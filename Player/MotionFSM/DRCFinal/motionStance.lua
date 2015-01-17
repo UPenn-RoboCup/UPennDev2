@@ -119,10 +119,7 @@ function state.update()
   mcm.set_stance_bodyHeight(bodyHeight)  
   moveleg.ft_compensate(t_diff)
 
-  delta_legs, angleShift = moveleg.get_leg_compensation_simple(supportLeg,0,gyro_rpy, angleShift,t_diff)
-
---moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  zShift[1],zShift[2],delta_legs)
-
+  delta_legs, angleShift = moveleg.get_leg_compensation_new(supportLeg,0,gyro_rpy, angleShift,t_diff)
   moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)
   mcm.set_status_uTorsoVel({0,0,0})
 

@@ -1,5 +1,8 @@
 assert(Config, 'Need a pre-existing Config table!')
 
+
+print("FSM")
+
 local fsm = {}
 
 -- Do we disable FSMs?
@@ -124,12 +127,8 @@ fsm.Motion = {
   {'motionStance', 'preview', 'motionStepPreview'},
   {'motionStepPreview', 'done', 'motionStance'},
 
-
   {'motionStance', 'stair', 'motionStepPreviewStair'},
-  {'motionStepPreviewStair', 'done', 'motionStepPreviewStairStopped'},
-  {'motionStepPreviewStairStopped', 'stair', 'motionStepPreviewStair'},
-  {'motionStepPreviewStairStopped', 'stop', 'motionStance'},
-
+  {'motionStepPreviewStair', 'done', 'motionStance'},
 
   {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
   {'motionHybridWalkInit', 'done', 'motionHybridWalk'},

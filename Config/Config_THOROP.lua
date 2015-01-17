@@ -72,9 +72,10 @@ end
 
 -- Load custom Config files first 
 for _,v in ipairs(exo) do
-  local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}  
+  local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v} 
   require(table.concat(fname))
 end
+
 
 -- Load custom libraries
 for i,sm in pairs(Config.fsm.libraries) do

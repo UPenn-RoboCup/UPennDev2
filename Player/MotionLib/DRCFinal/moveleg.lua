@@ -15,6 +15,9 @@ local supportX = Config.walk.supportX
 local supportY = Config.walk.supportY
 local torsoX    = Config.walk.torsoX
 
+local DEG_TO_RAD = math.pi/180
+
+
 -- Gyro stabilization parameters
 local ankleImuParamX = Config.walk.ankleImuParamX
 local ankleImuParamY = Config.walk.ankleImuParamY
@@ -27,6 +30,28 @@ local ankleRollCompensation = Config.walk.ankleRollCompensation or 0
 local anklePitchCompensation = Config.walk.anklePitchCompensation or 0
 local kneePitchCompensation = Config.walk.kneePitchCompensation or 0
 local hipPitchCompensation = Config.walk.hipPitchCompensation or 0
+
+function moveleg.get_ph_single(ph,phase1,phase2) return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))end
+
+function moveleg.get_ft()
+  local y_angle_zero = 3*math.pi/180
+  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
+  local ft= {
+    lf_z=l_ft[3],rf_z=r_ft[3],
+    lt_x=-l_ft[4],rt_x=-r_ft[4],
+    lt_y=l_ft[5],rt_y=r_ft[5]
+  }
+  if IS_WEBOTS then
+    ft.lt_y, ft.rt_y = -l_ft[4],-r_ft[5]      
+    ft.lt_x,ft.rt_x = -l_ft[5],-r_ft[4] 
+  end
+  local rpy = Body.get_rpy()
+  local gyro, gyro_t = Body.get_gyro()
+  local imu={
+    roll_err = rpy[1], pitch_err = rpy[2]-y_angle_zero,  v_roll = gyro[1], v_pitch = gyro[2]
+  }
+  return ft,imu
+end
 
 
 
@@ -54,401 +79,8 @@ end
 
 
 
-function moveleg.get_leg_compensation(supportLeg, ph, gyro_rpy,angleShift)
-  local gyro_pitch = gyro_rpy[2]
-  local gyro_roll = gyro_rpy[1]
 
-  -- Ankle feedback
-  local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
-  local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
 
-  -- Ankle shift is filtered... thus a global
-  angleShift[1] = angleShift[1] + ankleImuParamX[1]*(ankleShiftX-angleShift[1])
-  angleShift[2] = angleShift[2] + ankleImuParamY[1]*(ankleShiftY-angleShift[2])
-
-  -- Knee feedback
-  local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
-  angleShift[3] = angleShift[3] + kneeImuParamX[1]*(kneeShiftX-angleShift[3])
-
-  -- Hip feedback
-  local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
-  angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
-
-  local delta_legs = vector.zeros(12)
-  -- Change compensation in the beginning of the phase (first 10%)
-  -- Saturate compensation afterwards
-  -- Change compensation at the beginning of the phase (first 10%)
-  -- Same sort of trapezoid at double->single->double support shape
-
-  --SJ: now we apply the compensation during DS too
-  local phComp1 = 0.1
-  local phComp2 = 0.9
-  local phSingleComp = math.min( math.max(ph-phComp1, 0)/(phComp2-phComp1), 1)
-
-  local phComp = 10 * math.min( phSingleComp, .1, 1-phSingleComp)
---[[
-  if supportLeg == 0 then
-    -- Left support
-    delta_legs[2] = angleShift[4] + hipRollCompensation*phComp
-    delta_legs[4] = angleShift[3]
-    delta_legs[5] = angleShift[1]
-    delta_legs[6] = angleShift[2]*phComp
-  elseif supportLeg==1 then
-    -- Right support
-    delta_legs[8]  = angleShift[4] - hipRollCompensation*phComp
-    delta_legs[10] = angleShift[3]
-    delta_legs[11] = angleShift[1]
-    delta_legs[12] = angleShift[2]*phComp
-  elseif supportLeg==2 then
-    -- Double support
-    delta_legs[4] = angleShift[3]
-    delta_legs[5] = angleShift[1]
-
-    delta_legs[10] = angleShift[3]
-    delta_legs[11] = angleShift[1]
-  else --Robotis style
-    delta_legs[2] = angleShift[4]
-    delta_legs[4] = angleShift[3]
-    delta_legs[5] = angleShift[1]
-    delta_legs[6] = angleShift[2]
-
-    delta_legs[8]  = angleShift[4]
-    delta_legs[10] = angleShift[3]
-    delta_legs[11] = angleShift[1]
-    delta_legs[12] = angleShift[2]
-  end
---]]
-
-local comp_factor = 1
-if mcm.get_stance_singlesupport()==1 then
-  comp_factor = 2
-end
-
-if supportLeg == 0 then
-    -- Left support
-  delta_legs[2] = angleShift[4] + hipRollCompensation*phComp*comp_factor
-elseif supportLeg==1 then
-    -- Right support
-  delta_legs[8]  = angleShift[4] - hipRollCompensation*phComp*comp_factor
-else
-  delta_legs[2] = angleShift[4]
-  delta_legs[8]  = angleShift[4]
-end
-
-delta_legs[4] = angleShift[3]
-delta_legs[5] = angleShift[1]
-delta_legs[6] = angleShift[2]
-
-delta_legs[10] = angleShift[3]
-delta_legs[11] = angleShift[1]
-delta_legs[12] = angleShift[2]
-
-
---  print('Ankle shift',angleShift[1]*Body.RAD_TO_DEG )
-
-  return delta_legs, angleShift
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function moveleg.set_leg_positions_ankletilt(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
-
-  local uTorsoActual = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-  local pTorso = vector.new({
-        uTorsoActual[1], uTorsoActual[2], mcm.get_stance_bodyHeight(),
-        0,mcm.get_stance_bodyTilt(),uTorsoActual[3]})
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-
-  --LeftHeel LeftToe RightHeel RightToe
-  local footLift = K.calculate_foot_tilt(pLLeg, pRLeg, pTorso)
-  local aLeg={0,0}
-  local aLegOld = mcm.get_status_aLeg()
-
-  --check which leg is forward
-  local uLeftTorso = util.pose_relative(uLeft,uTorso)
-  local uRightTorso = util.pose_relative(uRight,uTorso)
-
-  if uLeft[1]>uRight[1] then --left foot forward
-    aLeg = {footLift[2],footLift[3]} --Lfoot toe lift, right foot heel lift
-  elseif uLeft[1]<uRight[1] then  --right foot forward
-    aLeg = {footLift[1],footLift[4]} --Lfoot heel lift, right foot toe lift
-  else
-    aLeg = {footLift[2],footLift[4]} --Lfoot toe lift, right foot toe lift
-  end
-
-  --When foot is lifted, slowly zero ankle angle
-
-  --TODO
-
-
-  local qLegs = K.inverse_legs_foot_tilt(pLLeg, pRLeg, pTorso,aLeg)
-  local legBias = vector.new(mcm.get_leg_bias())
-
-  qLegs = qLegs + delta_legs + legBias
-  Body.set_lleg_command_position(vector.slice(qLegs,1,6))
-  Body.set_rleg_command_position(vector.slice(qLegs,7,12))
-
-  ------------------------------------------
-  -- Update the status in shared memory
-  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
-  mcm.set_status_odometry( uFoot )
-  --util.pose_relative(uFoot, u0) for relative odometry to point u0
-  local bodyOffset = util.pose_relative(uTorso, uFoot)
-  mcm.set_status_bodyOffset( bodyOffset )
-  ------------------------------------------
-
-  mcm.set_status_aLeg(aLeg)
-  mcm.set_status_zLeg({zLeft,zRight})
-end
-
-
-
-
-
-
-
-
-
-
-
-
-function moveleg.set_leg_transforms(pLLeg,pRLeg,pTorso,supportLeg,delta_legs)
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, supportLeg)
-  qLegs = qLegs + delta_legs
-  Body.set_lleg_command_position(qLegs)
-end
-
-function moveleg.get_ph_single(ph,phase1,phase2)
-  return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))
-end
-
-
-local function eval_spline(breaks,coefs,ph)
-  local x_offset, xf = 0,0
-  for i=1,#breaks do
-    if ph<=breaks[i] then
-      local x=ph - x_offset
-      xf = coefs[i][1]*x^3 + coefs[i][2]*x^2 + coefs[i][3]*x + coefs[i][4]
-      break;
-    end
-    x_offset = breaks[i]    
-  end
-  return xf
-end
-
-
-
-
-
-
-function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
-  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
-  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
-  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-  local zFoot = stepHeight * zf
-
-  return uFoot, zFoot
-end
-
-function moveleg.foot_trajectory_square(phSingle,uStart,uEnd,stepHeight)
-  local phase1,phase2 = 0.2, 0.7 --TODO: automatic detect
-  local xf,zf = 0,0
-
-  if phSingle<phase1 then --Lifting phase
-    ph1 = phSingle / phase1
-    zf = ph1;
-  elseif phSingle<phase2 then
-    ph1 = (phSingle-phase1) / (phase2-phase1)
-    xf,zf = ph1, 1
-  else
-    ph1 = (phSingle-phase2) / (1-phase2)
-    xf,zf = 1, 1-ph1
-  end
-  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-  local zFoot = stepHeight * zf
-  return uFoot, zFoot
-end
-
-
-function moveleg.foot_trajectory_square_stair(phSingle,uStart,uEnd, stepHeight, walkParam)
-  local phase1,phase2 = 0.2, 0.7 --TODO: automatic detect
-  local xf,zf = 0,0
-  local zFoot,aFoot = 0,0
-  local zHeight0, zHeight1= 0,0,0
-  local special = false
-
-
-  if walkParam then    
-    zHeight0, zHeight1 = walkParam[1],walkParam[3]
-    stepHeight = walkParam[2]
-    --hack for the special step for block climbing
-    if walkParam[1]==-999 then
-      zHeight0 = 0
-      special = true
-    end
-
-
-    local move1 = math.abs(zHeight0-stepHeight)
-    local move2 = math.abs(zHeight1-stepHeight)
-  
-    if move1>move2*2.0 then --step up
-      phase1,phase2 = 0.5,0.8
-    elseif move1*2.0<move2 then --step down
-      phase1,phase2 = 0.2,0.5
-    end
-  end
-
-  if phSingle<phase1 then --Lifting phase
-    ph1 = phSingle / phase1
-    zf = ph1;
-    zFoot = zHeight0 + (stepHeight-zHeight0) * zf
-    if special then
-      if ph1<0.4 then ph2=ph1/0.4
-      elseif ph1<0.7 then ph2 = 1
-      else ph2 = (1-ph1)/0.3 end
-      aFoot = 20*math.pi/180*ph2      
-    end
-  elseif phSingle<phase2 then
-    ph1 = (phSingle-phase1) / (phase2-phase1)
-    xf,zf = ph1, 1
-    zFoot = stepHeight * zf
-
-  else
-    ph1 = (phSingle-phase2) / (1-phase2)
-    xf,zf = 1, 1-ph1
-    zFoot = zHeight1 + (stepHeight-zHeight1) * zf
-  end
-
-  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-  return uFoot, zFoot, aFoot
-end
-
-function moveleg.foot_trajectory_square_stair_touchdown(phSingle,uStart,uEnd, stepHeight, walkParam, zOld,forceZ, touched)
-  local phase1,phase2 = 0.2, 0.7 --TODO: automatic detect
-  local xf,zf = 0,0
-  local zFoot,aFoot = 0,0
-  local zHeight0, zHeight1= 0,0,0
-
-
-  if walkParam then    
-    zHeight0, zHeight1 = walkParam[1],walkParam[3]
-    stepHeight = walkParam[2]
-    local move1 = math.abs(zHeight0-stepHeight)
-    local move2 = math.abs(zHeight1-stepHeight)
-  
-    if move1>move2*2.0 then --step up
-      phase1,phase2 = 0.5,0.8
-    elseif move1*2.0<move2 then --step down
-      phase1,phase2 = 0.2,0.5
-    end
-  end
-
-  if phSingle<phase1 then --Lifting phase
-    ph1 = phSingle / phase1
-    zf = ph1;
-    zFoot = zHeight0 + (stepHeight-zHeight0) * zf
-  elseif phSingle<phase2 then
-    ph1 = (phSingle-phase1) / (phase2-phase1)
-    xf,zf = ph1, 1
-    zFoot = stepHeight * zf
-  else
-    if forceZ>50 or touched or phSingle==1 then
-      print("TOUCHDOWN!",zOld,forceZ)
-      xf=1
-      zFoot = zOld
-      local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-      return uFoot, zFoot, aFoot, true
-    end
-
-    ph1 = (phSingle-phase2) / (1-phase2)
-    xf,zf = 1, 1-ph1
-    zFoot = zHeight1 + (stepHeight-zHeight1) * zf
-  end
-
-  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-  return uFoot, zFoot, aFoot, false
-end
-
-
-
-function moveleg.foot_trajectory_square_touchdown(phSingle,uStart,uEnd,stepHeight, touched)
-  local phase1,phase2 = 0.2, 0.7 --TODO: automatic detect
-  local xf,zf = 0,0
-
-  if phSingle<phase1 then --Lifting phase
-    ph1 = phSingle / phase1
-    zf = ph1;
-  elseif phSingle<phase2 then
-    ph1 = (phSingle-phase1) / (phase2-phase1)
-    xf,zf = ph1, 1
-  else
-    ph1 = (phSingle-phase2) / (1-phase2)
-    xf,zf = 1, 1-ph1
-  end
-  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
-  local zFoot = stepHeight * zf
-  return uFoot, zFoot
-end
-
-
-
-function moveleg.get_foot(ph,start_phase,finish_phase)
-  -- Computes relative x, z motion of foot during single support phase
-  -- phSingle = 0: x=0, z=0, phSingle = 1: x=1,z=0
-  -- phSingle is 100% @ finish_phase, and 0% at start_phase
-  -- It just ignores the double support phase so we know how long we've been in single support
-  local phSingle = math.min( math.max(ph-start_phase, 0)/(finish_phase-start_phase), 1)
-  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
-  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
-  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
-  -- xf and zf and percentages, it seems
-  return xf, zf, phSingle
-end
-
-function moveleg.get_foot_square(ph,start_phase,finish_phase)
-  --SJ: Square wave walk pattern
-  local phSingle = math.min( math.max(ph-start_phase, 0)/(finish_phase-start_phase), 1)
-  local phase1 = 0.2;
-  local phase2 = 0.7;
-
-  if phSingle<phase1 then --Lifting phase
-    ph1 = phSingle / phase1
-    xf = 0;
-    zf = ph1;
-  elseif phSingle<phase2 then
-    ph1 = (phSingle-phase1) / (phase2-phase1)
-    xf = ph1;
-    zf = 1;
-  else
-    ph1 = (phSingle-phase2) / (1-phase2)
-    xf = 1;
-    zf = (1-ph1)
-  end
-  return xf,zf,phSingle
-end
 
 
 
@@ -458,7 +90,7 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   dt= dt or 0.010
 
   --Now we limit the angular velocity of compensation angles 
-  local DEG_TO_RAD = math.pi/180
+
   local dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
 
   local gyro_pitch = gyro_rpy[2]
@@ -515,23 +147,23 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   end
 
 
-
-  if supportLeg == 0 then -- Left support
+  if supportLeg == 0 then -- Left supports
     supportRatioLeft = phComp;
   elseif supportLeg==1 then
     supportRatioRight = phComp;
   end
-    delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
-    delta_legs[3] = - hipPitchCompensation*supportRatioLeft
-    delta_legs[4] = angleShift[3] - kneePitchCompensation*supportRatioLeft
-    delta_legs[5] = angleShift[1] - anklePitchCompensation*supportRatioLeft
-    delta_legs[6] = angleShift[2] + ankleRollCompensation*supportRatioLeft
 
-    delta_legs[8]  = angleShift[4] - hipRollCompensation*supportRatioRight
-    delta_legs[9] = -hipPitchCompensation*supportRatioRight
-    delta_legs[10] = angleShift[3] - kneePitchCompensation*supportRatioRight
-    delta_legs[11] = angleShift[1] - anklePitchCompensation*supportRatioRight
-    delta_legs[12] = angleShift[2] - ankleRollCompensation
+  delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
+  delta_legs[3] = - hipPitchCompensation*supportRatioLeft
+  delta_legs[4] = angleShift[3] - kneePitchCompensation*supportRatioLeft
+  delta_legs[5] = angleShift[1] - anklePitchCompensation*supportRatioLeft
+  delta_legs[6] = angleShift[2] + ankleRollCompensation*supportRatioLeft
+
+  delta_legs[8]  = angleShift[4] - hipRollCompensation*supportRatioRight
+  delta_legs[9] = -hipPitchCompensation*supportRatioRight
+  delta_legs[10] = angleShift[3] - kneePitchCompensation*supportRatioRight
+  delta_legs[11] = angleShift[1] - anklePitchCompensation*supportRatioRight
+  delta_legs[12] = angleShift[2] - ankleRollCompensation
 
   return delta_legs, angleShift
 end
@@ -539,7 +171,72 @@ end
 
 
 
-function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,aLeft,aRight)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
+  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
+  local xf = .5*(1-math.cos(math.pi*phSingleSkew))
+  local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight * zf
+
+  return uFoot, zFoot
+end
+
+function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkParam)
+  local xf,zf,zFoot,aFoot, zHeight0, zHeight1= 0,0,0,0,0,0
+  if not walkParam then walkParam={0,stepHeight,0} end
+  zHeight0, stepHeight,zHeight1 = walkParam[1],walkParam[2],walkParam[3]
+  local lift = math.abs(zHeight0-stepHeight)
+  local land = math.abs(zHeight1-stepHeight)
+  local move = math.sqrt( (uEnd[2]-uStart[2])*(uEnd[2]-uStart[2])+
+                         (uEnd[1]-uStart[1])*(uEnd[1]-uStart[1]))
+  local total_dist = lift+land+move
+
+  local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
+  local tf = .5*(1-math.cos(math.pi*phSingleSkew))
+
+--cubic curve
+  local k =1.5
+  if phSingleSkew<0.5 then
+    tf = k*phSingleSkew^3 + (2-k/2)*phSingleSkew*phSingleSkew
+  else
+    tf = 1- (k*(1-phSingleSkew)^3 + (2-k/2)*(1-phSingleSkew)^2)
+  end
+  tf = math.max(0,math.min(1,tf))
+
+  if tf < lift/total_dist then xf,zf =0,tf*total_dist +zHeight0
+  elseif tf <(lift+move)/total_dist then xf,zf = (tf*total_dist-lift)/move, stepHeight
+  else xf,zf= 1,(1-tf)*total_dist +zHeight1   end 
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  return uFoot, zf
+end
+
+
+
+
+
+function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs)
 
 
   local zShift=mcm.get_walk_zShift()
@@ -588,75 +285,20 @@ function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,a
 end
 
 
---Robotis style simple feedback
-function moveleg.get_leg_compensation_simple(supportLeg, phSingle, gyro_rpy,angleShift)
 
-  local gyro_pitch = gyro_rpy[2]
-  local gyro_roll = gyro_rpy[1]
-
-  local enable_gyro = hcm.get_legdebug_enable_gyro()
-  if enable_gyro>0 then gyro_pitch,gyro_roll = 0,0 end
-
-  -- Ankle feedback
-  local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
-  local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
-
-  -- Ankle shift is filtered... thus a global
-  angleShift[1] = angleShift[1] + ankleImuParamX[1]*(ankleShiftX-angleShift[1])
-  angleShift[2] = angleShift[2] + ankleImuParamY[1]*(ankleShiftY-angleShift[2])
-
-  -- Knee feedback
-  local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
-  angleShift[3] = angleShift[3] + kneeImuParamX[1]*(kneeShiftX-angleShift[3])
-
-  -- Hip feedback
-  local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
-  angleShift[4] = angleShift[4]+hipImuParamY[1]*(hipShiftY-angleShift[4])
-
-  local delta_legs = vector.zeros(12)
-  -- Change compensation in the beginning of the phase (first 10%)
-  -- Saturate compensation afterwards
-  -- Change compensation at the beginning of the phase (first 10%)
-  -- Same sort of trapezoid at double->single->double support shape
-  local phComp = 10 * math.min( phSingle, .1, 1-phSingle )
-
-  delta_legs[4] = angleShift[3]
-  delta_legs[5] = angleShift[1]
-
-  delta_legs[10] = angleShift[3]
-  delta_legs[11] = angleShift[1]
-
-  delta_legs[2] = angleShift[4]
-  delta_legs[6] = angleShift[2]
-  delta_legs[8]  = angleShift[4]
-  delta_legs[12] = angleShift[2]
-
-  return delta_legs, angleShift
-end
 
 
 function moveleg.ft_compensate(t_diff)
 
   local enable_balance = hcm.get_legdebug_enable_balance()
   local ft,imu = moveleg.get_ft()
-
   if enable_balance[1]+enable_balance[2]>0 then
     print()
-
     print(string.format("%d%d Fz: %d %d  T_p: %d %d T_r: %d %d", 
       enable_balance[1],enable_balance[2],
       ft.lf_z,ft.rf_z,ft.lt_y,ft.rt_y, ft.lt_x,ft.rt_x))
     print(string.format("angle: %.1f p %.1f",imu.roll_err*180/math.pi, imu.pitch_err*180/math.pi))
   end
-
-
---[[
-  local t = Body.get_time()
-  local t_last = mcm.get_walk_t_last()
-  local t_diff = t-t_last
-  mcm.set_walk_t_last(t)
---]]
-
   moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
   moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
   moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
@@ -664,32 +306,7 @@ function moveleg.ft_compensate(t_diff)
 end
 
 
-function moveleg.get_ft()
-  local y_angle_zero = 3*math.pi/180
 
-  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
-  local ft= {
-    lf_z=l_ft[3],
-    rf_z=r_ft[3],
-    lt_x=-l_ft[4],
-    rt_x=-r_ft[4],
-    lt_y=l_ft[5],
-    rt_y=r_ft[5]
-  }
-  if IS_WEBOTS then
-    ft.lt_y, ft.rt_y = -l_ft[4],-r_ft[5]      
-    ft.lt_x,ft.rt_x = -l_ft[5],-r_ft[4] 
-  end
-  local rpy = Body.get_rpy()
-  local gyro, gyro_t = Body.get_gyro()
-  local imu={
-    roll_err = rpy[1],
-    pitch_err = rpy[2]-y_angle_zero,
-    v_roll = gyro[1],
-    v_pitch = gyro[2]
-  }
-  return ft,imu
-end
 
 
 

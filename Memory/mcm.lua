@@ -112,7 +112,6 @@ shared.walk.kickfoot = vector.zeros(1)
 
 
 --feet shift/tilt info
-
 shared.walk.zShift = vector.zeros(2)
 shared.walk.zvShift = vector.zeros(2)
 
@@ -124,6 +123,16 @@ shared.walk.avShiftY = vector.zeros(2)
 
 shared.walk.t_last = vector.zeros(1)
 
+
+
+--direct leg compensation info
+
+shared.walk.ankleshiftX = vector.zeros(2)
+shared.walk.ankleshiftY = vector.zeros(2)
+shared.walk.kneeshiftX = vector.zeros(2)
+shared.walk.hipshiftY = vector.zeros(2)
+
+-------------------------------------------
 
 
 

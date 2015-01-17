@@ -85,6 +85,7 @@ if IS_WEBOTS or (HOSTNAME ~="alvin" and HOSTNAME ~= "teddy") then
   walk.velDelta  = {0.025,0.02,0.1}
 end
 
+
 -----------------------------------------------------------
 -- Stance parameters
 -----------------------------------------------------------
@@ -149,13 +150,11 @@ zmpstep.param_k1={
   }
 
 
-
 --Load robot specific configs
 local fname = {Config.PLATFORM_NAME,'/calibration'}  
 c = require(table.concat(fname))
 if c.cal[HOSTNAME].legBias then walk.legBias = c.cal[HOSTNAME].legBias end
 if c.cal[HOSTNAME].headBias then walk.headBias = c.cal[HOSTNAME].headBias end
-
 
 if IS_WEBOTS then
   Config.supportY_preview = -0.02

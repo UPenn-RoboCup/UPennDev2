@@ -320,6 +320,24 @@ function util.bezier( alpha, s )
   return value
 end
 
+function util.spline(breaks,coefs,ph)
+  local x_offset, xf = 0,0
+  for i=1,#breaks do
+    if ph<=breaks[i] then
+      local x=ph - x_offset
+      xf = coefs[i][1]*x^3 + coefs[i][2]*x^2 + coefs[i][3]*x + coefs[i][4]
+      break;
+    end
+    x_offset = breaks[i]    
+  end
+  return xf
+end
+
+function util.get_ph_single(ph,phase1,phase2)
+  return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))
+end
+
+
 function util.tablesize(table)
   local count = 0
   for _ in pairs(table) do count = count + 1 end

@@ -198,18 +198,15 @@ function walk.update()
 -- Grab gyro feedback for these joint angles
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
-  --Calculate how close the ZMP is to each foot
-  local uLeftSupport,uRightSupport = step_planner.get_supports(uLeft,uRight)
-  local dZmpL = math.sqrt( (uZMP[1]-uLeftSupport[1])^2+ (uZMP[2]-uLeftSupport[2])^2)
-  local dZmpR = math.sqrt((uZMP[1]-uRightSupport[1])^2+(uZMP[2]-uRightSupport[2])^2)
-  local supportRatio = dZmpL/(dZmpL+dZmpR)
+
+
 
   delta_legs, angleShift = moveleg.get_leg_compensation_new(
       supportLeg,
       ph,
       gyro_rpy, 
       angleShift,
-      supportRatio,
+      0,
       t_diff)
 
   

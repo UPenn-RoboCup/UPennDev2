@@ -60,11 +60,13 @@ step_queues={
 local sh1,sh2 = 0.10, 0.05
 local step1,step2 = 0.0, 0.0
 
+local side_adj = 0.04
+
 
 --This is for webots
 step_queues={
    {
-    {{step1,0,0},0,  0.5,2,0.5,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+0.04}},   --LS    
+    {{step1,0,0},0,  0.5,2,0.5,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+side_adj}},   --LS    
 
    },
 
@@ -73,7 +75,7 @@ step_queues={
    },
 
    {
-    {{step1,0,0},1,   0.5,2,0.5,  {0,0.04},  {0,sh1,sh2},  {-step1/2  ,-Config.walk.footY-0.04}},    --RS    
+    {{step1,0,0},1,   0.5,2,0.5,  {0,side_adj},  {0,sh1,sh2},  {-step1/2  ,-Config.walk.footY-side_adj}},    --RS    
    },
 
    {

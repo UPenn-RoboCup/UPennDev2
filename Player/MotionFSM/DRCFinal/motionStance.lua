@@ -25,7 +25,6 @@ local angleShift = vector.new{0,0,0,0}
 local uLeft,uRight,uTorso
 local zLeft,zRight = 0,0
 
-
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -114,6 +113,9 @@ function state.update()
     zLeg[1] = util.approachTol( zLeg[1],uLeftTarget[4],vel_lift , t_diff )
     zLeg[2] = util.approachTol( zLeg[2],uRightTarget[4],vel_movement , t_diff )
   end
+
+
+
 
 
 

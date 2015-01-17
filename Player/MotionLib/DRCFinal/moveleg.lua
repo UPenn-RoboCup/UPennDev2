@@ -133,18 +133,18 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
   local delta_legs = vector.zeros(12)
 
-  --How much do we need to apply the compensation?
-  local supportRatioRight = supportRatio;
-  local supportRatioLeft = 1-supportRatio;
---  supportRatioLeft = math.max(0,supportRatioLeft*4-3);
---  supportRatioRight = math.max(0,supportRatioRight*4-3);
+  local uTorso = mcm.get_status_uTorso()
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uZMP = mcm.get_status_uZMP()
 
-  supportRatioLeft = math.max(0,supportRatioLeft*2-1);
-  supportRatioRight = math.max(0,supportRatioRight*2-1);
+  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
+  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)
 
+  local dTL = math.sqrt( (uTorso[1]-uLeftSupport[1])^2+ (uTorso[2]-uLeftSupport[2])^2)
+  local dTR = math.sqrt((uTorso[1]-uRightSupport[1])^2+(uTorso[2]-uRightSupport[2])^2)
+  local supportRatio = math.max(dTL,dTR)/(dTL+dTR)
 
-
---print("SR:",supportRatio,supportRatioLeft,supportRatioRight)
   --SJ: now we apply the compensation during DS too
   local phComp1 = Config.walk.phComp[1]
   local phComp2 = Config.walk.phComp[2]
@@ -156,15 +156,14 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   supportRatioLeft, supportRatioRight = 0,0
 
 
-  if mcm.get_stance_singlesupport()==1 then
-    phComp = phComp*2
-  end
+  local phComp2 = math.max(0, math.min(1, (supportRatio-0.58)/ (0.66-0.58)) )
 
+--  if mcm.get_stance_singlesupport()==1 then phComp = phComp*2 end
 
-  if supportLeg == 0 then -- Left supports
-    supportRatioLeft = phComp;
-  elseif supportLeg==1 then
-    supportRatioRight = phComp;
+  if dTL>dTR then --Right support
+    supportRatioRight = math.max(phComp,phComp2);
+  else
+    supportRatioLeft = math.max(phComp,phComp2);
   end
 
   delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft

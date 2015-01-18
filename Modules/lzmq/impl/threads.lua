@@ -1,31 +1,102 @@
--- Copyright (c) 2011 by Robert G. Jakabosky <bobby@sharedrealm.com>
 --
--- Permission is hereby granted, free of charge, to any person obtaining a copy
--- of this software and associated documentation files (the "Software"), to deal
--- in the Software without restriction, including without limitation the rights
--- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
--- copies of the Software, and to permit persons to whom the Software is
--- furnished to do so, subject to the following conditions:
+--  Author: Alexey Melnichuk <mimir@newmail.ru>
 --
--- The above copyright notice and this permission notice shall be included in
--- all copies or substantial portions of the Software.
+--  Copyright (C) 2013-2014 Alexey Melnichuk <mimir@newmail.ru>
 --
--- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
--- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
--- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
--- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
--- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
--- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
--- THE SOFTWARE.
+--  Licensed according to the included 'LICENCE' document
+--
+--  This file is part of lua-lzqm library.
+--
 
 --
 -- zmq.thread wraps the low-level threads object & a zmq context.
 --
 
+local T = string.dump
+
+local run_starter = {
+  prelude = T(function(ZMQ_NAME, ctx, ...)
+    local zmq      = require(ZMQ_NAME)
+    local zthreads = require(ZMQ_NAME .. ".threads")
+
+    if ctx then
+      ctx = zmq.init_ctx(ctx)
+      zthreads.set_context(ctx)
+    end
+
+    return ...
+  end)
+}
+
+local fork_starter = {
+  prelude = T(function(ZMQ_NAME, ctx, endpoint, ...)
+    local zmq      = require(ZMQ_NAME)
+    local zthreads = require(ZMQ_NAME .. ".threads")
+
+    assert(ctx)
+    assert(endpoint)
+
+    ctx = zmq.init_ctx(ctx)
+    zthreads.set_context(ctx)
+
+    local pipe = zmq.assert(ctx:socket{zmq.PAIR, connect = endpoint})
+    return pipe, ...
+  end)
+}
+
 local function rand_bytes(n)
-	local t = {}
-	for i = 1, n do table.insert(t, string.char(math.random(256)-1)) end
-	return table.concat(t)
+  local t = {}
+  for i = 1, n do t[i] = string.char( math.random(string.byte('a'), string.byte('z')) ) end
+  return table.concat(t)
+end
+
+local actor_mt = {} do
+
+actor_mt.__index = function(self, k)
+  local v = actor_mt[k]
+  if v ~= nil then
+    return v
+  end
+
+  v = self._thread[k]
+  if v ~= nil then
+    local f = function(self, ...) return self._thread[k](self._thread, ...) end
+    self[k] = f
+    return f
+  end
+
+  v = self._pipe[k]
+  if v ~= nil then
+    local f = function(self, ...) return self._pipe[k](self._pipe, ...) end
+    self[k] = f
+    return f
+  end
+end
+
+function actor_mt:start(...)
+  local ok, err = self._thread:start(...)
+  if not ok then return nil, err end
+  return self, err
+end
+
+function actor_mt:socket()
+  return self._pipe
+end
+
+function actor_mt:close()
+  self._pipe:close()
+  self._thread:join()
+end
+
+end
+
+local function actor_new(thread, pipe)
+  local o = setmetatable({
+    _thread = thread;
+    _pipe   = pipe;
+  }, actor_mt)
+
+  return o
 end
 
 local string  = require"string"
@@ -34,97 +105,80 @@ return function(ZMQ_NAME)
 
 local zmq = require(ZMQ_NAME)
 
-local zthreads_prelude = [[
-local zmq = require(]] .. ("%q"):format(ZMQ_NAME) .. [[)
-local zthreads = require(]] .. ("%q"):format(ZMQ_NAME) .. [[ .. ".threads")
-local parent_ctx = arg[1]
-if parent_ctx then zthreads.set_parent_ctx(zmq.init_ctx(parent_ctx)) end
-local unpack = table.unpack or unpack
-arg = {n = arg.n - 1, unpack(arg, 2, arg.n) }
-]]
-
-local fork_prelude = [[
-arg[1] = zmq.assert(zthreads.get_parent_ctx():socket(zmq.PAIR,{
-	connect = assert(arg[1]);
-}))
-]]
-
-local prelude = zthreads_prelude
-
 local function make_pipe(ctx)
-	local pipe = ctx:socket(zmq.PAIR)
-	local pipe_endpoint = "inproc://lzmq.pipe." .. pipe:fd() .. "." .. rand_bytes(10);
-	local ok, err = pipe:bind(pipe_endpoint)
-	if not ok then 
-		pipe:close()
-		return nil, err
-	end
-	return pipe, pipe_endpoint
+  local pipe = ctx:socket(zmq.PAIR)
+  local pipe_endpoint = "inproc://lzmq.pipe." .. pipe:fd() .. "." .. rand_bytes(10);
+  local ok, err = pipe:bind(pipe_endpoint)
+  if not ok then 
+    pipe:close()
+    return nil, err
+  end
+  return pipe, pipe_endpoint
 end
 
-local M = {}
+local zthreads = {}
 
-function M.set_bootstrap_prelude (code)
-	prelude = code .. zthreads_prelude
-end;
-
-function M.runfile(ctx, file, ...)
-	if ctx then ctx = ctx:lightuserdata() end
-	return Threads.runfile_ex(prelude, file, ctx, ...)
+function zthreads.run(ctx, code, ...)
+  if ctx then ctx = ctx:lightuserdata() end
+  run_starter.source = code
+  return Threads.new(run_starter, ZMQ_NAME, ctx, ...)
 end
 
-function M.runstring(ctx, code, ...)
-	if ctx then ctx = ctx:lightuserdata() end
-	return Threads.runstring_ex(prelude, code, ctx, ...)
+function zthreads.fork(ctx, code, ...)
+  local pipe, endpoint = make_pipe(ctx)
+  if not pipe then return nil, endpoint end
+
+  ctx = ctx:lightuserdata()
+  fork_starter.source = code
+  local ok, err = Threads.new(fork_starter, ZMQ_NAME, ctx, endpoint, ...)
+  if not ok then
+    pipe:close()
+    return nil, err
+  end
+  return ok, pipe
 end
 
-function M.run(ctx, code, ...)
-	if string.sub(code, 1, 1) == '@' then
-		return M.runfile(ctx, string.sub(code, 2), ...)
-	end
-	return M.runstring(ctx, code, ...)
+function zthreads.actor(...)
+  local thread, pipe = zthreads.fork(...)
+  if not thread then return nil, pipe end
+
+  return actor_new(thread, pipe)
 end
 
-function M.forkstring(ctx, code, ...)
-	local pipe, endpoint = make_pipe(ctx)
-	if not pipe then return nil, endpoint end
-	ctx = ctx:lightuserdata()
-	local ok, err = Threads.runstring_ex(prelude .. fork_prelude, code, ctx, endpoint, ...)
-	if not ok then
-		pipe:close()
-		return nil, err
-	end
-	return ok, pipe
+function zthreads.xrun(...)
+  return zthreads.run(zthreads.context(), ...)
 end
 
-function M.forkfile(ctx, file, ...)
-	local pipe, endpoint = make_pipe(ctx)
-	if not pipe then return nil, endpoint end
-	ctx = ctx:lightuserdata()
-	local ok, err = Threads.runfile_ex(prelude .. fork_prelude, file, ctx, endpoint, ...)
-	if not ok then
-		pipe:close()
-		return nil, err
-	end
-	return ok, pipe
+function zthreads.xfork(...)
+  return zthreads.fork(zthreads.context(), ...)
 end
 
-function M.fork(ctx, code, ...)
-	if string.sub(code, 1, 1) == '@' then
-		return M.forkfile(ctx, string.sub(code, 2), ...)
-	end
-	return M.forkstring(ctx, code, ...)
+function zthreads.xactor(...)
+  return zthreads.actor(zthreads.context(), ...)
 end
 
-local parent_ctx = nil
-function M.set_parent_ctx(ctx)
-	parent_ctx = ctx
+local global_context = nil
+function zthreads.set_context(ctx)
+  assert(ctx)
+
+  if global_context == ctx then return end
+
+  assert(global_context == nil, 'global_context already setted')
+
+  global_context = ctx
 end
 
-function M.get_parent_ctx(ctx)
-	return parent_ctx
+function zthreads.context()
+  if not global_context then global_context = zmq.assert(zmq.context()) end
+  return global_context
 end
 
-return M
+-- compatibility functions
+
+zthreads.get_parent_ctx = zthreads.context
+
+zthreads.set_parent_ctx = zthreads.set_context
+
+return zthreads
 
 end

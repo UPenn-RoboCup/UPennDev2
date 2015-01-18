@@ -664,6 +664,23 @@ static int luazmq_skt_closed (lua_State *L) {
   return 1;
 }
 
+static int luazmq_skt_has_event (lua_State *L) {
+  zsocket *skt = luazmq_getsocket(L);
+  int i, top = lua_gettop(L);
+  int option_value; size_t len = sizeof(option_value);
+  int ret = zmq_getsockopt(skt->skt, ZMQ_EVENTS, &option_value, &len);
+  if (ret == -1) return luazmq_fail(L, skt);
+
+  luaL_checkint(L, 2); /* we need at least one event */
+
+  for(i = 2; i <= top; ++i){
+    lua_pushboolean(L, option_value & luaL_checkint(L, i));
+    lua_replace(L, i);
+  }
+
+  return top - 1;
+}
+
 static int luazmq_skt_set_int (lua_State *L, int option_name) {
   zsocket *skt = luazmq_getsocket(L);
   int option_value = luaL_checkint(L, 2);
@@ -875,12 +892,6 @@ static int luazmq_skt_set_str_arr (lua_State *L, int option_name) {
 #if defined(ZMQ_LAST_ENDPOINT)
   DEFINE_SKT_OPT_RO(last_endpoint,            ZMQ_LAST_ENDPOINT,                  str       )
 #endif
-#if defined(ZMQ_ROUTER_BEHAVIOR)
-  DEFINE_SKT_OPT_WO(router_behavior,         ZMQ_ROUTER_BEHAVIOR,               int       )
-#endif
-#if defined(ZMQ_FAIL_UNROUTABLE)
-  DEFINE_SKT_OPT_WO(fail_unroutable,         ZMQ_FAIL_UNROUTABLE,               int       )
-#endif
 #if defined(ZMQ_ROUTER_MANDATORY)
   DEFINE_SKT_OPT_WO(router_mandatory,         ZMQ_ROUTER_MANDATORY,               int       )
 #endif
@@ -992,6 +1003,18 @@ static int luazmq_skt_set_str_arr (lua_State *L, int option_name) {
 #if defined(ZMQ_SOCKS_PROXY)
   DEFINE_SKT_OPT_RW(socks_proxy,              ZMQ_SOCKS_PROXY,                    str       )
 #endif
+#if defined(ZMQ_XPUB_NODROP)
+  DEFINE_SKT_OPT_WO(xpub_nodrop,              ZMQ_XPUB_NODROP,                    int       )
+#endif
+#if defined(ZMQ_BLOCKY)
+  DEFINE_SKT_OPT_RW(blocky,                   ZMQ_BLOCKY,                         int       )
+#endif
+#if defined(ZMQ_XPUB_MANUAL)
+  DEFINE_SKT_OPT_WO(xpub_manual,              ZMQ_XPUB_MANUAL,                    int       )
+#endif
+#if defined(ZMQ_XPUB_WELCOME_MSG)
+  DEFINE_SKT_OPT_WO(xpub_welcome_msg,         ZMQ_XPUB_WELCOME_MSG,               str       )
+#endif
 
 //}
 
@@ -1040,6 +1063,8 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
   {"lightuserdata",  luazmq_skt_handle       },
   {"context",        luazmq_skt_context      },
   {"bind_to_random_port", luazmq_skt_bind_to_random_port},
+
+  {"has_event",      luazmq_skt_has_event    },
 
   {"getopt_int",     luazmq_skt_getopt_int   },
   {"getopt_i64",     luazmq_skt_getopt_i64   },
@@ -1127,12 +1152,6 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
 #endif
 #if defined(ZMQ_LAST_ENDPOINT)
   REGISTER_SKT_OPT_RO(last_endpoint             ),
-#endif
-#if defined(ZMQ_ROUTER_BEHAVIOR)
-  REGISTER_SKT_OPT_WO(router_behavior          ),
-#endif
-#if defined(ZMQ_FAIL_UNROUTABLE)
-  REGISTER_SKT_OPT_WO(fail_unroutable          ),
 #endif
 #if defined(ZMQ_ROUTER_MANDATORY)
   REGISTER_SKT_OPT_WO(router_mandatory          ),
@@ -1245,6 +1264,18 @@ static const struct luaL_Reg luazmq_skt_methods[] = {
 #if defined(ZMQ_SOCKS_PROXY)
   REGISTER_SKT_OPT_RW(socks_proxy               ),
 #endif
+#if defined(ZMQ_XPUB_NODROP)
+  REGISTER_SKT_OPT_WO(xpub_nodrop               ),
+#endif
+#if defined(ZMQ_BLOCKY)
+  REGISTER_SKT_OPT_RW(blocky                    ),
+#endif
+#if defined(ZMQ_XPUB_MANUAL)
+  REGISTER_SKT_OPT_WO(xpub_manual               ),
+#endif
+#if defined(ZMQ_XPUB_WELCOME_MSG)
+  REGISTER_SKT_OPT_WO(xpub_welcome_msg          ),
+#endif
   //}
 
   {NULL,NULL}
@@ -1344,12 +1375,6 @@ static const luazmq_int_const skt_options[] ={
 #endif
 #if defined(ZMQ_LAST_ENDPOINT)
   DEFINE_ZMQ_CONST(LAST_ENDPOINT             ),
-#endif
-#if defined(ZMQ_ROUTER_BEHAVIOR)
-  DEFINE_ZMQ_CONST(ROUTER_BEHAVIOR          ),
-#endif
-#if defined(ZMQ_FAIL_UNROUTABLE)
-  DEFINE_ZMQ_CONST(FAIL_UNROUTABLE          ),
 #endif
 #if defined(ZMQ_ROUTER_MANDATORY)
   DEFINE_ZMQ_CONST(ROUTER_MANDATORY          ),
@@ -1462,7 +1487,18 @@ static const luazmq_int_const skt_options[] ={
 #if defined(ZMQ_SOCKS_PROXY)
   DEFINE_ZMQ_CONST(SOCKS_PROXY               ),
 #endif
-
+#if defined(ZMQ_XPUB_NODROP)
+  DEFINE_ZMQ_CONST(XPUB_NODROP               ),
+#endif
+#if defined(ZMQ_BLOCKY)
+  DEFINE_ZMQ_CONST(BLOCKY                    ),
+#endif
+#if defined(ZMQ_XPUB_MANUAL)
+  DEFINE_ZMQ_CONST(XPUB_MANUAL               ),
+#endif
+#if defined(ZMQ_XPUB_WELCOME_MSG)
+  DEFINE_ZMQ_CONST(XPUB_WELCOME_MSG          ),
+#endif
   {NULL, 0}
 };
 

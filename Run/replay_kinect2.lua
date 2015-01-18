@@ -1,6 +1,6 @@
 #!/usr/bin/env luajit
 dofile'../include.lua'
-local LOG_DATE = '12.04.2014.09.30.05'
+local LOG_DATE = '01.09.2015.16.42.40'
 
 local libLog = require'libLog'
 local replay_depth = libLog.open(HOME..'/Data/', LOG_DATE, 'k2_depth')
@@ -38,7 +38,6 @@ for i, metadata_depth, payload_depth in logged_depth do
 	local t_sleep = metadata_dt - dt
 	if t_sleep>0 then unix.usleep(1e6*t_sleep) end
 
-  print('payload_depth', #payload_depth)
   -- Assume real kinect
   metadata_depth.width = metadata_depth.width or 512
   metadata_depth.height = metadata_depth.height or 424

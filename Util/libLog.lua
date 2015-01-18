@@ -16,7 +16,6 @@ else
 	-- TODO: Maybe use a pcall here in case carray not found
 	carray = require'carray'
 end
-local torch = require'torch'
 local mpack = require'msgpack.MessagePack'.pack
 -- Need the C version for unpacker
 local munpacker = require'msgpack'.unpacker
@@ -28,7 +27,6 @@ local function stop(self)
 	if self.f_raw then self.f_raw:close() end
 end
 
--- User should pass :data() of a torch object
 -- For proper recording
 local function record(self, meta, raw, n_raw)
 	-- Record the metadata
@@ -105,7 +103,6 @@ local function log_iter(self)
 	local metadata, buf_t = self.metadata
 	local f_r = io.open(self.r_name,'r')
 	local i, n = 0, #metadata
-	if C then buf_t = torch.ByteTensor() end
 	local function iter(param, state)
 		i = i + 1
 		if i>n then
@@ -117,9 +114,9 @@ local function log_iter(self)
 		-- Metadata only
 		if not f_r then return i, m end
 		if C then
-			buf_t:resize(m.rsz)
-			local n_read = C.fread(buf_t:data(),1,m.rsz,f_r)
-			return i, m, buf_t
+			local buf_t = ffi.new('uint8_t[?]', m.rsz)
+			local n_read = C.fread(buf_t,1,m.rsz,f_r)
+			return i, m, ffi.string(buf_t, ffi.sizeof(buf_t))
 		else
 			local data = f_r:read(m.rsz)
 			return i, m, data

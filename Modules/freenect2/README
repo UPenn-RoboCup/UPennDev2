@@ -2,3 +2,18 @@ http://stackoverflow.com/questions/23072367/cant-setup-opencl-on-mac-osx
 http://support.apple.com/en-us/HT5942
 https://www.khronos.org/registry/cl/api/1.2/cl.h
 Place:
+
+Measured:
+DEPTH: HFOV=70, V=60 degrees
+DEPTH: HFOV=70, V=60 degrees
+COLOR: H= ~75-80, V= ~50-55
+
+From online:
+https://social.msdn.microsoft.com/Forums/en-US/1fc334e4-cfc3-4f79-b637-a0c9ed976fd1/one-question-about-kinect-20?forum=kinectv2sdk
+DEPTH: HFOV=70, V=60 degrees, focal length: 32mm
+COLOR: H=83.5 -> V=47, focal length: 24mm? should be 60
+so: color is 60 is well, since i measured it to be nearly the same as the depth
+
+http://smeenk.com/kinect-field-of-view-comparison/
+Color: 84.1 x 53.8
+Depth: 70.6 x 60

@@ -4,19 +4,49 @@
 -- (c) Stephen McGill, 2014
 ----------------------------
 dofile'../include.lua'
-local ptable = require'util'.ptable
-local mpack = require'msgpack.MessagePack'.pack
-local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
-local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
-local c_rgb = require'jpeg'.compressor('rgb')
-
 local cfg = Config.kinect
 local Body = require'Body'
 require'mcm'
+local ptable = require'util'.ptable
+local mpack = require'msgpack.MessagePack'.pack
+
+local operator
+if Config.net.use_wireless then
+	operator = Config.net.operator.wireless
+else
+	operator = Config.net.operator.wired
+end
+print(Config.net.streams['kinect2_depth'].tcp, operator)
+local depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp, operator)
+local color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp, operator)
+local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
+local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
+print(depth_net_ch.name)
+
+local c_rgb
+if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
+local T = require'Transform'
+local rotY = T.rotY
+local rotZ = T.rotZ
+local trans = T.trans
+local from_rpy_trans = T.from_rpy_trans
+local flatten = T.flatten
+
+-- CoM to the Neck (32cm in z)
+local tNeck = trans(unpack(Config.head.neckOffset))
+-- Mounting of Kinect from the neck axes
+--local tKinect = trans(unpack(cfg.mountOffset))
+local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
+
+-- Next rotation
+local function get_transform(head_angles, imu_rpy, body_height)
+  -- {yaw, pitch}
+  return from_rpy_trans({imu_rpy[1], imu_rpy[2], 0}, {0, 0, body_height}) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
+end
 
 --local has_detection, detection = pcall(require, cfg.detection)
 
-local ENABLE_LOG = true
+--local ENABLE_LOG = true
 local libLog, logger
 if ENABLE_LOG then
   libLog = require'libLog'
@@ -37,37 +67,52 @@ local function update(rgb, depth)
 	-- Send debug
   if t - t_send > 1 then
     t_send = t
-    local q, rpy, bh = Body.get_position(), Body.get_rpy(), mcm.get_walk_bodyHeight()
-	  -- Send color
+    local rpy = Body.get_rpy()
+    local bh = mcm.get_walk_bodyHeight()
+    local qHead = Body.get_head_position()
+    local tr = flatten(get_transform(qHead, rpy, bh))
+	  -- Form color
     rgb.t = t
-		rgb.c = 'jpeg'
-    rgb.q = q
-    rgb.bh = bh
-    rgb.rpy = rpy
+    rgb.c = 'jpeg'
     rgb.id = 'k2_rgb'
-    local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+    rgb.head_angles = qHead
+    rgb.body_height = bh
+    rgb.imu_rpy = rpy
+    rgb.tr = tr
+    local j_rgb
+    if IS_WEBOTS then
+      j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+    else
+      j_rgb = rgb.data
+    end
     rgb.data = nil
     rgb.sz = #j_rgb
     rgb.rsz = #j_rgb
     local m_rgb = mpack(rgb)
-    color_ch:send({m_rgb, j_rgb})
-	  -- Send depth (TODO: zlib)
+    
+	  -- Form depth (TODO: zlib)
+    depth.t = t
     depth.c = 'raw'
-    depth.q = q
-    depth.bh = bh
-    depth.rpy = rpy
     depth.id = 'k2_depth'
+    depth.head_angles = qHead
+    depth.body_height = bh
+    depth.imu_rpy = rpy
+    depth.tr = tr
 	  local ranges = depth.data
 	  depth.data = nil
 	  depth.sz = #ranges
     depth.rsz = #ranges
     local m_depth = mpack(depth)
-    depth_ch:send({m_depth, ranges})
     -- Log
     if ENABLE_LOG then
       log_rgb:record(m_rgb, j_rgb)
       log_depth:record(m_depth, ranges)
     end
+    -- Send
+		color_net_ch:send({m_rgb, j_rgb})
+    depth_net_ch:send({m_depth, ranges})
+		--color_ch:send({m_rgb, j_rgb})
+    --depth_ch:send({m_depth, ranges})
   end
   return t
 end

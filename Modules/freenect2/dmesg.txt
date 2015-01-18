@@ -1,0 +1,34 @@
+[13407.523234] usb 1-2: USB disconnect, device number 7
+[13407.627028] usb 2-1: USB disconnect, device number 6
+[13407.627038] usb 2-1.1: USB disconnect, device number 7
+[13407.627301] usb 2-1.1: Failed to set U1 timeout to 0x0,error code -19
+[13407.627310] usb 2-1.1: Set SEL for device-initiated U1 failed.
+[13407.627316] usb 2-1.1: Set SEL for device-initiated U2 failed.
+[13407.627590] usb 2-1.1: Failed to set U1 timeout to 0x0,error code -19
+[13407.627596] usb 2-1.1: Set SEL for device-initiated U1 failed.
+[13407.627601] usb 2-1.1: Set SEL for device-initiated U2 failed.
+[13407.627627] usb 2-1.1: Failed to set U1 timeout to 0x0,error code -19
+[13407.627632] usb 2-1.1: Set SEL for device-initiated U1 failed.
+[13407.627636] usb 2-1.1: Set SEL for device-initiated U2 failed.
+[13407.628181] usb 2-1: Set SEL for device-initiated U1 failed.
+[13407.628188] usb 2-1: Set SEL for device-initiated U2 failed.
+[13410.136681] usb 2-1: new SuperSpeed USB device number 8 using xhci_hcd
+[13410.149931] usb 2-1: New USB device found, idVendor=045e, idProduct=02d9
+[13410.149942] usb 2-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[13410.149949] usb 2-1: Product: NuiSensor Adaptor      
+[13410.149953] usb 2-1: Manufacturer: Microsoft Corporation  
+[13410.152334] hub 2-1:1.0: USB hub found
+[13410.152463] hub 2-1:1.0: 1 port detected
+[13410.505526] usb 1-2: new high-speed USB device number 8 using xhci_hcd
+[13410.519312] usb 1-2: New USB device found, idVendor=045e, idProduct=02d9
+[13410.519323] usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[13410.519329] usb 1-2: Product: NuiSensor Adaptor      
+[13410.519335] usb 1-2: Manufacturer: Microsoft Corporation  
+[13410.520194] hub 1-2:1.0: USB hub found
+[13410.520321] hub 1-2:1.0: 1 port detected
+[13411.701211] usb 2-1.1: new SuperSpeed USB device number 9 using xhci_hcd
+[13411.712935] usb 2-1.1: New USB device found, idVendor=045e, idProduct=02d8
+[13411.712946] usb 2-1.1: New USB device strings: Mfr=1, Product=2, SerialNumber=4
+[13411.712952] usb 2-1.1: Product: Xbox NUI Sensor
+[13411.712958] usb 2-1.1: Manufacturer: Microsoft
+[13411.712962] usb 2-1.1: SerialNumber: 502299141942

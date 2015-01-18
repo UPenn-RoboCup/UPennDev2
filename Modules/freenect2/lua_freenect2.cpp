@@ -33,14 +33,10 @@ Lua Wrapper for some libfreenect2 functionality
 #include <libfreenect2/frame_listener_impl.h>
 #include <libfreenect2/threading.h>
 
-using namespace libfreenect2;
+#define USE_DEPTH
+#define USE_COLOR
 
-/*
-Freenect2 *freenect2 = NULL;
-Freenect2Device *dev = NULL;
-SyncMultiFrameListener *listener = NULL;
-FrameMap frames;
-*/
+using namespace libfreenect2;
 
 /* Device state variables */
 char init = 0;
@@ -65,7 +61,6 @@ static int lua_freenect_init(lua_State *L) {
   fflush(stdout);
 #endif
 
-	// Freenect2 freenect2;
 	freenect2 = new Freenect2();
 
 #ifdef DEBUG
@@ -73,7 +68,6 @@ static int lua_freenect_init(lua_State *L) {
   fflush(stdout);
 #endif
   
-  //Freenect2Device* dev = freenect2.openDefaultDevice();
   dev = freenect2->openDefaultDevice();
 
 #ifdef DEBUG
@@ -89,33 +83,26 @@ static int lua_freenect_init(lua_State *L) {
   fprintf(stdout,"Starting listener...\n");
   fflush(stdout);
 #endif
-  
-  //SyncMultiFrameListener listener(
-  //  Frame::Color | Frame::Ir | Frame::Depth
-  //);
+
   listener = new SyncMultiFrameListener(
     Frame::Color | Frame::Ir | Frame::Depth
   );
   
-#ifdef DEBUG
-//  fprintf(stdout,"Instantiate frames...\n");
-//  fflush(stdout);
-#endif
-  //frames = new FrameMap();
-  
+#ifdef USE_COLOR
 #ifdef DEBUG
   fprintf(stdout,"Color listener...\n");
   fflush(stdout);
 #endif
-  //dev->setColorFrameListener(&listener);
   dev->setColorFrameListener(listener);
+#endif
   
+#ifdef USE_DEPTH
 #ifdef DEBUG
   fprintf(stdout,"IR/Depth listener...\n");
   fflush(stdout);
 #endif
-  //dev->setIrAndDepthFrameListener(&listener);
   dev->setIrAndDepthFrameListener(listener);
+#endif
   
 #ifdef DEBUG
   fprintf(stdout, "Start device...\n");
@@ -134,8 +121,6 @@ static int lua_freenect_init(lua_State *L) {
   lua_pushstring(L, dev->getFirmwareVersion().c_str());
   
   return 2;
-  
-  //return 0;
 }
 
 static int lua_freenect_update(lua_State *L) {
@@ -156,33 +141,49 @@ static int lua_freenect_update(lua_State *L) {
   fprintf(stdout, "Access frames...\n");
   fflush(stdout);
 #endif  
+#ifdef USE_COLOR
   Frame *rgb = frames[Frame::Color];
+#endif
+
+#ifdef USE_DEPTH
   Frame *ir = frames[Frame::Ir];
   Frame *depth = frames[Frame::Depth];
+#endif
 
 #ifdef DEBUG
   fprintf(stdout, "Push frames...\n");
   fflush(stdout);
 #endif  
-  
+
+  int nret = 0;
+#ifdef USE_COLOR
   lua_newtable(L);
   lua_pushstring(L, "name");
   lua_pushstring(L, "color");
   lua_rawset(L, -3);
   lua_pushstring(L, "height");
-  lua_pushnumber(L, rgb->height);
+  //lua_pushnumber(L, rgb->height);
+  lua_pushnumber(L, 1080);
   lua_rawset(L, -3);
   lua_pushstring(L, "width");
-  lua_pushnumber(L, rgb->width);
+  //lua_pushnumber(L, rgb->width);
+  lua_pushnumber(L, 1920);
   lua_rawset(L, -3);
   lua_pushstring(L, "bpp");
-  lua_pushnumber(L, rgb->bytes_per_pixel);
+  //lua_pushnumber(L, rgb->bytes_per_pixel);
+  lua_pushnumber(L, 3);
   lua_rawset(L, -3);
   lua_pushstring(L, "data");
   //lua_pushlightuserdata(L, rgb->data);
-  lua_pushlstring(L, (char*)rgb->data, rgb->height*rgb->width*rgb->bytes_per_pixel);
+  //lua_pushlstring(L, (char*)rgb->data, rgb->height*rgb->width*rgb->bytes_per_pixel);
+  // I just put the byte count directly in bpp
+  lua_pushlstring(L, (char*)rgb->data, rgb->bytes_per_pixel);
   lua_rawset(L, -3);
+  nret++;
+#endif
   
+
+#ifdef USE_DEPTH
   lua_newtable(L);
   lua_pushstring(L, "name");
   lua_pushstring(L, "depth");
@@ -200,6 +201,7 @@ static int lua_freenect_update(lua_State *L) {
   //lua_pushlightuserdata(L, depth->data);
   lua_pushlstring(L, (char*)depth->data, depth->height*depth->width*depth->bytes_per_pixel);
   lua_rawset(L, -3);
+  nret++;
 
   lua_newtable(L);
   lua_pushstring(L, "name");
@@ -218,8 +220,10 @@ static int lua_freenect_update(lua_State *L) {
   //lua_pushlightuserdata(L, ir->data);
   lua_pushlstring(L, (char*)ir->data, ir->height*ir->width*ir->bytes_per_pixel);
   lua_rawset(L, -3);
+  nret++;
+#endif
 
-  return 3;
+  return nret;
 }
 
 static int lua_freenect_shutdown(lua_State *L) {

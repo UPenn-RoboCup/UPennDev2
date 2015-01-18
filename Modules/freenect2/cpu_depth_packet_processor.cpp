@@ -30,12 +30,14 @@
 #include <libfreenect2/resource.h>
 #include <libfreenect2/protocol/response.h>
 
-//#include <opencv2/opencv.hpp>
 #include <sys/time.h>
 #include <cmath>
+#include <limits>
 
 #include <iostream>
+#include <stdio.h>
 #include <fstream>
+#include <string.h>
 
 namespace libfreenect2
 {
@@ -95,44 +97,28 @@ public:
     timing_acc_n = 0.0;
     timing_current_start = 0.0;
 
-    // New code
     enable_bilateral_filter = false;
     enable_edge_filter = false;
-    // TODO: no cvMat
-    /*
-    enable_bilateral_filter = true;
-    enable_edge_filter = true;
-    */
 
     flip_ptables = true;
   }
 
   void startTiming()
   {
-    // Replacement
     static struct timeval t;
     gettimeofday(&t, NULL);
     timing_current_start = t.tv_sec + 1E-6 * t.tv_usec;
-    
-    // Old
-    //timing_current_start = cv::getTickCount();
   }
 
   void stopTiming()
   {
     
-    // Replacement
     static struct timeval t;
     gettimeofday(&t, NULL);
     double timing_now = t.tv_sec + 1E-6 * t.tv_usec;
     timing_acc += timing_now - timing_current_start;
-    
-    // Old
-    //timing_acc += (cv::getTickCount() - timing_current_start) / cv::getTickFrequency();
     timing_acc_n += 1.0;
     
-    //std::cout << "[CpuDepthPacketProcessor] acc: " << timing_acc_n << std::endl;
-
     if(timing_acc_n >= 100.0)
     {
       double avg = (timing_acc / timing_acc_n);
@@ -153,7 +139,7 @@ public:
     depth_frame = new Frame(512, 424, 4);
   }
 
-  int32_t decodePixelMeasurement(unsigned char* data, int sub, int x, int y)
+  int16_t decodePixelMeasurement(unsigned char* data, int sub, int x, int y)
   {
     // 298496 = 512 * 424 * 11 / 8 = number of bytes per sub image
     uint16_t *ptr = reinterpret_cast<uint16_t *>(data + 298496 * sub);
@@ -221,9 +207,7 @@ public:
   {
     for (int i = 0; i < 512*424; i++)
     {
-      // TODO
-      //float p0 = -((float)p0table.at<uint16_t>(i)) * 0.000031 * M_PI;
-      float p0 = 0;
+      float p0 = -((float)p0table[i]) * 0.000031 * M_PI;
 
       float tmp0 = p0 + params.phase_in_rad[0];
       float tmp1 = p0 + params.phase_in_rad[1];
@@ -238,30 +222,8 @@ public:
       trig_table[i][5] = std::sin(-tmp2);
     }
   }
-  // TODO: no cvMat
-  /*
-  void fill_trig_tables(cv::Mat& p0table, float trig_table[512*424][6])
-  {
-    for (int i = 0; i < 512*424; i++)
-    {
-      float p0 = -((float)p0table.at<uint16_t>(i)) * 0.000031 * M_PI;
-
-      float tmp0 = p0 + params.phase_in_rad[0];
-      float tmp1 = p0 + params.phase_in_rad[1];
-      float tmp2 = p0 + params.phase_in_rad[2];
-
-      trig_table[i][0] = std::cos(tmp0);
-      trig_table[i][1] = std::cos(tmp1);
-      trig_table[i][2] = std::cos(tmp2);
-
-      trig_table[i][3] = std::sin(-tmp0);
-      trig_table[i][4] = std::sin(-tmp1);
-      trig_table[i][5] = std::sin(-tmp2);
-    }
-  }
-  */
-
-  void processMeasurementTriple(float trig_table[512*424][6], float abMultiplierPerFrq, int x, int y, const int32_t* m, float* m_out)
+  
+  void processMeasurementTriple(float trig_table[512*424][6], float abMultiplierPerFrq, int x, int y, const int16_t* m, float* m_out)
   {
     int offset = y * 512 + x;
     float cos_tmp0 = trig_table[offset][0];
@@ -278,6 +240,8 @@ public:
     //float zmultiplier = z_table.at<float>(y, x);
 
     bool cond0 = 0 < zmultiplier;
+    
+    // TODO: Went from int32_t to int16_t: will cond1 be affected?
     bool cond1 = (m[0] == 32767 || m[1] == 32767 || m[2] == 32767) && cond0;
 
     // formula given in Patent US 8,587,771 B2
@@ -319,13 +283,9 @@ public:
     m[1] = tmp1; // ir amplitude - (possibly bilateral filtered)
   }
   
-  
-  
-  
-
   void processPixelStage1(int x, int y, unsigned char* data, float *m0_out, float *m1_out, float *m2_out)
   {
-    int32_t m0_raw[3], m1_raw[3], m2_raw[3];
+    int16_t m0_raw[3], m1_raw[3], m2_raw[3];
 
     m0_raw[0] = decodePixelMeasurement(data, 0, x, y);
     m0_raw[1] = decodePixelMeasurement(data, 1, x, y);
@@ -341,22 +301,11 @@ public:
     processMeasurementTriple(trig_table1, params.ab_multiplier_per_frq[1], x, y, m1_raw, m1_out);
     processMeasurementTriple(trig_table2, params.ab_multiplier_per_frq[2], x, y, m2_raw, m2_out);
   }
-
-
-
-
-
   
   // TODO: No cvMat
-  void filterPixelStage1(int x, int y, const float* m, float* m_out, bool& bilateral_max_edge_test)
-//  void filterPixelStage1(int x, int y, const cv::Mat& m, float* m_out, bool& bilateral_max_edge_test)
-    
+  void filterPixelStage1(int x, int y, const float* m, float* m_out, bool& bilateral_max_edge_test)    
   {
-    // New code
-    const float *m_ptr = NULL;
-    // TODO: No cvMat
-    //const float *m_ptr = m.ptr<float>(y, x);
-    
+    const float *m_ptr = &m[9 * (y * 512 + x)];
     
     bilateral_max_edge_test = true;
 
@@ -570,9 +519,6 @@ public:
     int offset = y * 512 + x;
     float zmultiplier = z_table[offset];
     float xmultiplier = x_table[offset];
-    // TODO: Not CVMat
-    //float zmultiplier = z_table.at<float>(y, x);
-    //float xmultiplier = x_table.at<float>(y, x);
     
     phase = 0 < phase ? phase + params.phase_offset : phase;
 
@@ -718,9 +664,6 @@ void CpuDepthPacketProcessor::setConfiguration(const libfreenect2::DepthPacketPr
 }
 
 
-
-
-
 void CpuDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length)
 {
   
@@ -733,7 +676,6 @@ void CpuDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* buf
     return;
   }
 
-  // New code
   impl_->p0_table0.resize(424 * 512);
   impl_->p0_table1.resize(424 * 512);
   impl_->p0_table2.resize(424 * 512);
@@ -759,32 +701,12 @@ void CpuDepthPacketProcessor::loadP0TablesFromCommandResponse(unsigned char* buf
   impl_->fill_trig_tables(impl_->p0_table0, impl_->trig_table0);
   impl_->fill_trig_tables(impl_->p0_table1, impl_->trig_table1);
   impl_->fill_trig_tables(impl_->p0_table2, impl_->trig_table2);
-
-  // TODO: no cvMat
-  /*
-  if(impl_->flip_ptables)
-  {
-    cv::flip(cv::Mat(424, 512, CV_16UC1, p0table->p0table0), impl_->p0_table0, 0);
-    cv::flip(cv::Mat(424, 512, CV_16UC1, p0table->p0table1), impl_->p0_table1, 0);
-    cv::flip(cv::Mat(424, 512, CV_16UC1, p0table->p0table2), impl_->p0_table2, 0);
-
-    impl_->fill_trig_tables(impl_->p0_table0, impl_->trig_table0);
-    impl_->fill_trig_tables(impl_->p0_table1, impl_->trig_table1);
-    impl_->fill_trig_tables(impl_->p0_table2, impl_->trig_table2);
-  }
-  else
-  {
-    cv::Mat(424, 512, CV_16UC1, p0table->p0table0).copyTo(impl_->p0_table0);
-    cv::Mat(424, 512, CV_16UC1, p0table->p0table1).copyTo(impl_->p0_table1);
-    cv::Mat(424, 512, CV_16UC1, p0table->p0table2).copyTo(impl_->p0_table2);
-  }
-  */
   
 }
 
 
 
-
+// TODO
 void CpuDepthPacketProcessor::loadP0TablesFromFiles(const char* p0_filename, const char* p1_filename, const char* p2_filename)
 {
   /*
@@ -827,8 +749,6 @@ void CpuDepthPacketProcessor::loadP0TablesFromFiles(const char* p0_filename, con
 }
 
 
-
-
 void CpuDepthPacketProcessor::loadXTableFromFile(const char* filename)
 {
   // New code
@@ -841,10 +761,8 @@ void CpuDepthPacketProcessor::loadXTableFromFile(const char* filename)
 
   if(loadResource("xTable.bin", &data, &length))
   {
-    // New Code
-    std::copy(data, data + length, impl_->x_table.begin());
-    // TODO: no cvMat
-    //std::copy(data, data + length, impl_->x_table.data);
+    memcpy(&impl_->x_table[0], data, length);
+    //std::copy(data, data + length, impl_->x_table.begin());
   }
   else
   {
@@ -865,9 +783,8 @@ void CpuDepthPacketProcessor::loadZTableFromFile(const char* filename)
   if(loadResource("zTable.bin", &data, &length))
   {
     // New Code
-    std::copy(data, data + length, impl_->z_table.begin());
-    // TODO: No zTable
-    //std::copy(data, data + length, impl_->z_table.data);
+    memcpy(&impl_->z_table[0], data, length);
+    //std::copy(data, data + length, impl_->z_table.begin());
   }
   else
   {
@@ -893,24 +810,23 @@ void CpuDepthPacketProcessor::load11To16LutFromFile(const char* filename)
 void CpuDepthPacketProcessor::process(const DepthPacket &packet)
 {
   
+	//std::cerr << "CPU Depth Process start" << std::endl;
   if(listener_ == 0) return;
 
   impl_->startTiming();
   
   // New code
-  std::vector<float> m (424 * 512);
+  std::vector<float> m (424 * 512 * (9 * sizeof(float)));
   float *m_ptr = &m[0];
-  // TODO: no cvMat
-  /*
-  cv::Mat m = cv::Mat::zeros(424, 512, CV_32FC(9)), m_filtered = cv::Mat::zeros(424, 512, CV_32FC(9)), m_max_edge_test = cv::Mat::ones(424, 512, CV_8UC1);
-  float *m_ptr = m.ptr<float>();
-*/
+  // TODO: m_filtered: same as m, m_max_edge_test: 424*415*1 filled with 1s
   
   for(int y = 0; y < 424; ++y)
+  {
     for(int x = 0; x < 512; ++x, m_ptr += 9)
     {
       impl_->processPixelStage1(x, y, packet.buffer, m_ptr + 0, m_ptr + 3, m_ptr + 6);
     }
+  }
 
   // bilateral filtering
   if(impl_->enable_bilateral_filter)
@@ -993,13 +909,20 @@ void CpuDepthPacketProcessor::process(const DepthPacket &packet)
   }
   else
   {
+    int offset0 = 424 * 512;
     for(int y = 0; y < 424; ++y)
+    {
+      offset0 -= 512;
       for(int x = 0; x < 512; ++x, m_ptr += 9)
       {
         // New code
-        int offset = ((423 - y) * 512 + x);
+        //int offset = ((423 - y) * 512 + x);
+        int offset = offset0 + x;
         impl_->processPixelStage2(
-          x, y, m_ptr + 0, m_ptr + 3, m_ptr + 6, 
+          x, y,
+          m_ptr + 0,
+          m_ptr + 3,
+          m_ptr + 6, 
           out_ir + offset,
           out_depth + offset,
           0
@@ -1007,6 +930,7 @@ void CpuDepthPacketProcessor::process(const DepthPacket &packet)
         // TODO: no cvMat
         //impl_->processPixelStage2(x, y, m_ptr + 0, m_ptr + 3, m_ptr + 6, out_ir.ptr<float>(423 - y, x), out_depth.ptr<float>(423 - y, x), 0);
       }
+    }
   }
   
 

@@ -102,7 +102,7 @@ void TransferPool::submit(size_t num_parallel_transfers)
     else
     {
       idle_transfers_.push_back(transfer);
-      std::cerr << "[TransferPool::submit] failed to submit transfer" << std::endl;
+      std::cerr << "[TransferPool::submit] failed to submit transfer: " << r << std::endl;
     }
   }
 }
@@ -116,6 +116,7 @@ void TransferPool::cancel()
     if(r != LIBUSB_SUCCESS)
     {
       // TODO: error reporting
+			std::cerr << "No libusb success on transfer pool cancel()" << std::endl;
     }
   }
 
@@ -124,6 +125,7 @@ void TransferPool::cancel()
 
 void TransferPool::setCallback(TransferPool::DataReceivedCallback *callback)
 {
+	//std::cerr << "Setting the transfer pool callback" << std::endl;
   callback_ = callback;
 }
 
@@ -206,10 +208,16 @@ void BulkTransferPool::fillTransfer(libusb_transfer* transfer)
 
 void BulkTransferPool::processTransfer(libusb_transfer* transfer)
 {
-  if(transfer->status != LIBUSB_TRANSFER_COMPLETED) return;
+
+  if(transfer->status != LIBUSB_TRANSFER_COMPLETED){
+		//std::cerr << "Transfer not completed" << std::endl;
+		return;
+	}
 
   if(callback_)
     callback_->onDataReceived(transfer->buffer, transfer->actual_length);
+	else
+		std::cerr << "No callback registered!" << std::endl;
 }
 
 IsoTransferPool::IsoTransferPool(libusb_device_handle* device_handle, unsigned char device_endpoint) :
@@ -250,10 +258,16 @@ void IsoTransferPool::processTransfer(libusb_transfer* transfer)
 
   for(size_t i = 0; i < num_packets_; ++i)
   {
-    if(transfer->iso_packet_desc[i].status != LIBUSB_TRANSFER_COMPLETED) continue;
+    if(transfer->iso_packet_desc[i].status != LIBUSB_TRANSFER_COMPLETED)
+		{
+//			std::cerr << "Transfer not completed" << std::endl;
+			continue;
+		}
 
     if(callback_)
       callback_->onDataReceived(ptr, transfer->iso_packet_desc[i].actual_length);
+		else
+			std::cerr << "No callback registered!" << std::endl;
 
     ptr += transfer->iso_packet_desc[i].length;
   }

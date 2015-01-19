@@ -238,7 +238,7 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkPa
 
   if tf < lift/total_dist then xf,zf =0,tf*total_dist +zHeight0
   elseif tf <(lift+move)/total_dist then xf,zf = (tf*total_dist-lift)/move, stepHeight
-  else xf,zf= 1,(1-tf)*total_dist +zHeight1   end 
+  else xf,zf= 1,(1-tf)*total_dist +zHeight1   end   
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
 
   return uFoot, zf

@@ -185,13 +185,16 @@ function walk.update()
 
     --Calculate Leg poses 
     local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
-    local uLeft, uRight = uLeft_now, uRight_now
+--    local uLeft, uRight = uLeft_now, uRight_now
+    local uLeft, uRight = mcm.get_status_uLeft(), mcm.get_status_uRight()
+
     local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
 --    print("Z force:",l_ft[3],r_ft[3])    
 
     local zLeg0 = mcm.get_status_zLeg0()
     local zLeg = mcm.get_status_zLeg()
 --    print('f:',l_ft[3],r_ft[3])
+
 
     if supportLeg == 2 or phSingle==1 then --Double support
       zLeft = zLeg[1]

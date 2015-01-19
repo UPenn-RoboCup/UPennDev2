@@ -35,75 +35,48 @@ local step1,step2 = 0.25, 0.25
 local sh1,sh2 = 0.10, 0.0
 --local sh1,sh2 = 0.0, 0.0
 
-local step1,step2 = 0.20, 0.20
+local step1,step2 = 0.25, 0.25
 
 local side_adj = 0.02
 
 local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 
-if IS_WEBOTS then
+local st = 2.0
+local wt = 2.0
+
+
+if IS_WEBOTS then st,wt = 1.0,1.0 end
 
 step_queues={
    {
-    {{0,0,0},2,        1, 0.1, 0.1,   {-step1/2  , com_side},{0,0,0} },    
+    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
    },
 
    {
-    {{step1,0,0},0,  1,2,0.5 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
+    {{step1,0,0},0,  0.5,wt,0.5 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
    },
 
    {
-    {{0,0,0},2,        1, 0.1, 0.1,   {0,0},  {0,0,0}},    
+    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
    },
 
    {
-    {{0,0,0},2,        1, 0.1, 0.1,   {-step1/2  , -com_side},{0,0,0} },    
-   },
-
-
-   {
-    {{step1,0,0},1,   1,2,0.5,  {0,side_adj},  {0,sh1,sh2},  {-step1/2  ,-com_side}},    --RS    
-   },
-
-   {
-    {{0,0,0}, 2,      1, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-}
-
-else
-
-
-
-step_queues={
-   {
-    {{0,0,0},2,        2, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
-   },
-
-   {
-    {{step1,0,0},0,  2,2,0.5 ,   {-step1/2,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
-   },
-
-   {
-    {{0,0,0},2,        2, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-
-   {
-    {{0,0,0},2,        2, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },    
+    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },    
    },
 
 
    {
-    {{step1,0,0},1,   2,2,0.5,  {0,side_adj},  {0,sh1,sh2},  {-step1/2  ,-com_side}},    --RS    
+    {{step1,0,0},1,   0.5,wt,0.5,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
    },
 
    {
-    {{0,0,0}, 2,      2, 0.1, 0.1,   {0,0},  {0,0,0}},    
+    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
    },
 }
 
 
 
-end
+
 
 
 

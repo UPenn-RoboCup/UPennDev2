@@ -162,13 +162,20 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 --  if mcm.get_stance_singlesupport()==1 then phComp = phComp*2 end
 
 	phComp = 0 
-  local swing_leg_sag_compensation = 0.015
+  local swing_leg_sag_compensation = 0.01
+
+	local kneeComp={0,0}	
+	local knee_compensation = 1.5*math.pi/180
+
 
   if dTL>dTR then --Right support
     supportRatioRight = math.max(phComp,phComp2);
+		kneeComp[2] = phCompLift*knee_compensation
     mcm.set_walk_zSag({phCompLift*swing_leg_sag_compensation,0})
   else
     supportRatioLeft = math.max(phComp,phComp2);
+		kneeComp[1] = phCompLift*knee_compensation
+
     mcm.set_walk_zSag({0,phCompLift*swing_leg_sag_compensation})
   end
 
@@ -179,13 +186,13 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
   delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
   delta_legs[3] = - hipPitchCompensation*supportRatioLeft
-  delta_legs[4] = angleShift[3] - kneePitchCompensation*supportRatioLeft
+  delta_legs[4] = angleShift[3] - kneePitchCompensation*supportRatioLeft-kneeComp[1]
   delta_legs[5] = angleShift[1] - anklePitchCompensation*supportRatioLeft
   delta_legs[6] = angleShift[2] + ankleRollCompensation*supportRatioLeft
 
   delta_legs[8]  = angleShift[4] - hipRollCompensation*supportRatioRight
   delta_legs[9] = -hipPitchCompensation*supportRatioRight
-  delta_legs[10] = angleShift[3] - kneePitchCompensation*supportRatioRight
+  delta_legs[10] = angleShift[3] - kneePitchCompensation*supportRatioRight-kneeComp[2]
   delta_legs[11] = angleShift[1] - anklePitchCompensation*supportRatioRight
   delta_legs[12] = angleShift[2] - ankleRollCompensation
 

@@ -186,14 +186,6 @@ function walk.update()
     local zLeg0 = mcm.get_status_zLeg0()
 --    print('f:',l_ft[3],r_ft[3])
 
-    --Correctly set initial foot Z height 
-    if phSingle<1 and walkParam then
-      if supportLeg == 0 then  -- Left support    
-        walkParam[1] = zLeg0[2]
-      else
-        walkParam[1] = zLeg0[1]
-      end
-    end
 
     if supportLeg == 0 then  -- Left support    
       uRight,zRight,aRight,touched = foot_traj_func(
@@ -207,6 +199,18 @@ function walk.update()
       zRight = zLeg[2]
     end
 
+		--TODOTODO
+
+--[[
+		if phSingle==1 or supportLeg==2 then
+			if zLeg0[1]~=zLeft then zLef0[1]=zLeft
+			
+		else
+			zLeft,zRight = zLeft+zLeg0[1],zRight+zLeg0[2]	
+		end
+--]]
+
+		zLeft,zRight=0,0
 
     step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
@@ -241,9 +245,6 @@ function walk.update()
 
     moveleg.set_leg_positions()    
     
-
-    --moveleg.set_leg_positions_ankletilt(uTorsoCompensated,uLeft,uRight, zLeft,zRight,delta_legs)    
-
     --store last step height
     if phSingle==1 then 
       mcm.set_status_zLeg0({zLeft,zRight}) 

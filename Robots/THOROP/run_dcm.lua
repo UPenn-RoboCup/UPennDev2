@@ -15,6 +15,8 @@ local vector = require'vector'
 local signal = require'signal'
 local ffi = require'ffi'
 
+local sformat = string.format
+
 -- Timeouts
 local WRITE_TIMEOUT = 1 / 250
 local READ_TIMEOUT = 1 / 250
@@ -815,7 +817,8 @@ local function consolidate(queue)
 		end
 		-- Debug messages for the user
 		dt_debug = t_start - t_debug
-		if dt_debug > 2 then
+		if dt_debug > 1 then
+		  os.execute('clear')
 			t_debug = t_start
 			debug_str = {
 				string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, collectgarbage('count')),
@@ -829,8 +832,56 @@ local function consolidate(queue)
 				bus.reqs_cnt = 0
 				bus.n_read_timeouts = 0
 			end
+
+		local rpy = dcm.get_sensor_rpy()
+    local acc = dcm.get_sensor_accelerometer()
+    local gyro = dcm.get_sensor_gyro()
+table.insert(debug_str, sformat('Acc  : X%.2f Y%.2f Z%.2f (g)', unpack(acc)))
+table.insert(debug_str, sformat('Gyro : R%.2f P%.2f Y%.2f (deg/s)', unpack(RAD_TO_DEG*gyro)))
+table.insert(debug_str, sformat('Angle  R%.2f P%.2f Y%.2f (deg)', unpack(RAD_TO_DEG * rpy)))
+
+	  local pos = dcm.get_sensor_position()
+    local cmd_pos = dcm.get_actuator_command_position()
+
+--[[
+table.insert(debug_str, sformat('LLeg CMD  %.1f %.1f %.1f %.1f %.1f %.1f', 
+	unpack(RAD_TO_DEG * vector.slice(cmd_pos,10,15)) ))
+table.insert(debug_str, sformat('     POS  %.1f %.1f %.1f %.1f %.1f %.1f', 
+	unpack(RAD_TO_DEG * vector.slice(pos,10,15)) ))
+--]]
+
+table.insert(debug_str, sformat('LLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f', 
+	unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,10,15)) ))
+
+
+--[[
+table.insert(debug_str, sformat('RLeg CMD  %.1f %.1f %.1f %.1f %.1f %.1f',
+	unpack(RAD_TO_DEG * vector.slice(cmd_pos,16,21)) ))
+table.insert(debug_str, sformat('     POS  %.1f %.1f %.1f %.1f %.1f %.1f',
+	unpack(RAD_TO_DEG * vector.slice(pos,16,21)) ))
+--]]
+table.insert(debug_str, sformat('RLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
+	unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,16,21)) ))
+
+
+			local lfoot = dcm.get_sensor_lfoot()
+			local rfoot = dcm.get_sensor_rfoot()
+
+table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f', 
+	lfoot[3], -lfoot[4],lfoot[5] ))
+
+table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f', 
+	rfoot[3], -rfoot[4],rfoot[5] ))
+
+
+
 			debug_str = table.concat(debug_str, '\n')
 			print(debug_str)
+
+
+
+
+
 		end
 	end
 

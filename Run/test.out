@@ -1,0 +1,15 @@
+FSM
+State | Loaded	Arm
+State | Loaded	Body
+State | Loaded	Head
+State | Loaded	Motion
+bodyIdle Entry
+motionIdle Entry
+BIAS SET:	0.02474004214702	0.007068583470577	-0.0058904862254809	-0.027096236637212	-0.0035342917352885	0.014137166941154	0.0082466807156732	-0.035342917352885	0.007068583470577	-0.014137166941154	-0.0035342917352885	-0.0035342917352885
+armIdle Entry
+headIdle Entry
+Exiting state wizard...
+bodyIdle Exit
+motionIdle Exit
+armIdle Exit
+headIdle Exit

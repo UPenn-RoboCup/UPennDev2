@@ -91,7 +91,7 @@ local function update(key_code)
 		if key_char_lower==("i") then      lright[1]=lright[1]+0.01
 		elseif key_char_lower==("j") then  lright[2]=lright[2]+0.01
 		elseif key_char_lower==("k") then  
-		lright[1],lright[2],lright[4]=0,0,0
+			lright[4]=0
 		elseif key_char_lower==("l") then  lright[2]=lright[2]-0.01
 		elseif key_char_lower==(",") then  lright[1]=lright[1]-0.01
 		elseif key_char_lower==("u") then  lright[4]=lright[4]+0.01
@@ -100,7 +100,7 @@ local function update(key_code)
 		elseif key_char_lower==("w") then  lleft[1]=lleft[1]+0.01
 		elseif key_char_lower==("a") then  lleft[2]=lleft[2]+0.01
 		elseif key_char_lower==("s") then  
-			lleft[1],lleft[2],lleft[4]=0,0,0
+			lleft[4]=0
 		elseif key_char_lower==("d") then  lleft[2]=lleft[2]-0.01
 		elseif key_char_lower==("x") then  lleft[1]=lleft[1]-0.01
 		elseif key_char_lower==("q") then  lleft[4]=lleft[4]+0.01
@@ -112,7 +112,7 @@ local function update(key_code)
 		elseif key_char_lower==("h") then  ltorso[2]=ltorso[2]-0.01
 		elseif key_char_lower==("b") then  ltorso[1]=ltorso[1]-0.01
 		elseif key_char_lower==("g") then  
-				ltorso[1],ltorso[2]=0,0
+
 --[[		
 		elseif key_char_lower==("-") then  torsoangle[1]=torsoangle[1]-math.pi/180		
 		elseif key_char_lower==("=") then  torsoangle[1]=torsoangle[1]+math.pi/180			
@@ -183,6 +183,8 @@ local function update(key_code)
 			targetvel[1],targetvel[2],targetvel[3] = targetvel_new[1],targetvel_new[2],targetvel_new[3]
 			mcm.set_walk_vel(targetvel)
 		end
+		print("foot hight:",lleft[4],lright[4])
+
 	else  --Game state! 
 	
 	end

@@ -160,6 +160,8 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
 --  if mcm.get_stance_singlesupport()==1 then phComp = phComp*2 end
 
+	phComp = 0 
+
   if dTL>dTR then --Right support
     supportRatioRight = math.max(phComp,phComp2);
   else
@@ -220,8 +222,8 @@ end
 
 function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkParam)
   local xf,zf,zFoot,aFoot, zHeight0, zHeight1= 0,0,0,0,0,0
-  if not walkParam then walkParam={0,stepHeight,0} end
-  zHeight0, stepHeight,zHeight1 = walkParam[1],walkParam[2],walkParam[3]
+  if not walkParam then walkParam={stepHeight,0,0} end
+  zHeight0, stepHeight,zHeight1 = 0, walkParam[1],walkParam[2]
   local lift = math.abs(zHeight0-stepHeight)
   local land = math.abs(zHeight1-stepHeight)
   local move = math.sqrt( (uEnd[2]-uStart[2])*(uEnd[2]-uStart[2])+
@@ -244,6 +246,7 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkPa
   elseif tf <(lift+move)/total_dist then xf,zf = (tf*total_dist-lift)/move, stepHeight
   else xf,zf= 1,(1-tf)*total_dist +zHeight1   end 
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+
   return uFoot, zf
 end
 

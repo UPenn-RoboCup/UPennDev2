@@ -234,10 +234,6 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkPa
   else xf,zf= 1,(1-tf)*total_dist +zHeight1   end 
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
 
-
-
-print(phSingle,zf)
-
   return uFoot, zf
 end
 
@@ -310,7 +306,7 @@ function moveleg.ft_compensate(t_diff)
       ft.lf_z,ft.rf_z,ft.lt_y,ft.rt_y, ft.lt_x,ft.rt_x))
     print(string.format("angle: %.1f p %.1f",imu.roll_err*180/math.pi, imu.pitch_err*180/math.pi))
   end
- -- moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
+  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
   moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
   moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 
@@ -379,10 +375,11 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local zShift = mcm.get_status_zLeg()
 
 --  local zShift = mcm.get_walk_zShift()
-  zShift[1] = util.procFunc( zShift[1]+zvShift[1]*t_diff , 0, z_shift_max)
-  zShift[2] = util.procFunc( zShift[2]+zvShift[2]*t_diff , 0, z_shift_max)
-  mcm.set_walk_zvShift(zvShift)
+  zShift[1] = math.max(0, zShift[1]+zvShift[1]*t_diff)
+  zShift[2] = math.max(0, zShift[2]+zvShift[2]*t_diff)
 
+
+  mcm.set_walk_zvShift(zvShift)
   mcm.set_walk_zShift(zShift)
   mcm.set_status_zLeg(zShift)
 

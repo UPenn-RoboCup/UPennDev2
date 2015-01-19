@@ -157,16 +157,25 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
 
   local phComp2 = math.max(0, math.min(1, (supportRatio-0.58)/ (0.66-0.58)) )
+  local phCompLift = math.max(0, math.min(1, (supportRatio-0.6)/ (0.94-0.58)) )
 
 --  if mcm.get_stance_singlesupport()==1 then phComp = phComp*2 end
 
 	phComp = 0 
+  local swing_leg_sag_compensation = 0.015
 
   if dTL>dTR then --Right support
     supportRatioRight = math.max(phComp,phComp2);
+    mcm.set_walk_zSag({phCompLift*swing_leg_sag_compensation,0})
   else
     supportRatioLeft = math.max(phComp,phComp2);
+    mcm.set_walk_zSag({0,phCompLift*swing_leg_sag_compensation})
   end
+
+
+--Foot sagging compensation
+
+
 
   delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
   delta_legs[3] = - hipPitchCompensation*supportRatioLeft
@@ -188,28 +197,6 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local phSingleSkew = phSingle^0.8 - 0.17*phSingle*(1-phSingle)
   local xf = .5*(1-math.cos(math.pi*phSingleSkew))
@@ -222,8 +209,8 @@ end
 
 function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkParam)
   local xf,zf,zFoot,aFoot, zHeight0, zHeight1= 0,0,0,0,0,0
-  if not walkParam then walkParam={stepHeight,0,0} end
-  zHeight0, stepHeight,zHeight1 = 0, walkParam[1],walkParam[2]
+  if not walkParam then walkParam={0,stepHeight,0} end
+  zHeight0, stepHeight,zHeight1 = 0, walkParam[2],walkParam[3]
   local lift = math.abs(zHeight0-stepHeight)
   local land = math.abs(zHeight1-stepHeight)
   local move = math.sqrt( (uEnd[2]-uStart[2])*(uEnd[2]-uStart[2])+
@@ -247,6 +234,10 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkPa
   else xf,zf= 1,(1-tf)*total_dist +zHeight1   end 
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
 
+
+
+print(phSingle,zf)
+
   return uFoot, zf
 end
 
@@ -256,12 +247,14 @@ end
 
 function moveleg.set_leg_positions()
 
-
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorso = mcm.get_status_uTorso()
   local zLeg = mcm.get_status_zLeg()
-  local zLeft,zRight = zLeg[1],zLeg[2]
+  local zSag = mcm.get_walk_zSag()
+    
+
+  local zLeft,zRight = zLeg[1]+zSag[1],zLeg[2]+zSag[2]
   local supportLeg = mcm.get_status_supportLeg()
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
@@ -317,7 +310,7 @@ function moveleg.ft_compensate(t_diff)
       ft.lf_z,ft.rf_z,ft.lt_y,ft.rt_y, ft.lt_x,ft.rt_x))
     print(string.format("angle: %.1f p %.1f",imu.roll_err*180/math.pi, imu.pitch_err*180/math.pi))
   end
-  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
+ -- moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
   moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
   moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 
@@ -332,7 +325,10 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   --------------------------------------------------------------------------------------------------------
   -- Foot height differential adaptation
 
-  local zf_touchdown = 50
+--  local zf_touchdown = 50
+
+  local zf_touchdown = 10
+
   local z_shift_max = 0.05 --max 5cm difference
   local z_vel_max_diff = 0.4 --max 40cm per sec
   local z_vel_max_balance = 0.05 --max 5cm per sec
@@ -365,7 +361,8 @@ function moveleg.process_ft_height(ft,imu,t_diff)
       zvShift[1] = -0.01 --1cm per sec
     else
       --both foot on the ground!
-      zvShift[1] = zvShiftTarget
+
+--      zvShift[1] = zvShiftTarget
     end
   end
 
@@ -374,7 +371,8 @@ function moveleg.process_ft_height(ft,imu,t_diff)
       zvShift[2] = -0.01 --1cm per sec
     else
       --both foot on the ground!
-      zvShift[2] = -zvShiftTarget 
+
+--      zvShift[2] = -zvShiftTarget 
     end
   end
 

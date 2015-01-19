@@ -49,6 +49,9 @@ local read_test = false
 --local read_test = true
 local debug_on = false
 
+local ph_old = 0
+
+
 local init_odometry = function(uTorso)
   wcm.set_robot_utorso0(uTorso)
   wcm.set_robot_utorso1(uTorso)
@@ -140,7 +143,11 @@ function walk.entry()
 
   debugdata=''
  
+  local zLeg = mcm.get_status_zLeg()
+  mcm.get_status_zLeg0(zLeg)
+
   hcm.set_motion_estop(0)
+  ph_old = 0
 end
 
 function walk.update()
@@ -182,35 +189,29 @@ function walk.update()
     local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
 --    print("Z force:",l_ft[3],r_ft[3])    
 
-    local zLeg = mcm.get_status_zLeg()
     local zLeg0 = mcm.get_status_zLeg0()
+    local zLeg = mcm.get_status_zLeg()
 --    print('f:',l_ft[3],r_ft[3])
 
-
-    if supportLeg == 0 then  -- Left support    
+    if supportLeg == 2 or phSingle==1 then --Double support
+      zLeft = zLeg[1]
+      zRight = zLeg[2]
+      mcm.set_status_zLeg0({zLeft,zRight})
+    elseif supportLeg == 0 then  -- Left support    
       uRight,zRight,aRight,touched = foot_traj_func(
-        phSingle,uRight_now,uRight_next,stepHeight,walkParam, zLeg[2],r_ft[3],touched)    
+        phSingle,uRight_now,uRight_next,stepHeight,walkParam, zLeg[2],r_ft[3],touched)
+      zRight = zRight +zLeg0[2]      
     elseif supportLeg==1 then    -- Right support    
       uLeft,zLeft,aLeft,touched = foot_traj_func(
         phSingle,uLeft_now,uLeft_next,stepHeight,walkParam, zLeg[1], l_ft[3],touched)    
-    elseif supportLeg == 2 then --Double support
-      aLeft,aRight = 0,0
-      zLeft = zLeg[1]
-      zRight = zLeg[2]
+      zLeft = zLeft +zLeg0[1]
     end
 
-		--TODOTODO
+    
 
---[[
-		if phSingle==1 or supportLeg==2 then
-			if zLeg0[1]~=zLeft then zLef0[1]=zLeft
-			
-		else
-			zLeft,zRight = zLeft+zLeg0[1],zRight+zLeg0[2]	
-		end
---]]
 
-		zLeft,zRight=0,0
+
+
 
     step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 

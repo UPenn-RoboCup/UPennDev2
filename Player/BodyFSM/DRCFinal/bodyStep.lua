@@ -58,49 +58,81 @@ step_queues={
 --local sh1,sh2 = 0.10, 0.05
 
 local sh1,sh2 = 0.10, 0.05
+--local sh1,sh2 = 0.0, 0.0
+
 local step1,step2 = 0.0, 0.0
 
-local side_adj = 0.01
+local side_adj = 0.02
+
+local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 
 if IS_WEBOTS then
 --This is for webots
+--[[
 step_queues={
    {
-    {{step1,0,0},0,  0.5,2,0.5,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+side_adj}},   --LS    
-
+    {{step1,0,0},0,  1,2,0.5 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+Config.walk.supportY-side_adj}},   --LS    
    },
 
    {
-    {{0,0,0},    2,  0.1, 1, 0.1,   {0,0},  {0,0,0}},    
+    {{0,0,0},2,        1, 0.1, 0.1,   {0,0},  {0,0,0}},    
    },
 
    {
-    {{step1,0,0},1,   0.5,2,0.5,  {0,side_adj},  {0,sh1,sh2},  {-step1/2  ,-Config.walk.footY-side_adj}},    --RS    
+    {{step1,0,0},1,   1,2,0.5,  {0,side_adj},  {0,sh1,sh2},  {-step1/2  ,-Config.walk.footY-Config.walk.supportY+side_adj}},    --RS    
    },
 
    {
-    {{0,0,0},    2,  0.1, 1, 0.1,   {0,0},  {0,0,0}},    
+    {{0,0,0}, 2,      1, 0.1, 0.1,   {0,0},  {0,0,0}},    
    },
 }
-else
+--]]
 
---This is for webots
 step_queues={
    {
-    {{step1,0,0},0,  2,1,0.5,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+side_adj}},   --LS    
-
+    {{0,0,0},2,        1, 0.1, 0.1,   {-step1/2  , com_side},{0,0,0} },    
    },
 
    {
-    {{0,0,0}, 2,   2, 1, 0.1,   {0,0},  {0,0,0}},    
+    {{step1,0,0},0,  1,2,0.5 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
    },
 
    {
-    {{step1,0,0},1,   2,0.5,0.5,  {0,side_adj},  {0,sh1,sh2},  {-step1/2  ,-Config.walk.footY-side_adj}},    --RS    
+    {{0,0,0},2,        1, 0.1, 0.1,   {0,0},  {0,0,0}},    
    },
 
    {
-    {{0,0,0},2,     2, 1, 0.1,   {0,0},  {0,0,0}},    
+    {{0,0,0},2,        1, 0.1, 0.1,   {-step1/2  , -com_side},{0,0,0} },    
+   },
+
+
+   {
+    {{step1,0,0},1,   1,2,0.5,  {0,side_adj},  {0,sh1,sh2},  {-step1/2  ,-com_side}},    --RS    
+   },
+
+   {
+    {{0,0,0}, 2,      1, 0.1, 0.1,   {0,0},  {0,0,0}},    
+   },
+}
+
+else
+
+--This is for robot
+step_queues={
+   {
+    {{step1,0,0},0,  2,2,0.5 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+Config.walk.supportY-side_adj}},   --LS    
+   },
+
+   {
+    {{0,0,0},    2,  1, 0.1, 0.1,   {0,0},  {0,0,0}},    
+   },
+
+   {
+    {{step1,0,0},1,   2,2,0.5,  {0,side_adj},  {0,sh1,sh2},  {-step1/2  ,-Config.walk.footY-Config.walk.supportY+side_adj}},    --RS    
+   },
+
+   {
+    {{0,0,0},    2,  1, 0.1, 0.1,   {0,0},  {0,0,0}},    
    },
 }
 

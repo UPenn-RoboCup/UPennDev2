@@ -51,6 +51,7 @@ function state.entry()
   uRight = mcm.get_status_uRight()
   uTorso = mcm.get_status_uTorso()  
   local zLeg = mcm.get_status_zLeg()
+  print("zLeg:",unpack(zLeg))
 
   hcm.set_legdebug_left({uLeft[1],uLeft[2],uLeft[3],zLeg[1]})
   hcm.set_legdebug_right({uRight[1],uRight[2],uRight[3],zLeg[2]})
@@ -111,13 +112,8 @@ function state.update()
     hcm.set_legdebug_right(uRightTarget) 
   else
     zLeg[1] = util.approachTol( zLeg[1],uLeftTarget[4],vel_lift , t_diff )
-    zLeg[2] = util.approachTol( zLeg[2],uRightTarget[4],vel_movement , t_diff )
+    zLeg[2] = util.approachTol( zLeg[2],uRightTarget[4],vel_lift , t_diff )
   end
-
-
-
-
-
 
   moveleg.store_stance(t,0,uLeft,uTorso,uRight,2,uTorso, zLeg[1],zLeg[2])
 

@@ -498,6 +498,18 @@ function moveleg.process_ft_pitch(ft,t_diff)
       ,k_const_ty*ay_shift_db*right_damping_factor , 
       ay_vel_max)
 
+  --foot idle, return to heel strike position
+  if ft.lf_z<50 and math.abs(ft.lt_y)<ay_shift_db then
+	  aShiftTarget = -10*math.pi/180		
+		avShiftY[1] = util.procFunc( (aShiftTarget-aShiftY[1])*0.5, 0, 5*math.pi/180)
+  end
+
+  if ft.rf_z<50 and math.abs(ft.rt_y)<ay_shift_db then
+	  aShiftTarget = -10*math.pi/180		
+		avShiftY[2] = util.procFunc( (aShiftTarget-aShiftY[2])*0.5, 0, 5*math.pi/180)
+  end
+
+
   if enable_balance[1]>0 then
     aShiftY[1] = aShiftY[1]+avShiftY[1]*t_diff
     aShiftY[1] = math.min(ay_shift_max,math.max(-ay_shift_max,aShiftY[1]))

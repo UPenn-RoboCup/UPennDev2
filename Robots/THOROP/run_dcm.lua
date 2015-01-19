@@ -817,7 +817,7 @@ local function consolidate(queue)
 		end
 		-- Debug messages for the user
 		dt_debug = t_start - t_debug
-		if dt_debug > 1 then
+		if dt_debug > .1 then
 		  os.execute('clear')
 			t_debug = t_start
 			debug_str = {

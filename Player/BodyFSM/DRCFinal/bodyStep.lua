@@ -36,13 +36,15 @@ local sh1,sh2 = 0.10, 0.0
 --local sh1,sh2 = 0.0, 0.0
 
 local step1,step2 = 0.25, 0.25
-
 local side_adj = 0.02
+
 
 local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 
 local st = 2.0
-local wt = 2.0
+local wt = 3.0
+local wt_pre = 1.0
+
 
 
 if IS_WEBOTS then st,wt = 1.0,1.0 end
@@ -74,6 +76,25 @@ step_queues={
    },
 }
 
+
+
+
+
+
+--Faster
+step_queues={
+   {
+    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
+    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
+    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
+   },
+
+   {
+    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },    
+    {{step1,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
+    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
+   },
+}
 
 
 

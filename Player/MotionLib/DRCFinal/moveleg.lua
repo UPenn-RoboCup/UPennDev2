@@ -162,7 +162,8 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 --  if mcm.get_stance_singlesupport()==1 then phComp = phComp*2 end
 
 	phComp = 0 
-  local swing_leg_sag_compensation = 0.01
+  local swing_leg_sag_compensation_left = 0.02
+  local swing_leg_sag_compensation_right = 0.01
 
 	local kneeComp={0,0}	
 	local knee_compensation = 1.5*math.pi/180
@@ -171,12 +172,12 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   if dTL>dTR then --Right support
     supportRatioRight = math.max(phComp,phComp2);
 		kneeComp[2] = phCompLift*knee_compensation
-    mcm.set_walk_zSag({phCompLift*swing_leg_sag_compensation,0})
+    mcm.set_walk_zSag({phCompLift*swing_leg_sag_compensation_left,0})
   else
     supportRatioLeft = math.max(phComp,phComp2);
 		kneeComp[1] = phCompLift*knee_compensation
 
-    mcm.set_walk_zSag({0,phCompLift*swing_leg_sag_compensation})
+    mcm.set_walk_zSag({0,phCompLift*swing_leg_sag_compensation_right})
   end
 
 

@@ -39,6 +39,9 @@ local step1,step2 = 0.25, 0.25
 local side_adj = 0.02
 
 
+local step1,step2 = 0.0, 0.0
+
+
 
 local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 

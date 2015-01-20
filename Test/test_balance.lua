@@ -22,59 +22,15 @@ local gcm_names={
   util.color('Untorqued','red'),    
   util.color('Test','blue'),    
 }
---[[
-local command1='\nKey commands:\n'
-  ..'1 : game Initial\n'
-  ..'3 : game Set\n'
-  ..'4 : game Playing\n'
-  ..'5 : game Finished\n'
-  ..'r : Toggle role\n'
-  ..'0 : Enter test mode\n'
 
-local command2=
-  util.color('Test mode\n','blue')
-  ..'Key commands:\n'
-..'i/j/k/l/,/h/; : control walk velocity\n'
-
-..'3 : Left kick\n'
-..'4 : Right kick\n'
-..'5 : Left Walkkick\n'
-..'6 : Right Walkkick\n'
-
-..'8 : stop walking\n'
-..'9 : start walking\n'
-..'a : Enter attacker mode\n'
-..'g : Enter goalie mode\n'
---]]
 local command1, command2 = '',''  
 
 local function show_status()
-	--[[
 
-  local outstring=''
---  if gcm.get_game_state()==6 then --Testing state
-  if gcm.get_game_role()==2 then --Testing state
-    outstring= outstring..command2..string.format(
-    "Target velocity: %.3f %.3f %.3f",unpack(targetvel)
-    )
-
-  else
-    outstring = string.format(
-    "Role: %s\nGame state: %s\nMotion state: %s\nBody state: %s\nHead state:%s \n",
-    role_names[gcm.get_game_role()+1],    
-    gcm_names[gcm.get_game_state()+1],
-    gcm.get_fsm_Motion(),
-    gcm.get_fsm_Body(),
-    gcm.get_fsm_Head()
-    )..command1
-  end
- 
-  print(outstring)
---]]  
 end
 
 local function update(key_code)
-  if type(key_code)~='number' or key_code==0 then return end
+	if type(key_code)~='number' or key_code==0 then return end
 	local key_char = string.char(key_code)
 	local key_char_lower = string.lower(key_char)
 	--if gcm.get_game_state()==6 then --Testing state
@@ -86,63 +42,61 @@ local function update(key_code)
 	local torsoangle = hcm.get_legdebug_torso_angle()
 
 
-	if gcm.get_game_role()==2 then --Testing state
-	-- Walk velocity setting
-		if key_char_lower==("i") then      lright[1]=lright[1]+0.01
-		elseif key_char_lower==("j") then  lright[2]=lright[2]+0.01
-		elseif key_char_lower==("k") then  
-			lright[4]=0
-		elseif key_char_lower==("l") then  lright[2]=lright[2]-0.01
-		elseif key_char_lower==(",") then  lright[1]=lright[1]-0.01
-		elseif key_char_lower==("u") then  lright[4]=lright[4]+0.01
-		elseif key_char_lower==("m") then  lright[4]=lright[4]-0.01
-	
-		elseif key_char_lower==("w") then  lleft[1]=lleft[1]+0.01
-		elseif key_char_lower==("a") then  lleft[2]=lleft[2]+0.01
-		elseif key_char_lower==("s") then  
-			lleft[4]=0
-		elseif key_char_lower==("d") then  lleft[2]=lleft[2]-0.01
-		elseif key_char_lower==("x") then  lleft[1]=lleft[1]-0.01
-		elseif key_char_lower==("q") then  lleft[4]=lleft[4]+0.01
-		elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.01
+	if key_char_lower==("i") then      lright[1]=lright[1]+0.01
+	elseif key_char_lower==("j") then  lright[2]=lright[2]+0.01
+	elseif key_char_lower==("k") then  
+		lright[4]=0
+	elseif key_char_lower==("l") then  lright[2]=lright[2]-0.01
+	elseif key_char_lower==(",") then  lright[1]=lright[1]-0.01
+	elseif key_char_lower==("u") then  lright[4]=lright[4]+0.01
+	elseif key_char_lower==("m") then  lright[4]=lright[4]-0.01
 
-		
-		elseif key_char_lower==("t") then  ltorso[1]=ltorso[1]+0.01
-		elseif key_char_lower==("f") then  ltorso[2]=ltorso[2]+0.01		
-		elseif key_char_lower==("h") then  ltorso[2]=ltorso[2]-0.01
-		elseif key_char_lower==("b") then  ltorso[1]=ltorso[1]-0.01
-		elseif key_char_lower==("g") then  
+	elseif key_char_lower==("w") then  lleft[1]=lleft[1]+0.01
+	elseif key_char_lower==("a") then  lleft[2]=lleft[2]+0.01
+	elseif key_char_lower==("s") then  
+		lleft[4]=0
+	elseif key_char_lower==("d") then  lleft[2]=lleft[2]-0.01
+	elseif key_char_lower==("x") then  lleft[1]=lleft[1]-0.01
+	elseif key_char_lower==("q") then  lleft[4]=lleft[4]+0.01
+	elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.01
 
---[[		
-		elseif key_char_lower==("-") then  torsoangle[1]=torsoangle[1]-math.pi/180		
-		elseif key_char_lower==("=") then  torsoangle[1]=torsoangle[1]+math.pi/180			
-		elseif key_char_lower==("[") then  torsoangle[2]=torsoangle[2]-math.pi/180		
-		elseif key_char_lower==("]") then  torsoangle[2]=torsoangle[2]+math.pi/180			
---]]					
+
+	elseif key_char_lower==("t") then  ltorso[1]=ltorso[1]+0.01
+	elseif key_char_lower==("f") then  ltorso[2]=ltorso[2]+0.01		
+	elseif key_char_lower==("h") then  ltorso[2]=ltorso[2]-0.01
+	elseif key_char_lower==("b") then  ltorso[1]=ltorso[1]-0.01
+	elseif key_char_lower==("g") then  
+
+	--[[		
+	elseif key_char_lower==("-") then  torsoangle[1]=torsoangle[1]-math.pi/180		
+	elseif key_char_lower==("=") then  torsoangle[1]=torsoangle[1]+math.pi/180			
+	elseif key_char_lower==("[") then  torsoangle[2]=torsoangle[2]-math.pi/180		
+	elseif key_char_lower==("]") then  torsoangle[2]=torsoangle[2]+math.pi/180			
+	--]]					
 
 
 
-		elseif key_char_lower==("1") then			
-			body_ch:send'init'
-	
-		elseif key_char_lower==("2") then
-			local enable_balance = hcm.get_legdebug_enable_balance()	
-			hcm.set_legdebug_enable_balance(
-				{1-enable_balance[1],enable_balance[2]})
+	elseif key_char_lower==("1") then			
+		body_ch:send'init'
 
-			print("Balance:",unpack(hcm.get_legdebug_enable_balance()))			
-							
-		elseif key_char_lower==("3") then
-			local enable_balance = hcm.get_legdebug_enable_balance()
-			hcm.set_legdebug_enable_balance(
-				{enable_balance[1],1-enable_balance[2]})
+	elseif key_char_lower==("2") then
+		local enable_balance = hcm.get_legdebug_enable_balance()	
+		hcm.set_legdebug_enable_balance(
+			{1-enable_balance[1],enable_balance[2]})
 
-			print("Balance:",unpack(hcm.get_legdebug_enable_balance()))
+		print("Balance:",unpack(hcm.get_legdebug_enable_balance()))			
+						
+	elseif key_char_lower==("3") then
+		local enable_balance = hcm.get_legdebug_enable_balance()
+		hcm.set_legdebug_enable_balance(
+			{enable_balance[1],1-enable_balance[2]})
 
-		elseif key_char_lower==("4") then
-			local enable_gyro = hcm.get_legdebug_enable_gyro()
-			hcm.set_legdebug_enable_gyro(1-enable_gyro)
-			print("Gyro:",hcm.get_legdebug_enable_gyro())
+		print("Balance:",unpack(hcm.get_legdebug_enable_balance()))
+
+	elseif key_char_lower==("4") then
+		local enable_gyro = hcm.get_legdebug_enable_gyro()
+		hcm.set_legdebug_enable_gyro(1-enable_gyro)
+		print("Gyro:",hcm.get_legdebug_enable_gyro())
 
 
 	elseif key_char_lower==("6") then      
@@ -151,43 +105,22 @@ local function update(key_code)
 	elseif key_char_lower==("=") then      
 		hcm.set_state_proceed(1)
 
-
-
-
-		elseif key_char_lower==("8") then  
-			motion_ch:send'stand'
-			body_ch:send'stop'
-			if mcm.get_walk_ismoving()>0 then 
-				print("requesting stop")
-				mcm.set_walk_stoprequest(1) 
-			end
-		elseif key_char_lower==("9") then  
-			motion_ch:send'hybridwalk'
---      body_ch:send'stepinplace'
-		elseif key_char_lower==("f") then        
-			head_ch:send'scan'      
-		elseif key_char_lower==("a") then      
-			gcm.set_game_role(1)
-			gcm.set_game_state(0)
-		elseif key_char_lower==("g") then      
-			gcm.set_game_role(0)
-			gcm.set_game_state(0)
+	elseif key_char_lower==("8") then  
+		motion_ch:send'stand'
+		body_ch:send'stop'
+		if mcm.get_walk_ismoving()>0 then 
+			print("requesting stop")
+			mcm.set_walk_stoprequest(1) 
 		end
-		hcm.set_legdebug_left(lleft)
-		hcm.set_legdebug_right(lright)
-		hcm.set_legdebug_torso(ltorso)
-		hcm.set_legdebug_torso_angle(torsoangle)		
-
-		local vel_diff = (targetvel_new[1]-targetvel[1])^2+(targetvel_new[2]-targetvel[2])^2+(targetvel_new[3]-targetvel[3])^2
-		if vel_diff>0 then
-			targetvel[1],targetvel[2],targetvel[3] = targetvel_new[1],targetvel_new[2],targetvel_new[3]
-			mcm.set_walk_vel(targetvel)
-		end
-		print("foot hight:",lleft[4],lright[4])
-
-	else  --Game state! 
-	
+	elseif key_char_lower==("9") then  
+		motion_ch:send'hybridwalk'	
 	end
+	hcm.set_legdebug_left(lleft)
+	hcm.set_legdebug_right(lright)
+	hcm.set_legdebug_torso(ltorso)
+	hcm.set_legdebug_torso_angle(torsoangle)		
+
+	print("foot hight:",lleft[4],lright[4])
 	show_status()
 end
 

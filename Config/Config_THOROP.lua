@@ -63,7 +63,8 @@ local exo = {
   'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal' 
 }
 if IS_WEBOTS then
-  Config.testfile = 'test_sitevisit'
+--  Config.testfile = 'test_sitevisit'
+  Config.testfile = 'test_balance'
 end
 
 -----------------------------------

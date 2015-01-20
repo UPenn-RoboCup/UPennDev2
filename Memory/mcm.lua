@@ -138,6 +138,11 @@ shared.walk.hipshiftY = vector.zeros(2)
 
 shared.walk.delta_legs = vector.zeros(12)
 
+
+--torso x-y shift (to keep zmp in the middle)
+shared.walk.torsoShift = vector.zeros(2) 
+
+
 -------------------------------------------
 
 

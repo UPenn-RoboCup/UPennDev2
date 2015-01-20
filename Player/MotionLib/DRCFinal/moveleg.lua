@@ -16,7 +16,7 @@ local supportY = Config.walk.supportY
 local torsoX    = Config.walk.torsoX
 
 local DEG_TO_RAD = math.pi/180
-
+local sformat = string.format
 
 -- Gyro stabilization parameters
 local ankleImuParamX = Config.walk.ankleImuParamX
@@ -162,11 +162,11 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 --  if mcm.get_stance_singlesupport()==1 then phComp = phComp*2 end
 
 	phComp = 0 
-  local swing_leg_sag_compensation_left = 0.02
-  local swing_leg_sag_compensation_right = 0.01
+  local swing_leg_sag_compensation_left = Config.walk.footSagCompensation[1]
+  local swing_leg_sag_compensation_right = Config.walk.footSagCompensation[2]
 
 	local kneeComp={0,0}	
-	local knee_compensation = 1.5*math.pi/180
+	local knee_compensation = Config.walk.kneePitchCompensation
 
 
   if dTL>dTR then --Right support
@@ -332,6 +332,7 @@ function moveleg.process_ft_height(ft,imu,t_diff)
 --  local zf_touchdown = 50
 
   local zf_touchdown = 10
+  local zf_support = 150
 
   local z_shift_max = 0.05 --max 5cm difference
   local z_vel_max_diff = 0.4 --max 40cm per sec
@@ -360,9 +361,45 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(imu.roll_err)
   local zvShiftTarget = util.procFunc( (LR_pitch_err + LR_roll_err) * k_balancing, 0, z_vel_max_balance )
 
-  if enable_balance[1]>0 and ft.rf_z>zf_touchdown then --right support
+  local zmp_err_left = {0,0}
+  local zmp_err_right = {0,0}
+
+
+  if ft.lf_z>zf_support and ft.rf_z>zf_support then --double support
+    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z}
+    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z}
+    print(sformat("lFoot ZMP: X %.1f Y %.1f cm",  zmp_err_left[1]*100, zmp_err_left[2]*100 ))
+    print(sformat("rFoot ZMP: X %.1f Y %.1f cm",   zmp_err_right[1]*100, zmp_err_right[2]*100 ))
+  elseif ft.lf_z>zf_support then --left support
+    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z}    
+    print(sformat("lFoot ZMP: X %.1f Y %.1f cm",  zmp_err_left[1]*100, zmp_err_left[2]*100 ))
+    if enable_balance[2]>0 then --left support  
+      if ft.rf_z<zf_touchdown and zmp_err_left[2]<0 then
+        zvShift[2] = -0.01 --Lower left feet at 1cm per sec
+      elseif zmp_err_left[1]>0.01 then 
+        zvShift[2] = 0.01 --Raise the foot
+      end
+    end
+  elseif ft.rf_z>zf_support then  --right support
+    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z}    
+    print(sformat("rFoot ZMP: X %.1f Y %.1f cm",   zmp_err_right[1]*100, zmp_err_right[2]*100 ))
+
+    if enable_balance[1]>0 then --right support
+      if ft.lf_z<zf_touchdown and zmp_err_right[1]>0.00 then
+        zvShift[1] = -0.01 --Lower left feet at 1cm per sec
+      elseif zmp_err_right[1]<-0.01 then 
+        zvShift[1] = 0.01 --We are pushing too much. raise the foot
+      end
+    end
+  end
+
+--[[
+  if enable_balance[1]>0 and ft.rf_z>zf_support then --right support
+    
+    
+
     if ft.lf_z<zf_touchdown then --left foot afloat. lower it
-      zvShift[1] = -0.01 --1cm per sec
+      
     else
       --both foot on the ground!
 
@@ -370,7 +407,9 @@ function moveleg.process_ft_height(ft,imu,t_diff)
     end
   end
 
-  if enable_balance[2]>0 and ft.lf_z>zf_touchdown then --left support
+  if enable_balance[2]>0 and ft.lf_z>zf_support then --left support
+    print("lf x torque:",ft.lt_x)
+
     if ft.rf_z<zf_touchdown then --left foot afloat. lower it
       zvShift[2] = -0.01 --1cm per sec
     else
@@ -379,12 +418,15 @@ function moveleg.process_ft_height(ft,imu,t_diff)
 --      zvShift[2] = -zvShiftTarget 
     end
   end
+--]]
 
   local zShift = mcm.get_status_zLeg()
 
---  local zShift = mcm.get_walk_zShift()
-  zShift[1] = math.max(0, zShift[1]+zvShift[1]*t_diff)
-  zShift[2] = math.max(0, zShift[2]+zvShift[2]*t_diff)
+  local z_min = -0.05
+
+
+  zShift[1] = math.max(z_min, zShift[1]+zvShift[1]*t_diff)
+  zShift[2] = math.max(z_min, zShift[2]+zvShift[2]*t_diff)
 
 
   mcm.set_walk_zvShift(zvShift)

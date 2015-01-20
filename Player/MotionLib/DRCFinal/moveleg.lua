@@ -180,9 +180,7 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
     mcm.set_walk_zSag({0,phCompLift*swing_leg_sag_compensation_right})
   end
 
-
---Foot sagging compensation
-print("roll:",angleShift[2])
+print("ankle roll:",angleShift[2]*180/math.pi)
 
 
   delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
@@ -541,6 +539,7 @@ function moveleg.process_ft_pitch(ft,t_diff)
       ,k_const_ty*ay_shift_db*right_damping_factor , 
       ay_vel_max)
 
+--[[
   --foot idle, return to heel strike position
   if ft.lf_z<50 and math.abs(ft.lt_y)<ay_shift_db then
 	  aShiftTarget = -10*math.pi/180		
@@ -551,7 +550,7 @@ function moveleg.process_ft_pitch(ft,t_diff)
 	  aShiftTarget = -10*math.pi/180		
 		avShiftY[2] = util.procFunc( (aShiftTarget-aShiftY[2])*0.5, 0, 5*math.pi/180)
   end
-
+--]]
 
   if enable_balance[1]>0 then
     aShiftY[1] = aShiftY[1]+avShiftY[1]*t_diff

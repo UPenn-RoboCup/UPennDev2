@@ -159,6 +159,11 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   local phComp2 = math.max(0, math.min(1, (supportRatio-0.58)/ (0.66-0.58)) )
   local phCompLift = math.max(0, math.min(1, (supportRatio-0.6)/ (0.94-0.58)) )
 
+
+  local phCompLift = phComp2 --knee compensation for standard walking too
+
+
+
 --  if mcm.get_stance_singlesupport()==1 then phComp = phComp*2 end
 
 	phComp = 0 

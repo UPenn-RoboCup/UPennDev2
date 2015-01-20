@@ -36,7 +36,7 @@ local sh1,sh2 = 0.10, 0.0
 --local sh1,sh2 = 0.0, 0.0
 
 local step1,step2 = 0.25, 0.25
-local side_adj = 0.02
+local side_adj = Config.walk.supportY - 0.00
 
 
 local step1,step2 = 0.0, 0.0

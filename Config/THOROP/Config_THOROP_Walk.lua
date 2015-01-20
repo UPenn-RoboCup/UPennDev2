@@ -239,7 +239,8 @@ if not IS_WEBOTS then
     walk.supportY = 0.05
   end
   walk.kneePitchCompensation = 1.5*DEG_TO_RAD
-  walk.footSagCompensation = {0.02,0.01}
+--  walk.footSagCompensation = {0.02,0.01}
+  walk.footSagCompensation = {0.00,0.00}
 else
   walk.kneePitchCompensation = 0*DEG_TO_RAD
   walk.footSagCompensation = {0.0,0.0}

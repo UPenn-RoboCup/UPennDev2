@@ -182,7 +182,7 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
 
 --Foot sagging compensation
-
+print("roll:",angleShift[2])
 
 
   delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
@@ -285,6 +285,7 @@ function moveleg.set_leg_positions()
   qLegs[11]=qLegs[11]+aShiftY[2]
   qLegs[6]=qLegs[6]+aShiftX[1]
   qLegs[12]=qLegs[12]+aShiftX[2]
+
 
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))

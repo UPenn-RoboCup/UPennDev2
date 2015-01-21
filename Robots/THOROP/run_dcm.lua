@@ -862,14 +862,14 @@ local function consolidate(queue)
 			rfoot[3], -rfoot[4],rfoot[5] ))
 
 		if lfoot[3]>20 then
-			local rel_zmp_left = {lfoot[4]/lfoot[3], lfoot[5]/lfoot[3], 0}
+			local rel_zmp_left = {-lfoot[5]/lfoot[3], lfoot[4]/lfoot[3], 0}
 			table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)', 
 			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
 
     	end
 
 		if rfoot[3]>20 then
-			local rel_zmp_right = {rfoot[4]/rfoot[3], rfoot[5]/rfoot[3], 0}
+			local rel_zmp_right = {-rfoot[5]/rfoot[3], rfoot[4]/rfoot[3], 0}
 			table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)', 
 			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
 		end

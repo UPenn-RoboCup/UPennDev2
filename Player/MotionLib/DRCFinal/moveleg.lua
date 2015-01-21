@@ -198,7 +198,7 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   delta_legs[12] = angleShift[2] - ankleRollCompensation
 
   mcm.set_walk_delta_legs(delta_legs)  
-
+print(kneeComp[1],kneeComp[2])
   return delta_legs, angleShift
 end
 

@@ -255,6 +255,16 @@ end
 
 
 
+--COM compensation testing
+
+  walk.supportX = 0.03 
+  walk.supportY = 0.02
+
+
+----------------------------
+
+
+
 
 
 

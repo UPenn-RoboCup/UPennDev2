@@ -242,6 +242,11 @@ if not IS_WEBOTS then
 --  walk.footSagCompensation = {0.02,0.01}
   walk.footSagCompensation = {0.00,0.00}
 else
+
+  walk.torsoX = -0.03     -- com-to-body-center offset
+  walk.supportX = 0.03 --better
+  walk.supportY = 0.05
+
   walk.kneePitchCompensation = 0*DEG_TO_RAD
   walk.footSagCompensation = {0.0,0.0}
 end

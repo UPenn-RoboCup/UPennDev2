@@ -834,53 +834,48 @@ local function consolidate(queue)
 			end
 
 		local rpy = dcm.get_sensor_rpy()
-    local acc = dcm.get_sensor_accelerometer()
-    local gyro = dcm.get_sensor_gyro()
-table.insert(debug_str, sformat('Acc  : X%.2f Y%.2f Z%.2f (g)', unpack(acc)))
-table.insert(debug_str, sformat('Gyro : R%.2f P%.2f Y%.2f (deg/s)', unpack(RAD_TO_DEG*gyro)))
-table.insert(debug_str, sformat('Angle  R%.2f P%.2f Y%.2f (deg)', unpack(RAD_TO_DEG * rpy)))
+	    local acc = dcm.get_sensor_accelerometer()
+	    local gyro = dcm.get_sensor_gyro()
+		table.insert(debug_str, sformat('Acc  : X%.2f Y%.2f Z%.2f (g)', unpack(acc)))
+		table.insert(debug_str, sformat('Gyro : R%.2f P%.2f Y%.2f (deg/s)', unpack(RAD_TO_DEG*gyro)))
+		table.insert(debug_str, sformat('Angle  R%.2f P%.2f Y%.2f (deg)', unpack(RAD_TO_DEG * rpy)))
 
-	  local pos = dcm.get_sensor_position()
-    local cmd_pos = dcm.get_actuator_command_position()
-
---[[
-table.insert(debug_str, sformat('LLeg CMD  %.1f %.1f %.1f %.1f %.1f %.1f', 
-	unpack(RAD_TO_DEG * vector.slice(cmd_pos,10,15)) ))
-table.insert(debug_str, sformat('     POS  %.1f %.1f %.1f %.1f %.1f %.1f', 
-	unpack(RAD_TO_DEG * vector.slice(pos,10,15)) ))
---]]
-
-table.insert(debug_str, sformat('LLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f', 
-	unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,10,15)) ))
+		  local pos = dcm.get_sensor_position()
+	    local cmd_pos = dcm.get_actuator_command_position()
 
 
---[[
-table.insert(debug_str, sformat('RLeg CMD  %.1f %.1f %.1f %.1f %.1f %.1f',
-	unpack(RAD_TO_DEG * vector.slice(cmd_pos,16,21)) ))
-table.insert(debug_str, sformat('     POS  %.1f %.1f %.1f %.1f %.1f %.1f',
-	unpack(RAD_TO_DEG * vector.slice(pos,16,21)) ))
---]]
-table.insert(debug_str, sformat('RLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
-	unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,16,21)) ))
+		table.insert(debug_str, sformat('LLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f', 
+			unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,10,15)) ))
 
 
-			local lfoot = dcm.get_sensor_lfoot()
-			local rfoot = dcm.get_sensor_rfoot()
-
-table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f', 
-	lfoot[3], -lfoot[4],lfoot[5] ))
-
-table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f', 
-	rfoot[3], -rfoot[4],rfoot[5] ))
+		table.insert(debug_str, sformat('RLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
+			unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,16,21)) ))
 
 
+		local lfoot = dcm.get_sensor_lfoot()
+		local rfoot = dcm.get_sensor_rfoot()
 
-			debug_str = table.concat(debug_str, '\n')
-			print(debug_str)
+		table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f', 
+			lfoot[3], -lfoot[4],lfoot[5] ))
 
+		table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f', 
+			rfoot[3], -rfoot[4],rfoot[5] ))
 
+		if lfoot[3]>20 then
+			local rel_zmp_left = {lfoot[4]/lfoot[3], lfoot[5]/lfoot[3], 0}
+			table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)', 
+			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
 
+    	end
 
+		if rfoot[3]>20 then
+			local rel_zmp_right = {rfoot[4]/rfoot[3], rfoot[5]/rfoot[3], 0}
+			table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)', 
+			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
+		end
+
+		debug_str = table.concat(debug_str, '\n')
+		print(debug_str)
 
 		end
 	end

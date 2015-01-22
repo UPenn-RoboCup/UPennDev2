@@ -111,6 +111,42 @@ shared.walk.kickfoot = vector.zeros(1)
 
 
 
+--feet shift/tilt info
+shared.walk.zShift = vector.zeros(2)
+shared.walk.zvShift = vector.zeros(2)
+
+shared.walk.aShiftX = vector.zeros(2)
+shared.walk.avShiftX = vector.zeros(2)
+
+shared.walk.aShiftY = vector.zeros(2)
+shared.walk.avShiftY = vector.zeros(2)
+
+shared.walk.t_last = vector.zeros(1)
+
+
+--During SS, swinging foot sags below
+--So they should be lifted up more
+shared.walk.zSag = vector.zeros(2)
+
+
+--direct leg compensation info
+
+shared.walk.ankleshiftX = vector.zeros(2)
+shared.walk.ankleshiftY = vector.zeros(2)
+shared.walk.kneeshiftX = vector.zeros(2)
+shared.walk.hipshiftY = vector.zeros(2)
+
+shared.walk.delta_legs = vector.zeros(12)
+
+
+--torso x-y shift (to keep zmp in the middle)
+shared.walk.torsoShift = vector.zeros(2) 
+
+
+-------------------------------------------
+
+
+
 
 -- Motion Status
 shared.status = {}

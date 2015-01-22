@@ -207,27 +207,31 @@ end
 
 local dWalk = 0.05
 local daWalk = 5*DEG_TO_RAD
-local head = {
+local walk = {
   i = dWalk * vector.new{1, 0, 0},
   j = dWalk * vector.new{0, 0, 1},
-  k = dWalk * vector.new{0, 0, -1},
+  [','] = dWalk * vector.new{0, 0, -1},
   l = dWalk * vector.new{0, -1, 0},
   h = dWalk * vector.new{0, 1, 0},
   [';'] = dWalk * vector.new{0, -1, 0},
 }
 local function apply_walk(dWalk)
-  if not dHead then return end
+  if not dWalk then return end
   local goalBefore = mcm.get_walk_vel()
   local goalAfter = goalBefore + dWalk
-  hcm.set_walk_vel(goalAfter)
+  mcm.set_walk_vel(goalAfter)
 end
 
 -- Add the access to the transforms
 setmetatable(char_lut, {
 	__index = function(t, k)
-    if arm_mode then
+    if (not arm_mode) then
       apply_head(head[k])
-      apply_walk(head[k])
+      if k=='k' then
+        mcm.set_walk_vel({0,0,0})
+      else
+        apply_walk(walk[k])
+      end
     elseif pre_arm[k] then
 			apply_pre(pre_arm[k])
 		elseif post_arm[k] then

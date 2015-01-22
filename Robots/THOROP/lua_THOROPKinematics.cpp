@@ -349,10 +349,14 @@ static int calculate_com_pos(lua_State *L) {
 	std::vector<double> qRArm = lua_checkvector(L, 3);
 	std::vector<double> qLLeg = lua_checkvector(L, 4);
 	std::vector<double> qRLeg = lua_checkvector(L, 5);
-	double bodyPitch = luaL_optnumber(L, 6,0.0);
+	
+	double mLHand = luaL_optnumber(L, 6,0.0);
+	double mRHand = luaL_optnumber(L, 7,0.0);
+	double bodyPitch = luaL_optnumber(L, 8,0.0);
+
 
 	std::vector<double> r = THOROP_kinematics_calculate_com_positions(
-		&qWaist[0],&qLArm[0],&qRArm[0],&qLLeg[0],&qRLeg[0],bodyPitch);
+		&qWaist[0],&qLArm[0],&qRArm[0],&qLLeg[0],&qRLeg[0],mLHand, mRHand,bodyPitch);
 	lua_pushvector(L, r);
 	return 1;
 }

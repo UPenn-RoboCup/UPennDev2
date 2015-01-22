@@ -204,7 +204,8 @@ std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const d
 
 std::vector<double> THOROP_kinematics_calculate_com_positions(
     const double *qWaist,  const double *qLArm,   const double *qRArm,
-    const double *qLLeg,   const double *qRLeg,   double bodyPitch);
+    const double *qLLeg,   const double *qRLeg,   
+    double mLHand, double mRHand, double bodyPitch);
 
 std::vector<double> THOROP_kinematics_calculate_com_positions_global(
     const double *qWaist,  const double *qLArm,   const double *qRArm,

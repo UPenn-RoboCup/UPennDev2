@@ -181,6 +181,8 @@ THOROP_kinematics_calculate_com_positions(
     const double *qLLeg,
     const double *qRLeg,
 
+    double mLHand,
+    double mRHand,
     double bodyPitch){
   
   
@@ -380,6 +382,72 @@ THOROP_kinematics_calculate_com_positions(
         .translateZ(comFootZ);
 
 
+
+
+
+//make a single compound COM position (from pelvis frame)
+  std::vector<double> r(4);
+
+
+ r[0] = 
+         mPelvis * tPelvisCOM(0,3) +
+         mTorso * tTorsoCOM(0,3) +
+         mUpperArm * (tLUArmCOM(0,3) + tRUArmCOM(0,3))+
+         mElbow * (tLElbowCOM(0,3) + tRElbowCOM(0,3))+
+         mLowerArm * (tLLArmCOM(0,3)+ tRLArmCOM(0,3))+
+         mWrist * (tLWristCOM(0,3) + tRWristCOM(0,3))+
+         mLHand * tLHandCOM(0,3) + 
+         mRHand * tRHandCOM(0,3) +
+
+         mUpperLeg * (tLULegCOM(0,3) + tRULegCOM(0,3))+
+         mLowerLeg * (tLLLegCOM(0,3) + tRLLegCOM(0,3))+
+         mFoot *  (tLFootCOM(0,3)+ tRFootCOM(0,3));
+
+
+
+  r[1] = mPelvis * tPelvisCOM(1,3) +
+         mTorso * tTorsoCOM(1,3) +
+         mUpperArm * (tLUArmCOM(1,3) + tRUArmCOM(1,3))+
+         mElbow * (tLElbowCOM(1,3) + tRElbowCOM(1,3))+
+         mLowerArm * (tLLArmCOM(1,3)+ tRLArmCOM(1,3))+
+         mWrist * (tLWristCOM(1,3) + tRWristCOM(1,3))+
+         mLHand * tLHandCOM(1,3) + 
+         mRHand * tRHandCOM(1,3) +
+
+         mUpperLeg * (tLULegCOM(1,3) + tRULegCOM(1,3))+
+         mLowerLeg * (tLLLegCOM(1,3) + tRLLegCOM(1,3))+
+         mFoot *  (tLFootCOM(1,3)+ tRFootCOM(1,3));
+
+  r[2] = mPelvis * tPelvisCOM(2,3) +
+         mTorso * tTorsoCOM(2,3) +
+         mUpperArm * (tLUArmCOM(2,3) + tRUArmCOM(2,3))+
+         mElbow * (tLElbowCOM(2,3) + tRElbowCOM(2,3))+
+         mLowerArm * (tLLArmCOM(2,3)+ tRLArmCOM(2,3))+
+         mWrist * (tLWristCOM(2,3) + tRWristCOM(2,3))+
+         mLHand * tLHandCOM(2,3) + 
+         mRHand * tRHandCOM(2,3) +
+
+         mUpperLeg * (tLULegCOM(2,3) + tRULegCOM(2,3))+
+         mLowerLeg * (tLLLegCOM(2,3) + tRLLegCOM(2,3))+
+         mFoot *  (tLFootCOM(2,3)+ tRFootCOM(2,3));
+
+
+  r[3] = mPelvis + mTorso + 
+      2* (
+        mUpperArm + mElbow + mLowerArm + mWrist +
+        mUpperLeg +mLowerLeg + mFoot
+        ) + 
+      mLHand + mRHand;
+
+//TODO: we should ignore support foot mass 
+
+
+  return r;
+
+
+
+
+/*
   //Write to a single vector
 
   //Mass points
@@ -456,7 +524,10 @@ THOROP_kinematics_calculate_com_positions(
   comxyz[20+44] = tTorsoCOM(2,3);
   comxyz[21+44] = tPelvisCOM(2,3);
 
+
+
   return comxyz;
+*/  
 }
 
 

@@ -170,6 +170,8 @@ if Config.libs.MotionLib == 'RoboCup' then
 
     {'motionHybridWalkEnd', 'done', 'motionStance'},
   }
+elseif Config.libs.MotionLib == 'DRCFinal' then
+  fsm.select.Motion = 'DRCFinal'
 end
 
 Config.fsm = fsm

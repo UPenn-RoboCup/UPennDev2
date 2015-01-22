@@ -172,6 +172,28 @@ if Config.libs.MotionLib == 'RoboCup' then
   }
 elseif Config.libs.MotionLib == 'DRCFinal' then
   fsm.select.Motion = 'DRCFinal'
+  fsm.Motion = {
+    {'motionIdle', 'timeout', 'motionIdle'},
+    {'motionIdle', 'stand', 'motionInit'},
+    {'motionInit', 'done', 'motionStance'},
+
+    {'motionIdle', 'bias', 'motionBiasInit'},  
+    {'motionStance', 'bias', 'motionBiasInit'},
+    {'motionBiasInit', 'done', 'motionBiasIdle'}, 
+    {'motionBiasIdle', 'stand', 'motionInit'}, 
+
+
+    {'motionStance', 'preview', 'motionStepPreview'},
+    {'motionStepPreview', 'done', 'motionStance'},
+
+    {'motionStance', 'stair', 'motionStepPreviewStair'},
+    {'motionStepPreviewStair', 'done', 'motionStance'},
+
+    {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+    {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+    {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+    {'motionHybridWalkEnd', 'done', 'motionStance'},
+  }
 end
 
 Config.fsm = fsm

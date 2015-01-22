@@ -156,7 +156,6 @@ if Config.libs.MotionLib == 'RoboCup' then
 
     --For new hybrid walk
     {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-    {'motionStance', 'walk', 'motionHybridWalkInit'},
     {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 
     {'motionHybridWalk', 'done', 'motionStance'},

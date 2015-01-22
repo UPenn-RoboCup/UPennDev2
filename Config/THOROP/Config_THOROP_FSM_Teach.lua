@@ -89,7 +89,6 @@ fsm.Arm = {
   {'armGrab', 'init', 'armInit'},
 }
 
-----[[
 fsm.Motion = {
   -- Idle
   {'motionIdle', 'timeout', 'motionIdle'},
@@ -130,7 +129,7 @@ fsm.Motion = {
   --
   {'motionJoin', 'done', 'motionLower'},
 }
---]]
+
 if Config.libs.MotionLib == 'RoboCup' then
   fsm.select.Motion = 'RoboCup'
   fsm.Motion = {

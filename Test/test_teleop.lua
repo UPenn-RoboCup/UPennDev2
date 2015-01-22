@@ -42,7 +42,7 @@ char_lut['9'] = function()
   motion_ch:send'hybridwalk'
 end
 
-char_lut['g'] = function()
+char_lut['t'] = function()
   if selected_arm==0 then
     local qLArm = hcm.get_teleop_larm()
     --print('Pre',qLArm*RAD_TO_DEG)
@@ -61,7 +61,7 @@ char_lut['g'] = function()
   end
 end
 
-char_lut['h'] = function()
+char_lut['y'] = function()
   if selected_arm==0 then
     local qLArm = hcm.get_teleop_larm()
 		local tr = K.forward_larm(qLArm)
@@ -209,9 +209,11 @@ local dWalk = 0.05
 local daWalk = 5*DEG_TO_RAD
 local walk = {
   i = dWalk * vector.new{1, 0, 0},
-  j = dWalk * vector.new{0, 0, 1},
   [','] = dWalk * vector.new{0, 0, -1},
-  l = dWalk * vector.new{0, -1, 0},
+  --
+  j = dWalk * vector.new{0, 0, 1},
+  l = dWalk * vector.new{0, 0, -1},
+  --
   h = dWalk * vector.new{0, 1, 0},
   [';'] = dWalk * vector.new{0, -1, 0},
 }
@@ -272,10 +274,11 @@ function show_status()
     (not arm_mode) and '*' or '',
     'q: '..tostring(Body.get_head_position()*RAD_TO_DEG)
   )
-  local walk_info = string.format('\n%s %s\n%s',
+  local walk_info = string.format('\n%s %s\n%s\n%s',
     util.color('Walk', 'yellow'),
     (not arm_mode) and '*' or '',
-    'vel: '..tostring(mcm.get_walk_vel())
+    'Velocity: '..tostring(mcm.get_walk_vel()),
+    'Odometry:'..tostring(mcm.get_status_odometry())
   )
   local info = {
     color('== Teleoperation ==', 'magenta'),

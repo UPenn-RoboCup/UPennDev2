@@ -80,8 +80,8 @@ end
 -- Steve Manipulation and Locomotion
 ----[[
 --Config.libs.MotionLib = 'Teach'
---Config.libs.MotionLib = 'RoboCup'
-Config.libs.MotionLib = 'DRCFinal'
+Config.libs.MotionLib = 'RoboCup'
+--Config.libs.MotionLib = 'DRCFinal'
 Config.libs.ArmLib = 'Teach'
 Config.libs.World = 'Teach'
 -- Precedence in loading, for overrides!
@@ -91,7 +91,7 @@ local exo = {
 }
 if IS_WEBOTS then
   Config.testfile = 'test_teleop'
-  Config.sensors.kinect = true
+  --Config.sensors.kinect = true
   --Config.sensors.chest_lidar = true
 	Config.wizards.kinect = 'kinect2_wizard'
   Config.kinect_timestep = 50

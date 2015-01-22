@@ -40,9 +40,19 @@ char_lut['2'] = function()
 	arm_ch:send'ready'
   head_ch:send'teleop'
 end
+--[[
 char_lut['3'] = function()
   arm_ch:send'grab'
   head_ch:send'trackhand'
+end
+--]]
+char_lut['8'] = function()
+  head_ch:send'teleop'
+  motion_ch:send'done'
+end
+char_lut['9'] = function()
+  head_ch:send'teleop'
+  motion_ch:send'walk'
 end
 
 char_lut['g'] = function()

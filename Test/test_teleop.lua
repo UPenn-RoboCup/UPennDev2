@@ -14,22 +14,9 @@ local selected_arm = 0 -- left to start
 code_lut, char_lut, lower_lut = {}, {}, {}
 
 -- Switch to head teleop
-local head_mode = false
+local arm_mode = true
 char_lut['`'] = function()
-  head_mode = not head_mode
-end
-local dHead = 5*DEG_TO_RAD
-local head = {
-  w = dHead * vector.new{0,-1},
-  a = dHead * vector.new{1, 0},
-  s = dHead * vector.new{0,1},
-  d = dHead * vector.new{-1, 0},
-}
-local function apply_head(dHead)
-  if not dHead then return end
-  local goalBefore = hcm.get_teleop_head()
-  local goalAfter = goalBefore + dHead
-  hcm.set_teleop_head(goalAfter)
+  arm_mode = not arm_mode
 end
 
 -- State Machine events
@@ -204,11 +191,43 @@ local post_arm = {
   ['x'] = T.trans(-ds,0,0),
 }
 
+local dHead = 5*DEG_TO_RAD
+local head = {
+  w = dHead * vector.new{0,-1},
+  a = dHead * vector.new{1, 0},
+  s = dHead * vector.new{0,1},
+  d = dHead * vector.new{-1, 0},
+}
+local function apply_head(dHead)
+  if not dHead then return end
+  local goalBefore = hcm.get_teleop_head()
+  local goalAfter = goalBefore + dHead
+  hcm.set_teleop_head(goalAfter)
+end
+
+local dWalk = 0.05
+local daWalk = 5*DEG_TO_RAD
+local head = {
+  i = dWalk * vector.new{1, 0, 0},
+  j = dWalk * vector.new{0, 0, 1},
+  k = dWalk * vector.new{0, 0, -1},
+  l = dWalk * vector.new{0, -1, 0},
+  h = dWalk * vector.new{0, 1, 0},
+  [';'] = dWalk * vector.new{0, -1, 0},
+}
+local function apply_walk(dWalk)
+  if not dHead then return end
+  local goalBefore = mcm.get_walk_vel()
+  local goalAfter = goalBefore + dWalk
+  hcm.set_walk_vel(goalAfter)
+end
+
 -- Add the access to the transforms
 setmetatable(char_lut, {
 	__index = function(t, k)
-    if head_mode then
+    if arm_mode then
       apply_head(head[k])
+      apply_walk(head[k])
     elseif pre_arm[k] then
 			apply_pre(pre_arm[k])
 		elseif post_arm[k] then
@@ -232,22 +251,27 @@ function show_status()
 	--
   local larm_info = string.format('\n%s %s %s\n%s\n%s',
     util.color('Left Arm', 'yellow'),
-    (not head_mode) and selected_arm==0 and '*' or '',
+    arm_mode and selected_arm==0 and '*' or '',
 		l_indicator,
     'q: '..tostring(qlarm*RAD_TO_DEG),
 		'Pos6d: '..tostring(vector.new(T.position6D(fkL)))
   )
   local rarm_info = string.format('\n%s %s %s\n%s\n%s',
     util.color('Right Arm', 'yellow'),
-    (not head_mode) and selected_arm==1 and '*' or '',
+    arm_mod and selected_arm==1 and '*' or '',
 		r_indicator,
     'q: '..tostring(qrarm*RAD_TO_DEG),
     'Pos6d: '..tostring(vector.new(T.position6D(fkR)))
   )
   local head_info = string.format('\n%s %s\n%s',
     util.color('Head', 'yellow'),
-    head_mode and '*' or '',
+    (not arm_mode) and '*' or '',
     'q: '..tostring(Body.get_head_position()*RAD_TO_DEG)
+  )
+  local walk_info = string.format('\n%s %s\n%s',
+    util.color('Walk', 'yellow'),
+    (not arm_mode) and '*' or '',
+    'vel: '..tostring(mcm.get_walk_vel())
   )
   local info = {
     color('== Teleoperation ==', 'magenta'),
@@ -258,6 +282,7 @@ function show_status()
     larm_info,
     rarm_info,
     head_info,
+    walk_info,
     '\n'
   }
   io.write(table.concat(info,'\n'))

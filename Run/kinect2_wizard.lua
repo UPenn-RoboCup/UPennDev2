@@ -1,4 +1,5 @@
 #!/usr/bin/env luajit
+local ENABLE_LOG = true
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014
@@ -46,7 +47,6 @@ end
 
 --local has_detection, detection = pcall(require, cfg.detection)
 
---local ENABLE_LOG = true
 local libLog, logger
 if ENABLE_LOG then
   libLog = require'libLog'
@@ -71,6 +71,8 @@ local function update(rgb, depth)
     local bh = mcm.get_walk_bodyHeight()
     local qHead = Body.get_head_position()
     local tr = flatten(get_transform(qHead, rpy, bh))
+		local odom = mcm.get_status_odometry()
+		local vel = mcm.get_walk_vel()
 	  -- Form color
     rgb.t = t
     rgb.c = 'jpeg'

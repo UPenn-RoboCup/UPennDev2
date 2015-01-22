@@ -64,7 +64,7 @@ local left_arm = {
   -- lidar
   37,
 	-- gripper
-  66, 67
+  --66, 67
 },
   enable_read = true
 }

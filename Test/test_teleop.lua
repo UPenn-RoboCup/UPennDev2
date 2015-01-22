@@ -35,7 +35,10 @@ end
 --]]
 char_lut['8'] = function()
   head_ch:send'teleop'
-  motion_ch:send'done'
+  motion_ch:send'stand'
+	if mcm.get_walk_ismoving()>0 then
+		mcm.set_walk_stoprequest(1)
+	end
 end
 char_lut['9'] = function()
   head_ch:send'teleop'

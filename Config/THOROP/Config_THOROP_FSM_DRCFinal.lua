@@ -1,5 +1,8 @@
 assert(Config, 'Need a pre-existing Config table!')
 
+
+print("FSM")
+
 local fsm = {}
 
 -- Do we disable FSMs?
@@ -23,11 +26,19 @@ fsm.enabled = {
 
 --SJ: now we can have multiple FSM options 
 fsm.select = {
-  Arm = 'DRCTrials',  
-  Head = 'Default',
-  Body = 'DRCNew',
-  Motion = 'RoboCup'
+  Arm = 'DRCFinal',  
+  Head = 'DRCFinal',
+  Body = 'DRCFinal',
+  Motion = 'DRCFinal'
 }
+
+--SJ: custom library selection moved to HERE
+fsm.libraries = {
+  ArmLib = 'DRCFinal',
+  MotionLib = 'DRCFinal',  
+  World = 'DRCFinal'
+}
+
 
 
 fsm.Lidar = {
@@ -45,13 +56,10 @@ fsm.Body = {
   {'bodyInit', 'done', 'bodyStop'},
 
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
-
-  {'bodyStop', 'stepover', 'bodyStepOver'},
-
   {'bodyStepPlace',   'done', 'bodyStop'},
-  {'bodyStop', 'stepover1', 'bodyStepUp1'},
-  {'bodyStepUp1', 'done', 'bodyStop'},
---  {'bodyStepWaypoint',   'done', 'bodyStop'},
+  
+  {'bodyStop', 'stepover1', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},
 }
 
 fsm.Arm = {
@@ -108,51 +116,24 @@ fsm.Arm = {
 fsm.Motion = {
   {'motionIdle', 'timeout', 'motionIdle'},
   {'motionIdle', 'stand', 'motionInit'},
-  {'motionIdle', 'bias', 'motionBiasInit'},
+  {'motionInit', 'done', 'motionStance'},
 
+  {'motionIdle', 'bias', 'motionBiasInit'},  
+  {'motionStance', 'bias', 'motionBiasInit'},
   {'motionBiasInit', 'done', 'motionBiasIdle'}, 
   {'motionBiasIdle', 'stand', 'motionInit'}, 
 
-  {'motionInit', 'done', 'motionStance'},
 
-  {'motionStance', 'bias', 'motionBiasInit'},
   {'motionStance', 'preview', 'motionStepPreview'},
-  {'motionStance', 'kick', 'motionKick'},
-  {'motionStance', 'done_step', 'motionHybridWalkKick'},
-  {'motionStance', 'stair', 'motionStepPreviewStair'},
-
-
-  {'motionStance', 'sit', 'motionSit'},
-  {'motionSit', 'stand', 'motionStandup'},
-  {'motionStandup', 'done', 'motionStance'},
-
   {'motionStepPreview', 'done', 'motionStance'},
-  {'motionStepPreviewStair', 'done', 'motionStepPreviewStairStopped'},
-  {'motionStepPreviewStairStopped', 'stair', 'motionStepPreviewStair'},
-  {'motionKick', 'done', 'motionStance'},
 
---For new hybrid walk
+  {'motionStance', 'stair', 'motionStepPreviewStair'},
+  {'motionStepPreviewStair', 'done', 'motionStance'},
+
   {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
---  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
--- {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
---  {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
-
-  {'motionHybridWalkInit', 'done', 'motionHybridWalkAdaptive'},
-  {'motionHybridWalkAdaptive', 'done', 'motionHybridWalkEnd'},  
-  {'motionHybridWalkAdaptive', 'done_step', 'motionHybridWalkKick'},
-  
-  {'motionHybridWalkKick', 'done', 'motionStance'},
---  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
-
-  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalkAdaptive'},
-
-
-  
---  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
---  {'motionStepNonstop', 'done', 'motionStance'},
-
+  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+  {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
   {'motionHybridWalkEnd', 'done', 'motionStance'},
-
 }
 
 fsm.dqNeckLimit = {

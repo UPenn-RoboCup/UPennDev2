@@ -81,7 +81,7 @@ end
 ----[[
 --Config.libs.MotionLib = 'Teach'
 Config.libs.MotionLib = 'RoboCup'
---Config.libs.MotionLib = 'DRCFinal'
+Config.libs.MotionLib = 'DRCFinal'
 Config.libs.ArmLib = 'Teach'
 Config.libs.World = 'Teach'
 -- Precedence in loading, for overrides!

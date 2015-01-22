@@ -152,7 +152,7 @@ zmpstep.param_k1={
 
 --Load robot specific configs
 local fname = {Config.PLATFORM_NAME,'/calibration'}  
-c = require(table.concat(fname))
+local c = require(table.concat(fname))
 if c.cal[HOSTNAME].legBias then walk.legBias = c.cal[HOSTNAME].legBias end
 if c.cal[HOSTNAME].headBias then walk.headBias = c.cal[HOSTNAME].headBias end
 

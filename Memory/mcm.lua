@@ -166,6 +166,10 @@ shared.status.zGround = vector.zeros(0) -- if feet on a higher ground
 
 
 shared.status.uTorso = vector.zeros(3)
+shared.status.uTorsoZMPComp = vector.zeros(3) --zmp-based reactive torso compensation
+
+
+
 shared.status.uSupport = vector.zeros(3)
 shared.status.supportLeg = vector.zeros(1)
 shared.status.ph = vector.zeros(1)

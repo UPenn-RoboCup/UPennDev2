@@ -24,6 +24,9 @@ while running do
 	local uZMP = mcm.get_status_uZMP()
 	local uZMPMeasured = mcm.get_status_uZMPMeasured()
 
+	local LZMP = mcm.get_status_LZMP()
+	local RZMP = mcm.get_status_RZMP()
+
 	os.execute('clear')
 	print(sformat("force Z: %d %d",forceZ[1],forceZ[2]))
 	print(sformat("force Total: %d %d",forceTotal[1],forceTotal[2]))
@@ -31,6 +34,10 @@ while running do
 		uZMP[1]*100, uZMP[2]*100, uZMPMeasured[1]*100,	uZMPMeasured[2]*100
 
 		))
+
+	print(sformat("ZMP err: L %.1f %.1f R %.1f %.1f cm",
+		LZMP[1]*100, LZMP[2]*100,RZMP[1]*100, RZMP[2]*100))
+
 	unix.usleep(tDelay);
 
 end

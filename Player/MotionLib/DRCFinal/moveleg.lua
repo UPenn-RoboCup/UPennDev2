@@ -256,6 +256,11 @@ function moveleg.set_leg_positions()
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorso = mcm.get_status_uTorso()
+  local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
+
+  uTorso = util.pose_global(uTorsoZMPComp,uTorso)
+
+
   local zLeg = mcm.get_status_zLeg()
   local zSag = mcm.get_walk_zSag()
     
@@ -446,30 +451,33 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   mcm.set_status_uZMPMeasured(uZMPMeasured) 
   
 
+  local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
 
-
-
-
-
-
-
-
-
-
+  local zmp_err_db = 0.01 
+  local k_zmp_err = -0.5 --0.5cm per sec for 1cm error
+  local max_torso_vel = 0.01 --1cm per sec
 
 
   if ft.lf_z>zf_support and ft.rf_z>zf_support then --double support
   elseif ft.lf_z>zf_support then --left support
 
+    local torso_y_comp = util.procFunc(zmp_err_left[2]*k_zmp_err,zmp_err_db,max_torso_vel)
+    uTorsoZMPComp[2] = uTorsoZMPComp[2] + torso_y_comp*t_diff
+    mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
+
     if enable_balance[2]>0 then --left support  
       if ft.rf_z<zf_touchdown and zmp_err_left[2]<0 then
         zvShift[2] = -0.01 --Lower left feet at 1cm per sec
-      elseif zmp_err_left[1]>0.01 then 
+      elseif zmp_err_left[2]>0.01 then 
         zvShift[2] = 0.01 --Raise the foot
       end
     end
 
   elseif ft.rf_z>zf_support then  --right support
+
+    local torso_y_comp = util.procFunc(zmp_err_left[2]*k_zmp_err,zmp_err_db,max_torso_vel)
+    uTorsoZMPComp[2] = uTorsoZMPComp[2] + torso_y_comp*t_diff
+    mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
 
     if enable_balance[1]>0 then --right support
       if ft.lf_z<zf_touchdown and zmp_err_right[1]>0.00 then

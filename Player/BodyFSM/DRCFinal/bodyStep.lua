@@ -70,6 +70,13 @@ step_queues={
 }
 
 
+
+if IS_WEBOTS then st,wt = 1.0,1.0 
+
+
+end
+
+
 step_queues={
    {
     {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
@@ -91,6 +98,28 @@ step_queues={
 }
 
 
+--Larger step
+
+
+step_queues={
+   {
+    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
+   },
+
+   {
+    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
+    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
+   },
+
+   {
+    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },  
+   },
+
+   {  
+    {{step1*2,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
+    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
+   },
+}
 
 
 
@@ -143,6 +172,65 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+
+  local uTorso = mcm.get_status_uTorso()  
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+
+  --Which foot is ahead?
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+
+
+  local leg_move_factor = math.abs(uLeftTorso[1]-uRightTorso[1])/0.25
+
+  local wt2 = wt +(1+leg_move_factor)
+
+
+
+--[[
+  step1,step2 = 0.25,0.25
+  if uLeftTorso[1]>uRightTorso[1] then
+    --Take right step
+
+    step2 = (uLeftTorso[1]-uRightTorso[1]) + step1
+    step_queues={
+       {
+        {{0,0,0},2,        st, 0.1, 0.1,   {uLeftTorso[1]  , com_side},{0,0,0} },    --Shift and Lift
+       },
+
+       {
+        {{step2,0,0},0,  0.1,wt2,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS     --Move and land
+--        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
+       },
+
+       {
+        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+       },
+    }
+
+  else
+    --Take left step
+
+    step2 = -(uLeftTorso[1]-uRightTorso[1]) + step1
+    step_queues={
+       {
+        {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+       },
+
+       {
+        {{step2,0,0},1,  0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-step1/2  , -com_side}},   --LS     --Move and land
+--        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
+       },
+
+       {
+        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+       },
+    }
+  end
+--]]
+
+
 
   stage = 1
   calculate_footsteps(stage)

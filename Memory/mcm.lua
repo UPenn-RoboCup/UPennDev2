@@ -176,6 +176,7 @@ shared.status.uTorsoVel = vector.zeros(3)
 
 --ZMP is stored here for external monitoring
 shared.status.uZMP = vector.zeros(3)
+shared.status.uZMPMeasured = vector.zeros(3)
 
 --We monitor whole mass points here
 shared.status.com_pos = vector.zeros(66)
@@ -186,6 +187,13 @@ shared.status.com_pos0 = vector.zeros(66)
 shared.status.com_pos1 = vector.zeros(66)
 shared.status.t0 = vector.zeros(1)
 shared.status.t1 = vector.zeros(1)
+
+
+--Normal forces and zmp error at each foot
+shared.status.forceZ = vector.zeros(2)
+shared.status.forceTotal = vector.zeros(2)
+shared.status.LZMP = vector.zeros(3)
+shared.status.RZMP = vector.zeros(3)
 
 
 

@@ -511,10 +511,17 @@ if IS_WEBOTS then
       dcm.sensorPtr.rfoot[0] = webots.wb_touch_sensor_get_value(tags.r_fsr)
     end
 		
+    local force_factor = 3.0
+
 		-- F/T sensor
     if ENABLE_FT then
 			local l_ft = Body.get_lfoot()
 			l_ft[2], l_ft[3], l_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
+
+
+      --SJ: FT factor fix
+      l_ft[2], l_ft[3], l_ft[1]=l_ft[2]*force_factor, l_ft[3]*force_factor, l_ft[1]*force_factor
+
       l_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleL)
       l_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootL)
       if tags.left_ankle_yaw > 0 then
@@ -526,6 +533,12 @@ if IS_WEBOTS then
 			r_ft[2], r_ft[3], r_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
       r_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleR)
       r_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootR)
+
+
+      --SJ: FT factor fix
+      r_ft[2], r_ft[3], r_ft[1]=r_ft[2]*force_factor, r_ft[3]*force_factor, r_ft[1]*force_factor
+
+
       if tags.right_ankle_yaw > 0 then
         r_ft[6] = webots.wb_motor_get_force_feedback(tags.right_ankle_yaw)
       end

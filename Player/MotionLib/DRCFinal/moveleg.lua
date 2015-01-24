@@ -50,6 +50,8 @@ function moveleg.get_ft()
   local y_angle_zero = 3*math.pi/180
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
   local ft= {
+    lf_x=l_ft[1],rf_x=r_ft[1],
+    lf_y=l_ft[2],rf_y=r_ft[2],
     lf_z=l_ft[3],rf_z=r_ft[3],
     lt_x=-l_ft[4],rt_x=-r_ft[4],
     lt_y=l_ft[5],rt_y=r_ft[5]
@@ -198,7 +200,7 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   delta_legs[12] = angleShift[2] - ankleRollCompensation
 
   mcm.set_walk_delta_legs(delta_legs)  
-print(kneeComp[1],kneeComp[2])
+
   return delta_legs, angleShift
 end
 
@@ -297,37 +299,29 @@ local pTorso = vector.new({
 local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
 
 
-print("---")
+--print("---")
 
 --Incremental COM filtering
 while count<=revise_max do
-
   local qLLeg = vector.slice(qLegs,1,6)
   local qRLeg = vector.slice(qLegs,7,12)
-
   com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,3*DEG_TO_RAD)
   local uCOM = util.pose_global(
     vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
-
-
+--[[
  print(sformat("Target COM XY: %.1f %.1f  Current COM XY: %.1f %.1f cm",
     100*uTorso[1],100*uTorso[2], 100*uCOM[1],100*uCOM[2]
     ))
-
+--]]
  
-
-  
  uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
  uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
-
  local pTorso = vector.new({
           uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
           0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
  qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
-
  count = count+1
 end
-
 
 -----------------------------------------
 
@@ -417,54 +411,56 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(imu.roll_err)
   local zvShiftTarget = util.procFunc( (LR_pitch_err + LR_roll_err) * k_balancing, 0, z_vel_max_balance )
 
-  local zmp_err_left = {0,0}
-  local zmp_err_right = {0,0}
+  local zmp_err_left = {0,0,0}
+  local zmp_err_right = {0,0,0}
 
 
   local uZMP = mcm.get_status_uZMP()  
-
   local uZMPLeft=mcm.get_status_uLeft()
   local uZMPRight=mcm.get_status_uRight()
   local forceLeft, forceRight = 0,0
 
   if ft.lf_z>zf_touchdown then
-    local rel_zmp_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z, 0}
-    uZMPLeft = util.pose_global(rel_zmp_left, uLeft)
+    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z, 0}
+    uZMPLeft = util.pose_global(zmp_err_left, uLeft)
     forceLeft = ft.lf_z
   end
   if ft.rf_z>zf_touchdown then
-    local rel_zmp_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z, 0}
-    uZMPRight = util.pose_global(rel_zmp_right, uRight)
+    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z, 0}
+    uZMPRight = util.pose_global(zmp_err_right, uRight)
     forceRight = ft.rf_z
   end
 
-
-
-
   local uZMPMeasured= (forceLeft*uZMPLeft + forceRight*uZMPRight) / (forceLeft+forceRight)
 
-  if IS_WEBOTS then
-    print("support xy:",Config.walk.supportX, Config.walk.supportY)
-    print(sformat("ZMP R:%.1f %.1f M: %.1f %.1f Err: %.1f %.1f(cm)",
-    uZMP[1]*100,uZMP[2]*100,uZMPMeasured[1]*100,uZMPMeasured[2]*100,
-    (uZMPMeasured[1]-uZMP[1])*100,(uZMPMeasured[2]-uZMP[2])*100
+  local force_total = {0,0}
 
-    ))
-  end
- 
+  force_total[1] = math.sqrt(ft.lf_z^2+ft.lf_x^2+ft.lf_y^2)
+  force_total[2] = math.sqrt(ft.rf_z^2+ft.rf_x^2+ft.rf_y^2)
+
+
+  mcm.set_status_LZMP({zmp_err_left[1],zmp_err_left[2],0})
+  mcm.set_status_RZMP({zmp_err_right[1],zmp_err_right[2],0})
+  mcm.set_status_forceZ({forceLeft,forceRight})
+  mcm.set_status_forceTotal(force_total)
+  mcm.set_status_uZMPMeasured(uZMPMeasured) 
+  
+
+
+
+
+
+
+
+
+
+
+
+
 
   if ft.lf_z>zf_support and ft.rf_z>zf_support then --double support
-    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z}
-    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z}
-    if IS_WEBOTS then
-      print(sformat("lFoot ZMP: X %.1f Y %.1f cm",  zmp_err_left[1]*100, zmp_err_left[2]*100 ))
-      print(sformat("rFoot ZMP: X %.1f Y %.1f cm",   zmp_err_right[1]*100, zmp_err_right[2]*100 ))
-    end
   elseif ft.lf_z>zf_support then --left support
-    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z}    
-    if IS_WEBOTS then
-      print(sformat("lFoot ZMP: X %.1f Y %.1f cm",  zmp_err_left[1]*100, zmp_err_left[2]*100 ))
-    end
+
     if enable_balance[2]>0 then --left support  
       if ft.rf_z<zf_touchdown and zmp_err_left[2]<0 then
         zvShift[2] = -0.01 --Lower left feet at 1cm per sec
@@ -472,11 +468,9 @@ function moveleg.process_ft_height(ft,imu,t_diff)
         zvShift[2] = 0.01 --Raise the foot
       end
     end
+
   elseif ft.rf_z>zf_support then  --right support
-    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z}    
-    if IS_WEBOTS then
-      print(sformat("rFoot ZMP: X %.1f Y %.1f cm",   zmp_err_right[1]*100, zmp_err_right[2]*100 ))
-    end
+
     if enable_balance[1]>0 then --right support
       if ft.lf_z<zf_touchdown and zmp_err_right[1]>0.00 then
         zvShift[1] = -0.01 --Lower left feet at 1cm per sec
@@ -485,6 +479,19 @@ function moveleg.process_ft_height(ft,imu,t_diff)
       end
     end
   end
+
+
+
+--[[
+  if IS_WEBOTS then
+    print("support xy:",Config.walk.supportX, Config.walk.supportY)
+    print(sformat("ZMP R:%.1f %.1f M: %.1f %.1f Err: %.1f %.1f(cm)",
+    uZMP[1]*100,uZMP[2]*100,uZMPMeasured[1]*100,uZMPMeasured[2]*100,
+    (uZMPMeasured[1]-uZMP[1])*100,(uZMPMeasured[2]-uZMP[2])*100
+
+    ))
+  end
+--]]
 
 --[[
   if enable_balance[1]>0 and ft.rf_z>zf_support then --right support

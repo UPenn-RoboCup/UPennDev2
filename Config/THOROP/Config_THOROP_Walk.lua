@@ -231,6 +231,13 @@ if not IS_WEBOTS then
   walk.supportX = 0.05 --better
   walk.supportY = 0.05
 
+
+
+--  walk.delay_threshold_angle = 2.5*math.pi/180
+  walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  walk.delay_factor = {0.8,1.7}
+
+
   if HOSTNAME=="teddy" then
     print "TEDDY"
     Config.supportY_preview = -0.02
@@ -249,6 +256,12 @@ else
 
   walk.kneePitchCompensation = 0*DEG_TO_RAD
   walk.footSagCompensation = {0.0,0.0}
+
+
+--  walk.delay_threshold_angle = 2.5*math.pi/180
+  walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  walk.delay_factor = {0.8,1.7}
+
 end
 
 

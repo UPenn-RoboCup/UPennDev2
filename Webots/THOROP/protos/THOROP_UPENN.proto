@@ -45,7 +45,8 @@ Robot {
   # Unsure why there is physics here...
   physics Physics {
     density -1
-		mass 1
+#		mass 1
+		mass 11 #Temporary fix to match COM closely to actual robot
     centerOfMass [0 0.1557 -0.0208]
   }
 
@@ -385,6 +386,7 @@ Robot {
 																										}
 																										DEF Right_ankle_force TouchSensor {
 																											translation 0 -0.09 0
+																											lookupTable   [ 0 0 0, 5000 5000 0 ]
 																											name "RAnkle_force"
                                                       contactMaterial IS footContactMaterial
 																											boundingObject Transform {
@@ -393,7 +395,10 @@ Robot {
 																													Box {size 0.147 0.05 0.262}
 																												]
 																											}
-																											physics Physics {}
+																											physics Physics {
+																												density -1
+																												mass 0.1
+																											}
 																											type "force-3d"
 																										}
 #
@@ -415,7 +420,10 @@ Robot {
                                                             }
                                                           ]
                                                         }
-      																									physics Physics {}
+      																									physics Physics {
+      																										density -1
+																													mass 0.1
+      																									}
                                                       }
                                                     }
 #
@@ -661,6 +669,7 @@ Robot {
 																										}
 																										DEF Left_ankle_force TouchSensor {
 																											translation 0 -0.09 0
+																											lookupTable   [ 0 0 0, 5000 5000 0 ]
 																											name "LAnkle_force"
                                                       contactMaterial IS footContactMaterial
 																											boundingObject Transform {
@@ -669,7 +678,10 @@ Robot {
 																													Box {size 0.147 0.05 0.262}
 																												]
 																											}
-																											physics Physics {}
+																											physics Physics {
+																												density -1
+																												mass 0.1
+																											}
 																											type "force-3d"
 																										}
 #
@@ -691,7 +703,10 @@ Robot {
                                                             }
                                                           ]
                                                         }
-      																									physics Physics {}
+      																									physics Physics {
+      																										density -1
+																													mass 0.1
+      																									}
                                                       }
                                                     }
 #
@@ -953,11 +968,11 @@ Robot {
                       centerOfMass 0 -0.15 0.01
                     }
                     children [
-  										RIGHT_ARM{
-  											translation 0 -0.027 0
-  											rotation 0 1 0 3.14159
-  											scale 0.001 0.001 0.001
-  										}
+											RIGHT_ARM{
+												translation 0 -0.027 0
+												rotation 0 1 0 3.14159
+												scale 0.001 0.001 0.001
+											}
                       DEF Right_elbow_pitch HingeJoint {
                         device RotationalMotor {
                           name "ArmLowerR"

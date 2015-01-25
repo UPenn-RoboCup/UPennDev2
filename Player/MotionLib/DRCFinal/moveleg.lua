@@ -384,9 +384,7 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   --------------------------------------------------------------------------------------------------------
   -- Foot height differential adaptation
 
---  local zf_touchdown = 50
-
-  local zf_touchdown = 10
+  local zf_touchdown = 50
   local zf_support = 150
 
   local z_shift_max = 0.05 --max 5cm difference
@@ -466,24 +464,24 @@ function moveleg.process_ft_height(ft,imu,t_diff)
     mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
 
     if enable_balance[2]>0 then --left support  
-      if ft.rf_z<zf_touchdown and zmp_err_left[2]<0 then
+      if ft.rf_z<zf_touchdown then 
         zvShift[2] = -0.01 --Lower left feet at 1cm per sec
-      elseif zmp_err_left[2]>0.01 then 
-        zvShift[2] = 0.01 --Raise the foot
+--      elseif zmp_err_left[2]>0.01 then 
+        --zvShift[2] = 0.01 --Raise the foot
       end
     end
 
   elseif ft.rf_z>zf_support then  --right support
 
-    local torso_y_comp = util.procFunc(zmp_err_left[2]*k_zmp_err,zmp_err_db,max_torso_vel)
+    local torso_y_comp = util.procFunc(zmp_err_right[2]*k_zmp_err,zmp_err_db,max_torso_vel)
     uTorsoZMPComp[2] = uTorsoZMPComp[2] + torso_y_comp*t_diff
     mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
 
     if enable_balance[1]>0 then --right support
-      if ft.lf_z<zf_touchdown and zmp_err_right[1]>0.00 then
+      if ft.lf_z<zf_touchdown then
         zvShift[1] = -0.01 --Lower left feet at 1cm per sec
-      elseif zmp_err_right[1]<-0.01 then 
-        zvShift[1] = 0.01 --We are pushing too much. raise the foot
+--      elseif zmp_err_right[1]<-0.01 then 
+--        zvShift[1] = 0.01 --We are pushing too much. raise the foot
       end
     end
   end

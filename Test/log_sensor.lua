@@ -30,6 +30,9 @@ while running do
 	os.execute('clear')
 	print(sformat("force Z: %d %d",forceZ[1],forceZ[2]))
 	print(sformat("force Total: %d %d",forceTotal[1],forceTotal[2]))
+
+--	print(sformat("Torque L: %.2f %.2f R: %.2f %.2f",forceTotal[1],forceTotal[2]))
+
 	print(sformat("uZMP: %.1f %.1f / uZMP(M): %.1f %.1f",
 		uZMP[1]*100, uZMP[2]*100, uZMPMeasured[1]*100,	uZMPMeasured[2]*100
 

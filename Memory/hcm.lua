@@ -255,6 +255,18 @@ shared_data.legdebug.torso_angle=vector.zeros(2) --pitch roll
 
 
 
+
+shared_data.step={}
+shared_data.step.supportLeg=vector.zeros(1)
+shared_data.step.relpos = vector.zeros(3)	--x y a
+shared_data.step.zpr = vector.zeros(2)		--z p r
+
+
+
+
+
+
+
 --These variables are only used for offline testing of arm states
 shared_data.state.success = vector.zeros(0)
 shared_data.state.tstartrobot = vector.zeros(0)

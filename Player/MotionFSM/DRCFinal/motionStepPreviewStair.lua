@@ -97,6 +97,8 @@ function walk.entry()
   
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, zLeft, zRight =
       step_planner:init_stance()
+
+
   zLeft0,zRight0 = zLeft,zRight
   print(string.format("Current torso: %.2f %.2f",
     uTorso_now[1],uTorso_now[2]))
@@ -269,6 +271,19 @@ function walk.update()
 end -- walk.update
 
 function walk.exit()
+
+
+
+print("uTorsoZMPComp CLEARED")
+  --Clear the zmp compensation value here -----------------------------------------
+  local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
+  local uTorso = mcm.get_status_uTorso()
+  uTorso = util.pose_global({uTorsoZMPComp[1],uTorsoZMPComp[2],0},uTorso)
+  mcm.set_status_uTorsoZMPComp({0,0,0})
+  mcm.set_status_uTorso(uTorso)
+  ---------------------------------------------------------------------------------
+
+
   print(walk._NAME..' Exit')  
   mcm.set_walk_ismoving(0) --We stopped moving
 end

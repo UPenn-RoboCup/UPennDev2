@@ -229,7 +229,7 @@ function state.exit()
   mcm.set_stance_bodyHeightTarget(Config.walk.bodyHeight)
 
 
-
+  mcm.set_status_uTorsoZMPComp({0,0,0})
   mcm.set_stance_uTorsoComp({0,0})
   mcm.set_status_iskneeling(0)
 

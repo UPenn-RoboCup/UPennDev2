@@ -42,8 +42,10 @@ DEF FLOOR Floor {
   ]
 }
 WoodBox {
-  translation 0 0.02 0.5
-  boxSize 0.8 0.04 0.4
+#  translation 0 0.02 0.5
+#  boxSize 0.8 0.04 0.4
+  translation 0 0.05 0.5
+  boxSize 0.8 0.10 0.4
 }
 WoodBox {
   translation 0 0.02 0.9

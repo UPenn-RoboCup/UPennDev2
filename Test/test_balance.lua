@@ -129,6 +129,15 @@ local function update(key_code)
 	elseif key_char_lower==("=") then      
 		hcm.set_state_proceed(1)
 
+
+	elseif key_char_lower==("8") then  
+		hcm.set_step_supportLeg(1)
+		hcm.set_step_relpos({0.25,0,0})
+		hcm.set_step_zpr({0.15,0,0})
+		body_ch:send'stepover1'		
+	end
+
+--[[
 	elseif key_char_lower==("8") then  
 		motion_ch:send'stand'
 		body_ch:send'stop'
@@ -136,9 +145,11 @@ local function update(key_code)
 			print("requesting stop")
 			mcm.set_walk_stoprequest(1) 
 		end
+
 	elseif key_char_lower==("9") then  
 		motion_ch:send'hybridwalk'	
 	end
+--]]	
 	hcm.set_legdebug_left(lleft)
 	hcm.set_legdebug_right(lright)
 	hcm.set_legdebug_torso(ltorso)

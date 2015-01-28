@@ -31,7 +31,7 @@ local zLeft,zRight = 0,0
 
 
 local vel_movement = 0.02 --1cm per sec
-local vel_lift = 0.01 --1cm per sec
+local vel_lift = 0.03 --1cm per sec
 
 function state.entry()
   print(state._NAME..' Entry' )

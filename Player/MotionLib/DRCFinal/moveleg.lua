@@ -440,21 +440,39 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local max_torso_vel = 0.01 --1cm per sec
   local max_zmp_comp = 0.04
 
-  local foot_z_vel = -0.01
   local foot_z_vel = -0.02
 
+  local foot_z_vel = -0.03
 
-  if ft.lf_z>zf_support and ft.rf_z>zf_support then --double support
-  elseif ft.lf_z>zf_support then --left support
 
-    if enable_balance[2]>0 then --left support  
-    
+
+	if (ft.lf_z>zf_support*2 and ft.rf_z<zf_touchdown) or enable_balance[2]>0 then
+
       local torso_x_comp = util.procFunc(zmp_err_left[1]*k_zmp_err,zmp_err_db,max_torso_vel)
       local torso_y_comp = util.procFunc(zmp_err_left[2]*k_zmp_err,zmp_err_db,max_torso_vel)
   --    uTorsoZMPComp[1] = util.procFunc(uTorsoZMPComp[1]+ torso_x_comp*t_diff,0,max_zmp_comp)
       uTorsoZMPComp[2] = util.procFunc(uTorsoZMPComp[2]+ torso_y_comp*t_diff,0,max_zmp_comp)
 
       mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
+
+
+  elseif  (ft.rf_z>zf_support*2 and ft.lf_z<zf_touchdown) or enable_balance[1]>0 then
+
+      local torso_x_comp = util.procFunc(zmp_err_right[1]*k_zmp_err,zmp_err_db,max_torso_vel)
+      local torso_y_comp = util.procFunc(zmp_err_right[2]*k_zmp_err,zmp_err_db,max_torso_vel)
+  --    uTorsoZMPComp[1] = uTorsoZMPComp[1] + torso_x_comp*t_diff
+      uTorsoZMPComp[2] = uTorsoZMPComp[2] + torso_y_comp*t_diff
+
+      mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
+
+
+  end
+
+  if ft.lf_z>zf_support and ft.rf_z>zf_support then --double support
+  elseif ft.lf_z>zf_support then --left support
+
+    if enable_balance[2]>0 then --left support  
+    
 
       if ft.rf_z<zf_touchdown and uTorsoZMPComp[2]>-0.02 then
           zvShift[2] = foot_z_vel --Lower left feet 
@@ -474,12 +492,6 @@ function moveleg.process_ft_height(ft,imu,t_diff)
     if enable_balance[1]>0 then --right support
 
 
-      local torso_x_comp = util.procFunc(zmp_err_right[1]*k_zmp_err,zmp_err_db,max_torso_vel)
-      local torso_y_comp = util.procFunc(zmp_err_right[2]*k_zmp_err,zmp_err_db,max_torso_vel)
-  --    uTorsoZMPComp[1] = uTorsoZMPComp[1] + torso_x_comp*t_diff
-      uTorsoZMPComp[2] = uTorsoZMPComp[2] + torso_y_comp*t_diff
-
-      mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
 
       if ft.lf_z<zf_touchdown and uTorsoZMPComp[2]<0.02 then
         zvShift[1] = foot_z_vel --Lower left feet 

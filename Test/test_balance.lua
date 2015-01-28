@@ -117,6 +117,15 @@ local function update(key_code)
 		
 		body_ch:send'stepover1'		
 
+
+	elseif key_char_lower==("7") then      
+
+		hcm.set_step_supportLeg(0)
+		hcm.set_step_relpos({0.25,0,0})
+		hcm.set_step_zpr({0.15,0,0})
+
+		body_ch:send'stepover1'		
+
 	elseif key_char_lower==("=") then      
 		hcm.set_state_proceed(1)
 

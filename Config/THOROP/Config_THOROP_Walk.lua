@@ -265,34 +265,11 @@ else
 end
 
 
-
-
-
 --COM compensation testing
-
   walk.supportX = 0.03 
   walk.supportY = 0.02
-
-
-----------------------------
-
-
-
-
-
-
---[[
---some fix
-walk.bodyTilt = 6*DEG_TO_RAD
-walk.supportX = 0.03 --better
-walk.torsoX = -0.02     -- com-to-body-center offset
---]]
-
-
-
---higher Y gain testing
-walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
-
+--higher ankle Y gain (helps SS)
+  walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 
 ------------------------------------
 -- Associate with the table

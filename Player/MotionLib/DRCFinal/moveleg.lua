@@ -291,60 +291,39 @@ function moveleg.set_leg_positions()
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
   
 
+  local qWaist = Body.get_waist_position()
+  local qLArm = Body.get_larm_position()
+  local qRArm = Body.get_rarm_position()
 
+  local count,revise_max = 1,4
+  local adapt_factor = 1.0
 
+  local uTorsoAdapt = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+  local pTorso = vector.new({
+            uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
+            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
+  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
 
---here
------------------------------------------
+  -------------------Incremental COM filtering
+  while count<=revise_max do
+    local qLLeg = vector.slice(qLegs,1,6)
+    local qRLeg = vector.slice(qLegs,7,12)
+    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,3*DEG_TO_RAD)
+    local uCOM = util.pose_global(
+      vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
-
-local qWaist = Body.get_waist_position()
-local qLArm = Body.get_larm_position()
-local qRArm = Body.get_rarm_position()
-
-
-
-local count,revise_max = 1,4
-local adapt_factor = 1.0
-
-local uTorsoAdapt = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-local pTorso = vector.new({
-          uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
-          0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
-
-
---print("---")
-
---Incremental COM filtering
-while count<=revise_max do
-  local qLLeg = vector.slice(qLegs,1,6)
-  local qRLeg = vector.slice(qLegs,7,12)
-  com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,3*DEG_TO_RAD)
-  local uCOM = util.pose_global(
-    vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
---[[
- print(sformat("Target COM XY: %.1f %.1f  Current COM XY: %.1f %.1f cm",
-    100*uTorso[1],100*uTorso[2], 100*uCOM[1],100*uCOM[2]
-    ))
---]]
- 
- uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
- uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
- local pTorso = vector.new({
-          uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
-          0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
- qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
- count = count+1
-end
-
------------------------------------------
+   uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
+   uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
+   local pTorso = vector.new({
+            uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
+            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
+   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
+   count = count+1
+  end
 
 
   local legBias = vector.new(mcm.get_leg_bias())
-
   qLegs = qLegs + delta_legs + legBias
-
   qLegs[5]=qLegs[5]+aShiftY[1]
   qLegs[11]=qLegs[11]+aShiftY[2]
   qLegs[6]=qLegs[6]+aShiftX[1]
@@ -375,7 +354,6 @@ function moveleg.ft_compensate(t_diff)
   moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
   moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
   moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
-
 end
 
 
@@ -456,15 +434,12 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
 
   local zmp_err_db = 0.01 
-  local k_zmp_err = -0.5 --0.5cm per sec for 1cm error
+  local k_zmp_err = -0.25 --0.5cm per sec for 1cm error
   local max_torso_vel = 0.01 --1cm per sec
-
+  local max_zmp_comp = 0.04
 
   local foot_z_vel = -0.01
   local foot_z_vel = -0.0
---  local foot_z_vel = -0.02
-
-
 
 
   if ft.lf_z>zf_support and ft.rf_z>zf_support then --double support
@@ -474,8 +449,8 @@ function moveleg.process_ft_height(ft,imu,t_diff)
     
     local torso_x_comp = util.procFunc(zmp_err_left[1]*k_zmp_err,zmp_err_db,max_torso_vel)
     local torso_y_comp = util.procFunc(zmp_err_left[2]*k_zmp_err,zmp_err_db,max_torso_vel)
-    uTorsoZMPComp[1] = uTorsoZMPComp[1] + torso_x_comp*t_diff
-    uTorsoZMPComp[2] = uTorsoZMPComp[2] + torso_y_comp*t_diff
+    uTorsoZMPComp[1] = util.procFunc(uTorsoZMPComp[1]+ torso_x_comp*t_diff,0,max_zmp_comp)
+    uTorsoZMPComp[2] = util.procFunc(uTorsoZMPComp[2]+ torso_y_comp*t_diff,0,max_zmp_comp)
 
 
     mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
@@ -510,61 +485,16 @@ function moveleg.process_ft_height(ft,imu,t_diff)
 
 
 
---[[
-  if IS_WEBOTS then
-    print("support xy:",Config.walk.supportX, Config.walk.supportY)
-    print(sformat("ZMP R:%.1f %.1f M: %.1f %.1f Err: %.1f %.1f(cm)",
-    uZMP[1]*100,uZMP[2]*100,uZMPMeasured[1]*100,uZMPMeasured[2]*100,
-    (uZMPMeasured[1]-uZMP[1])*100,(uZMPMeasured[2]-uZMP[2])*100
-
-    ))
-  end
---]]
-
---[[
-  if enable_balance[1]>0 and ft.rf_z>zf_support then --right support
-    
-    
-
-    if ft.lf_z<zf_touchdown then --left foot afloat. lower it
-      
-    else
-      --both foot on the ground!
-
---      zvShift[1] = zvShiftTarget
-    end
-  end
-
-  if enable_balance[2]>0 and ft.lf_z>zf_support then --left support
-    print("lf x torque:",ft.lt_x)
-
-    if ft.rf_z<zf_touchdown then --left foot afloat. lower it
-      zvShift[2] = -0.01 --1cm per sec
-    else
-      --both foot on the ground!
-
---      zvShift[2] = -zvShiftTarget 
-    end
-  end
---]]
-
   local zShift = mcm.get_status_zLeg()
-
   local z_min = -0.05
-
 
   zShift[1] = math.max(z_min, zShift[1]+zvShift[1]*t_diff)
   zShift[2] = math.max(z_min, zShift[2]+zvShift[2]*t_diff)
 
-
   mcm.set_walk_zvShift(zvShift)
   mcm.set_walk_zShift(zShift)
   mcm.set_status_zLeg(zShift)
-
-  if enable_balance[1]+enable_balance[2]>0 then
-    if balancing_type>0 then print"DS balancing" end
-    print(string.format("dZ : %.1f %.1f Zshift: %.2f %.2f cm",zvShift[1]*100,zvShift[2]*100,zShift[1]*100,zShift[2]*100))
-  end
+  
   --------------------------------------------------------------------------------------------------------
 end
 

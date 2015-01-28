@@ -207,7 +207,7 @@ function state.entry()
     step_queues={
        {
         {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-        {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2]}},   --LS     --Move and land
+        {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
        },
 
        {
@@ -222,14 +222,14 @@ function state.entry()
     local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftTarget)
     local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRight)
     local uTorsoTarget = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
-
     local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
-
+    
     step2 = -(uLeftTorso[1]-uRightTorso[1]) + step1
     step_queues={
        {
         {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2]}},   --LS     --Move and land
+        {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+       
        },
 
        {
@@ -238,43 +238,6 @@ function state.entry()
     }
   end
 
-
-
---[[
-  step1,step2 = 0.25,0.25
-  if uLeftTorso[1]>uRightTorso[1] then
-    --Take right step
-
-    step2 = (uLeftTorso[1]-uRightTorso[1]) + step1
-    step_queues={
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {uLeftTorso[1]  , com_side},{0,0,0} },    --Shift and Lift
-        {{step2,0,0},0,  0.1,wt2,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS     --Move and land
---        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-       },
-
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
-       },
-    }
-
-  else
-    --Take left step
-
-    step2 = -(uLeftTorso[1]-uRightTorso[1]) + step1
-    step_queues={
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        {{step2,0,0},1,  0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-step1/2  , -com_side}},   --LS     --Move and land
---        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-       },
-
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
-       },
-    }
-  end
---]]
 
 
 

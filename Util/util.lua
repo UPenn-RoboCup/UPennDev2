@@ -91,6 +91,14 @@ local function procFunc(a,deadband,maxvalue)
   return b
 end
 
+
+local function p_feedback(org,target, p_gain, max_vel, dt)
+  local err = target-org
+  local vel = math.max(-max_vel,math.min( max_vel, err*p_gain ))
+  return org + vel*dt
+end
+
+
 function util.clamp_vector(values,min_values,max_values)
 	local clamped = vector.new()
 	for i,v in ipairs(values) do
@@ -412,5 +420,6 @@ util.color = function(str,fg,bg,blink)
 end
 
 util.procFunc = procFunc
+util.p_feedback = p_feedback
 
 return util

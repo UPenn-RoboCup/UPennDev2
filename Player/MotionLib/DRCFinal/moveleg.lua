@@ -113,25 +113,36 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   local gyro_roll = gyro_rpy[1]
 
   -- Ankle feedback
-  local ankleShiftX = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
-  local ankleShiftY = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
-  -- Knee feedback
-  local kneeShiftX = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
-  -- Hip feedback
-  local hipShiftY=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
+  local ankleShiftXTarget = util.procFunc(gyro_pitch*ankleImuParamX[2],ankleImuParamX[3],ankleImuParamX[4])
+  local ankleShiftYTarget = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
+  local kneeShiftXTarget = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
+  local hipShiftYTarget=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
+
+  local angleShift = mcm.get_walk_angleShift()
+
+  angleShift[1] = util.p_feedback(angleShift[1], ankleShiftXTarget, ankleImuParamX[1],dShift[1], dt)
+  angleShift[2] = util.p_feedback(angleShift[2], ankleShiftYTarget, ankleImuParamY[1], dShift[2], dt)
+  angleShift[3] = util.p_feedback(angleShift[3], kneeShiftXTarget, kneeImuParamX[1], dShift[3], dt)
+  angleShift[4] = util.p_feedback(angleShift[4], hipShiftYTarget, hipImuParamY[1], dShift[4], dt)
+
+--[[
+
 
   local dShiftTarget = {}
-  dShiftTarget[1]=ankleImuParamX[1]*(ankleShiftX-angleShift[1])
-  dShiftTarget[2]=ankleImuParamY[1]*(ankleShiftY-angleShift[2])
-  dShiftTarget[3]=kneeImuParamX[1]*(kneeShiftX-angleShift[3])
-  dShiftTarget[4]=hipImuParamY[1]*(hipShiftY-angleShift[4])
+  dShiftTarget[1]=ankleImuParamX[1]*(ankleShiftXTarget-angleShift[1])
+  dShiftTarget[2]=ankleImuParamY[1]*(ankleShiftYTarget-angleShift[2])
+  dShiftTarget[3]=kneeImuParamX[1]*(kneeShiftXTarget-angleShift[3])
+  dShiftTarget[4]=hipImuParamY[1]*(hipShiftYTarget-angleShift[4])
   
--- Ankle shift is filtered... thus a global
+
   angleShift[1] = angleShift[1] + math.max(-dShift[1]*dt,math.min(dShift[1]*dt,dShiftTarget[1]))
   angleShift[2] = angleShift[2] + math.max(-dShift[2]*dt,math.min(dShift[2]*dt,dShiftTarget[2])) 
   angleShift[3] = angleShift[3] + math.max(-dShift[3]*dt,math.min(dShift[3]*dt,dShiftTarget[3])) 
   angleShift[4] = angleShift[4] + math.max(-dShift[4]*dt,math.min(dShift[4]*dt,dShiftTarget[4])) 
+--]]
 
+
+  mcm.set_walk_angleShift(angleShift)
 
   local delta_legs = vector.zeros(12)
 
@@ -183,7 +194,6 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   else
     supportRatioLeft = math.max(phComp,phComp2);
 		kneeComp[1] = phCompLift*knee_compensation
-
     mcm.set_walk_zSag({0,phCompLift*swing_leg_sag_compensation_right})
   end
 
@@ -395,6 +405,7 @@ function moveleg.process_ft_height(ft,imu,t_diff)
 
 
   local enable_balance = hcm.get_legdebug_enable_balance()
+
 
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
@@ -621,12 +632,7 @@ function moveleg.process_ft_roll(ft,t_diff)
 
   mcm.set_walk_aShiftX(aShiftX)
   mcm.set_walk_avShiftX(avShiftX)
-
-  if enable_balance[1]+enable_balance[2]>0 then
-  print(string.format("dRoll: %.1f %.1f Roll: %.1f %.1f",
-    avShiftX[1]*180/math.pi,avShiftX[2]*180/math.pi,
-    aShiftX[1]*180/math.pi,aShiftX[2]*180/math.pi))   
-  end
+  
 
   ----------------------------------------------------------------------------------------
 
@@ -697,11 +703,6 @@ if IS_WEBOT and false then
   mcm.set_walk_aShiftY(aShiftY)
   mcm.set_walk_avShiftY(avShiftY)
 
-  if enable_balance[1]+enable_balance[2]>0 then
-    print(string.format("dPitch: %.1f %.1f Pitch: %.1f %.1f",
-      avShiftY[1]*180/math.pi,avShiftY[2]*180/math.pi,
-      aShiftY[1]*180/math.pi,aShiftY[2]*180/math.pi))   
-  end
   ----------------------------------------------------------------------------------------
 
 end

@@ -112,6 +112,8 @@ shared.walk.kickfoot = vector.zeros(1)
 
 
 --feet shift/tilt info
+
+
 shared.walk.zShift = vector.zeros(2)
 shared.walk.zvShift = vector.zeros(2)
 
@@ -131,13 +133,8 @@ shared.walk.zSag = vector.zeros(2)
 
 --direct leg compensation info
 
-shared.walk.ankleshiftX = vector.zeros(2)
-shared.walk.ankleshiftY = vector.zeros(2)
-shared.walk.kneeshiftX = vector.zeros(2)
-shared.walk.hipshiftY = vector.zeros(2)
-
+shared.walk.angleShift=vector.zeros(4) --ankleX ankleY kneeX hipY
 shared.walk.delta_legs = vector.zeros(12)
-
 
 --torso x-y shift (to keep zmp in the middle)
 shared.walk.torsoShift = vector.zeros(2) 

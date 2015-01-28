@@ -352,8 +352,8 @@ function moveleg.ft_compensate(t_diff)
   local enable_balance = hcm.get_legdebug_enable_balance()
   local ft,imu = moveleg.get_ft()
   moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
-  moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
-  moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
+--  moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
+--  moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 end
 
 
@@ -433,7 +433,8 @@ function moveleg.process_ft_height(ft,imu,t_diff)
 
   local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
 
-  local zmp_err_db = 0.01 
+--  local zmp_err_db = 0.01 
+  local zmp_err_db = 0.0025  
   local k_zmp_err = -0.25 --0.5cm per sec for 1cm error
   local max_torso_vel = 0.01 --1cm per sec
   local max_zmp_comp = 0.04
@@ -447,7 +448,7 @@ function moveleg.process_ft_height(ft,imu,t_diff)
 
     if enable_balance[2]>0 then --left support  
     
-    local torso_x_comp = util.procFunc(zmp_err_left[1]*k_zmp_err,zmp_err_db,max_torso_vel)
+    local torso_x_comp = util.procFunc(zmp_err_left[1]*k_zmp_err,max_torso_vel)
     local torso_y_comp = util.procFunc(zmp_err_left[2]*k_zmp_err,zmp_err_db,max_torso_vel)
     uTorsoZMPComp[1] = util.procFunc(uTorsoZMPComp[1]+ torso_x_comp*t_diff,0,max_zmp_comp)
     uTorsoZMPComp[2] = util.procFunc(uTorsoZMPComp[2]+ torso_y_comp*t_diff,0,max_zmp_comp)
@@ -472,6 +473,7 @@ function moveleg.process_ft_height(ft,imu,t_diff)
       uTorsoZMPComp[1] = uTorsoZMPComp[1] + torso_x_comp*t_diff
       uTorsoZMPComp[2] = uTorsoZMPComp[2] + torso_y_comp*t_diff
 
+print(unpack(uTorsoZMPComp))
 
       mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
 

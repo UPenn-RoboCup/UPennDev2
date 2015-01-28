@@ -103,10 +103,16 @@ local function update(key_code)
 		hcm.set_step_relpos({0.25,0,0})
 		hcm.set_step_zpr({0.05,0,0})
 
+		hcm.set_step_relpos({0.150,0,0})
+		hcm.set_step_zpr({0.05,0,0})
+
 		body_ch:send'stepover1'		
 
 	elseif key_char_lower==("6") then      
-		hcm.set_step_relpos({0.50,0,0})
+--		hcm.set_step_relpos({0.50,0,0})
+--		hcm.set_step_zpr({0.05,0,0})
+
+		hcm.set_step_relpos({0.30,0,0})
 		hcm.set_step_zpr({0.05,0,0})
 		
 		body_ch:send'stepover1'		

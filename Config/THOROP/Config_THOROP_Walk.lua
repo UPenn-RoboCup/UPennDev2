@@ -288,6 +288,12 @@ walk.supportX = 0.03 --better
 walk.torsoX = -0.02     -- com-to-body-center offset
 --]]
 
+
+
+--higher Y gain testing
+walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+
+
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

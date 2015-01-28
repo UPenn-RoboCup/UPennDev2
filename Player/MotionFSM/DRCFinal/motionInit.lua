@@ -93,7 +93,7 @@ function state.entry()
   end
 
   mcm.set_motion_state(1.03)  
-
+  hcm.set_legdebug_enable_balance({0,0})
 
   Body.set_waist_command_position({0,0})
 end
@@ -139,15 +139,13 @@ function state.update()
     err = err + math.abs(qWaistActual[2]- qWaistCommand[2])
 
     if t>t_last_debug+1 then
-      print(string.format("LLeg err: %.1f %.1f %.1f %.1f %.1f %.1f",
-    	unpack(vector.new(qLLegActual-qLLegCommand)*180/math.pi ) ))
-      print(string.format("RLeg err: %.1f %.1f %.1f %.1f %.1f %.1f",
-    	unpack(vector.new(qRLegActual-qRLegCommand)*180/math.pi )))
-       print("total err:",err*180/math.pi)
       t_last_debug=t
       --SJ: we do have some steady steady error due to faulty servo (maybe)
       --so if the totall error does not decrase, we just exit
-      if math.abs(last_error-err)<0.2*math.pi/180 then return 'done'  end
+      if math.abs(last_error-err)<0.2*math.pi/180 then 
+        print("Total joint reading err:",err*180/math.pi)
+        return 'done'  
+      end
       last_error = err
     end
   end

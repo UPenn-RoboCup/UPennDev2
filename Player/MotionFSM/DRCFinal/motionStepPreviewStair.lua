@@ -15,6 +15,7 @@ local libStep = require'libStep'
 local step_planner
 
 require'mcm'
+require'hcm'
 
 -- Keep track of important times
 local t_entry, t_update, t_last_step
@@ -50,7 +51,7 @@ local read_test = false
 local debug_on = false
 
 local ph_old = 0
-
+local leg_lowered=false
 
 local init_odometry = function(uTorso)
   wcm.set_robot_utorso0(uTorso)
@@ -98,10 +99,7 @@ function walk.entry()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, zLeft, zRight =
       step_planner:init_stance()
 
-
   zLeft0,zRight0 = zLeft,zRight
-  print(string.format("Current torso: %.2f %.2f",
-    uTorso_now[1],uTorso_now[2]))
 
   zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)
   
@@ -150,6 +148,9 @@ function walk.entry()
 
   hcm.set_motion_estop(0)
   ph_old = 0
+
+  leg_lowered=false
+
 end
 
 function walk.update()
@@ -257,6 +258,19 @@ function walk.update()
       touched = false
     end
 
+    --Auto lower the leg
+    if phSingle==1 and not leg_lowered then
+      if supportLeg==0 then 
+        print("Lowering right foot...")
+        hcm.set_legdebug_enable_balance({0,1})
+        leg_lowered = true
+      elseif supportLeg==1 then  
+        print("Lowering left foot...")
+        hcm.set_legdebug_enable_balance({1,0})        
+        leg_lowered = true        
+      end
+    end
+
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG
     if math.abs(roll)>roll_max then roll_max = math.abs(roll)  end
@@ -274,7 +288,7 @@ function walk.exit()
 
 
 
-print("uTorsoZMPComp CLEARED")
+  print("uTorsoZMPComp CLEARED")
   --Clear the zmp compensation value here -----------------------------------------
   local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
   local uTorso = mcm.get_status_uTorso()

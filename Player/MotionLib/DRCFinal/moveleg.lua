@@ -366,6 +366,7 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   -- Foot height differential adaptation
 
   local zf_touchdown = 50
+  local zf_touchdown_confirm = 50
   local zf_support = 150
 
   local z_shift_max = 0.05 --max 5cm difference
@@ -460,6 +461,12 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   --      elseif zmp_err_left[2]>0.01 then 
           --zvShift[2] = 0.01 --Raise the foot
       end
+      if ft.rf_z>zf_touchdown_confirm and uTorsoZMPComp[2]<-0.02 then
+        print("Touchdown detected")
+        enable_balance[2]=0
+        hcm.set_legdebug_enable_balance(enable_balance)
+        hcm.set_state_proceed(1) --auto advance!
+      end
     end
 
   elseif ft.rf_z>zf_support then  --right support
@@ -476,8 +483,13 @@ function moveleg.process_ft_height(ft,imu,t_diff)
 
       if ft.lf_z<zf_touchdown and uTorsoZMPComp[2]<0.02 then
         zvShift[1] = foot_z_vel --Lower left feet 
---      elseif zmp_err_right[1]<-0.01 then 
---        zvShift[1] = 0.01 --We are pushing too much. raise the foot
+      end
+
+      if ft.lf_z>zf_touchdown_confirm and uTorsoZMPComp[2]>0.02 then
+        print("Touchdown detected")
+        enable_balance[1]=0
+        hcm.set_legdebug_enable_balance(enable_balance)
+        hcm.set_state_proceed(1) --auto advance!
       end
     end
   end

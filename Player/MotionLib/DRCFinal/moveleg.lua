@@ -440,7 +440,7 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local max_zmp_comp = 0.04
 
   local foot_z_vel = -0.01
---  local foot_z_vel = -0.0
+  local foot_z_vel = -0.02
 
 
   if ft.lf_z>zf_support and ft.rf_z>zf_support then --double support
@@ -603,6 +603,12 @@ if IS_WEBOT and false then
     avShiftY[2]*r_const_ty*right_damping_factor    
       ,k_const_ty*ay_shift_db*right_damping_factor , 
       ay_vel_max)
+
+	--if foot is firmly on the ground, lower the gain a lot (to reduce vibration)
+	if ft.lf_z>100 then avShiftY[1] = avShiftY[1]*0.25  end
+	if ft.rf_z>100 then avShiftY[2] = avShiftY[2]*0.25  end
+
+
 
 --[[
   --foot idle, return to heel strike position

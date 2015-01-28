@@ -33,6 +33,9 @@ while running do
 	local aShiftX = mcm.get_walk_aShiftX()
 	local aShiftY = mcm.get_walk_aShiftY()
 
+	local zLeg = mcm.get_status_zLeg()
+
+
   	local enable_balance = hcm.get_legdebug_enable_balance()
 
 
@@ -58,6 +61,9 @@ while running do
 			LZMP[1]*100, LZMP[2]*100,RZMP[1]*100, RZMP[2]*100))
 
 		print(sformat("leg balancing: %d %d",enable_balance[1],enable_balance[2]))
+
+		print(sformat("Foot Height: Left %.1f Right %.1f cm",
+		zLeg[1]*100,zLeg[2]*100))
 
 		print(sformat("Foot angles: Left P%.1f R%.1f  Right P%.1f R%.1f",
 			RAD_TO_DEG*aShiftX[1],RAD_TO_DEG*aShiftY[1],RAD_TO_DEG*aShiftX[2],RAD_TO_DEG*aShiftY[2]            

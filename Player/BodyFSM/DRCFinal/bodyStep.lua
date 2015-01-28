@@ -193,7 +193,7 @@ function state.entry()
 
 
 
-  if uLeftTorso[1]>uRightTorso[1] then
+  if supportLeg == 1 then
     --Take right step
 
     local uRightTarget = util.pose_global(step_relpos, uRight)

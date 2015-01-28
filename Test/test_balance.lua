@@ -80,23 +80,17 @@ local function update(key_code)
 		body_ch:send'init'
 
 	elseif key_char_lower==("2") then
-		local enable_balance = hcm.get_legdebug_enable_balance()	
-		hcm.set_legdebug_enable_balance(
-			{1-enable_balance[1],enable_balance[2]})
-
-		print("Balance:",unpack(hcm.get_legdebug_enable_balance()))			
+		print("left lower")		
+		hcm.set_legdebug_enable_balance({1,0})
 						
 	elseif key_char_lower==("3") then
-		local enable_balance = hcm.get_legdebug_enable_balance()
-		hcm.set_legdebug_enable_balance(
-			{enable_balance[1],1-enable_balance[2]})
+		print("right lower")		
+		hcm.set_legdebug_enable_balance({0,1})
 
-		print("Balance:",unpack(hcm.get_legdebug_enable_balance()))
 
 	elseif key_char_lower==("4") then
-		local enable_gyro = hcm.get_legdebug_enable_gyro()
-		hcm.set_legdebug_enable_gyro(1-enable_gyro)
-		print("Gyro:",hcm.get_legdebug_enable_gyro())
+		print("balance off")
+		hcm.set_legdebug_enable_balance({0,0})
 
 
 	elseif key_char_lower==("5") then      

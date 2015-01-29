@@ -76,7 +76,7 @@ local c_meta = {
 
 local has_detection, detection = pcall(require, metadata.detection)
 -- Send which camera we are using
-detection.entry(metadata)
+if has_detection then detection.entry(metadata) end
 
 -- JPEG Compressor
 local c_grey = jpeg.compressor('gray')
@@ -166,13 +166,15 @@ end
 
 -- Open the camera
 local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
+os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto" 1')
 -- Set the params
 for i, param in ipairs(metadata.auto_param) do
 	local name, value = unpack(param)
-	camera:set_param(name, value)
-	unix.usleep(1e5)
-	local now = camera:get_param(name)
-	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
+	local before = camera:get_param(name)
+	local ok = camera:set_param(name, value)
+--	unix.usleep(1e5)
+--	local now = camera:get_param(name)
+	assert(ok, string.format('Failed to set %s: from %d to %d', name, before, value))
 end
 -- Set the params
 for i, param in ipairs(metadata.param) do
@@ -182,11 +184,13 @@ for i, param in ipairs(metadata.param) do
 	local now = camera:get_param(name)
 	-- TODO: exposure
 	local count = 0
-	while count<5 and now~=value do
-		camera:set_param(name, value)
-		unix.usleep(1e6)
+	--while count<5 and now~=value do
+	local ok
+	while count<5 and not ok do
+		ok = camera:set_param(name, value)
+		unix.usleep(1e5)
 		count = count + 1
-		now = camera:get_param(name)
+		--now = camera:get_param(name)
 	end
 	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
 end

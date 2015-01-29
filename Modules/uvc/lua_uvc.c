@@ -113,17 +113,25 @@ static int lua_uvc_set_param(lua_State *L) {
     int value = luaL_checkint(L, 3);
  
     int ret = v4l2_set_ctrl(ud, param, value);
-    lua_pushnumber(L, ret);
-    return 1;
+		if(ret==-1){
+			return 0;
+		} else {
+			lua_pushnumber(L, ret);
+			return 1;
+		}
 }
 
 static int lua_uvc_get_param(lua_State *L) {
     v4l2_device *ud = lua_checkuvc(L, 1);
     const char *param = luaL_checkstring(L, 2);
     int value;
-    v4l2_get_ctrl(ud, param, &value);
-    lua_pushnumber(L, value);
-    return 1;
+    int ret = v4l2_get_ctrl(ud, param, &value);
+		if(ret==-1){
+			return 0;
+		} else {
+			lua_pushnumber(L, value);
+			return 1;
+		}
 }
 
 static int lua_uvc_get_raw(lua_State *L) {

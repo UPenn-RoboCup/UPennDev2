@@ -120,7 +120,7 @@ table.insert(camera,
     -- Use the default vision parameters
     vision = vision,
     -- Run the standard RoboCup vision processing
-    detection = 'libVision',
+    --detection = 'libVision',
     --Logitech C920
     --lut = 'empty',
     --lut = 'm308_lightson',
@@ -133,8 +133,8 @@ table.insert(camera,
     focal_length = 395.17,
     focal_base = 640,
     auto_param = {
+--      {'Exposure, Auto', 1},
       {'White Balance Temperature, Auto', 0},
-      {'Exposure, Auto', 0},
       {'Power Line Frequency', 0},
       {'Exposure, Auto Priority', 0},
 			{'Focus, Auto', 0}

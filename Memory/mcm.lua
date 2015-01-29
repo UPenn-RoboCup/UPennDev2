@@ -158,6 +158,9 @@ shared.status.uRight = vector.zeros(3)
 
 shared.status.zLeg0 = vector.zeros(2) -- left, right height at the beginning of the step
 shared.status.zLeg = vector.zeros(2) -- left, right height of the last frame
+
+shared.status.zLegComp = vector.zeros(2) --used to compensate for leg lift for swinging leg due to flex
+
 shared.status.aLeg = vector.zeros(2) --foot pitch angles of the last frame
 shared.status.zGround = vector.zeros(0) -- if feet on a higher ground
 

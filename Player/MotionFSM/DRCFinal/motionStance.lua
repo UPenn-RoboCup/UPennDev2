@@ -31,7 +31,7 @@ local zLeft,zRight = 0,0
 
 
 local vel_movement = 0.02 --1cm per sec
-local vel_lift = 0.01 --1cm per sec
+local vel_lift = 0.03 --1cm per sec
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -56,8 +56,7 @@ function state.entry()
   hcm.set_legdebug_left({uLeft[1],uLeft[2],uLeft[3],zLeg[1]})
   hcm.set_legdebug_right({uRight[1],uRight[2],uRight[3],zLeg[2]})
   hcm.set_legdebug_torso({uTorso[1],uTorso[2]})
-  hcm.set_legdebug_torso_angle({0,0})
-  hcm.set_legdebug_enable_balance({0,0})
+  hcm.set_legdebug_torso_angle({0,0}) 
 
 end
 

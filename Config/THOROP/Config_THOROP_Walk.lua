@@ -152,7 +152,7 @@ zmpstep.param_k1={
 
 --Load robot specific configs
 local fname = {Config.PLATFORM_NAME,'/calibration'}  
-local c = require(table.concat(fname))
+c = require(table.concat(fname))
 if c.cal[HOSTNAME].legBias then walk.legBias = c.cal[HOSTNAME].legBias end
 if c.cal[HOSTNAME].headBias then walk.headBias = c.cal[HOSTNAME].headBias end
 
@@ -231,6 +231,13 @@ if not IS_WEBOTS then
   walk.supportX = 0.05 --better
   walk.supportY = 0.05
 
+
+
+--  walk.delay_threshold_angle = 2.5*math.pi/180
+  walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  walk.delay_factor = {0.8,1.7}
+
+
   if HOSTNAME=="teddy" then
     print "TEDDY"
     Config.supportY_preview = -0.02
@@ -249,31 +256,20 @@ else
 
   walk.kneePitchCompensation = 0*DEG_TO_RAD
   walk.footSagCompensation = {0.0,0.0}
+
+
+--  walk.delay_threshold_angle = 2.5*math.pi/180
+  walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  walk.delay_factor = {0.8,1.7}
+
 end
 
 
-
-
-
 --COM compensation testing
-
   walk.supportX = 0.03 
   walk.supportY = 0.02
-
-
-----------------------------
-
-
-
-
-
-
---[[
---some fix
-walk.bodyTilt = 6*DEG_TO_RAD
-walk.supportX = 0.03 --better
-walk.torsoX = -0.02     -- com-to-body-center offset
---]]
+--higher ankle Y gain (helps SS)
+  walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 
 ------------------------------------
 -- Associate with the table

@@ -112,6 +112,8 @@ shared.walk.kickfoot = vector.zeros(1)
 
 
 --feet shift/tilt info
+
+
 shared.walk.zShift = vector.zeros(2)
 shared.walk.zvShift = vector.zeros(2)
 
@@ -131,13 +133,8 @@ shared.walk.zSag = vector.zeros(2)
 
 --direct leg compensation info
 
-shared.walk.ankleshiftX = vector.zeros(2)
-shared.walk.ankleshiftY = vector.zeros(2)
-shared.walk.kneeshiftX = vector.zeros(2)
-shared.walk.hipshiftY = vector.zeros(2)
-
+shared.walk.angleShift=vector.zeros(4) --ankleX ankleY kneeX hipY
 shared.walk.delta_legs = vector.zeros(12)
-
 
 --torso x-y shift (to keep zmp in the middle)
 shared.walk.torsoShift = vector.zeros(2) 
@@ -161,11 +158,18 @@ shared.status.uRight = vector.zeros(3)
 
 shared.status.zLeg0 = vector.zeros(2) -- left, right height at the beginning of the step
 shared.status.zLeg = vector.zeros(2) -- left, right height of the last frame
+
+shared.status.zLegComp = vector.zeros(2) --used to compensate for leg lift for swinging leg due to flex
+
 shared.status.aLeg = vector.zeros(2) --foot pitch angles of the last frame
 shared.status.zGround = vector.zeros(0) -- if feet on a higher ground
 
 
 shared.status.uTorso = vector.zeros(3)
+shared.status.uTorsoZMPComp = vector.zeros(3) --zmp-based reactive torso compensation
+
+
+
 shared.status.uSupport = vector.zeros(3)
 shared.status.supportLeg = vector.zeros(1)
 shared.status.ph = vector.zeros(1)
@@ -176,6 +180,7 @@ shared.status.uTorsoVel = vector.zeros(3)
 
 --ZMP is stored here for external monitoring
 shared.status.uZMP = vector.zeros(3)
+shared.status.uZMPMeasured = vector.zeros(3)
 
 --We monitor whole mass points here
 shared.status.com_pos = vector.zeros(66)
@@ -186,6 +191,13 @@ shared.status.com_pos0 = vector.zeros(66)
 shared.status.com_pos1 = vector.zeros(66)
 shared.status.t0 = vector.zeros(1)
 shared.status.t1 = vector.zeros(1)
+
+
+--Normal forces and zmp error at each foot
+shared.status.forceZ = vector.zeros(2)
+shared.status.forceTotal = vector.zeros(2)
+shared.status.LZMP = vector.zeros(3)
+shared.status.RZMP = vector.zeros(3)
 
 
 

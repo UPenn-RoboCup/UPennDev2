@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014

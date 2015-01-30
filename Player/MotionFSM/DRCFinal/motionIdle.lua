@@ -71,8 +71,11 @@ function state.update()
   qRLeg, updatedR = Body.get_rleg_position()
   qWaist, updatedW = Body.get_waist_position()
 
-  Body.set_lleg_command_position(qLLeg)
-  Body.set_rleg_command_position(qRLeg)
+
+--DON'T set potision as read positions tend to be courrupted (leg jump)
+
+--  Body.set_lleg_command_position(qLLeg)
+--  Body.set_rleg_command_position(qRLeg)
 
 end
 

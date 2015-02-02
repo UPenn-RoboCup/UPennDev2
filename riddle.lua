@@ -44,13 +44,13 @@ end
 
 -- Shared memory
 local shm_send = function(t, func)
-  local tbl = {shm = t.shm, access = func}
+  local seg, key = func:match('_(%a+)_(%g+)')
+  local tbl = {shm = t.shm, seg = seg, key = key}
   return function(val)
 		tbl.val = val
 		-- Use REQ/REP to get data
 		local ret = rpc_req:send(mp.pack(tbl))
 		local data = unpack(rpc_req:receive())
-    print('DATA', type(data))
     local result = mp.unpack(data)
     return type(result)=='table' and vector.new(result) or result
   end

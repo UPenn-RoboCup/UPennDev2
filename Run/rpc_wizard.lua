@@ -38,8 +38,8 @@ local function process_rpc(rpc)
   -- Shared memory modification
   if rpc.shm then
     local mem = _G[rpc.shm]
-    local seg = rpc.seg
     if type(mem)~='table' then return'Invalid memory' end
+		local seg = rpc.seg
     if type(seg)~='string' then return'Invalid memory segment' end
     local segment = mem[seg..'Keys']
     if type(rpc.key)~='string' then return'Invalid memory segment key' end

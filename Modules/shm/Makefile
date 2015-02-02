@@ -2,3 +2,4 @@
 LIBNAME=shm
 include ../../Makefile.inc
 LDFLAGS+=$(LIBRT)
+INCLUDES+=-I/usr/local

@@ -97,7 +97,7 @@ public:
     timing_acc_n = 0.0;
     timing_current_start = 0.0;
 
-    enable_bilateral_filter = false;
+    enable_bilateral_filter = true;
     enable_edge_filter = false;
 
     flip_ptables = true;
@@ -305,7 +305,9 @@ public:
   // TODO: No cvMat
   void filterPixelStage1(int x, int y, const float* m, float* m_out, bool& bilateral_max_edge_test)    
   {
-    const float *m_ptr = &m[9 * (y * 512 + x)];
+    
+    int offset = y * 512 + x;
+    const float *m_ptr = &m[9 * offset];
     
     bilateral_max_edge_test = true;
 
@@ -360,7 +362,7 @@ public:
             }
 
             // New code
-            const float *other_m_ptr = NULL;
+            const float *other_m_ptr = &m[9 * ((y+yi) * 512 + (x+xi))] + offset;
             // TODO: no cvMat
             //const float *other_m_ptr = m.ptr<float>(y + yi, x + xi) + offset;
             
@@ -815,11 +817,12 @@ void CpuDepthPacketProcessor::process(const DepthPacket &packet)
 
   impl_->startTiming();
   
-  // New code
+  // TODO: May not need sizeof(float)... since a vector type float
   std::vector<float> m (424 * 512 * (9 * sizeof(float)));
-  float *m_ptr = &m[0];
-  // TODO: m_filtered: same as m, m_max_edge_test: 424*415*1 filled with 1s
+  std::vector<float> m_filtered(424 * 512 * (9 * sizeof(float)));
+  std::vector<unsigned char> m_max_edge_test (424 * 512 * sizeof(unsigned char));
   
+  float *m_ptr = &m[0];
   for(int y = 0; y < 424; ++y)
   {
     for(int x = 0; x < 512; ++x, m_ptr += 9)
@@ -832,32 +835,22 @@ void CpuDepthPacketProcessor::process(const DepthPacket &packet)
   if(impl_->enable_bilateral_filter)
   {
     // New Code
-    float *m_filtered_ptr = NULL;
-    unsigned char *m_max_edge_test_ptr = NULL;
-    
-    // TODO: no cvMat
-    //float *m_filtered_ptr = m_filtered.ptr<float>();
-    //unsigned char *m_max_edge_test_ptr = m_max_edge_test.ptr<unsigned char>();
+    float *m_filtered_ptr = &m_filtered[0];
+    unsigned char *m_max_edge_test_ptr = &m_max_edge_test[0];
 
-    for(int y = 0; y < 424; ++y)
+    for(int y = 0; y < 424; ++y){
       for(int x = 0; x < 512; ++x, m_filtered_ptr += 9, ++m_max_edge_test_ptr)
       {
         bool max_edge_test_val = true;
-        // TODO: no cvMat
-        //impl_->filterPixelStage1(x, y, m, m_filtered_ptr, max_edge_test_val);
-        
-        // TODO: no cvMat
-        //*m_max_edge_test_ptr = max_edge_test_val ? 1 : 0;
+        impl_->filterPixelStage1(x, y, &m[0], m_filtered_ptr, max_edge_test_val);
+        *m_max_edge_test_ptr = max_edge_test_val ? 1 : 0;
       }
-    // TODO: no cvMat
-    //m_ptr = m_filtered.ptr<float>();
+    }
+    m_ptr = &m_filtered[0];
   }
-  else /* NOTE: Is this necessary? */
+  else
   {
-    // New code
     m_ptr = &m[0];
-    // TODO: no cvMat
-    //m_ptr = m.ptr<float>();
   }
 
   // New code

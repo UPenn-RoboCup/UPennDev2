@@ -20,6 +20,10 @@ local sformat = string.format
 -- Timeouts
 local WRITE_TIMEOUT = 1 / 250
 local READ_TIMEOUT = 1 / 250
+if OPERATING_SYSTEM=='darwin' then
+  WRITE_TIMEOUT = 1 / 60
+  READ_TIMEOUT = 1 / 60
+end
 
 -- Setup the channels
 local IS_THREAD = CTX and not arg
@@ -330,6 +334,7 @@ end
 -- Position Packet
 local function parse_read_position(pkt, bus)
 	-- TODO: Nothing to do if an error
+	if not pkt then return end
 	--if pkt.error ~= 0 then return end
 	local m_id = pkt.id
 	local read_j_id = m_to_j[m_id]
@@ -469,8 +474,9 @@ local function do_external(request, bus)
 						j_id, pos = parse_read_position(status, bus)
 						if not j_id then
 							print(get_time(), "BAD TORQUE ENABLE POS READ", m_id, status and status.error)
+						else
+							cp_ptr[j_id - 1] = p_ptr[j_id - 1]
 						end
-						cp_ptr[j_id - 1] = p_ptr[j_id - 1]
 					end
 				else
 					print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)

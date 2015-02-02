@@ -202,12 +202,12 @@ function simple_ipc.new_requester(channel, target)
   assert(ch_socket, 'REQUEST | Bad socket!')
   -- Attach to the channel
 	local is_bind = false
-  --if inverted then
-  --  ch_socket:bind(ch_name)
-	--	is_bind = true
-  --else
+  if inverted then
+    ch_socket:bind(ch_name)
+		is_bind = true
+  else
     ch_socket:connect(ch_name)
-  --end
+  end
 	-- Return the table
   local obj = {
 		socket = ch_socket,

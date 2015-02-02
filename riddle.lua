@@ -23,7 +23,7 @@ for _,lib in ipairs(libs) do
 end
 
 -- Requester
-local rpc_req = si.new_requester(Config.net.robot.wired, Config.net.rpc.tcp_reply)
+local rpc_req = si.new_requester(Config.net.rpc.tcp_reply, Config.net.robot.wired)
 print('REQ')
 print(util.ptable(rpc_req))
 -- UDP
@@ -46,17 +46,11 @@ end
 local shm_send = function(t, func)
   local tbl = {shm = t.shm, access = func}
   return function(val)
-		if val then tbl.val=val end
-		local packed = mp.pack(tbl)
-		if val then
-			-- Just PUB to the robot for shm set
-			tbl.val=val
-			local ret = rpc_pub:send(mp.pack(tbl))
-			return
-		end
+		tbl.val = val
 		-- Use REQ/REP to get data
-		rpc_req:send(packed)
-		local data = rpc_req:receive()
+		local ret = rpc_req:send(mp.pack(tbl))
+		local data = unpack(rpc_req:receive())
+    print('DATA', type(data))
     local result = mp.unpack(data)
     return type(result)=='table' and vector.new(result) or result
   end

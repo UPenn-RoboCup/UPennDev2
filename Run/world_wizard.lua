@@ -4,7 +4,7 @@
 -- (c) Stephen McGill 2014    --
 ---------------------------
 dofile'../include.lua'
-local Body = require(Config.dev.body)
+local Body = require(Config.body)
 local lW = require'libWorld'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'

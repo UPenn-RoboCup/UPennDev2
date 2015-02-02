@@ -8,8 +8,7 @@ Config.PLATFORM_NAME = 'YouBot'
 -----------------------
 -- Device Interfaces --
 -----------------------
-Config.dev = {}
-Config.dev.body = 'YouBotBody'
+Config.body = 'YouBotBody'
 
 ---------------------------
 -- Complementary Configs --

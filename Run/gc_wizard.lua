@@ -6,7 +6,7 @@
 dofile'../include.lua'
 local libGC = require'GameControlReceiver.ffi'
 require'gcm'
-local Body = require(Config.dev.body)
+local Body = require(Config.body)
 -- Cache some functions
 local get_time = Body.get_time
 local util = require'util'

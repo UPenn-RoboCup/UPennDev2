@@ -4,7 +4,7 @@
 -- (c) Stephen McGill    --
 ---------------------------
 dofile'../fiddle.lua'
-local Body = require(Config.dev.body)
+local Body = require(Config.body)
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep
 -- Cleanly exit on Ctrl-C

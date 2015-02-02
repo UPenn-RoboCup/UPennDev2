@@ -19,12 +19,20 @@ fsm.enabled = {
   'Lidar'
 }
 
---SJ: now we can have multiple FSM options 
+--SJ: now we can have multiple FSM options
 fsm.select = {
   Arm = 'Teach',
   Body = 'Teach',
   Head = 'Teach',
   Motion = 'Teach'
+}
+
+-- Custom libraries
+fsm.libraries = {
+  MotionLib = 'DRCFinal',
+  --MotionLib = 'Teach',
+  ArmLib = 'Teach',
+  World = 'Teach'
 }
 
 fsm.Body = {
@@ -130,15 +138,15 @@ fsm.Motion = {
   {'motionJoin', 'done', 'motionLower'},
 }
 
-if Config.libs.MotionLib == 'RoboCup' then
+if Config.libraries.MotionLib == 'RoboCup' then
   fsm.select.Motion = 'RoboCup'
   fsm.Motion = {
     {'motionIdle', 'timeout', 'motionIdle'},
     {'motionIdle', 'stand', 'motionInit'},
     {'motionIdle', 'bias', 'motionBiasInit'},
 
-    {'motionBiasInit', 'done', 'motionBiasIdle'}, 
-    {'motionBiasIdle', 'stand', 'motionInit'}, 
+    {'motionBiasInit', 'done', 'motionBiasIdle'},
+    {'motionBiasIdle', 'stand', 'motionInit'},
 
     {'motionInit', 'done', 'motionStance'},
 
@@ -164,7 +172,7 @@ if Config.libs.MotionLib == 'RoboCup' then
     {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
     {'motionHybridWalkKick', 'done', 'motionStance'},
     {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
-  
+
     --  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
     --  {'motionStepNonstop', 'done', 'motionStance'},
 
@@ -177,10 +185,10 @@ elseif Config.libs.MotionLib == 'DRCFinal' then
     {'motionIdle', 'stand', 'motionInit'},
     {'motionInit', 'done', 'motionStance'},
 
-    {'motionIdle', 'bias', 'motionBiasInit'},  
+    {'motionIdle', 'bias', 'motionBiasInit'},
     {'motionStance', 'bias', 'motionBiasInit'},
-    {'motionBiasInit', 'done', 'motionBiasIdle'}, 
-    {'motionBiasIdle', 'stand', 'motionInit'}, 
+    {'motionBiasInit', 'done', 'motionBiasIdle'},
+    {'motionBiasIdle', 'stand', 'motionInit'},
 
 
     {'motionStance', 'preview', 'motionStepPreview'},

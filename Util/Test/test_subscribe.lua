@@ -3,12 +3,12 @@ dofile'../../include.lua'
 local p
 local util = require'util'
 local simple_ipc = require 'simple_ipc'
-local test_channel = simple_ipc.new_subscriber('test')
---local test_channel = simple_ipc.new_subscriber(55555,'localhost')
+--local test_channel = simple_ipc.new_subscriber('test')
+local test_channel = simple_ipc.new_subscriber(43210,'192.168.123.222')
 test_channel.callback = function(s)
 	local c = p.lut[s]
 	local data, has_more = c:receive()
-	print(s,1, data, has_more)
+	print(s, 1, data, has_more)
 end
 
 print('-- test_channel')
@@ -30,5 +30,5 @@ end
 
 while true do
   local x = test_channel:receive()
-  print('Got',#x)
+  print('Got',#x, x)
 end

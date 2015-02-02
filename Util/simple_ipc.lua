@@ -41,7 +41,7 @@ local type2prefix = {
 	end,
 	number = function(n, target)
 		-- TODO: Specify inverted
-		local name, is_inverted = nil, true
+		local name, is_inverted = nil, false
 		if type(target)~='string' then
 			name = 'tcp://*:'..n
 		else

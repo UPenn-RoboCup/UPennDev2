@@ -91,6 +91,14 @@ local function procFunc(a,deadband,maxvalue)
   return b
 end
 
+
+local function p_feedback(org,target, p_gain, max_vel, dt)
+  local err = target-org
+  local vel = math.max(-max_vel,math.min( max_vel, err*p_gain ))
+  return org + vel*dt
+end
+
+
 function util.clamp_vector(values,min_values,max_values)
 	local clamped = vector.new()
 	for i,v in ipairs(values) do
@@ -320,6 +328,24 @@ function util.bezier( alpha, s )
   return value
 end
 
+function util.spline(breaks,coefs,ph)
+  local x_offset, xf = 0,0
+  for i=1,#breaks do
+    if ph<=breaks[i] then
+      local x=ph - x_offset
+      xf = coefs[i][1]*x^3 + coefs[i][2]*x^2 + coefs[i][3]*x + coefs[i][4]
+      break;
+    end
+    x_offset = breaks[i]    
+  end
+  return xf
+end
+
+function util.get_ph_single(ph,phase1,phase2)
+  return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))
+end
+
+
 function util.tablesize(table)
   local count = 0
   for _ in pairs(table) do count = count + 1 end
@@ -394,5 +420,6 @@ util.color = function(str,fg,bg,blink)
 end
 
 util.procFunc = procFunc
+util.p_feedback = p_feedback
 
 return util

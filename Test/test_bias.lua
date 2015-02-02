@@ -1,6 +1,8 @@
---(c) 2014 Team THORwIn
-
-dofile'include.lua'
+#!/usr/bin/env luajit
+-- (c) 2014 Team THORwIn
+local ok = pcall(dofile,'../fiddle.lua')
+if not ok then dofile'fiddle.lua' end
+--dofile'include.lua'
 
 -- Important libraries in the global space
 local libs = {
@@ -137,7 +139,7 @@ function process_keyinput()
       unpack(vector.new(legBias)*RAD_TO_DEG)))
 
       --Append at the end of calibration file
-      outfile=assert(io.open("./Config/THOROP/calibration.lua","a+"));
+      outfile=assert(io.open("../Config/THOROP/calibration.lua","a+"));
       --TODO: which one should we use?
       data=string.format("\n\n-- Updated date: %s\n" , os.date() );
       data=data..string.format("cal[\"%s\"].legBias=vector.new({\n   ",unix.gethostname());

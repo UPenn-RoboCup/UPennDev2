@@ -126,6 +126,7 @@ else
 	Config.chain[left_leg.name] = left_leg
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
+  -- Dummy arms are the two MX-106R motors per arm
   if Config.USE_DUMMY_ARMS then
     -- Not set up yet...
 	  --table.insert(Config.chain, arms_rc)

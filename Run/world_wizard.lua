@@ -4,7 +4,7 @@
 -- (c) Stephen McGill 2014    --
 ---------------------------
 dofile'../include.lua'
-local Body = require(Config.body)
+local Body = require('Body')
 local lW = require'libWorld'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
@@ -21,10 +21,7 @@ else
 	operator = Config.net.operator.wired_broadcast
 end
 
-local ENABLE_SEND = false 
-if Config.enable_monitor then
-	ENABLE_SEND = true
-end
+local ENABLE_SEND = false
 local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
 -- SHM
 require'wcm'

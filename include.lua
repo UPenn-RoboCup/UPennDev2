@@ -78,19 +78,18 @@ OPERATING_SYSTEM = unix.uname():lower()
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs"
 
--- Use functional idioms
-require "fun" ()
-
 -- include platform specific modules
-require'Config'
+local ok, Config = pcall(require, 'Config')
+if not ok then
+  print(Config)
+  error()
+end
 PLATFORM_NAME = Config.PLATFORM_NAME
 ROBOT_HOME = HOME..'/Robots/'..PLATFORM_NAME
 package.path  = ROBOT_HOME..'/?.lua;'..package.path
 package.cpath = ROBOT_HOME..'/?.so;'..package.cpath
 
 DONE_INCLUDE = true
-
-collectgarbage()
 
 -- Print out the globally available variables, when using include.lua
 --[[
@@ -108,5 +107,6 @@ function print_env()
 end
 print_env()
 --]]
-return Config
 
+collectgarbage()
+return Config

@@ -12,7 +12,7 @@ local libs = {
 	'torch',
 	'util',
 	'vector',
-	'Body',
+	'Body'
 }
 -- Load the libraries
 for _,lib in ipairs(libs) do

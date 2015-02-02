@@ -138,7 +138,7 @@ fsm.Motion = {
   {'motionJoin', 'done', 'motionLower'},
 }
 
-if Config.libraries.MotionLib == 'RoboCup' then
+if fsm.libraries.MotionLib == 'RoboCup' then
   fsm.select.Motion = 'RoboCup'
   fsm.Motion = {
     {'motionIdle', 'timeout', 'motionIdle'},
@@ -178,7 +178,7 @@ if Config.libraries.MotionLib == 'RoboCup' then
 
     {'motionHybridWalkEnd', 'done', 'motionStance'},
   }
-elseif Config.libs.MotionLib == 'DRCFinal' then
+elseif fsm.libraries.MotionLib == 'DRCFinal' then
   fsm.select.Motion = 'DRCFinal'
   fsm.Motion = {
     {'motionIdle', 'timeout', 'motionIdle'},
@@ -203,6 +203,8 @@ elseif Config.libs.MotionLib == 'DRCFinal' then
     {'motionHybridWalkEnd', 'done', 'motionStance'},
   }
 end
+
+
 
 Config.fsm = fsm
 

@@ -1,8 +1,5 @@
 assert(Config, 'Need a pre-existing Config table!')
 
-
-print("FSM")
-
 local fsm = {}
 
 -- Do we disable FSMs?
@@ -11,6 +8,8 @@ fsm.disabled = false
 -- Do we disable Kick?
 --fsm.disable_kick = true
 fsm.disable_kick = false
+
+Config.torque_legs = true
 
 -- Update rate in Hz
 fsm.update_rate = 100
@@ -24,9 +23,9 @@ fsm.enabled = {
 --  'Lidar'
 }
 
---SJ: now we can have multiple FSM options 
+--SJ: now we can have multiple FSM options
 fsm.select = {
-  Arm = 'DRCFinal',  
+  Arm = 'DRCFinal',
   Head = 'DRCFinal',
   Body = 'DRCFinal',
   Motion = 'DRCFinal'
@@ -35,7 +34,7 @@ fsm.select = {
 --SJ: custom library selection moved to HERE
 fsm.libraries = {
   ArmLib = 'DRCFinal',
-  MotionLib = 'DRCFinal',  
+  MotionLib = 'DRCFinal',
   World = 'DRCFinal'
 }
 
@@ -47,7 +46,7 @@ fsm.Lidar = {
   {'lidarPan', 'stop', 'lidarIdle'},
 }
 
-fsm.Head = {  
+fsm.Head = {
   {'headIdle', 'teleop', 'headTeleop'},
 }
 
@@ -57,7 +56,7 @@ fsm.Body = {
 
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
   {'bodyStepPlace',   'done', 'bodyStop'},
-  
+
   {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
 }
@@ -69,7 +68,7 @@ fsm.Arm = {
 
   {'armInit', 'done', 'armPose1'},
 
-  
+
   {'armPose1', 'teleop', 'armTeleop'},
   --{'armPose1', 'teleop', 'armIKTest'},
   --{'armIKTest', 'teleop', 'armPose1'},
@@ -118,10 +117,10 @@ fsm.Motion = {
   {'motionIdle', 'stand', 'motionInit'},
   {'motionInit', 'done', 'motionStance'},
 
-  {'motionIdle', 'bias', 'motionBiasInit'},  
+  {'motionIdle', 'bias', 'motionBiasInit'},
   {'motionStance', 'bias', 'motionBiasInit'},
-  {'motionBiasInit', 'done', 'motionBiasIdle'}, 
-  {'motionBiasIdle', 'stand', 'motionInit'}, 
+  {'motionBiasInit', 'done', 'motionBiasIdle'},
+  {'motionBiasIdle', 'stand', 'motionInit'},
 
 
   {'motionStance', 'preview', 'motionStepPreview'},

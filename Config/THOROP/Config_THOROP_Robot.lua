@@ -51,7 +51,7 @@ local right_arm = {
   ttyname = '/dev/ttyUSB0',
   m_ids = {1,3,5,7,9,11,13,
         --head
---        29, 30,
+        29, 30,
 				-- gripper
 --				66, 67
         },
@@ -64,7 +64,7 @@ local left_arm = {
   -- lidar
   37,
 	-- gripper
---  66, 67
+  --66, 67
 },
   enable_read = true
 }
@@ -98,10 +98,10 @@ local arms_rc = {
 }
 
 if OPERATING_SYSTEM=='darwin' then
-  right_arm.device = '/dev/cu.usbserial-FTVTLUY0A'
-  left_arm.device  = '/dev/cu.usbserial-FTVTLUY0B'
-  right_leg.device = '/dev/cu.usbserial-FTVTLUY0C'
-  left_leg.device  = '/dev/cu.usbserial-FTVTLUY0D'
+  right_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0A'
+  left_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0B'
+  right_leg.ttyname = '/dev/cu.usbserial-FTVTLUY0C'
+  left_leg.ttyname  = '/dev/cu.usbserial-FTVTLUY0D'
 end
 if ONE_CHAIN then
   -- Add the one chain support
@@ -126,6 +126,7 @@ else
 	Config.chain[left_leg.name] = left_leg
   table.insert(Config.chain, right_leg)
   table.insert(Config.chain, left_leg)
+  -- Dummy arms are the two MX-106R motors per arm
   if Config.USE_DUMMY_ARMS then
     -- Not set up yet...
 	  --table.insert(Config.chain, arms_rc)
@@ -245,7 +246,8 @@ servo.direction = vector.new({
 
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
-  -180,135, -- Head
+  --0,140.41837037037, -- Head
+  0,0, -- Head
   -90,90,-90,45,90,0,0, --LArm
   0,0,0,-45,0,0, --LLeg
   0,0,0,45,0,0, --RLeg
@@ -342,6 +344,7 @@ if Config.USE_DUMMY_ARMS then
 		-1, -- Lidar pan
 	})
 	--
+	print('DUMMY ARMS RAD OFFSET')
 	servo.rad_offset = vector.new({
 		-180,135, -- Head
 		0, -90, --LArm

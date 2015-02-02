@@ -10,9 +10,28 @@ local DEG_TO_RAD = math.pi/180
 local shared_data = {}
 local shared_data_sz = {}
 
+local zeros = require'vector'.zeros
+local ones = require'vector'.ones
+
+local shared_data = {}
+local shared_data_sz = {}
+
+shared_data.teleop = {
+  head = zeros(2),
+  -- Assume 7DOF arm
+  larm = zeros(7),
+  rarm = zeros(7),
+}
+
+shared_data.assist = {
+  -- Cylinder: [x center, y center, z center, radius, height]
+  cylinder = zeros(5),
+}
+
 shared_data.guidance={}
 shared_data.guidance.color = 'CYAN'
-shared_data.guidance.t = vector.zeros(1)
+shared_data.guidance.t = zeros(1)
+
 
 shared_data.audio={}
 shared_data.audio.request = vector.zeros(1)
@@ -249,18 +268,6 @@ shared_data.legdebug.enable_z_compliance=vector.zeros(1)
 shared_data.legdebug.enable_a_compliance=vector.zeros(1) 
 
 shared_data.legdebug.torso_angle=vector.zeros(2) --pitch roll
-
-
-
-
-
-
-
-shared_data.step={}
-shared_data.step.supportLeg=vector.zeros(1)
-shared_data.step.relpos = vector.zeros(3)	--x y a
-shared_data.step.zpr = vector.zeros(2)		--z p r
-
 
 
 

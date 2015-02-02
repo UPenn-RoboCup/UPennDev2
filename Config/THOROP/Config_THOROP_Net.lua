@@ -24,7 +24,7 @@ local net = {
 
 -- IP Addresses
 -- TODO: Find IP of this computer
-if Config.use_localhost then	
+if Config.use_localhost then
   net.robot = {
 		wired   = 'localhost',
 		wireless = 'localhost',
@@ -53,7 +53,6 @@ end
 -- Ports for Remote Procedure Calls
 net.rpc = {
 	tcp_reply = 55555,
-	tcp_subscribe = 55558,
 	udp = 55556,
 	uds = 'rpc',
 }

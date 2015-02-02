@@ -22,15 +22,14 @@ for _,lib in ipairs(libs) do
   end
 end
 
-local ip, port
 -- Requester
-ip, port = Config.net.robot.wired, Config.net.reliable_rpc
-print('REQ |', ip, port)
-local rpc_req = si.new_requester(port, ip)
+local rpc_req = si.new_requester(Config.net.robot.wired, Config.net.rpc.tcp_reply)
+print('REQ')
+print(util.ptable(rpc_req))
 -- UDP
-ip, port = Config.net.robot.wired, Config.net.unreliable_rpc
-print('UDP |', ip, port)
-local rpc_udp = require'udp.ffi'.new_sender(ip, port)
+print('UDP')
+local rpc_udp = si.new_sender(Config.net.robot.wired, Config.net.rpc.udp)
+print(util.ptable(rpc_udp))
 
 -- FSM communicationg
 fsm_chs = {}

@@ -2,17 +2,23 @@
 dofile'../fiddle.lua'
 local ptable = require'util'.ptable
 local ports = Config.net.rpc
+local wait_channels = {}
 -- Must reply to these TCP requests
+print('REP TCP')
 local tcp_rep = si.new_replier(ports.tcp_reply)
-print('RPC | REP Receiving on', ports.tcp_reply)
--- Need not reply to these UDP requests
-local udp_sub = si.new_receiver(ports.udp)
-print('RPC | UDP Receiving on', ports.udp)
+table.insert(wait_channels, tcp_rep)
+print(ptable(tcp_rep))
 -- Must reply to these UNIX domain socket requests
+print('REP local')
 local uds_rep = si.new_replier(ports.uds)
-print('RPC | REP Receiving on', ports.uds)
+table.insert(wait_channels, uds_rep)
+print(ptable(uds_rep))
+-- Need not reply to these UDP requests
+print('UDP')
+local udp_sub = si.new_receiver(ports.udp)
+table.insert(wait_channels, udp_sub)
+print(ptable(udp_sub))
 -- Setup the poller
-local wait_channels = {tcp_rep, udp_sub, uds_rep}
 local channel_poll
 -- Gracefully exit on Ctrl-C
 local function shutdown()
@@ -129,7 +135,9 @@ end
 -- Assign the callback
 tcp_rep.callback = process_zmq
 uds_rep.callback = process_zmq
-udp_sub.callback = process_udp
+if udp_sub then
+	udp_sub.callback = process_udp
+end
 
 -- Run the poller
 channel_poll = si.wait_on_channels(wait_channels)

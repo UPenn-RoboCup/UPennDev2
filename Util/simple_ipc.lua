@@ -236,12 +236,12 @@ function simple_ipc.new_replier(channel, target)
   assert(ch_socket, 'REPLIER | Bad socket!')
 	-- Attach to the channel
 	local is_bind = false
-	--if inverted then
-	--	ch_socket:connect(ch_name)
-	--else
+	if inverted then
+		ch_socket:connect(ch_name)
+	else
 		ch_socket:bind(ch_name)
 		is_bind = true
-	--end
+	end
 	-- Return the table
 	local obj = {
 		socket = ch_socket,

@@ -34,7 +34,7 @@ Robot {
   controller IS controller
   controllerArgs IS controllerArgs
   description "Robotis THOR-OP"
-  
+
   # Use a simple bounding object for the center of mass area
   boundingObject Transform {
 		translation 0 -0.04 -0.029
@@ -45,7 +45,8 @@ Robot {
   # Unsure why there is physics here...
   physics Physics {
     density -1
-		mass 1
+		#mass 1
+    mass 11 #Temporary fix to match COM closely to actual robot
     centerOfMass [0 0.1557 -0.0208]
   }
 
@@ -97,11 +98,11 @@ Robot {
       byteSize 96
     }
     ## End of sensors that are children of the root
-		
+
 		## The Chest is occupies the same position as the root
     CHEST{ scale 0.001 0.001 0.001 }
     ## End of chest this is root child
-		
+
     ## Begin the Legs
     DEF Torso_pitch HingeJoint {
 			device RotationalMotor {
@@ -161,7 +162,7 @@ Robot {
 									translation 0 -0.0875 0
 									scale 0.001 0.001 0.001
 								}
-								
+
 ## Begin Right Leg
 								DEF Right_hip_yaw HingeJoint {
 									device RotationalMotor {
@@ -195,7 +196,7 @@ Robot {
 											LEFT_HIP_YAW {
 												translation 0 0.063 0
 												scale 0.001 0.001 0.001
-											}													    
+											}
 											DEF Right_hip_roll HingeJoint {
 												device RotationalMotor {
 													name "PelvR"
@@ -383,20 +384,23 @@ Robot {
 																										FOOT {
 																											scale 0.001 0.001 0.001
 																										}
-																										DEF Right_ankle_force TouchSensor {
-																											translation 0 -0.09 0
-																											name "RAnkle_force"
+                                                    DEF Right_ankle_force TouchSensor {
+                                                      translation 0 -0.09 0
+                                                      lookupTable   [ 0 0 0, 5000 5000 0 ]
+                                                      name "RAnkle_force"
                                                       contactMaterial IS footContactMaterial
-																											boundingObject Transform {
-																												translation 0 -0.003 0.0177
-																												children [
-																													Box {size 0.147 0.05 0.262}
-																												]
-																											}
-																											physics Physics {}
-																											type "force-3d"
-																										}
-#
+                                                      boundingObject Transform {
+                                                        translation 0 -0.003 0.0177
+                                                        children [
+                                                          Box {size 0.147 0.05 0.262}
+                                                        ]
+                                                      }
+                                                      physics Physics {
+                                                        density -1
+                                                        mass 0.1
+                                                      }
+                                                      type "force-3d"
+                                                    }
       																							DEF Right_ankle_yaw HingeJoint {
       																								device RotationalMotor {
       																									name "right_ankle_yaw"
@@ -415,7 +419,10 @@ Robot {
                                                             }
                                                           ]
                                                         }
-      																									physics Physics {}
+                                                        physics Physics {
+                                                          density -1
+                                                          mass 0.1
+                                                        }
                                                       }
                                                     }
 #
@@ -438,7 +445,7 @@ Robot {
 									}
 								}
 								## End Right Leg
-								
+
 								## Begin  Left Leg
 								DEF Left_hip_yaw HingeJoint {
 									device RotationalMotor {
@@ -472,7 +479,7 @@ Robot {
 											LEFT_HIP_YAW {
 												translation 0 0.063 0
 												scale 0.001 0.001 0.001
-											}													    
+											}
 											DEF Left_hip_roll HingeJoint {
 												device RotationalMotor {
 													name "PelvL"
@@ -659,19 +666,23 @@ Robot {
 																										FOOT {
 																											scale 0.001 0.001 0.001
 																										}
-																										DEF Left_ankle_force TouchSensor {
-																											translation 0 -0.09 0
-																											name "LAnkle_force"
+                                                    DEF Left_ankle_force TouchSensor {
+                                                      translation 0 -0.09 0
+                                                      lookupTable   [ 0 0 0, 5000 5000 0 ]
+                                                      name "LAnkle_force"
                                                       contactMaterial IS footContactMaterial
-																											boundingObject Transform {
-																												translation 0 -0.003 0.0177
-																												children [
-																													Box {size 0.147 0.05 0.262}
-																												]
-																											}
-																											physics Physics {}
-																											type "force-3d"
-																										}
+                                                      boundingObject Transform {
+                                                        translation 0 -0.003 0.0177
+                                                        children [
+                                                          Box {size 0.147 0.05 0.262}
+                                                        ]
+                                                      }
+                                                      physics Physics {
+                                                        density -1
+                                                        mass 0.1
+                                                      }
+                                                      type "force-3d"
+                                                    }
 #
       																							DEF Left_ankle_yaw HingeJoint {
       																								device RotationalMotor {
@@ -691,7 +702,10 @@ Robot {
                                                             }
                                                           ]
                                                         }
-      																									physics Physics {}
+                                                        physics Physics {
+                                                          density -1
+                                                          mass 0.1
+                                                        }
                                                       }
                                                     }
 #
@@ -714,12 +728,12 @@ Robot {
 									}
 								}
 								# End Left Leg
-							
-							
-							
-							
-							
-							
+
+
+
+
+
+
 						]
 						}
 					}
@@ -728,8 +742,8 @@ Robot {
 		}
 		## End the Legs
 
-		
-		
+
+
     ## The Head is a root child
 		DEF Neck HingeJoint {
 			device RotationalMotor {
@@ -791,8 +805,8 @@ Robot {
               #TODO: add a pitch angle
       			  maxRange 4
       			}
-            
-            
+
+
 #            Solid {
 #							translation 0 0.161 0
 ##							rotation -1 0 0 -0.17
@@ -831,19 +845,19 @@ Robot {
 #									pixelSize IS cameraPixelSize
 #									near 0.02
 #								}
-#                
+#
 #							] # End of the Head Children
 #						} # End of the Head endpoint
-            
-            
+
+
 					} # End of the Head HingeJoint
 
 				] # End of the Head Children
 			} # End of the Head endpoint
 		} # End of the Head HingeJoint
     # End of the Head
-    
-    ## Begin the Chest lidar chain  
+
+    ## Begin the Chest lidar chain
 		DEF Chest_Pan HingeJoint {
 			device RotationalMotor {
 				name "ChestLidarPan"
@@ -865,10 +879,10 @@ Robot {
 				# Is if offset a bit from the axis, though?
 				translation 0 0 0.1
 				rotation 0.707107 -0.707107 0 3.14159
-			}			
+			}
 		} # End of the ChestLidarPan HingeJoint
 ## End the Chest lidar chain
-    
+
 
 
 
@@ -1004,7 +1018,7 @@ Robot {
                             density -1
                             mass 0.5
                             centerOfMass 0 -0.09 -0.02
-                          }		
+                          }
                           children [
 														RIGHT_ELBOW {
 															translation 0 0 -0.03
@@ -1071,14 +1085,14 @@ Robot {
                                             axis 0 -1 0
                                           }
                                           endPoint CHOPSTICKS {translation 0 -0.05 0}
-                                          
+
 #																					endPoint GRIPPER {
 #																						translation 0 -0.075 0
 #																						rotation 0 0 -1 0.707
 #																						trigger_name "r_trigger"
 #																						grip_name "r_grip"
 #																					}
-                                          
+
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
                                       ## End Wrist Yaw2
@@ -1108,8 +1122,8 @@ Robot {
 
 
 
-    
-    
+
+
 ## Begin the Left arm chain
     DEF Left_shoulder_pitch HingeJoint {
       device RotationalMotor {
@@ -1241,7 +1255,7 @@ Robot {
                             density -1
                             mass 0.5
                             centerOfMass 0 -0.09 -0.02
-                          }		
+                          }
                           children [
 														LEFT_ELBOW {
 															translation 0 0 -0.03
@@ -1306,7 +1320,7 @@ Robot {
                                           }
                                           jointParameters HingeJointParameters {
                                           	#fixed
-                                            axis 0 -1 0 
+                                            axis 0 -1 0
                                           }
 																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
 																					#endPoint CHOPSTICKS {translation 0 -0.05 0}
@@ -1345,9 +1359,9 @@ Robot {
 ## End the left arm chain
 
 
-    
+
   ] # End of the Robot children
-  
+
 } # End of Robot
 
 } # End of PROTO

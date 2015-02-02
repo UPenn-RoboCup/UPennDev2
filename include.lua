@@ -46,9 +46,6 @@ package.path = HOME..'/Util/?.lua;'..package.path
 package.path = HOME..'/Memory/?.lua;'..package.path
 
 -- include Robot Agnostic wrappers
-package.path = HOME..'/Player/Dev/?.lua;'..package.path
-
--- include Robot Agnostic wrappers
 --package.path = HOME..'/Player/Run/?.lua;'..package.path
 
 -- include World files to the path
@@ -109,4 +106,3 @@ end
 print_env()
 --]]
 return Config
-

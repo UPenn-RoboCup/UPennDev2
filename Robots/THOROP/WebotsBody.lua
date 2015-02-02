@@ -1,21 +1,22 @@
 local WebotsBody = {}
-local ptable = require'util'.ptable
 local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
 
 function WebotsBody.entry()
-	
-  fw = Config.wizards.feedback and require(Config.wizards.feedback)
-  rw = Config.wizards.remote and require(Config.wizards.remote)
-	cw = Config.sensors.camera and Config.wizards.camera and require(Config.wizards.camera)
-  kw = Config.sensors.kinect and Config.wizards.kinect and require(Config.wizards.kinect)
-	mw = Config.sensors.chest_lidar and Config.wizards.mesh and require(Config.wizards.mesh)
-	sw = Config.wizards.slam and require(Config.wizards.slam)
-  ww = Config.wizards.world and require(Config.wizards.world)
+
+	cw = Config.sensors.head_camera and require(Config.sensors.head_camera)
+  kw = Config.sensors.kinect and require(Config.sensors.kinect)
+	mw = Config.sensors.chest_lidar and require(Config.sensors.chest_lidar)
+	--
+	fw = Config.sensors.feedback and require(Config.sensors.feedback)
+  ww = Config.sensors.world and require(Config.sensors.world)
 	kb = Config.testfile and require(Config.testfile)
 
+	-- Marcell
+	--rw = Config.wizards.remote and require(Config.wizards.remote)
+
 	WebotsBody.USING_KB = type(kb)=='table' and type(kb.update)=='function'
-	
+
 	if ww then ww.entry() end
   if fw then fw.entry() end
   if rw then rw.entry() end

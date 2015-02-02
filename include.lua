@@ -46,9 +46,6 @@ package.path = HOME..'/Util/?.lua;'..package.path
 package.path = HOME..'/Memory/?.lua;'..package.path
 
 -- include Robot Agnostic wrappers
-package.path = HOME..'/Player/Dev/?.lua;'..package.path
-
--- include Robot Agnostic wrappers
 --package.path = HOME..'/Player/Run/?.lua;'..package.path
 
 -- include World files to the path
@@ -78,18 +75,19 @@ OPERATING_SYSTEM = unix.uname():lower()
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs"
 
+-- Use functional idioms
+require "fun" ()
+
 -- include platform specific modules
-local ok, Config = pcall(require, 'Config')
-if not ok then
-  print(Config)
-  error()
-end
+require'Config'
 PLATFORM_NAME = Config.PLATFORM_NAME
 ROBOT_HOME = HOME..'/Robots/'..PLATFORM_NAME
 package.path  = ROBOT_HOME..'/?.lua;'..package.path
 package.cpath = ROBOT_HOME..'/?.so;'..package.cpath
 
 DONE_INCLUDE = true
+
+collectgarbage()
 
 -- Print out the globally available variables, when using include.lua
 --[[
@@ -107,6 +105,4 @@ function print_env()
 end
 print_env()
 --]]
-
-collectgarbage()
 return Config

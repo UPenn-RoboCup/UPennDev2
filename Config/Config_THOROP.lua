@@ -45,12 +45,6 @@ end
 ----------------------------------
 local exo
 if IS_STEVE then
-	Config.testfile = 'test_balance'
-	exo = {
-	  'Robot','Walk','Net','Manipulation',
-	  'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'
-	}
-else
 	Config.testfile = 'test_teleop'
 	exo = {
 		'Robot', 'Walk', 'Net',
@@ -59,6 +53,12 @@ else
 	if IS_WEBOTS then
 		Config.kinect_timestep = 50
 	end
+else
+	Config.testfile = 'test_balance'
+	exo = {
+		'Robot','Walk','Net','Manipulation',
+		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'
+	}
 end
 
 -----------------------------------

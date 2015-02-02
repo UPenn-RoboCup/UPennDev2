@@ -1,4 +1,6 @@
 #!/usr/bin/env luajit
+local ENABLE_NET = false
+local ENABLE_LOG = false
 -----------------------------------
 -- Camera manager
 -- (c) Stephen McGill, 2014
@@ -40,8 +42,6 @@ local t_send, t_log = 0, 0
 local LOG_INTERVAL = 1/5
 local SEND_INTERVAL = .5
 
-local ENABLE_NET = Config.enable_monitor
-local ENABLE_LOG = Config.enable_log
 
 local libLog, logger
 

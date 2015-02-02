@@ -14,7 +14,7 @@ local vector = require'vector'
 require'vcm'
 require'Body'
 
---ENABLE_LOG = true
+--local ENABLE_LOG = true
 
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
@@ -45,7 +45,7 @@ if ENABLE_LOG then
 end
 
 local metadata = {
-	name = 'mesh0',
+	id = 'mesh0',
 	t = 0,
 }
 
@@ -271,5 +271,21 @@ function lidar_ch.callback(skt)
 	local meta = munpack(mdata)
 	update(meta, ranges)
 end
+local poller = si.wait_on_channels({lidar_ch})
 
-si.wait_on_channels({lidar_ch}):start()
+-- Cleanly exit on Ctrl-C
+local running = true
+local function shutdown()
+  print('Shutdown!')
+  poller:stop()
+end
+
+local signal = require'signal'.signal
+signal("SIGINT", shutdown)
+signal("SIGTERM", shutdown)
+
+poller:start()
+
+if ENABLE_LOG then
+	logger:stop()
+end

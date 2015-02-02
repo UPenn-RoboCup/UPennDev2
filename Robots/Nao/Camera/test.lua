@@ -1,1 +1,0 @@
-local NaoCam = require 'NaoCam'

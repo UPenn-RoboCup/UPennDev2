@@ -81,6 +81,8 @@ local function update(rgb, depth)
     rgb.body_height = bh
     rgb.imu_rpy = rpy
     rgb.tr = tr
+		rgb.odom = odom
+		rgb.vel = vel
     local j_rgb
     if IS_WEBOTS then
       j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
@@ -100,6 +102,8 @@ local function update(rgb, depth)
     depth.body_height = bh
     depth.imu_rpy = rpy
     depth.tr = tr
+		depth.odom = odom
+		depth.vel = vel
 	  local ranges = depth.data
 	  depth.data = nil
 	  depth.sz = #ranges

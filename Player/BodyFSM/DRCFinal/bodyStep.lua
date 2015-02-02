@@ -70,6 +70,13 @@ step_queues={
 }
 
 
+
+if IS_WEBOTS then st,wt = 1.0,1.0 
+
+
+end
+
+
 step_queues={
    {
     {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
@@ -91,6 +98,28 @@ step_queues={
 }
 
 
+--Larger step
+
+
+step_queues={
+   {
+    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
+   },
+
+   {
+    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
+    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
+   },
+
+   {
+    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },  
+   },
+
+   {  
+    {{step1*2,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
+    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
+   },
+}
 
 
 
@@ -144,6 +173,74 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
+  local uTorso = mcm.get_status_uTorso()  
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+
+  --Which foot is ahead?
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+
+
+  local leg_move_factor = math.abs(uLeftTorso[1]-uRightTorso[1])/0.25
+
+  local wt2 = wt +(1+leg_move_factor)
+
+  supportLeg = hcm.get_step_supportLeg()
+  step_relpos = hcm.get_step_relpos() 
+  step_zpr = hcm.get_step_zpr()
+  sh1,sh2 = step_zpr[1]+0.06, step_zpr[1]
+
+
+
+  if supportLeg == 1 then
+    --Take right step
+
+    local uRightTarget = util.pose_global(step_relpos, uRight)
+    local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeft)
+    local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTarget)
+    local uTorsoTarget = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
+    local uLeftTorsoTarget = util.pose_relative(uTorsoTarget, uLeftSupport)
+    local side_adj = Config.walk.supportY - 0.00
+    local com_side = Config.walk.footY+Config.walk.supportY-side_adj
+
+    step_queues={
+       {
+        {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+        {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+       },
+
+       {
+        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+       },
+    }
+
+
+  else
+    --Take left step
+    local uLeftTarget = util.pose_global(step_relpos, uLeft)
+    local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftTarget)
+    local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRight)
+    local uTorsoTarget = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
+    local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
+    
+    step2 = -(uLeftTorso[1]-uRightTorso[1]) + step1
+    step_queues={
+       {
+        {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+        {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+       
+       },
+
+       {
+        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+       },
+    }
+  end
+
+
+
+
   stage = 1
   calculate_footsteps(stage)
   motion_ch:send'stair'  
@@ -170,7 +267,17 @@ function state.update()
       motion_ch:send'stop'  
       print("ended")
       return 'done'
-    elseif hcm.get_state_proceed()==1 then       
+    elseif hcm.get_state_proceed()==1 then     
+
+
+      --Clear the zmp compensation value here between transition---------------------
+      local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
+      local uTorso = mcm.get_status_uTorso()
+      uTorso = util.pose_global({uTorsoZMPComp[1],uTorsoZMPComp[2],0},uTorso)
+      mcm.set_status_uTorsoZMPComp({0,0,0})
+      mcm.set_status_uTorso(uTorso)
+
+
       hcm.set_state_proceed(0)
       stage = stage+1
       calculate_footsteps(stage)

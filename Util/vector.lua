@@ -16,7 +16,6 @@ function vector.new(t)
   end
   return setmetatable(t, mt)
 end
-
 function vector.copy(t)
   local tt = {}
   for i=1,#t do tt[i] = t[i] end

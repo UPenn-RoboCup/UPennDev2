@@ -10,13 +10,12 @@ if type(jit)=='table' then
 	zmq    = require'lzmq.ffi'
 	poller = require'lzmq.ffi.poller'
 	llthreads = require'llthreads'
-  udp = require'udp.ffi'
 else
 	zmq    = require'lzmq'
 	poller = require'lzmq.poller'
 	llthreads = require'llthreads'
-  udp = require'udp'
 end
+udp = require'udp'
 
 local simple_ipc = {}
 
@@ -88,6 +87,7 @@ if type(udp)=='table' and not udp.ffi then
 			receive = udp_receive,
 			recv_all = udp_recv_all,
 		}
+		return obj
 	end
 elseif type(udp)=='table' then
   simple_ipc.new_sender = udp.new_sender

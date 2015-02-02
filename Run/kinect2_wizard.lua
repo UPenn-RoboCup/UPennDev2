@@ -18,8 +18,8 @@ else
 	operator = Config.net.operator.wired
 end
 print(Config.net.streams['kinect2_depth'].tcp, operator)
-local depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp, operator)
-local color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp, operator)
+local depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
+local color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
 print(depth_net_ch.name)
@@ -93,7 +93,7 @@ local function update(rgb, depth)
     rgb.sz = #j_rgb
     rgb.rsz = #j_rgb
     local m_rgb = mpack(rgb)
-    
+
 	  -- Form depth (TODO: zlib)
     depth.t = t
     depth.c = 'raw'

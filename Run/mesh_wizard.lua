@@ -32,7 +32,7 @@ else
 	operator = Config.net.operator.wired
 end
 local stream = Config.net.streams['mesh']
-local mesh_tcp_ch = stream.tcp and si.new_publisher(stream.tcp, operator)
+local mesh_tcp_ch = stream.tcp and si.new_publisher(stream.tcp)
 local mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
 local mesh_ch = stream.sub and si.new_publisher(stream.sub)
 print("OPERATOR", operator, stream.udp)
@@ -234,7 +234,7 @@ local function update(meta, ranges)
   local roll, pitch, yaw = unpack(meta.rpy)
   -- Body pose
   local pose = meta.pose
-  
+
   -- Find the scanline indices
 	local rad_angle = meta.angle
   local scanlines = angle_to_scanlines(rad_angle)
@@ -257,7 +257,7 @@ local function update(meta, ranges)
 	-- Check for sending out on the wire
 	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
 	check_send_mesh()
-  
+
 end
 
 -- If required from Webots, return the table

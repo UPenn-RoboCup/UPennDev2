@@ -5,9 +5,6 @@ local ports = Config.net.rpc
 -- Must reply to these TCP requests
 local tcp_rep = si.new_replier(ports.tcp_reply)
 print('RPC | REP Receiving on', ports.tcp_reply)
--- Need not reply to these TCP requests
-local tcp_sub = si.new_subscriber(ports.tcp_subscribe)
-print('RPC | SUB Receiving on', ports.tcp_subscribe)
 -- Need not reply to these UDP requests
 local udp_sub = si.new_receiver(ports.udp)
 print('RPC | UDP Receiving on', ports.udp)
@@ -15,11 +12,11 @@ print('RPC | UDP Receiving on', ports.udp)
 local uds_rep = si.new_replier(ports.uds)
 print('RPC | REP Receiving on', ports.uds)
 -- Setup the poller
-local wait_channels = {tcp_rep, tcp_sub, udp_sub, uds_rep}
+local wait_channels = {tcp_rep, udp_sub, uds_rep}
 local channel_poll
 -- Gracefully exit on Ctrl-C
 local function shutdown()
-	print('\nShutting down the RPC handler')
+	io.write('\nShutting down the RPC handler')
 	channel_poll:stop()
 end
 local signal = require'signal'
@@ -131,7 +128,6 @@ end
 
 -- Assign the callback
 tcp_rep.callback = process_zmq
-tcp_sub.callback = process_zmq
 uds_rep.callback = process_zmq
 udp_sub.callback = process_udp
 

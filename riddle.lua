@@ -27,10 +27,6 @@ local ip, port
 ip, port = Config.net.robot.wired, Config.net.reliable_rpc
 print('REQ |', ip, port)
 local rpc_req = si.new_requester(port, ip)
--- Publisher
-ip, port = Config.net.robot.wired, Config.net.reliable_rpc2
-print('PUB |', ip, port)
-local rpc_pub = si.new_publisher(port, ip)
 -- UDP
 ip, port = Config.net.robot.wired, Config.net.unreliable_rpc
 print('UDP |', ip, port)

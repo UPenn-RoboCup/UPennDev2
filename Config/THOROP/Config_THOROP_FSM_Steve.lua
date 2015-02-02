@@ -21,18 +21,18 @@ fsm.enabled = {
 
 --SJ: now we can have multiple FSM options
 fsm.select = {
-  Arm = 'Teach',
-  Body = 'Teach',
-  Head = 'Teach',
-  Motion = 'Teach'
+  Arm = 'Steve',
+  Body = 'Steve',
+  Head = 'Steve',
+  Motion = 'Steve'
 }
 
 -- Custom libraries
 fsm.libraries = {
   MotionLib = 'DRCFinal',
-  --MotionLib = 'Teach',
-  ArmLib = 'Teach',
-  World = 'Teach'
+  --MotionLib = 'Steve',
+  ArmLib = 'Steve',
+  World = 'Steve'
 }
 
 fsm.Body = {

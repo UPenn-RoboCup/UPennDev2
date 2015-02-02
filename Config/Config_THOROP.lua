@@ -48,7 +48,7 @@ if IS_STEVE then
 	Config.testfile = 'test_teleop'
 	exo = {
 		'Robot', 'Walk', 'Net',
-		'FSM_Teach', 'Arm_Teach', 'Vision_Teach' --, 'World_Teach'
+		'FSM_Steve', 'Arm_Steve', 'Vision_Steve' --, 'World_Steve'
 	}
 	if IS_WEBOTS then
 		Config.kinect_timestep = 50

@@ -1,7 +1,11 @@
 #!/usr/bin/env luajit
 dofile'../include.lua'
-local LOG_DATE = '01.20.2015.12.04.49'
-local EX0, EX1 = 48, 52
+local logs = {
+{'01.20.2015.12.04.49', 50, 52},
+{'01.23.2015.14.48.29', 48, 70}
+}
+
+local LOG_DATE, EX0, EX1 = unpack(logs[1])
 
 local libLog = require'libLog'
 local replay_depth = libLog.open(HOME..'/Data/', LOG_DATE, 'k2_depth')

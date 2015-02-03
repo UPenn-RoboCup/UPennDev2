@@ -6,7 +6,7 @@ local ptable = require'util'.ptable
 local munpack = require'msgpack.MessagePack'.unpack
 
 print(Config.net.field_computer)
-local planes_ch = si.new_subscriber(43210, Config.net.field_computer)
+local planes_ch = si.new_subscriber(49000, Config.net.field_computer)
 ptable(planes_ch)
 
 function planes_ch.callback()

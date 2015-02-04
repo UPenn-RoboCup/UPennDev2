@@ -417,8 +417,8 @@ if IS_WEBOTS then
 		1,-1,-1,  -1,  -1,-1,1, --RArm
 		-- TODO: Check the gripper
 		-1,1, -- Waist
-		1,-1, -- left gripper
-		1,1, -- right gripper
+		1,1, -- left gripper
+		-1,-1, -- right gripper
 
 		1, -- Lidar pan
 	})

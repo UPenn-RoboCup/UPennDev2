@@ -14,7 +14,7 @@ local lPlanner = P.new_planner(
 ):set_chain(K.forward_larm, K.inverse_larm)
 
 local rPlanner = P.new_planner(
-	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]), 
+	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
 	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
 	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD -- Angular speedlimits
 ):set_chain(K.forward_rarm, K.inverse_rarm)
@@ -24,20 +24,20 @@ local dqLimit = DEG_TO_RAD / 3
 
 -- Take a desired Transformation matrix and move joint-wise to it
 function movearm.goto_tr_via_q(lwrist, rwrist, loptions, roptions)
-	local lPathIter, rPathIter
+	local lPathIter, rPathIter, iqLArm, iqRArm
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		local iqLArm = K.inverse_larm(lwrist, qLArm, unpack(loptions))
+		iqLArm = K.inverse_larm(lwrist, qLArm, unpack(loptions))
     sanitize(iqLArm, qLArm)
 		lPathIter = lPlanner:joint_iter(iqLArm, qLArm, dqLimit)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		local iqRArm = K.inverse_rarm(rwrist, qRArm, unpack(roptions))
+		iqRArm = K.inverse_rarm(rwrist, qRArm, unpack(roptions))
     sanitize(iqRArm, qRArm)
 		rPathIter = rPlanner:joint_iter(iqRArm, qRArm, dqLimit)
 	end
-	return lPathIter, rPathIter
+	return lPathIter, rPathIter, iqLArm, iqRArm
 end
 
 -- Take a desired Transformation matrix and move in a line towards it

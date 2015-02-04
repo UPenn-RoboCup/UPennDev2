@@ -39,6 +39,8 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   --
   {'bodyInit', 'done', 'bodyStop'},
+  --
+  {'bodyStop', 'init', 'bodyInit'},
 }
 
 fsm.Head = {

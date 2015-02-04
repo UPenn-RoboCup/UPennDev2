@@ -881,7 +881,7 @@ local function consolidate(queue)
 		end
 
 		debug_str = table.concat(debug_str, '\n')
-		print(debug_str)
+		io.write(debug_str)
 
 		end
 	end

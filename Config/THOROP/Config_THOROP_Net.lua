@@ -9,17 +9,19 @@ local IP = {
   ALVIN = 24,
   ALVIN_Z = 222,
   TEDDY = 26,
+	FIELD = 201,
 }
 
 -- Who do we use?
---local WHO = IP.BHORAM
-local WHO = IP.STEVE
+local WHO = IP.BHORAM
+--local WHO = IP.STEVE
 local WHICH = IP.ALVIN_Z
 --local WHICH = IP.TEDDY
 
 -- Network settings --
 local net = {
 	use_wireless = false,
+	field_computer = '192.168.123.'..IP.FIELD,
 }
 
 -- IP Addresses

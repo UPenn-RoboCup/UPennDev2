@@ -16,7 +16,7 @@ local timeout = 30.0
 local trLGoal = T.transform6D{0.1, 0.3, -0.3, 0, 30*DEG_TO_RAD, -45*DEG_TO_RAD}
 local trRGoal = T.transform6D{0.1, -0.32, -0.28, 15*DEG_TO_RAD, 35*DEG_TO_RAD, 70*DEG_TO_RAD}
 
-local shoulderLGoal, shoulderRGoal = 10*DEG_TO_RAD, 10*DEG_TO_RAD
+local shoulderLGoal, shoulderRGoal = 5*DEG_TO_RAD, -5*DEG_TO_RAD
 
 local lPathIter, rPathIter
 local setShoulderYaw

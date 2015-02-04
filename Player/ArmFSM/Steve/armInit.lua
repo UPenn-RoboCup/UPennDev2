@@ -18,7 +18,7 @@ local trRGoal = T.transform6D{0.1, -0.32, -0.28, 15*DEG_TO_RAD, 35*DEG_TO_RAD, 7
 
 local shoulderLGoal, shoulderRGoal = 5*DEG_TO_RAD, -5*DEG_TO_RAD
 
-local lPathIter, rPathIter
+local lPathIter, rPathIter, qLGoal, qRGoal
 local setShoulderYaw
 
 function state.entry()
@@ -27,7 +27,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  lPathIter, rPathIter, lq, rq = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+  lPathIter, rPathIter, qLGoal, qRGoal = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
   if NO_YAW_FIRST then
     setShoulderYaw = true
   else
@@ -91,7 +91,7 @@ function state.update()
     if setShoulderYaw then
   		return 'done'
     else
-      lPathIter, rPathIter, lq, rq = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
       setShoulderYaw = true
     end
 	end

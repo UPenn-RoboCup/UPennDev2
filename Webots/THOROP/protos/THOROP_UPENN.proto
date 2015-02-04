@@ -1032,12 +1032,12 @@ Robot {
                                 maxTorque 6.3
                               } # End of the RightWristYaw RotationalMotor
                               jointParameters HingeJointParameters {
-                              #fixed
                                 axis 0 1 0
 																anchor 0 -0.216 -0.03
+                                #translation 0 -0.25 -0.03
                               } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
-                                translation 0 -0.216 -0.03
+                                translation 0 -0.25 -0.03
                                 boundingObject Box { size 0.05 0.05 0.1 }
                                 physics Physics {
                                   density -1
@@ -1062,9 +1062,8 @@ Robot {
                                       axis 0 0 -1
                                     } # End of the RightWristRoll HingeJointParameters
                                     endPoint Solid {
-                                      #translation 0 -0.075 0
-                                      translation 0 -0.085 0
-                                      boundingObject Box { size 0.05 0.1 0.05 }
+                                      translation 0 -0.08 0
+                                      boundingObject Box {size 0.05 0.1 0.05}
                                       physics Physics {
                                         density -1
                                         mass 0.2
@@ -1084,15 +1083,14 @@ Robot {
                                           	#fixed
                                             axis 0 -1 0
                                           }
-                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
-
-#																					endPoint GRIPPER {
-#																						translation 0 -0.075 0
-#																						rotation 0 0 -1 0.707
-#																						trigger_name "r_trigger"
-#																						grip_name "r_grip"
-#																					}
-
+#                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
+																					endPoint GRIPPER {
+                                            #translation 0 -0.06 0 #default
+                                            translation 0 -0.15 0 #default + extra 9cm for UCLA gripper
+                                            rotation -0.382683 0.92388 0 3.141592
+																						trigger_name "r_grip"
+																						grip_name "r_trigger"
+																					}
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
                                       ## End Wrist Yaw2
@@ -1259,7 +1257,6 @@ Robot {
                           children [
 														LEFT_ELBOW {
 															translation 0 0 -0.03
-															#rotation 0 1 0 3.14159
 															scale 0.001 0.001 0.001
 														}
                             DEF Left_wrist_yaw HingeJoint {
@@ -1269,12 +1266,10 @@ Robot {
                                 maxTorque 6.3
                               } # End of the LeftWristYaw RotationalMotor
                               jointParameters HingeJointParameters {
-                              	#fixed
                                 axis 0 1 0
 																anchor 0 -0.216 -0.03
                               } # End of the LeftWristYaw HingeJointParameters
                               endPoint Solid {
-                                #translation 0 -0.216 -0.03
                                 translation 0 -0.25 -0.03
                                 boundingObject Box { size 0.05 0.05 0.1 }
                                 physics Physics {
@@ -1300,8 +1295,7 @@ Robot {
                                       axis 0 0 -1
                                     } # End of the LeftWristRoll HingeJointParameters
                                     endPoint Solid {
-                                      translation 0 -0.075 0
-                                      #translation 0 -0.085 0
+                                      translation 0 -0.08 0
                                       boundingObject Box { size 0.05 0.1 0.05 }
                                       physics Physics {
                                         density -1
@@ -1325,8 +1319,8 @@ Robot {
 																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
 																					#endPoint CHOPSTICKS {translation 0 -0.05 0}
                                           endPoint GRIPPER {
-                                            #translation 0 -0.05 0
-                                            translation 0 -0.095 0
+                                            #translation 0 -0.06 0 # Default
+                                            translation 0 -0.15 0 # Default + UCLA gripper
 																						rotation 0 0 -1 0.707
 																						trigger_name "l_trigger"
 																						grip_name "l_grip"

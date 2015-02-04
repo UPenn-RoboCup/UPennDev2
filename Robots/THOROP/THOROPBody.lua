@@ -39,7 +39,7 @@ for sensor, n_el in pairs(dcm.sensorKeys) do
 		-- Return the time of the reading
 	  return vslice(ptr, start-1, stop-1), vslice(ptr_t, start-1, stop-1)
 	end
-  
+
   Body['get_'..sensor] = get
   -- Anthropomorphic access to dcm
 	-- TODO: get_lleg_rpy is illegal, for instance
@@ -176,7 +176,7 @@ if IS_WEBOTS then
 	local WebotsBody
   local webots = require'webots'
 	local ImageProc = require'ImageProc'
-  
+
   Body.enable_read = function(chain)
   end
   Body.disable_read = function(chain)
@@ -186,7 +186,7 @@ if IS_WEBOTS then
 	local jointNames = Config.jointNames
   local servo = Config.servo
 
-  -- Added to Config rather than hard-code 
+  -- Added to Config rather than hard-code
 	local ENABLE_CAMERA, NEXT_CAMERA = Config.sensors.head_camera, 0
   local ENABLE_CHEST_LIDAR, NEXT_CHEST_LIDAR  = Config.sensors.chest_lidar, 0
   local ENABLE_HEAD_LIDAR, NEXT_HEAD_LIDAR = Config.sensors.head_lidar, 0
@@ -208,7 +208,7 @@ if IS_WEBOTS then
   get_time = webots.wb_robot_get_time
 
   -- Setup the webots tags
-  local tags = {}  
+  local tags = {}
   local t_last_error = -math.huge
 
   tags.receiver = webots.wb_robot_get_device("receiver")
@@ -216,7 +216,7 @@ if IS_WEBOTS then
 		webots.wb_receiver_enable(tags.receiver, timeStep)
 		webots.wb_receiver_set_channel(tags.receiver, 13)
 	end
-    
+
   -- Ability to turn on/off items
   local t_last_keypress = get_time()
   -- Enable the keyboard 100ms
@@ -260,7 +260,7 @@ if IS_WEBOTS then
 				NEXT_KINECT = get_time() + kinect_timeStep / 1000
         ENABLE_KINECT = true
       end
-    end,    
+    end,
     c = function(override)
       if override~=nil then en=override else en=ENABLE_CAMERA==false end
       if en==false then
@@ -394,11 +394,13 @@ if IS_WEBOTS then
 		tags.gps = webots.wb_robot_get_device("GPS")
 		tags.compass = webots.wb_robot_get_device("Compass")
 		tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
-		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
-
+    
+    if Config.sensors.head_camera then
+  		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
+    end
     if Config.sensors.chest_lidar then
       tags.chest_lidar = webots.wb_robot_get_device("ChestLidar")
-    end		
+    end
     if Config.sensors.head_lidar then
       tags.head_lidar = webots.wb_robot_get_device("HeadLidar")
     end
@@ -415,14 +417,14 @@ if IS_WEBOTS then
 			tags.l_ft = webots.wb_robot_get_device("LAnkle_force")
       tags.r_ft = webots.wb_robot_get_device("RAnkle_force")
     end
-    
+
 		-- Enable or disable the sensors
 		key_action.i(ENABLE_IMU)
 		key_action.p(ENABLE_POSE)
 		if ENABLE_CAMERA then key_action.c(ENABLE_CAMERA) end
     if ENABLE_CHEST_LIDAR then key_action.l(ENABLE_CHEST_LIDAR) end
 		if ENABLE_HEAD_LIDAR then key_action.h(ENABLE_HEAD_LIDAR) end
-		if ENABLE_KINECT then key_action.k(ENABLE_KINECT) end    
+		if ENABLE_KINECT then key_action.k(ENABLE_KINECT) end
 		if ENABLE_FT then key_action.t(ENABLE_FT) end
 
 		-- Ensure torqued on
@@ -430,13 +432,13 @@ if IS_WEBOTS then
 
 		-- Take a step to get some values
 		webots.wb_robot_step(timeStep)
-    
+
     -- PID setting
     Body.set_position_p(PID_P)
 
 		local rad, val
 		local positions = vector.zeros(nJoint)
-    
+
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
         -- Update the PID if necessary
@@ -477,7 +479,7 @@ if IS_WEBOTS then
             PID_P[idx] = new_P
             webots.wb_motor_set_control_pid(jtag, new_P, 0, 0)
           end
-        end        
+        end
         local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
         set_pos(jtag, rad)
 			elseif en==0 and jtag>0 then
@@ -510,7 +512,7 @@ if IS_WEBOTS then
       dcm.sensorPtr.lfoot[0] = webots.wb_touch_sensor_get_value(tags.l_fsr)
       dcm.sensorPtr.rfoot[0] = webots.wb_touch_sensor_get_value(tags.r_fsr)
     end
-		
+
     local force_factor = 3.0
 
 		-- F/T sensor
@@ -625,7 +627,7 @@ if IS_WEBOTS then
 			WebotsBody.update_chest_kinect(rgb, depth)
 			NEXT_KINECT = t + kinect_timeStep / 1000
     end
-    
+
     -- Grab a lidar scan
     if ENABLE_CHEST_LIDAR and t >= NEXT_CHEST_LIDAR then
       local n = webots.wb_camera_get_width(tags.chest_lidar)
@@ -657,7 +659,7 @@ if IS_WEBOTS then
 	    -- get first message on the queue
 	    ndata = webots.wb_receiver_get_data_size(tags.receiver)
 	    msg = webots.wb_receiver_get_data(tags.receiver)
-	    if #msg==14 then 
+	    if #msg==14 then
 	    	local ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2
 	    	local ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2
 	    	wcm.set_robot_gpsball({ball_gpsx,ball_gpsy});
@@ -667,7 +669,7 @@ if IS_WEBOTS then
           print("=========================================")
           local score_time = get_time()-timestarted
           local score_min = math.floor(score_time/60)
-          local score_sec = score_time%60          
+          local score_sec = score_time%60
           print(string.format(
             "SCORED AT %d min %d sec",score_min, score_sec))
           print("=========================================")
@@ -677,17 +679,17 @@ if IS_WEBOTS then
           head_ch:send'teleop'
         end
 --	    	print("ball:",ball_gpsx,ball_gpsy)
-	  	elseif #msg==16 then     		
+	  	elseif #msg==16 then
     		local obsx=(tonumber(string.sub(msg,2,6))-5)*2
     		local obsy=(tonumber(string.sub(msg,8,12))-5)*2
     		local obsid = tonumber(string.sub(msg,14,14))
 --    		print("obs:",obsid,obsx,obsy)
 				if obsid==1 then wcm.set_robot_gpsobs1({obsx,obsy})
 				else wcm.set_robot_gpsobs2({obsx,obsy}) end
-    	end	    
+    	end
 	    webots.wb_receiver_next_packet(tags.receiver)
 	  end
-		
+
 		-- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()
 		if WebotsBody.USING_KB then
@@ -701,7 +703,7 @@ if IS_WEBOTS then
 				t_last_keypress = t
 			end
 		end
-	
+
 	end -- update
 
 	Body.exit = function()
@@ -835,7 +837,7 @@ local nJointRArm = 7
 
 local function check_larm_bounds(qL)
   --SJ: now we don't hacve nJointLArm definition
---[[  
+--[[
   print("check larm bound, nJointLArm:",nJointLArm)
   for i=1,nJointLArm do
     if qL[i]<servo.min_rad[indexLArm+i-1] or qL[i]>servo.max_rad[indexLArm+i-1] then
@@ -844,7 +846,7 @@ local function check_larm_bounds(qL)
     end
   end
   --]]
-  return true  
+  return true
 end
 
 local function check_rarm_bounds(qR)

@@ -51,9 +51,7 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-WoodBox {
-  translation 0.0108684 0.3 1.04426
-}
+#WoodBox { translation 0.0108684 0.3 1.04426 }
 THOROP_UPENN {
   translation 0 1.155 0
 	controller "thorop"

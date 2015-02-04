@@ -7,13 +7,14 @@ state._NAME = ...
 
 local Body   = require'Body'
 local vector = require'vector'
+local T = require'Transform'
 local movearm = require'movearm'
+
 local t_entry, t_update, t_finish
 local timeout = 15.0
 
-local T = require'Transform'
-local trLGoal = T.transform6D{0.12, 0.24, -0.3, 0, 30*DEG_TO_RAD, -45*DEG_TO_RAD}
-local trRGoal = T.transform6D{0.12, -0.265, -0.3, 0, 30*DEG_TO_RAD, 0}
+local trLGoal = T.transform6D{0.1, 0.3, -0.3, 0, 30*DEG_TO_RAD, -45*DEG_TO_RAD}
+local trRGoal = T.transform6D{0.1, -0.3, -0.3, 0, 30*DEG_TO_RAD, 45*DEG_TO_RAD}
 
 local lPathIter, rPathIter
 
@@ -24,7 +25,7 @@ function state.entry()
   t_update = t_entry
 
 	lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {10*DEG_TO_RAD}, {-5*DEG_TO_RAD})
-	
+
 	-- Set Hardware limits in case
   for i=1,10 do
     Body.set_larm_command_velocity(500)
@@ -43,7 +44,7 @@ function state.update()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
-	
+
 	-- Timing necessary
 	--[[
 	local qLArm = Body.get_larm_command_position()
@@ -55,7 +56,7 @@ function state.update()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]
 	Body.set_larm_command_position(q_lWaypoint)
-	
+
 	--[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)

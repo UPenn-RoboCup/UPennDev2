@@ -20,7 +20,7 @@ local PI = require'math'.pi
 local TWO_PI = 2 * PI
 local min, max = require'math'.min, require'math'.max
 -- Arm constants
-local shoulderOffsetX = 0;    
+local shoulderOffsetX = 0;
 local shoulderOffsetY = 0.234;
 local shoulderOffsetZ = 0.165;
 local upperArmLength = 0.246;
@@ -71,7 +71,7 @@ local function fk_arm(q)
 	local c6, s6 = cos(q[6]), sin(q[6])
 	local c7, s7 = cos(q[7]), sin(q[7])
 	return Tnew{
-		{(((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*s6 + (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*c6, ((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*c7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*s7, -((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*s7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*c7, -elbowOffsetX*((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2) + elbowOffsetX*(s1*c3 + s2*s3*c1) + lowerArmLength*(-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4) + upperArmLength*c1*c2}, 
+		{(((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*s6 + (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*c6, ((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*c7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*s7, -((((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*s5 + (s1*s3 - s2*c1*c3)*c5)*c6 - (-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4)*s6)*s7 + (((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2)*c5 - (s1*s3 - s2*c1*c3)*s5)*c7, -elbowOffsetX*((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2) + elbowOffsetX*(s1*c3 + s2*s3*c1) + lowerArmLength*(-(s1*c3 + s2*s3*c1)*s4 + c1*c2*c4) + upperArmLength*c1*c2},
 		{((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*s6 + (s2*c4 + s3*s4*c2)*c6, (((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*c6 - (s2*c4 + s3*s4*c2)*s6)*c7 + ((s2*s4 - s3*c2*c4)*c5 - s5*c2*c3)*s7, -(((s2*s4 - s3*c2*c4)*s5 + c2*c3*c5)*c6 - (s2*c4 + s3*s4*c2)*s6)*s7 + ((s2*s4 - s3*c2*c4)*c5 - s5*c2*c3)*c7, -elbowOffsetX*(s2*s4 - s3*c2*c4) - elbowOffsetX*s3*c2 + lowerArmLength*(s2*c4 + s3*s4*c2) + upperArmLength*s2},
 		{(((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*s6 + (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*c6, ((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*c6 - (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*s6)*c7 + (((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*c5 - (s1*s2*c3 + s3*c1)*s5)*s7, -((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*c6 - (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*s6)*s7 + (((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*c5 - (s1*s2*c3 + s3*c1)*s5)*c7, -elbowOffsetX*((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2) + elbowOffsetX*(-s1*s2*s3 + c1*c3) + lowerArmLength*(-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4) - upperArmLength*s1*c2},
 		{0, 0, 0, 1}}
@@ -89,17 +89,17 @@ local aElbowMax = -1*(aUpperArm + aLowerArm)
 -- Assume left arm
 local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 	local xWrist1, xWrist2, xWrist3 = trArm[1][4], trArm[2][4], trArm[3][4]
-  
+
   -- SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
-  -- We are only using the smaller one (arm more bent) 
+  -- We are only using the smaller one (arm more bent)
   local dWrist = xWrist1^2 + xWrist2^2 + xWrist3^2
   local cElbow = (dWrist-dUpperArm^2 - dLowerArm^2)/(2*dUpperArm*dLowerArm)
-  
+
 	cElbow = max(-1, min(1, cElbow))
-	
+
   local elbowPitch = -acos(cElbow) - aUpperArm - aLowerArm
-  
-  -- From shoulder yaw to wrist 
+
+  -- From shoulder yaw to wrist
   local m = TrotX(shoulderYaw) * trans_upper * TrotY(elbowPitch) * trans_lower
   local a = m[1][4]^2 + m[2][4]^2
   local b = -m[1][4] * xWrist2
@@ -122,30 +122,30 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
     shoulderRoll = err1^2 < err2^2 and shoulderRoll1 or shoulderRoll2
   end
 	shoulderRoll = FLIP_SHOULDER_ROLL and (FLIP_SHOULDER_ROLL - shoulderRoll) or shoulderRoll
-  
+
   local t1 = m[2][4] * sin(shoulderRoll) - m[1][4] * cos(shoulderRoll)
- 
+
   local m23 = m[3][4]
   local c1 = (m23*xWrist3 - t1*xWrist1) / (m23^2 + t1^2)
   local s1 = (m23*xWrist1 + t1*xWrist3) / (m23^2 + t1^2)
 
   local shoulderPitch = atan2(s1, c1)
-	
+
 	local qArm = {shoulderPitch, shoulderRoll, shoulderYaw, elbowPitch}
-	
+
 	--
 	-- Now find the wrist
 	--
   -- Now we know shoulder pich, roll, yaw and elbow pitch
   -- Calc the final transform for the wrist based on rotation alone
 	local rotWrist = TrotY(-elbowPitch) * TrotX(-shoulderYaw) * TrotZ(-shoulderRoll) * TrotY(-shoulderPitch) * trArm
-	
+
   -- NOTE: singular point: just use current angles
 	local wristYaw_a, wristYaw2_a, wristRoll_b, wristYaw_b, wristYaw2_b
 	local wristRoll_a = acos(rotWrist[1][1]) -- 0 to pi
   if sin(wristRoll_a) < 1e-5 then
 	--if (wristRoll_a) < 1e-5 then
-    wristYaw_a = qOrg[5]    
+    wristYaw_a = qOrg[5]
     wristRoll_a = qOrg[6]
     wristYaw2_a = qOrg[7]
     wristYaw_b = qOrg[5]
@@ -158,7 +158,7 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 	  -- Flipped position
 		-- -pi to 0
 	  wristRoll_b = -wristRoll_a
-	  wristYaw_b = atan2(-rotWrist[3][1], -rotWrist[2][1])  
+	  wristYaw_b = atan2(-rotWrist[3][1], -rotWrist[2][1])
 	  wristYaw2_b = atan2(-rotWrist[1][3], rotWrist[1][2])
   end
   local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % (2*PI) ) - PI
@@ -175,14 +175,19 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
   return vnew(qArm)
 end
 
--- Forward with respect to the torso
+-- Mounting Transform offsets
+-- Left: Assume UCLA gripper
 local preLArm, postLArm = Ttrans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, -handOffsetY, handOffsetZ)
  * Ttrans(0.045,0,0) * TrotZ(-45*DEG_TO_RAD) -- Add translation to the center of the palm, or what?
+-- Right: UCLA Gripper
+local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ)
+* Ttrans(0.08,0,0) * TrotZ(45*DEG_TO_RAD)
+-- Forward with respect to the torso
 function K.forward_larm(qLArm)
 	return preLArm * fk_arm(qLArm) * postLArm, {qLArm[3]}
 end
-local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ)
--- * TrotZ(-45*DEG_TO_RAD)
+
+
 function K.forward_rarm(qRArm)
 	return preRArm * fk_arm(qRArm) * postRArm, {qRArm[3]}
 end
@@ -195,7 +200,7 @@ function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll)
 		qLArm,
 		shoulderYaw or qLArm[3],
 		flipRoll and PI
-	)	
+	)
 end
 local preRArmInv, postRArmInv = Tinv(preRArm), Tinv(postRArm)
 function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll)
@@ -214,8 +219,8 @@ local function fk_leg(q)
 	local c6, s6 = cos(q[6]), sin(q[6])
 	local q3, q4, q5 = unpack(q,3,5)
 	return Tnew{
-		{((-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5))*c6 + s1*s6*c2, -((-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5))*s6 + s1*c2*c6, -(-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5), -dThigh*(s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1) - dTibia*(-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))}, 
-		{(((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5))*c6 - s6*c1*c2, -(((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5))*s6 - c1*c2*c6, ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) - ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5), -dThigh*(s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3)) - dTibia*((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))}, 
+		{((-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5))*c6 + s1*s6*c2, -((-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5))*s6 + s1*c2*c6, -(-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5), -dThigh*(s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1) - dTibia*(-(-s1*s2*sin(aThigh + q3) + c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*s2*cos(aThigh + q3) + sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))},
+		{(((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5))*c6 - s6*c1*c2, -(((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*cos(aTibia + q5))*s6 - c1*c2*c6, ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*sin(aThigh + aTibia - q4) + (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) - ((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))*sin(aTibia + q5), -dThigh*(s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3)) - dTibia*((s1*sin(aThigh + q3) - s2*c1*cos(aThigh + q3))*cos(aThigh + aTibia - q4) - (s1*cos(aThigh + q3) + s2*sin(aThigh + q3)*c1)*sin(aThigh + aTibia - q4))},
 		{((sin(aThigh + q3)*sin(aThigh + aTibia - q4)*c2 + c2*cos(aThigh + q3)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + (-sin(aThigh + q3)*c2*cos(aThigh + aTibia - q4) + sin(aThigh + aTibia - q4)*c2*cos(aThigh + q3))*sin(aTibia + q5))*c6 - s2*s6, -((sin(aThigh + q3)*sin(aThigh + aTibia - q4)*c2 + c2*cos(aThigh + q3)*cos(aThigh + aTibia - q4))*cos(aTibia + q5) + (-sin(aThigh + q3)*c2*cos(aThigh + aTibia - q4) + sin(aThigh + aTibia - q4)*c2*cos(aThigh + q3))*sin(aTibia + q5))*s6 - s2*c6, -(sin(aThigh + q3)*sin(aThigh + aTibia - q4)*c2 + c2*cos(aThigh + q3)*cos(aThigh + aTibia - q4))*sin(aTibia + q5) + (-sin(aThigh + q3)*c2*cos(aThigh + aTibia - q4) + sin(aThigh + aTibia - q4)*c2*cos(aThigh + q3))*cos(aTibia + q5), -dThigh*c2*cos(aThigh + q3) - dTibia*(sin(aThigh + q3)*sin(aThigh + aTibia - q4)*c2 + c2*cos(aThigh + q3)*cos(aThigh + aTibia - q4))},
 		{0, 0, 0, 1}}
 end

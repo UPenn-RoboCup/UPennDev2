@@ -51,6 +51,7 @@ if IS_STEVE then
 		'FSM_Steve', 'Arm_Steve', 'Vision_Steve' --, 'World_Steve'
 	}
 	if IS_WEBOTS then
+		Config.sensors.kinect = 'kinect2_wizard'
 		Config.kinect_timestep = 50
 	end
 else
@@ -59,6 +60,10 @@ else
 		'Robot','Walk','Net','Manipulation',
 		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'
 	}
+	if IS_WEBOTS then
+		Config.sensors.kinect = 'kinect2_wizard'
+		Config.kinect_timestep = 50
+	end
 end
 
 -----------------------------------

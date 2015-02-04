@@ -22,7 +22,7 @@ local head = {
   --From CoM to neck joint
   neckZ = .165 + .161,
   neckX = 0,
-
+	neckOffset = {0, 0, 0.32}
 }
 
 local vision = {
@@ -47,7 +47,7 @@ local vision = {
 
   --To compensate for the body flexing backward
   --Use this angle instead of walk.bodyTilt
-  bodyTilt = 3*DEG_TO_RAD, 
+  bodyTilt = 3*DEG_TO_RAD,
 
   --
 }
@@ -62,7 +62,7 @@ vision.ball = {
   max_height0 = 0.3,    --Max height = max_height0 + dist*max_height1
   max_height1 = 0.12,
 
-  max_distance = 9, 
+  max_distance = 9,
   th_ground_head_pitch = 50*DEG_TO_RAD,
   th_ground_boundingbox = {-30,30,0,20},
   th_ground_green = 400,  --TODO
@@ -73,14 +73,14 @@ vision.ball = {
 }
 
 vision.goal = {
-  th_min_bbox_area = 80, --100, 
+  th_min_bbox_area = 80, --100,
   th_nPostB = 15,
   th_min_area = 40,
   th_min_orientation = 80*math.pi/180,
   th_min_fill_rate = 0.4, --0.45,
   -- TODO: need to test on real robot
-  height_min = 1, 
-  height_max = 2, 
+  height_min = 1,
+  height_max = 2,
   th_aspect_ratio = {13,120},
   th_edge_margin = 5,
   th_bottom_boundingbox = 0.9,
@@ -108,9 +108,9 @@ vision.obstacle = {
   th_min_height = -0.2,
   th_min_orientation = 60/180*math.pi,
   th_green_black_ratio = 2,
-  min_ground_fill_rate = 0.4,  
+  min_ground_fill_rate = 0.4,
 	--
-	min_width = 5, 
+	min_width = 5,
 	max_width = 16,
 }
 
@@ -207,18 +207,18 @@ if IS_WEBOTS then
 
   focal_length = 395.17
   focal_base = 640
-  
+
 	head.neckX= 0 --From CoM to neck joint
 
   vision.scaleA = 2
   vision.scaleB = 2
-  
+
   head.cameraPitch = 0
   head.cameraRoll = 0
 	head.yawBias = 0
-  
+
   vision.goal = {
-    th_min_bbox_area = 80, 
+    th_min_bbox_area = 80,
     th_nPostB = 10,
     th_min_area = 35,
     th_min_orientation = 80*math.pi/180,
@@ -238,12 +238,12 @@ if IS_WEBOTS then
     min_crossbar_ratio = 0.6,
     check_for_ground = 1,
 
-    height_max = 9, 
+    height_max = 9,
   }
-  
+
   vision.obstacle = {
     label = 'b',
-    grid_x = 10, 
+    grid_x = 10,
     grid_y = 15,
     th_min_area = 42,
     th_min_orientation = 70/180*math.pi,
@@ -254,10 +254,10 @@ if IS_WEBOTS then
     th_min_height = -0.2,
     min_ground_fill_rate = 0.55,
 		--
-		min_width = 3, 
+		min_width = 3,
 		max_width = 15,
   }
-  
+
   vision.ball = {
   diameter = 0.22,
   th_min_bbox_area = 10,
@@ -265,7 +265,7 @@ if IS_WEBOTS then
   th_min_fill_rate = 0.35,
   max_height0 = 0.34,    --Max height = max_height0 + dist*max_height1
   max_height1 = 0.19,
-  max_distance = 9, 
+  max_distance = 9,
   th_ground_head_pitch = 50*DEG_TO_RAD,
   th_ground_boundingbox = {-30,30,0,20},
   th_ground_green = 400,  --TODO
@@ -276,9 +276,26 @@ if IS_WEBOTS then
 }
 end
 
+local kinect = {
+	name = 'kinect2',
+	w = 512,
+	h = 424,
+	jpeg_quality = 60,
+	-- Use the default vision parameters
+	vision = vision_k2,
+	-- Run the standard RoboCup vision processing
+	detection = 'MultiValve',
+	lut = 'multi_valve',
+	mountOffset = {
+		{3*DEG_TO_RAD,-3*DEG_TO_RAD,0}, -- RPY
+		{0.03,0,0.08} -- translaction
+	}
+}
+
 -- Associate with the table
 Config.vision = vision
 Config.head = head
 Config.monitor = monitor
+Config.kinect = kinect
 
 return Config

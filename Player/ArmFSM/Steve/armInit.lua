@@ -13,12 +13,17 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
+--[[
 local trLGoal = T.transform6D{0.1, 0.3, -0.3, 0, 30*DEG_TO_RAD, -45*DEG_TO_RAD}
 local trRGoal = T.transform6D{0.1, -0.32, -0.28, 15*DEG_TO_RAD, 35*DEG_TO_RAD, 70*DEG_TO_RAD}
+--]]
+-- From the IK solution above, in webots
+local qLGoal = vector.new{140.055, 14.5738, 5, -82.3928, 65.0266, 38.4997, -59.7267} * DEG_TO_RAD
+local qRGoal = vector.new{157.166, -40.6751, -5, -101.136, -55.7423, -26.6821, 63.5934} * DEG_TO_RAD
 
 local shoulderLGoal, shoulderRGoal = 5*DEG_TO_RAD, -5*DEG_TO_RAD
 
-local lPathIter, rPathIter, qLGoal, qRGoal
+local lPathIter, rPathIter
 local setShoulderYaw
 
 function state.entry()
@@ -27,18 +32,16 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  lPathIter, rPathIter, qLGoal, qRGoal = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+  -- To get to the IK solution
+  --lPathIter, rPathIter, qLGoal, qRGoal = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+  -- Given the IK solution
+  lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
   if NO_YAW_FIRST then
     setShoulderYaw = true
   else
     -- First, ignore the shoulderYaw, since it can cause issues of self collision
     local qL = Body.get_larm_position()
     local qR = Body.get_rarm_position()
-    --[[
-    lq[3] = qL[3]
-    rq[3] = qR[3]
-    lPathIter, rPathIter = movearm.goto_q(lq, rq)
-    --]]
     qL[3] = -20*DEG_TO_RAD
     qR[3] = 20*DEG_TO_RAD
     lPathIter, rPathIter = movearm.goto_q(qL, qR)
@@ -65,22 +68,22 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
 	-- Timing necessary
-	--[[
+	----[[
 	local qLArm = Body.get_larm_command_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
 	--]]
 	-- No time needed
-	----[[
+	--[[
 	local qLArm = Body.get_larm_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]
 	Body.set_larm_command_position(q_lWaypoint)
 
-	--[[
+	----[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
 	--]]
-	----[[
+	--[[
 	local qRArm = Body.get_rarm_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm)
 	--]]

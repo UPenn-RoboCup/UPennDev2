@@ -12,30 +12,18 @@ local T = require'Transform'
 local tremove = require'table'.remove
 local fabs = require'math'.abs
 
-local mt = {}
-local function tbl_iter(t,k)
-	return tremove(t)
-end
-mt.__call = tbl_iter
+local mt = {
+	__call = function(t,k) return tremove(t) end
+}
 
 local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
-	local diff, mod_diff
+	local diff0, mod_diff, diff
 	for i, v in ipairs(cur_qArm) do
-		diff = iqWaypoint[i] - v
-		mod_diff = mod_angle(diff)
-		if fabs(diff) > fabs(mod_diff) then
-			if dt then
-				iqWaypoint[i] = v + procFunc(mod_diff, 0, dqdt_limit[i]*dt)
-			else
-				iqWaypoint[i] = v + mod_diff
-			end
-		else
-			if dt then
-				iqWaypoint[i] = v + procFunc(diff, 0, dqdt_limit[i]*dt)
-			else
-				iqWaypoint[i] = v + diff
-			end
-		end
+		diff0 = iqWaypoint[i] - v
+		mod_diff = mod_angle(diff0)
+		-- Use the smaller diff
+		diff = fabs(diff0) < fabs(mod_diff) and diff0 or mod_diff
+		iqWaypoint[i] = v + (dt and procFunc(diff, 0, dqdt_limit[i] * dt) or diff)
 	end
 end
 
@@ -46,6 +34,133 @@ end
 -- to change the orientation through the singularity
 -- TODO: Handle goal of transform or just position
 -- Just position disables orientation checking
+
+-- This should have exponential approach properties...
+-- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
+local function line_iter(self, trGoal, qArm0, res_pos, res_ang, null_options)
+	res_pos = res_pos or 0.005
+	res_ang = res_ang or 3*DEG_TO_RAD
+	null_options = null_options or {}
+	-- If goal is position vector, then skip check
+	local skip_angles = type(trGoal[1])=='number'
+	--
+	local forward, inverse = self.forward, self.inverse
+	-- Save the goal
+	local qGoal, posGoal, quatGoal
+	if skip_angles then
+		posGoal = trGoal
+		qGoal = inverse_position(posGoal, qArm0, unpack(null_options))
+	else
+		-- Must also fix the rotation matrix, else the yaw will not be correct!
+		qGoal = inverse(trGoal, qArm0, unpack(null_options))
+	end
+	--
+	qGoal = clamp_vector(qGoal, self.min_q, self.max_q)
+	--
+	local fkGoal, null_options0 = forward(qGoal)
+	if not skip_angles then
+		--print('posGoal In ', trGoal)
+		quatGoal, posGoal = T.to_quaternion(fkGoal)
+		vector.new(posGoal)
+		--print('posGoal Out', posGoal)
+	end
+
+	local fkArm0, null_options0 = forward(qArm0)
+	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
+	local dPos0 = posGoal - posArm0
+	local distance0 = vector.norm(dPos0)
+
+	local dqdt_limit = self.dqdt_limit
+	-- We return the iterator and the final joint configuarion
+	-- TODO: Add failure detection; if no dist/ang changes in a while
+	return function(cur_qArm, dt)
+		local cur_trArm, null_options_tmp = forward(cur_qArm)
+		--if skip_angles==false and is_singular then print('PLAN SINGULARITY') end
+		local trStep, dAng, dAxis, quatArm, posArm
+		if skip_angles then
+			posArm = vector.new{cur_trArm[1][4], cur_trArm[2][4], cur_trArm[3][4]}
+		else
+			quatArm, posArm = T.to_quaternion(cur_trArm)
+			dAng, dAxis = q.diff(quatArm,quatGoal)
+		end
+		--
+		local dPos = posGoal - vector.new(posArm)
+		--print('dPos', dPos, posGoal, posArm)
+		local distance = vector.norm(dPos)
+		if distance < res_pos then
+			if skip_angles or math.abs(dAng)<res_ang or is_singular then
+				-- If both within tolerance, then we are done
+				-- If singular and no position to go, then done
+					-- TODO: Return the goal
+				sanitize(qGoal, cur_qArm, dt, dqdt_limit)
+				return nil, qGoal, is_singular
+			end
+			-- Else, just rotate in place
+			local qSlerp = q.slerp(quatArm,quatGoal,res_ang/dAng)
+			trStep = T.from_quaternion(qSlerp,posGoal)
+		elseif skip_angles or math.abs(dAng)<res_ang or is_singular then
+			-- Just translation
+			local ddpos = (res_pos / distance) * dPos
+			if skip_angles then
+				return inverse_position(ddpos+posArm, cur_qArm, unpack(null_options))
+			end
+			trStep = T.trans(unpack(ddpos)) * cur_trArm
+		else
+			-- Both translation and rotation
+			trStep = T.from_quaternion(
+				q.slerp(quatArm,quatGoal,res_ang/dAng),
+				res_pos * dPos/distance + posArm
+			)
+		end
+		-- Abstract idea of how far we are from the goal, as a percentage.
+		-- Closer to the start, means the null options should be closer there, too.
+		-- Closer to the finish, the null options should be closer to the goal options
+		-- null_options_tmp: has the *current* option
+		local null_ph = 1 - math.max(0, math.min(1, distance / distance0))
+		for i, v in ipairs(null_options) do
+			null_options_tmp[i] = null_options0[i] * (1-null_ph) + v * null_ph
+		end
+		local iqWaypoint = inverse(trStep, cur_qArm, unpack(null_options_tmp))
+		-- Sanitize to avoid trouble with wrist yaw
+		sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
+		return distance, iqWaypoint
+	end, qGoal
+end
+
+-- TODO: Optimize the feedforward ratio
+local function joint_iter(self, qGoal0, qArm0, res_q, SKIP_SANITIZE)
+	res_q = res_q or 3 * DEG_TO_RAD
+	local dq_max = res_q * self.ones
+	local dq_min = -1 * dq_max
+	local qGoal = clamp_vector(qGoal0, self.min_q, self.max_q)
+	local dqdt_limit = self.dqdt_limit
+	if not SKIP_SANITIZE then sanitize(qGoal, qArm0, dt, dqdt_limit) end
+	local qPrev
+	return function(cur_qArm, dt)
+		-- Feedback
+		local dqFB = qGoal - cur_qArm
+		local distanceFB = vector.norm(dqFB)
+		-- Check if done
+		if distanceFB < res_q then return nil, qGoal end
+		local qWaypointFB = cur_qArm + clamp_vector(dqFB, dq_min, dq_max)
+		sanitize(qWaypointFB, cur_qArm, dt, dqdt_limit)
+		-- Feedforward
+		qPrev = qPrev or cur_qArm
+		local dqFF = qGoal - qPrev
+		local distanceFF = vector.norm(dqFF)
+		local qWaypointFF
+		if distanceFF < res_q then
+			qWaypointFF = qGoal
+		else
+			qWaypointFF = qPrev + clamp_vector(dqFF, dq_min, dq_max)
+			sanitize(qWaypointFF, qPrev, dt, dqdt_limit)
+		end
+		-- Mix Feedback and Feedforward
+		local qWaypoint = 0.25 * qWaypointFB + 0.75 * qWaypointFF
+		qPrev = qWaypoint
+		return distanceFB, qWaypoint
+	end, qGoal
+end
 
 -- Plan a direct path using
 -- a straight line
@@ -125,98 +240,6 @@ local function line_stack(self, qArm, trGoal, res_pos, res_ang, use_safe_inverse
 	return setmetatable(qStack, mt), qGoal
 end
 
--- This should have exponential approach properties...
--- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
-local function line_iter(self, trGoal, qArm0, res_pos, res_ang, null_options)
-	res_pos = res_pos or 0.005
-	res_ang = res_ang or 3*DEG_TO_RAD
-	null_options = null_options or {}
-	-- If goal is position vector, then skip check
-	local skip_angles = type(trGoal[1])=='number'
-	--
-	local forward, inverse = self.forward, self.inverse
-	-- Save the goal
-	local qGoal, posGoal, quatGoal
-	if skip_angles then
-		posGoal = trGoal
-		qGoal = inverse_position(posGoal, qArm0, unpack(null_options))
-	else
-		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		qGoal = inverse(trGoal, qArm0, unpack(null_options))
-	end
-	--
-	qGoal = clamp_vector(qGoal, self.min_q, self.max_q)
-	--
-	local fkGoal, null_options0 = forward(qGoal)
-	if not skip_angles then
-		--print('posGoal In ', trGoal)
-		quatGoal, posGoal = T.to_quaternion(fkGoal)
-		vector.new(posGoal)
-		--print('posGoal Out', posGoal)
-	end
-	
-	local fkArm0, null_options0 = forward(qArm0)
-	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
-	local dPos0 = posGoal - posArm0
-	local distance0 = vector.norm(dPos0)
-	
-	local dqdt_limit = self.dqdt_limit
-	-- We return the iterator and the final joint configuarion
-	-- TODO: Add failure detection; if no dist/ang changes in a while
-	return function(cur_qArm, dt)
-		local cur_trArm, null_options_tmp = forward(cur_qArm)
-		--if skip_angles==false and is_singular then print('PLAN SINGULARITY') end
-		local trStep, dAng, dAxis, quatArm, posArm
-		if skip_angles then
-			posArm = vector.new{cur_trArm[1][4], cur_trArm[2][4], cur_trArm[3][4]}
-		else
-			quatArm, posArm = T.to_quaternion(cur_trArm)
-			dAng, dAxis = q.diff(quatArm,quatGoal)
-		end
-		--
-		local dPos = posGoal - vector.new(posArm)
-		--print('dPos', dPos, posGoal, posArm)
-		local distance = vector.norm(dPos)
-		if distance < res_pos then
-			if skip_angles or math.abs(dAng)<res_ang or is_singular then
-				-- If both within tolerance, then we are done
-				-- If singular and no position to go, then done
-					-- TODO: Return the goal
-				sanitize(qGoal, cur_qArm, dt, dqdt_limit)
-				return nil, qGoal, is_singular
-			end
-			-- Else, just rotate in place
-			local qSlerp = q.slerp(quatArm,quatGoal,res_ang/dAng)
-			trStep = T.from_quaternion(qSlerp,posGoal)
-		elseif skip_angles or math.abs(dAng)<res_ang or is_singular then
-			-- Just translation
-			local ddpos = (res_pos / distance) * dPos
-			if skip_angles then
-				return inverse_position(ddpos+posArm, cur_qArm, unpack(null_options))
-			end
-			trStep = T.trans(unpack(ddpos)) * cur_trArm
-		else
-			-- Both translation and rotation
-			trStep = T.from_quaternion(
-				q.slerp(quatArm,quatGoal,res_ang/dAng),
-				res_pos * dPos/distance + posArm
-			)
-		end
-		-- Abstract idea of how far we are from the goal, as a percentage.
-		-- Closer to the start, means the null options should be closer there, too.
-		-- Closer to the finish, the null options should be closer to the goal options
-		-- null_options_tmp: has the *current* option
-		local null_ph = 1 - math.max(0, math.min(1, distance / distance0))
-		for i, v in ipairs(null_options) do
-			null_options_tmp[i] = null_options0[i] * (1-null_ph) + v * null_ph
-		end
-		local iqWaypoint = inverse(trStep, cur_qArm, unpack(null_options_tmp))
-		-- Sanitize to avoid trouble with wrist yaw
-		sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
-		return distance, iqWaypoint
-	end, qGoal
-end
-
 local function joint_stack(self, qGoal, qArm, res_q)
 	res_q = res_q or 2*DEG_TO_RAD
 	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
@@ -232,40 +255,6 @@ local function joint_stack(self, qGoal, qArm, res_q)
 	return setmetatable(qStack, mt)
 end
 
-local function joint_iter(self, qGoal, qArm0, res_q)
-	res_q = res_q or 3 * DEG_TO_RAD
-	qGoal = vector.copy(clamp_vector(qGoal, self.min_q, self.max_q))
-	sanitize(qGoal, qArm0, dt, dqdt_limit)
-	local dq_min = -res_q * vector.ones(#qGoal)
-	local dq_max = res_q * vector.ones(#qGoal)
-	local dqdt_limit = self.dqdt_limit
-	local qPrev
-	return function(cur_qArm, dt)
-		-- Feedback
-		local dqFB = qGoal - cur_qArm
-		local distanceFB = vector.norm(dqFB)
-		-- Check if done
-		if distanceFB < res_q then return nil, vector.copy(qGoal) end
-		local qWaypointFB = cur_qArm + clamp_vector(dqFB, dq_min, dq_max)
-		sanitize(qWaypointFB, cur_qArm, dt, dqdt_limit)
-		-- Feedforward
-		qPrev = qPrev or vector.copy(cur_qArm)
-		local dqFF = qGoal - qPrev
-		local distanceFF = vector.norm(dqFF)
-		local qWaypointFF
-		if distanceFF < res_q then
-			qWaypointFF = vector.copy(qGoal)
-		else
-			qWaypointFF = qPrev + clamp_vector(dqFF, dq_min, dq_max)
-		end
-		sanitize(qWaypointFF, qPrev, dt, dqdt_limit)
-		-- Mix Feedback and Feedforward
-		local qWaypoint = 0.25 * qWaypointFB + 0.75 * qWaypointFF
-		qPrev = vector.copy(qWaypoint)
-		return distanceFB, qWaypoint
-	end
-end
-
 -- Set the forward and inverse
 local function set_chain(self, forward, inverse)
 	self.forward = forward
@@ -275,15 +264,17 @@ end
 
 -- Still must set the forward and inverse kinematics
 function libPlan.new_planner(min_q, max_q, dqdt_limit)
+	local armOnes = vector.ones(7)
 	return {
-		min_q = min_q or -90*DEG_TO_RAD*vector.ones(7),
-		max_q = max_q or 90*DEG_TO_RAD*vector.ones(7),
-		dqdt_limit = dqdt_limit or DEG_TO_RAD*vector.new{15,10,10, 15, 20,20,20},
+		min_q = min_q or -90*DEG_TO_RAD*armOnes,
+		max_q = max_q or 90*DEG_TO_RAD*armOnes,
+		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
 		line_stack = line_stack,
 		line_iter = line_iter,
 		joint_stack = joint_stack,
 		joint_iter = joint_iter,
-		set_chain = set_chain
+		set_chain = set_chain,
+		ones = armOnes,
 	}
 end
 

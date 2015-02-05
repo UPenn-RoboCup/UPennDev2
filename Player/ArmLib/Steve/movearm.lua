@@ -7,16 +7,19 @@ local P = require'libPlan'
 local K = require'K_ffi'
 local sanitize = K.sanitize
 
+local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
+local radiansPerSecond = degreesPerSecond * DEG_TO_RAD
+
 local lPlanner = P.new_planner(
 	vector.slice(Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
 	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
-	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD
+	radiansPerSecond
 ):set_chain(K.forward_larm, K.inverse_larm)
 
 local rPlanner = P.new_planner(
 	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
 	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
-	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD -- Angular speedlimits
+	radiansPerSecond
 ):set_chain(K.forward_rarm, K.inverse_rarm)
 
 -- TODO: Add dt into the joint iterator

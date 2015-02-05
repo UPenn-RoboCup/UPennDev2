@@ -100,6 +100,7 @@ fsm.Arm = {
   {'armGrab', 'init', 'armInit'},
   -- Push around the arm in the null space of our IK
   {'armNull', 'null', 'armNull'},
+  {'armNull', 'teleop', 'armTeleop'},
   {'armNull', 'done', 'armStance'},
 }
 

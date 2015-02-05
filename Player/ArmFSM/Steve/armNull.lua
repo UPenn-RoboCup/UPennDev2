@@ -19,7 +19,7 @@ local n_inflections, is_inflected, was_inflected
 -- Count the steady state
 local n_steady_state
 -- Detect the direction and current offset and the joint initially
-local d0, cur0, q0
+local dir0, cur0, q0
 -- Check if moving
 local moving
 -- Threholds
@@ -50,7 +50,7 @@ function state.entry()
 	n_steady_state = 0
   --
 	cur0 = false
-	d0 = false
+	dir0 = false
 	q0 = Body.get_rarm_command_position()[dof]
   -- error in the position (sag)
   qErr = Body.get_rarm_position()[dof] - q0
@@ -101,15 +101,18 @@ function state.update()
 	local ddCur = util.procFunc(dCur, cur_std, 1)
   local ddQ = util.procFunc(dq, cur_std, 1)
 
+  -- Need at least 5 points to sum
 	if #sample_dir < 5 then
     table.insert(sample_dir, ddCur)
-    d0 = util.sign(sample_dir)
-    if #sample_dir < 5 or d0==0 then return end
-    print('Set the Current direction', d0)
+    if #sample_dir < 5 then return end
+    local s = torch.Tensor(sample_dir)
+    dir0 = util.sign(s:sum())
+    if dir0==0 then return end
+    print('Set the Current direction', dir0)
 	end
 
   -- Check if an inflection occurred
-	if ddCur~=d0 then
+	if ddCur~=dir0 then
 		n_inflections = n_inflections + 1
 	else
 		n_inflections = n_inflections - 1
@@ -134,7 +137,7 @@ function state.update()
 
 	-- Must only use our initial direction to react to the human
 	-- Can just re-enter the state quickly on direction change
-	if ddCur~=d0 then
+	if ddCur~=dir0 then
     print('outlier dir')
     return
   end
@@ -142,7 +145,7 @@ function state.update()
   -- Calculate the new position to use for the arm
 	local dqFromCur = qCurGain * dCur
   local q1 = q0 - dqFromCur
-  io.write('dCur', dCur, 'd0', d0, 'ddCur', ddCur, '\n')
+  io.write('dCur', dCur, 'dir0', dir0, 'ddCur', ddCur, '\n')
 	io.write('dq*', dqFromCur*RAD_TO_DEG, 'dq', dq*RAD_TO_DEG, '\n')
   io.write('q0', q0*RAD_TO_DEG, '\n')
 	io.write('q1', q1*RAD_TO_DEG, 'q', q*RAD_TO_DEG, '\n')

@@ -13,8 +13,8 @@ local sample_dir, n_sample_dir
 local moving
 local n_inflections, n_steady_state, is_inflected
 
--- Detect the direction and current offset
-local d0, cur0
+-- Detect the direction and current offset and the joint initially
+local d0, cur0, q0
 
 -- The null degree of freedom
 -- TODO: Use a jacbian and fun stuff
@@ -28,10 +28,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   t_finish = t
-  -- First, determine the stiction current at present
-  local cur = Body.get_rarm_current()[dof]
-	local q = Body.get_rarm_position()[dof]
-	local q0 = Body.get_rarm_command_position()[dof]
+	
+	-- Determining stiction, etc.
 	stiction = 0
 	n_stiction = 0
 	sample_dir = 0
@@ -41,6 +39,7 @@ function state.entry()
 	is_inflected = false
 	cur0 = nil
 	d0 = nil
+	q0 = Body.get_rarm_command_position()[dof]
 
   -- Assume not moving to begin with
   moving = false
@@ -58,7 +57,6 @@ function state.update()
 	-- Grab our data
 	local cur = Body.get_rarm_current()[dof]
 	local q = Body.get_rarm_position()[dof]
-	local q0 = Body.get_rarm_command_position()[dof]
 
 	-- Estimate the stiction while in this limit
 	if not moving and math.abs(q-q0)*RAD_TO_DEG<0.02 then
@@ -130,8 +128,19 @@ function state.update()
 
 	print('dq', dq)
 	print('dCur', dCur)
+	-- Current opposes the direction
+	local qCurGain = 1/7500
+	local dqFromCur = qCurGain * dCur
+	print('dq*', dqFromCur*RAD_TO_DEG)
+	print('q0', q0*RAD_TO_DEG)
+	local q1 = q0 - dqFromCur
+	print('q1', q1*RAD_TO_DEG)
+	print('q', q*RAD_TO_DEG)
+	----[[
+	q0 = q1
+	Body.set_rarm_command_position(q0, dof)
+	--]]
 	print()
-	--Body.set_rarm_command_position(0, dof)
 
 end
 

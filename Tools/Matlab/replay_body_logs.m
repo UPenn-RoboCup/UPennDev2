@@ -15,8 +15,7 @@ jointNames = { ...
 };
 
 %% Aquire the body joint angles
-timestamp = '12.02.2014.18.28.47';
-
+timestamp = '02.05.2015.11.04.59';
 % TODO: Check if already available
 %load(strcat('Data/joint_m_',timestamp,'.mat'));
 

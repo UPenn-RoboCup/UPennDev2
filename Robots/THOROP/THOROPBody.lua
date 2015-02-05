@@ -15,7 +15,8 @@ require'dcm'
 local Body = {}
 local dcm_ch = si.new_publisher'dcm!'
 local get_time = require'unix'.time
-local vslice = vector.slice
+local usleep = require'unix'.usleep
+local vslice = require'vector'.slice
 
 -- Body sensors
 local nx_registers = require'libDynamixel'.nx_registers
@@ -28,12 +29,14 @@ for sensor, n_el in pairs(dcm.sensorKeys) do
     ptr = dcm.sensorPtr[sensor]
     ptr_t = dcm.tsensorPtr[sensor]
   end
-  local get = function(idx1, idx2, needs_wait)
+  local function get(idx1, idx2, needs_wait)
 		local start, stop = idx1 or 1, idx2 or n_el
     if is_motor and needs_wait then
 			local ids = {}
 			for id = start, stop do ids[id] = true end
 			dcm_ch:send(mpack({rd_reg=sensor, ids=ids}))
+			-- 100Hz assumed for the wait period to be in SHM
+			unix.usleep(1e4)
     end
   	-- For cdata, use -1
 		-- Return the time of the reading
@@ -46,8 +49,8 @@ for sensor, n_el in pairs(dcm.sensorKeys) do
   for part, jlist in pairs(Config.parts) do
 	  local not_synced = sensor~='position'
     local idx1, idx2 = jlist[1], jlist[#jlist]
-    Body['get_'..part:lower()..'_'..sensor] = function(idx, skip_wait)
-			return get(idx1, idx2, not_synced and not skip_wait)
+    Body['get_'..part:lower()..'_'..sensor] = function(idx)
+			return get(idx1, idx2, not_synced)
     end -- Get
   end
 	-- End anthropomorphic
@@ -107,9 +110,16 @@ for actuator, n_el in pairs(dcm.actuatorKeys) do
 			dcm_ch:send(mpack({wr_reg=actuator, ids=changed_ids}))
 		end
 	end
-	local function get(idx1, idx2)
+	local function get(idx1, idx2, needs_wait)
 		idx1 = idx1 or 1
 		idx2 = idx2 or n_el
+    if needs_wait then
+			local ids = {}
+			for id = idx1, idx2 do ids[id] = true end
+			dcm_ch:send(mpack({rd_reg=actuator, ids=ids}))
+			-- 100Hz assumed for the wait period to be in SHM
+			unix.usleep(1e4)
+    end
 		-- For cdata, use -1
 		return vslice(ptr, idx1 - 1, idx2 - 1)
 	end
@@ -122,7 +132,9 @@ for actuator, n_el in pairs(dcm.actuatorKeys) do
   for part, jlist in pairs(Config.parts) do
 		local idx1, idx2, idx = jlist[1], jlist[#jlist], nil
 		Body['get_'..part:lower()..'_'..actuator] = function(idx)
-			if idx then return get(jlist[idx]) else return get(idx1, idx2) end
+			local needs_wait = not (actuator=='command_position')
+			print('actuator', actuator)
+			if idx then return get(jlist[idx], needs_wait) else return get(idx1, idx2, needs_wait) end
 		end
 		Body['set_'..part:lower()..'_'..actuator] = function(val, i)
 			if i then

@@ -8,13 +8,18 @@ local timeout = 10.0
 
 -- Stiction.current offset (synonomous for now)
 local STICTION_THRESHOLD = 10
+-- Count the current offset
 local stiction, n_stiction
+-- Count the directions
 local sample_dir, n_sample_dir
-local moving
-local n_inflections, n_steady_state, is_inflected
-
+-- Count the inflections
+local n_inflections, is_inflected
+-- Count the steady state
+local n_steady_state
 -- Detect the direction and current offset and the joint initially
 local d0, cur0, q0
+-- Check if moving
+local moving
 
 -- The null degree of freedom
 -- TODO: Use a jacbian and fun stuff
@@ -28,20 +33,22 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   t_finish = t
-	
 	-- Determining stiction, etc.
 	stiction = 0
 	n_stiction = 0
+  --
 	sample_dir = 0
 	n_sample_dir = 0
+  --
 	n_inflections = 0
+  is_inflected = false
+  --
 	n_steady_state = 0
-	is_inflected = false
-	cur0 = nil
-	d0 = nil
+  --
+	cur0 = false
+	d0 = false
 	q0 = Body.get_rarm_command_position()[dof]
-
-  -- Assume not moving to begin with
+  --
   moving = false
 end
 
@@ -53,31 +60,32 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 --  if t-t_entry > timeout then return'timeout' end
-  
+
 	-- Grab our data
 	local cur = Body.get_rarm_current()[dof]
 	local q = Body.get_rarm_position()[dof]
 
 	-- Estimate the stiction while in this limit
-	if not moving and math.abs(q-q0)*RAD_TO_DEG<0.02 then
-		-- Need 100 samples
-		if n_stiction < 100 then
-			n_stiction = n_stiction + 1
-			stiction = stiction + cur
-		end
-		-- Position is still close enough
-		return
-	elseif not cur0 then
-		cur0 = stiction / n_stiction
-		print('Offset current', cur0)
+	if moving==false then
+    if math.abs(q-q0)*RAD_TO_DEG<0.02 then
+  		-- Need 100 samples
+  		if n_stiction < 100 then
+  			n_stiction = n_stiction + 1
+  			stiction = stiction + cur
+  		end
+  		-- Position is still close enough
+  		return
+    end
 	end
 
 	-- See if we have started moving
-	if not moving then
+	if moving==false then
 		if math.abs(cur-cur0) > STICTION_THRESHOLD then
 			-- Check if away from the stiction significantly
-			print('Moving the arm!')
 			moving = true
+      print('Moving the arm!')
+      cur0 = stiction / n_stiction
+      print('Offset current', cur0)
 		else
 			return
 		end
@@ -92,7 +100,7 @@ function state.update()
 		n_sample_dir = n_sample_dir + 1
 		if n_sample_dir>4 then
 			d0 = util.sign(sample_dir)
-			-- Keep going...
+			-- Keep going if no common direction
 			if d0==0 then return end
 			print('Set the Current direction', d0)
 		else
@@ -100,7 +108,7 @@ function state.update()
 		end
 	end
 
-	if d~=d0 and not is_inflected then
+	if d~=d0 and is_inflected==false then
 		n_inflections = n_inflections + (d==d0 and -1 or 1)
 		n_inflections = math.max(0, n_inflections)
 		if n_inflections > 5 then
@@ -108,9 +116,8 @@ function state.update()
 			print('Inflection Current direction!')
 		end
 	end
-	
-	local dq = q-q0
 
+	local dq = q-q0
 	-- Don't return on inflection. Wait until steady state
 	if math.abs(dq)*RAD_TO_DEG < 0.04 then
 		n_steady_state = n_steady_state + 1
@@ -126,16 +133,14 @@ function state.update()
 	-- Can just re-enter the state quickly on direction change
 	if is_inflected or d~=d0 then return end
 
-	print('dq', dq)
 	print('dCur', dCur)
 	-- Current opposes the direction
 	local qCurGain = 1/7500
 	local dqFromCur = qCurGain * dCur
-	print('dq*', dqFromCur*RAD_TO_DEG)
-	print('q0', q0*RAD_TO_DEG)
+	print('dq*', dqFromCur*RAD_TO_DEG, 'dq', dq*RAD_TO_DEG)
 	local q1 = q0 - dqFromCur
-	print('q1', q1*RAD_TO_DEG)
-	print('q', q*RAD_TO_DEG)
+  print('q0', q0*RAD_TO_DEG)
+	print('q1', q1*RAD_TO_DEG, 'q', q*RAD_TO_DEG)
 	----[[
 	q0 = q1
 	Body.set_rarm_command_position(q0, dof)

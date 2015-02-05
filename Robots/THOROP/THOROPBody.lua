@@ -133,7 +133,6 @@ for actuator, n_el in pairs(dcm.actuatorKeys) do
 		local idx1, idx2, idx = jlist[1], jlist[#jlist], nil
 		Body['get_'..part:lower()..'_'..actuator] = function(idx)
 			local needs_wait = not (actuator=='command_position')
-			print('actuator', actuator)
 			if idx then return get(jlist[idx], needs_wait) else return get(idx1, idx2, needs_wait) end
 		end
 		Body['set_'..part:lower()..'_'..actuator] = function(val, i)

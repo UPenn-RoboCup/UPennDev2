@@ -26,9 +26,9 @@ for i=1:numel(jointNames)
     end
 end
 
-plot(h_n, t, rad2deg(pos(t_selected, joint_idx)), t, rad2deg(cmd(t_selected, joint_idx)) );
+plot(h_n, t, rad2deg(cmd(t_selected, joint_idx)), t, rad2deg(pos(t_selected, joint_idx)) );
 xlim(h_n, [t0, tf]);
-legend(h_n, 'Position', 'Command');
+legend(h_n, 'Command', 'Position');
 title(h_n, sprintf('%s: Command vs. Position', joint));
 xlabel(h_n,'Time (sec) with P Gain: 32');
 ylabel(h_n,'Angle (deg)');
@@ -49,9 +49,9 @@ for i=1:numel(jointNames)
     end
 end
 
-plot(h_s, t, rad2deg(pos(t_selected, joint_idx)), t, rad2deg(cmd(t_selected, joint_idx)) );
+plot(h_s, t, rad2deg(cmd(t_selected, joint_idx)), t, rad2deg(pos(t_selected, joint_idx)) );
 xlim(h_s, [t0, tf]);
-legend(h_s, 'Position', 'Command');
+legend(h_s, 'Command', 'Position');
 title(h_s, sprintf('%s: Command vs. Position', joint));
 xlabel(h_s,'Time (sec) with P Gain: 32');
 ylabel(h_s,'Angle (deg)');

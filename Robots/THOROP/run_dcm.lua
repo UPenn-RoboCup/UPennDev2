@@ -369,11 +369,15 @@ local function parse_read_packet(pkt, bus)
 	local parse = lD.byte_to_number[reg[2]]
 	-- Assume just reading position, for now
 	local j_val, read_j_id = parse(unpack(pkt.parameter)), m_to_j[m_id]
+	if not read_j_id then return end
 	-- Set in Shared memory
 	local ptr, ptr_t = dcm.sensorPtr[reg_name], dcm.tsensorPtr[reg_name]
-	if not ptr or not ptr_t then return end
-	ptr[read_j_id - 1] = j_val
-	ptr_t[read_j_id - 1] = t_read
+	if ptr then
+		ptr[read_j_id - 1] = j_val
+		ptr_t[read_j_id - 1] = t_read
+	elseif dcm.actuatorPtr[reg_name] then
+		dcm.actuatorPtr[reg_name][read_j_id - 1] = j_val
+	end
 	return read_j_id
 end
 
@@ -501,9 +505,10 @@ local function do_external(request, bus)
 					print("BAD TORQUE MODE!!")
 				end
 			end
+			return
 		end
 		-- TODO: Special code for changing torque modes
-
+--print('wr_reg', wr_reg)
 		-- Send to the bus in sync fashion, for now
 		if has_nx and has_mx then
 			lD.set_bulk(m_ids, addr_n_len, m_vals, bus, true)
@@ -542,6 +547,7 @@ local function do_external(request, bus)
 		elseif has_mx then
 			lD['get_mx_'..rd_reg](m_ids, bus, true)
 		end
+		--print('rd_reg', rd_reg)
 		return #m_ids, rd_reg
 	elseif bus_name then
 		print("Externally set", request.key, request.val, bus_name)
@@ -824,7 +830,6 @@ local function consolidate(queue)
 		-- Debug messages for the user
 		dt_debug = t_start - t_debug
 		if dt_debug > .1 then
-		  os.execute('clear')
 			t_debug = t_start
 			debug_str = {
 				string.format('\nDCM | Uptime %.2f sec, Mem: %d kB', t_start - t0, collectgarbage('count')),
@@ -881,6 +886,7 @@ local function consolidate(queue)
 		end
 
 		debug_str = table.concat(debug_str, '\n')
+		os.execute('clear')
 		io.write(debug_str)
 
 		end

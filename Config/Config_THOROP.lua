@@ -26,19 +26,23 @@ if IS_WEBOTS then
   -- Default Webots sensors
   Config.sensors = {
 		ft = true,
-		feedback = 'feedback_wizard',
+		--feedback = 'feedback_wizard',
     --head_camera = 'camera_wizard',
     --chest_lidar = 'mesh_wizard',
     --head_lidar = 'slam_wizard',
     --kinect = 'kinect2_wizard',
-		--world = 'world_wizard',
+	 world = 'world_wizard',
   }
   -- Adjust the tiemsteps if desired
   -- Config.camera_timestep = 33
   -- Config.lidar_timestep = 200 --slower
   -- Config.kinect_timestep = 30
+
+
+
   Config.use_gps_pose = false
 end
+Config.use_imu_yaw = true
 
 ----------------------------------
 -- Application specific Configs --
@@ -61,8 +65,7 @@ else
 		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'
 	}
 	if IS_WEBOTS then
-		Config.sensors.kinect = 'kinect2_wizard'
-		Config.kinect_timestep = 50
+--		Config.kinect_timestep = 50
 	end
 end
 

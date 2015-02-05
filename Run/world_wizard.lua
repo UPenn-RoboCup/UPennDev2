@@ -75,8 +75,8 @@ local function update()
     uOdometry = mcm.get_status_odometry()
     dOdometry = util.pose_relative(uOdometry,uOdometry0)
 
-    --Hack dor robocup
-    if Config.libs.World=='RoboCup' then
+    --Hack for robocup
+    if Config.fsm.libraries.World=='RoboCup' then
       lW.update_odometry(dOdometry)
       wcm.set_robot_pose(lW.get_pose())
     else
@@ -106,9 +106,7 @@ local function update()
     print(string.format('HURDLE: %.2f %.2f %.1f', 
       step_pose[1], step_pose[2], step_pose[3]*RAD_TO_DEG))
   end  
-  
-  
-  
+   
 end
 
 if ... and type(...)=='string' then

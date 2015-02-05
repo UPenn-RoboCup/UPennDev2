@@ -156,7 +156,7 @@ local function joint_iter(self, qGoal0, qArm0, res_q, SKIP_SANITIZE)
 			sanitize(qWaypointFF, qPrev, dt, dqdt_limit)
 		end
 		-- Mix Feedback and Feedforward
-		local qWaypoint = 0.25 * qWaypointFB + 0.75 * qWaypointFF
+		local qWaypoint = 0.2 * qWaypointFB + 0.8 * qWaypointFF
 		qPrev = qWaypoint
 		return distanceFB, qWaypoint
 	end, qGoal
@@ -170,23 +170,23 @@ end
 local function line_stack(self, qArm, trGoal, res_pos, res_ang, use_safe_inverse)
 	res_pos = res_pos or 0.005
 	res_ang = res_ang or 1*DEG_TO_RAD
-	local K = self.K
+	local forward, inverse = self.forward, self.inverse
 	-- If goal is position vector, then skip check
 	local skip_angles = type(trGoal[1])=='number'
 	-- Save the goal
 	local qGoal, posGoal, quatGoal
 	if skip_angles==true then
 		posGoal = trGoal
-		qGoal = K.inverse_arm_position(posGoal,qArm)
+		qGoal = inverse(posGoal,qArm)
 	else
 		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		qGoal = K.inverse_arm(trGoal,qArm)
+		qGoal = forward(trGoal,qArm)
 	end
 	--
 	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
 	--
-	local fkGoal = K.forward_arm(qGoal)
-	local fkArm  = K.forward_arm(qArm)
+	local fkGoal = forward(qGoal)
+	local fkArm  = forward(qArm)
 	if skip_angles==true then
 		posArm = vector.new{fkArm[1][4],fkArm[2][4],fkArm[3][4]}
 	else
@@ -218,11 +218,12 @@ local function line_stack(self, qArm, trGoal, res_pos, res_ang, use_safe_inverse
 	for i=nSteps,1,-1 do
 		cur_posArm = cur_posArm + ddp
 		if skip_angles==true then
-			cur_qArm = K.inverse_arm_position(cur_posArm,cur_qArm)
+			-- TODO: Does not exist
+			cur_qArm = K.inverse_arm_position(cur_posArm, cur_qArm)
 		else
 			local qSlerp = q.slerp( quatArm, quatGoal, i*inv_nSteps )
 			local trStep = T.from_quaternion( qSlerp, cur_posArm )
-			cur_qArm = K.inverse_arm( trStep, cur_qArm )
+			cur_qArm = inverse( trStep, cur_qArm )
 		end
 		--[[
 		local trWaypoint = dTransBack * cur_trArm

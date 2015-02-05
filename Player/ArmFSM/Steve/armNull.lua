@@ -54,6 +54,7 @@ function state.entry()
 	q0 = Body.get_rarm_command_position()[dof]
   -- error in the position (sag)
   qErr = Body.get_rarm_position()[dof] - q0
+  print('qErr', qErr*RAD_TO_DEG)
   --
   cur_std = math.huge
   --
@@ -70,9 +71,9 @@ function state.update()
 --  if t-t_entry > timeout then return'timeout' end
 
 	-- Grab our data
+  local cur = Body.get_rarm_current()[dof]
   local qArm = Body.get_rarm_position()
-	local cur = Body.get_rarm_current()[dof]
-	local q = qArm[dof]
+  local q = qArm[dof]
 
 	-- Estimate the sample_cur while in this limit
 	if moving==false then
@@ -98,12 +99,12 @@ function state.update()
 	local dCur = cur - cur0
   local dq = q - q0
 	-- Check the direction of the current and position
-	local ddCur = util.procFunc(dCur, cur_std, 1)
-  local ddQ = util.procFunc(dq, cur_std, 1)
+	local dirCur = util.procFunc(dCur, cur_std, 1)
+  local dirQ = util.procFunc(dq, cur_std, 1)
 
   -- Need at least 5 points to sum
 	if #sample_dir < 5 then
-    table.insert(sample_dir, ddCur)
+    table.insert(sample_dir, dirCur)
     if #sample_dir < 5 then return end
     local s = torch.Tensor(sample_dir)
     dir0 = util.sign(s:sum())
@@ -112,7 +113,7 @@ function state.update()
 	end
 
   -- Check if an inflection occurred
-	if ddCur~=dir0 then
+	if dirCur~=dir0 then
 		n_inflections = n_inflections + 1
 	else
 		n_inflections = n_inflections - 1
@@ -137,7 +138,7 @@ function state.update()
 
 	-- Must only use our initial direction to react to the human
 	-- Can just re-enter the state quickly on direction change
-	if ddCur~=dir0 then
+	if dirCur~=dir0 then
     print('outlier dir')
     return
   end
@@ -145,7 +146,7 @@ function state.update()
   -- Calculate the new position to use for the arm
 	local dqFromCur = qCurGain * dCur
   local q1 = q0 - dqFromCur
-  io.write('dCur', dCur, 'dir0', dir0, 'ddCur', ddCur, '\n')
+  io.write('dCur', dCur, 'dir0', dir0, 'dirCur', dirCur, '\n')
 	io.write('dq*', dqFromCur*RAD_TO_DEG, 'dq', dq*RAD_TO_DEG, '\n')
   io.write('q0', q0*RAD_TO_DEG, '\n')
 	io.write('q1', q1*RAD_TO_DEG, 'q', q*RAD_TO_DEG, '\n')

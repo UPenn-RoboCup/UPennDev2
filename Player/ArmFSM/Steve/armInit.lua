@@ -5,6 +5,10 @@
 local state = {}
 state._NAME = ...
 
+
+local NO_YAW_FIRST = true
+
+
 local Body   = require'Body'
 local vector = require'vector'
 local T = require'Transform'
@@ -95,7 +99,7 @@ function state.update()
   		return 'done'
     else
 			-- ignore sanitization for the init position, which is absolutely known
-      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, 3*DEG_TO_RAD, true)
+      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, 1*DEG_TO_RAD, true)
       setShoulderYaw = true
     end
 	end

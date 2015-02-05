@@ -76,16 +76,13 @@ function state.update()
   		-- Position is still close enough
   		return
     end
-	end
-
-	-- See if we have started moving
-	if moving==false then
+		-- Need all those samples
+		if n_stiction < 100 then return end
+		cur0 = stiction / n_stiction
 		if math.abs(cur-cur0) > STICTION_THRESHOLD then
 			-- Check if away from the stiction significantly
 			moving = true
       print('Moving the arm!')
-      cur0 = stiction / n_stiction
-      print('Offset current', cur0)
 		else
 			return
 		end
@@ -109,12 +106,14 @@ function state.update()
 	end
 
 	if d~=d0 and is_inflected==false then
-		n_inflections = n_inflections + (d==d0 and -1 or 1)
-		n_inflections = math.max(0, n_inflections)
+		n_inflections = n_inflections + 1
 		if n_inflections > 5 then
 			is_inflected = true
 			print('Inflection Current direction!')
 		end
+	else
+		n_inflections = n_inflections - 1
+		n_inflections = math.max(0, n_inflections)
 	end
 
 	local dq = q-q0

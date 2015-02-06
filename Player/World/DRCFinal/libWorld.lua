@@ -77,7 +77,7 @@ function libWorld.pose_reset()
     yaw0 = gps_pose[3]
     wcm.set_robot_pose_gps0(wcm.get_robot_pose_gps())
   end
-
+print("pose resetted")
 end
 
 

@@ -113,6 +113,7 @@ function state.update()
     if IS_WEBOTS then
       bodyHeight = util.approachTol( bodyHeight, Config.walk.bodyHeight, Config.stance.dHeight, dt )
       mcm.set_stance_bodyHeight(bodyHeight)
+      if math.abs(bodyHeight-Config.walk.bodyHeight)<0.01 then return 'done' end
     end
 
     delta_legs, angleShift = moveleg.get_leg_compensation_new(2,0,{0,0,0}, {0,0,0,0},dt)

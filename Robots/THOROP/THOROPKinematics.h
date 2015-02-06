@@ -38,8 +38,14 @@ const double tibiaLength = 0.30;
 const double kneeOffsetX = 0.03;
 
 const double footHeight = 0.118; // Webots value
+
+
+//const double footToeX = 0.130; //from ankle to toe
+//const double footHeelX = 0.130; //from ankle to heel
+//SJ: Measured from NEW (smaller) feet
 const double footToeX = 0.130; //from ankle to toe
-const double footHeelX = 0.130; //from ankle to heel
+const double footHeelX = 0.110; //from ankle to heel
+
 
 //=================================================================
 

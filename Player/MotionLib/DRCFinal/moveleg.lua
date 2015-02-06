@@ -464,7 +464,7 @@ function moveleg.ft_compensate(t_diff)
   local ft,imu = moveleg.get_ft()
   moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
 --  moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
-  moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
+--  moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 end
 
 
@@ -506,6 +506,15 @@ function moveleg.process_ft_height(ft,imu,t_diff)
     max_torso_vel = {0.01,0.01} --1cm per sec
 
     max_zmp_comp = 0.08
+
+
+    zf_touchdown = 20    
+    zf_touchdown2= 50
+
+
+
+
+
   end
 
   local lft = mcm.get_status_LFT()
@@ -606,9 +615,13 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local zShift = mcm.get_status_zLeg()
   local z_min = -0.05
 
+  zShift[1] = zShift[1]+zvShift[1]*t_diff
+  zShift[2] = zShift[2]+zvShift[2]*t_diff
+
+--[[
   zShift[1] = math.max(z_min, zShift[1]+zvShift[1]*t_diff)
   zShift[2] = math.max(z_min, zShift[2]+zvShift[2]*t_diff)
-
+--]]
   mcm.set_walk_zvShift(zvShift)
   mcm.set_walk_zShift(zShift)
   mcm.set_status_zLeg(zShift)

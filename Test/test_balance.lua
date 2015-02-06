@@ -101,6 +101,19 @@ local function update(key_code)
 		hcm.set_step_relpos({0.0,0,0})
 		hcm.set_step_zpr({0.05,0,0})
 
+
+
+		hcm.set_step_relpos({0.17,0,0})
+		hcm.set_step_zpr({0.00,0,0})
+
+
+
+
+
+		hcm.set_step_relpos({-0.28,0,0})
+		hcm.set_step_zpr({-0.15,0,0})
+
+
 		body_ch:send'stepover1'		
 
 	elseif key_char_lower==("6") then      
@@ -112,8 +125,18 @@ local function update(key_code)
 		hcm.set_step_relpos({0.0,0,0})
 		hcm.set_step_zpr({0.05,0,0})
 
---		hcm.set_step_relpos({0.25,0,0})
---		hcm.set_step_zpr({0.15,0,0})
+
+
+		hcm.set_step_relpos({0.17,0,0})
+		hcm.set_step_zpr({0.00,0,0})
+
+
+
+
+
+
+		hcm.set_step_relpos({-0.28,0,0})
+		hcm.set_step_zpr({-0.15,0,0})
 		
 		body_ch:send'stepover1'		
 
@@ -123,6 +146,12 @@ local function update(key_code)
 		hcm.set_step_supportLeg(0)
 		hcm.set_step_relpos({0.25,0,0})
 		hcm.set_step_zpr({0.15,0,0})
+
+
+		hcm.set_step_relpos({0.28,0,0})
+		hcm.set_step_zpr({0.15,0,0})
+
+
 
 		body_ch:send'stepover1'		
 
@@ -134,6 +163,11 @@ local function update(key_code)
 		hcm.set_step_supportLeg(1)
 		hcm.set_step_relpos({0.25,0,0})
 		hcm.set_step_zpr({0.15,0,0})
+
+
+		hcm.set_step_relpos({0.28,0,0})
+		hcm.set_step_zpr({0.15,0,0})
+
 		body_ch:send'stepover1'		
 	end
 

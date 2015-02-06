@@ -199,17 +199,65 @@ function walk.update()
 --    print('f:',l_ft[3],r_ft[3])
 
 
+    local raiseVelMax = math.sin(phSingle*math.pi)*0.05
+    local raiseVelDS = 0.03
+
+
+
+
+    local lowerVelMax = math.sin(phSingle*math.pi)*0.10
+    local lowerVelDS = 0.05
+
+    local lowerVelMax = 0.20
+    local lowerVelDS = 0.10
+
+
+    local leg_raise = 0
+    if Config.raise_body then
+      if zLeft>0 and zRight>0 then
+        --we are climbing, and left support foot is already on the block
+
+        leg_raise = math.min(zLeft,zRight)
+        if supportLeg == 2 or phSingle==1 then
+          leg_raise = math.min(leg_raise,raiseVelDS*t_diff)
+        else
+          leg_raise = math.min(leg_raise,raiseVelMax*t_diff)
+        end
+      elseif zLeft<0 or zRight<0 then
+         leg_raise = math.min(zLeft,zRight)
+         if supportLeg == 2 or phSingle==1 then
+           leg_raise = math.max(leg_raise,-lowerVelDS*t_diff)
+         else
+           leg_raise = math.max(leg_raise,-lowerVelMax*t_diff)
+         end
+      end
+    end
+
+
     if supportLeg == 2 or phSingle==1 then --Double support
+      zLeg[1] = zLeg[1] - leg_raise
+      zLeg[2] = zLeg[2] - leg_raise        
       zLeft = zLeg[1]
       zRight = zLeg[2]
       mcm.set_status_zLeg0({zLeft,zRight})
     elseif supportLeg == 0 then  -- Left support    
       uRight,zRight,aRight,touched = foot_traj_func(
         phSingle,uRight_now,uRight_next,stepHeight,walkParam, zLeg[2],r_ft[3],touched)
-      zRight = zRight +zLeg0[2]      
+      
+      zLeg0[1] = zLeg0[1] - leg_raise
+      zLeg0[2] = zLeg0[2] - leg_raise
+      mcm.set_status_zLeg0(zLeg0)
+
+      zLeft = zLeg0[1]      
+      zRight = zRight +zLeg0[2]
     elseif supportLeg==1 then    -- Right support    
       uLeft,zLeft,aLeft,touched = foot_traj_func(
         phSingle,uLeft_now,uLeft_next,stepHeight,walkParam, zLeg[1], l_ft[3],touched)    
+          
+      zLeg0[1] = zLeg0[1] - leg_raise
+      zLeg0[2] = zLeg0[2] - leg_raise
+      mcm.set_status_zLeg0(zLeg0)
+      zRight = zLeg0[2]    
       zLeft = zLeft +zLeg0[1]
     end
 
@@ -258,6 +306,8 @@ function walk.update()
       touched = false
     end
 
+--[[
+
     --Auto lower the leg
     if phSingle==1 and not leg_lowered then
       if supportLeg==0 then 
@@ -270,6 +320,7 @@ function walk.update()
         leg_lowered = true        
       end
     end
+--]]
 
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG

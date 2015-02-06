@@ -19,6 +19,7 @@ local sformat = string.format
 
 require'mcm'
 require'hcm'
+require'wcm'
 
 count = 0
 
@@ -42,8 +43,9 @@ while running do
 
   	local enable_balance = hcm.get_legdebug_enable_balance()
 
-
   	local angleShift = mcm.get_walk_angleShift()
+
+	local pose = wcm.get_robot_pose()
 
 
 	count = count + 1
@@ -72,6 +74,9 @@ while running do
 		print(sformat("Foot angles: Left P%.1f R%.1f  Right P%.1f R%.1f",
 			RAD_TO_DEG*aShiftY[1],RAD_TO_DEG*aShiftX[1],RAD_TO_DEG*aShiftY[2],RAD_TO_DEG*aShiftX[2]            
 			))
+
+		print()
+		print(sformat("Pose: %.2f %.2f %d(deg)",pose[1],pose[2],pose[3]*180/math.pi))
 	end
 
 	unix.usleep(tDelay);

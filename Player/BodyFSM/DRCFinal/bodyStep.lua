@@ -52,7 +52,7 @@ local wt_pre = 1.0
 
 
 if IS_WEBOTS then st,wt = 1.0,1.0 end
-
+if IS_WEBOTS and not Config.enable_touchdown then st,wt = 0.3,1.0 end
 
 --Faster
 step_queues={
@@ -189,7 +189,12 @@ function state.entry()
   supportLeg = hcm.get_step_supportLeg()
   step_relpos = hcm.get_step_relpos() 
   step_zpr = hcm.get_step_zpr()
-  sh1,sh2 = step_zpr[1]+0.06, step_zpr[1]
+
+  if step_zpr[1]>0 then 
+    sh1,sh2 = step_zpr[1]+0.05, step_zpr[1]
+  else
+    sh1,sh2 = 0.05, step_zpr[1]
+  end
 
 
 
@@ -204,17 +209,30 @@ function state.entry()
     local side_adj = Config.walk.supportY - 0.00
     local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 
-    step_queues={
-       {
-        {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-        {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
-       },
 
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
-       },
-    }
+    if Config.enable_touchdown then
 
+
+      step_queues={
+         {
+          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+          {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+         },
+
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+    else
+      step_queues={
+         {
+          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+          {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+
+    end
 
   else
     --Take left step
@@ -225,17 +243,29 @@ function state.entry()
     local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
     
     step2 = -(uLeftTorso[1]-uRightTorso[1]) + step1
-    step_queues={
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-       
-       },
+    if Config.enable_touchdown then
+      step_queues={
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+          {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+         
+         },
 
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
-       },
-    }
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+    else
+      step_queues={
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+          {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+    end
+
+
   end
 
 

@@ -200,7 +200,7 @@ function walk.update()
 
 
     local raiseVelMax = math.sin(phSingle*math.pi)*0.05
-    local raiseVelDS = 0.03
+    local raiseVelDS = 0.05
 
 
 
@@ -210,6 +210,11 @@ function walk.update()
 
     local lowerVelMax = 0.20
     local lowerVelDS = 0.10
+
+
+    local lowerVelMax = 0.40
+    local lowerVelDS = 0.40
+
 
 
     local leg_raise = 0

@@ -16,8 +16,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.060965 -0.989928 -0.127774 4.07743
-  position 3.45531 1.61153 -1.17746
+  orientation 0.228468 -0.93575 -0.268652 4.5112
+  position 3.07529 2.49382 0.508088
 }
 Background {
   skyColor [
@@ -38,15 +38,13 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP_UPENN_HP {
-  translation 0 1.17 0
+  translation 0.00608837 1.17 0.354766
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
   footContactMaterial "feet"
 }
-
 CinderStair {
   translation 0 0 1.5
 }
-

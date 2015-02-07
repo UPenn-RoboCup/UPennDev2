@@ -11,6 +11,9 @@ require'wcm'
 
 require'mcm'
 
+local footstepplanner = require'footstepplanner'
+
+
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
 local motion_ch = simple_ipc.new_publisher('MotionFSM!')
@@ -68,13 +71,6 @@ step_queues={
     {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
    },
 }
-
-
-
-if IS_WEBOTS then st,wt = 1.0,1.0 
-
-
-end
 
 
 step_queues={
@@ -186,9 +182,39 @@ function state.entry()
 
   local wt2 = wt +(1+leg_move_factor)
 
-  supportLeg = hcm.get_step_supportLeg()
+
+
+
+
+  footstepplanner.getnextstep()
+
+  
   step_relpos = hcm.get_step_relpos() 
   step_zpr = hcm.get_step_zpr()
+
+
+
+
+
+
+
+
+
+
+
+  --automatic detect
+  supportLeg = 0 --right support
+  if step_relpos[1]>0 then --walk forward
+    if uLeftTorso[1]>uRightTorso[1] then --LF is leading foot, so left support
+      supportLeg=1
+    end
+  else
+    if uLeftTorso[1]<uRightTorso[1] then --RF is leading foot, so left support
+      supportLeg=1
+    end
+  end
+
+
 
   if step_zpr[1]>0 then 
     sh1,sh2 = step_zpr[1]+0.05, step_zpr[1]

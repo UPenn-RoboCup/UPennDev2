@@ -44,6 +44,7 @@ Solid {
 		children [
 			USE block
 			USE block2
+			USE block3
 		]
   }  
  locked TRUE

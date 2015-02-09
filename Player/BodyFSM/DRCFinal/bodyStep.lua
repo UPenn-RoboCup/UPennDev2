@@ -28,101 +28,17 @@ local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 
 
---for deflection test
-local sh1,sh2 = 0.10, 0.0
-local step1,step2 = 0.25, 0.25
-
-
---local sh1,sh2 = 0.10, 0.05
-
-local sh1,sh2 = 0.10, 0.0
---local sh1,sh2 = 0.0, 0.0
-
-local step1,step2 = 0.25, 0.25
-local side_adj = Config.walk.supportY - 0.00
-
-
-local step1,step2 = 0.0, 0.0
-
-
-
-local com_side = Config.walk.footY+Config.walk.supportY-side_adj
-
-local st = 2.0
-local wt = 3.0
-local wt_pre = 1.0
-
-
-
 if IS_WEBOTS then st,wt = 1.0,1.0 end
 if IS_WEBOTS and not Config.enable_touchdown then st,wt = 0.3,1.0 end
-
---Faster
-step_queues={
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
-    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
-    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },    
-    {{step1,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
-    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-}
-
-
-step_queues={
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
-   },
-
-   {
-    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
-    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },  
-   },
-
-   {  
-    {{step1,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
-    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-}
-
-
---Larger step
-
-
-step_queues={
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
-   },
-
-   {
-    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
-    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },  
-   },
-
-   {  
-    {{step1*2,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
-    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-}
-
-
-
 
 
 local stage = 1
 local ready_for_input = true
+
+local is_possible = true
+
+
+
 
 local function calculate_footsteps(stage)
   local step_queue = step_queues[stage]
@@ -182,11 +98,16 @@ function state.entry()
 
   local wt2 = wt +(1+leg_move_factor)
 
+  is_possible = true
 
-
-
-
+  hcm.set_step_nosolution(0)
   footstepplanner.getnextstep()
+  if hcm.get_step_nosolution()>0 then
+    --don't start step if there's no foot positions available!
+    is_possible = false
+    return
+  end
+
 
   
   step_relpos = hcm.get_step_relpos() 
@@ -205,21 +126,13 @@ function state.entry()
   --automatic detect
   supportLeg = 0 --right support
   if step_relpos[1]>0 then --walk forward
-    if uLeftTorso[1]>uRightTorso[1] then --LF is leading foot, so left support
-      supportLeg=1
-    end
+    if uLeftTorso[1]>uRightTorso[1] then supportLeg=1 end--LF is leading foot, so left support
   else
-    if uLeftTorso[1]<uRightTorso[1] then --RF is leading foot, so left support
-      supportLeg=1
-    end
+    if uLeftTorso[1]<uRightTorso[1] then supportLeg=1 end--RF is leading foot, so left support
   end
 
-
-
-  if step_zpr[1]>0 then 
-    sh1,sh2 = step_zpr[1]+0.05, step_zpr[1]
-  else
-    sh1,sh2 = 0.05, step_zpr[1]
+  if step_zpr[1]>0 then sh1,sh2 = step_zpr[1]+0.05, step_zpr[1]
+  else sh1,sh2 = 0.05, step_zpr[1]
   end
 
 
@@ -267,8 +180,9 @@ function state.entry()
     local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRight)
     local uTorsoTarget = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
     local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
+    local side_adj = Config.walk.supportY - 0.00
+    local com_side = Config.walk.footY+Config.walk.supportY-side_adj
     
-    step2 = -(uLeftTorso[1]-uRightTorso[1]) + step1
     if Config.enable_touchdown then
       step_queues={
          {
@@ -313,6 +227,8 @@ function state.update()
   -- Get the time of update
   
   local dt = t - t_update
+
+  if not is_possible then return "done" end
   -- Save this at the last update time
   t_update = t
   if mcm.get_walk_ismoving()==0 and t-t_stage>0.5 then    

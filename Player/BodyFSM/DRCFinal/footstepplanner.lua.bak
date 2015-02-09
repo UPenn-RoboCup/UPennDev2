@@ -10,6 +10,20 @@ require'hcm'
 local sformat = string.format
 local footY = Config.walk.footY
 
+--Temporary 1D surfaces
+local surfaces1D={
+  {-100,0.40,0.0,0},  -- x0 x1 z pitch
+  {0.40,0.80,0.15,0},  -- x0 x1 z pitch
+  {0.80,1.20,0.30,0},  -- x0 x1 z pitch
+  {1.20,1.60,0.45,0},  -- x0 x1 z pitch
+  {1.60,2.00,0.60,0},  -- x0 x1 z pitch
+  {2.00,2.40,0.45,0},  -- x0 x1 z pitch
+  {2.40,2.80,0.30,0},  -- x0 x1 z pitch
+  {2.80,3.20,0.15,0},  -- x0 x1 z pitch
+  {3.20,100,0,0},  -- x0 x1 z pitch
+}
+
+
 --2D surfaces
 --x1 x2 y1 y2  z_center pitch
 local surfaces2D={ 
@@ -22,16 +36,6 @@ local surfaces2D={
   {2.40,2.80,  -0.2,0.2,  0.30,0},  
   {2.80,3.20,  -0.2,0.2,  0.15,0},  
   {3.20,3.60,  -0.2,0.2,  0.0,0},  
-
-  {0,0.40,     -0.6,-0.2,          0.0,0}, 
-  {0.40,0.80,  -0.6,-0.2,  0,0},  
-  {0.80,1.20,  -0.6,-0.2,  0.15,0},  
-  {1.20,1.60,  -0.6,-0.2,  0.30,0}, 
-  {1.60,2.00,  -0.6,-0.2,  0.45,0}, 
-  {2.00,2.40,  -0.6,-0.2,  0.60,0},  
-  {2.40,2.80,  -0.6,-0.2,  0.45,0},  
-  {2.80,3.20,  -0.6,-0.2,  0.30,0},  
-  {3.20,3.60,  -0.6,-0.2,  0.15,0},  
 }
 
 
@@ -84,8 +88,22 @@ local function check_inside_surface2D_margin(s,uFoot,heel_margin)
 end
 
 
+local function check_inside_1D(surface1D,uFoot)
+  return (surface1D[1]<uFoot[1] and surface1D[2]>uFoot[1])
+end
+
+
+local function check_inside_margin_1D(surface1D,uFoot,heel_margin)
+  return (surface1D[1]+heel_margin<uFoot[1] and surface1D[2]-toeX>uFoot[1])
+end
+
 
 local function find_current_surface_height(uFoot)
+--[[  
+  for i=1,#surfaces1D do
+    if check_inside_1D(surfaces1D[i],uFoot) then return surfaces1D[i][3] end
+  end
+--]]
   for i=1,#surfaces2D do
     if check_inside_surface2D(surfaces2D[i],uFoot) then return surfaces2D[i][5] end
   end
@@ -93,6 +111,15 @@ local function find_current_surface_height(uFoot)
 end
 
 local function is_reachable(uFoot,foot_z)
+--[[  
+  for i=1,#surfaces1D do
+    local stepheight = surfaces1D[i][3]-foot_z
+    if math.abs(stepheight)<stepheight_max then
+      if stepheight>=0 and check_inside_margin_1D(surfaces1D[i],uFoot,heelX) then return stepheight end
+      if stepheight<0 and check_inside_margin_1D(surfaces1D[i],uFoot,heelLandX) then return stepheight end
+    end
+  end
+--]] 
   for i=1,#surfaces2D do
     local stepheight = surfaces2D[i][5]-foot_z
     if math.abs(stepheight)<stepheight_max then
@@ -119,7 +146,6 @@ end
 
 local function select_best_landing_position(uFoot,candidate)
   local best_foot, best_zpr = {0,0,0}, {0,0,0}
-  local no_solution = true
 
   local dir = hcm.get_step_dir()
 

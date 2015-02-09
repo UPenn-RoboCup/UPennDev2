@@ -6,6 +6,7 @@ state._NAME = ...
 
 require'mcm'
 require'hcm'
+require'wcm'
 local Body       = require'Body'
 local K          = Body.Kinematics
 local util       = require'util'
@@ -159,9 +160,9 @@ function state.exit()
 
   -- now on feet
   mcm.set_walk_bipedal(1)
-
-  -- Update current pose
   
+  -- Update current pose
+  wcm.set_robot_reset_pose(1)
   
 
   local pg = Config.walk.leg_p_gain or 64

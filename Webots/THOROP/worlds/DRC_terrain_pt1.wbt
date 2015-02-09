@@ -16,8 +16,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.228468 -0.93575 -0.268652 4.5112
-  position 3.07529 2.49382 0.508088
+  orientation 0.123037 -0.982721 -0.138278 4.62829
+  position 4.75013 3.11253 0.810935
 }
 Background {
   skyColor [
@@ -38,7 +38,8 @@ DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
 THOROP_UPENN_HP {
-  translation 0.00608837 1.17 0.354766
+#  translation 0.00608837 1.17 0.354766
+  translation 0 1.17 -0.030
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
@@ -46,5 +47,11 @@ THOROP_UPENN_HP {
   footContactMaterial "feet"
 }
 CinderStair {
-  translation 0 0 1.5
+  translation 0 0 1.8
+}
+CinderStair {
+  translation -0.40 0 2.2
+}
+CinderStair {
+  translation -0.80 0 2.6
 }

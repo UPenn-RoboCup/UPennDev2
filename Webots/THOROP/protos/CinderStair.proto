@@ -13,7 +13,7 @@ Solid {
   rotation IS rotation
   children [
 		DEF block Transform{
-			translation 0 0.075 0
+			translation 0 0.225 0
 			children[
 			  DEF cinderblock Shape {
 			     appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}
@@ -22,7 +22,7 @@ Solid {
 			]			
 		}
 		DEF block2 Transform{
-			  	translation 0 0.225 0
+			  	translation 0 0.375 0
 					children[
 						DEF cinderblock Shape {
 			     		appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}
@@ -31,20 +31,30 @@ Solid {
 			  	]
 		  	}	
 	  	DEF block3 Transform{
-		  	translation 0 0.375 0
+		  	translation 0 0.525 0
 				children[
 					DEF cinderblock Shape {
 		     		appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}
 		     		geometry Box { size 0.40 0.15 0.40 }
 		  		}
 		  	]
-	  	}	
+	  	}
+	  	DEF block4 Transform{
+		  	translation 0 0.075 0
+				children[
+					DEF cinderblock Shape {
+		     		appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}
+		     		geometry Box { size 0.40 0.15 2.80 }
+		  		}
+		  	]
+	  	}		
   ]
   boundingObject Group {
 		children [
 			USE block
 			USE block2
 			USE block3
+			USE block4
 		]
   }  
  locked TRUE

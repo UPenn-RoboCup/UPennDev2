@@ -103,16 +103,19 @@ local function is_reachable(uFoot,foot_z)
   return nil
 end
 
-local function sample_landing_positions(uFoot, foot_z)
+local function sample_landing_positions(uFoot, foot_z,leftsupport)
   local possible_foot_positions={}
   local dir = hcm.get_step_dir()
   local s,e=0,0.32
   if dir<0 then s,e = -0.28,0 end
 
-  for i=s,e,0.02 do
-    local uFoot2 = util.pose_global({i,0,0},uFoot)
-    local stepheight = is_reachable(uFoot2,foot_z)
-    if stepheight then table.insert(possible_foot_positions,{uFoot2, {stepheight,0,0}} )end
+  for j=0,0.04,0.02 do
+    for i=s,e,0.02 do    
+      local uFoot2 = util.pose_global({i,-j*leftsupport,0},uFoot)
+      local stepheight = is_reachable(uFoot2,foot_z)
+      if stepheight then table.insert(possible_foot_positions,{uFoot2, {stepheight,0,0}} )end
+    end
+    if #possible_foot_positions>0 then return possible_foot_positions end
   end
   return possible_foot_positions
 end
@@ -149,6 +152,7 @@ local function select_best_landing_position(uFoot,candidate)
     print("No landing possition possible!")
 
     hcm.set_step_nosolution(1)
+    hcm.set_step_dir(0)
     return    
   end
   print(sformat("Landing position selected: %.2f / %.2f", best_foot[1], best_zpr[1] ))
@@ -157,14 +161,14 @@ local function select_best_landing_position(uFoot,candidate)
 end
 
 
-function footstepplanner.getnextfoot(uFootSwing, uFootSupport)
+function footstepplanner.getnextfoot(uFootSwing, uFootSupport,leftsupport)
   local possible_foot_positions,uFootSwing0={},nil
   local current_swingfoot_z = find_current_surface_height(uFootSwing)
   local uFootSwingSupport = util.pose_relative(uFootSwing, uFootSupport)
   if uFootSwingSupport[2]>0 then uFootSwing0 = util.pose_global({0,2*footY,0},uFootSupport)--right support
   else uFootSwing0 = util.pose_global({0,-2*footY,0},uFootSupport) end
 
-  local possible_foot_positions = sample_landing_positions(uFootSwing0,current_swingfoot_z)
+  local possible_foot_positions = sample_landing_positions(uFootSwing0,current_swingfoot_z,leftsupport)
   select_best_landing_position(uFootSwing,possible_foot_positions)
 end
 
@@ -198,9 +202,9 @@ print(sformat("Current pose:%.2f Left:%.2f Right:%.2f ",pose[1],uLeftGlobal[1],u
 
 
   if uLeftTorso[1]>uRightTorso[1] then --left foot is leading foot
-    footstepplanner.getnextfoot(uRightGlobal,uLeftGlobal)
+    footstepplanner.getnextfoot(uRightGlobal,uLeftGlobal,1)
   else
-    footstepplanner.getnextfoot(uLeftGlobal,uRightGlobal)
+    footstepplanner.getnextfoot(uLeftGlobal,uRightGlobal,-1)
   end
 end
 

@@ -8,8 +8,6 @@ local util = require'util'
 local t_entry, t_update, t_finish
 local timeout = 10.0
 
--- Gain for moving the arm
-local qCurGain = 1 / 7500
 -- Count the current offset
 local sample_cur
 -- Count the directions
@@ -25,12 +23,18 @@ local moving
 -- Threholds
 local cur_std
 --
-local qErr
+local qErr, qArm0, trArm0
+local q_last, qc_last, cur_last
+local zeroCur_last, zeroHappened
+local start_count
+--
+local qSag0
 
 -- The null degree of freedom
 -- TODO: Use a jacbian and fun stuff
 -- For now, just use the free parameter of the IK, which is just the third joint
 local dof = 3
+local t_move
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -49,16 +53,27 @@ function state.entry()
   --
 	n_steady_state = 0
   --
-	cur0 = false
 	dir0 = false
-	q0 = Body.get_rarm_command_position()[dof]
+	curArm0 = Body.get_rarm_current()
+	qcArm0 = Body.get_rarm_command_position()
+	qArm0 = Body.get_rarm_position()
+  trArm0 = K.forward_rarm(qArm0)
+	cur0 = curArm0[dof]
+	q0 = qArm0[dof]
+	qc0 = qcArm0[dof]
+	q_last = q0
+	qc_last = qc0
+	cur_last = cur0
   -- error in the position (sag)
-  qErr = Body.get_rarm_position()[dof] - q0
-  print('qErr', qErr*RAD_TO_DEG)
+  qSag0 = q0 - qc0
   --
   cur_std = math.huge
   --
   moving = false
+	zeroHappened = false
+	--
+	start_count = 0
+	--print('Calibrating...', qSag0*RAD_TO_DEG)
 end
 
 function state.update()
@@ -71,17 +86,32 @@ function state.update()
 --  if t-t_entry > timeout then return'timeout' end
 
 	-- Grab our data
-  local cur = Body.get_rarm_current()[dof]
+  local curArm = Body.get_rarm_current()
   local qArm = Body.get_rarm_position()
+  local qcArm = Body.get_rarm_command_position()
+	--
+	local cur = curArm[dof]
   local q = qArm[dof]
+  local qc = qcArm[dof]
+	--
+	local dCur0 = cur - cur0
+  local dq0 = q - q0
+  local dqc0 = qc - qc0
+	--
+	local dCur = cur - cur_last
+	local dq = q - q_last
+	local dqc = qc - qc_last
+	--
+	q_last = q
+	qc_last = qc
+	cur_last = cur
 
 	-- Estimate the sample_cur while in this limit
 	if moving==false then
     -- Need 100 samples
     if #sample_cur < 100 then
-      if math.abs(q-q0)*RAD_TO_DEG<0.02 then
-        table.insert(sample_cur, cur)
-  		end
+			if math.abs(dq0)*RAD_TO_DEG > 0.02 then return'null' end
+			table.insert(sample_cur, cur)
       -- After inserting, check
       if #sample_cur < 100 then return end
       -- Get the statistics
@@ -89,90 +119,122 @@ function state.update()
       cur0 = s:mean()
       -- Assign the threshold
       cur_std = math.max(s:std(), 3)
-    end
-    -- We are moving if outside twice our std dev
-		if math.abs(cur-cur0) < 3*cur_std then return end
+			qSag0 = q0 - qc0
+			--print('Calibrated', cur0, cur_std)
+			--print('qSag0', qSag0*RAD_TO_DEG)
+			-- hack for now
+			t_entry = t
+		end
+		local dCurAbs0 = math.abs(dCur0)
+		if dCurAbs0<2*cur_std then
+			local beta = 0.6
+			cur0 = cur0 * beta + cur * (1-beta)
+		end
+		if dCurAbs0 > 2*cur_std then
+			start_count = start_count + 1
+		else
+			start_count = math.max(start_count - 1, 0)
+			if start_count == 0 then sample_dir = {} end
+		end
+		if start_count<3 then return end
+		local qSag = q - qc
+		local dir = util.sign(qSag - qSag0)
+		if #sample_dir < 5 then
+			table.insert(sample_dir, dir)
+			if #sample_dir < 5 then return end
+			local s = torch.Tensor(sample_dir)
+			dir0 = util.sign(s:sum())
+			if dir0==0 then return end
+		end
 		moving = true
-    print('Moving the arm!', cur, cur0, cur_std)
+		zeroCur_last = cur
+		print('Moving the arm', dir0, zeroCur_last)
+		t_move = t
 	end
+	
+	if dCur==0 then
+		local dZeroCur = cur - zeroCur_last
+		if util.sign(zeroCur_last) ~= util.sign(cur) then
+			io.write('\ncur: ', cur)
+			io.write('\ndZeroCur: ', dZeroCur, '\tzeroCur_last: ', zeroCur_last)
+			io.write('\n')
+			if t-t_move>1 then zeroHappened = true end
+		end
+		zeroCur_last = cur
+	end
+	
+	if zeroHappened then print('zero occurred') return'null' end
+	--print('dCur', dCur)
+  if t-t_entry > 8 then return'null' end
 
-	local dCur = cur - cur0
-  local dq = q - q0
+  local qc_next = qc + dir0 * 1/10 * DEG_TO_RAD
+	Body.set_rarm_command_position(qc_next, dof)
+
+	if true then return end
+
 	-- Check the direction of the current and position
-	local dirCur = util.sign(util.procFunc(dCur, cur_std, 1))
+	local dirCur = util.sign(util.procFunc(dCur0, cur_std, 1))
   local dirQ = util.sign(util.procFunc(dq, 0.02 * DEG_TO_RAD, 1))
+	local dir = dirCur
 
   -- Need at least 5 points to sum
 	if #sample_dir < 5 then
-		print('dirCur', dirCur)
     table.insert(sample_dir, dirCur)
     if #sample_dir < 5 then return end
     local s = torch.Tensor(sample_dir)
     dir0 = util.sign(s:sum())
     if dir0==0 then return end
     print('dir0= '..dir0)
+		qdir0 = util.sign(q - q0)
+		print('qdir0', qdir0)
 	end
-
-  -- Check if an inflection occurred
-	if dirCur~=dir0 then
-		n_inflections = n_inflections + 1
-	else
-		n_inflections = n_inflections - 1
-		n_inflections = math.max(0, n_inflections)
-	end
-  is_inflected = n_inflections > 5
-  if is_inflected~=was_inflected then
-    print('Inflection change', is_inflected)
-  end
-  was_inflected = is_inflected
 
 	-- Don't return on inflection. Wait until steady state
-	if math.abs(dq)*RAD_TO_DEG < 0.05 then
-		n_steady_state = n_steady_state + 1
-	else
-		n_steady_state = n_steady_state - 1
-	end
-	if n_steady_state > 20 then
-		print('Steady state')
-		return'null'
+	----[[
+	--]]
+
+
+
+	if zeroHappened then
+		print('dq', math.abs(dq)*RAD_TO_DEG, dCur)
+		if math.abs(dq)*RAD_TO_DEG < 0.02 then
+			n_steady_state = n_steady_state + 1
+		else
+			n_steady_state = n_steady_state - 1
+		end
+		if n_steady_state > 25 then
+			print('Steady state')
+			return'null'
+		end
+		return
 	end
 
-	-- Must only use our initial direction to react to the human
-	-- Can just re-enter the state quickly on direction change
-	if dirCur~=dir0 then
---    print('outlier dir', dCur, dir0)
-    return
-  end
-	if is_inflected then return end
---print('dirQ', dirQ, dirCur)
-  -- Calculate the new position to use for the arm
-	local dqFromCur = qCurGain * dCur
---	print('dqFromCur', dqFromCur)
-	dqFromCur = 0.005 * dir0
+--	if math.abs(dCur)>20 then return end
+
+  local qc_next = qc - dir0 * 1/8 * DEG_TO_RAD
+	--io.write('\nqc: ', qc*RAD_TO_DEG, '\tq_next: ', qc_next*RAD_TO_DEG)
+	--io.write('\nq: ', q*RAD_TO_DEG, '\tq_last: ', q_last*RAD_TO_DEG)
+	
 	--if true then return'null' end
-  local q1 = q0 - dqFromCur
-	if dir0==1 then
-		io.write('dCur ', dCur, '\tdir0 ', dir0, '\tdirCur ', dirCur, '\n')
-		io.write('dq* ', dqFromCur*RAD_TO_DEG, '\tdq ', dq*RAD_TO_DEG, '\n')
-		io.write('q0 ', q0*RAD_TO_DEG, '\n')
-		io.write('q1 ', q1*RAD_TO_DEG, '\tq ', q*RAD_TO_DEG, '\n')
-		io.write('\n')
-	end
 
   -- Set on the robot
   -- NOTE: THIS CAN BE DANGEROUS!
-	----[[
+	--[[
 	q0 = q1
-	Body.set_rarm_command_position(q0, dof)
+	Body.set_rarm_command_position(q, dof)
+	--]]
+	
+	----[[
+	Body.set_rarm_command_position(qc_next, dof)
 	--]]
 
   --[[
 	q0 = q1
-  local trArm = K.forward_rarm(qArm)
   -- Get the inverse using the new free dof parameter (shoulderYaw)
-  local iqArm = K.inverse_rarm(trArm, qArm, q0)
+  local iqArm = K.inverse_rarm(trArm0, qArm, q0)
   Body.set_rarm_command_position(iqArm)
 	--]]
+	
 
 end
 

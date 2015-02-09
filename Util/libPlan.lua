@@ -146,7 +146,7 @@ local function joint_iter(self, qGoal0, qArm0, res_q, SKIP_SANITIZE)
 		sanitize(qWaypointFB, cur_qArm, dt, dqdt_limit)
 		-- Feedforward
 		qPrev = qPrev or cur_qArm
-		local dqFF = qGoal - qPrev
+		local dqFF = qGoal - cur_qArm --qPrev
 		local distanceFF = vector.norm(dqFF)
 		local qWaypointFF
 		if distanceFF < res_q then

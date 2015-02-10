@@ -37,13 +37,14 @@ DirectionalLight {
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP_UPENN_HP {
+THOROP_UPENN {
   translation 0 1.17 -0.03
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
   footContactMaterial "feet"
+  max_knee_torque 90
 }
 PitchRamp {
   translation 0 0 0.3

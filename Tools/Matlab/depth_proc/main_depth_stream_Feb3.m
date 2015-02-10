@@ -44,7 +44,7 @@ while 1
             else
                 
                 raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
-                                
+                uisetting; % See uisetting.m                
                 res = depth_proc(raw, metadata, ui);
                              
             end

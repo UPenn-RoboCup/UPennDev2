@@ -13,6 +13,8 @@ function planes_ch.callback()
 	local mplanes = unpack(planes_ch:receive())
 	local planes = munpack(mplanes)
 	ptable(planes)
+    -- planes structure (to be done)
+    --  
 end
 
 -- Cleanly exit on Ctrl-C

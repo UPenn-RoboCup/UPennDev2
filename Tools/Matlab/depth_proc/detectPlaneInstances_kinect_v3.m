@@ -28,34 +28,25 @@ persistent thre_memberSize
 persistent param_meanShiftResol
 persistent param_meanShiftWeights
 
-loadPersistentVariables_0202;
+if nargin < 4
+    error('The number of input arguments must be 4');
+end
 
-% params{1} : Transformation Matrix
-Ccb = eye(3);
-Tcb = zeros(3,1);
+loadPersistentVariables_0204;
+
+Ccb = Rot;
+Tcb = tr;
 if isempty(Ccb_prev)
     Ccb_prev = Ccb;
     Tcb_prev = Tcb;
 end
-if ~isempty(Rot) && ~isempty(tr)
-    Ccb = Rot;
-    if sum(size(Ccb) ~= [3 3])
-        Ccb = eye(3);
-    end
-    Tcb = tr;
-    if length(Tcb) ~= 3
-        Tcb = zeros(3,1);
-    end
-end
-
 Tcb = Tcb + Ccb*tr_kinect2head;
 
 Planes =[]; 
 Points3D = [];
-Indices = []; % Type: Ground, Wall, Table, Manual, Else 
-                        
+Indices = [];                                           
 PlaneID = 0;
-nPlanes = 0;
+nPlanes = 0; %#ok<NASGU>
 PlaneOfInterest = 0;    
 
 %% Filtering     
@@ -78,9 +69,12 @@ validNormal = validNormal(find(S(4,validNormal)< thre_sValue));
 
 %% Clustering  
 data = [  Xind_(validNormal) ; Yind_(validNormal)];
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% generate initial mean information HERE for better starting 
-[finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,A(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights);
+% generate initial point information HERE for better starting 
+% stPoint = getClickPoint( ui, depth );
+% computeClosestPointAndNormal;
+[finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,A(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 
 % for each cluster
 blankConnImg = zeros(floor(DEPTH_W/param_normalComputation(2)),floor(DEPTH_H /param_normalComputation(2)));
@@ -177,12 +171,12 @@ if ui.figures(1) > 0
     hold on; axis([1 DEPTH_W 1 DEPTH_H]); colormap('gray');
 end
 
-if ui.figures(2) 
+if ui.figures(3) 
     Ztemp = depth(validInd(10:10:end))*0.001;
     Ytemp = -Yind_c(validInd(10:10:end))*Sy.*Ztemp;
     Xtemp = -Xind_c(validInd(10:10:end))*Sx.*Ztemp;
     Xvis = Ccb*[Ztemp(:)'; Ytemp(:)'; Xtemp(:)'] + repmat(Tcb,1,length(Ztemp(:)));
-    figure(visflag), [az,el] = view; hold off; 
+    figure(3), [az,el] = view; hold off; 
     scatter3( Xvis(1,:),Xvis(2,:), Xvis(3,:), 2 ,[0.5 0.5 0.5] ,'filled'); axis equal; hold on;
     set(gca,'XDir','reverse');
     xlabel('x');
@@ -201,7 +195,7 @@ Cs = zeros(3,PlaneID);
 Szs = zeros(1,PlaneID);
 
  % Coordinate Transformation
-if ~isempty(params)  
+if ~issame(Rot,eye(3))
     for t = 1:PlaneID  
         Planes{t}.Center = Ccb*Planes{t}.Center + Tcb;
         Planes{t}.Points = Ccb*Planes{t}.Points + repmat(Tcb,1,size(Planes{t}.Points,2)) ;
@@ -221,7 +215,7 @@ if ~isempty(params)
     end
 end
   
-if strcmp(params{3}.mode,'ground')
+if ui.taskMode == 1 % ground
     % testGround();
     n_inner = 1-abs([0 0 1]*Ns);
     flag = (n_inner < 0.02);
@@ -233,70 +227,73 @@ if strcmp(params{3}.mode,'ground')
         Planes{candidates(idx)}.Type = 'ground';
         PlaneOfInterest = idx;
     end
-elseif strcmp(params{3}.mode, 'table')  
-    ; % testTable();   
-elseif strcmp(params{3}.mode, 'manual_2d')
-    minval = 10000;
-    min_idx = 0;
-    for t=1:PlaneID 
-        dsq =  (Indices{t} - repmat(params{3}.data',1,length(Indices{t}))).^2;
-        [val] = min(sum(dsq,1));
-        if val < minval 
-            if min_idx > 0 
-                Planes{min_idx}.Type = 'Else';
-            end
-            Planes{t}.Type = 'Manual';
-            PlaneOfInterest = t;   
-            min_idx = t;
-            minval = val;
-        end
-    end
-elseif strcmp(params{3}.mode, 'manual_3d')
-    % Find closest plane center (Assuming not ground)
-    minval = 10000;
-    min_idx = 0;
-    for t=1:PlaneID
-        dsq = ( Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t})) - repmat((params{3}.data'),1,size(Points3D{t},2))).^2;
-        [val] = min(sum(dsq,1));
-        if val < minval 
-            if min_idx > 0 
-                Planes{min_idx}.Type = 'Else';
-            end
-            Planes{t}.Type = 'Manual';
-            PlaneOfInterest = t;   
-            min_idx = t;
-            minval = val;
-        end
-    end
-else
+end
+
+% elseif strcmp(params{3}.mode, 'manual_2d')
+%     minval = 10000;
+%     min_idx = 0;
+%     for t=1:PlaneID 
+%         dsq =  (Indices{t} - repmat(params{3}.data',1,length(Indices{t}))).^2;
+%         [val] = min(sum(dsq,1));
+%         if val < minval 
+%             if min_idx > 0 
+%                 Planes{min_idx}.Type = 'Else';
+%             end
+%             Planes{t}.Type = 'Manual';
+%             PlaneOfInterest = t;   
+%             min_idx = t;
+%             minval = val;
+%         end
+%     end
+% elseif strcmp(params{3}.mode, 'manual_3d')
+%     % Find closest plane center (Assuming not ground)
+%     minval = 10000;
+%     min_idx = 0;
+%     for t=1:PlaneID
+%         dsq = ( Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t})) - repmat((params{3}.data'),1,size(Points3D{t},2))).^2;
+%         [val] = min(sum(dsq,1));
+%         if val < minval 
+%             if min_idx > 0 
+%                 Planes{min_idx}.Type = 'Else';
+%             end
+%             Planes{t}.Type = 'Manual';
+%             PlaneOfInterest = t;   
+%             min_idx = t;
+%             minval = val;
+%         end
+%     end
+% else
     
 for t = 1:PlaneID  
 
-    if  visflag
+    if  ui.figures(3) > 0
         randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
-        figure(visflag), 
+        figure(3), 
         scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,randcolor,'filled');
         nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.2];
-        figure(visflag),
+        figure(3),
         plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
     end
 end
     
-    
-end
+
 
 if PlaneOfInterest > 0 
-   if visflag
+   if ui.figures(3) 
        t = PlaneOfInterest;
         randcolor = [1 0 0];%rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
-        figure(visflag), 
+        figure(3), 
         scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,randcolor,'filled');
         nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.2];
-        figure(visflag),
+        figure(3),
         plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
     end
 end
     
+% save previous pose
+Ccb_prev = Ccb;
+Tcb_prev = Tcb;
+
 nPlanes = PlaneID;
 
 end

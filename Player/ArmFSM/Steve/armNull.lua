@@ -88,28 +88,29 @@ function state.update()
       local s = torch.Tensor(sample_cur)
       cur0 = s:mean()
       -- Assign the threshold
-      cur_std = s:std()
+      cur_std = math.max(s:std(), 3)
     end
     -- We are moving if outside twice our std dev
-		if math.abs(cur-cur0) < 2*cur_std then return end
+		if math.abs(cur-cur0) < 3*cur_std then return end
 		moving = true
-    print('Moving the arm!')
+    print('Moving the arm!', cur, cur0, cur_std)
 	end
 
 	local dCur = cur - cur0
   local dq = q - q0
 	-- Check the direction of the current and position
-	local dirCur = util.procFunc(dCur, cur_std, 1)
-  local dirQ = util.procFunc(dq, cur_std, 1)
+	local dirCur = util.sign(util.procFunc(dCur, cur_std, 1))
+  local dirQ = util.sign(util.procFunc(dq, 0.02 * DEG_TO_RAD, 1))
 
   -- Need at least 5 points to sum
 	if #sample_dir < 5 then
+		print('dirCur', dirCur)
     table.insert(sample_dir, dirCur)
     if #sample_dir < 5 then return end
     local s = torch.Tensor(sample_dir)
     dir0 = util.sign(s:sum())
     if dir0==0 then return end
-    print('Set the Current direction', dir0)
+    print('dir0= '..dir0)
 	end
 
   -- Check if an inflection occurred
@@ -131,7 +132,7 @@ function state.update()
 	else
 		n_steady_state = n_steady_state - 1
 	end
-	if n_steady_state > 40 then
+	if n_steady_state > 20 then
 		print('Steady state')
 		return'null'
 	end
@@ -139,25 +140,34 @@ function state.update()
 	-- Must only use our initial direction to react to the human
 	-- Can just re-enter the state quickly on direction change
 	if dirCur~=dir0 then
-    print('outlier dir')
+--    print('outlier dir', dCur, dir0)
     return
   end
-
+	if is_inflected then return end
+--print('dirQ', dirQ, dirCur)
   -- Calculate the new position to use for the arm
 	local dqFromCur = qCurGain * dCur
+--	print('dqFromCur', dqFromCur)
+	dqFromCur = 0.005 * dir0
+	--if true then return'null' end
   local q1 = q0 - dqFromCur
-  io.write('dCur', dCur, 'dir0', dir0, 'dirCur', dirCur, '\n')
-	io.write('dq*', dqFromCur*RAD_TO_DEG, 'dq', dq*RAD_TO_DEG, '\n')
-  io.write('q0', q0*RAD_TO_DEG, '\n')
-	io.write('q1', q1*RAD_TO_DEG, 'q', q*RAD_TO_DEG, '\n')
-  io.write('\n')
+	if dir0==1 then
+		io.write('dCur ', dCur, '\tdir0 ', dir0, '\tdirCur ', dirCur, '\n')
+		io.write('dq* ', dqFromCur*RAD_TO_DEG, '\tdq ', dq*RAD_TO_DEG, '\n')
+		io.write('q0 ', q0*RAD_TO_DEG, '\n')
+		io.write('q1 ', q1*RAD_TO_DEG, '\tq ', q*RAD_TO_DEG, '\n')
+		io.write('\n')
+	end
 
   -- Set on the robot
   -- NOTE: THIS CAN BE DANGEROUS!
+	----[[
 	q0 = q1
 	Body.set_rarm_command_position(q0, dof)
+	--]]
 
   --[[
+	q0 = q1
   local trArm = K.forward_rarm(qArm)
   -- Get the inverse using the new free dof parameter (shoulderYaw)
   local iqArm = K.inverse_rarm(trArm, qArm, q0)

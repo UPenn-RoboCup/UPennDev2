@@ -38,6 +38,11 @@ walk.bodyHeight = 0.93
 walk.footY = 0.095
 walk.footX = 0
 walk.bodyTilt = 3*DEG_TO_RAD
+
+
+walk.bodyTilt = 0 --NOW TESTING ZERO BODY TILT
+
+
 walk.torsoX = 0.02     -- com-to-body-center offset
 
 ------------------------------------

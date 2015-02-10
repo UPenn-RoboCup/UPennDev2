@@ -15,8 +15,8 @@ Solid {
   translation IS translation
   rotation IS rotation
   children [
-		DEF ramp1 Transform{
-		  translation 0 0.08 0.3
+		DEF ramp1 Transform{		  
+		  translation 0 0.07 0.305	
 		  rotation 1 0 0 -0.262
 		  children [		
 			  Shape {
@@ -25,13 +25,13 @@ Solid {
 			         diffuseColor 1 1 0.5
 			       }
 			     }
-			     geometry Box { size 2.4 0.02 0.62 }
+			     geometry Box { size 2.4 0.02 0.6212 }
 			  }
 			]					
 		}
 		
-		DEF ramp2 Transform{
-		  translation 0 0.08 0.9
+		DEF ramp2 Transform{		  
+		  translation 0 0.07 0.895
 		  rotation 1 0 0 0.262
 		  children [		
 			  Shape {
@@ -40,7 +40,7 @@ Solid {
 			         diffuseColor 1 1 0.5
 			       }
 			     }
-			     geometry Box { size 2.4 0.02 0.62 }
+			     geometry Box { size 2.4 0.02 0.6212 }
 			  }
 			]					
 		}		

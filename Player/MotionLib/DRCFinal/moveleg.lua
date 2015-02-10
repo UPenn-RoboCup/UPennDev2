@@ -360,12 +360,25 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkPa
   end
   tf = math.max(0,math.min(1,tf))
 
-  if tf < lift/total_dist then xf,zf =0,tf*total_dist +zHeight0
-  elseif tf <(lift+move)/total_dist then xf,zf = (tf*total_dist-lift)/move, stepHeight
-  else xf,zf= 1,(1-tf)*total_dist +zHeight1   end   
+  local lift_phase, land_phase = 0,0
+
+
+  if tf < lift/total_dist then 
+    xf,zf =0,tf*total_dist +zHeight0
+    lift_phase = 1 - tf / (lift/total_dist) --1 to 0
+
+
+
+
+  elseif tf <(lift+move)/total_dist then 
+    xf,zf = (tf*total_dist-lift)/move, stepHeight
+
+  else xf,zf= 1,(1-tf)*total_dist +zHeight1   
+    land_phase = (tf*total_dist - (lift+move))/land
+  end   
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
 
-  return uFoot, zf
+  return uFoot, zf, lift_phase, land_phase
 end
 
 
@@ -413,7 +426,11 @@ function moveleg.set_leg_positions()
   local pTorso = vector.new({
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
+
+  local aShiftX = mcm.get_walk_aShiftX()
+  local aShiftY = mcm.get_walk_aShiftY()
+
+  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
 
   -------------------Incremental COM filtering
   while count<=revise_max do
@@ -428,7 +445,12 @@ function moveleg.set_leg_positions()
    local pTorso = vector.new({
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
+
+
+
+
+
+   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
    count = count+1
   end
 

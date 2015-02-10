@@ -201,8 +201,8 @@ std::vector<double> THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, c
 
 
 
-std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg);
-std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg);
+std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg, double aShiftX, double aShiftY);
+std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg, double aShiftX, double aShiftY);
 std::vector<double> THOROP_kinematics_inverse_joints(const double *q);
 
 std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch, double mLHand, double mRHand); 

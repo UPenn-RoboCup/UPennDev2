@@ -278,6 +278,7 @@ shared_data.step.zpr = vector.zeros(2)         --z p r
 shared_data.step.nosolution = vector.zeros(1)         --z p r
 
 shared_data.step.dir = vector.zeros(1)         --temporary
+shared_data.step.auto = vector.zeros(1)         --temporary
 
 
 --These variables are only used for offline testing of arm states

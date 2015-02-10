@@ -141,11 +141,8 @@ local function update(key_code)
 
 	elseif key_char_lower==("7") and Body.get_time()-last_input>input_delay then      
 		last_input = Body.get_time()
+		hcm.set_step_auto(1)
 		
-		hcm.set_step_relpos({0.42,0,0})
-		hcm.set_step_zpr({-0.15,0,0})
-		
-		body_ch:send'stepover1'		
 
 
 	elseif key_char_lower==("8") and Body.get_time()-last_input>input_delay then      
@@ -154,6 +151,7 @@ local function update(key_code)
 		
 
 		hcm.set_step_dir(0)
+		hcm.set_step_auto(0)
 		
 
 

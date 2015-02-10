@@ -28,8 +28,6 @@ local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 
 
-if IS_WEBOTS then st,wt = 1.0,1.0 end
-if IS_WEBOTS and not Config.enable_touchdown then st,wt = 0.3,1.0 end
 
 
 local stage = 1
@@ -96,12 +94,13 @@ function state.entry()
 
   local leg_move_factor = math.abs(uLeftTorso[1]-uRightTorso[1])/0.25
 
-  local wt2 = wt +(1+leg_move_factor)
+
 
   is_possible = true
 
   hcm.set_step_nosolution(0)
-  footstepplanner.getnextstep()
+  supportLeg = footstepplanner.getnextstep()
+
   if hcm.get_step_nosolution()>0 then
     --don't start step if there's no foot positions available!
     is_possible = false
@@ -109,16 +108,33 @@ function state.entry()
   end
 
 
+  local step_min = 0.05
+  local step_min = 0.10
+
   
   step_relpos = hcm.get_step_relpos() 
   step_zpr = hcm.get_step_zpr()
+  if step_zpr[1]>0 then sh1,sh2 = step_zpr[1]+step_min, step_zpr[1]
+  else sh1,sh2 = step_min, step_zpr[1]
+  end
+
+  local st,wt = 1.0,3.0
+  if IS_WEBOTS then st,wt = 1.0,1.0 end
+  if IS_WEBOTS and not Config.enable_touchdown then 
+    st,wt = 0.3,1.0 
+    st,wt = 0.3,1.5 
+--    st,wt = 0.1,0.5 
+  end
+
+  local leg_move_dist = 
+    math.abs(step_relpos[1])+math.abs(step_relpos[2])+
+    math.abs(step_zpr[1])+step_min+step_min
+  local wt2 = wt *  math.max(1,  leg_move_dist / 0.20) 
 
 
 
 
-
-
-
+  --[[
 
 
 
@@ -130,10 +146,10 @@ function state.entry()
   else
     if uLeftTorso[1]<uRightTorso[1] then supportLeg=1 end--RF is leading foot, so left support
   end
+--]]
 
-  if step_zpr[1]>0 then sh1,sh2 = step_zpr[1]+0.05, step_zpr[1]
-  else sh1,sh2 = 0.05, step_zpr[1]
-  end
+
+  
 
 
 
@@ -266,6 +282,9 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   mcm.set_stance_singlesupport(0)
+  if hcm.get_step_auto()==0 then
+    hcm.set_step_dir(0)
+  end
 end
 
 return state

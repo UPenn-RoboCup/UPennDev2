@@ -6,6 +6,7 @@
 #  Changes: variable knee torque (needed for terrain tasks)
 #  Shrunk foot size according to actual robot
 #  MINIMUM number of bounding box for speed up
+# SJ: cleaned-up all mass properties according thorIK.h
 #############################################
 
 PROTO THOROP_UPENN_NB2 [
@@ -34,13 +35,11 @@ Robot {
   controllerArgs IS controllerArgs
   description "Robotis THOR-OP"
 
-  # Use a simple bounding object for the center of mass area
-
-  # Unsure why there is physics here...
+  #Center of the robot is 170mm higher than the waist pitch joint  
   physics Physics {
   	#################################################################
-    density -1 mass 11 #Temporary fix to match COM closely to actual robot
-    centerOfMass [0 0.1557 -0.0208]
+    density -1 mass 9.21
+    centerOfMass [0 -0.0143 -0.0208]   # 0.1700-0.1557 = -0.0143
 		#################################################################  
   }
 
@@ -98,9 +97,6 @@ Robot {
     ## End of chest this is root child
 
 
-
-
-
     ## Begin the Legs
     DEF Torso_pitch HingeJoint {
 			device RotationalMotor {
@@ -119,7 +115,6 @@ Robot {
 				#################################################################
 				physics Physics {density -1  mass 0.2} 
 				#################################################################
-
 				children [
 					TORSO_PITCH_SERVO {
 						translation 0 -0.038 0
@@ -136,12 +131,15 @@ Robot {
 						jointParameters HingeJointParameters {
 							# Out x for pitch
 							axis 0 1 0
-							anchor 0 -0.038 0
+							#anchor 0 -0.038 0   
+							anchor 0 -0.050 0  #we use waist-hip height of 282mm
 						}
 						endPoint Solid {
 							translation 0 -0.038 0
-							#################################################################
-							physics Physics {density -1 mass 0.6}
+							#Center of the pelvis block is 0.038+0.0875 = 0.1255 lower than the waist pitch joint  
+							#comPelvis = (-0.0264,0,-0.1208) based on waist pitch
+							#################################################################							
+							physics Physics {density -1 mass 8.0 centerOfMass [0 0.0047 -0.0264]}
 							#################################################################
 							children [
 								DEF Pelvis PELVIS {
@@ -165,7 +163,6 @@ Robot {
 										physics Physics {
 											#################################################################
 											density -1 mass 0.05
-											centerOfMass [0 0.03 -0.02]
 											#################################################################
 										}
 
@@ -206,9 +203,10 @@ Robot {
 															endPoint Solid {
                                 physics Physics {
                                 #################################################################
-                                  density -1 mass 1.1
-																	# TODO: Test that this is the correct center of mass...
-																	centerOfMass [-0.01 -0.18 0]
+                                # comUpperLeg = {-0.0082, 0.0211, -0.124}
+                                #TODO: is Y axis correct?
+                                  density -1 mass 4.28																	
+																	centerOfMass [0.0211 -0.124 -0.0082]
  	 												  		#################################################################
                                 }
 																
@@ -221,8 +219,7 @@ Robot {
 																		device RotationalMotor {
 																			name "LegLowerR"
 																			maxVelocity 2.9216811678
-																			#maxTorque 44.2
-																			maxTorque IS max_knee_torque																			
+																			maxTorque IS max_knee_torque
 																			minPosition -2.92343
 																			maxPosition 2.92343
 																		}
@@ -238,8 +235,10 @@ Robot {
 																			}
                                       physics Physics {
                                       #################################################################
-                                        density -1 mass 1.1
-																				centerOfMass -0.01 -0.16 0
+                                      # comLowerLeg = {0.0074,-0.0313,-0.1796}
+                                			#TODO: is Y axis correct?
+                                        density -1 mass 2.24
+																				centerOfMass [0.0313 -0.1796 0.0074]
 																			#################################################################
                                       }
 																			children[
@@ -274,21 +273,17 @@ Robot {
 																								device RotationalMotor {
 																									name "FootR"
 																									maxVelocity 3.1520646292
-																									maxTorque 24.8																									
+																									maxTorque 24.8																								
 																									minPosition -2.92343 maxPosition 2.92343
 																								} # End of the LegLowerR RotationalMotor
-																								jointParameters HingeJointParameters {
-																									axis 0 0 1
-																									#anchor 0 -0.1115 0.018
-																								}
+																								jointParameters HingeJointParameters {axis 0 0 1}
 																								endPoint Solid {
                                                 contactMaterial IS footContactMaterial															
-																									physics Physics {
-																									#################################################################
-																										density -1 mass 0.6
-																										centerOfMass -0.01 -0.07 0.02
-																									#################################################################																										
-																									}
+																									########################################################				
+                                                    #comFoot = {-0.0048,0,-0.0429}
+                                                  	physics Physics {density -1 mass 1.74
+                                                  		centerOfMass [0 -0.0429 -0.0048]}
+																						########################################################
 																									children [
 																										#FOOT {scale 0.001 0.001 0.001}
 																										Transform{
@@ -308,26 +303,20 @@ Robot {
                                                           Box {size 0.147 0.05 0.240}
                                                         ]
                                                       }
-                                                      ##############################################################
-                                                      physics Physics {density -1 mass 0.1}
-                                                      #################################################################
-                                                      type "force-3d"
+                                                      physics Physics {density -1 mass 0.2}
+                                                      type "force-3d"                                                    
                                                     }
+
       																							DEF Right_ankle_yaw HingeJoint {
-      																								device RotationalMotor {
-      																									name "right_ankle_yaw"
-      																								}
-      																								jointParameters HingeJointParameters {
-      																									axis 0 1 0
-      																								}
+      																								device RotationalMotor {name "right_ankle_yaw"}
+      																								jointParameters HingeJointParameters {axis 0 1 0}
       																								endPoint Solid {
                                                         translation 0 -0.09 0
                                                         contactMaterial IS footContactMaterial
-																				#################################################################
-                                                        physics Physics {density -1 mass 0.1}
-																				#################################################################                                                        
+																												physics Physics {density -1 mass 0.2}          
                                                       }
                                                     }
+
 #
 																									]
 																								}
@@ -353,8 +342,7 @@ Robot {
 								DEF Left_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYL"
-										maxVelocity 3.1520646292
-										maxTorque 24.8
+										maxVelocity 3.15 maxTorque 24.8
 										minPosition -2.92343 maxPosition 2.92343
 									}
 									jointParameters HingeJointParameters {
@@ -366,7 +354,6 @@ Robot {
 										physics Physics {
 										##############################################################
 											density -1 mass 0.05
-											centerOfMass [0 0.03 -0.02]
 										##############################################################
 										}
 									
@@ -398,23 +385,22 @@ Robot {
 															device RotationalMotor {
 																name "LegUpperL"
 																maxVelocity 2.9216811678
-																maxTorque 44.2
-																
-																minPosition -2.92343
-																maxPosition 2.92343
+																maxTorque 44.2																
+																minPosition -2.92343 maxPosition 2.92343
 															}
 															jointParameters HingeJointParameters {
 																# I think z?
 																axis 1 0 0
 															}
 															endPoint Solid {
+																physics Physics {
 															##############################################################
-                                physics Physics {
-                                  density -1 mass 1.1
-																	# TODO: Test that this is the correct center of mass...
-																	centerOfMass [-0.01 -0.18 0]
-                                }
+                                # comUpperLeg = {-0.0082, 0.0211, -0.124}
+                                #TODO: is Y axis correct?
+                                  density -1 mass 4.28																	
+																	centerOfMass [-0.0211 -0.124 -0.0082]                                
 															##############################################################
+																}
 																children [
 																	L_THIGH{
 																		#rotation 0 1 0 3.14159
@@ -424,7 +410,6 @@ Robot {
 																		device RotationalMotor {
 																			name "LegLowerL"
 																			maxVelocity 2.9216811678
-																			#maxTorque 44.2
 																			maxTorque IS max_knee_torque																			
 																			minPosition -2.92343 maxPosition 2.92343
 																		}
@@ -440,8 +425,10 @@ Robot {
 																			}
                                       physics Physics {
                                       ##############################################################
-                                        density -1 mass 1.1
-																				centerOfMass -0.01 -0.16 0
+                                      # comLowerLeg = {0.0074,-0.0313,-0.1796}
+                                			#TODO: is Y axis correct?
+                                        density -1 mass 2.24
+																				centerOfMass [-0.0313 -0.1796 0.0074]
 																			##############################################################
                                       }
 																			children[
@@ -484,13 +471,11 @@ Robot {
 																								}
 																								endPoint Solid {
                                                   contactMaterial IS footContactMaterial
-																									
-																									physics Physics {
-																					##############################################################						
-																										density -1 mass 0.6
-																										centerOfMass -0.01 -0.07 0.02
-																					##############################################################						
-																									}
+																					########################################################				
+                                                    #comFoot = {-0.0048,0,-0.0429}
+                                                  	physics Physics {density -1 mass 1.74
+                                                  		centerOfMass [0 -0.0429 -0.0048]}
+																						########################################################
 																									children [
 																										#FOOT {scale 0.001 0.001 0.001}
 																										Transform{
@@ -513,7 +498,7 @@ Robot {
                                                             }
                                                           ]
                                                         }                                                 
-                                                      physics Physics {density -1 mass 0.1}
+                                                  		physics Physics {density -1 mass 0.2}
                                                       type "force-3d"
                                                     }
 
@@ -527,9 +512,7 @@ Robot {
       																								endPoint Solid {
                                                         translation 0 -0.09 0
                                                         contactMaterial IS footContactMaterial
-																									##############################################################		
-                                                        physics Physics {density -1 mass 0.1}
-																									############################################################## 
+																												physics Physics {density -1 mass 0.2}
                                                       }
                                                     }
 																									]

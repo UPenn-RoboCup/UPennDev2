@@ -40,4 +40,4 @@ THOROP_UPENN {
   footContactMaterial "feet"
   max_knee_torque 90
 }
-#PitchRamp {translation 0 0 0.3}
+PitchRamp {translation 0 0 0.3}

@@ -35,9 +35,10 @@ local surfaces2D={
 }
 
 
+--[[
 --This is for the lamp
 
-  --x1 x2 y1 y2,       z_center, pitch
+--x1 x2 y1 y2,       z_center, pitch
 
 local surfaces2D={
     {0.0,0.30,    -1.2,1.2,           0,   0}, 
@@ -45,6 +46,7 @@ local surfaces2D={
     {0.90,1.50,   -1.2,1.2,          0.08045,    0.262}, 
     {1.50,2.00,    -1.2,1.2,           0,   0}, 
 }
+--]]
 
 --[[
 

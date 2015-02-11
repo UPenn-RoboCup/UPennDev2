@@ -66,10 +66,14 @@ local function update(key_code)
 	elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.01
 
 
-	elseif key_char_lower==("t") then  ltorso[1]=ltorso[1]+0.01
+	elseif key_char_lower==("t") then  
+		ltorso[1]=ltorso[1]+0.01
+		print("Torso:",ltorso[1])
 	elseif key_char_lower==("f") then  ltorso[2]=ltorso[2]+0.01		
 	elseif key_char_lower==("h") then  ltorso[2]=ltorso[2]-0.01
-	elseif key_char_lower==("b") then  ltorso[1]=ltorso[1]-0.01
+	elseif key_char_lower==("b") then  
+		ltorso[1]=ltorso[1]-0.01
+		print("Torso:",ltorso[1])
 	elseif key_char_lower==("g") then  
 
 	--[[		

@@ -31,7 +31,9 @@ DirectionalLight {direction 0.5 -0.5 0.5
 DEF FLOOR MetricFloor {
   color 0.95 0.95 0.95
 }
-THOROP_UPENN_NB {
+#THOROP_UPENN_NB {
+#THOROP_UPENN_Steve {
+THOROP_UPENN_NB2 {
   translation 0 1.17 -0.03
   rotation 1 0 0 0
   controller "thorop"

@@ -511,7 +511,7 @@ if IS_WEBOTS then
       dcm.sensorPtr.rfoot[0] = webots.wb_touch_sensor_get_value(tags.r_fsr)
     end
 		
-    local force_factor = 3.0
+    local force_factor = 1.0
 
 		-- F/T sensor
     if ENABLE_FT then

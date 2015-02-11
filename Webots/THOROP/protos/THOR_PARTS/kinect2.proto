@@ -34,11 +34,7 @@ Solid {
         material Material {
           specularColor 1.0 1.0 1.0
         }
-        texture ImageTexture {
-          url [
-            "textures/kinect.png"
-          ]
-        }
+#        texture ImageTexture {url ["textures/kinect.png"]}
       }
       geometry IndexedFaceSet {
         coord Coordinate {
@@ -255,12 +251,7 @@ Solid {
       }
     }
   ]
-  boundingObject Box {
-    size 0.28 0.038 0.064
-  }
-  physics Physics {
-    density -1
-    mass 0.5
-  }
+# boundingObject Box {size 0.28 0.038 0.064}
+  physics Physics {density -1 mass 0.5}
 }
 }

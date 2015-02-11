@@ -3871,10 +3871,10 @@ Camera {
   #    }
   #  ]
   #}
-  #physics Physics {
-  #  density -1
-  #  mass 0.37
-  #}
+  physics Physics {
+    density -1
+    mass 0.37
+  }
   fieldOfView IS fieldOfView
   width IS width
   height 1

@@ -23,7 +23,7 @@ Solid {
       fieldOfView IS fieldOfView
       width IS width
       height IS height
-      maxRange IS maxRange 
+      maxRange IS maxRange
       type "b"
       colorNoise IS colorNoise
       rangeNoise IS rangeNoise
@@ -255,9 +255,7 @@ Solid {
       }
     }
   ]
-  boundingObject Box {
-    size 0.28 0.038 0.064
-  }
+  #boundingObject Box { size 0.28 0.038 0.064 }
   physics Physics {
     density -1
     mass 0.5

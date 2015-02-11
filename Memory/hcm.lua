@@ -275,6 +275,10 @@ shared_data.step={}
 shared_data.step.supportLeg=vector.zeros(1)
 shared_data.step.relpos = vector.zeros(3)      --x y a
 shared_data.step.zpr = vector.zeros(2)         --z p r
+shared_data.step.nosolution = vector.zeros(1)         --z p r
+
+shared_data.step.dir = vector.zeros(1)         --temporary
+shared_data.step.auto = vector.zeros(1)         --temporary
 
 
 --These variables are only used for offline testing of arm states

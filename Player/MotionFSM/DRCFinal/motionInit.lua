@@ -6,6 +6,7 @@ state._NAME = ...
 
 require'mcm'
 require'hcm'
+require'wcm'
 local Body       = require'Body'
 local K          = Body.Kinematics
 local util       = require'util'
@@ -113,6 +114,7 @@ function state.update()
     if IS_WEBOTS then
       bodyHeight = util.approachTol( bodyHeight, Config.walk.bodyHeight, Config.stance.dHeight, dt )
       mcm.set_stance_bodyHeight(bodyHeight)
+      if math.abs(bodyHeight-Config.walk.bodyHeight)<0.01 then return 'done' end
     end
 
     delta_legs, angleShift = moveleg.get_leg_compensation_new(2,0,{0,0,0}, {0,0,0,0},dt)
@@ -158,9 +160,9 @@ function state.exit()
 
   -- now on feet
   mcm.set_walk_bipedal(1)
-
-  -- Update current pose
   
+  -- Update current pose
+  wcm.set_robot_reset_pose(1)
   
 
   local pg = Config.walk.leg_p_gain or 64

@@ -140,7 +140,7 @@ function state.entry()
   }
 
   --local wrist_seq = {{'wrist',trLArm1,trRArm1}}
-  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristyawturn" end  
+  if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristyawturn" end  
 
     hcm.set_tool_model(Config.armfsm.toolgrip.default_model)
   hcm.set_state_proceed(1)

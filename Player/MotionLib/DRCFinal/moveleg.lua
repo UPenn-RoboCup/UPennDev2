@@ -145,28 +145,6 @@ function moveleg.get_ft()
   mcm.set_status_uZMPMeasured(uZMPMeasured) 
   mcm.set_status_uTorsoNeutral(uTorsoNeutral)
 
-
---[[
---why do we need those?
-
-  local z_shift_max = 0.05 --max 5cm difference
-  local z_vel_max_diff = 0.4 --max 40cm per sec
-  local z_vel_max_balance = 0.05 --max 5cm per sec
-  local k_const_z_diff = 0.5 / 100  -- 50cm/s for 100 N difference
-  local z_shift_diff_db = 50 --50N deadband
-
-
-
-  local k_balancing = 0.4 
-  local LR_pitch_err = -(uLeftTorso[1]-uRightTorso[1])*math.tan( imu.pitch_err)
-  local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(imu.roll_err)
-  local zvShiftTarget = util.procFunc( (LR_pitch_err + LR_roll_err) * k_balancing, 0, z_vel_max_balance )
---]]
-
-
-
-
-
   return ft,imu
 end
 
@@ -446,13 +424,13 @@ function moveleg.set_leg_positions()
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
-
-
-
-
    qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
    count = count+1
   end
+  local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
+  
+--  print("uTorso:",uTorso[1],uLeft[1])
+--  print("Torso offset:",uTorsoOffset[1],uTorsoOffset[2])
 
 
   local legBias = vector.new(mcm.get_leg_bias())

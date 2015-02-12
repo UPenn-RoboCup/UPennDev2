@@ -68,6 +68,7 @@ if IS_STEVE then
 	end
 else
 	Config.testfile = 'test_balance'
+  
 	exo = {
 		'Robot','Walk','Net','Manipulation',
 		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'

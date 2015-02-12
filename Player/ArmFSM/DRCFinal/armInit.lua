@@ -16,6 +16,12 @@ local timeout = 15.0
 
 local qLArmTarget, qRArmTarget
 
+
+
+--SJ: now SLOWLY move joint one by one
+
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -38,12 +44,9 @@ function state.entry()
   local qRArm = Body.get_rarm_command_position()
 
 
-print(string.format("qLArmr: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
-unpack(qLArm*RAD_TO_DEG)
-))
-
-
-
+  print(string.format("qLArmr: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
+  unpack(qLArm*RAD_TO_DEG)
+  ))
 
   local qLWrist = Body.get_inverse_lwrist(
     qLArm,
@@ -58,10 +61,14 @@ unpack(qLArm*RAD_TO_DEG)
   qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
 
 
-print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
-unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
-))
+  print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
+    unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
+  ))
 
+--[[
+  qLArmTarget = vector.new({90,0,0,-170,90,10,0})*DEG_TO_RAD
+  qRArmTarget = vector.new({90,0,0,-170,-90,-10,0})*DEG_TO_RAD
+--]]
 
 
 
@@ -147,13 +154,6 @@ function state.exit()
   Body.set_lgrip_percent(0.9)
   Body.set_rgrip_percent(0.9)
 --]]
-
-
-print("qRArm:",
-
-unpack(vector.new(qRArmTarget)*180/math.pi))
-
-
 
   print(state._NAME..' Exit' )
 end

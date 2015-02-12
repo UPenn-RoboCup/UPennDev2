@@ -80,6 +80,14 @@ if Config.arm then
   shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
 end
 
+--Hand weight 
+shared.arm.handmass = vector.zeros(2)
+--Additional holding mass weight
+shared.arm.holdmass = vector.zeros(2)
+
+
+
+
 
 -- Walk Parameters (for tuning on the fly)
 shared.walk = {}

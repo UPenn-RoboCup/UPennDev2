@@ -51,7 +51,7 @@ for i=1,n do
 	dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3}
 	dt_all = dt_all + dt
 end
-print('Times:',dt_all)
+print('Times:', dt_all, n)
 
 -- Find the forward kinematics
 fL[2] = fL[2] - K.shoulderOffsetY
@@ -101,11 +101,13 @@ for i=1,n do
 	dt_all = vector.new{t1-t0, t2-t1, t3-t2, t4-t3} + dt_all
 end
 
+print('Time:', dt_all, n)
+
 iqLArm_a = K.inverse_l_arm_7(fLa, qLArm2, 0, 0, {0,0}, 0,0,0, 0)
 iqLArm2a = ik2.ik(fL2a_t, qLArm2, 0, false)
 iqLArm3a = ik2.ik2(fL2a_t4, qLArm2, 0, false)
 
-print('Time:', dt_all)
+
 print()
 print(qLArm)
 print(vector.new(iqLArm))

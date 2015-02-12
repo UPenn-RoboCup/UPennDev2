@@ -178,6 +178,7 @@ local function send_mesh(destination, compression, dynrange)
 	-- Update relevant metadata
 	metadata.c = compression
 	metadata.dr = dynrange
+	metadata.t = unix.time()
 	-- Send away
 	if IS_WEBOTS and mesh_ch then
     mesh_ch:send{mpack(metadata), c_mesh}

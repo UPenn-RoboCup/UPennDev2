@@ -9,7 +9,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local util = require'util'
 local odomScale = Config.world.odomScale 
-local ballFilter = require'ballFilter'
+
 
 require'wcm'
 require'gcm'
@@ -56,24 +56,12 @@ local function update_odometry(uOdometry)
   local pose = wcm.get_robot_pose()
   wcm.set_robot_pose(util.pose_global(uOdometry,pose))
 
+  --TODO: slam or wall detection-based pose
 
 
-
-  -- Update the filters based on the new odometry
---TODO: need posefilter for slam + odometry
---  poseFilter.odometry(unpack(uOdometry))
 end
 
 local function update_vision(detected)  
-
-
-  -- If the ball is detected
-  ball = detected.ball
-
-	if ball then
-		ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
-	end
-
 end
 
 
@@ -89,7 +77,7 @@ function libWorld.pose_reset()
     yaw0 = gps_pose[3]
     wcm.set_robot_pose_gps0(wcm.get_robot_pose_gps())
   end
-
+print("pose resetted")
 end
 
 
@@ -170,6 +158,9 @@ function libWorld.get_pose()
 --  return wcm.get_robot_pose(wcm.get_robot_pose_gps())
   --return vector.pose({0,0,0})
   --return vector.pose{poseFilter.get_pose()}
+
+print("POSE")
+
   return wcm.get_robot_pose()
 
 

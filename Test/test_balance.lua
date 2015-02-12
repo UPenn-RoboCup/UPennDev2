@@ -25,6 +25,11 @@ local gcm_names={
 
 local command1, command2 = '',''  
 
+local last_support = 0
+local last_input = Body.get_time()
+local input_delay = 1.0
+
+
 local function show_status()
 
 end
@@ -61,10 +66,14 @@ local function update(key_code)
 	elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.01
 
 
-	elseif key_char_lower==("t") then  ltorso[1]=ltorso[1]+0.01
+	elseif key_char_lower==("t") then  
+		ltorso[1]=ltorso[1]+0.01
+		print("Torso:",ltorso[1])
 	elseif key_char_lower==("f") then  ltorso[2]=ltorso[2]+0.01		
 	elseif key_char_lower==("h") then  ltorso[2]=ltorso[2]-0.01
-	elseif key_char_lower==("b") then  ltorso[1]=ltorso[1]-0.01
+	elseif key_char_lower==("b") then  
+		ltorso[1]=ltorso[1]-0.01
+		print("Torso:",ltorso[1])
 	elseif key_char_lower==("g") then  
 
 	--[[		
@@ -93,7 +102,11 @@ local function update(key_code)
 		hcm.set_legdebug_enable_balance({0,0})
 
 
-	elseif key_char_lower==("5") then      
+	elseif key_char_lower==("5") and Body.get_time()-last_input>input_delay then      
+		last_input = Body.get_time()
+
+
+
 		hcm.set_step_supportLeg(1)
 		hcm.set_step_relpos({0.25,0,0})
 		hcm.set_step_zpr({0.05,0,0})
@@ -101,40 +114,55 @@ local function update(key_code)
 		hcm.set_step_relpos({0.0,0,0})
 		hcm.set_step_zpr({0.05,0,0})
 
+
+
+		hcm.set_step_relpos({0.17,0,0})
+		hcm.set_step_zpr({0.00,0,0})
+
+
+
+		
+		
+		hcm.set_step_relpos({0.28,0,0})
+		hcm.set_step_zpr({0.15,0,0})
+
+		hcm.set_step_dir(1)
+
 		body_ch:send'stepover1'		
 
-	elseif key_char_lower==("6") then      
---		hcm.set_step_relpos({0.50,0,0})
---		hcm.set_step_zpr({0.05,0,0})
+	elseif key_char_lower==("6") and Body.get_time()-last_input>input_delay then      
+		last_input = Body.get_time()
 
-		hcm.set_step_supportLeg(0)
+		
+		hcm.set_step_relpos({0.40,0,0})
+		hcm.set_step_zpr({0.15,0,0})
 
-		hcm.set_step_relpos({0.0,0,0})
-		hcm.set_step_zpr({0.05,0,0})
 
---		hcm.set_step_relpos({0.25,0,0})
---		hcm.set_step_zpr({0.15,0,0})
+		hcm.set_step_dir(-1)
 		
 		body_ch:send'stepover1'		
 
 
-	elseif key_char_lower==("7") then      
+	elseif key_char_lower==("7") and Body.get_time()-last_input>input_delay then      
+		last_input = Body.get_time()
+		hcm.set_step_auto(1)
+		
 
-		hcm.set_step_supportLeg(0)
-		hcm.set_step_relpos({0.25,0,0})
-		hcm.set_step_zpr({0.15,0,0})
 
-		body_ch:send'stepover1'		
+	elseif key_char_lower==("8") and Body.get_time()-last_input>input_delay then      
+		last_input = Body.get_time()
+		
+		
+
+		hcm.set_step_dir(0)
+		hcm.set_step_auto(0)
+		
+
 
 	elseif key_char_lower==("=") then      
 		hcm.set_state_proceed(1)
 
 
-	elseif key_char_lower==("8") then  
-		hcm.set_step_supportLeg(1)
-		hcm.set_step_relpos({0.25,0,0})
-		hcm.set_step_zpr({0.15,0,0})
-		body_ch:send'stepover1'		
 	end
 
 --[[

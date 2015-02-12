@@ -167,7 +167,7 @@ shared.status.zGround = vector.zeros(0) -- if feet on a higher ground
 
 shared.status.uTorso = vector.zeros(3)
 shared.status.uTorsoZMPComp = vector.zeros(3) --zmp-based reactive torso compensation
-
+shared.status.uTorsoNeutral = vector.zeros(3) --center torso position between two legs
 
 
 shared.status.uSupport = vector.zeros(3)
@@ -193,12 +193,11 @@ shared.status.t0 = vector.zeros(1)
 shared.status.t1 = vector.zeros(1)
 
 
---Normal forces and zmp error at each foot
-shared.status.forceZ = vector.zeros(2)
-shared.status.forceTotal = vector.zeros(2)
+shared.status.LFT = vector.zeros(3) --fZ tx ty
+shared.status.RFT = vector.zeros(3) --fz tx ty
 shared.status.LZMP = vector.zeros(3)
 shared.status.RZMP = vector.zeros(3)
-
+shared.status.IMU = vector.zeros(4) --r p vr vp
 
 
 --If we are kneeling, we don't need quasistatic balancing

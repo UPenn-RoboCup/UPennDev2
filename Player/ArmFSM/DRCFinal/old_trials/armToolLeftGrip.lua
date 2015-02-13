@@ -106,7 +106,7 @@ function state.update()
   if stage=="wristyawturn" then --Turn yaw angles first    
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
-        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trLArm:",util.print_transform(trLArm))
         arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])        
         local arm_seq = {
           {'move',Config.armfsm.toolleftgrip.arminit[1],nil},
@@ -132,7 +132,7 @@ function state.update()
       Body.move_lgrip2(Config.arm.torque.open)    
       
       if hcm.get_state_proceed()==1 then 
-        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trLArm:",util.print_transform(trLArm))
         arm_planner:set_shoulder_yaw_target(nil,qRArm0[3])
       
         local trArmTarget1 = get_tool_tr(Config.armfsm.toolgrip.tool_clearance)        
@@ -220,7 +220,7 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
         arm_planner:set_hand_mass(2,0)
-        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trLArm:",util.print_transform(trLArm))
         local trLArmTarget1 = Config.armfsm.toolleftgrip.armpull[1]
         trLArmTarget1[2]=trRArm[2]
         trLArmTarget1[3]=trRArm[3]

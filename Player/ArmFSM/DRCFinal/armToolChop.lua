@@ -145,9 +145,9 @@ function state.update()
   elseif stage=="drilloutmove" then
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then             
-        print("trRArm:",arm_planner.print_transform(trRArm))
+        print("trRArm:",util.print_transform(trRArm))
         local trRArmTarget1 = get_cutpos_tr()
-        print("trRArmTarget:",arm_planner.print_transform(trRArmTarget1))
+        print("trRArmTarget:",util.print_transform(trRArmTarget1))
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillcut" end      
         hcm.set_state_proceed(0)
@@ -176,7 +176,7 @@ function state.update()
       elseif check_override() then --Model modification        
         update_override()        
         local trRArmTarget1 = get_cutpos_tr()
-        print("trRArmTarget:",arm_planner.print_transform(trRArmTarget1))
+        print("trRArmTarget:",util.print_transform(trRArmTarget1))
         local arm_seq = {{'move',nil, trRArmTarget1}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "drillcut" 
           confirm_override()

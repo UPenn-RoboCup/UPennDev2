@@ -20,14 +20,29 @@ DEG_TO_RAD = math.pi/180
 RAD_TO_DEG = 1/DEG_TO_RAD
 
 
+local override_target=vector.new({0,0,0,  0,0,0,0})
+
+
 local char_to_override = {
+--[[
   ['i'] = vector.new({0.01, 0, 0,   0,0,0,0}),
   [','] = vector.new({-.01, 0, 0,   0,0,0,0}),
   ['j'] = vector.new({0, 0.01, 0,   0,0,0,0}),
   ['l'] = vector.new({0, -.01, 0,   0,0,0,0}),
   ['u'] = vector.new({0, 0, 0.01,  0,0,0,0}),
   ['m'] = vector.new({0,0, -.01,   0,0,0,0}),
+  --]]
+
+  ['i'] = vector.new({0.04, 0, 0,   0,0,0,0}),
+  [','] = vector.new({-.04, 0, 0,   0,0,0,0}),
+  ['j'] = vector.new({0, 0.04, 0,   0,0,0,0}),
+  ['l'] = vector.new({0, -.04, 0,   0,0,0,0}),
+  ['u'] = vector.new({0, 0, 0.04,  0,0,0,0}),
+  ['m'] = vector.new({0,0, -.04,   0,0,0,0}),
   
+
+
+
   --Yaw
   ['h'] = vector.new({0,0,0,     0,0,1,0}),
   [';'] = vector.new({0,0,0,    0,0,-1,0}),
@@ -73,6 +88,13 @@ local function update(key_code)
     hcm.set_state_proceed(1)
   elseif key_char_lower==("-") then          
     hcm.set_state_proceed(-1)
+
+
+  elseif key_char_lower==("k") then          
+    override_target=vector.new({0,0,0,  0,0,0,0})
+  elseif key_char_lower==(" ") then              
+
+    hcm.set_state_override(override_target)    
   end
 
 
@@ -97,16 +119,16 @@ local function update(key_code)
     local override_old = hcm.get_state_override()
     local tr = vector.new(trmod) + vector.new(override_old)
     --]]
-    local tr = trmod
+    override_target = override_target+trmod
     print( util.color('Override:','yellow'), 
       string.format("%.2f %.2f %.2f / %.1f %.1f",
-      tr[1],
-      tr[2],
-      tr[3],
-      tr[4]*180/math.pi,
-      tr[5]*180/math.pi))
+      override_target[1],
+      override_target[2],
+      override_target[3],
+      override_target[4]*180/math.pi,
+      override_target[5]*180/math.pi))
     --hcm.set_state_override_target(tr)    
-    hcm.set_state_override(tr)    
+    
     return
   end
 

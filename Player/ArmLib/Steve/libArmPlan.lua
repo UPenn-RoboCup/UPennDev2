@@ -825,8 +825,6 @@ libArmPlan.new_planner = function (params)
   s.init_valveparam = {0,0,0,0}
 
   --member functions
-  s.print_transform = print_transform
-  s.print_jangle = print_jangle
   s.print_segment_info = print_segment_info
 
   s.calculate_margin = calculate_margin

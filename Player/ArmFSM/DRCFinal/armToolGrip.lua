@@ -28,7 +28,7 @@ local function get_tool_tr(tooloffset)
   local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3],
                     handrpy[1],handrpy[2],handrpy[3] + tool_model[4]}
 
-  print("hand transform:",arm_planner.print_transform(tool_tr))                    
+  print("hand transform:",util.print_transform(tool_tr))                    
   return tool_tr
 end
 
@@ -134,6 +134,7 @@ function state.entry()
   arm_planner:set_hand_mass(0,0)
 --  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) 
   arm_planner:set_shoulder_yaw_target(nil, nil) 
+arm_planner:set_shoulder_yaw_target(15*DEG_TO_RAD, -15*DEG_TO_RAD)  --test
 
   local wrist_seq = {
     {'wrist',trLArm1, trRArm1},
@@ -149,7 +150,7 @@ function state.entry()
 
   hcm.set_state_tstartactual(unix.time())
   hcm.set_state_tstartrobot(Body.get_time())
-
+print("ASDASDASDSA")
 end
 
 function state.update()
@@ -169,14 +170,15 @@ function state.update()
   if stage=="wristyawturn" then --Turn yaw angles first    
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
---        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trRArm:",arm_planner.print_transform(trRArm))
+--        print("trLArm:",util.print_transform(trLArm))
+        print("trRArm:",util.print_transform(trRArm))
 --        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)        
+        arm_planner:set_shoulder_yaw_target(15*DEG_TO_RAD, -15*DEG_TO_RAD)  --test
         local arm_seq = {
           {'move',nil,Config.armfsm.toolgrip.arminit[1]},
-          {'move',nil,Config.armfsm.toolgrip.arminit[2]},
-          {'move',nil,Config.armfsm.toolgrip.arminit[3]},
-          {'wrist',nil,Config.armfsm.toolgrip.arminit[4]}
+--          {'move',nil,Config.armfsm.toolgrip.arminit[2]},
+--          {'move',nil,Config.armfsm.toolgrip.arminit[3]},
+--          {'wrist',nil,Config.armfsm.toolgrip.arminit[4]}
         }
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
       elseif hcm.get_state_proceed()==-1 then 
@@ -189,7 +191,7 @@ function state.update()
   elseif stage=="armup" then
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
-        print("trRArm:",arm_planner.print_transform(trRArm))
+        print("trRArm:",util.print_transform(trRArm))
         --arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
         arm_planner:set_shoulder_yaw_target(nil,nil)        
         local trRArmTarget = get_tool_tr({0,0,0})
@@ -237,7 +239,7 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
         arm_planner:set_hand_mass(0,2)
-        print("trRArm:",arm_planner.print_transform(trRArm))
+        print("trRArm:",util.print_transform(trRArm))
         
 
         --Going back to the init position

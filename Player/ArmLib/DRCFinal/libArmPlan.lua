@@ -8,29 +8,12 @@ require'mcm'
 
 local movearm = require'movearm'
 local sformat = string.format
-
+local K = Body.Kinematics
 --debug_on = true
 debug_on = false
 debug_on_2 = false
-debug_on = true
+debugmsg = true
 
-
-
-
-
-
-
-local function print_transform(tr)
-  if not tr then return end
-  local str= sformat("%.2f %.2f %.2f (%.1f %.1f %.1f)",
-    tr[1],tr[2],tr[3],tr[4]*180/math.pi,tr[5]*180/math.pi,tr[6]*180/math.pi)
-  return str
-end
-
-local function print_jangle(q)
-  local str= sformat("%d %d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  )
-  return str
-end
 
 local function print_arm_plan(arm_plan)
   print("Arm plan: total ", #arm_plan.LAP)  
@@ -40,128 +23,198 @@ end
 
 
 
-local function calculate_margin(qArm,isLeft)
-  local jointangle_margin
+local function calculate_margin(qArm,isLeft,trArm)
+  local jointangle_margin, trCheck
   if not qArm then return -math.huge 
   elseif isLeft==1 then --Left arm
+    trCheck = Body.get_forward_larm(qArm,mcm.get_stance_bodyTilt(),qWaist)
+  
     jointangle_margin = math.min(
       math.abs(qArm[2]-math.pi/2),       --Shoulder Roll 
-      math.abs(qArm[2]),
+      math.abs(qArm[2]),      
       math.abs(qArm[6]-math.pi/2),        --Wrist Roll
       math.abs(qArm[6]+math.pi/2)            
       )
+
+--[[
+    local sy_margin = math.min(
+      math.abs(qArm[3]-math.pi/2),       --Shoulder Yaw
+      math.abs(qArm[3]))      
+
+    if sy_margin<10*math.pi/180 then
+      jointangle_margin = math.min(jointangle_margin,sy_margin) 
+    end
+--]]
     if math.abs(qArm[6]) < 10*math.pi/180 then
       jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
     end
   else --Right arm
+    trCheck = Body.get_forward_rarm(qArm,mcm.get_stance_bodyTilt(),qWaist)
     jointangle_margin = math.min(
       math.abs(qArm[2]+math.pi/2),       --Shoulder Roll
-      math.abs(qArm[2]),
+      math.abs(qArm[2]),      
       math.abs(qArm[6]-math.pi/2), --Wrist Roll
       math.abs(qArm[6]+math.pi/2)      
       )
+
+--[[
+    local sy_margin = math.min(
+      math.abs(qArm[3]+math.pi/2),       --Shoulder Yaw
+      math.abs(qArm[3]))
+    if sy_margin<10*math.pi/180 then
+      jointangle_margin = math.min(jointangle_margin,sy_margin) 
+    end
+--]]
     if math.abs(qArm[6]) < 10*math.pi/180 then
       jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
     end
   end
 
+  if isLeft==1 then --Left arm
+    if qArm[2]>math.pi/2 then 
+--      print("L Roll out of bounds error", qArm[2]*RAD_TO_DEG) 
+      jointangle_margin = 0 
+    end
+    if qArm[3]>math.pi/2 or qArm[3]<0 then 
+--      print("L yaw OUT OF BOUNDS EROR!!!",qArm[3]*RAD_TO_DEG) 
+      jointangle_margin = 0 
+    end
+
+  else
+    if qArm[2]<-math.pi/2 then 
+--      print("R Roll out of bounds error",qArm[2]*RAD_TO_DEG) 
+      jointangle_margin = 0 
+    end
+    if qArm[3]<-math.pi/2 or qArm[3]>0 then 
+--      print("R yaw OUT OF BOUNDS EROR!!!",qArm[3]*RAD_TO_DEG) 
+      jointangle_margin = 0 
+    end
+  end
+
+
+
+
+
+
+
+  local tr_err = math.abs(trArm[1]-trCheck[1])+math.abs(trArm[2]-trCheck[2])+math.abs(trArm[3]-trCheck[3])
+  if jointangle_margin>0 and tr_err>0.005 then 
+    print("IK ERROR"    )
+    jointangle_margin = 0 
+  end
+
   --Clamp the margin
-  jointangle_margin = math.min(
-    Config.arm.plan.max_margin,
-    jointangle_margin)
+  jointangle_margin = math.min(Config.arm.plan.max_margin,jointangle_margin)
 --  print("yaw, margin:",qArm[3]*Body.RAD_TO_DEG,jointangle_margin*Body.RAD_TO_DEG)
   return jointangle_margin
 end
 
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
-
---print("qWaist:",unpack(qWaist))
-
   local step = Config.arm.plan.search_step
 
   --Calculte the margin for current shoulder yaw angle
   local qArmMaxMargin, qArmNext
   local max_margin = -math.huge  
-  local min_yaw_diff = math.huge
   local debugmsg=false
-  local check_yaw_diff = false
-  
+--  if isLeft==0 then  debugmsg=true end
 
-  if isLeft>0 then 
-    local shoulderYawTarget = self.shoulder_yaw_target_left
-    if shoulderYawTarget then
-      local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
-      local qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), qWaist)            
-      return qArmNext
-    end
-  else 
-    local shoulderYawTarget = self.shoulder_yaw_target_right    
-    if shoulderYawTarget then
-      local shoulderYaw = util.approachTol(qArm[3],shoulderYawTarget, yawMag, 1)
-      local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
-      return qArmNext
-    end
+
+  if isLeft>0 and self.shoulder_yaw_target_left then 
+
+    local shoulderYaw = util.approachTol(qArm[3],self.shoulder_yaw_target_left, yawMag, 1)
+    local qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), qWaist)            
+    return qArmNext
+  elseif isLeft==0 and self.shoulder_yaw_target_right then
+
+
+    local shoulderYaw = util.approachTol(qArm[3],self.shoulder_yaw_target_right, yawMag, 1)
+    local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
+    return qArmNext
   end
- 
+
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
     local qArmNext
     if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
     else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist) end
-    local margin = self.calculate_margin(qArmNext,isLeft)
---    local shoulderYawDiff = 999
---    if qArmNext then shoulderRollDdiff = math.abs(qArmNext[2]-qArm[2]) end
-
-    if debugmsg then 
-      print("CHECKING SHOULDERYAW ",
-        qShoulderYaw*180/math.pi,
-        margin*180/math.pi
---        ,shoulderYawDiff*180/math.pi
-        ) 
-    end
-
-    
-
-
-    if margin>=max_margin then
---[[      
-      if check_yaw_diff and margin == Config.arm.plan.max_margin then --max margin
-        if shoulderYawDiff < min_yaw_diff then
-          min_yaw_diff = shoulderRollDiff
-          qArmMaxMargin = qArmNext
-          max_margin = margin
-        end
-      else        
-        
-      end
---]]
-      qArmMaxMargin = qArmNext
-      max_margin = margin      
-    end
-
+    local margin = self.calculate_margin(qArmNext,isLeft,trArmNext)
+    if debugmsg then print("CHECKING SHOULDERYAW ",qShoulderYaw*180/math.pi,margin*180/math.pi) end
+    if margin>=max_margin then qArmMaxMargin, max_margin = qArmNext, margin end
   end
   if max_margin<0 then
-    print("CANNOT FIND CORRECT SHOULDER ANGLE, at trNext:",self.print_transform(trArmNext))
+    print("CANNOT FIND CORRECT SHOULDER ANGLE, at trNext:",util.print_transform(trArmNext))
     return
   else
-    if debugmsg then print("arm found with shoulderangle",qArmMaxMargin[3]*180/math.pi) end
+    if debugmsg then print(sformat("shoulder angle::%.2f",qArmMaxMargin[3]*180/math.pi)) end
     return qArmMaxMargin
   end
 end
 
-local function check_arm_joint_velocity(qArm0, qArm1, dt,velLimit)
-  --Slow down the total movement time based on joint velocity limit
-  velLimit = velLimit or dqArmMax
---Config.arm.overspeed_factor = 1 --temporary disable speeding up
-  local qArmMovement = vector.new(qArm1) - vector.new(qArm0);
-  local max_movement_ratio = 1 / Config.arm.overspeed_factor
+--[[
+local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist, dt_step)
+  local step = Config.arm.plan.search_step
 
-  for i=1,7 do
-    local movement_ratio = math.abs(util.mod_angle(qArmMovement[i]))/(velLimit[i]*dt)
-    max_movement_ratio = math.max(max_movement_ratio,movement_ratio)
+  --Calculte the margin for current shoulder yaw angle
+  local qArmMaxMargin, qArmNext
+  local max_margin = -math.huge  
+  local debugmsg=false
+  if isLeft==0 then  debugmsg=true end
+  if isLeft>0 and self.shoulder_yaw_target_left then 
+    local shoulderYaw = util.approachTol(qArm[3],self.shoulder_yaw_target_left, yawMag, 1)
+    local qArmNext = Body.get_inverse_larm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), qWaist)            
+    return qArmNext
+  elseif isLeft==0 and self.shoulder_yaw_target_right then
+    local shoulderYaw = util.approachTol(qArm[3],self.shoulder_yaw_target_right, yawMag, 1)
+    local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, shoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
+    return qArmNext
   end
-  return max_movement_ratio
+
+  local s0,s1
+  if isLeft>0 then
+    s0 = math.max(0,qArm[3] - 30*math.pi/180)
+    s1 = math.min(math.pi/2,qArm[3] + 30*math.pi/180)
+  else
+    s0 = math.max(-math.pi/2,qArm[3] - 30*math.pi/180)
+    s1 = math.min(0,qArm[3] + 30*math.pi/180)    
+  end
+
+--  print(s0,qArm[3],s1)
+
+  for qShoulderYaw = s0,s1,math.pi/180 do    
+    local qArmNext
+    if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
+    else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist) end
+    local margin = self.calculate_margin(qArmNext,isLeft)
+
+--    print("yaw searching",qShoulderYaw,margin)
+
+    if margin>=max_margin then qArmMaxMargin, max_margin = qArmNext, margin end
+  end
+  if max_margin<0 then
+    print("CANNOT FIND CORRECT SHOULDER ANGLE, at trNext:",util.print_transform(trArmNext))
+    return
+  else
+
+    local next_yaw_angle = util.approachTol(qArm[3], qArmMaxMargin[3], 20*math.pi/180, dt_step)
+
+    if debugmsg then print(sformat("shoulder angle::%.2f",next_yaw_angle*180/math.pi)) end
+
+    if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, next_yaw_angle, mcm.get_stance_bodyTilt(), qWaist)
+    else  qArmNext = Body.get_inverse_rarm(qArm,trArmNext, next_yaw_angle, mcm.get_stance_bodyTilt(), qWaist) end
+
+    return qArmNext
+  end
 end
+--]]
+
+
+
+
+
+
+
+
+
 
 
 
@@ -197,24 +250,18 @@ end
 --now linear joint level accelleration
 local function filter_arm_plan(plan)
   local num = #plan.LAP
---local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
-  velLimit = dqArmMax
-
-t0 =unix.time()
-
+  local velLimit = dqArmMax
+  local t0 =unix.time()
   local velLimit0 = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD --default value
- 
+
+local velLimit0 = vector.new({20,20,10,20,30,30,30})*DEG_TO_RAD --default value
 
   local accLimit0 = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD --accelleration value
-  local accLimit = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD*2 --accelleration value
-
   local accMax = vector.new({60,60,60,60,90,90,90})
-
 
   local dt = {}
   local qLArmMov,qRArmMov = {},{}
   local qLArmVel,qRArmVel = {},{}
-
 
   --Initial filtering based on max velocity
   for i=1,num-1 do    
@@ -223,9 +270,7 @@ t0 =unix.time()
     local dt_min_left  = get_admissible_dt_vel(qLArmMov[i], velLimit0)
     local dt_min_right = get_admissible_dt_vel(qRArmMov[i], velLimit0)
     dt[i] = math.max(dt_min_left, dt_min_right,0.01)
-
-
-    dt[i] = math.max(dt_min_left, dt_min_right,0.2)
+--    dt[i] = math.max(dt_min_left, dt_min_right,0.2)
     qLArmVel[i] = qLArmMov[i]/dt[i]    
     qRArmVel[i] = qLArmMov[i]/dt[i]
   end
@@ -237,60 +282,24 @@ t0 =unix.time()
     local dt_min_left, dt_max_left = get_admissible_dt(qLArmMov[i], qLArmVel[i-1], qLArmVel[i+1], accLimit)
     local dt_min_right, dt_max_right = get_admissible_dt(qLArmMov[i], qLArmVel[i-1], qLArmVel[i+1], accLimit)    
     local dt_accel = math.max(dt_min_left, dt_min_right)
-
     print("Accelerated dt:")
-
-
     qLArmVel[i] = qLArmMov[i]/dt[i]    
     qRArmVel[i] = qLArmMov[i]/dt[i]
   end  
 --]]
-
   local total_time=0
   for i=1,num-1 do 
     plan.LAP[i][2] = dt[i] 
     total_time = total_time+dt[i]
   end
-
-  t1 =unix.time()
-  print("Planning time:",t1-t0, " total time:",total_time)  
+  local t1 =unix.time()
+  print(sformat("Filtering time: %.2f ms Execution time: %.1fs",(t1-t0)*1000,total_time))  
 end
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-local function set_hand_mass(self,mLeftHand, mRightHand)
-  self.mLeftHand, self.mRightHand = mLeftHand, mRightHand
-end
+local function set_hand_mass(self,mLeftHand, mRightHand) self.mLeftHand, self.mRightHand = mLeftHand, mRightHand end
 
 local function reset_torso_comp(self,qLArm,qRArm)
   local qWaist = Body.get_waist_command_position()
@@ -303,29 +312,62 @@ local function reset_torso_comp(self,qLArm,qRArm)
   self:save_boundary_condition({qLArm,qRArm,qLArm,qRArm,{0.0}})
 end
 
-local function get_torso_compensation(self,qLArm,qRArm,qWaist,massL,massR)  
-  if mcm.get_status_iskneeling()==1 or Config.stance.enable_torso_compensation==0 then
-    return {0,0}
-  else      
-    local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm,mcm.get_stance_bodyTilt(), massL, massR)
-    local uTorsoCompBias = mcm.get_stance_uTorsoCompBias()
-    local uTorsoCompNew = {-com[1]/com[4]-uTorsoCompBias[1],-com[2]/com[4]-uTorsoCompBias[2]}
-    return uTorsoCompNew
+
+local function get_torso_compensation(qLArm,qRArm,qWaist,massL,massR)
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()
+  local zLeg = mcm.get_status_zLeg()
+  local zSag = mcm.get_walk_zSag()
+  local zLegComp = mcm.get_status_zLegComp()
+  local zLeft,zRight = zLeg[1]+zSag[1]+zLegComp[1],zLeg[2]+zSag[2]+zLegComp[2]
+
+
+  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})  
+  local aShiftX = mcm.get_walk_aShiftX()
+  local aShiftY = mcm.get_walk_aShiftY()
+  local torsoX    = Config.walk.torsoX
+
+  local count,revise_max = 1,4
+  local adapt_factor = 1.0
+
+ --Initial guess 
+  local uTorsoAdapt = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
+  local pTorso = vector.new({
+    uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
+            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
+  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
+  
+  -------------------Incremental COM filtering
+  while count<=revise_max do
+    local qLLeg = vector.slice(qLegs,1,6)
+    local qRLeg = vector.slice(qLegs,7,12)
+    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,3*DEG_TO_RAD)
+    local uCOM = util.pose_global(
+      vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
+
+   uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
+   uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
+   local pTorso = vector.new({
+            uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
+            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
+   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
+   count = count+1
   end
+  local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
+  return {uTorsoOffset[1],uTorsoOffset[2]}
+  
 end
 
 local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch)
-
+  local default_hand_mass = Config.arm.default_hand_mass or 0
   local dqVelLeft = mcm.get_arm_dqVelLeft()
   local dqVelRight = mcm.get_arm_dqVelRight()
 
   local velTorsoComp = Config.arm.torso_comp_limit
   local velYaw = Config.arm.shoulder_yaw_limit
-  local massL, massR = self.mLeftHand, self.mRightHand
-
-  local default_hand_mass = Config.arm.default_hand_mass or 0
-  massL = massL + default_hand_mass
-  massR = massR + default_hand_mass
+  local massL, massR = self.mLeftHand + default_hand_mass, self.mRightHand + default_hand_mass
 
   local qLArm,qRArm, qLArmComp , qRArmComp, uTorsoComp = unpack(init_cond)
 
@@ -333,40 +375,30 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local qLArmNext, qRArmNext = qLArm, qRArm
   local qWaist = {waistYaw, waistPitch}
 
-  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, qWaist)
-  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, qWaist)
+  qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, qWaist,dt_step)
+  qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, qWaist,dt_step)
+  
+
+
   if not qLArmNext or not qRArmNext then return end
 
-  local trLArmNext, trRArmNext = 
-    Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist),
-    Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
+  local trLArmNext = Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist)
+  local trRArmNext = Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
   local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
   local trLArmNextComp = vector.new(trLArmNext) + vec_comp
   local trRArmNextComp = vector.new(trRArmNext) + vec_comp
 
   --Actual arm angle considering the torso compensation
-  local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag, qWaist)
-  local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, qWaist)
+  local qLArmNextComp = self:search_shoulder_angle(qLArmComp,trLArmNextComp,1, yawMag, qWaist,dt_step)
+  local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, qWaist,dt_step)
 
   if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
     print("ERROR")
-      print("ERROR")
-        print("ERROR")
-          print("ERROR")
-            print("ERROR")
     return 
   else
-    --[[
-    local max_movement_ratioL = check_arm_joint_velocity(qLArmComp, qLArmNextComp, dt_step, dqVelLeft)
-    local max_movement_ratioR = check_arm_joint_velocity(qRArmComp, qRArmNextComp, dt_step, dqVelRight)
-    local dt_step_current = dt_step * math.max(max_movement_ratioL,max_movement_ratioR)
-    --TODO: WAIST 
-    --]]
-
     local dt_step_current = dt_step
-    local uTorsoCompNextTarget = self:get_torso_compensation(qLArmNext,qRArmNext,qWaist, massL,massR)
+    local uTorsoCompNextTarget = get_torso_compensation(qLArmNext,qRArmNext,qWaist, massL,massR)
     local uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
-    
     local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw, waistPitch}
     return new_cond, dt_step_current, torsoCompDone    
   end
@@ -390,21 +422,10 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   if not init_cond then return end
   local done, failed = false, false, false
 
-  local qWaist = {
-     init_cond[6] or Body.get_waist_command_position()[1],
-     init_cond[7] or Body.get_waist_command_position()[2],
-    }
---print("init waist:",qWaist[1]*Body.RAD_TO_DEG,qWaist[2]*Body.RAD_TO_DEG)
-
-  local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]},
-    qWaist[1],qWaist[2]}
-  local trLArm, trRArm = 
-    Body.get_forward_larm(init_cond[1],
-      mcm.get_stance_bodyTilt(),
-      qWaist), 
-    Body.get_forward_rarm(init_cond[2],
-      mcm.get_stance_bodyTilt(),
-      qWaist) 
+  local qWaist = {init_cond[6] or Body.get_waist_command_position()[1],init_cond[7] or Body.get_waist_command_position()[2]}
+  local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]},qWaist[1],qWaist[2]}
+  local trLArm = Body.get_forward_larm(init_cond[1],mcm.get_stance_bodyTilt(),qWaist) 
+  local trRArm =Body.get_forward_rarm(init_cond[2],mcm.get_stance_bodyTilt(),qWaist) 
 
 
   local qLArm0, qRArm0 = init_cond[1],init_cond[2]
@@ -466,12 +487,6 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       Config.armfsm.valvebar.velTurnAngle,
       Config.armfsm.valvebar.velTurnAngle,
       Config.armfsm.valvebar.velInsert}
-  elseif plantype=="hoseattach" then        
-    vel_param={
-      vector.slice(dpVelLeft,1,3),
-      Config.armfsm.hoseattach.velTurnAngle,
-      Config.armfsm.hoseattach.velTurnAngle,
-      Config.armfsm.hoseattach.velMove}      
   end
   
   local done, torsoCompDone = false, false
@@ -649,6 +664,8 @@ local function plan_arm_sequence(self,arm_seq)
 --    {'wrist', trLArm, trRArm} : rotate wrist to target transform
 --    {'valve', }      
 --  }
+  local t0 =unix.time()
+
 
   local init_cond = self:load_boundary_condition()
   local LAPs, RAPs, uTPs, WPs = {},{},{},{}
@@ -711,11 +728,6 @@ local function plan_arm_sequence(self,arm_seq)
         self.init_valveparam, 
         vector.slice(arm_seq[i],2,#arm_seq[i]) )      
 
-    elseif arm_seq[i][1] =='hoseattach' then
-      LAP, RAP, uTP, WP, end_cond, end_valveparam  = self:plan_unified('hoseattach',
-        init_cond, 
-        self.init_valveparam, 
-        vector.slice(arm_seq[i],2,#arm_seq[i]) )      
     end
     if not LAP then 
       hcm.set_state_success(-1) --Report plan failure
@@ -727,8 +739,7 @@ local function plan_arm_sequence(self,arm_seq)
     if end_valveparam then self.init_valveparam = end_valveparam end
     
     for j=1,#LAP do
-      LAPs[counter],RAPs[counter],uTPs[counter],WPs[counter]= 
-        LAP[j],RAP[j],uTP[j],WP[j]
+      LAPs[counter],RAPs[counter],uTPs[counter],WPs[counter]= LAP[j],RAP[j],uTP[j],WP[j]
       counter = counter+1
     end
   end
@@ -737,10 +748,14 @@ local function plan_arm_sequence(self,arm_seq)
   local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
 
   filter_arm_plan(arm_plan)
-
   print_arm_plan(arm_plan)
 
   self:init_arm_sequence(arm_plan,Body.get_time())
+
+  local t1 =unix.time()
+  print(sformat("Total planning time: %.2f ms",(t1-t0)*1000))  
+
+
   return true
 end
 
@@ -929,10 +944,8 @@ libArmPlan.new_planner = function (params)
   s.print_segment_info = print_segment_info
 
   s.calculate_margin = calculate_margin
-  s.search_shoulder_angle = search_shoulder_angle  
-  s.get_torso_compensation = get_torso_compensation
+  s.search_shoulder_angle = search_shoulder_angle    
   s.set_hand_mass = set_hand_mass
-  s.check_arm_joint_velocity = check_arm_joint_velocity
   s.reset_torso_comp = reset_torso_comp
   s.get_next_movement = get_next_movement
 

@@ -110,8 +110,8 @@ function state.entry()
     {'move',Config.armfsm.hosegrip.armhosepull[4],nil},
   }
 
-  print("trLArm0:",arm_planner.print_transform(trLArm0))
-  print("trLArm1:",arm_planner.print_transform(trLArm1))
+  print("trLArm0:",util.print_transform(trLArm0))
+  print("trLArm1:",util.print_transform(trLArm1))
 
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "wristyawturn" end
   hcm.set_state_proceed(1)
@@ -138,8 +138,8 @@ function state.update()
   if stage=="wristyawturn" then --Turn yaw angles first    
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
-        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trRArm:",arm_planner.print_transform(trRArm))
+        print("trLArm:",util.print_transform(trLArm))
+        print("trRArm:",util.print_transform(trRArm))
 
         local arm_seq = {
           {'wrist',Config.armfsm.hosegrip.armhoseattachinit[1],nil},

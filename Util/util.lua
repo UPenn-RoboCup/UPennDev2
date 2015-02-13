@@ -1,6 +1,6 @@
 local util = {}
 local vector = require'vector'
-
+local sformat = string.format
 local abs = math.abs
 
 function util.mod_angle(a)
@@ -355,6 +355,18 @@ end
 function util.ptable(t)
   -- print a table key, value pairs
   for k,v in pairs(t) do print(k,v) end
+end
+
+function util.print_transform(tr)
+  if not tr then return end
+  local str= sformat("%.2f %.2f %.2f (%.1f %.1f %.1f)",
+    tr[1],tr[2],tr[3],tr[4]*180/math.pi,tr[5]*180/math.pi,tr[6]*180/math.pi)
+  return str
+end
+
+function util.print_jangle(q)
+  local str= sformat("%d %d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  )
+  return str
 end
 
 function util.ptorch(data, W, Precision)

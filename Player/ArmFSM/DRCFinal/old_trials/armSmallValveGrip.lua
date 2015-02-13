@@ -159,7 +159,7 @@ function state.update()
   if stage=="wristturn" then --Turn yaw angles first
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then       
-        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trLArm:",util.print_transform(trLArm))
         local model = hcm.get_largevalve_model()
 --[[
         local arm_seq = {
@@ -179,7 +179,7 @@ function state.update()
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
 --        local wrist_seq = {{'wrist',trLArm0, nil}}
-        print("trRARm0:",arm_planner.print_transform(trRArm0))
+        print("trRARm0:",util.print_transform(trRArm0))
 
         local wrist_seq = {{'wrist',trLArm0, trRArm0}}
         if arm_planner:plan_arm_sequence(wrist_seq) then stage = "armbacktoinitpos" end
@@ -206,7 +206,7 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         hcm.set_state_proceed(0)
---        print("trLArm:",arm_planner.print_transform(trLArm))
+--        print("trLArm:",util.print_transform(trLArm))
       elseif hcm.get_state_proceed()==-1 then 
 --[[        
         local arm_seq = {

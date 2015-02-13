@@ -132,8 +132,8 @@ function state.update()
   if stage=="wristyawturn" then --Turn yaw angles first    
     if doneL and arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
-        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trRArm:",arm_planner.print_transform(trRArm))
+        print("trLArm:",util.print_transform(trLArm))
+        print("trRArm:",util.print_transform(trRArm))
         local arm_seq = {
           {'move',Config.armfsm.hoseattach.larminit[1],Config.armfsm.hoseattach.rarminit[1]},
           {'wrist',Config.armfsm.hoseattach.larminit[2],Config.armfsm.hoseattach.rarminit[2]},
@@ -155,10 +155,10 @@ function state.update()
         local trLArmTarget,trRArmTarget = movearm.getHoseAttachPosition(
             {0,0,0},0,0,Config.armfsm.hoseattach.rarm_clearance1 )
 
-        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trRArm:",arm_planner.print_transform(trRArm))
-        print("trLArmT:",arm_planner.print_transform(trLArmTarget))
-        print("trRArmT:",arm_planner.print_transform(trRArmTarget))
+        print("trLArm:",util.print_transform(trLArm))
+        print("trRArm:",util.print_transform(trRArm))
+        print("trLArmT:",util.print_transform(trLArmTarget))
+        print("trRArmT:",util.print_transform(trRArmTarget))
 
         local arm_seq = {{'move',trLArmTarget,trRArmTarget}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "reachout" end

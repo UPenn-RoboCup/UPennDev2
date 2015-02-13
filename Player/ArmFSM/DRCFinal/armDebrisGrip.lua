@@ -151,8 +151,8 @@ function state.update()
 --    if arm_planner:play_arm_sequence(t) then   
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
---        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trRArm:",arm_planner.print_transform(trRArm))
+--        print("trLArm:",util.print_transform(trLArm))
+        print("trRArm:",util.print_transform(trRArm))
 --        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armup" end
         hcm.set_state_proceed(0)--stop at next step
       elseif hcm.get_state_proceed()==-1 then 
@@ -174,7 +174,7 @@ function state.update()
           trRArmCurrent[5],
           trRArmCurrent[6]
         }
-        print("trRarm:",arm_planner.print_transform(trRArmTarget))
+        print("trRarm:",util.print_transform(trRArmTarget))
         hcm.set_state_override({0,0,0,0,0,0,0})        
         local arm_seq = {{'move',nil, trRArmTarget}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "armreachout" end
@@ -190,7 +190,7 @@ function state.update()
           trLArmCurrent[5],
           trLArmCurrent[6]
         }
-        print("trLarm:",arm_planner.print_transform(trLArmTarget))
+        print("trLarm:",util.print_transform(trLArmTarget))
         hcm.set_state_override_support({0,0,0,0,0,0,0})        
         local arm_seq = {{'move',trLArmTarget,nil}}
         if arm_planner:plan_arm_sequence2(arm_seq) then 

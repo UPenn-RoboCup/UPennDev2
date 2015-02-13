@@ -131,7 +131,7 @@ function state.update()
   if stage=="wristturn" then --Turn yaw angles first
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then       
-        print("trLArm:",arm_planner.print_transform(trLArm))
+        print("trLArm:",util.print_transform(trLArm))
         local model = hcm.get_largevalve_model()
         local arm_seq = {
             {'move',Config.armfsm.valveonearm.arminit[1], nil},
@@ -166,7 +166,7 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
 
---        print("trLArm:",arm_planner.print_transform(trLArm))
+--        print("trLArm:",util.print_transform(trLArm))
       elseif hcm.get_state_proceed()==-1 then 
         local arm_seq = {
             {'move',Config.armfsm.valveonearm.arminit[4], nil},           

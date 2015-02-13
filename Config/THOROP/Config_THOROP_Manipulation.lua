@@ -67,7 +67,7 @@ arm.torso_comp_limit = vector.new({0.02,0.01})
 arm.overspeed_factor = 3
 --arm.overspeed_factor = 1
 
-arm.vel_linear_limit = vector.new({0.06,0.06,0.06, 30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD})
+arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD})
 arm.vel_angular_limit = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD
 
 
@@ -406,6 +406,20 @@ armfsm.toolgrip.arminit={
   {0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
   {0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
 }
+
+--for ik testing
+armfsm.toolgrip.arminit={
+  {0.29,-0.20,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.39,-0.20,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.20,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+  {0.46,-0.20,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},
+}
+
+
+
+
+
+
 
 armfsm.toolgrip.armpull={
   {0.42,-0.40,0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD},

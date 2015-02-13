@@ -186,8 +186,8 @@ function state.update()
   if stage=="wristyawturn" then --Turn yaw angles first  
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then         
-        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trR:",arm_planner.print_transform(trRArm))
+        print("trLArm:",util.print_transform(trLArm))
+        print("trR:",util.print_transform(trRArm))
         local arm_seq = {
           {'move',Config.armfsm.hosegrip.arminit[2],Config.armfsm.hosegrip.arminit_support[2]},
           }
@@ -271,7 +271,7 @@ function state.update()
     end
   elseif stage=="armretract2" then --Move arm back to holding position
     if arm_planner:play_arm_sequence(t) then 
-      print("trLArm:",arm_planner.print_transform(trLArm))
+      print("trLArm:",util.print_transform(trLArm))
       stage = "pulldone"
       print("SEQUENCE DONE")
       return"hold"

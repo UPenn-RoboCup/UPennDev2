@@ -164,32 +164,96 @@ local function check_arm_joint_velocity(qArm0, qArm1, dt,velLimit)
 end
 
 
+
+
+
+
+
+local function get_admissible_dt_accel(qMovement, qVelLast,accLimit)
+  local dt_min , dt_max = -math.huge, math.huge
+  for j = 1,7 do
+    local dx = util.mod_angle(qMovement[j])
+    local min_vel, max_vel = qVelLast[j] - accLimit[j] ,qVelLast[j] + accLimit[j] 
+    --    dt * min_vel   <= dx <= dt* max_vel
+    
+    if max_vel> 0 then dt_min = math.max(dt_min, dx/max_vel)
+    elseif max_vel<0 then dt_max = math.min(dt_max, dx/max_vel)
+    else       --dx <= 0
+    end
+    if min_vel>0 then dt_max = math.min(dt_max, dx/min_vel)
+    elseif min_vel<0 then dt_min = math.max(dt_min, dx/min_vel)
+    else       --dx >=0
+    end
+  end
+  return dt_min, dt_max
+end
+
+local function get_admissible_dt_vel(qMovement, velLimit)
+  local dt_min = -math.huge
+  for j = 1,7 do dt_min = math.max(dt_min, util.mod_angle(qMovement[j])/velLimit[j]) end
+  return dt_min
+end
+
 --now linear joint level accelleration
 local function filter_arm_plan(plan)
   local num = #plan.LAP
 --local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
   velLimit = dqArmMax
 
+t0 =unix.time()
 
   local velLimit0 = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD --default value
-  local velLimit0 = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD --accelleration value
+ 
+
+  local accLimit0 = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD --accelleration value
+  local accLimit = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD*2 --accelleration value
+
+  local accMax = vector.new({60,60,60,60,90,90,90})
+
 
   local dt = {}
-  for i=1,num-1 do
-    local qLArmMovement =  vector.new(plan.LAP[i+1][1]) - vector.new(plan.LAP[i][1])
-    local qRArmMovement =  vector.new(plan.RAP[i+1][1]) - vector.new(plan.RAP[i][1])
-    local qLArmVel = qLArmMovement / plan.LAP[i][2]
-    local qRArmVel = qRArmMovement / plan.LAP[i][2]
-
---    dt[i] = 
+  local qLArmMov,qRArmMov = {},{}
+  local qLArmVel,qRArmVel = {},{}
 
 
-    print("LArm:",print_jangle(qLArmVel))
-    print("RArm:",print_jangle(qRArmVel))
-    print("Max:",print_jangle(  mcm.get_arm_dqVelLeft()  ))
+  --Initial filtering based on max velocity
+  for i=1,num-1 do    
+    qLArmMov[i] =  vector.new(plan.LAP[i+1][1]) - vector.new(plan.LAP[i][1])
+    qRArmMov[i] =  vector.new(plan.RAP[i+1][1]) - vector.new(plan.RAP[i][1])
+    local dt_min_left  = get_admissible_dt_vel(qLArmMov[i], velLimit0)
+    local dt_min_right = get_admissible_dt_vel(qRArmMov[i], velLimit0)
+    dt[i] = math.max(dt_min_left, dt_min_right,0.01)
 
 
+    dt[i] = math.max(dt_min_left, dt_min_right,0.2)
+    qLArmVel[i] = qLArmMov[i]/dt[i]    
+    qRArmVel[i] = qLArmMov[i]/dt[i]
   end
+
+  --Accelleration filtering
+--[[
+  for i=2,num-2 do    
+    local accLimit = accLimit0 * dt[i-1]    
+    local dt_min_left, dt_max_left = get_admissible_dt(qLArmMov[i], qLArmVel[i-1], qLArmVel[i+1], accLimit)
+    local dt_min_right, dt_max_right = get_admissible_dt(qLArmMov[i], qLArmVel[i-1], qLArmVel[i+1], accLimit)    
+    local dt_accel = math.max(dt_min_left, dt_min_right)
+
+    print("Accelerated dt:")
+
+
+    qLArmVel[i] = qLArmMov[i]/dt[i]    
+    qRArmVel[i] = qLArmMov[i]/dt[i]
+  end  
+--]]
+
+  local total_time=0
+  for i=1,num-1 do 
+    plan.LAP[i][2] = dt[i] 
+    total_time = total_time+dt[i]
+  end
+
+  t1 =unix.time()
+  print("Planning time:",t1-t0, " total time:",total_time)  
 end
 
 
@@ -285,7 +349,11 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
   local qRArmNextComp = self:search_shoulder_angle(qRArmComp,trRArmNextComp,0, yawMag, qWaist)
 
   if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
---  print("ERROR")
+    print("ERROR")
+      print("ERROR")
+        print("ERROR")
+          print("ERROR")
+            print("ERROR")
     return 
   else
     --[[

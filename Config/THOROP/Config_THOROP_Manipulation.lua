@@ -62,11 +62,6 @@ arm.plan.search_step = 0.25
 arm.shoulder_yaw_limit = 10*math.pi/180
 arm.torso_comp_limit = vector.new({0.02,0.01})
 
--- Linear movement speed limits
-arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 15*DEG_TO_RAD,15*DEG_TO_RAD,15*DEG_TO_RAD})
-
--- Angular velocity limit at servo
-arm.vel_angular_limit = vector.new({10,10,10,15,30,30,30})*DEG_TO_RAD
 
 --testing for speeding up
 arm.overspeed_factor = 3
@@ -74,6 +69,12 @@ arm.overspeed_factor = 3
 
 arm.vel_linear_limit = vector.new({0.06,0.06,0.06, 30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD})
 arm.vel_angular_limit = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD
+
+
+--Servo limit
+-- 30rpm 30rpm 30rpm 30rpm 20rpm 20rpm 20rpm
+-- = 180 180 180 180 120 120 120 degree/sec
+
 arm.shoulder_yaw_limit = 20*DEG_TO_RAD
 
 local speed_factor = 1

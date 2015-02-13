@@ -1,89 +1,24 @@
 #!/usr/bin/env luajit
-pcall(dofile, 'include.lua')
-pcall(dofile, '../include.lua')
+-- (c) 2014 Team THORwIn
+local ok = pcall(dofile,'../fiddle.lua')
+if not ok then dofile'fiddle.lua' end
 
--- Important libraries in the global space
-local libs = {
-  'Config',
-  'Body',
-  'unix',
-  'util',
-  'vector',
-  'torch',
-  'getch',
-  'msgpack'
-}
+local targetvel = {0,0,0}
+local targetvel_new = {0,0,0}
+local WAS_REQUIRED
 
--- Load the libraries
-for _,lib in ipairs(libs) do _G[lib] = require(lib) end
-if torch then torch.Tensor = torch.DoubleTensor end
-
--- FSM communicationg
--- Add all FSM directories that are in Player
-local si = require'simple_ipc'
--- FSM communicationg
-local fsm_chs = {}
-for _,sm in ipairs(Config.fsm.enabled) do
-  local fsm_name = sm..'FSM'
-  table.insert(fsm_chs, fsm_name)
-  _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
-end
+local t_last = Body.get_time()
+local tDelay = 0.005*1E6
 
 
--- Shared memory
-local listing = unix.readdir(HOME..'/Memory')
-local shm_vars = {}
-for _,mem in ipairs(listing) do
-  local found, found_end = mem:find'cm'
-  if found then
-    local name = mem:sub(1,found_end)
-    table.insert(shm_vars,name)
-    require(name)
-  end
-end
-
--- RPC engine
---rpc_ch = simple_ipc.new_requester(Config.net.reliable_rpc)
-
--- Mesh requester
---mesh_req_ch = simple_ipc.new_requester(Config.net.reliable_mesh)
-
--- Useful constants
-DEG_TO_RAD = Body.DEG_TO_RAD
-RAD_TO_DEG = Body.RAD_TO_DEG
-
---print( util.color('FSM Channel','yellow'), table.concat(fsm_ch_vars,' ') )
-print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
-
-
-local channels = {
-  ['motion_ch'] = motion_ch,
-  ['body_ch'] = body_ch,
-  ['arm_ch'] = arm_ch,
-}
-
-
--- Events for the FSMs
-local char_to_event = {
-  ['1'] = {'body_ch','init'},
-
-  ['2'] = {'arm_ch','toolgrab'},
-  ['3'] = {'arm_ch','pushdoorgrab'},
-
-  ['6'] = {'arm_ch','smallvalvegrab'},
-  ['7'] = {'arm_ch','barvalvegrab'},
-
-  ['9'] = {'arm_ch','hosegrab'},
-  ['0'] = {'arm_ch','debrisgrab'},
-
-  ['r'] = {'arm_ch','rocky'},
---  ['t'] = {'arm_ch','teleop'},
---  ['y'] = {'arm_ch','test'},
-
- 
-}
 
 local angle_increment = 5*math.pi/180
+
+
+
+DEG_TO_RAD = math.pi/180
+RAD_TO_DEG = 1/DEG_TO_RAD
+
 
 local char_to_override = {
   ['i'] = vector.new({0.01, 0, 0,   0,0,0,0}),
@@ -125,25 +60,35 @@ local char_to_rfinger = {
 
 
 
-local function send_command_to_ch(channel, cmd_string)
-  -- Default case is to send the command and receive a reply
---  local ret   = channel:send(msgpack.pack(cmd))
---  local reply = channel:receive()
---  return msgpack.unpack(reply)
-  print(cmd_string)
-  local ret   = channel:send(cmd_string)
-  return
-end
+local function update(key_code)
+  if type(key_code)~='number' or key_code==0 then return end
+  local key_char = string.char(key_code)
+  local key_char_lower = string.lower(key_char)
 
-local function process_character(key_code,key_char,key_char_lower)
-  local cmd
 
-  -- Send motion fsm events
-  local event = char_to_event[key_char_lower]
-  if event then
-    print( event[1], util.color(event[2],'yellow') )    
-    return send_command_to_ch(channels[event[1]],event[2])
+  if key_char_lower==("1") then      body_ch:send'init'
+  elseif key_char_lower==("2") then  arm_ch:send'toolgrab'
+  elseif key_char_lower==("3") then  arm_ch:send'pushdoorgrab'
+  elseif key_char_lower==("=") then      
+    hcm.set_state_proceed(1)
+  elseif key_char_lower==("-") then          
+    hcm.set_state_proceed(-1)
   end
+
+
+--[[
+  ['2'] = {'arm_ch','toolgrab'},
+  ['3'] = {'arm_ch','pushdoorgrab'},
+
+  ['6'] = {'arm_ch','smallvalvegrab'},
+  ['7'] = {'arm_ch','barvalvegrab'},
+
+  ['9'] = {'arm_ch','hosegrab'},
+  ['0'] = {'arm_ch','debrisgrab'},
+
+  ['r'] = {'arm_ch','rocky'},
+--]]
+
   
   --notify target transform change
   local trmod = char_to_override[key_char_lower]
@@ -193,33 +138,15 @@ end
 
 
 
+if ... and type(...)=='string' then
+  WAS_REQUIRED = true
+  return {entry=nil, update=update, exit=nil}
+end
 
-------------
--- Start processing
---os.execute("clear")
-io.flush()
-local t0 = unix.time()
-while true do
-  
-  -- Grab the keyboard character
-  local key_code = getch.block()
-  local key_char = string.char(key_code)
-  local key_char_lower = string.lower(key_char)
-  
-  -- Process the character
-  local msg = process_character(key_code,key_char,key_char_lower)
-  
-  -- Measure the timing
-  local t = unix.time()
-  local t_diff = t-t0
-  t0 = t
-  local fps = 1/t_diff
- 
-  -- Print is_debugging message
-  if is_debug then
-    print( string.format('\nKeyboard | Code: %d, Char: %s, Lower: %s',
-    key_code,key_char,key_char_lower) )
-    print('Response time:',t_diff)
-  end
-    
+local getch = require'getch'
+local running = true
+local key_code
+while running do
+  key_code = getch.block()
+  update(key_code)
 end

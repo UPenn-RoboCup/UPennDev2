@@ -1,5 +1,5 @@
 LIBNAME = THOROPKinematics
-EXTRA_OBJ = THOROPLegKinematics.o THOROPArmKinematics.o THOROPMassProps.o
+EXTRA_OBJ = THOROPArmKinematics.o THOROPLegKinematics.o THOROPMassProps.o
 EXTRA_LINK = ../Transform/Transform.o
 include ../../Makefile.inc
 LDFLAGS += -lm

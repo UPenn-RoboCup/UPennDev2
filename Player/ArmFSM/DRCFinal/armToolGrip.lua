@@ -134,10 +134,12 @@ function state.entry()
   arm_planner:set_hand_mass(0,0)
 --  arm_planner:set_shoulder_yaw_target(qLArm0[3], nil) 
   arm_planner:set_shoulder_yaw_target(nil, nil) 
-arm_planner:set_shoulder_yaw_target(15*DEG_TO_RAD, -15*DEG_TO_RAD)  --test
+  arm_planner:set_shoulder_yaw_target(qLArm0[3], -15*DEG_TO_RAD)  --test
+  mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand
+
 
   local wrist_seq = {
-    {'wrist',trLArm1, trRArm1},
+    {'wrist',nil, trRArm1},
   }
 
   --local wrist_seq = {{'wrist',trLArm1,trRArm1}}
@@ -173,7 +175,7 @@ function state.update()
 --        print("trLArm:",util.print_transform(trLArm))
         print("trRArm:",util.print_transform(trRArm))
 --        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)        
-        arm_planner:set_shoulder_yaw_target(15*DEG_TO_RAD, -15*DEG_TO_RAD)  --test
+        arm_planner:set_shoulder_yaw_target(qLArm0[3], -15*DEG_TO_RAD)  --test
         local arm_seq = {
           {'move',nil,Config.armfsm.toolgrip.arminit[1]},
 --          {'move',nil,Config.armfsm.toolgrip.arminit[2]},
@@ -193,7 +195,7 @@ function state.update()
       if hcm.get_state_proceed()==1 then 
         print("trRArm:",util.print_transform(trRArm))
         --arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
-        arm_planner:set_shoulder_yaw_target(nil,nil)        
+        arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)        
         local trRArmTarget = get_tool_tr({0,0,0})
         local arm_seq = { {'move',nil, trRArmTarget} }     
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "grab" end          

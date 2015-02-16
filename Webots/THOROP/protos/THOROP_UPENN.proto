@@ -8,6 +8,7 @@
 #  MINIMUM number of bounding box for speed up
 #  SJ: cleaned-up all mass properties according thorIK.h
 #  Fixed wrong arm lengths
+# unlimited arm torque and velocity (for arm motion testing)
 #############################################
 
 PROTO THOROP_UPENN [
@@ -745,10 +746,8 @@ Robot {
                           ##############################################################		
                           }
                           children [
-														RIGHT_ELBOW {
-															translation 0 0 -0.03
-															rotation 0 1 0 3.14159
-															scale 0.001 0.001 0.001
+														RIGHT_ELBOW_LONG {
+															translation 0 -0.125 -0.03
 														}
                             DEF Right_wrist_yaw HingeJoint {
                               device RotationalMotor {
@@ -954,10 +953,8 @@ Robot {
                           ##############################################################		
                           }
                           children [
-														LEFT_ELBOW {
-															translation 0 0 -0.03
-															#rotation 0 1 0 3.14159
-															scale 0.001 0.001 0.001
+														RIGHT_ELBOW_LONG {
+															translation 0 -0.125 -0.03												
 														}
                             DEF Left_wrist_yaw HingeJoint {
                               device RotationalMotor {

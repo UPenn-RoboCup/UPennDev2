@@ -44,18 +44,17 @@ function state.entry()
   local qRArm = Body.get_rarm_command_position()
 
 
-  print(string.format("qLArmr: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
-  unpack(qLArm*RAD_TO_DEG)
-  ))
 
-  local qLWrist = Body.get_inverse_lwrist(
-    qLArm,
-    Config.arm.pLWristTarget0,
+
+  local qLWrist = Body.get_inverse_lwrist(qLArm,Config.arm.pLWristTarget0,
     Config.arm.lShoulderYaw0)
-  local qRWrist = Body.get_inverse_rwrist(
-    qRArm,
-    Config.arm.pRWristTarget0,
+  local qRWrist = Body.get_inverse_rwrist(qRArm,Config.arm.pRWristTarget0,
     Config.arm.rShoulderYaw0)
+
+  local qLWrist = Body.get_inverse_lwrist(qLArm,Config.arm.pLWristTarget0,0)
+  local qRWrist = Body.get_inverse_rwrist(qRArm,Config.arm.pRWristTarget0,0)
+
+
 
   qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
   qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
@@ -78,21 +77,6 @@ function state.entry()
 
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
   mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
-
---[[
-  if not IS_WEBOTS then
-    for i=1,10 do      
-      Body.set_larm_command_velocity({500,500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_velocity({500,500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);  
-      Body.set_larm_command_acceleration({50,50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_acceleration({50,50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
-    end
-  end
---]]
 end
 
 function state.update()
@@ -100,27 +84,8 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
---  print(state._NAME..' Update' )
-
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-
---[[
-print(string.format("Cur: %.2f %.2f %.2f %.2f" ,
-qLArm[1]*Body.RAD_TO_DEG,
-qLArm[2]*Body.RAD_TO_DEG,
-qLArm[3]*Body.RAD_TO_DEG,
-qLArm[4]*Body.RAD_TO_DEG
-))
-
-print(string.format("Nxt: %.2f %.2f %.2f %.2f",
-qLArmTarget[1]*Body.RAD_TO_DEG,
-qLArmTarget[2]*Body.RAD_TO_DEG,
-qLArmTarget[3]*Body.RAD_TO_DEG,
-qLArmTarget[4]*Body.RAD_TO_DEG
-
-))
---]]
   local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
   if ret==1 then return "done" end
 end

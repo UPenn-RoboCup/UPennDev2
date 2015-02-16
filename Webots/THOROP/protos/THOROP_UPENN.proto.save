@@ -6,13 +6,15 @@
 #  Changes: variable knee torque (needed for terrain tasks)
 #  Shrunk foot size according to actual robot
 #  MINIMUM number of bounding box for speed up
-# SJ: cleaned-up all mass properties according thorIK.h
+#  SJ: cleaned-up all mass properties according thorIK.h
+#  Fixed wrong arm lengths
+# 
 #############################################
 
-PROTO THOROP_UPENN_NB2 [
+PROTO THOROP_UPENN [
   field SFVec3f    translation 0 1.155 0
   field SFRotation rotation 0 1 0 0
-  field SFString  ontroller "void"
+  field SFString   controller "void"
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
 	field SFFloat    lidarFov 3.1415926536
@@ -744,10 +746,8 @@ Robot {
                           ##############################################################		
                           }
                           children [
-														RIGHT_ELBOW {
-															translation 0 0 -0.03
-															rotation 0 1 0 3.14159
-															scale 0.001 0.001 0.001
+														RIGHT_ELBOW_LONG {
+															translation 0 -0.125 -0.03
 														}
                             DEF Right_wrist_yaw HingeJoint {
                               device RotationalMotor {
@@ -953,10 +953,8 @@ Robot {
                           ##############################################################		
                           }
                           children [
-														LEFT_ELBOW {
-															translation 0 0 -0.03
-															#rotation 0 1 0 3.14159
-															scale 0.001 0.001 0.001
+														RIGHT_ELBOW_LONG {
+															translation 0 -0.125 -0.03												
 														}
                             DEF Left_wrist_yaw HingeJoint {
                               device RotationalMotor {

@@ -10,7 +10,7 @@ PROTO RIGHT_ELBOW_LONG [
 ]
 {
 Solid {
-  translation 0 -0.125 0
+  translation IS translation
   rotation IS rotation
   children [
 	  Shape {

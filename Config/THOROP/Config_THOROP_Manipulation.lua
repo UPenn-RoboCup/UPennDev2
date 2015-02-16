@@ -32,10 +32,8 @@ arm.handoffset.chopstick = {0.440,0,0} --Two rod (for valve)
 --Torques for finger controls
 arm.torque={}
 arm.torque.movement = 5
-
 arm.torque.open = -10
 arm.torque.grip_hose = 10
-
 arm.torque.grip_drill = 10
 arm.torque.grip_drill_trigger1 = 40
 arm.torque.grip_drill_trigger2 = 40
@@ -46,12 +44,9 @@ arm.torque.grip_drill_trigger2 = 40
 --Arm planner variables
 arm.plan={}
 arm.plan.max_margin = math.pi/6
-
 arm.plan.dt_step0 = 0.1
 arm.plan.dt_step = 0.2
 arm.plan.search_step = 1
-
-
 --arm.plan.max_margin = math.pi/2
 arm.plan.search_step = 0.25
 
@@ -90,37 +85,12 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 
 
 --Pose 1 wrist position
-arm.pLWristTarget0 = {-.0,.30,-.20,0,0,0}
-arm.pRWristTarget0 = {-.0,-.30,-.20,0,0,0}
-
---ONLY FOR GETUP!!!
---
-arm.pLWristTarget0 = {-.10,.30,-.20,0,0,0}
-arm.pRWristTarget0 = {-.10,-.30,-.20,0,0,0}
---]]
-
+arm.pLWristTarget0 = {-.0,0.25,-0.25,0,0,0}
+arm.pRWristTarget0 = {-.0,-0.25,-0.25,0,0,0}
 
 --POse 1 wrist angle
-arm.lrpy0 = vector.new({0,0,0,0,30,0})*DEG_TO_RAD
-arm.rrpy0 = vector.new({0,0,0,-0,30,0})*DEG_TO_RAD
-
---[[
---New angle
---POse 1 wrist angle
-arm.lrpy0 = vector.new({0,0,0,0,5,-45})*DEG_TO_RAD
-arm.rrpy0 = vector.new({0,0,0,-0,5,45})*DEG_TO_RAD
---]]
-
-
-
-
-
---[[
---now hand facing down
-arm.lrpy0 = vector.new({0,0,0,0,80,0})*DEG_TO_RAD
-arm.rrpy0 = vector.new({0,0,0,0,80,0})*DEG_TO_RAD
---]]
-
+arm.lrpy0 = vector.new({0,0,0,0, 0,0})*DEG_TO_RAD
+arm.rrpy0 = vector.new({0,0,0,-0,0,0})*DEG_TO_RAD
 
 arm.lShoulderYaw0 = 5*DEG_TO_RAD
 arm.rShoulderYaw0 = -5*DEG_TO_RAD

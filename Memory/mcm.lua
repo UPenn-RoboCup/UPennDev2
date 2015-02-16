@@ -80,10 +80,13 @@ if Config.arm then
   shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
 end
 
---Hand weight 
-shared.arm.handmass = vector.zeros(2)
---Additional holding mass weight
-shared.arm.holdmass = vector.zeros(2)
+
+--SJ: I will move to shared memory (from function arguments)
+
+shared.arm.handmass = vector.zeros(2) --Hand weight 
+shared.arm.holdmass = vector.zeros(2) --Additional holding mass weight
+shared.arm.endpoint_compensation = vector.zeros(2) --should we apply ik-based endpoint compensation?
+
 
 
 

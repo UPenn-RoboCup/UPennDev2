@@ -84,6 +84,7 @@ local function update(key_code)
   if key_char_lower==("1") then      body_ch:send'init'
   elseif key_char_lower==("2") then  arm_ch:send'toolgrab'
   elseif key_char_lower==("3") then  arm_ch:send'pushdoorgrab'
+  elseif key_char_lower==("4") then  arm_ch:send'teleop'
   elseif key_char_lower==("=") then      
     hcm.set_state_proceed(1)
   elseif key_char_lower==("-") then          

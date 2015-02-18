@@ -14,6 +14,24 @@ debug_on = false
 debug_on_2 = false
 debugmsg = true
 
+local function tr_dist(trA,trB)
+  return math.sqrt(  (trA[1]-trB[1])^2+(trA[2]-trB[2])^2+(trA[3]-trB[3])^2)
+end
+
+local function movfunc(cdist,dist)
+  if dist==0 then return 0 end  
+
+  local acc_factor = 1 /0.02 --accellerate 2X over 2cm
+  local max_vel_factor = 2 --max 3X speed
+
+  local vel = math.min(
+    cdist*acc_factor,
+    (dist-cdist)*acc_factor,
+    max_vel_factor
+    )+1
+  return vel
+end
+
 
 local function print_arm_plan(arm_plan)
   print("Arm plan: total ", #arm_plan.LAP)  
@@ -155,23 +173,6 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
 end
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 --[[
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist, dt_step)
   local step = Config.arm.plan.search_step
@@ -274,10 +275,8 @@ local function filter_arm_plan(plan)
   local num = #plan.LAP
   local velLimit = dqArmMax
   local t0 =unix.time()
-  local velLimit0 = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD --default value
-
-local velLimit0 = vector.new({20,20,10,20,30,30,30})*DEG_TO_RAD --default value
-
+  
+  local velLimit0 = Config.arm.vel_angular_limit
   local accLimit0 = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD --accelleration value
   local accMax = vector.new({60,60,60,60,90,90,90})
 
@@ -291,8 +290,8 @@ local velLimit0 = vector.new({20,20,10,20,30,30,30})*DEG_TO_RAD --default value
     qRArmMov[i] =  vector.new(plan.RAP[i+1][1]) - vector.new(plan.RAP[i][1])
     local dt_min_left  = get_admissible_dt_vel(qLArmMov[i], velLimit0)
     local dt_min_right = get_admissible_dt_vel(qRArmMov[i], velLimit0)
-    dt[i] = math.max(dt_min_left, dt_min_right,0.01)
---    dt[i] = math.max(dt_min_left, dt_min_right,0.2)
+--    dt[i] = math.max(dt_min_left, dt_min_right,0.01)
+    dt[i] = math.max(dt_min_left, dt_min_right, Config.arm.plan.dt_step_min)
     qLArmVel[i] = qLArmMov[i]/dt[i]    
     qRArmVel[i] = qLArmMov[i]/dt[i]
   end
@@ -309,13 +308,17 @@ local velLimit0 = vector.new({20,20,10,20,30,30,30})*DEG_TO_RAD --default value
     qRArmVel[i] = qLArmMov[i]/dt[i]
   end  
 --]]
-  local total_time=0
+  local total_time1,total_time2=0,0
+
   for i=1,num-1 do 
+    total_time1=total_time1+plan.LAP[i][2]
     plan.LAP[i][2] = dt[i] 
-    total_time = total_time+dt[i]
+    total_time2 = total_time2+dt[i]
   end
+
   local t1 =unix.time()
-  print(sformat("Filtering time: %.2f ms Execution time: %.1fs",(t1-t0)*1000,total_time))  
+  print(sformat("%d segments, Filtering time: %.2f ms\nOrg: %.fs Execution time: %.1fs",
+    num-1,(t1-t0)*1000,total_time1,total_time2))  
 end
 
 
@@ -404,7 +407,7 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
 
   Kinematics.collision_check(qLArmNext,qRArmNext)
 
-    
+
 
   local trLArmNext = Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist)
   local trRArmNext = Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
@@ -437,13 +440,6 @@ end
 
 
 local function plan_unified(self, plantype, init_cond, init_param, target_param)
---[[
---hack for now (constant speed)
-  mcm.set_arm_dpVelLeft(Config.arm.vel_linear_limit)
-  mcm.set_arm_dpVelRight(Config.arm.vel_linear_limit)
-  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
-  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
---]]
   local dpVelLeft = mcm.get_arm_dpVelLeft()
   local dpVelRight = mcm.get_arm_dpVelRight()
 
@@ -478,8 +474,10 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
     current_param[4] = current_cond[7]
     target_param[3] = target_param[3] or current_cond[6]
     target_param[4] = target_param[4] or current_cond[7]
-    vel_param = {dpVelLeft,dpVelRight,Config.armfsm.dooropen.velWaistYaw,Config.armfsm.dooropen.velWaistPitch}
+
+    vel_param = {dpVelLeft,dpVelRight,Config.arm.vel_waist_limit[1],Config.arm.vel_waist_limit[2]}
   elseif plantype=="wrist" then
+--[[    
   elseif plantype=="door" then
     target_param[4] = target_param[4] or current_cond[6]
 
@@ -518,6 +516,7 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       Config.armfsm.valvebar.velTurnAngle,
       Config.armfsm.valvebar.velTurnAngle,
       Config.armfsm.valvebar.velInsert}
+--]]      
   end
   
   local done, torsoCompDone = false, false
@@ -526,11 +525,20 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
   local t0 = unix.time()  
   local t_robot = 0
+  local done2 = false
 
-  while not done and not failed  do        
+  while not done and not failed  do --we were skipping the last frame
     if plantype=="move" then
-      trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpVelLeft, dt_step )
-      trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpVelRight, dt_step )
+      local distL = tr_dist(init_param[1],target_param[1])
+      local distR = tr_dist(init_param[2],target_param[2])
+      local cdistL = tr_dist(init_param[1],trLArm)
+      local cdistR = tr_dist(init_param[2],trRArm)
+      
+      local velL = movfunc(cdistL,distL)
+      local velR = movfunc(cdistR,distR)
+
+      trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpVelLeft*velL, dt_step )
+      trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpVelRight*velR, dt_step )
 
       --Waist yaw
       new_param[3],done3 = util.approachTol(current_param[3],target_param[3],vel_param[3],dt_step )
@@ -711,11 +719,7 @@ local function plan_arm_sequence(self,arm_seq)
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('move',
         init_cond,
         {trLArm,trRArm},
-        {arm_seq[i][2] or trLArm,
-         arm_seq[i][3] or trRArm, 
-         arm_seq[i][4],
-         arm_seq[i][5],
-         } )
+        {arm_seq[i][2] or trLArm, arm_seq[i][3] or trRArm, arm_seq[i][4], arm_seq[i][5],} )
     elseif arm_seq[i][1] =='wrist' then
 
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('wrist',
@@ -837,11 +841,14 @@ local function print_segment_info(self)
 end
 
 local function play_arm_sequence(self,t)
+  if not self.t_last then return true end
   local dt =  t - self.t_last
   self.t_last = t
   if #self.leftArmQueue < self.armQueuePlaybackCount then
     return true
   else
+
+
    --Skip keyframes if needed
     while t>self.armQueuePlayEndTime do        
       self.armQueuePlaybackCount = self.armQueuePlaybackCount +1        
@@ -873,6 +880,7 @@ local function play_arm_sequence(self,t)
     end
     local ph = (t-self.armQueuePlayStartTime)/ 
               (self.armQueuePlayEndTime-self.armQueuePlayStartTime)
+--    print(sformat("%d/%d ph:%.2f",self.armQueuePlaybackCount,#self.leftArmQueue,ph))
     local qLArm,qRArm,qWaist={},{}
     for i=1,7 do
       qLArm[i] = self.qLArmStart[i] + ph * (util.mod_angle(self.qLArmEnd[i]-self.qLArmStart[i]))

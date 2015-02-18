@@ -73,6 +73,17 @@ local char_to_rfinger = {
   ['w'] = vector.new({5,5}),
 }
 
+local function print_override()
+  print( util.color('Override:','yellow'), 
+      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      override_target[1],
+      override_target[2],
+      override_target[3],
+      override_target[4]*180/math.pi,
+      override_target[5]*180/math.pi))
+
+end
+
 
 
 local function update(key_code)
@@ -93,24 +104,11 @@ local function update(key_code)
 
   elseif key_char_lower==("k") then          
     override_target=vector.new({0,0,0,  0,0,0,0})
-  elseif key_char_lower==(" ") then              
-
+  elseif key_char_lower==(" ") then
     hcm.set_state_override(override_target)    
+    override_target = vector.zeros(6)
+    print_override()
   end
-
-
---[[
-  ['2'] = {'arm_ch','toolgrab'},
-  ['3'] = {'arm_ch','pushdoorgrab'},
-
-  ['6'] = {'arm_ch','smallvalvegrab'},
-  ['7'] = {'arm_ch','barvalvegrab'},
-
-  ['9'] = {'arm_ch','hosegrab'},
-  ['0'] = {'arm_ch','debrisgrab'},
-
-  ['r'] = {'arm_ch','rocky'},
---]]
 
   
   --notify target transform change
@@ -121,13 +119,7 @@ local function update(key_code)
     local tr = vector.new(trmod) + vector.new(override_old)
     --]]
     override_target = override_target+trmod
-    print( util.color('Override:','yellow'), 
-      string.format("%.2f %.2f %.2f / %.1f %.1f",
-      override_target[1],
-      override_target[2],
-      override_target[3],
-      override_target[4]*180/math.pi,
-      override_target[5]*180/math.pi))
+    print_override()   
     --hcm.set_state_override_target(tr)    
     
     return

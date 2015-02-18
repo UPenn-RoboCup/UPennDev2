@@ -35,25 +35,31 @@ function state.entry()
 	--]]
 
   --SJ: these can be dangerous... (may make arm jump at startup)
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
 
-  local qLWrist = Body.get_inverse_lwrist(qLArm,Config.arm.pLWristTarget0,
-    Config.arm.lShoulderYaw0)
-  local qRWrist = Body.get_inverse_rwrist(qRArm,Config.arm.pRWristTarget0,
-    Config.arm.rShoulderYaw0)
+  mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper)
+  mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper)
 
-  local qLWrist = Body.get_inverse_lwrist(qLArm,Config.arm.pLWristTarget0,0)
-  local qRWrist = Body.get_inverse_rwrist(qRArm,Config.arm.pRWristTarget0,0)
+  qLArmTarget = Body.get_inverse_larm(
+    vector.zeros(7),
+    Config.arm.trLArm0,
+    Config.arm.ShoulderYaw0[1],
+    mcm.get_stance_bodyTilt(),{0,0})
 
-  qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
-  qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
+  qRArmTarget = Body.get_inverse_rarm(
+    vector.zeros(7),
+    Config.arm.trRArm0,
+    Config.arm.ShoulderYaw0[2],
+    mcm.get_stance_bodyTilt(),{0,0})
+
+  
+--  qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
+--  qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
 
   print("QLArmTarget:", util.print_jangle(qLArmTarget))
 
   mcm.set_stance_enable_torso_track(0)
-  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
-  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
+  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit_init)
+  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit_init)
 end
 
 function state.update()

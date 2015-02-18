@@ -811,7 +811,7 @@ Robot {
 
 																					endPoint GRIPPER {
 																						translation 0 -0.075 0
-																						rotation 0 0 -1 0.707
+ 		  																			rotation 0 0 -1 0.707																		
 																						trigger_name "r_trigger"
 																						grip_name "r_grip"
 																					}

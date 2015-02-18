@@ -148,8 +148,10 @@ end
 
 --SJ: This approaches to the DIRECTION of the target position
 
-function util.approachTolTransform(values, targets, vellimit, dt, tolerance)
-  tolerance = tolerance or 1e-6
+function util.approachTolTransform(values, targets, vellimit, dt)
+  local tolerance_dist = 0.001
+  local tolerance_angle = 0.1*math.pi/180
+
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
   -- Iterate through the limits of movements to approach
@@ -160,7 +162,7 @@ function util.approachTolTransform(values, targets, vellimit, dt, tolerance)
   local delta = target_pos - cur_pos
   local mag_delta = math.sqrt(delta[1]*delta[1] + delta[2]*delta[2] + delta[3]*delta[3])
   
-  if math.abs(mag_delta)>tolerance then
+  if math.abs(mag_delta)>tolerance_dist then
     movement = math.min(mag_delta, linearvellimit*dt)
     values[1] = values[1] + delta[1]/mag_delta * movement 
     values[2] = values[2] + delta[2]/mag_delta * movement 
@@ -172,7 +174,7 @@ function util.approachTolTransform(values, targets, vellimit, dt, tolerance)
   for i=4,6 do --Transform 
     -- Target value minus present value
     local delta = targets[i] - values[i]    
-    if math.abs(delta) > tolerance then
+    if math.abs(delta) > tolerance_angle then
       within_tolerance = false
       -- Ensure that we do not move motors too quickly
       delta = util.procFunc(delta,0,vellimit[i]*dt)

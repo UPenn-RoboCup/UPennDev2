@@ -233,9 +233,7 @@ std::vector<double> THOROP_kinematics_calculate_com_positions(
 std::vector<double> THOROP_kinematics_calculate_zmp(const double *com0, const double *com1, 
 		const double *com2,double dt0, double dt1);
 
-
-//SJ: those are no longer being used 
-std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch, double mLHand, double mRHand); 
+int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm);
 
 
 #endif

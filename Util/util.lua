@@ -365,8 +365,11 @@ function util.print_transform(tr)
 end
 
 function util.print_jangle(q)
-  local str= sformat("%d %d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  )
-  return str
+  if #q==6 then
+    return sformat("%d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  )
+  elseif #q==7 then
+    return sformat("%d %d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  ) 
+  end
 end
 
 function util.ptorch(data, W, Precision)

@@ -13,15 +13,9 @@ local t_entry, t_update, t_finish
 local timeout = 15.0
 
 -- Goal position is arm Init, with hands in front, ready to manipulate
-
 local qLArmTarget, qRArmTarget
 
-
-
 --SJ: now SLOWLY move joint one by one
-
-
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -40,11 +34,9 @@ function state.entry()
   Body.move_rgrip2(Config.arm.torque.movement)
 	--]]
 
+  --SJ: these can be dangerous... (may make arm jump at startup)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-
-
-
 
   local qLWrist = Body.get_inverse_lwrist(qLArm,Config.arm.pLWristTarget0,
     Config.arm.lShoulderYaw0)
@@ -54,27 +46,12 @@ function state.entry()
   local qLWrist = Body.get_inverse_lwrist(qLArm,Config.arm.pLWristTarget0,0)
   local qRWrist = Body.get_inverse_rwrist(qRArm,Config.arm.pRWristTarget0,0)
 
-
-
   qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
   qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
 
-
-  print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f",
-    unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
-  ))
-
---[[
-  qLArmTarget = vector.new({90,0,0,-170,90,10,0})*DEG_TO_RAD
-  qRArmTarget = vector.new({90,0,0,-170,-90,-10,0})*DEG_TO_RAD
---]]
-
-
-
-
+  print("QLArmTarget:", util.print_jangle(qLArmTarget))
 
   mcm.set_stance_enable_torso_track(0)
-
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit)
   mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit)
 end
@@ -93,7 +70,6 @@ end
 function state.exit()
   local libArmPlan = require 'libArmPlan'
   local arm_planner = libArmPlan.new_planner()
-  --print("qLArm:",unpack(qLArmTarget))
   arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
 --[[
   Body.move_lgrip1(0)
@@ -119,7 +95,6 @@ function state.exit()
   Body.set_lgrip_percent(0.9)
   Body.set_rgrip_percent(0.9)
 --]]
-
   print(state._NAME..' Exit' )
 end
 

@@ -298,20 +298,11 @@ static int torso_r_leg(lua_State *L) {
 }
 
 
-
-
-static int com_upperbody(lua_State *L) {
-	std::vector<double> qWaist = lua_checkvector(L, 1);
-	std::vector<double> qLArm = lua_checkvector(L, 2);
-	std::vector<double> qRArm = lua_checkvector(L, 3);
-	double bodyPitch = luaL_optnumber(L, 4,0.0);
-	double mLHand = luaL_optnumber(L, 5,0.0);
-	double mRHand = luaL_optnumber(L, 6,0.0);
-
-
-	std::vector<double> r = THOROP_kinematics_com_upperbody(
-		&qWaist[0],&qLArm[0],&qRArm[0],bodyPitch, mLHand, mRHand);
-	lua_pushvector(L, r);
+static int collision_check(lua_State *L) {	
+	std::vector<double> qLArm = lua_checkvector(L, 1);
+	std::vector<double> qRArm = lua_checkvector(L, 2);	
+	int r = THOROP_kinematics_check_collision(&qLArm[0],&qRArm[0]);
+	lua_pushnumber(L, r);	
 	return 1;
 }
 
@@ -508,10 +499,9 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_arm_given_wrist", inverse_arm_given_wrist},
 
  /* COM calculation */
-    
-	{"com_upperbody", com_upperbody},
 	{"calculate_com_pos", calculate_com_pos},
 	{"calculate_zmp", calculate_zmp},
+	{"collision_check",collision_check},
 
 	{NULL, NULL}
 };
@@ -541,4 +531,3 @@ int luaopen_THOROPKinematics (lua_State *L) {
 	lua_install_constants(L, kinematics_constants);
 	return 1;
 }
-

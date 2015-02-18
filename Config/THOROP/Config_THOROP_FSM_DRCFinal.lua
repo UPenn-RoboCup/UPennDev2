@@ -61,52 +61,23 @@ fsm.Body = {
   {'bodyStep', 'done', 'bodyStop'},
 }
 
+
+--Cut down arm FSM for now
+
 fsm.Arm = {
   {'armIdle', 'timeout', 'armIdle'},
-  {'armIdle', 'drive', 'armDrive'},
   {'armIdle', 'init', 'armInit'},
-
   {'armInit', 'done', 'armPose1'},
 
-
   {'armPose1', 'teleop', 'armTeleop'},
-  --{'armPose1', 'teleop', 'armIKTest'},
-  --{'armIKTest', 'teleop', 'armPose1'},
-
-  {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
-  {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
-
   {'armPose1', 'toolgrab', 'armToolGrip'},
-  {'armPose1', 'hosegrab', 'armHoseGrip'},
 
+--  {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
+--  {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
 
-  {'armPose1', 'debrisgrab', 'armDebrisGrip'},
-  {'armPose1', 'smallvalvegrab', 'armSmallValveGrip'},
-  {'armPose1', 'barvalvegrab', 'armBarValveGrip'},
-  {'armPose1', 'smallvalverightgrab', 'armSmallValveRightGrip'},
-  {'armPose1', 'barvalverightgrab', 'armBarValveRightGrip'},
-
-
-  {'armSmallValveGrip', 'done', 'armPose1'},
-  {'armSmallValveRightGrip', 'done', 'armPose1'},
-  {'armBarValveGrip', 'done', 'armPose1'},
-  {'armBarValveRightGrip', 'done', 'armPose1'},
 
   {'armToolGrip', 'done', 'armPose1'},
-  {'armToolGrip', 'hold', 'armToolHold'},
-  {'armToolHold', 'toolgrab', 'armToolChop'},
-  {'armToolChop', 'done', 'armToolHold'},
-
-  {'armHoseGrip', 'done', 'armPose1'},
-  {'armHoseGrip', 'hold', 'armHoseHold'},
-  {'armHoseHold', 'hold', 'armHoseHold'},
-  {'armHoseHold', 'hosegrab', 'armHoseTap'},
-  {'armHoseTap', 'done', 'armHoseHold'},
-
-  {'armPushDoorSideGrip', 'done', 'armPose1'},
-  {'armPullDoorSideGrip', 'done', 'armPose1'},
-
-  {'armDebrisGrip', 'done', 'armPose1'},
+--  {'armToolGrip', 'hold', 'armToolHold'},
   {'armTeleop', 'done', 'armPose1'},
 }
 

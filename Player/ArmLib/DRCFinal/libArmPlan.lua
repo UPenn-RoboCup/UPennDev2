@@ -323,18 +323,6 @@ end
 
 local function set_hand_mass(self,mLeftHand, mRightHand) self.mLeftHand, self.mRightHand = mLeftHand, mRightHand end
 
-local function reset_torso_comp(self,qLArm,qRArm)
-  local qWaist = Body.get_waist_command_position()
-
-  local com = Kinematics.com_upperbody(qWaist,qLArm,qRArm, 
-         mcm.get_stance_bodyTilt(), 0,0)
-
-  self.torsoCompBias = {-com[1]/com[4],-com[2]/com[4]}
-  mcm.set_stance_uTorsoCompBias(self.torsoCompBias)  
-  self:save_boundary_condition({qLArm,qRArm,qLArm,qRArm,{0.0}})
-end
-
-
 local function get_torso_compensation(qLArm,qRArm,qWaist,massL,massR)
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
@@ -382,6 +370,15 @@ local function get_torso_compensation(qLArm,qRArm,qWaist,massL,massR)
   
 end
 
+local function reset_torso_comp(self,qLArm,qRArm)
+  local qWaist = Body.get_waist_command_position()
+  self.torsoCompBias = get_torso_compensation(qLArm,qRArm,qWaist,0,0)  
+  mcm.set_stance_uTorsoCompBias(self.torsoCompBias)  
+  self:save_boundary_condition({qLArm,qRArm,qLArm,qRArm,{0.0}})
+end
+
+
+
 local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch)
   local default_hand_mass = Config.arm.default_hand_mass or 0
   local dqVelLeft = mcm.get_arm_dqVelLeft()
@@ -403,6 +400,11 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
 
 
   if not qLArmNext or not qRArmNext then return end
+
+
+  Kinematics.collision_check(qLArmNext,qRArmNext)
+
+    
 
   local trLArmNext = Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist)
   local trRArmNext = Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)

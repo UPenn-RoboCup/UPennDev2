@@ -366,164 +366,63 @@ THOROP_kinematics_calculate_com_positions(
 
 
 
-//Get the COM and total mass of the upper body
-
-  std::vector<double>
-THOROP_kinematics_com_upperbody(
-    const double *qWaist,
-    const double *qLArm,
-    const double *qRArm,
-    double bodyPitch,
-    double mLHand,
-    double mRHand)  
-{
+//Arm collision check
+int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm){
 
 
   /* inverse kinematics to convert joint angles to servo positions */
   std::vector<double> r(4);
 
-  //Now we use PELVIS frame as the default frame
-  //As the IMU are located there
+  Transform tTorso;
 
-  Transform tPelvis, tTorso, 
-            tLShoulder, tLElbow, tLWrist, tLHand,
-            tRShoulder, tRElbow, tRWrist, tRHand,
-
-            tPelvisCOM, tTorsoCOM,
-            tLUArmCOM, tLElbowCOM, tLLArmCOM, tLWristCOM, tLHandCOM,
-            tRUArmCOM, tRElbowCOM, tRLArmCOM, tRWristCOM, tRHandCOM;
-  
-  tPelvis = tPelvis
-    .rotateY(bodyPitch);
-
-  tTorso = trcopy(tPelvis)
-    .rotateZ(qWaist[0])
-    .rotateY(qWaist[1]);
-
-  tLShoulder = trcopy(tTorso)
+  Transform tLShoulder = trcopy(tTorso)
     .translateY(shoulderOffsetY)
     .translateZ(shoulderOffsetZ)        
     .rotateY(qLArm[0])
     .rotateZ(qLArm[1])
     .rotateX(qLArm[2]);
 
-  tLElbow = trcopy(tLShoulder)
+  Transform tLElbow = trcopy(tLShoulder)
     .translateX(upperArmLength)
     .translateZ(elbowOffsetX)
     .rotateY(qLArm[3]);
   
-  tLWrist = trcopy(tLElbow)
+  Transform tLWrist = trcopy(tLElbow)
     .translateZ(-elbowOffsetX)
     .rotateX(qLArm[4]);         
   
-  tLHand = trcopy(tLWrist)
+  Transform tLHand = trcopy(tLWrist)
     .translateX(lowerArmLength)          
     .rotateZ(qLArm[5])
     .rotateX(qLArm[6]);
 
-
-  tRShoulder = trcopy(tTorso)
+  Transform tRShoulder = trcopy(tTorso)
     .translateY(-shoulderOffsetY)
     .translateZ(shoulderOffsetZ)        
     .rotateY(qRArm[0])
     .rotateZ(qRArm[1])
     .rotateX(qRArm[2]);
 
-  tRElbow = trcopy(tRShoulder)
+  Transform tRElbow = trcopy(tRShoulder)
     .translateX(upperArmLength)
     .translateZ(elbowOffsetX)
     .rotateY(qRArm[3]);    
 
-  tRWrist = trcopy(tRElbow)
+  Transform tRWrist = trcopy(tRElbow)
     .translateZ(-elbowOffsetX)
     .rotateX(qRArm[4]);            
 
-  tRHand = trcopy(tRWrist)
+  Transform tRHand = trcopy(tRWrist)
     .translateX(lowerArmLength)          
     .rotateZ(qRArm[5])
     .rotateX(qRArm[6]);
 
-
-  tPelvisCOM = tPelvis
-    .translateX(comPelvisX)
-    .translateZ(comPelvisZ);
-
-  tTorsoCOM = tTorso
-    .translateX(comTorsoX)
-    .translateZ(comTorsoZ);
-
-  tLUArmCOM = tLShoulder
-    .translateX(comUpperArmX)
-    .translateZ(comUpperArmZ);
-        
-  tLElbowCOM = tLElbow
-    .translateX(comElbowX)
-    .translateZ(comElbowZ);
-
-  tLLArmCOM = tLWrist
-    .translateX(comLowerArmX);
-  
-  tLWristCOM = trcopy(tLHand)
-    .translateX(comWristX)
-    .translateZ(comWristZ);
-
-  tLHandCOM = tLHand
-    .translateX(handOffsetX)
-    .translateY(-handOffsetY);
-
-
-
-  tRUArmCOM = tRShoulder
-    .translateX(comUpperArmX)
-    .translateZ(comUpperArmZ);
-
-  tRElbowCOM = tRElbow
-    .translateX(comElbowX)
-    .translateZ(comElbowZ);
-
-  tRLArmCOM = tRWrist
-    .translateX(comLowerArmX);
-
-  tRWristCOM = trcopy(tRHand)
-    .translateX(comWristX)
-    .translateZ(comWristZ);    
-
-  tRHandCOM = tRHand
-    .translateX(handOffsetX)
-    .translateY(handOffsetY);    
-
-
-  r[0] = 
-         mPelvis * tPelvisCOM(0,3) +
-         mTorso * tTorsoCOM(0,3) +
-         mUpperArm * (tLUArmCOM(0,3) + tRUArmCOM(0,3))+
-         mElbow * (tLElbowCOM(0,3) + tRElbowCOM(0,3))+
-         mLowerArm * (tLLArmCOM(0,3)+ tRLArmCOM(0,3))+
-         mWrist * (tLWristCOM(0,3) + tRWristCOM(0,3))+
-         mLHand * tLHandCOM(0,3) + 
-         mRHand * tRHandCOM(0,3);
-
-  r[1] = mPelvis * tPelvisCOM(1,3) +
-         mTorso * tTorsoCOM(1,3) +
-         mUpperArm * (tLUArmCOM(1,3) + tRUArmCOM(1,3))+
-         mElbow * (tLElbowCOM(1,3) + tRElbowCOM(1,3))+
-         mLowerArm * (tLLArmCOM(1,3)+ tRLArmCOM(1,3))+
-         mWrist * (tLWristCOM(1,3) + tRWristCOM(1,3))+
-         mLHand * tLHandCOM(1,3) + 
-         mRHand * tRHandCOM(1,3);
-
-  r[2] = mPelvis * tPelvisCOM(2,3) +
-         mTorso * tTorsoCOM(2,3) +
-         mUpperArm * (tLUArmCOM(2,3) + tRUArmCOM(2,3))+
-         mElbow * (tLElbowCOM(2,3) + tRElbowCOM(2,3))+
-         mLowerArm * (tLLArmCOM(2,3)+ tRLArmCOM(2,3))+
-         mWrist * (tLWristCOM(2,3) + tRWristCOM(2,3))+
-         mLHand * tLHandCOM(2,3) + 
-         mRHand * tRHandCOM(2,3);
-
-  r[3] = mPelvis + mTorso + 2* (mUpperArm + mElbow + mLowerArm + mWrist) + mLHand + mRHand;
-
-  return r;
+  //Elbow should always be outside the shoulder
+  if ((tLElbow(1,3)<tLShoulder(1,3))||(tRElbow(1,3)>tRShoulder(1,3))){
+    printf("Elbow collision!\n");
+    return 1;
+  }
+  return 0;
 }
 
 

@@ -807,14 +807,14 @@ Robot {
                                           	#fixed
                                             axis 0 -1 0
                                           }
-                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
+#                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
 
-#																					endPoint GRIPPER {
-#																						translation 0 -0.075 0
-#																						rotation 0 0 -1 0.707
-#																						trigger_name "r_trigger"
-#																						grip_name "r_grip"
-#																					}
+																					endPoint GRIPPER {
+																						translation 0 -0.075 0
+																						rotation 0 0 -1 0.707
+																						trigger_name "r_trigger"
+																						grip_name "r_grip"
+																					}
 
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children

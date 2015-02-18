@@ -65,61 +65,61 @@ local function update(rgb, depth)
 		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
 	end
 	-- Send debug
-  if t - t_send > 1 then
-    t_send = t
-    local rpy = Body.get_rpy()
-    local bh = mcm.get_walk_bodyHeight()
-    local qHead = Body.get_head_position()
-    local tr = flatten(get_transform(qHead, rpy, bh))
-		local odom = mcm.get_status_odometry()
-		local vel = mcm.get_walk_vel()
-	  -- Form color
-    rgb.t = t
-    rgb.c = 'jpeg'
-    rgb.id = 'k2_rgb'
-    rgb.head_angles = qHead
-    rgb.body_height = bh
-    rgb.imu_rpy = rpy
-    rgb.tr = tr
-		rgb.odom = odom
-		rgb.vel = vel
-    local j_rgb
-    if IS_WEBOTS then
-      j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
-    else
-      j_rgb = rgb.data
-    end
-    rgb.data = nil
-    rgb.sz = #j_rgb
-    rgb.rsz = #j_rgb
-    local m_rgb = mpack(rgb)
-
-	  -- Form depth (TODO: zlib)
-    depth.t = t
-    depth.c = 'raw'
-    depth.id = 'k2_depth'
-    depth.head_angles = qHead
-    depth.body_height = bh
-    depth.imu_rpy = rpy
-    depth.tr = tr
-		depth.odom = odom
-		depth.vel = vel
-	  local ranges = depth.data
-	  depth.data = nil
-	  depth.sz = #ranges
-    depth.rsz = #ranges
-    local m_depth = mpack(depth)
-    -- Log
-    if ENABLE_LOG then
-      log_rgb:record(m_rgb, j_rgb)
-      log_depth:record(m_depth, ranges)
-    end
-    -- Send
-		color_net_ch:send({m_rgb, j_rgb})
-    depth_net_ch:send({m_depth, ranges})
-		--color_ch:send({m_rgb, j_rgb})
-    --depth_ch:send({m_depth, ranges})
+  if t - t_send < 1 then return t end
+  t_send = t
+	print('t_send', t_send)
+  local rpy = Body.get_rpy()
+  local bh = mcm.get_walk_bodyHeight()
+  local qHead = Body.get_head_position()
+  local tr = flatten(get_transform(qHead, rpy, bh))
+	local odom = mcm.get_status_odometry()
+	local vel = mcm.get_walk_vel()
+  -- Form color
+  rgb.t = t
+  rgb.c = 'jpeg'
+  rgb.id = 'k2_rgb'
+  rgb.head_angles = qHead
+  rgb.body_height = bh
+  rgb.imu_rpy = rpy
+  rgb.tr = tr
+	rgb.odom = odom
+	rgb.vel = vel
+  local j_rgb
+  if IS_WEBOTS then
+    j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+  else
+    j_rgb = rgb.data
   end
+  rgb.data = nil
+  rgb.sz = #j_rgb
+  rgb.rsz = #j_rgb
+  local m_rgb = mpack(rgb)
+
+  -- Form depth (TODO: zlib)
+  depth.t = t
+  depth.c = 'raw'
+  depth.id = 'k2_depth'
+  depth.head_angles = qHead
+  depth.body_height = bh
+  depth.imu_rpy = rpy
+  depth.tr = tr
+	depth.odom = odom
+	depth.vel = vel
+  local ranges = depth.data
+  depth.data = nil
+  depth.sz = #ranges
+  depth.rsz = #ranges
+  local m_depth = mpack(depth)
+  -- Log
+  if ENABLE_LOG then
+    log_rgb:record(m_rgb, j_rgb)
+    log_depth:record(m_depth, ranges)
+  end
+  -- Send
+	--color_net_ch:send({m_rgb, j_rgb})
+  --depth_net_ch:send({m_depth, ranges})
+	color_ch:send({m_rgb, j_rgb})
+  depth_ch:send({m_depth, ranges})
   return t
 end
 

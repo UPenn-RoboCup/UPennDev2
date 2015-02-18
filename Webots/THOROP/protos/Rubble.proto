@@ -3,7 +3,7 @@
 
 PROTO Rubble [
   field SFVec3f translation 0 0.05 0
-  field SFVec3f scale 1 0.5 1
+  field SFVec3f scale 1 1 1
   field SFRotation rotation 0 1 0 0
   field MFString texture "textures/rock.png"
   field SFColor color 1 1 1
@@ -178,7 +178,7 @@ PROTO Rubble [
         }
       }
     ]
-    boundingObject USE IFS
-    physics IS physics
+    #boundingObject USE IFS
+    #physics IS physics
   }
 }

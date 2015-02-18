@@ -12,6 +12,7 @@ PROTO simple_wall [
 ]
 {
 Solid {
+	locked TRUE
   name IS name
   description "Wall for the RoboCup@Work competition"
   translation IS translation

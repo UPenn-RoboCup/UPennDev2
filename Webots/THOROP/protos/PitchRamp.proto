@@ -51,6 +51,6 @@ Solid {
 			USE ramp2
 		]
   }  
-# locked TRUE
+ locked TRUE
 }
 }

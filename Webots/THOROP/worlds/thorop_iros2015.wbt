@@ -1,10 +1,10 @@
-#VRML_SIM V7.4.3 utf8
+#VRML_SIM V6.0 utf8
 WorldInfo {
   info [
-    "Default world for the THOR-OP"
+    "IROS 2015 World"
   ]
-  title "THOR-OP Only"
-  basicTimeStep 20
+  title "THOR-OP In an obstacle course"
+  basicTimeStep 15
   FPS 15
   contactProperties [
     ContactProperties {

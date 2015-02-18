@@ -67,7 +67,7 @@ local function update(rgb, depth)
 	-- Send debug
   if t - t_send < 1 then return t end
   t_send = t
-	print('t_send', t_send)
+	print('Kinect2 | t_send', t_send)
   local rpy = Body.get_rpy()
   local bh = mcm.get_walk_bodyHeight()
   local qHead = Body.get_head_position()

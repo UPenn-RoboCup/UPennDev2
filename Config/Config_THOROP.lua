@@ -50,10 +50,10 @@ if IS_STEVE then
 		'Robot', 'Walk', 'Net',
 		'FSM_Steve', 'Arm_Steve', 'Vision_Steve' --, 'World_Steve'
 	}
-	--[[
+	----[[
 	if IS_WEBOTS then
 		Config.sensors.kinect = 'kinect2_wizard'
-		Config.kinect_timestep = 50
+		Config.kinect_timestep = 1000--50
 	end
 	--]]
 else

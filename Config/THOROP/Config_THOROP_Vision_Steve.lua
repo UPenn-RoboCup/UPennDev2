@@ -27,6 +27,9 @@ local head = {
   -- From CoM to neck joint
   neckOffset = {0, 0, 0.32}
 }
+if IS_WEBOTS then
+	head.cameraPitch = 0
+end
 
 local colors = {
 		black = 0,
@@ -52,14 +55,14 @@ local vision_k2 = {
 }
 
 vision.goal = {
-  th_min_bbox_area = 80, --100, 
+  th_min_bbox_area = 80, --100,
   th_nPostB = 15,
   th_min_area = 40,
   th_min_orientation = 80*DEG_TO_RAD,
   th_min_fill_rate = 0.4, --0.45,
   -- TODO: need to test on real robot
-  height_min = 1, 
-  height_max = 2, 
+  height_min = 1,
+  height_max = 2,
   th_aspect_ratio = {13,120},
   th_edge_margin = 5,
   th_bottom_boundingbox = 0.9,
@@ -142,7 +145,7 @@ table.insert(camera,
 		param = m308_param,
     --param = grasp_afternoon_param,
   })
-	
+
 local kinect = {
   name = 'kinect2',
   w = 512,
@@ -158,6 +161,12 @@ local kinect = {
     {0.03,0,0.08} -- translaction
   }
 }
+if IS_WEBOTS then
+	kinect.mountOffset = {
+    {0,0,0}, -- RPY
+    {0.03,0,0.13} -- translaction
+  }
+end
 
 --Webots use 1/2 resolution but 2x label resolution
 if IS_WEBOTS then
@@ -168,20 +177,20 @@ if IS_WEBOTS then
   camera[1].lut = 'multi_valve'
   camera[1].focal_length = 395.17
   camera[1].focal_base = 640
-	
+
 	-- Kinect width and height
 	kinect.w, kinect.h = 256, 212
-  
+
   vision.scaleA = 2
   vision.scaleB = 2
-	
+
 	head.neckX = 0 --From CoM to neck joint
   head.cameraPitch = 0
   head.cameraRoll = 0
 	head.yawBias = 0
-  
+
   vision.goal = {
-    th_min_bbox_area = 80, 
+    th_min_bbox_area = 80,
     th_nPostB = 10,
     th_min_area = 35,
     th_min_orientation = 80*DEG_TO_RAD,

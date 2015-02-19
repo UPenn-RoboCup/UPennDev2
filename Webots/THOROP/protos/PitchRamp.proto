@@ -1,8 +1,8 @@
+#VRML_SIM V6.0 utf8
 #
 #  DARPA Trials Terrain: Pitch Ramp
 #  heqin@seas.upenn.edu
 #
-
 
 PROTO PitchRamp [
   field SFVec3f translation 0 0 0
@@ -25,11 +25,10 @@ Solid {
 			         diffuseColor 1 1 0.5
 			       }
 			     }
-			     geometry Box { size 2.4 0.02 0.62 }
+			     geometry DEF ramp_geo Box { size 1 0.02 0.62 }
 			  }
 			]					
 		}
-		
 		DEF ramp2 Transform{
 		  translation 0 0.08 0.9
 		  rotation 1 0 0 0.262
@@ -40,7 +39,7 @@ Solid {
 			         diffuseColor 1 1 0.5
 			       }
 			     }
-			     geometry Box { size 2.4 0.02 0.62 }
+					 geometry USE ramp_geo
 			  }
 			]					
 		}		

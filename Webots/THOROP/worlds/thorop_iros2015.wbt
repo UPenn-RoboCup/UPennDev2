@@ -1,0 +1,147 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "IROS 2015 World"
+  ]
+  title "THOR-OP In an obstacle course"
+  basicTimeStep 15
+  FPS 15
+  contactProperties [
+    ContactProperties {
+      material1 "feet"
+      material2 "floor"
+      coulombFriction 0.5
+      forceDependentSlip 0.0001
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.00511571 0.999986 -0.00159458 2.17532
+  position 3.60201 0.729405 -2.33966
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR Floor {
+  translation 0 0 2
+  size 2 5
+  tileSize 2 2
+  contactMaterial "floor"
+  texture [
+    "textures/marble.png" #"textures/texture_grid.png"
+  ]
+}
+DEF FLOOR2 Floor {
+  translation -1.5 0 5.5
+  rotation 0 1 0 1.57
+  size 2 5
+  tileSize 2 2
+  contactMaterial "floor"
+  texture [
+    "textures/marble.png" #"textures/texture_grid.png"
+  ]
+}
+simple_wall {
+  size 3 1 0.01
+  translation -2.5 0.5 4.5
+}
+QualStep {
+  translation -2 0 5.5
+}
+THOROP_UPENN {
+  controller "thorop"
+  controllerArgs "0 32"
+  lidarRays 360
+  footContactMaterial "feet"
+}
+PitchRamp { translation -0.5 0 0.5 }
+QualStep {
+  rotation 0 1 0 1.57
+  translation 0.5 0 1
+}
+QualStep {
+  rotation 0 1 0 1.57
+  translation 0.5 0 2.5
+}
+
+OilBarrel {
+  translation 0.5 0.44 3.75
+}
+
+#Rubble field
+#Even
+Rubble {
+  translation -0.3 0 2.4
+}
+Rubble {
+  translation -0.4 0 2.4
+}
+Rubble {
+  translation -0.5 0 2.4
+}
+Rubble {
+  translation -0.6 0 2.4
+}
+Rubble {
+  translation -0.7 0 2.4
+}
+#Odd
+Rubble {
+  translation -0.35 0 2.5
+}
+Rubble {
+  translation -0.45 0 2.5
+}
+Rubble {
+  translation -0.55 0 2.5
+}
+Rubble {
+  translation -0.65 0 2.5
+}
+Rubble {
+  translation -0.75 0 2.5
+}
+# Even
+Rubble {
+  translation -0.3 0 2.6
+}
+Rubble {
+  translation -0.4 0 2.6
+}
+Rubble {
+  translation -0.5 0 2.6
+}
+Rubble {
+  translation -0.6 0 2.6
+}
+Rubble {
+  translation -0.7 0 2.6
+}
+#Odd
+Rubble {
+  translation -0.35 0 2.7
+}
+Rubble {
+  translation -0.45 0 2.7
+}
+Rubble {
+  translation -0.55 0 2.7
+}
+Rubble {
+  translation -0.65 0 2.7
+}
+Rubble {
+  translation -0.75 0 2.7
+}

@@ -14,6 +14,22 @@ debug_on = false
 debug_on_2 = false
 debugmsg = true
 
+
+
+
+
+
+
+--print(unpack(Config.arm.iklookup.x))
+
+
+
+
+
+
+
+
+
 local function tr_dist(trA,trB)
   return math.sqrt(  (trA[1]-trB[1])^2+(trA[2]-trB[2])^2+(trA[3]-trB[3])^2)
 end
@@ -68,6 +84,7 @@ local function calculate_margin(qArm,isLeft,trArm)
       jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
     end
   else --Right arm
+
     trCheck = Body.get_forward_rarm(qArm,mcm.get_stance_bodyTilt(),qWaist)
     jointangle_margin = math.min(
       math.abs(qArm[2]+math.pi/2),       --Shoulder Roll
@@ -132,7 +149,65 @@ local function calculate_margin(qArm,isLeft,trArm)
   return jointangle_margin
 end
 
+
+
+
+local function get_shoulder_yaw_angle_lookup(trArmNext,qArm)
+  isLeft=0
+
+  local xmin,xmax,div = Config.arm.iklookup.x[1],Config.arm.iklookup.x[2],Config.arm.iklookup.x[3]
+  local ymin,ymax = Config.arm.iklookup.y[1],Config.arm.iklookup.y[2]
+  local zmin,zmax = Config.arm.iklookup.z[1],Config.arm.iklookup.z[2]
+  local xmag,ymag,zmag = (xmax-xmin)/div+1,(ymax-ymin)/div+1,(zmax-zmin)/div+1
+
+--  print("current xyz:",util.print_transform(trArmNext))
+
+  x = (math.max(xmin,math.min(xmax,trArmNext[1])) - xmin)/div
+  y = (math.max(ymin,math.min(ymax,trArmNext[2])) - ymin)/div
+  z = (math.max(zmin,math.min(zmax,trArmNext[3])) - zmin)/div
+  
+  local xi,yi,zi = math.floor(x+0.5),math.floor(y+0.5),math.floor(z+0.5)  
+  local index = zi + yi*zmag + xi*zmag*ymag
+
+  for i=index-10,index+10 do print(i,Config.arm.iklookup.dat[i]) end
+
+  local yawangle = Config.arm.iklookup.dat[index]*DEG_TO_RAD
+  print("yawangle:",yawangle/DEG_TO_RAD)
+  if yawangle>90*DEG_TO_RAD then 
+    print("no solution here")
+    return 
+  end
+
+  local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, yawangle, 0, {0,0}) 
+
+  if not qArmNext then print("NO SOLUTION WTF") end
+
+  return qArmNext 
+
+--[[
+  local margin = calculate_margin(qArmNext,isLeft,trArmNext)
+  if margin>=0 then 
+    print("margin:",margin/DEG_TO_RAD)
+    return qArmNext 
+  end
+  print("no margin!")
+  return 
+--]]  
+end
+
+
+
+
+
+
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
+
+
+  if isLeft==0 and trArmNext[6] ==45*DEG_TO_RAD then
+    return get_shoulder_yaw_angle_lookup(trArmNext,qArm)
+  end
+
+
   local step = Config.arm.plan.search_step
 
   --Calculte the margin for current shoulder yaw angle
@@ -158,16 +233,10 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
 
   for div = -1,1,step do
     local qShoulderYaw = qArm[3] + div * yawMag
---    if isLeft>0 then qShoulderYaw = math.max(0,qShoulderYaw)
---    else qShoulderYaw = math.min(0,qShoulderYaw)  end
-
     local qArmNext
     if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
     else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist) end
-
     local margin = self.calculate_margin(qArmNext,isLeft,trArmNext)
-    
-
     if debugmsg then print("CHECKING SHOULDERYAW ",qShoulderYaw*180/math.pi,margin*180/math.pi) end
     if margin>=max_margin then qArmMaxMargin, max_margin = qArmNext, margin end
   end
@@ -175,7 +244,6 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
     print("CANNOT FIND CORRECT SHOULDER ANGLE, at trNext:",util.print_transform(trArmNext))
     return
   else
-
     if debugmsg then print(sformat("shoulder angle::%.2f",qArmMaxMargin[3]*180/math.pi)) end
     return qArmMaxMargin
   end

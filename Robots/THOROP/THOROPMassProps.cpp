@@ -471,9 +471,17 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left){
 
   //Elbow should always be outside the shoulder
   if (fabs(tElbow(1,3)) <fabs( tShoulder(1,3))  ){
-    printf("Elbow collision!\n");
+    //printf("Elbow collision!\n");
     return 1;
   }
+  //Wrist collision check with pelvis
+
+  //Pelvis box: 
+
+
+
+
+
   return 0;
 }
 

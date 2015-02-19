@@ -1,5 +1,6 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
+local carray = require'carray'
 
 Config.IS_LONGARM =true
 --Config.IS_LONGARM =false
@@ -7,6 +8,13 @@ Config.IS_LONGARM =true
 ------------------------------------
 -- For the arm FSM
 local arm = {}
+
+
+
+
+
+
+
 
 arm.default_hand_mass = 0.4
 
@@ -116,18 +124,28 @@ armfsm.toolgrip.lhand_rpy = {0,0,-45*DEG_TO_RAD}
 armfsm.toolgrip.rhand_rpy = {0,0,45*DEG_TO_RAD}
 
 --Conservative initial model (away from target)
-armfsm.toolgrip.default_model = {
-  0.42,-0.06,0.20,  0*DEG_TO_RAD}
+armfsm.toolgrip.default_model = {0.42,-0.06,0.20,  0*DEG_TO_RAD}
 
 armfsm.toolgrip.arminit={
   {'move',nil,{0.29,-0.40,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.39,-0.40,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move',nil,{0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 
+
+--test
+armfsm.toolgrip.arminit={
+  {'move',nil,{0.29,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+--  {'move',nil,{0.40,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+}
+armfsm.toolgrip.default_model = {0.29,-0.25,-0.15,  0*DEG_TO_RAD}
+
+
+
+
+
+
 armfsm.toolgrip.armuninit={
   {'move',nil,{0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.39,-0.40,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move',nil,{0.29,-0.40,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move',nil,arm.trRArm1},
   {'move',nil,arm.trRArm0},
@@ -136,14 +154,35 @@ armfsm.toolgrip.armuninit={
 armfsm.toolgrip.armpull={
   {'wrist',nil,{0.42,-0.40,0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move',nil,{0.42,-0.40,0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.39,-0.40,0.01,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.25,-0.40,-0.10,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move',nil,{0.42,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move',nil,{0.29,-0.40,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move',nil,{0.25,0.0,-0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
+
+
+--Load arm IK lookup table
+local fname = {Config.PLATFORM_NAME,'/iklookup'}  
+local c = require(table.concat(fname))
+if c.iklookup then 
+  arm.iklookup={}
+  arm.iklookup.x = c.iklookup.x
+  arm.iklookup.y = c.iklookup.y
+  arm.iklookup.z = c.iklookup.z
+
+  print("ik table size:",#c.iklookup.dat)
+  arm.iklookup.dat=carray.int(#c.iklookup.dat)
+  for i=1,#c.iklookup.dat do
+    arm.iklookup.dat[i]=c.iklookup.dat[i]
+  end
+end
+
+
 
 ------------------------------------
 -- Associate with the table
 Config.arm     = arm
 Config.armfsm  = armfsm
+
+
 
 return Config

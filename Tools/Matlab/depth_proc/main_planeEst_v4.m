@@ -10,12 +10,13 @@ clear;
 close all;
 
 % foldername = '/home/thor/Desktop/UPennDev/Tools/Matlab/depth_proc/UnpackedData/'; % change the folder
-foldername = '/home/leebhoram/matlab_workspace/DRC/Unpacked/'; % change the folder
+%foldername = '/home/leebhoram/matlab_workspace/DRC/Unpacked/'; % change the folder
 % datestamp = '12.04.2014.09.30.46';
-
 % datestamp = '01.07.2015.16.42.55';
- datestamp = '01.09.2015.16.42.40';
+% datestamp = '01.09.2015.16.42.40';
 % datestamp = '01.20.2015.12.02.25';
+foldername = '/home/leebhoram/matlab_workspace/DRC/kinect2_on_robot/Unpacked/'; % change the folder
+datestamp = '01.23.2015.14.48.29';
 
 [ fileSequence] = getMatFilesFromFolder( strcat(foldername,datestamp));
 

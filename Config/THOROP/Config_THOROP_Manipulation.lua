@@ -46,6 +46,8 @@ arm.plan.dt_step = 0.2
 arm.plan.dt_step_min = 0.02
 arm.plan.dt_step_min = 0.2 --no speedup
 
+--arm.plan.dt_step_min = 0.1 --2x speedup
+
 
 --arm.plan.dt_step0 = 0.05
 --arm.plan.dt_step = 0.1
@@ -68,12 +70,12 @@ arm.vel_waist_limit = vector.new({3,3})*DEG_TO_RAD
 arm.shoulder_yaw_limit = 20*DEG_TO_RAD
 
 if IS_WEBOTS then 
+  speedup_factor = 1
   speedup_factor = 3
---  speedup_factor = 1
 
+  arm.shoulder_yaw_limit = arm.shoulder_yaw_limit*speedup_factor
   arm.vel_linear_limit = arm.vel_linear_limit*speedup_factor
   arm.vel_angular_limit = arm.vel_angular_limit*speedup_factor
-
   arm.vel_angular_limit_init = arm.vel_angular_limit_init*3 
 end
 

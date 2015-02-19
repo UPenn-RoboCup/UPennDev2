@@ -22,11 +22,13 @@ local function movfunc(cdist,dist)
   if dist==0 then return 0 end  
 
   local acc_factor = 1 /0.02 --accellerate 2X over 2cm
+  local dcc_factor = 1 /0.03 --accellerate 2X over 3cm
   local max_vel_factor = 2 --max 3X speed
+  
 
   local vel = math.min(
     cdist*acc_factor,
-    (dist-cdist)*acc_factor,
+    (dist-cdist)*dcc_factor,
     max_vel_factor
     )+1
   return vel
@@ -122,6 +124,10 @@ local function calculate_margin(qArm,isLeft,trArm)
 
   --Clamp the margin
   jointangle_margin = math.min(Config.arm.plan.max_margin,jointangle_margin)
+
+
+  if K.collision_check_single(qArm,isLeft)>0 then jointangle_margin=-math.huge end
+
 --  print("yaw, margin:",qArm[3]*Body.RAD_TO_DEG,jointangle_margin*Body.RAD_TO_DEG)
   return jointangle_margin
 end
@@ -158,11 +164,14 @@ local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
     local qArmNext
     if isLeft>0 then qArmNext = Body.get_inverse_larm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist)
     else qArmNext = Body.get_inverse_rarm(qArm,trArmNext, qShoulderYaw, mcm.get_stance_bodyTilt(), qWaist) end
+
     local margin = self.calculate_margin(qArmNext,isLeft,trArmNext)
+    
+
     if debugmsg then print("CHECKING SHOULDERYAW ",qShoulderYaw*180/math.pi,margin*180/math.pi) end
     if margin>=max_margin then qArmMaxMargin, max_margin = qArmNext, margin end
   end
-  if max_margin<0 then
+  if max_margin<=0 then
     print("CANNOT FIND CORRECT SHOULDER ANGLE, at trNext:",util.print_transform(trArmNext))
     return
   else
@@ -946,6 +955,9 @@ local function set_shoulder_yaw_target(self,left,right)
 end
 
 
+
+
+
 local libArmPlan={}
 
 libArmPlan.new_planner = function (params)
@@ -1002,6 +1014,8 @@ libArmPlan.new_planner = function (params)
   s.save_doorparam = save_doorparam  
   s.save_valveparam = save_valveparam
   s.set_shoulder_yaw_target = set_shoulder_yaw_target
+
+  s.range_test=range_test
 
   return s
 end

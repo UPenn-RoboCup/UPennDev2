@@ -426,6 +426,59 @@ int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm){
 }
 
 
+//Arm collision check
+int THOROP_kinematics_check_collision_single(const double *qArm,int is_left){
+
+
+  /* inverse kinematics to convert joint angles to servo positions */
+  std::vector<double> r(4);
+
+  Transform tTorso;
+
+  Transform tShoulder;
+
+  if (is_left>0)
+    tShoulder = trcopy(tTorso)
+      .translateY(shoulderOffsetY)
+      .translateZ(shoulderOffsetZ)        
+      .rotateY(qArm[0])
+      .rotateZ(qArm[1])
+      .rotateX(qArm[2]);
+  else
+    tShoulder = trcopy(tTorso)
+      .translateY(-shoulderOffsetY)
+      .translateZ(shoulderOffsetZ)        
+      .rotateY(qArm[0])
+      .rotateZ(qArm[1])
+      .rotateX(qArm[2]);
+
+
+  Transform tElbow = trcopy(tShoulder)
+    .translateX(upperArmLength)
+    .translateZ(elbowOffsetX)
+    .rotateY(qArm[3]);
+  
+  Transform tWrist = trcopy(tElbow)
+    .translateZ(-elbowOffsetX)
+    .rotateX(qArm[4]);         
+
+/*  
+  Transform tLHand = trcopy(tLWrist)
+    .translateX(lowerArmLength)          
+    .rotateZ(qLArm[5])
+    .rotateX(qLArm[6]);
+*/
+
+  //Elbow should always be outside the shoulder
+  if (fabs(tElbow(1,3)) <fabs( tShoulder(1,3))  ){
+    printf("Elbow collision!\n");
+    return 1;
+  }
+  return 0;
+}
+
+
+
 
 std::vector<double>
 THOROP_kinematics_calculate_zmp(

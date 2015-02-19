@@ -306,6 +306,14 @@ static int collision_check(lua_State *L) {
 	return 1;
 }
 
+static int collision_check_single(lua_State *L) {	
+	std::vector<double> qArm = lua_checkvector(L, 1);
+	int is_left = luaL_optnumber(L, 2 , 0);
+	int r = THOROP_kinematics_check_collision_single(&qArm[0],is_left);
+	lua_pushnumber(L, r);	
+	return 1;
+}
+
 
 static int calculate_com_pos(lua_State *L) {
 	std::vector<double> qWaist = lua_checkvector(L, 1);
@@ -502,6 +510,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"calculate_com_pos", calculate_com_pos},
 	{"calculate_zmp", calculate_zmp},
 	{"collision_check",collision_check},
+	{"collision_check_single",collision_check_single},
 
 	{NULL, NULL}
 };

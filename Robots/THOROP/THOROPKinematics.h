@@ -234,6 +234,6 @@ std::vector<double> THOROP_kinematics_calculate_zmp(const double *com0, const do
 		const double *com2,double dt0, double dt1);
 
 int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm);
-
+int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
 
 #endif

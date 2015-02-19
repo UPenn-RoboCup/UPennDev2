@@ -7,7 +7,8 @@
 %                        [2]fig2: 
 %                        [3]fig3: subsampled points in 3D ... 
 ui.runningMode = 2;
-ui.taskMode = 0;
+ui.reset = 1;
+ui.taskMode = 1;
 ui.clickType = 0;
 ui.clickxy = [];
 ui.figures = [0 0 1];

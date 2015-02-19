@@ -1,4 +1,9 @@
 This folder contains code for the field computer to find the planes in each RGBD frame or each Mesh frame.
 by Bhoram Lee 
 
+Last Update: 2015. Feb. 19 
+= added unpack code (main_unpacklogdata.m)
+= use bwlabeln instead of my code to compute connectivity (only for Matlab use)
+= set starting points from the previous cluster means (Mean Shift)
+
 

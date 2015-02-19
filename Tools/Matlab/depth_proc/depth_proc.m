@@ -9,7 +9,7 @@
 %  - res (result)
 %
 % by Bhoram Lee 
-function res = depth_proc(data, meta, ui)
+function [res, meta] = depth_proc(data, meta, ui)
 
 if isempty(data)
     return
@@ -19,7 +19,7 @@ switch ui.runningMode
     case 1, % logging 
         %logDepthData(data, meta);
     case 2, 
-        res = detectPlanes(data, meta, ui);
+        [res, meta] = detectPlanes(data, meta, ui);
 end
     
 end

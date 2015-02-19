@@ -31,4 +31,4 @@ thre_memberSize = 30; % number of connected members (in the image domain)
 param_meanShiftResol = 0.6;% 0.6;         % mean shift resolution
 param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
 
-
+prevNormals = [];

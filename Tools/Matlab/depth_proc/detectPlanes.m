@@ -1,6 +1,5 @@
-function Planes = detectPlanes(data, meta, ui)
+function  [Planes, metadata] = detectPlanes(data, meta, ui)
  
-Planes = [];
 
 if ~isempty(meta) && isfield(meta,'tr')
     % transformation to the global coordinate 
@@ -16,8 +15,9 @@ else
 end
 
 if strcmp(char(meta.name),'depth')
-    Planes = detectPlaneInstances_kinect_v3(data,Rot,tr,ui);
-elseif strcmp(char(meta.name),'lidar') % ?? 
+    [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v3(data,Rot,tr,ui);
+    metadata = struct('PlaneOfInterest',PlaneOfInterest,'numPlanes',nPlanes);
+    elseif strcmp(char(meta.name),'lidar') % ?? 
    % Planes = detectPlaneInstances_lidar(data,param,3);
 end
 

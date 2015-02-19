@@ -16,9 +16,11 @@ persistent Xind_
 persistent Yind_
 persistent Xind_c
 persistent Yind_c 
+
 persistent Ccb_prev
 persistent Tcb_prev
 persistent tr_kinect2head
+persistent prevNormals
 
 % Important Parameters 
 persistent param_normalComputation
@@ -32,7 +34,9 @@ if nargin < 4
     error('The number of input arguments must be 4');
 end
 
-loadPersistentVariables_0204;
+if isempty(DEPTH_W) || ui.reset == 1
+    loadPersistentVariables_0216;
+end
 
 Ccb = Rot;
 Tcb = tr;
@@ -41,6 +45,7 @@ if isempty(Ccb_prev)
     Tcb_prev = Tcb;
 end
 Tcb = Tcb + Ccb*tr_kinect2head;
+
 
 Planes =[]; 
 Points3D = [];
@@ -71,9 +76,26 @@ validNormal = validNormal(find(S(4,validNormal)< thre_sValue));
 data = [  Xind_(validNormal) ; Yind_(validNormal)];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% generate initial point information HERE for better starting 
+if ui.clickType == 0
+    
+    if ui.taskMode == 1 % ground
+         stPoint = zeros(5,1);
+         stPoint(3:5,:) = Ccb(3,:)';
+    else
+        if ~isempty(prevNormals)
+            stPoint = zeros(5,size(prevNormals,2));
+            stPoint(3:5,:) = Ccb'*prevNormals;
+        else
+            stPoint = [];
+        end
+    end
+% elseif ui.clickType > 0 
+% Display a figure for the user to make a click on. 
 % stPoint = getClickPoint( ui, depth );
-% computeClosestPointAndNormal;
+end
+
+% compute Closest Point And Normal;
+
 [finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,A(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 
 % for each cluster
@@ -91,29 +113,41 @@ for tt = 1: size(finalMean,2)
        %% Connectivity Check 
         % Connected-component analysis 
         % check an error related to "eqlabel"
-        [conn, ids, count_, indices ] = test4Connectivity(connImg);
+      
+        %CC = bwconncomp(connImg,4);
+        %numPixels = cellfun(@numel,CC.PixelIdxList);
+        %tic,
+        %[conn, ids, count_, indices ] = test4Connectivity(connImg);
+        %toc,
         
-        if ~isempty(ids)
+        L = bwlabel(connImg,4);
+        NL = max(L(:));
+        for t=1:NL
+            indices{t} = find(L==t);
+            count_(t) = length(indices{t});
+        end
+       
+        if NL >0
             for t = 1: length(count_)                 
                 if count_(t) > thre_memberSize % if the connected bloc is big enough 
-                    [dummy,whichcell] = intersect(index_ , indices{ids(t)});    
+                    [dummy,whichcell] = intersect(index_ , indices{t});    
                     if ~isempty(whichcell)   
                      %% Find center, bbox, boundary
-                        [yind_s, xind_s] = ind2sub(size(conn),indices{ids(t)});
+                        [yind_s, xind_s] = ind2sub(size(connImg),indices{t}');
                         center_s = round(mean([xind_s;yind_s],2));
                        
                         Pts = [];
                         bbox = getBoundingBox(yind_s,xind_s);
                         Bbox = zeros(3,size(bbox,1));
-                        [dummy,whichcell__] = intersect(index_ , sub2ind(size(conn), bbox(:,1), bbox(:,2)));   
+                        [dummy,whichcell__] = intersect(index_ , sub2ind(size(connImg), bbox(:,1), bbox(:,2)));   
                         Bbox(1,:) = depth(index(whichcell__))*0.001;
                         Bbox(2,:) = -Yind_c(index(whichcell__))*Sy.*Bbox(1,:);
                         Bbox(3,:) = -Xind_c(index(whichcell__))*Sx.*Bbox(1,:);
                         
                         % 8-directional extreme points 
-                        pts = find8ExtremePoints(conn, center_s, ids(t));
+                        pts = find8ExtremePoints(L, center_s, t);
                         if ~isempty(pts)                               
-                            [dummy,whichcell_] = intersect(index_ , sub2ind(size(conn), pts(:,1), pts(:,2)));  
+                            [dummy,whichcell_] = intersect(index_ , sub2ind(size(connImg), pts(:,1), pts(:,2)));  
                           
                             Pts(1,:) = depth(index(whichcell_))*0.001;
                             Pts(2,:) = -Yind_c(index(whichcell_))*Sy.*Pts(1,:);
@@ -121,12 +155,13 @@ for tt = 1: size(finalMean,2)
                         end       
                         
                      %% refinement 
-                        % (could test using svd and find the principal axes?) 
+                        % (could test using svd and find the principal axes?)                       
                         [c, ins] = estimatePlane_useall( Xind_c(index(whichcell)), Yind_c(index(whichcell)), ZZ(index(whichcell)));
-                        c(1) = c(1)/Sx;
-                        c(2) = c(2)/Sy;
+                       
                       %% save output 
-                        if ~isempty(c) && numel(ins) > 5
+                        if ~isempty(c) && numel(ins) > 5 
+                            c(1) = c(1)/Sx;
+                            c(2) = c(2)/Sy;
                             n_ = c([2 1 3]);
                             n_ = -n_/norm(n_);
                             n__ = [n_(3) -n_(1) -n_(2)]/norm(n_);
@@ -182,7 +217,7 @@ if ui.figures(3)
     xlabel('x');
     ylabel('y');
     zlabel('z','Rotation',0);        
-    axis([0 1.5 -1 1 0 1.5]);
+    axis([0 2.5 -1 1 0 1.5]);
     view(az,el);
 
    % figure(101), hold off;
@@ -196,14 +231,19 @@ Szs = zeros(1,PlaneID);
 
  % Coordinate Transformation
 if ~issame(Rot,eye(3))
+    prevNormals = zeros(3,PlaneID);
     for t = 1:PlaneID  
         Planes{t}.Center = Ccb*Planes{t}.Center + Tcb;
         Planes{t}.Points = Ccb*Planes{t}.Points + repmat(Tcb,1,size(Planes{t}.Points,2)) ;
         Planes{t}.Normal = Ccb*Planes{t}.Normal;
-        if params{3}.mode > 0 
+        if ui.taskMode > 0 
             Ns(:,t) = Planes{t}.Normal;
             Cs(:,t) = Planes{t}.Center;
         end
+        
+        % save normals for clustering in the next frame
+        prevNormals(:,t) = Planes{t}.Normal;
+        
         if 0 % visflag
             randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
             figure(visflag), 
@@ -213,17 +253,22 @@ if ~issame(Rot,eye(3))
             plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
         end
     end
+else
+    prevNormals = zeros(3,PlaneID);
+    for t = 1:PlaneID  
+         prevNormals(:,t) = Planes{t}.Normal;
+    end
 end
   
 if ui.taskMode == 1 % ground
     % testGround();
     n_inner = 1-abs([0 0 1]*Ns);
     flag = (n_inner < 0.02);
-    flag = flag & (Cs(3,:) < 0.03);
+    flag = flag & (Cs(3,:) < 0.08)
     % pick the largest
     candidates = find(flag>0);
     if ~isempty(candidates)
-        [val, idx] = max(Szs(candidates));
+        [val, idx] = max(cellfun(@(x) x.Size, Planes(candidates)));
         Planes{candidates(idx)}.Type = 'ground';
         PlaneOfInterest = idx;
     end
@@ -263,10 +308,8 @@ end
 %         end
 %     end
 % else
-    
-for t = 1:PlaneID  
-
-    if  ui.figures(3) > 0
+if  ui.figures(3) > 0    
+    for t = 1:PlaneID    
         randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
         figure(3), 
         scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,randcolor,'filled');
@@ -274,12 +317,8 @@ for t = 1:PlaneID
         figure(3),
         plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
     end
-end
     
-
-
-if PlaneOfInterest > 0 
-   if ui.figures(3) 
+    if PlaneOfInterest > 0 
        t = PlaneOfInterest;
         randcolor = [1 0 0];%rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
         figure(3), 
@@ -295,6 +334,6 @@ Ccb_prev = Ccb;
 Tcb_prev = Tcb;
 
 nPlanes = PlaneID;
-
+    
 end
 

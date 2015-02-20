@@ -344,8 +344,6 @@ function WebotsBody.update(Body)
 		end --for
 
 		-- Step the simulation, and shutdown if the update fails
-		print("timestep:",Body.timeStep)
-
 		if webots.wb_robot_step(Body.timeStep) < 0 then os.exit() end
 		t = get_time()
 

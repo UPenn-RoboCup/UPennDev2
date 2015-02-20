@@ -7,6 +7,9 @@ local t_entry, t_update, t_finish
 
 require'mcm'
 
+require'dcm'
+
+
 local qLArm, qRArm
 
 function state.entry()
@@ -26,6 +29,15 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
+
+
+  larm_pos = Body.get_larm_position()
+  larm_torque = Body.get_larm_current()
+
+
+print("larm pos:",unpack(larm_pos))
+print("larm torque:",unpack(larm_torque))
+
 
 end
 

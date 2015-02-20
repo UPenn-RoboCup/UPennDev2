@@ -128,7 +128,6 @@ function state.update()
   elseif stage=="arminit" then --Grip the object   
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
-        arm_planner:set_hand_mass(0,1)
         local arm_seq = {{'move',nil,get_tool_tr({0,0,0})}}
         if arm_planner:plan_arm_sequence2(arm_seq) then stage = "lift" end
         
@@ -153,7 +152,6 @@ function state.update()
   elseif stage=="lift" then
     if arm_planner:play_arm_sequence(t) then    
       if hcm.get_state_proceed()==1 then        
-        arm_planner:set_hand_mass(0,2)
         print("trRArm:",util.print_transform(trRArm))        
         if arm_planner:plan_arm_sequence2(Config.armfsm.toolgrip.armpull) then stage = "liftpull" end
 

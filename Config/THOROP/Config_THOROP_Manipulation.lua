@@ -131,19 +131,6 @@ armfsm.toolgrip.arminit={
   {'move',nil,{0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 
-
---test
-armfsm.toolgrip.arminit={
-  {'move',nil,{0.29,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
---  {'move',nil,{0.40,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-}
-armfsm.toolgrip.default_model = {0.29,-0.25,-0.15,  0*DEG_TO_RAD}
-
-
-
-
-
-
 armfsm.toolgrip.armuninit={
   {'move',nil,{0.46,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move',nil,{0.29,-0.40,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},

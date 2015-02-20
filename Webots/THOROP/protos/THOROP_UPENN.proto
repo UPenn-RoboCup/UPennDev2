@@ -49,32 +49,6 @@ Robot {
   # Children items
   children [    
 
-    ## The sensors occupy the same position as the Chest
-    InertialUnit {name "InertialUnit"}
-    Compass {name "Compass"}
-    GPS {name "GPS"}
-    DEF ACCEL Accelerometer {
-      name "Accelerometer"
-      # Must place where is on the actual robot
-      translation 0 0 0.02
-      # Rotate to the correct orientation
-      rotation 0 0.707107 0.707107 3.14159
-      lookupTable [
-         -39.24 0 0
-         39.24 1024 0
-      ]
-    }
-    DEF GYRO Gyro {
-      # Must place where is on the actual robot
-      translation 0 0 0.02
-      # Rotate to the correct orientation
-      rotation -0.57735 0.57735 0.57735 2.09
-      name "Gyro"
-      lookupTable [
-         -27.925 0 0
-         27.925 1024 0
-      ]
-    }
     DEF RECEIVER Receiver {
       name "receiver"
       channel IS channel
@@ -129,8 +103,8 @@ Robot {
 							name "TorsoYaw"
 							maxVelocity 2.9216811678
 							maxTorque 44.2
-							minPosition -2.92343
-							maxPosition 2.92343
+							minPosition -3.14
+							maxPosition 6.28
 						}
 						jointParameters HingeJointParameters {
 							# Out x for pitch
@@ -150,6 +124,34 @@ Robot {
 									translation 0 -0.0875 0
 									scale 0.001 0.001 0.001
 								}
+
+						    ## The sensors occupy the same position as the Chest
+						    InertialUnit {name "InertialUnit"}
+						    Compass {name "Compass"}
+						    GPS {name "GPS"}
+						    DEF ACCEL Accelerometer {
+						      name "Accelerometer"
+						      # Must place where is on the actual robot
+						      translation 0 0 0.02
+						      # Rotate to the correct orientation
+						      rotation 0 0.707107 0.707107 3.14159
+						      lookupTable [
+						         -39.24 0 0
+						         39.24 1024 0
+						      ]
+						    }
+						    DEF GYRO Gyro {
+						      # Must place where is on the actual robot
+						      translation 0 0 0.02
+						      # Rotate to the correct orientation
+						      rotation -0.57735 0.57735 0.57735 2.09
+						      name "Gyro"
+						      lookupTable [
+						         -27.925 0 0
+						         27.925 1024 0
+						      ]
+						    }
+
 
 								## Begin Right Leg
 								DEF Right_hip_yaw HingeJoint {

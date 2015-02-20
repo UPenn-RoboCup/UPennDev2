@@ -15,20 +15,7 @@ debug_on_2 = false
 debugmsg = true
 
 
-
-
-
-
-
 --print(unpack(Config.arm.iklookup.x))
-
-
-
-
-
-
-
-
 
 local function tr_dist(trA,trB)
   return math.sqrt(  (trA[1]-trB[1])^2+(trA[2]-trB[2])^2+(trA[3]-trB[3])^2)
@@ -71,15 +58,6 @@ local function calculate_margin(qArm,isLeft,trArm)
       math.abs(qArm[6]-math.pi/2),        --Wrist Roll
       math.abs(qArm[6]+math.pi/2)            
       )
---[[
-    local sy_margin = math.min(
-      math.abs(qArm[3]-math.pi/2),       --Shoulder Yaw
-      math.abs(qArm[3]))      
-
-    if sy_margin<10*math.pi/180 then
-      jointangle_margin = math.min(jointangle_margin,sy_margin) 
-    end
---]]
     if math.abs(qArm[6]) < 10*math.pi/180 then
       jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
     end
@@ -92,15 +70,6 @@ local function calculate_margin(qArm,isLeft,trArm)
       math.abs(qArm[6]-math.pi/2), --Wrist Roll
       math.abs(qArm[6]+math.pi/2)      
       )
-
---[[
-    local sy_margin = math.min(
-      math.abs(qArm[3]+math.pi/2),       --Shoulder Yaw
-      math.abs(qArm[3]))
-    if sy_margin<10*math.pi/180 then
-      jointangle_margin = math.min(jointangle_margin,sy_margin) 
-    end
---]]
     if math.abs(qArm[6]) < 10*math.pi/180 then
       jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
     end
@@ -130,13 +99,12 @@ local function calculate_margin(qArm,isLeft,trArm)
 --]]
 
 
---[[
+
   local tr_err = math.abs(trArm[1]-trCheck[1])+math.abs(trArm[2]-trCheck[2])+math.abs(trArm[3]-trCheck[3])
   if jointangle_margin>0 and tr_err>0.005 then 
     print("IK ERROR"    )
     jointangle_margin = 0 
   end
---]]
 
 
   --Clamp the margin
@@ -154,45 +122,25 @@ end
 
 local function get_shoulder_yaw_angle_lookup(trArmNext,qArm)
   isLeft=0
-
   local xmin,xmax,div = Config.arm.iklookup.x[1],Config.arm.iklookup.x[2],Config.arm.iklookup.x[3]
   local ymin,ymax = Config.arm.iklookup.y[1],Config.arm.iklookup.y[2]
   local zmin,zmax = Config.arm.iklookup.z[1],Config.arm.iklookup.z[2]
   local xmag,ymag,zmag = (xmax-xmin)/div+1,(ymax-ymin)/div+1,(zmax-zmin)/div+1
-
---  print("current xyz:",util.print_transform(trArmNext))
-
   x = (math.max(xmin,math.min(xmax,trArmNext[1])) - xmin)/div
   y = (math.max(ymin,math.min(ymax,trArmNext[2])) - ymin)/div
   z = (math.max(zmin,math.min(zmax,trArmNext[3])) - zmin)/div
-  
   local xi,yi,zi = math.floor(x+0.5),math.floor(y+0.5),math.floor(z+0.5)  
   local index = zi + yi*zmag + xi*zmag*ymag
-
   for i=index-10,index+10 do print(i,Config.arm.iklookup.dat[i]) end
-
   local yawangle = Config.arm.iklookup.dat[index]*DEG_TO_RAD
   print("yawangle:",yawangle/DEG_TO_RAD)
   if yawangle>90*DEG_TO_RAD then 
     print("no solution here")
     return 
   end
-
   local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, yawangle, 0, {0,0}) 
-
   if not qArmNext then print("NO SOLUTION WTF") end
-
   return qArmNext 
-
---[[
-  local margin = calculate_margin(qArmNext,isLeft,trArmNext)
-  if margin>=0 then 
-    print("margin:",margin/DEG_TO_RAD)
-    return qArmNext 
-  end
-  print("no margin!")
-  return 
---]]  
 end
 
 
@@ -201,12 +149,7 @@ end
 
 
 local function search_shoulder_angle(self,qArm,trArmNext,isLeft, yawMag, qWaist)
-
-
-  if isLeft==0 and trArmNext[6] ==45*DEG_TO_RAD then
-    return get_shoulder_yaw_angle_lookup(trArmNext,qArm)
-  end
-
+--  if isLeft==0 and trArmNext[6] ==45*DEG_TO_RAD then return get_shoulder_yaw_angle_lookup(trArmNext,qArm) end
 
   local step = Config.arm.plan.search_step
 

@@ -97,9 +97,7 @@ function state.entry()
   hcm.set_legdebug_enable_balance({0,0})
 
   Body.set_waist_command_position({0,0})
-  if IS_WEBOTS then
-    Body.set_waist_command_position({math.pi,0})
-  end
+  --if IS_WEBOTS then Body.set_waist_command_position({math.pi,0}) end
 end
 
 ---

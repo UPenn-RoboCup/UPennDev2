@@ -523,3 +523,77 @@ THOROP_kinematics_calculate_zmp(
 
   return zmp;
 }
+
+
+
+
+std::vector<double>
+THOROP_kinematics_calculate_arm_torque(const double *qArm){
+
+
+Transform tShoulder;
+
+Transform tShoulder1 = trcopy(tShoulder).rotateY(qLArm[0]);   //mass 0.1
+Transform tShoulder2 = trcopy(tShoulder1).rotateZ(qLArm[1]);  // mass 0.1
+Transform tShoulder3 = trcopy(tShoulder2).rotateX(qLArm[2]);  //mass 2.89, COM {0.1027,0.-0.008} (upper arm)
+
+Transform tElbow = trcopy(tShoulder3).translateX(upperArmLength)
+  .translateZ(elbowOffsetX).rotateY(qLArm[3]); //elbow,  Mass 0.81, COM {0.0464 0 0}
+  
+Transform tWrist = trcopy(tElbow).translateZ(-elbowOffsetX).rotateX(qLArm[4]);   //wrist yaw 1, mass 0.97, COM {0.146 0 -0.0039}
+  
+Transform tWrist2 = trcopy(tLWrist).translateX(lowerArmLength).rotateZ(qLArm[5]); //wrist roll, mass 0.2
+
+Transform tWrist3 = trcopy(tWrist2).rotateX(qLArm[6]); //wrist yaw, mass 0.03?
+
+
+
+tShoulderPitchCOM = trcopy(tShoulder)
+
+        
+  tLElbowCOM = tLElbow
+    .translateX(comElbowX)
+    .translateZ(comElbowZ);
+
+  tLLArmCOM = tLWrist
+    .translateX(comLowerArmX);
+  
+  tLWristCOM = trcopy(tLHand)
+    .translateX(comWristX)
+    .translateZ(comWristZ);
+
+  tLHandCOM = tLHand
+    .translateX(handOffsetX)
+    .translateY(-handOffsetY);
+
+
+
+  Transform left = trcopy(tShoulder)
+    .rotateY(qLArm[0]).rotateZ(qLArm[1]).rotateX(qLArm[2])
+    .translateX(upperArmLength).translateZ(elbowOffsetX);
+
+  Transform rdot = rotateY(qLArm[3])
+
+  Transform right = (
+     translateX(comElbowX).translateZ(comElbowZ) //elbow to wristyaw com
+    +translateZ(-elbowOffsetX).rotateX(qLArm[4]).translateX(comLowerArmX) //wristyaw to wristroll com
+    +translateZ(-elbowOffsetX).rotateX(qLArm[4]).translateX(lowerArmLength).rotateZ(qLArm[5]) //wristroll to wristyaw2 com
+    .translateX(comWristX).translateZ(comWristZ)
+    +translateZ(-elbowOffsetX).rotateX(qLArm[4]).translateX(lowerArmLength).rotateZ(qLArm[5]).rotateX(qLArm[6])
+    );
+
+
+
+}
+
+
+    
+
+
+
+
+
+
+
+
+

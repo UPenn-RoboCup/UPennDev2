@@ -35,8 +35,20 @@ function state.update()
   larm_torque = Body.get_larm_current()
 
 
-print("larm pos:",unpack(larm_pos))
-print("larm torque:",unpack(larm_torque))
+print("larm pos:",util.print_jangle(larm_pos))
+print(string.format("larm torque  :%.2f %.2f %.2f //   %.2f %.2f  // ",
+  larm_torque[1],larm_torque[2],larm_torque[3],larm_torque[4],larm_torque[5]
+
+  ))
+
+
+
+   larm_torque2 = Body.Kinematics.calculate_arm_torque(larm_pos)
+
+   print(string.format("larm torque2 :%.2f %.2f %.2f //   %.2f %.2f  // ",
+  larm_torque2[1],larm_torque2[2],larm_torque2[3],larm_torque2[4],larm_torque2[5]
+  ))
+
 
 
 end

@@ -122,6 +122,9 @@ const double Mass[22] = {
 	8.8, 10.131}; // Mass of Each Body Part
 */
 
+
+
+
 const double Mass[22]={
 	mUpperLeg,mLowerLeg,mFoot,0,0,0,
 	mUpperLeg,mLowerLeg,mFoot,0,0,0,
@@ -129,6 +132,16 @@ const double Mass[22]={
 	mUpperArm,mElbow,mLowerArm,mWrist,
 	mTorso,
 	mPelvis
+};
+
+
+const double g = 9.8;
+
+//Based on webots mass 
+const double MassArm[7]={
+	g*0.1,g*0.1,g*2.89,
+	g*0.81,g*0.97,g*0.2,
+	g*0.03
 };
 
 
@@ -235,5 +248,8 @@ std::vector<double> THOROP_kinematics_calculate_zmp(const double *com0, const do
 
 int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm);
 int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
+
+
+std::vector<double> THOROP_kinematics_calculate_arm_torque(const double *qArm);
 
 #endif

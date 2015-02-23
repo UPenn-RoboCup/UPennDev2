@@ -18,8 +18,16 @@ public:
   Transform &rotateX(double a = 0);
   Transform &rotateY(double a = 0);
   Transform &rotateZ(double a = 0);
+
+  Transform &rotateDotX(double a = 0);
+  Transform &rotateDotY(double a = 0);
+  Transform &rotateDotZ(double a = 0);
+
   Transform &mDH(double alpha, double a, double theta, double d);
   void apply(double x[3]);
+  void apply0(double* x);
+  double getZ();
+  
   double& operator() (int i, int j);
   const double operator() (int i, int j) const;
 

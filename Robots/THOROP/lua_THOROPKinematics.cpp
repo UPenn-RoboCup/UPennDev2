@@ -334,6 +334,16 @@ static int calculate_com_pos(lua_State *L) {
 }
 
 
+static int calculate_arm_torque(lua_State *L) {
+	std::vector<double> qArm = lua_checkvector(L, 1);
+	std::vector<double> r = 
+	  THOROP_kinematics_calculate_arm_torque(&qArm[0]);
+	lua_pushvector(L, r);
+	return 1;
+}
+
+
+
 static int calculate_zmp(lua_State *L) {
 	std::vector<double> com0 = lua_checkvector(L, 1);
 	std::vector<double> com1 = lua_checkvector(L, 2);
@@ -511,6 +521,8 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"calculate_zmp", calculate_zmp},
 	{"collision_check",collision_check},
 	{"collision_check_single",collision_check_single},
+
+    {"calculate_arm_torque", calculate_arm_torque},
 
 	{NULL, NULL}
 };

@@ -530,60 +530,141 @@ THOROP_kinematics_calculate_zmp(
 std::vector<double>
 THOROP_kinematics_calculate_arm_torque(const double *qArm){
 
+  Transform tShoulder;
 
-Transform tShoulder;
+  Transform COM0 = trcopy(tShoulder).rotateY(qArm[0]);
+  Transform COM1 = trcopy(tShoulder).rotateY(qArm[0]).rotateZ(qArm[1]);
+  Transform COM2 = trcopy(tShoulder).rotateY(qArm[0]).rotateZ(qArm[1]).rotateX(qArm[2])
+    .translate(comUpperArmX,0,comUpperArmZ);
 
-Transform tShoulder1 = trcopy(tShoulder).rotateY(qLArm[0]);   //mass 0.1
-Transform tShoulder2 = trcopy(tShoulder1).rotateZ(qLArm[1]);  // mass 0.1
-Transform tShoulder3 = trcopy(tShoulder2).rotateX(qLArm[2]);  //mass 2.89, COM {0.1027,0.-0.008} (upper arm)
+  Transform COM3 = trcopy(tShoulder)
+    .rotateY(qArm[0]).rotateZ(qArm[1]).rotateX(qArm[2])
+    .translate(upperArmLength,0,elbowOffsetX).rotateY(qArm[3])
+    .translate(comElbowX,0,comElbowZ);
 
-Transform tElbow = trcopy(tShoulder3).translateX(upperArmLength)
-  .translateZ(elbowOffsetX).rotateY(qLArm[3]); //elbow,  Mass 0.81, COM {0.0464 0 0}
-  
-Transform tWrist = trcopy(tElbow).translateZ(-elbowOffsetX).rotateX(qLArm[4]);   //wrist yaw 1, mass 0.97, COM {0.146 0 -0.0039}
-  
-Transform tWrist2 = trcopy(tLWrist).translateX(lowerArmLength).rotateZ(qLArm[5]); //wrist roll, mass 0.2
-
-Transform tWrist3 = trcopy(tWrist2).rotateX(qLArm[6]); //wrist yaw, mass 0.03?
-
-
-
-tShoulderPitchCOM = trcopy(tShoulder)
-
-        
-  tLElbowCOM = tLElbow
-    .translateX(comElbowX)
-    .translateZ(comElbowZ);
-
-  tLLArmCOM = tLWrist
+  Transform COM4 = trcopy(tShoulder)
+    .rotateY(qArm[0]).rotateZ(qArm[1]).rotateX(qArm[2])
+    .translate(upperArmLength,0,elbowOffsetX).rotateY(qArm[3])
+    .translateZ(-elbowOffsetX).rotateX(qArm[4])
     .translateX(comLowerArmX);
+/*
+
+  double compos0[3];
+  double compos1[3];
+  double compos2[3];
+  double compos3[3];
+  double compos4[3];
+
   
-  tLWristCOM = trcopy(tLHand)
-    .translateX(comWristX)
-    .translateZ(comWristZ);
+  COM0.apply0(compos0);
+  COM1.apply0(compos1);
+  COM2.apply0(compos2);
+  COM3.apply0(compos3);
+  COM4.apply0(compos4);
 
-  tLHandCOM = tLHand
-    .translateX(handOffsetX)
-    .translateY(-handOffsetY);
+  printf("Shoulder com: %.2f %.2f %.2f\n",compos2[0],compos2[1],compos2[2]);
+  
+  printf("Elbow com: %.2f %.2f %.2f\n",compos3[0],compos3[1],compos3[2]);
 
-
-
-  Transform left = trcopy(tShoulder)
-    .rotateY(qLArm[0]).rotateZ(qLArm[1]).rotateX(qLArm[2])
-    .translateX(upperArmLength).translateZ(elbowOffsetX);
-
-  Transform rdot = rotateY(qLArm[3])
-
-  Transform right = (
-     translateX(comElbowX).translateZ(comElbowZ) //elbow to wristyaw com
-    +translateZ(-elbowOffsetX).rotateX(qLArm[4]).translateX(comLowerArmX) //wristyaw to wristroll com
-    +translateZ(-elbowOffsetX).rotateX(qLArm[4]).translateX(lowerArmLength).rotateZ(qLArm[5]) //wristroll to wristyaw2 com
-    .translateX(comWristX).translateZ(comWristZ)
-    +translateZ(-elbowOffsetX).rotateX(qLArm[4]).translateX(lowerArmLength).rotateZ(qLArm[5]).rotateX(qLArm[6])
-    );
+  printf("Wrist com: %.2f %.2f %.2f\n",compos4[0],compos4[1],compos4[2]);
+*/
 
 
+//COM jacobian matrix
 
+  Transform 
+    Jac00,
+    Jac10,Jac11,
+    Jac20,Jac21,Jac22,
+    Jac30,Jac31,Jac32,Jac33,
+    Jac40,Jac41,Jac42,Jac43,Jac44;
+
+  //more compact calculation
+  Jac00.rotateDotY(qArm[0]);  //d (com0) / dq0
+
+  Jac10=trcopy(Jac00).rotateZ(qArm[1]);  //d(com1) / dq0
+  Jac11.rotateY(qArm[0]).rotateDotZ(qArm[1]);  //d(com1) / dq1
+
+  Jac20=trcopy(Jac10).rotateX(qArm[2]);
+  Jac21=trcopy(Jac11).rotateX(qArm[2]);
+  Jac22.rotateY(qArm[0]).rotateZ(qArm[1]).rotateDotX(qArm[2]);  //d(com2) / dq0
+
+  Jac30=trcopy(Jac20).translate(upperArmLength,0,elbowOffsetX).
+    rotateY(qArm[3]).translate(comElbowX,0,comElbowZ);     //d(com3) / dq0
+  Jac31=trcopy(Jac21).translate(upperArmLength,0,elbowOffsetX).
+    rotateY(qArm[3]).translate(comElbowX,0,comElbowZ);     //d(com3) / dq0
+  Jac32=trcopy(Jac22).translate(upperArmLength,0,elbowOffsetX).
+    rotateY(qArm[3]).translate(comElbowX,0,comElbowZ);     //d(com3) / dq0
+  Jac33.rotateY(qArm[0]).rotateZ(qArm[1]).rotateX(qArm[2])
+    .translate(upperArmLength,0,elbowOffsetX).rotateDotY(qArm[3])
+    .translate(comElbowX,0,comElbowZ);     //d(com3) / dq0
+
+  Jac40=trcopy(Jac20).translate(upperArmLength,0,elbowOffsetX)
+    .rotateY(qArm[3]).translateZ(-elbowOffsetX)
+    .rotateX(qArm[4]).translateX(comLowerArmX);
+  Jac41=trcopy(Jac21).translate(upperArmLength,0,elbowOffsetX)
+    .rotateY(qArm[3]).translateZ(-elbowOffsetX)
+    .rotateX(qArm[4]).translateX(comLowerArmX);
+  Jac42=trcopy(Jac22).translate(upperArmLength,0,elbowOffsetX)
+    .rotateY(qArm[3]).translateZ(-elbowOffsetX)
+    .rotateX(qArm[4]).translateX(comLowerArmX);
+  Jac43.rotateY(qArm[0]).rotateZ(qArm[1]).rotateX(qArm[2])
+    .rotateDotY(qArm[3]).translateZ(-elbowOffsetX)
+    .rotateX(qArm[4]).translateX(comLowerArmX);
+  Jac44.rotateY(qArm[0]).rotateZ(qArm[1]).rotateX(qArm[2])
+    .rotateY(qArm[3]).rotateDotX(qArm[4])
+    .translateX(comLowerArmX);
+
+  double jac33[3];
+  Jac33.apply0(jac33);
+  printf("Elbow jacobian: %.3f %.3f %.3f\n",jac33[0],jac33[1],jac33[2]);
+
+  double jac43[3];
+  Jac43.apply0(jac43);
+  printf("Elbow jacobian: %.3f %.3f %.3f\n",jac43[0],jac43[1],jac43[2]);
+
+//larm torque2 :2.54 0.17 -0.04 // -0.12 0.00 // 
+
+
+
+
+
+  std::vector<double> torque(7);
+
+  
+  torque[0] = 
+    Jac00.getZ() * MassArm[0]+
+    Jac10.getZ() * MassArm[1]+
+    Jac20.getZ() * MassArm[2]+
+    Jac30.getZ() * MassArm[3]+
+    Jac40.getZ() * MassArm[4];
+    
+
+  torque[1] =     
+    Jac11.getZ() * MassArm[1]+
+    Jac21.getZ() * MassArm[2]+
+    Jac31.getZ() * MassArm[3]+
+    Jac41.getZ() * MassArm[4];
+    
+
+  torque[2] =         
+    Jac22.getZ() * MassArm[2]+
+    Jac32.getZ() * MassArm[3]+
+    Jac42.getZ() * MassArm[4];
+    
+
+  torque[3] =             
+    Jac33.getZ() * MassArm[3]+
+    Jac43.getZ() * MassArm[4];
+
+  torque[4] =             
+    Jac44.getZ() * MassArm[4];
+
+
+  //Torque = (g*m)' J_i  
+ 
+
+  return torque;
 }
 
 

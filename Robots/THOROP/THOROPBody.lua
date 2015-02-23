@@ -30,6 +30,9 @@ for sensor, n_el in pairs(dcm.sensorKeys) do
     ptr_t = dcm.tsensorPtr[sensor]
   end
   local function get(idx1, idx2, needs_wait)
+    --for some reason, webot makes this code wait, slowing down simulation a lot
+    if IS_WEBOTS then needs_wait=false end
+
 		local start, stop = idx1 or 1, idx2 or n_el
     if is_motor and needs_wait then
 			local ids = {}

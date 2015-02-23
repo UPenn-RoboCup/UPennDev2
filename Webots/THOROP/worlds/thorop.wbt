@@ -44,7 +44,7 @@ DEF FLOOR Floor {
 WoodBox {
   translation 0.0108684 0.3 1.04426
 }
-THOROP_UPENN {
+THOROP_UPENN_masstest {
   translation 0 1.17 -0.03
   rotation 1 0 0 0
   controller "thorop"

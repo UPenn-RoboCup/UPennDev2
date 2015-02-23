@@ -8,7 +8,7 @@ local nJoint = Config.nJoint
 local jointNames = Config.jointNames
 local servo = Config.servo
 
--- Added to Config rather than hard-code
+-- Added to Config rather than hard-coded
 local ENABLE_CAMERA, NEXT_CAMERA = Config.sensors.head_camera, 0
 local ENABLE_CHEST_LIDAR, NEXT_CHEST_LIDAR  = Config.sensors.chest_lidar, 0
 local ENABLE_HEAD_LIDAR, NEXT_HEAD_LIDAR = Config.sensors.head_lidar, 0
@@ -315,6 +315,7 @@ function WebotsBody.update(Body)
 		-- Set actuator commands from shared memory
 		local cmds = Body.get_command_position()
 		local poss = Body.get_position()
+    local cmdt = Body.get_command_torque()
 		for idx, jtag in ipairs(tags.joints) do
 			local cmd, pos = cmds[idx], poss[idx]
 			-- TODO: What is velocity?
@@ -334,7 +335,21 @@ function WebotsBody.update(Body)
           end
         end
         local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
-        set_pos(jtag, rad)
+
+        --SJ: if torque enable is set to 2, it's torque control mode
+        if en==1 then
+          set_pos(jtag, rad)
+        elseif en==2 then 
+--          webots.wb_motor_set_torque(jtag,servo.direction[idx]*cmdt[idx])
+
+--for whatever reason the torque direction is inverted
+          webots.wb_motor_set_torque(jtag,-servo.direction[idx]*cmdt[idx])
+        end
+
+
+
+
+
 			elseif en==0 and jtag>0 then
 				-- Disabling torque
 				if jointNames[idx]:lower():find('grip') or jointNames[idx]:lower():find('trigger') then
@@ -437,6 +452,7 @@ function WebotsBody.update(Body)
 		-- Update the sensor readings of the joint positions
 		local rad, val
 		local positions = dcm.get_sensor_position()
+
     for idx, jtag in ipairs(tags.joints) do
       if jtag>0 then
 				val = get_pos(jtag)
@@ -445,7 +461,8 @@ function WebotsBody.update(Body)
 				positions[idx] = rad
 				if not OLD_API then
 					local tq = webots.wb_motor_get_force_feedback(jtag)
-					dcm.sensorPtr.current[idx-1] = tq==tq and tq or 0
+
+					dcm.sensorPtr.current[idx-1] = tq==tq and tq*servo.direction[idx] or 0
 				end
       end
     end

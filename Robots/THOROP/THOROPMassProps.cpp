@@ -531,7 +531,7 @@ std::vector<double>
 THOROP_kinematics_calculate_arm_torque(const double *qArm){
 
   Transform tShoulder;
-
+/*
   Transform COM0 = trcopy(tShoulder).rotateY(qArm[0]);
   Transform COM1 = trcopy(tShoulder).rotateY(qArm[0]).rotateZ(qArm[1]);
   Transform COM2 = trcopy(tShoulder).rotateY(qArm[0]).rotateZ(qArm[1]).rotateX(qArm[2])
@@ -547,6 +547,7 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
     .translate(upperArmLength,0,elbowOffsetX).rotateY(qArm[3])
     .translateZ(-elbowOffsetX).rotateX(qArm[4])
     .translateX(comLowerArmX);
+   */ 
 /*
 
   double compos0[3];
@@ -615,6 +616,7 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
     .rotateY(qArm[3]).rotateDotX(qArm[4])
     .translateX(comLowerArmX);
 
+/*
   double jac33[3];
   Jac33.apply0(jac33);
   printf("Elbow jacobian: %.3f %.3f %.3f\n",jac33[0],jac33[1],jac33[2]);
@@ -622,6 +624,7 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
   double jac43[3];
   Jac43.apply0(jac43);
   printf("Elbow jacobian: %.3f %.3f %.3f\n",jac43[0],jac43[1],jac43[2]);
+*/
 
 //larm torque2 :2.54 0.17 -0.04 // -0.12 0.00 // 
 

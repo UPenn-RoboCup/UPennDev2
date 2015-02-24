@@ -135,14 +135,54 @@ const double Mass[22]={
 };
 
 
-const double g = 9.8;
+const double g = 9.81;
 
 //Based on webots mass 
 const double MassArm[7]={
-	g*0.1,g*0.1,g*2.89,
-	g*0.81,g*0.97,g*0.2,
-	g*0.03
+	g*0.1,
+	g*2.89,
+	g*0.13,
+	g*0.81,
+	g*0.97,
+	g*0.1,	
+	g*0.1,	//gripper mass... TBD
 };
+
+
+const double armLink[7][3]={
+	{0,0.234,0.165}, //waist-shoulder roll
+	{0,0,0}, //shoulder pitch-shoulder roll
+	{0,0,0}, //shouder roll-shoulder yaw
+	{0.246,0,0.030},//shoulder yaw-elbow 
+	{0.250,0,-0.030},//elbow to wrist yaw 1
+	{0,0,0},//wrist yaw1 to wrist roll
+	{0,0,0}//wrist roll to wrist yaw2
+};
+
+//Com position from joint center
+
+const double armCom[7][3]={
+	{0,0,0},	//after shoulder pitch
+	{0.1027,0,-0.008},//after shoulder roll
+	{0.246,0,0}, //after shoulder yaw
+	{0.0464,0,0},//after elbow
+	{-0.040,0,0}, //after wrist yaw 1
+	{0,0,0}, //after wrist roll
+	{0.095,0,0} //after wrist yaw 2
+};
+/*
+const double armCom[7][3]={
+	{0,0,0},	//after shoulder pitch
+	{0,0,0},
+	{0,0,0},
+	{0,0,0},
+	{0,0,0},
+	{0,0,0}, //after wrist roll
+	{0,0,0} //after wrist yaw 2
+};
+*/
+
+
 
 
 const double comOffsetMm[22][3]={//in mm

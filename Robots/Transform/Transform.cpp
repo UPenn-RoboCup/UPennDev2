@@ -23,6 +23,13 @@ Transform& Transform::translate(double x, double y, double z) {
   return *this;
 }
 
+Transform& Transform::translate(const double* p) {
+  t[0][3] += t[0][0]*p[0] + t[0][1]*p[1] + t[0][2]*p[2];
+  t[1][3] += t[1][0]*p[0] + t[1][1]*p[1] + t[1][2]*p[2];
+  t[2][3] += t[2][0]*p[0] + t[2][1]*p[1] + t[2][2]*p[2];
+  return *this;
+}
+
 Transform& Transform::translateX(double x) {
   t[0][3] += t[0][0]*x;
   t[1][3] += t[1][0]*x;

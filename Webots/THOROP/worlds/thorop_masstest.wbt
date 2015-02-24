@@ -5,7 +5,7 @@ WorldInfo {
   ]
   title "THOR-OP Only"
   basicTimeStep 8
-    ERP 0.1
+  ERP 0.1
   CFM 1e-05
 
   FPS 15

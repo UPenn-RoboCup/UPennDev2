@@ -1,10 +1,5 @@
 #include "THOROPKinematics.h"
 
-//Calculate the point COM positions for the robot
-// 6 mass for legs
-// 4 mass for arms
-// 1 mass for torso/pelvis
-
 std::vector<double>
 THOROP_kinematics_calculate_com_positions(
     const double *qWaist,
@@ -20,16 +15,14 @@ THOROP_kinematics_calculate_com_positions(
   
   Transform 
     tPelvis, tTorso, 
-    tLShoulder, tLElbow, tLWrist, tLHand,
-    tRShoulder, tRElbow, tRWrist, tRHand,
-    tLHip, tLKnee, tLAnkle,
-    tRHip, tRKnee, tRAnkle,
-   
-    tPelvisCOM, tTorsoCOM,
-    tLUArmCOM, tLElbowCOM, tLLArmCOM, tLWristCOM, tLHandCOM,
-    tRUArmCOM, tRElbowCOM, tRLArmCOM, tRWristCOM, tRHandCOM,
-    tLULegCOM, tLLLegCOM, tLFootCOM,
-    tRULegCOM, tRLLegCOM, tRFootCOM;
+    tLArm0, tLArm1, tLArm2, tLArm3, tLArm4,
+    tRArm0, tRArm1, tRArm2, tRArm3, tRArm4,
+
+    tLLeg0, tLLeg1, tLLeg2, tLLeg3, tLLeg4, tLLeg5,
+    tRLeg0, tRLeg1, tRLeg2, tRLeg3, tRLeg4, tRLeg5,
+    
+    tPelvisCOM, tTorsoCOM
+    ;
     
 
   tPelvis = tPelvis
@@ -39,96 +32,108 @@ THOROP_kinematics_calculate_com_positions(
     .rotateZ(qWaist[0])
     .rotateY(qWaist[1]);
 
-  /////////////////////////////////
-  //Arm joint poistions
-  /////////////////////////////////
+  tLArm0= trcopy(tTorso).translate(armLink[0])
+          .rotateY(qLArm[0]);
 
-  tLShoulder = trcopy(tTorso)
-    .translateY(shoulderOffsetY)
-    .translateZ(shoulderOffsetZ)        
-    .rotateY(qLArm[0])
-    .rotateZ(qLArm[1])
-    .rotateX(qLArm[2]);
+  tLArm1= trcopy(tTorso).translate(armLink[0])
+          .rotateY(qLArm[0]).rotateZ(qLArm[1])
+          .translate(armCom[1]);
 
-  tLElbow = trcopy(tLShoulder)
-    .translateX(upperArmLength)
-    .translateZ(elbowOffsetX)
-    .rotateY(qLArm[3]);
-  
-  tLWrist = trcopy(tLElbow)
-    .translateZ(-elbowOffsetX)
-    .rotateX(qLArm[4]);         
-  
-  tLHand = trcopy(tLWrist)
-    .translateX(lowerArmLength)          
-    .rotateZ(qLArm[5])
-    .rotateX(qLArm[6]);
+  tLArm2= trcopy(tTorso).translate(armLink[0])
+          .rotateY(qLArm[0]).rotateZ(qLArm[1])
+          .translate(armLink[2]).rotateX(qLArm[2])
+          .translate(armCom[2]);
 
-  tRShoulder = trcopy(tTorso)
-    .translateY(-shoulderOffsetY)
-    .translateZ(shoulderOffsetZ)        
-    .rotateY(qRArm[0])
-    .rotateZ(qRArm[1])
-    .rotateX(qRArm[2]);
+  tLArm3= trcopy(tTorso).translate(armLink[0])
+          .rotateY(qLArm[0]).rotateZ(qLArm[1])
+          .translate(armLink[2]).rotateX(qLArm[2])
+          .translate(armLink[3]).rotateY(qLArm[3])
+          .translate(armCom[3]);
 
-  tRElbow = trcopy(tRShoulder)
-    .translateX(upperArmLength)
-    .translateZ(elbowOffsetX)
-    .rotateY(qRArm[3]);    
+  tLArm4= trcopy(tTorso).translate(armLink[0])
+          .rotateY(qLArm[0]).rotateZ(qLArm[1])
+          .translate(armLink[2]).rotateX(qLArm[2])
+          .translate(armLink[3]).rotateY(qLArm[3])
+          .translate(armLink[4]).rotateX(qLArm[4])
+          .translate(armCom[4]);
 
-  tRWrist = trcopy(tRElbow)
-    .translateZ(-elbowOffsetX)
-    .rotateX(qRArm[4]);            
+  tRArm0= trcopy(tTorso).translate(rarmLink0)
+          .rotateY(qRArm[0]);          
 
-  tRHand = trcopy(tRWrist)
-    .translateX(lowerArmLength)          
-    .rotateZ(qRArm[5])
-    .rotateX(qRArm[6]);
+  tRArm1= trcopy(tTorso).translate(rarmLink0)
+          .rotateY(qRArm[0]).rotateZ(qRArm[1])
+          .translate(armCom[1]);
 
-  /////////////////////////////////
-  //Leg joint poistions
-  /////////////////////////////////
+  tRArm2= trcopy(tTorso).translate(rarmLink0)
+          .rotateY(qRArm[0]).rotateZ(qRArm[1])
+          .translate(armLink[2]).rotateX(qRArm[2])
+          .translate(armCom[2]);
 
+  tRArm3= trcopy(tTorso).translate(rarmLink0)
+          .rotateY(qRArm[0]).rotateZ(qRArm[1])
+          .translate(armLink[2]).rotateX(qRArm[2])
+          .translate(armLink[3]).rotateY(qRArm[3])
+          .translate(armCom[3]);
 
-  tLHip = trcopy(tPelvis)
-        .translateY(hipOffsetY)
-        .translateZ(-hipOffsetZ)
-        .rotateZ(qLLeg[0])
-        .rotateX(qLLeg[1])
-        .rotateY(qLLeg[2]);
-
-  tLKnee = trcopy(tLHip)
-        .translateX(kneeOffsetX)
-        .translateZ(-thighLength)        
-        .rotateY(qLLeg[3]);
-
-  tLAnkle = trcopy(tLKnee)
-        .translateX(-kneeOffsetX)
-        .translateZ(-tibiaLength)        
-        .rotateY(qLLeg[4])
-        .rotateX(qLLeg[5]);
-
-  tRHip = trcopy(tPelvis)
-        .translateY(-hipOffsetY)
-        .translateZ(-hipOffsetZ)
-        .rotateZ(qRLeg[0])
-        .rotateX(qRLeg[1])
-        .rotateY(qRLeg[2]);
-
-  tRKnee = trcopy(tRHip)
-        .translateX(kneeOffsetX)
-        .translateZ(-thighLength)        
-        .rotateY(qRLeg[3]);
-
-  tRAnkle = trcopy(tRKnee)
-        .translateX(-kneeOffsetX)
-        .translateZ(-tibiaLength)        
-        .rotateY(qRLeg[4])
-        .rotateX(qRLeg[5]);
+  tRArm4= trcopy(tTorso).translate(rarmLink0)
+          .rotateY(qRArm[0]).rotateZ(qRArm[1])
+          .translate(armLink[2]).rotateX(qRArm[2])
+          .translate(armLink[3]).rotateY(qRArm[3])
+          .translate(armLink[4]).rotateX(qRArm[4])
+          .translate(armCom[4]);          
 
 
-  /////////////////////////////////
-  //Body COM positions
+  tLLeg0 = trcopy(tPelvis).translate(legLink[0])
+          .rotateZ(qLLeg[0])
+          .translate(legComL[0]);
+  tLLeg1 = trcopy(tPelvis).translate(legLink[0])
+          .rotateZ(qLLeg[0]).rotateX(qLLeg[1])
+          .translate(legComL[1]);
+  tLLeg2 = trcopy(tPelvis).translate(legLink[0])
+          .rotateZ(qLLeg[0]).rotateX(qLLeg[1]).rotateY(qLLeg[2])
+          .translate(legComL[2]);
+  tLLeg3 = trcopy(tPelvis).translate(legLink[0])
+          .rotateZ(qLLeg[0]).rotateX(qLLeg[1]).rotateY(qLLeg[2])
+          .translate(legLink[3]).rotateY(qLLeg[3])
+          .translate(legComL[3]);
+  tLLeg4 = trcopy(tPelvis).translate(legLink[0])
+          .rotateZ(qLLeg[0]).rotateX(qLLeg[1]).rotateY(qLLeg[2])
+          .translate(legLink[3]).rotateY(qLLeg[3])
+          .translate(legLink[4]).rotateY(qLLeg[4])
+          .translate(legComL[4]);
+  tLLeg5 = trcopy(tPelvis).translate(legLink[0])
+          .rotateZ(qLLeg[0]).rotateX(qLLeg[1]).rotateY(qLLeg[2])
+          .translate(legLink[3]).rotateY(qLLeg[3])
+          .translate(legLink[4]).rotateY(qLLeg[4])
+          .translate(legLink[5]).rotateY(qLLeg[5])
+          .translate(legComL[5]);
+
+  tRLeg0 = trcopy(tPelvis).translate(rlegLink0)
+          .rotateZ(qRLeg[0])
+          .translate(legComR[0]);
+  tRLeg1 = trcopy(tPelvis).translate(rlegLink0)
+          .rotateZ(qRLeg[0]).rotateX(qRLeg[1])
+          .translate(legComR[1]);
+  tRLeg2 = trcopy(tPelvis).translate(rlegLink0)
+          .rotateZ(qRLeg[0]).rotateX(qRLeg[1]).rotateY(qRLeg[2])
+          .translate(legComR[2]);
+  tRLeg3 = trcopy(tPelvis).translate(rlegLink0)
+          .rotateZ(qRLeg[0]).rotateX(qRLeg[1]).rotateY(qRLeg[2])
+          .translate(legLink[3]).rotateY(qRLeg[3])
+          .translate(legComR[3]);
+  tRLeg4 = trcopy(tPelvis).translate(rlegLink0)
+          .rotateZ(qRLeg[0]).rotateX(qRLeg[1]).rotateY(qRLeg[2])
+          .translate(legLink[3]).rotateY(qRLeg[3])
+          .translate(legLink[4]).rotateY(qRLeg[4])
+          .translate(legComR[4]);
+  tRLeg5 = trcopy(tPelvis).translate(rlegLink0)
+          .rotateZ(qRLeg[0]).rotateX(qRLeg[1]).rotateY(qRLeg[2])
+          .translate(legLink[3]).rotateY(qRLeg[3])
+          .translate(legLink[4]).rotateY(qRLeg[4])
+          .translate(legLink[5]).rotateY(qRLeg[5])
+          .translate(legComR[5]);
+
+
   /////////////////////////////////
 
   tPelvisCOM = tPelvis
@@ -139,84 +144,6 @@ THOROP_kinematics_calculate_com_positions(
     .translateX(comTorsoX)
     .translateZ(comTorsoZ);
 
-  /////////////////////////////////
-  //Arm COM poistions
-  /////////////////////////////////
-
-  tLUArmCOM = tLShoulder
-    .translateX(comUpperArmX)
-    .translateZ(comUpperArmZ);
-        
-  tLElbowCOM = tLElbow
-    .translateX(comElbowX)
-    .translateZ(comElbowZ);
-
-  tLLArmCOM = tLWrist
-    .translateX(comLowerArmX);
-  
-  tLWristCOM = trcopy(tLHand)
-    .translateX(comWristX)
-    .translateZ(comWristZ);
-
-  tLHandCOM = tLHand
-    .translateX(handOffsetX)
-    .translateY(-handOffsetY);
-
-  tRUArmCOM = tRShoulder
-    .translateX(comUpperArmX)
-    .translateZ(comUpperArmZ);
-
-  tRElbowCOM = tRElbow
-    .translateX(comElbowX)
-    .translateZ(comElbowZ);
-
-  tRLArmCOM = tRWrist
-    .translateX(comLowerArmX);
-
-  tRWristCOM = trcopy(tRHand)
-    .translateX(comWristX)
-    .translateZ(comWristZ);    
-
-  tRHandCOM = tRHand
-    .translateX(handOffsetX)
-    .translateY(handOffsetY);    
-
-  /////////////////////////////////
-  //Leg COM poistions
-  /////////////////////////////////
-
-  tLULegCOM = tLHip
-        .translateX(comUpperLegX)
-        .translateY(comUpperLegY)
-        .translateZ(comUpperLegZ);
-
-  tLLLegCOM = tLKnee
-        .translateX(comLowerLegX)
-        .translateY(comLowerLegY)
-        .translateZ(comLowerLegZ);
-
-  tLFootCOM = tLAnkle
-        .translateX(comFootX)
-        .translateZ(comFootZ);
-
-  tRULegCOM = tRHip
-        .translateX(comUpperLegX)
-        .translateY(-comUpperLegY)
-        .translateZ(comUpperLegZ);        
-
-  tRLLegCOM = tRKnee
-        .translateX(comLowerLegX)
-        .translateY(-comLowerLegY)
-        .translateZ(comLowerLegZ);
-
-  tRFootCOM = tRAnkle
-        .translateX(comFootX)
-        .translateZ(comFootZ);
-
-
-
-
-
 //make a single compound COM position (from pelvis frame)
   std::vector<double> r(4);
 
@@ -224,142 +151,60 @@ THOROP_kinematics_calculate_com_positions(
  r[0] = 
          mPelvis * tPelvisCOM(0,3) +
          mTorso * tTorsoCOM(0,3) +
-         mUpperArm * (tLUArmCOM(0,3) + tRUArmCOM(0,3))+
-         mElbow * (tLElbowCOM(0,3) + tRElbowCOM(0,3))+
-         mLowerArm * (tLLArmCOM(0,3)+ tRLArmCOM(0,3))+
-         mWrist * (tLWristCOM(0,3) + tRWristCOM(0,3))+
-         mLHand * tLHandCOM(0,3) + 
-         mRHand * tRHandCOM(0,3) +
 
-         mUpperLeg * (tLULegCOM(0,3) + tRULegCOM(0,3))+
-         mLowerLeg * (tLLLegCOM(0,3) + tRLLegCOM(0,3))+
-         mFoot *  (tLFootCOM(0,3)+ tRFootCOM(0,3));
+         MassArm[0]* (tLArm0(0,3)+tRArm0(0,3))+
+         MassArm[1]* (tLArm1(0,3)+tRArm1(0,3))+
+         MassArm[2]* (tLArm2(0,3)+tRArm2(0,3))+
+         MassArm[3]* (tLArm3(0,3)+tRArm3(0,3))+
+         MassArm[4]* (tLArm4(0,3)+tRArm4(0,3))+
 
-
+         MassLeg[0]* (tLLeg0(0,3)+tRLeg0(0,3))+
+         MassLeg[1]* (tLLeg1(0,3)+tRLeg1(0,3))+
+         MassLeg[2]* (tLLeg2(0,3)+tRLeg2(0,3))+
+         MassLeg[3]* (tLLeg3(0,3)+tRLeg3(0,3))+
+         MassLeg[4]* (tLLeg4(0,3)+tRLeg4(0,3))+
+         MassLeg[5]* (tLLeg5(0,3)+tRLeg5(0,3));
 
   r[1] = mPelvis * tPelvisCOM(1,3) +
          mTorso * tTorsoCOM(1,3) +
-         mUpperArm * (tLUArmCOM(1,3) + tRUArmCOM(1,3))+
-         mElbow * (tLElbowCOM(1,3) + tRElbowCOM(1,3))+
-         mLowerArm * (tLLArmCOM(1,3)+ tRLArmCOM(1,3))+
-         mWrist * (tLWristCOM(1,3) + tRWristCOM(1,3))+
-         mLHand * tLHandCOM(1,3) + 
-         mRHand * tRHandCOM(1,3) +
 
-         mUpperLeg * (tLULegCOM(1,3) + tRULegCOM(1,3))+
-         mLowerLeg * (tLLLegCOM(1,3) + tRLLegCOM(1,3))+
-         mFoot *  (tLFootCOM(1,3)+ tRFootCOM(1,3));
+         MassArm[0]* (tLArm0(1,3)+tRArm0(1,3))+
+         MassArm[1]* (tLArm1(1,3)+tRArm1(1,3))+
+         MassArm[2]* (tLArm2(1,3)+tRArm2(1,3))+
+         MassArm[3]* (tLArm3(1,3)+tRArm3(1,3))+
+         MassArm[4]* (tLArm4(1,3)+tRArm4(1,3))+
+
+         MassLeg[0]* (tLLeg0(1,3)+tRLeg0(1,3))+
+         MassLeg[1]* (tLLeg1(1,3)+tRLeg1(1,3))+
+         MassLeg[2]* (tLLeg2(1,3)+tRLeg2(1,3))+
+         MassLeg[3]* (tLLeg3(1,3)+tRLeg3(1,3))+
+         MassLeg[4]* (tLLeg4(1,3)+tRLeg4(1,3))+
+         MassLeg[5]* (tLLeg5(1,3)+tRLeg5(1,3));
 
   r[2] = mPelvis * tPelvisCOM(2,3) +
          mTorso * tTorsoCOM(2,3) +
-         mUpperArm * (tLUArmCOM(2,3) + tRUArmCOM(2,3))+
-         mElbow * (tLElbowCOM(2,3) + tRElbowCOM(2,3))+
-         mLowerArm * (tLLArmCOM(2,3)+ tRLArmCOM(2,3))+
-         mWrist * (tLWristCOM(2,3) + tRWristCOM(2,3))+
-         mLHand * tLHandCOM(2,3) + 
-         mRHand * tRHandCOM(2,3) +
 
-         mUpperLeg * (tLULegCOM(2,3) + tRULegCOM(2,3))+
-         mLowerLeg * (tLLLegCOM(2,3) + tRLLegCOM(2,3))+
-         mFoot *  (tLFootCOM(2,3)+ tRFootCOM(2,3));
+         MassArm[0]* (tLArm0(2,3)+tRArm0(2,3))+
+         MassArm[1]* (tLArm1(2,3)+tRArm1(2,3))+
+         MassArm[2]* (tLArm2(2,3)+tRArm2(2,3))+
+         MassArm[3]* (tLArm3(2,3)+tRArm3(2,3))+
+         MassArm[4]* (tLArm4(2,3)+tRArm4(2,3))+
 
+         MassLeg[0]* (tLLeg0(2,3)+tRLeg0(2,3))+
+         MassLeg[1]* (tLLeg1(2,3)+tRLeg1(2,3))+
+         MassLeg[2]* (tLLeg2(2,3)+tRLeg2(2,3))+
+         MassLeg[3]* (tLLeg3(2,3)+tRLeg3(2,3))+
+         MassLeg[4]* (tLLeg4(2,3)+tRLeg4(2,3))+
+         MassLeg[5]* (tLLeg5(2,3)+tRLeg5(2,3));
 
-  r[3] = mPelvis + mTorso + 
-      2* (
-        mUpperArm + mElbow + mLowerArm + mWrist +
-        mUpperLeg +mLowerLeg + mFoot
-        ) + 
-      mLHand + mRHand;
+  int i;
 
-//TODO: we should ignore support foot mass 
+  r[3] = mPelvis + mTorso; 
 
+  for (i=0;i<7;i++) r[3]+=2*MassArm[i];
+  for (i=0;i<6;i++) r[3]+=2*MassLeg[i];
 
   return r;
-
-
-
-
-/*
-  //Write to a single vector
-
-  //Mass points
-  //4+4 for arms
-  //6+6 for legs
-  //1+1 for body
-
-  std::vector<double> comxyz(66);
-
-  //X coordinates
-  comxyz[0] = tRULegCOM(0,3);
-  comxyz[1] = tRLLegCOM(0,3);
-  comxyz[2] = tRFootCOM(0,3);
-
-  comxyz[6] = tLULegCOM(0,3);
-  comxyz[7] = tLLLegCOM(0,3);
-  comxyz[8] = tLFootCOM(0,3);
-
-  comxyz[12] = tRUArmCOM(0,3);
-  comxyz[13] = tRElbowCOM(0,3);
-  comxyz[14] = tRLArmCOM(0,3);
-  comxyz[15] = tRWristCOM(0,3);
-
-  comxyz[16] = tLUArmCOM(0,3);
-  comxyz[17] = tLElbowCOM(0,3);
-  comxyz[18] = tLLArmCOM(0,3);
-  comxyz[19] = tLWristCOM(0,3);
-
-  comxyz[20] = tTorsoCOM(0,3);
-  comxyz[21] = tPelvisCOM(0,3);
-
-
-  //Y coordinates
-  comxyz[0+22] = tRULegCOM(1,3);
-  comxyz[1+22] = tRLLegCOM(1,3);
-  comxyz[2+22] = tRFootCOM(1,3);
-
-  comxyz[6+22] = tLULegCOM(1,3);
-  comxyz[7+22] = tLLLegCOM(1,3);
-  comxyz[8+22] = tLFootCOM(1,3);
-
-  comxyz[12+22] = tRUArmCOM(1,3);
-  comxyz[13+22] = tRElbowCOM(1,3);
-  comxyz[14+22] = tRLArmCOM(1,3);
-  comxyz[15+22] = tRWristCOM(1,3);
-
-  comxyz[16+22] = tLUArmCOM(1,3);
-  comxyz[17+22] = tLElbowCOM(1,3);
-  comxyz[18+22] = tLLArmCOM(1,3);
-  comxyz[19+22] = tLWristCOM(1,3);
-
-  comxyz[20+22] = tTorsoCOM(1,3);
-  comxyz[21+22] = tPelvisCOM(1,3);
-
-  //Z coordinates
-  comxyz[0+44] = tRULegCOM(2,3);
-  comxyz[1+44] = tRLLegCOM(2,3);
-  comxyz[2+44] = tRFootCOM(2,3);
-
-  comxyz[6+44] = tLULegCOM(2,3);
-  comxyz[7+44] = tLLLegCOM(2,3);
-  comxyz[8+44] = tLFootCOM(2,3);
-
-  comxyz[12+44] = tRUArmCOM(2,3);
-  comxyz[13+44] = tRElbowCOM(2,3);
-  comxyz[14+44] = tRLArmCOM(2,3);
-  comxyz[15+44] = tRWristCOM(2,3);
-
-  comxyz[16+44] = tLUArmCOM(2,3);
-  comxyz[17+44] = tLElbowCOM(2,3);
-  comxyz[18+44] = tLLArmCOM(2,3);
-  comxyz[19+44] = tLWristCOM(2,3);
-
-  comxyz[20+44] = tTorsoCOM(2,3);
-  comxyz[21+44] = tPelvisCOM(2,3);
-
-
-
-  return comxyz;
-*/  
 }
 
 
@@ -745,7 +590,7 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
   
 
   //Torque = (g*m)' J_i  
- 
+  for (int i=0;i<7;i++) torque[i]*=g;
 
   return torque;
 }
@@ -753,12 +598,6 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
 
 std::vector<double>
 THOROP_kinematics_calculate_leg_torque(const double *qLeg){
+  std::vector<double> torque(6);
+  return torque;
 }
-
-
-
-
-
-
-
-

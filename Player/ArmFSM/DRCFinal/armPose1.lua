@@ -23,14 +23,10 @@ function state.entry()
   t_update = t_entry
   t_finish = t
 
+--[[
   Body.set_larm_torque_enable({2,2,2, 2,1,1,1}) --enable force control
   Body.set_rarm_torque_enable({2,2,2, 2,1,1,1}) --enable force control
-    
-
-Body.set_larm_torque_enable({2,1,1, 2,1,1,1}) --enable force control
-Body.set_rarm_torque_enable({2,1,1, 2,1,1,1}) --enable force control
-
-
+--]]
   larm_pos_old = Body.get_larm_position()
   rarm_pos_old = Body.get_rarm_position()
   l_comp_torque = vector.zeros(7)
@@ -70,90 +66,34 @@ print(string.format("rarm torque  :%.2f %.2f %.2f //   %.2f // %.2f %.2f // ",
   ))
 --]]
   
-  larm_pos = Body.get_larm_position()
-  rarm_pos = Body.get_rarm_position()
-
-  larm_cmdpos = Body.get_larm_command_position()
-  rarm_cmdpos = Body.get_rarm_command_position()
-
-  larm_torque2 = Body.Kinematics.calculate_arm_torque(larm_cmdpos)
-
-  local l_stall_torque = vector.new({2.54,0,0, -1.0, 0,0,0})
-  local r_stall_torque = vector.new({2.54,0,0, -1.0, 0,0,0})
-
-print("larm:",util.print_jangle(larm_cmdpos))
-print("rarm:",util.print_jangle(rarm_cmdpos))
-
-
-
-  l_stall_torque = Body.Kinematics.calculate_arm_torque(larm_cmdpos)
-  r_stall_torque = Body.Kinematics.calculate_arm_torque(rarm_cmdpos)
 
   local larm_cmdpos = Body.get_larm_command_position()
   local rarm_cmdpos = Body.get_rarm_command_position()
   local larm_pos = Body.get_larm_position()
   local rarm_pos = Body.get_rarm_position()
+  l_stall_torque = vector.new(Body.Kinematics.calculate_arm_torque(larm_cmdpos))
+  r_stall_torque = vector.new(Body.Kinematics.calculate_arm_torque(rarm_cmdpos))
+
+--  l_stall_torque = Body.Kinematics.calculate_arm_torque(larm_pos)
+--  r_stall_torque = Body.Kinematics.calculate_arm_torque(rarm_pos)
+
+
 
   local larm_vel =  (larm_pos-larm_pos_old)/dt
   local rarm_vel =  (rarm_pos-rarm_pos_old)/dt
   larm_pos_old,rarm_pos_old = larm_pos,rarm_pos
 
+  local larm_pos_err = (larm_cmdpos-larm_pos)
+  local rarm_pos_err = (rarm_cmdpos-rarm_pos)
 
-  local larm_pos_err = (larm_pos-larm_cmdpos)
-  local rarm_pos_err = (rarm_pos-rarm_cmdpos)
+  local l_comp_torque = util.pid_feedback(larm_pos_err, larm_vel, dt)
+  local r_comp_torque = util.pid_feedback(rarm_pos_err, rarm_vel, dt)
 
-
-
-
-
-
-  local d_gain = - 1
-  local d_gain = - 10
-
-  local d_gain = - 1
-  local i_gain = -0.003
+  local l_torque =  l_stall_torque + l_comp_torque
+  local r_torque =  r_stall_torque + r_comp_torque
 
 
---    local i_gain = -0
-    
-
-
-
-
-  if util.mod_angle(larm_pos_err[1])>DEG_TO_RAD then
-    l_comp_torque[1] = l_comp_torque[1]+i_gain
-  elseif util.mod_angle(larm_pos_err[1])<-DEG_TO_RAD then
-    l_comp_torque[1] = l_comp_torque[1]-i_gain
-  end
-
-  if util.mod_angle(rarm_pos_err[1])>DEG_TO_RAD then
-    r_comp_torque[1] = r_comp_torque[1]+i_gain
-  elseif util.mod_angle(rarm_pos_err[1])<-DEG_TO_RAD then
-    r_comp_torque[1] = r_comp_torque[1]-i_gain
-  end
-
-  if util.mod_angle(larm_pos_err[4])>DEG_TO_RAD then
-    l_comp_torque[4] = l_comp_torque[4]+i_gain
-  elseif util.mod_angle(larm_pos_err[4])<-DEG_TO_RAD then
-    l_comp_torque[4] = l_comp_torque[4]-i_gain
-  end
-
-  if util.mod_angle(rarm_pos_err[4])>DEG_TO_RAD then    
-    r_comp_torque[4] = r_comp_torque[4]+i_gain
-  elseif util.mod_angle(rarm_pos_err[4])<-DEG_TO_RAD then
-    r_comp_torque[4] = r_comp_torque[4]-i_gain
-  end
-
-
- 
-
-
-
-  local l_torque =  larm_vel*d_gain  + l_stall_torque + l_comp_torque
-  local r_torque =  rarm_vel*d_gain  + r_stall_torque + r_comp_torque
-
-
-
+--[[
   print(string.format("calculated left torque :%.2f %.2f %.2f //   %.2f // %.2f %.2f %.2f  // ",
   unpack(l_stall_torque)
   ))
@@ -168,7 +108,7 @@ print("rarm:",util.print_jangle(rarm_cmdpos))
   print(string.format("empirical right torque :%.2f %.2f %.2f //   %.2f // %.2f %.2f %.2f // ",
   r_torque[1],r_torque[2],r_torque[3],r_torque[4],r_torque[5],r_torque[6],r_torque[7]
   ))
-  
+--]]
 
 
 

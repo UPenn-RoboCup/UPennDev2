@@ -137,20 +137,22 @@ const double Mass[22]={
 
 const double g = 9.81;
 
-//Based on webots mass 
-const double MassArm[7]={
-	g*0.1,
-	g*2.89,
-	g*0.13,
-	g*0.81,
-	g*0.97,
-	g*0.1,	
-	g*0.1,	//gripper mass... TBD
+const double MassBody[2]={
+	9.21, //torso
+	8.0,  //pelvis	
+};
+const double bodyCom[2][3]={
+	{-0.0208,0,0.1557},	//after shoulder pitch
+	{-0.0264,0,-0.1208},//after shoulder roll	
 };
 
+//Based on webots mass 
+const double MassArm[7]={
+	0.1, 2.89, 0.13, 0.81, 0.97, 0.1,	 0.1,	//gripper mass... TBD
+};
 
 const double armLink[7][3]={
-	{0,0.234,0.165}, //waist-shoulder roll
+	{0,0.234,0.165}, //waist-shoulder roll 
 	{0,0,0}, //shoulder pitch-shoulder roll
 	{0,0,0}, //shouder roll-shoulder yaw
 	{0.246,0,0.030},//shoulder yaw-elbow 
@@ -158,9 +160,9 @@ const double armLink[7][3]={
 	{0,0,0},//wrist yaw1 to wrist roll
 	{0,0,0}//wrist roll to wrist yaw2
 };
+const double rarmLink0[3] = {0,-0.234,0.165};
 
 //Com position from joint center
-
 const double armCom[7][3]={
 	{0,0,0},	//after shoulder pitch
 	{0.1027,0,-0.008},//after shoulder roll
@@ -170,17 +172,42 @@ const double armCom[7][3]={
 	{0,0,0}, //after wrist roll
 	{0.095,0,0} //after wrist yaw 2
 };
-/*
-const double armCom[7][3]={
-	{0,0,0},	//after shoulder pitch
-	{0,0,0},
-	{0,0,0},
-	{0,0,0},
-	{0,0,0},
-	{0,0,0}, //after wrist roll
-	{0,0,0} //after wrist yaw 2
+
+
+const double MassLeg[6]={
+	0.165, 1.122, 3.432, 2.464, 0.946, 1.133
 };
-*/
+
+const double legLink[7][3]={
+	{0,-0.072,-0.282}, //waist-hipyaw
+	{0,0,0}, //hip yaw-roll
+	{0,0,0}, //hip roll-pitch
+	{0.030,0,-0.300}, //hip pitch-knee
+	{-0.030,0,-0.300}, //knee-ankle pitch
+	{0,0,0}, //ankle pitch-ankle roll
+	{0,0,-0.118}, //ankle roll - foot bottom
+};
+
+const double rlegLink0[3] = {0,0.072,-0.282};
+
+const double legComL[6][3]={
+	{0,0,0},	//after hip yaw
+	{0,0,0},	//after hip roll
+	{-0.029, 0.014,-0.130},	//after hip pitch (upper leg)
+	{0.031,  0.019,-0.119},	//after knee (lower leg)
+	{0,0,0}, //after ankle pitch
+	{0,0,-0.031}, //after ankle pitch	
+};
+
+const double legComR[6][3]={
+	{0,0,0},	//after hip yaw
+	{0,0,0},	//after hip roll
+	{-0.029, -0.014,-0.130},	//after hip pitch (upper leg)
+	{0.031,  -0.019,-0.119},	//after knee (lower leg)
+	{0,0,0}, //after ankle pitch
+	{0,0,-0.031}, //after ankle pitch	
+};
+
 
 
 

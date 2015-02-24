@@ -98,6 +98,28 @@ local function p_feedback(org,target, p_gain, max_vel, dt)
   return org + vel*dt
 end
 
+function util.pid_feedback(err, vel, dt)
+  
+  err_deadband = math.pi/180
+  vel_p_gain = 2
+  max_vel = math.pi/2 --90 deg per sec 
+
+  acc_p_gain = 1
+  max_acc = 1
+
+  vel_d_gain = -1
+  vel_d_gain = 0
+    
+  local cmd={}
+  for i=1,#err do
+    local err_clamped = math.max(0,math.abs(err[i])-err_deadband)
+    if err[i]<0 then err_clamped = -err_clamped end
+    local velTarget = math.max(-max_vel,math.min( max_vel, err_clamped*vel_p_gain ))
+    local accTarget = math.max(-max_acc,math.min( max_acc,  acc_p_gain*(velTarget-vel[i])/dt ))
+    cmd[i] = accTarget + vel[i]*vel_d_gain
+  end
+  return cmd
+end
 
 function util.clamp_vector(values,min_values,max_values)
 	local clamped = vector.new()

@@ -30,6 +30,23 @@ Transform& Transform::translate(const double* p) {
   return *this;
 }
 
+Transform& Transform::invtranslate(const double* p) {
+  t[0][3] -= t[0][0]*p[0] + t[0][1]*p[1] + t[0][2]*p[2];
+  t[1][3] -= t[1][0]*p[0] + t[1][1]*p[1] + t[1][2]*p[2];
+  t[2][3] -= t[2][0]*p[0] + t[2][1]*p[1] + t[2][2]*p[2];
+  return *this;
+}
+
+Transform& Transform::neg() {
+  for (int i = 0; i < 3; i++){ 
+    t[i][0] = -t[i][0];
+    t[i][1] = -t[i][1];
+    t[i][2] = -t[i][2];
+    t[i][3] = -t[i][3];
+  }
+  return *this;
+}
+
 Transform& Transform::translateX(double x) {
   t[0][3] += t[0][0]*x;
   t[1][3] += t[1][0]*x;
@@ -128,6 +145,10 @@ Transform& Transform::rotateDotZ(double a) {
   }
   return *this;
 }
+
+
+
+
 
 
 Transform& Transform::mDH(double alpha, double a, double theta, double d) {

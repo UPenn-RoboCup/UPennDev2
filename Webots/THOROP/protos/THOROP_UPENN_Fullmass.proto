@@ -8,10 +8,10 @@
 #  MINIMUM number of bounding box for speed up
 #  SJ: cleaned-up all mass properties according thorIK.h
 #  Fixed wrong arm lengths
-# 
+# unlimited arm torque and velocity (for arm motion testing)
 #############################################
 
-PROTO THOROP_UPENN [
+PROTO THOROP_UPENN_Fullmass [
   field SFVec3f    translation 0 1.155 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -19,7 +19,10 @@ PROTO THOROP_UPENN [
   field SFBool     synchronization TRUE
 	field SFFloat    lidarFov 3.1415926536
 	field SFInt32    lidarRays 720
-	field SFFloat    max_knee_torque 44 #now variable 
+	#SJ - robotis rating is not enough to keep the robot standing
+	field SFFloat    max_torque_400w 44
+	field SFFloat    max_torque_200w 44
+  field SFFloat    max_torque_100w 24
 
   # We may want wider FOV for head lidar	
   field SFString   name "THOR-OP"
@@ -40,6 +43,10 @@ Robot {
  
   #Center of the robot is 170mm higher than the waist pitch joint  
   #################################################################
+	boundingObject Transform {    
+    translation 0 0 0
+    children [Box {size 0.05 0.05 0.05}]
+  }    
   physics Physics {
     density -1 
     mass 9.21
@@ -49,32 +56,6 @@ Robot {
   # Children items
   children [    
 
-    ## The sensors occupy the same position as the Chest
-    InertialUnit {name "InertialUnit"}
-    Compass {name "Compass"}
-    GPS {name "GPS"}
-    DEF ACCEL Accelerometer {
-      name "Accelerometer"
-      # Must place where is on the actual robot
-      translation 0 0 0.02
-      # Rotate to the correct orientation
-      rotation 0 0.707107 0.707107 3.14159
-      lookupTable [
-         -39.24 0 0
-         39.24 1024 0
-      ]
-    }
-    DEF GYRO Gyro {
-      # Must place where is on the actual robot
-      translation 0 0 0.02
-      # Rotate to the correct orientation
-      rotation -0.57735 0.57735 0.57735 2.09
-      name "Gyro"
-      lookupTable [
-         -27.925 0 0
-         27.925 1024 0
-      ]
-    }
     DEF RECEIVER Receiver {
       name "receiver"
       channel IS channel
@@ -113,10 +94,15 @@ Robot {
 			jointParameters HingeJointParameters {
 				axis 1 0 0
 				anchor 0 -0.17 0
+				dampingConstant 0.1                              
 			}
 			endPoint Solid {
 				translation 0 -0.17 0
 				#################################################################
+				boundingObject Transform {    
+    			translation 0 0 0
+    			children [Box {size 0.05 0.05 0.05}]
+  			}    
 				physics Physics {density -1  mass 0.2} 				
 				#################################################################
 				children [
@@ -129,21 +115,26 @@ Robot {
 							name "TorsoYaw"
 							maxVelocity 2.9216811678
 							maxTorque 44.2
-							minPosition -2.92343
-							maxPosition 2.92343
+							minPosition -3.14
+							maxPosition 6.28
 						}
 						jointParameters HingeJointParameters {
 							# Out x for pitch
 							axis 0 1 0
-							#anchor 0 -0.038 0   
-							anchor 0 -0.050 0  #we use waist-hip height of 282mm
+							anchor 0 -0.038 0
+							dampingConstant 0.1                              
 						}
 						endPoint Solid {
-							translation 0 -0.038 0
-							#Center of the pelvis block is 0.038+0.0875 = 0.1255 lower than the waist pitch joint  
+							translation 0 -0.050 0
+							#translation 0 -0.038 0							
 							#comPelvis = (-0.0264,0,-0.1208) based on waist pitch
-							#################################################################							
-							physics Physics {density -1 mass 8.0 centerOfMass [0 0.0047 -0.0264]}
+							#################################################################
+							boundingObject Transform {    
+    						translation 0 -0.080 0
+    						children [Box {size 0.05 0.05 0.05}]
+  						}    							
+							physics Physics {density -1 mass 8.0 
+									centerOfMass [-0.0708 0 -0.0264]}
 							#################################################################
 							children [
 								DEF Pelvis PELVIS {
@@ -151,22 +142,54 @@ Robot {
 									scale 0.001 0.001 0.001
 								}
 
+						    ## The sensors occupy the same position as the Chest
+						    InertialUnit {name "InertialUnit"}
+						    Compass {name "Compass"}
+						    GPS {name "GPS"}
+						    DEF ACCEL Accelerometer {
+						      name "Accelerometer"
+						      # Must place where is on the actual robot
+						      translation 0 0 0.02
+						      # Rotate to the correct orientation
+						      rotation 0 0.707107 0.707107 3.14159
+						      lookupTable [
+						         -39.24 0 0
+						         39.24 1024 0
+						      ]
+						    }
+						    DEF GYRO Gyro {
+						      # Must place where is on the actual robot
+						      translation 0 0 0.02
+						      # Rotate to the correct orientation
+						      rotation -0.57735 0.57735 0.57735 2.09
+						      name "Gyro"
+						      lookupTable [
+						         -27.925 0 0
+						         27.925 1024 0
+						      ]
+						    }
+
 								## Begin Right Leg
 								DEF Right_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYR"
-										maxVelocity 3.15 maxTorque 24.8
+										maxVelocity 3.15 maxTorque IS max_torque_100w
 										minPosition -2.92343 maxPosition 2.92343
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
 										anchor -0.072 -0.232 0
+										dampingConstant 0.1                              
 									}
 									endPoint Solid {
 										translation -0.072 -0.232 0
+										boundingObject Transform {    
+			    						translation 0 0.07 0
+    									children [Box {size 0.05 0.05 0.05}]
+  									}    				
 										physics Physics {
 											#################################################################
-											density -1 mass 0.05
+											density -1 mass 0.165
 											#################################################################
 										}
 
@@ -179,16 +202,22 @@ Robot {
 												device RotationalMotor {
 													name "PelvR"
 													# TODO: Use NX Motor specs
-													maxVelocity 2.9216811678 maxTorque 44.2													
+													maxVelocity 2.9216811678 
+													maxTorque IS max_torque_200w
 													minPosition -2.92343 maxPosition 2.92343
 												} # End of the PelvYR RotationalMotor
 												jointParameters HingeJointParameters {
 													# Out x for pitch
 													axis 0 0 1
+													dampingConstant 0.1                              
 												} # End of the PelvYR HingeJointParameters
 												endPoint Solid {
 												#################################################################		
-                          physics Physics {density -1 mass 0.3}
+													boundingObject Transform {    
+			    									translation 0 0.0 0
+    												children [Box {size 0.05 0.05 0.05}]
+  												}    				
+                          physics Physics {density -1 mass 1.122}
                         #################################################################
 													children[
 														HIP_ROLL {
@@ -197,20 +226,22 @@ Robot {
 														DEF Right_hip_pitch HingeJoint {
 															device RotationalMotor {
 																name "LegUpperR"
-																maxVelocity 2.9216811678 maxTorque 44.2																
+																maxVelocity 2.9216811678 maxTorque IS max_torque_200w
 																minPosition -2.92343 maxPosition 2.92343
 															}
 															jointParameters HingeJointParameters {
-																# I think z?
 																axis 1 0 0
+																dampingConstant 0.1                              
 															}
 															endPoint Solid {
+																boundingObject Transform {    
+			    												translation 0 -0.10 0
+    															children [Box {size 0.05 0.05 0.05}]
+  															}    				
                                 physics Physics {
                                 #################################################################
-                                # comUpperLeg = {-0.0082, 0.0211, -0.124}
-                                #TODO: is Y axis correct?
-                                  density -1 mass 4.28																	
-																	centerOfMass [0.0211 -0.124 -0.0082]
+                                  density -1 mass 3.432																	
+																	centerOfMass [-0.014 -0.130 -0.029]
  	 												  		#################################################################
                                 }
 																
@@ -223,31 +254,25 @@ Robot {
 																		device RotationalMotor {
 																			name "LegLowerR"
 																			maxVelocity 2.9216811678
-																			maxTorque IS max_knee_torque
+																			maxTorque IS max_torque_400w
 																			minPosition -2.92343
 																			maxPosition 2.92343
 																		}
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
 																			anchor 0 -0.3 -0.03
+																			dampingConstant 0.1             
 																		}
 																		endPoint Solid {
 																			translation 0 -0.3 -0.03
 																			boundingObject Transform {
-																			#HIGHER SHIN BOUNDING BOX
-																				#translation -0.025 -0.192 0.043
-																				#children [Box {size 0.144 0.35 0.085}]
 																				translation -0.025 -0.162 0.043
 																				children [Box {size 0.144 0.29 0.085}]
-
-
 																			}
                                       physics Physics {
                                       #################################################################
-                                      # comLowerLeg = {0.0074,-0.0313,-0.1796}
-                                			#TODO: is Y axis correct?
-                                        density -1 mass 2.24
-																				centerOfMass [0.0313 -0.1796 0.0074]
+                                        density -1 mass 2.464
+																				centerOfMass [-0.019 -0.119 0.031]
 																			#################################################################
                                       }
 																			children[
@@ -260,19 +285,24 @@ Robot {
 																					device RotationalMotor {
 																						name "AnkleR"
 																						maxVelocity 2.9216811678
-																						maxTorque 44.2
+																						maxTorque IS max_torque_200w
 																						minPosition -2.92343
 																						maxPosition 2.92343
 																					} # End of the LegLowerR RotationalMotor
 																					jointParameters HingeJointParameters {
 																						axis 1 0 0
 																						anchor 0 -0.3 0.03
+																						dampingConstant 0.1             
 																					}
 																					endPoint Solid {
 																						translation 0 -0.3 0.03
                                             contactMaterial IS footContactMaterial
-                                            #################################################################
-																						physics Physics {density -1 mass 0.2}
+                                            #########################################################
+                                            boundingObject Transform {    
+			    																		translation 0 0.0 0
+    																					children [Box {size 0.03 0.03 0.03}]
+  																					}    				
+																						physics Physics {density -1 mass 0.946}
 																						#################################################################
 																						children[
 																							LEFT_ANKLE {
@@ -282,17 +312,22 @@ Robot {
 																								device RotationalMotor {
 																									name "FootR"
 																									maxVelocity 3.1520646292
-																									maxTorque 24.8																								
+																									maxTorque IS max_torque_100w		
 																									minPosition -2.92343 maxPosition 2.92343
 																								} # End of the LegLowerR RotationalMotor
-																								jointParameters HingeJointParameters {axis 0 0 1}
+																								jointParameters HingeJointParameters {
+																									axis 0 0 1
+																									dampingConstant 0.1             
+																									}
 																								endPoint Solid {
-                                                contactMaterial IS footContactMaterial															
-																									########################################################				
-                                                    #comFoot = {-0.0048,0,-0.0429}
-                                                  	physics Physics {density -1 mass 1.74
-                                                  		centerOfMass [0 -0.0429 -0.0048]}
-																						########################################################
+                                                	contactMaterial IS footContactMaterial															
+																									####################################################	
+																										boundingObject Transform {    
+				    																					translation 0 0.0 0
+	    																								children [Box {size 0.03 0.03 0.03}]
+	  																								} 
+	  																								physics Physics {density -1 mass 0.2}
+																									########################################################
 																									children [
 																										#FOOT {scale 0.001 0.001 0.001}
 																										Transform{
@@ -304,29 +339,19 @@ Robot {
                                                       lookupTable   [ 0 0 0, 5000 5000 0 ]
                                                       name "RAnkle_force"
                                                       contactMaterial IS footContactMaterial
-                                                      boundingObject Transform {
-                                                        #translation 0 -0.003 0.0177
+                                                      boundingObject Transform {            
                                                         translation 0 -0.003 0.01
-                                                        children [
-                                                          #Box {size 0.147 0.05 0.262}
+                                                        children [               
                                                           Box {size 0.147 0.05 0.240}
                                                         ]
                                                       }
-                                                      physics Physics {density -1 mass 0.2}
+                                                     	physics Physics {
+                                                     		density -1 mass 1.133
+                                                  			centerOfMass [0 -0.031 0]
+                                                  		}
                                                       type "force-3d"                                                    
                                                     }
 
-      																							DEF Right_ankle_yaw HingeJoint {
-      																								device RotationalMotor {name "right_ankle_yaw"}
-      																								jointParameters HingeJointParameters {axis 0 1 0}
-      																								endPoint Solid {
-                                                        translation 0 -0.09 0
-                                                        contactMaterial IS footContactMaterial
-																												physics Physics {density -1 mass 0.2}          
-                                                      }
-                                                    }
-
-#
 																									]
 																								}
 																							}
@@ -351,18 +376,23 @@ Robot {
 								DEF Left_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYL"
-										maxVelocity 3.15 maxTorque 24.8
+										maxVelocity 3.15 maxTorque IS max_torque_100w
 										minPosition -2.92343 maxPosition 2.92343
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
 										anchor 0.072 -0.232 0
+										dampingConstant 0.1                              
 									}
 									endPoint Solid {
 										translation 0.072 -0.232 0
+										boundingObject Transform {    
+			    						translation 0 0.07 0
+    									children [Box {size 0.05 0.05 0.05}]
+  									}    				
 										physics Physics {
 										##############################################################
-											density -1 mass 0.05
+											density -1 mass 0.165
 										##############################################################
 										}
 									
@@ -375,17 +405,22 @@ Robot {
 												device RotationalMotor {
 													name "PelvL"
 													maxVelocity 2.9216811678
-													maxTorque 44.2
+													maxTorque IS max_torque_200w
 													minPosition -2.92343 maxPosition 2.92343
 												}
 												jointParameters HingeJointParameters {
 													# Out x for pitch
 													axis 0 0 1
+													dampingConstant 0.1                              
 												}
 												endPoint Solid {
 												##############################################################
-                          physics Physics {density -1 mass 0.3}
-                        ##############################################################
+												boundingObject Transform {    
+			    									translation 0 0.0 0
+    												children [Box {size 0.05 0.05 0.05}]
+  												}    				
+                          physics Physics {density -1 mass 1.122}
+	                      ##############################################################
 													children[
 														HIP_ROLL {
 															scale 0.001 0.001 0.001
@@ -394,20 +429,22 @@ Robot {
 															device RotationalMotor {
 																name "LegUpperL"
 																maxVelocity 2.9216811678
-																maxTorque 44.2																
+																maxTorque IS max_torque_200w
 																minPosition -2.92343 maxPosition 2.92343
 															}
 															jointParameters HingeJointParameters {
-																# I think z?
 																axis 1 0 0
+																dampingConstant 0.1        
 															}
 															endPoint Solid {
+																boundingObject Transform {    
+			    												translation 0 -0.10 0
+    															children [Box {size 0.05 0.05 0.05}]
+  															}    				
 																physics Physics {
 															##############################################################
-                                # comUpperLeg = {-0.0082, 0.0211, -0.124}
-                                #TODO: is Y axis correct?
-                                  density -1 mass 4.28																	
-																	centerOfMass [-0.0211 -0.124 -0.0082]                                
+                                density -1 mass 3.432																	
+																	centerOfMass [0.014 -0.130 -0.029]                        
 															##############################################################
 																}
 																children [
@@ -419,12 +456,13 @@ Robot {
 																		device RotationalMotor {
 																			name "LegLowerL"
 																			maxVelocity 2.9216811678
-																			maxTorque IS max_knee_torque																			
+																			maxTorque IS max_torque_400w																		
 																			minPosition -2.92343 maxPosition 2.92343
 																		}
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
 																			anchor 0 -0.3 -0.03
+																			dampingConstant 0.1             
 																		}
 																		endPoint Solid {
 																			translation 0 -0.3 -0.03
@@ -437,10 +475,8 @@ Robot {
 																			}
                                       physics Physics {
                                       ##############################################################
-                                      # comLowerLeg = {0.0074,-0.0313,-0.1796}
-                                			#TODO: is Y axis correct?
-                                        density -1 mass 2.24
-																				centerOfMass [-0.0313 -0.1796 0.0074]
+                                      density -1 mass 2.464
+																				centerOfMass [0.019 -0.119 0.031]
 																			##############################################################
                                       }
 																			children[
@@ -453,7 +489,7 @@ Robot {
 																					device RotationalMotor {
 																						name "AnkleL"
 																						maxVelocity 2.9216811678
-																						maxTorque 44.2																						
+																						maxTorque IS max_torque_200w																	
 																						minPosition -2.92343 maxPosition 2.92343
 																					} # End of the LegLowerR RotationalMotor
 																					jointParameters HingeJointParameters {
@@ -464,7 +500,11 @@ Robot {
 																						translation 0 -0.3 0.03
                                             contactMaterial IS footContactMaterial
 																				##############################################################
-																						physics Physics {density -1 mass 0.2}
+																						boundingObject Transform {    
+			    																		translation 0 0.0 0
+    																					children [Box {size 0.03 0.03 0.03}]
+  																					}    				
+																						physics Physics {density -1 mass 0.946}
 																			  ##############################################################
 																						children[
 																							LEFT_ANKLE {
@@ -474,7 +514,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootL"
 																									maxVelocity 3.1520646292
-																									maxTorque 24.8																									
+																									maxTorque IS max_torque_100w
 																									minPosition -2.92343 maxPosition 2.92343
 																								}
 																								jointParameters HingeJointParameters {
@@ -483,10 +523,12 @@ Robot {
 																								}
 																								endPoint Solid {
                                                   contactMaterial IS footContactMaterial
-																					########################################################				
-                                                    #comFoot = {-0.0048,0,-0.0429}
-                                                  	physics Physics {density -1 mass 1.74
-                                                  		centerOfMass [0 -0.0429 -0.0048]}
+																					########################################################						
+																									boundingObject Transform {    
+			    																					translation 0 0.0 0
+    																								children [Box {size 0.03 0.03 0.03}]
+  																								}    				
+                                                  physics Physics {density -1 mass 0.2}
 																						########################################################
 																									children [
 																										#FOOT {scale 0.001 0.001 0.001}
@@ -501,32 +543,20 @@ Robot {
                                                       name "LAnkle_force"
                                                       contactMaterial IS footContactMaterial    
                                                       boundingObject Transform {
-                                                          #translation 0 -0.003 0.0177
                                                           translation 0 -0.003 0.010
                                                           children [
                                                             Box {
-                                                              #size 0.147 0.05 0.262
                                                               size 0.147 0.05 0.240
                                                             }
                                                           ]
                                                         }                                                 
-                                                  		physics Physics {density -1 mass 0.2}
+                                                  		physics Physics {
+                                                  			density -1 mass 1.133
+                                                  			centerOfMass [0 -0.031 0]
+                                                  		}
                                                       type "force-3d"
                                                     }
-
-      																							DEF Left_ankle_yaw HingeJoint {
-      																								device RotationalMotor {
-      																									name "left_ankle_yaw"
-      																								}
-      																								jointParameters HingeJointParameters {
-      																									axis 0 1 0
-      																								}
-      																								endPoint Solid {
-                                                        translation 0 -0.09 0
-                                                        contactMaterial IS footContactMaterial
-																												physics Physics {density -1 mass 0.2}
-                                                      }
-                                                    }
+      																						
 																									]
 																								}
 																							}
@@ -575,6 +605,10 @@ Robot {
 			} # End of the Head HingeJointParameters
 			endPoint Solid {
         translation 0 0.12 0
+        boundingObject Transform {    
+    			translation 0 -0.020 0
+    			children [Box {size 0.05 0.05 0.05}]
+  			}    
 				physics Physics {
 				##############################################################		
 					density -1 mass 0.1
@@ -604,6 +638,7 @@ Robot {
       			  rotation 0 1 0 3.14159265
               #TODO: add a pitch angle
       			  maxRange 4
+      			 
       			}
       			##############################################################		
 					} # End of the Head HingeJoint
@@ -654,12 +689,13 @@ Robot {
       jointParameters HingeJointParameters {
         axis 1 0 0
         anchor -0.234 0 0
+        dampingConstant 0.1                              
       } # End of the ShoulderR HingeJointParameters
       endPoint Solid {
         translation -0.234 0 0
         boundingObject Transform {
-          translation 0.01 0 0
-          children [Box {size 0.085 0.066 0.15}]
+        	translation 0.10 0 0
+          children [Box {size 0.05 0.05 0.05}]
         }
         ##############################################################		
         physics Physics {density -1 mass 0.1}
@@ -679,11 +715,18 @@ Robot {
             } # End of the ArmUpperR RotationalMotor
             jointParameters HingeJointParameters {
               axis 0 0 -1
+              dampingConstant 0.1                            
             } # End of the ArmUpperR HingeJointParameters
             endPoint Solid {
-              #rotation 0 0 -1 0.17
+              boundingObject Transform {	          		
+          			translation 0.01 0 0
+          			children [Box {size 0.085 0.066 0.15}]
+        			}
          ##############################################################		
-              physics Physics {density -1 mass 0.1}
+              physics Physics {
+              	density -1 mass 2.89
+                centerOfMass 0 -0.1027 -0.008 #this assumes straight down arm posture
+              }
  				 ##############################################################
               ## Begin Shoulder Yaw
               children [
@@ -701,15 +744,19 @@ Robot {
                   }
                   jointParameters HingeJointParameters {
                     axis 0 1 0
+                     dampingConstant 0.1                    
                   }
                   endPoint Solid {                    
-                    physics Physics {
+										boundingObject Transform {
+	          					translation 0 -0.07 0
+          						children [Box {size 0.05 0.05 0.05}]
+        						}           
            ##############################################################	
-           # comUpperArm = {0.1027,0,-0.008} #this assumes straight forward arm posture
-                      density -1 mass 2.89
-                      centerOfMass 0 -0.1027 -0.008 #this assumes straight down arm posture
+                    physics Physics {
+                 			density -1 mass 0.13
+                			centerOfMass 0 -0.246 0
+                		}
 				#############################################################
-                    }
                     children [
   										RIGHT_ARM{
   											translation 0 -0.027 0
@@ -726,6 +773,7 @@ Robot {
                         jointParameters HingeJointParameters {
                           axis -1 0 0
                           anchor 0 -0.246 0.030
+                          dampingConstant 0.1                                                    
                         }
                         endPoint Solid {
                           translation 0 -0.246 0.030
@@ -737,18 +785,16 @@ Robot {
                               }                              
                             ]
                           }
+                          ##############################################################		
                           physics Physics {
-                          ##############################################################		
-                          #TODO... is it correct?
-                          #comLowerArm = {0.0464,0,0}
-                            density -1 mass 0.81
-                            centerOfMass [0 -0.0464 0]
-                          ##############################################################		
+                            density -1 
+                            mass 0.81
+                            centerOfMass 0 -0.0464 0
                           }
+                          ##############################################################		
+                          
                           children [
-														RIGHT_ELBOW_LONG {
-															translation 0 -0.125 -0.03
-														}
+														RIGHT_ELBOW_LONG {translation 0 -0.125 -0.03}
                             DEF Right_wrist_yaw HingeJoint {
                               device RotationalMotor {
                                 name "RightWristYaw"
@@ -759,15 +805,19 @@ Robot {
                                 axis 0 1 0
 																#anchor 0 -0.216 -0.03
 																anchor 0 -0.25 -0.03
+                                dampingConstant 0.1																			
                               } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
                                 translation 0 -0.250 -0.03
-                                boundingObject Box { size 0.05 0.05 0.1 }
-                                ##############################################################		
-                                #COMwRIST = {0.146,0,-0.0039}
-                                physics Physics {density -1 mass 0.97
-                                						centerOfMass [0 0.104 -0.0039]}
-                                ##############################################################		
+																boundingObject Transform {
+	          											translation 0 0.065 0
+          												children [Box {size 0.05 0.05 0.05}]
+        												}
+                                physics Physics {
+                                	density -1 
+                                	mass 0.97
+                                	centerOfMass 0 0.040 0
+                                }
                                 children [
                                   DEF Right_wrist_roll HingeJoint {
                                     device RotationalMotor {
@@ -780,20 +830,21 @@ Robot {
                                       # Straight out the z axis
                                       #fixed
                                       axis 0 0 -1
+                                      dampingConstant 0.1
                                     } # End of the RightWristRoll HingeJointParameters
                                     endPoint Solid {
-                                    	#Wrist-gripper center distance is 200mm
-                                      translation 0 -0.065 0 
-                                      #####################################################
-                                      physics Physics { density -1 mass 0.2}
-																			############################################################## 
+                                    	translation 0 0 0 
+                                      boundingObject Box { size 0.05 0.05 0.1 }
+																		  physics Physics {
+                                      	density -1
+                                      	mass 0.1
+                                      }           
                                       children [
-
-																				WRIST { # The 20W motor
-																					translation 0 0.065 0
-																					scale 0.001 0.001 0.001
-																				}
-        																WRIST { # The 20W motor
+																				WRIST {
+                                      		translation 0 0 0
+                                      		scale 0.001 0.001 0.001}
+        																WRIST {
+        																	translation 0 -0.0650 0
         																	scale 0.001 0.001 0.001
                                           rotation 1 0 0 1.5708
         																}
@@ -806,15 +857,25 @@ Robot {
                                           jointParameters HingeJointParameters {
                                           	#fixed
                                             axis 0 -1 0
+                                            dampingConstant 0.1     
                                           }
-                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
+#                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
 
-#																					endPoint GRIPPER {
-#																						translation 0 -0.075 0
-#																						rotation 0 0 -1 0.707
-#																						trigger_name "r_trigger"
-#																						grip_name "r_grip"
-#																					}
+                                    endPoint Solid {
+					                            translation 0 -0.095 0
+					                            boundingObject Box { size 0.05 0.05 0.05 }
+					                           	physics Physics{
+					                           		density -1
+					                           		mass 0.1
+					                              }
+					                    			}
+
+#																			endPoint GRIPPER {
+#																					translation 0 -0.075 0
+#		  																			rotation 0 0 -1 0.707																		#
+#																					trigger_name "r_trigger
+#																					grip_name "r_grip"
+#																				}
 
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
@@ -858,12 +919,14 @@ Robot {
       jointParameters HingeJointParameters {
         axis 1 0 0
         anchor -0.234 0 0
+        dampingConstant 0.1                      
       }
       endPoint Solid {
         translation 0.234 0 0
         boundingObject Transform {
-          translation -0.01 0 0
-          children [Box {size 0.085 0.066 0.15}]
+        	translation -0.10 0 0
+          children [Box {size 0.05 0.05 0.05}]
+          
         }
         ##############################################################		
         physics Physics {density -1          mass 0.1}
@@ -883,11 +946,18 @@ Robot {
             }
             jointParameters HingeJointParameters {
               axis 0 0 -1
+              dampingConstant 0.1              
             }
             endPoint Solid {
-              #rotation 0 0 -1 0.17
+            	boundingObject Transform {	          		
+          			translation -0.01 0 0
+          			children [Box {size 0.085 0.066 0.15}]
+        			}
               ##############################################################		
-              physics Physics {density -1 mass 0.1}
+              physics Physics {
+              	density -1 mass 2.89
+                centerOfMass 0 -0.1027 -0.008 #this assumes straight down arm posture
+              }
               ##############################################################		
               ## Begin Shoulder Yaw
               children [
@@ -901,22 +971,24 @@ Robot {
                     name "LeftShoulderYaw"
                     maxVelocity 2.9216811678
 										maxTorque 44.2
-                    
                     minPosition -2.92343
                     maxPosition 2.92343
                   }
                   jointParameters HingeJointParameters {
                     axis 0 1 0
+                    dampingConstant 0.1                    
                   }
                   endPoint Solid {
-
+										boundingObject Transform {
+	          					translation 0 -0.07 0
+          						children [Box {size 0.05 0.05 0.05}]
+        						}
+  						     ##############################################################		
                     physics Physics {
-                    ##############################################################		
-                      # comUpperArm = {0.1027,0,-0.008} #this assumes straight forward arm posture
-                      density -1 mass 2.89
-                      centerOfMass 0 -0.1027 -0.008 #this assumes straight down arm posture
-                    ##############################################################		
-                    }
+                    	density -1 mass 0.13
+                    	centerOfMass 0 -0.246 0.030
+                    }  
+                    ##############################################################		                    
                     children [
   										LEFT_ARM {
   											translation 0 -0.027 0
@@ -933,24 +1005,18 @@ Robot {
                         jointParameters HingeJointParameters {
                           axis 1 0 0
                           anchor 0 -0.246 0.030
+                          dampingConstant 0.1                          
                         }
                         endPoint Solid {
                           translation 0 -0.246 0.030
-                          boundingObject Group {
-                            children [
-                              Transform {
-                                rotation 1 0 0 0.7854
-                                children [Box {size 0.13 0.065 0.065}]
-                              }
-                            ]
-                          }
+                          boundingObject Transform {
+        							      rotation 1 0 0 0.7854
+                            children [Box {size 0.13 0.065 0.065}]
+        									}
                           physics Physics {
-                          ##############################################################		
-                          #TODO... is it correct?
-                            #comLowerArm = {0.0464,0,0}
-                            density -1 mass 0.81
-                            centerOfMass [0 -0.0464 0]
-                          ##############################################################		
+                            density -1 
+                            mass 0.81
+                            centerOfMass 0 -0.0464 0
                           }
                           children [
 														RIGHT_ELBOW_LONG {
@@ -965,41 +1031,47 @@ Robot {
                               jointParameters HingeJointParameters {
                               	#fixed
                                 axis 0 1 0
-																#anchor 0 -0.216 -0.03
 																anchor 0 -0.25 -0.03
+                                dampingConstant 0.1																
                               } # End of the LeftWristYaw HingeJointParameters
                               endPoint Solid {                                
                                 translation 0 -0.25 -0.03 #lower arm length is 250mm
-                                boundingObject Box { size 0.05 0.05 0.1 }
-                                ##############################################################		
-                                #COMwRIST = {0.146,0,-0.0039}
-                                physics Physics {density -1 mass 0.97
-                                						centerOfMass [0 0.104 -0.0039]}
-                                ##############################################################		
+                                boundingObject Transform {
+	          											translation 0 0.065 0
+          												children [Box {size 0.05 0.05 0.05}]
+        												}
+                                physics Physics {
+                                	density -1 
+                                	mass 0.97                                	
+                                	centerOfMass 0 0.040 0
+                                }
                                 children [
-  																
                                   DEF Left_wrist_roll HingeJoint {
                                     device RotationalMotor {
                                       name "LeftWristRoll"
                                       maxVelocity 3.1206487025
 																			maxTorque 6.3                                      
                                       minPosition -2.92343 maxPosition 2.92343
+
                                     } # End of the LeftWristRoll RotationalMotor
                                     jointParameters HingeJointParameters {
                                       # Straight out the z axis
-                                      #fixed
                                       axis 0 0 -1
+                                      dampingConstant 0.1                                      
                                     } # End of the LeftWristRoll HingeJointParameters
                                     endPoint Solid {                                    	
-                                      translation 0 -0.065 0        
-                                      ##############################################################              
-                                      physics Physics {density -1 mass 0.2}
-                                      ##############################################################
+                                      translation 0 0 0 
+                                      boundingObject Box { size 0.05 0.05 0.1 }
+																		  physics Physics {
+                                      	density -1
+                                      	mass 0.1
+                                      }                                      
                                       children [
                                       	WRIST {
-                                      		translation 0 0.065 0
+                                      		translation 0 0 0
                                       		scale 0.001 0.001 0.001}
         																WRIST {
+        																	translation 0 -0.0650 0
         																	scale 0.001 0.001 0.001
                                           rotation 1 0 0 1.5708
         																}
@@ -1010,18 +1082,31 @@ Robot {
 																						maxTorque 6.3
                                           }
                                           jointParameters HingeJointParameters {
-                                          	#fixed
                                             axis 0 -1 0
+																						dampingConstant 0.1                                            
                                           }
 																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
 																					#endPoint CHOPSTICKS {translation 0 -0.05 0}
-                                          endPoint GRIPPER {
-                                            #translation 0 -0.05 0
-                                            translation 0 -0.095 0
-																						rotation 0 0 -1 0.707
-																						trigger_name "l_trigger"
-																						grip_name "l_grip"
-																					}
+#                                          endPoint GRIPPER {
+#                                            #translation 0 -0.05 0
+#                                            translation 0 -0.095 0
+#																						rotation 0 0 -1 0.707
+#																						trigger_name "l_trigger"
+#																						grip_name "l_grip"
+#																					}
+
+													endPoint Solid {
+                            translation 0 -0.095 0
+                            boundingObject Box { size 0.05 0.05 0.05 }
+                           	physics Physics{
+                           		density -1
+                           		mass 0.1
+                              }
+                    			}
+
+
+
+
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
                                       ## End Wrist Yaw2

@@ -13,6 +13,8 @@ public:
   void clear();
   Transform &translate(double x, double y, double z);
   Transform &translate(const double *p);
+  Transform &invtranslate(const double *p);
+  Transform &neg();
   Transform &translateX(double x = 0);
   Transform &translateY(double y = 0);
   Transform &translateZ(double z = 0);

@@ -9,6 +9,7 @@
 #  SJ: cleaned-up all mass properties according thorIK.h
 #  Fixed wrong arm lengths
 # unlimited arm torque and velocity (for arm motion testing)
+# Low mass model (50% for every mass points)
 #############################################
 
 PROTO THOROP_UPENN [
@@ -19,7 +20,10 @@ PROTO THOROP_UPENN [
   field SFBool     synchronization TRUE
 	field SFFloat    lidarFov 3.1415926536
 	field SFInt32    lidarRays 720
-	field SFFloat    max_knee_torque 44 #now variable 
+	#SJ - robotis rating is not enough to keep the robot standing
+	field SFFloat    max_torque_400w 44
+	field SFFloat    max_torque_200w 44
+  field SFFloat    max_torque_100w 24
 
   # We may want wider FOV for head lidar	
   field SFString   name "THOR-OP"
@@ -46,7 +50,8 @@ Robot {
   }    
   physics Physics {
     density -1 
-    mass 9.21
+    #mass 9.21
+    mass 4.605
     centerOfMass [0 -0.0143 -0.0208]   # 0.1700-0.1557 = -0.0143
   }
   #################################################################  
@@ -100,7 +105,8 @@ Robot {
     			translation 0 0 0
     			children [Box {size 0.05 0.05 0.05}]
   			}    
-				physics Physics {density -1  mass 0.2} 				
+				#physics Physics {density -1  mass 0.2} 				
+				physics Physics {density -1  mass 0.1} 		
 				#################################################################
 				children [
 					TORSO_PITCH_SERVO {
@@ -130,7 +136,9 @@ Robot {
     						translation 0 -0.080 0
     						children [Box {size 0.05 0.05 0.05}]
   						}    							
-							physics Physics {density -1 mass 8.0 
+							physics Physics {
+									#density -1 mass 8.0 
+									density -1 mass 4.0 
 									centerOfMass [-0.0708 0 -0.0264]}
 							#################################################################
 							children [
@@ -170,7 +178,7 @@ Robot {
 								DEF Right_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYR"
-										maxVelocity 3.15 maxTorque 24.8
+										maxVelocity 3.15 maxTorque IS max_torque_100w
 										minPosition -2.92343 maxPosition 2.92343
 									}
 									jointParameters HingeJointParameters {
@@ -186,7 +194,8 @@ Robot {
   									}    				
 										physics Physics {
 											#################################################################
-											density -1 mass 0.165
+											#density -1 mass 0.165
+											density -1 mass 0.0825
 											#################################################################
 										}
 
@@ -199,7 +208,8 @@ Robot {
 												device RotationalMotor {
 													name "PelvR"
 													# TODO: Use NX Motor specs
-													maxVelocity 2.9216811678 maxTorque 44.2													
+													maxVelocity 2.9216811678 
+													maxTorque IS max_torque_200w
 													minPosition -2.92343 maxPosition 2.92343
 												} # End of the PelvYR RotationalMotor
 												jointParameters HingeJointParameters {
@@ -213,7 +223,8 @@ Robot {
 			    									translation 0 0.0 0
     												children [Box {size 0.05 0.05 0.05}]
   												}    				
-                          physics Physics {density -1 mass 1.122}
+                          #physics Physics {density -1 mass 1.122}
+                          physics Physics {density -1 mass 0.561}
                         #################################################################
 													children[
 														HIP_ROLL {
@@ -222,7 +233,7 @@ Robot {
 														DEF Right_hip_pitch HingeJoint {
 															device RotationalMotor {
 																name "LegUpperR"
-																maxVelocity 2.9216811678 maxTorque 44.2																
+																maxVelocity 2.9216811678 maxTorque IS max_torque_200w
 																minPosition -2.92343 maxPosition 2.92343
 															}
 															jointParameters HingeJointParameters {
@@ -236,7 +247,8 @@ Robot {
   															}    				
                                 physics Physics {
                                 #################################################################
-                                  density -1 mass 3.432																	
+                                  #density -1 mass 3.432
+                                  density -1 mass 1.716
 																	centerOfMass [-0.014 -0.130 -0.029]
  	 												  		#################################################################
                                 }
@@ -250,7 +262,7 @@ Robot {
 																		device RotationalMotor {
 																			name "LegLowerR"
 																			maxVelocity 2.9216811678
-																			maxTorque IS max_knee_torque
+																			maxTorque IS max_torque_400w
 																			minPosition -2.92343
 																			maxPosition 2.92343
 																		}
@@ -267,7 +279,8 @@ Robot {
 																			}
                                       physics Physics {
                                       #################################################################
-                                        density -1 mass 2.464
+                                        #density -1 mass 2.464
+                                        density -1 mass 1.232
 																				centerOfMass [-0.019 -0.119 0.031]
 																			#################################################################
                                       }
@@ -281,7 +294,7 @@ Robot {
 																					device RotationalMotor {
 																						name "AnkleR"
 																						maxVelocity 2.9216811678
-																						maxTorque 44.2
+																						maxTorque IS max_torque_200w
 																						minPosition -2.92343
 																						maxPosition 2.92343
 																					} # End of the LegLowerR RotationalMotor
@@ -298,7 +311,8 @@ Robot {
 			    																		translation 0 0.0 0
     																					children [Box {size 0.03 0.03 0.03}]
   																					}    				
-																						physics Physics {density -1 mass 0.946}
+																						#physics Physics {density -1 mass 0.946}
+																						physics Physics {density -1 mass 0.473}
 																						#################################################################
 																						children[
 																							LEFT_ANKLE {
@@ -308,7 +322,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootR"
 																									maxVelocity 3.1520646292
-																									maxTorque 24.8																								
+																									maxTorque IS max_torque_100w		
 																									minPosition -2.92343 maxPosition 2.92343
 																								} # End of the LegLowerR RotationalMotor
 																								jointParameters HingeJointParameters {
@@ -322,7 +336,8 @@ Robot {
 				    																					translation 0 0.0 0
 	    																								children [Box {size 0.03 0.03 0.03}]
 	  																								} 
-	  																								physics Physics {density -1 mass 0.2}
+	  																								#physics Physics {density -1 mass 0.2}
+	  																								physics Physics {density -1 mass 0.1}
 																									########################################################
 																									children [
 																										#FOOT {scale 0.001 0.001 0.001}
@@ -342,7 +357,8 @@ Robot {
                                                         ]
                                                       }
                                                      	physics Physics {
-                                                     		density -1 mass 1.133
+                                                     		#density -1 mass 1.133
+                                                     		density -1 mass 0.5665
                                                   			centerOfMass [0 -0.031 0]
                                                   		}
                                                       type "force-3d"                                                    
@@ -372,7 +388,7 @@ Robot {
 								DEF Left_hip_yaw HingeJoint {
 									device RotationalMotor {
 										name "PelvYL"
-										maxVelocity 3.15 maxTorque 24.8
+										maxVelocity 3.15 maxTorque IS max_torque_100w
 										minPosition -2.92343 maxPosition 2.92343
 									}
 									jointParameters HingeJointParameters {
@@ -388,7 +404,8 @@ Robot {
   									}    				
 										physics Physics {
 										##############################################################
-											density -1 mass 0.165
+											#density -1 mass 0.165
+											density -1 mass 0.0825
 										##############################################################
 										}
 									
@@ -401,7 +418,7 @@ Robot {
 												device RotationalMotor {
 													name "PelvL"
 													maxVelocity 2.9216811678
-													maxTorque 44.2
+													maxTorque IS max_torque_200w
 													minPosition -2.92343 maxPosition 2.92343
 												}
 												jointParameters HingeJointParameters {
@@ -415,7 +432,8 @@ Robot {
 			    									translation 0 0.0 0
     												children [Box {size 0.05 0.05 0.05}]
   												}    				
-                          physics Physics {density -1 mass 1.122}
+                          #physics Physics {density -1 mass 1.122}
+                          physics Physics {density -1 mass 0.561}
 	                      ##############################################################
 													children[
 														HIP_ROLL {
@@ -425,7 +443,7 @@ Robot {
 															device RotationalMotor {
 																name "LegUpperL"
 																maxVelocity 2.9216811678
-																maxTorque 44.2																
+																maxTorque IS max_torque_200w
 																minPosition -2.92343 maxPosition 2.92343
 															}
 															jointParameters HingeJointParameters {
@@ -439,7 +457,8 @@ Robot {
   															}    				
 																physics Physics {
 															##############################################################
-                                density -1 mass 3.432																	
+                                #density -1 mass 3.432
+                                  density -1 mass 1.716
 																	centerOfMass [0.014 -0.130 -0.029]                        
 															##############################################################
 																}
@@ -452,7 +471,7 @@ Robot {
 																		device RotationalMotor {
 																			name "LegLowerL"
 																			maxVelocity 2.9216811678
-																			maxTorque IS max_knee_torque																			
+																			maxTorque IS max_torque_400w																		
 																			minPosition -2.92343 maxPosition 2.92343
 																		}
 																		jointParameters HingeJointParameters {
@@ -471,7 +490,8 @@ Robot {
 																			}
                                       physics Physics {
                                       ##############################################################
-                                      density -1 mass 2.464
+                                      #density -1 mass 2.464
+                                        density -1 mass 1.232
 																				centerOfMass [0.019 -0.119 0.031]
 																			##############################################################
                                       }
@@ -485,7 +505,7 @@ Robot {
 																					device RotationalMotor {
 																						name "AnkleL"
 																						maxVelocity 2.9216811678
-																						maxTorque 44.2																						
+																						maxTorque IS max_torque_200w																	
 																						minPosition -2.92343 maxPosition 2.92343
 																					} # End of the LegLowerR RotationalMotor
 																					jointParameters HingeJointParameters {
@@ -500,7 +520,8 @@ Robot {
 			    																		translation 0 0.0 0
     																					children [Box {size 0.03 0.03 0.03}]
   																					}    				
-																						physics Physics {density -1 mass 0.946}
+																						#physics Physics {density -1 mass 0.946}
+																						physics Physics {density -1 mass 0.473}
 																			  ##############################################################
 																						children[
 																							LEFT_ANKLE {
@@ -510,7 +531,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootL"
 																									maxVelocity 3.1520646292
-																									maxTorque 24.8																									
+																									maxTorque IS max_torque_100w
 																									minPosition -2.92343 maxPosition 2.92343
 																								}
 																								jointParameters HingeJointParameters {
@@ -524,7 +545,8 @@ Robot {
 			    																					translation 0 0.0 0
     																								children [Box {size 0.03 0.03 0.03}]
   																								}    				
-                                                  physics Physics {density -1 mass 0.2}
+                                                  #physics Physics {density -1 mass 0.2}
+	  																								physics Physics {density -1 mass 0.1}
 																						########################################################
 																									children [
 																										#FOOT {scale 0.001 0.001 0.001}
@@ -547,7 +569,8 @@ Robot {
                                                           ]
                                                         }                                                 
                                                   		physics Physics {
-                                                  			density -1 mass 1.133
+                                                  			#density -1 mass 1.133
+                                                     		density -1 mass 0.5665
                                                   			centerOfMass [0 -0.031 0]
                                                   		}
                                                       type "force-3d"
@@ -608,7 +631,8 @@ Robot {
 				physics Physics {
 				##############################################################		
 					density -1 mass 0.1
-					centerOfMass 0 0.06 0
+					#centerOfMass 0 0.06 0
+					centerOfMass 0 0.03 0
 				##############################################################		
 				}
 				children [
@@ -632,6 +656,7 @@ Robot {
 						endPoint kinect2 {      			  
               translation 0 0.12 0.03
       			  rotation 0 1 0 3.14159265
+      			  mass 0.1
               #TODO: add a pitch angle
       			  maxRange 4
       			 
@@ -694,7 +719,8 @@ Robot {
           children [Box {size 0.05 0.05 0.05}]
         }
         ##############################################################		
-        physics Physics {density -1 mass 0.1}
+        #physics Physics {density -1 mass 0.1}
+        physics Physics {density -1 mass 0.05}
         ##############################################################		
         children [
           RIGHT_SHOULDER_PITCH {
@@ -720,7 +746,8 @@ Robot {
         			}
          ##############################################################		
               physics Physics {
-              	density -1 mass 2.89
+              	#density -1 mass 2.89
+              	density -1 mass 1.445
                 centerOfMass 0 -0.1027 -0.008 #this assumes straight down arm posture
               }
  				 ##############################################################
@@ -749,7 +776,8 @@ Robot {
         						}           
            ##############################################################	
                     physics Physics {
-                 			density -1 mass 0.13
+                 			#density -1 mass 0.13
+                 			density -1 mass 0.065
                 			centerOfMass 0 -0.246 0
                 		}
 				#############################################################
@@ -784,7 +812,8 @@ Robot {
                           ##############################################################		
                           physics Physics {
                             density -1 
-                            mass 0.81
+                            #mass 0.81
+                            mass 0.405
                             centerOfMass 0 -0.0464 0
                           }
                           ##############################################################		
@@ -811,7 +840,8 @@ Robot {
         												}
                                 physics Physics {
                                 	density -1 
-                                	mass 0.97
+                                	#mass 0.97
+                                	mass 0.485
                                 	centerOfMass 0 0.040 0
                                 }
                                 children [
@@ -833,7 +863,8 @@ Robot {
                                       boundingObject Box { size 0.05 0.05 0.1 }
 																		  physics Physics {
                                       	density -1
-                                      	mass 0.1
+                                      	#mass 0.1
+                                      	mass 0.05
                                       }           
                                       children [
 																				WRIST {
@@ -862,7 +893,8 @@ Robot {
 					                            boundingObject Box { size 0.05 0.05 0.05 }
 					                           	physics Physics{
 					                           		density -1
-					                           		mass 0.1
+					                           		#mass 0.1
+					                           		mass 0.05
 					                              }
 					                    			}
 
@@ -925,7 +957,8 @@ Robot {
           
         }
         ##############################################################		
-        physics Physics {density -1          mass 0.1}
+        #physics Physics {density -1 mass 0.1}
+        physics Physics {density -1 mass 0.05}
         ##############################################################		
         children [
           LEFT_SHOULDER_PITCH {
@@ -951,7 +984,8 @@ Robot {
         			}
               ##############################################################		
               physics Physics {
-              	density -1 mass 2.89
+              	#density -1 mass 2.89
+              	density -1 mass 1.445
                 centerOfMass 0 -0.1027 -0.008 #this assumes straight down arm posture
               }
               ##############################################################		
@@ -981,7 +1015,8 @@ Robot {
         						}
   						     ##############################################################		
                     physics Physics {
-                    	density -1 mass 0.13
+                    	#density -1 mass 0.13
+                 			density -1 mass 0.065
                     	centerOfMass 0 -0.246 0.030
                     }  
                     ##############################################################		                    
@@ -1011,7 +1046,8 @@ Robot {
         									}
                           physics Physics {
                             density -1 
-                            mass 0.81
+                            #mass 0.81
+                            mass 0.405
                             centerOfMass 0 -0.0464 0
                           }
                           children [
@@ -1038,7 +1074,8 @@ Robot {
         												}
                                 physics Physics {
                                 	density -1 
-                                	mass 0.97                                	
+                                	#mass 0.97
+                                	mass 0.485
                                 	centerOfMass 0 0.040 0
                                 }
                                 children [
@@ -1060,7 +1097,8 @@ Robot {
                                       boundingObject Box { size 0.05 0.05 0.1 }
 																		  physics Physics {
                                       	density -1
-                                      	mass 0.1
+                                      	#mass 0.1
+                                      	mass 0.05
                                       }                                      
                                       children [
                                       	WRIST {
@@ -1096,7 +1134,8 @@ Robot {
                             boundingObject Box { size 0.05 0.05 0.05 }
                            	physics Physics{
                            		density -1
-                           		mass 0.1
+                           		#mass 0.1
+                           		mass 0.05
                               }
                     			}
 

@@ -61,8 +61,10 @@ walk.supportY = 0.06
 ------------------------------------
 -- Compensation parameters
 ------------------------------------
+
 gyroFactorX = 490.23/(251000/180)*0.5
 gyroFactorY = 490.23/(251000/180)*0.5
+if IS_WEBOTS then gyroFactorX,gyroFactorY=0,0 end
 walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}

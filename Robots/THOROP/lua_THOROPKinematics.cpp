@@ -342,6 +342,16 @@ static int calculate_arm_torque(lua_State *L) {
 	return 1;
 }
 
+static int calculate_leg_torque(lua_State *L) {
+	std::vector<double> qLeg = lua_checkvector(L, 1);
+	int isLeft = luaL_optnumber(L, 2, 0);
+	double grf = luaL_optnumber(L, 3, 0.0);
+	std::vector<double> r = 
+	  THOROP_kinematics_calculate_leg_torque(&qLeg[0],isLeft,grf);
+	lua_pushvector(L, r);
+	return 1;
+}
+
 
 
 static int calculate_zmp(lua_State *L) {
@@ -522,7 +532,8 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"collision_check",collision_check},
 	{"collision_check_single",collision_check_single},
 
-    {"calculate_arm_torque", calculate_arm_torque},
+  {"calculate_arm_torque", calculate_arm_torque},
+  {"calculate_leg_torque", calculate_leg_torque},
 
 	{NULL, NULL}
 };

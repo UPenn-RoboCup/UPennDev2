@@ -123,8 +123,6 @@ const double Mass[22] = {
 */
 
 
-
-
 const double Mass[22]={
 	mUpperLeg,mLowerLeg,mFoot,0,0,0,
 	mUpperLeg,mLowerLeg,mFoot,0,0,0,
@@ -189,17 +187,18 @@ const double legLink[7][3]={
 };
 
 const double rlegLink0[3] = {0,0.072,-0.282};
+const double llegLink0[3] = {0,-0.072,-0.282};
 
-const double legComL[6][3]={
+const double legCom[12][3]={
+	//left
 	{0,0,0},	//after hip yaw
 	{0,0,0},	//after hip roll
 	{-0.029, 0.014,-0.130},	//after hip pitch (upper leg)
 	{0.031,  0.019,-0.119},	//after knee (lower leg)
 	{0,0,0}, //after ankle pitch
 	{0,0,-0.031}, //after ankle pitch	
-};
 
-const double legComR[6][3]={
+	//right
 	{0,0,0},	//after hip yaw
 	{0,0,0},	//after hip roll
 	{-0.029, -0.014,-0.130},	//after hip pitch (upper leg)
@@ -318,5 +317,8 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
 
 
 std::vector<double> THOROP_kinematics_calculate_arm_torque(const double *qArm);
+std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft, double grf);
+
+
 
 #endif

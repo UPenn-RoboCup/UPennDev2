@@ -33,6 +33,8 @@ function state.entry()
   r_comp_torque = vector.zeros(7)
 end
 
+local count=0
+
 function state.update()
 --  print(state._NAME..' Update' )
   -- Get the time of update
@@ -42,42 +44,45 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
+  count=count+1
+  if count%100==0 then
+    local lleg_cmdpos = Body.get_lleg_command_position()
+    local rleg_cmdpos = Body.get_rleg_command_position()
+    local lleg_actual_torque = Body.get_lleg_current()
+    local rleg_actual_torque = Body.get_rleg_current()
+    local lft = mcm.get_status_LFT()
+    local rft = mcm.get_status_RFT()
+
+    lleg_stall_torque = vector.new(Body.Kinematics.calculate_leg_torque(lleg_cmdpos,1,450/2))
+    rleg_stall_torque = vector.new(Body.Kinematics.calculate_leg_torque(rleg_cmdpos,0,450/2))
+
+    print(string.format("LLeg actual torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
+        unpack(lleg_actual_torque)))
+    print(string.format("LLeg calced torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
+        unpack(lleg_stall_torque)))
+
+    print(string.format("RLeg actual torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
+        unpack(rleg_actual_torque)))
+    print(string.format("RLeg calced torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
+        unpack(rleg_stall_torque)))
+
+    print()
+  end
 --[[
-  larm_pos = Body.get_larm_position()
-
-  larm_torque = Body.get_larm_current()
-  rarm_torque = Body.get_rarm_current()
-
-
-print("larm pos:",util.print_jangle(larm_pos))
-print(string.format("larm torque  :%.2f %.2f %.2f //   %.2f // %.2f %.2f // ",
-  larm_torque[1],larm_torque[2],larm_torque[3],larm_torque[4],larm_torque[5],larm_torque[6]
-
-  ))
-print(string.format("rarm torque  :%.2f %.2f %.2f //   %.2f // %.2f %.2f // ",
-  rarm_torque[1],rarm_torque[2],rarm_torque[3],rarm_torque[4],rarm_torque[5],rarm_torque[6]
-  ))
-
-
-   
-
-   print(string.format("larm torque2 :%.2f %.2f %.2f //   %.2f // %.2f  // ",
-  larm_torque2[1],larm_torque2[2],larm_torque2[3],larm_torque2[4],larm_torque2[5]
-  ))
---]]
-  
+----------------------------------------------------------------------------
+-- Arm force-control code #1
 
   local larm_cmdpos = Body.get_larm_command_position()
   local rarm_cmdpos = Body.get_rarm_command_position()
+
   local larm_pos = Body.get_larm_position()
   local rarm_pos = Body.get_rarm_position()
-  l_stall_torque = vector.new(Body.Kinematics.calculate_arm_torque(larm_cmdpos))
-  r_stall_torque = vector.new(Body.Kinematics.calculate_arm_torque(rarm_cmdpos))
 
 --  l_stall_torque = Body.Kinematics.calculate_arm_torque(larm_pos)
 --  r_stall_torque = Body.Kinematics.calculate_arm_torque(rarm_pos)
 
-
+  l_stall_torque = vector.new(Body.Kinematics.calculate_arm_torque(larm_cmdpos))
+  r_stall_torque = vector.new(Body.Kinematics.calculate_arm_torque(rarm_cmdpos))
 
   local larm_vel =  (larm_pos-larm_pos_old)/dt
   local rarm_vel =  (rarm_pos-rarm_pos_old)/dt
@@ -92,39 +97,11 @@ print(string.format("rarm torque  :%.2f %.2f %.2f //   %.2f // %.2f %.2f // ",
   local l_torque =  l_stall_torque + l_comp_torque
   local r_torque =  r_stall_torque + r_comp_torque
 
-
---[[
-  print(string.format("calculated left torque :%.2f %.2f %.2f //   %.2f // %.2f %.2f %.2f  // ",
-  unpack(l_stall_torque)
-  ))
-  print(string.format("empirical left torque :%.2f %.2f %.2f //   %.2f // %.2f %.2f %.2f // ",
-  unpack(l_torque)
-  ))
-
-  print(string.format("calculated right torque :%.2f %.2f %.2f //   %.2f // %.2f %.2f %.2f// ",
-  r_stall_torque[1],r_stall_torque[2],r_stall_torque[3],r_stall_torque[4],r_stall_torque[5],r_stall_torque[6],r_stall_torque[7]
-  ))
-
-  print(string.format("empirical right torque :%.2f %.2f %.2f //   %.2f // %.2f %.2f %.2f // ",
-  r_torque[1],r_torque[2],r_torque[3],r_torque[4],r_torque[5],r_torque[6],r_torque[7]
-  ))
---]]
-
-
-
-  ---(larm_cmdpos-larm_pos) +{}
-
-
-
-  
   Body.set_larm_command_torque(l_torque)
   Body.set_rarm_command_torque(r_torque)
 
-
-
-  --Body.set_larm_command_torque({0.1,0.1,  0,  -0.1,  0,0,0})
-
-
+----------------------------------------------------------------------------
+--]]
 
 end
 

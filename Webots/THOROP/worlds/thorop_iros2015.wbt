@@ -24,6 +24,13 @@ Background {
     0.678431 0.847059 0.901961
   ]
 }
+#THOROP_UPENN {
+THOROP_UPENN_OLD {
+  controller "thorop"
+  controllerArgs "0 32"
+  lidarRays 360
+  footContactMaterial "feet"
+}
 DirectionalLight {
   ambientIntensity 0.8
   direction -0.5 -2 -0.5
@@ -60,12 +67,6 @@ simple_wall {
 QualStep {
   translation -2 0 5.5
 }
-THOROP_UPENN {
-  controller "thorop"
-  controllerArgs "0 32"
-  lidarRays 360
-  footContactMaterial "feet"
-}
 PitchRamp { translation -0.5 0 0.5 }
 QualStep {
   rotation 0 1 0 1.57
@@ -99,19 +100,51 @@ Rubble {
 }
 #Odd
 Rubble {
-  translation -0.35 0 2.5
+  translation -0.35 0 2.45
 }
 Rubble {
-  translation -0.45 0 2.5
+  translation -0.45 0 2.45
 }
 Rubble {
-  translation -0.55 0 2.5
+  translation -0.55 0 2.45
 }
 Rubble {
-  translation -0.65 0 2.5
+  translation -0.65 0 2.45
 }
 Rubble {
-  translation -0.75 0 2.5
+  translation -0.75 0 2.45
+}
+# Even
+Rubble {
+  translation -0.3 0 2.5
+}
+Rubble {
+  translation -0.4 0 2.5
+}
+Rubble {
+  translation -0.5 0 2.5
+}
+Rubble {
+  translation -0.6 0 2.5
+}
+Rubble {
+  translation -0.7 0 2.5
+}
+#Odd
+Rubble {
+  translation -0.35 0 2.55
+}
+Rubble {
+  translation -0.45 0 2.55
+}
+Rubble {
+  translation -0.55 0 2.55
+}
+Rubble {
+  translation -0.65 0 2.55
+}
+Rubble {
+  translation -0.75 0 2.55
 }
 # Even
 Rubble {
@@ -131,17 +164,17 @@ Rubble {
 }
 #Odd
 Rubble {
-  translation -0.35 0 2.7
+  translation -0.35 0 2.65
 }
 Rubble {
-  translation -0.45 0 2.7
+  translation -0.45 0 2.65
 }
 Rubble {
-  translation -0.55 0 2.7
+  translation -0.55 0 2.65
 }
 Rubble {
-  translation -0.65 0 2.7
+  translation -0.65 0 2.65
 }
 Rubble {
-  translation -0.75 0 2.7
+  translation -0.75 0 2.65
 }

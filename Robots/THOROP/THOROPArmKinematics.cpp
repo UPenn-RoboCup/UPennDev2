@@ -537,3 +537,4 @@ std::vector<double>
 THOROP_kinematics_inverse_r_wrist(Transform trWrist,const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist) {
   return THOROP_kinematics_inverse_wrist(trWrist, ARM_RIGHT, qOrg, shoulderYaw, bodyPitch, qWaist);
 }
+

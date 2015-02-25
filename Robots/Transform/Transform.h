@@ -12,14 +12,25 @@ public:
 
   void clear();
   Transform &translate(double x, double y, double z);
+  Transform &translate(const double *p);
+  Transform &invtranslate(const double *p);
+  Transform &neg();
   Transform &translateX(double x = 0);
   Transform &translateY(double y = 0);
   Transform &translateZ(double z = 0);
   Transform &rotateX(double a = 0);
   Transform &rotateY(double a = 0);
   Transform &rotateZ(double a = 0);
+
+  Transform &rotateDotX(double a = 0);
+  Transform &rotateDotY(double a = 0);
+  Transform &rotateDotZ(double a = 0);
+
   Transform &mDH(double alpha, double a, double theta, double d);
   void apply(double x[3]);
+  void apply0(double* x);
+  double getZ();
+  
   double& operator() (int i, int j);
   const double operator() (int i, int j) const;
 

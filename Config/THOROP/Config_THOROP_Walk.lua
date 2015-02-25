@@ -87,8 +87,8 @@ if IS_WEBOTS or (HOSTNAME ~="alvin" and HOSTNAME ~= "teddy") then
   --tZMP: 0.272
   walk.foot_traj = 2 --square step
   walk.tZMP = 0.40 
-  walk.tZMP = 0.272
-  walk.tZMP = 0.33
+--  walk.tZMP = 0.272
+--  walk.tZMP = 0.33
 
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1*DEG_TO_RAD

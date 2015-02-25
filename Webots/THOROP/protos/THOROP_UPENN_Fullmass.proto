@@ -134,7 +134,7 @@ Robot {
     						children [Box {size 0.05 0.05 0.05}]
   						}    							
 							physics Physics {density -1 mass 8.0 
-									centerOfMass [-0.0708 0 -0.0264]}
+									centerOfMass [0 -0.0708 -0.0264]}
 							#################################################################
 							children [
 								DEF Pelvis PELVIS {

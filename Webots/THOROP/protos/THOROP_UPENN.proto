@@ -139,7 +139,7 @@ Robot {
 							physics Physics {
 									#density -1 mass 8.0 
 									density -1 mass 4.0 
-									centerOfMass [-0.0708 0 -0.0264]}
+									centerOfMass [0 -0.0708 -0.0264]}
 							#################################################################
 							children [
 								DEF Pelvis PELVIS {

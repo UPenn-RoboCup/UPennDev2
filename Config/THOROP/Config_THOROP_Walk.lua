@@ -81,8 +81,15 @@ walk.velDelta  = {0.025,0.02,0.1}
 walk.foot_traj = 1 --curved step
 
 if IS_WEBOTS or (HOSTNAME ~="alvin" and HOSTNAME ~= "teddy") then
+
+  --relative COM z: -0.203
+  --Actual COM height = 0.93-0.203 = 0.727
+  --tZMP: 0.272
   walk.foot_traj = 2 --square step
   walk.tZMP = 0.40 
+  walk.tZMP = 0.272
+  walk.tZMP = 0.33
+
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1*DEG_TO_RAD
   walk.ankleRollCompensation = 1.2*DEG_TO_RAD
@@ -256,6 +263,8 @@ if not IS_WEBOTS then
 --  walk.footSagCompensation = {0.02,0.01}
   walk.footSagCompensation = {0.00,0.00}
 else
+
+  --WEBOTS
 
   walk.torsoX = -0.03     -- com-to-body-center offset
   walk.supportX = 0.03 --better

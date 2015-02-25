@@ -427,6 +427,8 @@ function moveleg.set_leg_positions()
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
   
+--  print("uTorsoZ:",com[3]/com[4])
+
 --  print("uTorso:",uTorso[1],uLeft[1])
 --  print("Torso offset:",uTorsoOffset[1],uTorsoOffset[2])
 

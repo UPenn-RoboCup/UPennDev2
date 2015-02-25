@@ -177,7 +177,7 @@ const double MassLeg[6]={
 };
 
 const double legLink[7][3]={
-	{0,-0.072,-0.282}, //waist-hipyaw
+	{0,0.072,-0.282}, //waist-hipyaw
 	{0,0,0}, //hip yaw-roll
 	{0,0,0}, //hip roll-pitch
 	{0.030,0,-0.300}, //hip pitch-knee
@@ -186,8 +186,9 @@ const double legLink[7][3]={
 	{0,0,-0.118}, //ankle roll - foot bottom
 };
 
-const double rlegLink0[3] = {0,0.072,-0.282};
-const double llegLink0[3] = {0,-0.072,-0.282};
+
+const double llegLink0[3] = {0,0.072,-0.282};
+const double rlegLink0[3] = {0,-0.072,-0.282};
 
 const double legCom[12][3]={
 	//left

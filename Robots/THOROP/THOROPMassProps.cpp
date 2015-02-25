@@ -89,25 +89,25 @@ THOROP_kinematics_calculate_com_positions(
           .translate(armCom[4]);          
 
 
-  tLLeg0 = trcopy(tPelvis).translate(legLink[0])
+  tLLeg0 = trcopy(tPelvis).translate(llegLink0)
           .rotateZ(qLLeg[0])
           .translate(legCom[0]);
-  tLLeg1 = trcopy(tPelvis).translate(legLink[0])
+  tLLeg1 = trcopy(tPelvis).translate(llegLink0)
           .rotateZ(qLLeg[0]).rotateX(qLLeg[1])
           .translate(legCom[1]);
-  tLLeg2 = trcopy(tPelvis).translate(legLink[0])
+  tLLeg2 = trcopy(tPelvis).translate(llegLink0)
           .rotateZ(qLLeg[0]).rotateX(qLLeg[1]).rotateY(qLLeg[2])
           .translate(legCom[2]);
-  tLLeg3 = trcopy(tPelvis).translate(legLink[0])
+  tLLeg3 = trcopy(tPelvis).translate(llegLink0)
           .rotateZ(qLLeg[0]).rotateX(qLLeg[1]).rotateY(qLLeg[2])
           .translate(legLink[3]).rotateY(qLLeg[3])
           .translate(legCom[3]);
-  tLLeg4 = trcopy(tPelvis).translate(legLink[0])
+  tLLeg4 = trcopy(tPelvis).translate(llegLink0)
           .rotateZ(qLLeg[0]).rotateX(qLLeg[1]).rotateY(qLLeg[2])
           .translate(legLink[3]).rotateY(qLLeg[3])
           .translate(legLink[4]).rotateY(qLLeg[4])
           .translate(legCom[4]);
-  tLLeg5 = trcopy(tPelvis).translate(legLink[0])
+  tLLeg5 = trcopy(tPelvis).translate(llegLink0)
           .rotateZ(qLLeg[0]).rotateX(qLLeg[1]).rotateY(qLLeg[2])
           .translate(legLink[3]).rotateY(qLLeg[3])
           .translate(legLink[4]).rotateY(qLLeg[4])
@@ -606,10 +606,10 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
 
 
 std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft, const double *com_rest){
-  int index = 0;
+  int index = 6;
   const double *legLink0=rlegLink0;
   if (isLeft>0) {
-    index = 6;
+    index = 0;
     legLink0=llegLink0;
   }
 
@@ -750,6 +750,20 @@ std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,in
          .invtranslate(legLink[2]).rotateX(-qLeg[1])
          .invtranslate(legLink[1]).rotateZ(-qLeg[0])
          .invtranslate(legLink0).translate(bodyCom);
+
+
+  Transform relB;
+  relB.invtranslate(legLink[6]).rotateX(-qLeg[5])
+         .invtranslate(legLink[5]).rotateY(-qLeg[4])
+         .invtranslate(legLink[4]).rotateY(-qLeg[3])
+         .invtranslate(legLink[3]).rotateY(-qLeg[2])
+         .invtranslate(legLink[2]).rotateX(-qLeg[1])
+         .invtranslate(legLink[1]).rotateZ(-qLeg[0])
+         .invtranslate(legLink0).translate(bodyCom);
+
+  printf("Relative com: %.2f %.2f %.2f\n",
+    relB(0,3),relB(1,3),relB(2,3)
+    );
 
 
 

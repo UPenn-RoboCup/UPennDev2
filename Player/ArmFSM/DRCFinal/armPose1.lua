@@ -27,6 +27,10 @@ function state.entry()
   Body.set_larm_torque_enable({2,2,2, 2,1,1,1}) --enable force control
   Body.set_rarm_torque_enable({2,2,2, 2,1,1,1}) --enable force control
 --]]
+
+  Body.set_lleg_torque_enable({1,1,1, 1,1,2}) --enable force control
+  Body.set_rleg_torque_enable({1,1,1, 1,1,2}) --enable force control
+
   larm_pos_old = Body.get_larm_position()
   rarm_pos_old = Body.get_rarm_position()
   l_comp_torque = vector.zeros(7)
@@ -49,6 +53,10 @@ function state.update()
   if count%100==0 then
     local lleg_cmdpos = Body.get_lleg_command_position()
     local rleg_cmdpos = Body.get_rleg_command_position()
+    local lleg_pos = Body.get_lleg_position()
+    local rleg_pos = Body.get_rleg_position()
+
+
     local lleg_actual_torque = Body.get_lleg_current()
     local rleg_actual_torque = Body.get_rleg_current()
     local lft = mcm.get_status_LFT()
@@ -59,22 +67,41 @@ function state.update()
     local qLArm = Body.get_larm_command_position()
     local qRArm = Body.get_rarm_command_position()
 
-    local com_body_leftsupport = Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_cmdpos,rleg_cmdpos,0,0,0,  0,1)
-    local com_body_rightsupport = Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_cmdpos,rleg_cmdpos,0,0,0,  1,0)
+    local com_body_leftsupport = 
+      --Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_cmdpos,rleg_cmdpos,0,0,0,  0,1)
+      Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  0,1)
+    local com_body_rightsupport = 
+      Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_cmdpos,rleg_cmdpos,0,0,0,  1,0)
+
+
+    print("rel com w/o left leg:",
+      com_body_leftsupport[1]/com_body_leftsupport[4],
+      com_body_leftsupport[2]/com_body_leftsupport[4],
+      com_body_leftsupport[3]/com_body_leftsupport[4]
+      )
+    print("total mass w/o left leg:",com_body_leftsupport[4] )
 
     lleg_stall_torque = vector.new(Body.Kinematics.calculate_leg_torque(lleg_cmdpos,1,com_body_leftsupport))
+
+
+
     rleg_stall_torque = vector.new(Body.Kinematics.calculate_leg_torque(rleg_cmdpos,0,com_body_rightsupport))
 
     print(string.format("LLeg actual torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
         unpack(lleg_actual_torque)))
+    print(string.format("RLeg actual torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
+        unpack(rleg_actual_torque)))
+
+
     print(string.format("LLeg calced torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
         unpack(lleg_stall_torque)))
 
+--[[
     print(string.format("RLeg actual torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
         unpack(rleg_actual_torque)))
     print(string.format("RLeg calced torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
         unpack(rleg_stall_torque)))
-
+--]]
     print()
   end
 

@@ -611,7 +611,8 @@ Robot {
   			}    
 				physics Physics {
 				##############################################################		
-					density -1 mass 0.1
+					#density -1 mass 0.1
+					density -1 mass 0.01
 					centerOfMass 0 0.06 0
 				##############################################################		
 				}
@@ -636,6 +637,7 @@ Robot {
 						endPoint kinect2 {      			  
               translation 0 0.12 0.03
       			  rotation 0 1 0 3.14159265
+      			  mass 0.01
               #TODO: add a pitch angle
       			  maxRange 4
       			 
@@ -669,6 +671,7 @@ Robot {
 				fieldOfView IS lidarFov
 				translation 0 0 0.1 				# Is if offset a bit from the axis, though?
 				rotation 0.707107 -0.707107 0 3.14159
+				mass 0.01
 			}
 			##############################################################		
 		} # End of the ChestLidarPan HingeJoint

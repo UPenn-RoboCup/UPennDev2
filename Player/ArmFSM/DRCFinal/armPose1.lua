@@ -44,6 +44,7 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
+
   count=count+1
   if count%100==0 then
     local lleg_cmdpos = Body.get_lleg_command_position()
@@ -53,8 +54,16 @@ function state.update()
     local lft = mcm.get_status_LFT()
     local rft = mcm.get_status_RFT()
 
-    lleg_stall_torque = vector.new(Body.Kinematics.calculate_leg_torque(lleg_cmdpos,1,450/2))
-    rleg_stall_torque = vector.new(Body.Kinematics.calculate_leg_torque(rleg_cmdpos,0,450/2))
+
+    local qWaist = Body.get_waist_command_position()
+    local qLArm = Body.get_larm_command_position()
+    local qRArm = Body.get_rarm_command_position()
+
+    local com_body_leftsupport = Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_cmdpos,rleg_cmdpos,0,0,0,  0,1)
+    local com_body_rightsupport = Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_cmdpos,rleg_cmdpos,0,0,0,  1,0)
+
+    lleg_stall_torque = vector.new(Body.Kinematics.calculate_leg_torque(lleg_cmdpos,1,com_body_leftsupport))
+    rleg_stall_torque = vector.new(Body.Kinematics.calculate_leg_torque(rleg_cmdpos,0,com_body_rightsupport))
 
     print(string.format("LLeg actual torque: %.2f %.2f/  %.2f %.2f %.2f / %.2f",
         unpack(lleg_actual_torque)))
@@ -68,6 +77,9 @@ function state.update()
 
     print()
   end
+
+
+
 --[[
 ----------------------------------------------------------------------------
 -- Arm force-control code #1

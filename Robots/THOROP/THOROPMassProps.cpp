@@ -1,5 +1,7 @@
 #include "THOROPKinematics.h"
 
+
+
 std::vector<double>
 THOROP_kinematics_calculate_com_positions(
     const double *qWaist,
@@ -10,7 +12,11 @@ THOROP_kinematics_calculate_com_positions(
 
     double mLHand,
     double mRHand,
-    double bodyPitch){
+    double bodyPitch,
+
+    int use_lleg,
+    int use_rleg
+    ){
   
   
   Transform 
@@ -158,12 +164,13 @@ THOROP_kinematics_calculate_com_positions(
          MassArm[3]* (tLArm3(0,3)+tRArm3(0,3))+
          MassArm[4]* (tLArm4(0,3)+tRArm4(0,3))+
 
-         MassLeg[0]* (tLLeg0(0,3)+tRLeg0(0,3))+
-         MassLeg[1]* (tLLeg1(0,3)+tRLeg1(0,3))+
-         MassLeg[2]* (tLLeg2(0,3)+tRLeg2(0,3))+
-         MassLeg[3]* (tLLeg3(0,3)+tRLeg3(0,3))+
-         MassLeg[4]* (tLLeg4(0,3)+tRLeg4(0,3))+
-         MassLeg[5]* (tLLeg5(0,3)+tRLeg5(0,3));
+         MassLeg[0]* (tLLeg0(0,3)*use_lleg+tRLeg0(0,3)*use_rleg)+
+         MassLeg[1]* (tLLeg1(0,3)*use_lleg+tRLeg1(0,3)*use_rleg)+
+         MassLeg[2]* (tLLeg2(0,3)*use_lleg+tRLeg2(0,3)*use_rleg)+
+         MassLeg[3]* (tLLeg3(0,3)*use_lleg+tRLeg3(0,3)*use_rleg)+
+         MassLeg[4]* (tLLeg4(0,3)*use_lleg+tRLeg4(0,3)*use_rleg)+
+         MassLeg[5]* (tLLeg5(0,3)*use_lleg+tRLeg5(0,3)*use_rleg);
+
 
   r[1] = mPelvis * tPelvisCOM(1,3) +
          mTorso * tTorsoCOM(1,3) +
@@ -174,12 +181,12 @@ THOROP_kinematics_calculate_com_positions(
          MassArm[3]* (tLArm3(1,3)+tRArm3(1,3))+
          MassArm[4]* (tLArm4(1,3)+tRArm4(1,3))+
 
-         MassLeg[0]* (tLLeg0(1,3)+tRLeg0(1,3))+
-         MassLeg[1]* (tLLeg1(1,3)+tRLeg1(1,3))+
-         MassLeg[2]* (tLLeg2(1,3)+tRLeg2(1,3))+
-         MassLeg[3]* (tLLeg3(1,3)+tRLeg3(1,3))+
-         MassLeg[4]* (tLLeg4(1,3)+tRLeg4(1,3))+
-         MassLeg[5]* (tLLeg5(1,3)+tRLeg5(1,3));
+         MassLeg[0]* (tLLeg0(1,3)*use_lleg+tRLeg0(1,3)*use_rleg)+
+         MassLeg[1]* (tLLeg1(1,3)*use_lleg+tRLeg1(1,3)*use_rleg)+
+         MassLeg[2]* (tLLeg2(1,3)*use_lleg+tRLeg2(1,3)*use_rleg)+
+         MassLeg[3]* (tLLeg3(1,3)*use_lleg+tRLeg3(1,3)*use_rleg)+
+         MassLeg[4]* (tLLeg4(1,3)*use_lleg+tRLeg4(1,3)*use_rleg)+
+         MassLeg[5]* (tLLeg5(1,3)*use_lleg+tRLeg5(1,3)*use_rleg);
 
   r[2] = mPelvis * tPelvisCOM(2,3) +
          mTorso * tTorsoCOM(2,3) +
@@ -190,22 +197,24 @@ THOROP_kinematics_calculate_com_positions(
          MassArm[3]* (tLArm3(2,3)+tRArm3(2,3))+
          MassArm[4]* (tLArm4(2,3)+tRArm4(2,3))+
 
-         MassLeg[0]* (tLLeg0(2,3)+tRLeg0(2,3))+
-         MassLeg[1]* (tLLeg1(2,3)+tRLeg1(2,3))+
-         MassLeg[2]* (tLLeg2(2,3)+tRLeg2(2,3))+
-         MassLeg[3]* (tLLeg3(2,3)+tRLeg3(2,3))+
-         MassLeg[4]* (tLLeg4(2,3)+tRLeg4(2,3))+
-         MassLeg[5]* (tLLeg5(2,3)+tRLeg5(2,3));
+         MassLeg[0]* (tLLeg0(2,3)*use_lleg+tRLeg0(2,3)*use_rleg)+
+         MassLeg[1]* (tLLeg1(2,3)*use_lleg+tRLeg1(2,3)*use_rleg)+
+         MassLeg[2]* (tLLeg2(2,3)*use_lleg+tRLeg2(2,3)*use_rleg)+
+         MassLeg[3]* (tLLeg3(2,3)*use_lleg+tRLeg3(2,3)*use_rleg)+
+         MassLeg[4]* (tLLeg4(2,3)*use_lleg+tRLeg4(2,3)*use_rleg)+
+         MassLeg[5]* (tLLeg5(2,3)*use_lleg+tRLeg5(2,3)*use_rleg);
 
   int i;
 
   r[3] = mPelvis + mTorso; 
 
   for (i=0;i<7;i++) r[3]+=2*MassArm[i];
-  for (i=0;i<6;i++) r[3]+=2*MassLeg[i];
+  for (i=0;i<6;i++) r[3]+=(use_lleg+use_rleg)*MassLeg[i];
 
   return r;
 }
+
+
 
 
 
@@ -596,14 +605,18 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
 }
 
 
-std::vector<double>
-THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft,double grf){
+std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft, const double *com_rest){
   int index = 0;
   const double *legLink0=rlegLink0;
   if (isLeft>0) {
     index = 6;
     legLink0=llegLink0;
   }
+
+  double bodyCom[3]={
+    com_rest[0]/com_rest[3],com_rest[1]/com_rest[3],com_rest[2]/com_rest[3]
+  };
+
 
   Transform 
     Jac45,
@@ -701,49 +714,48 @@ THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft,double grf)
          .invtranslate(legLink[3]).rotateY(-qLeg[2])
          .invtranslate(legLink[2]).rotateX(-qLeg[1])
          .invtranslate(legLink[1]).rotateDotZ(-qLeg[0]).neg()
-         .invtranslate(legLink0);
+         .invtranslate(legLink0).translate(bodyCom);
     JacB1.invtranslate(legLink[6]).rotateX(-qLeg[5])
          .invtranslate(legLink[5]).rotateY(-qLeg[4])
          .invtranslate(legLink[4]).rotateY(-qLeg[3])
          .invtranslate(legLink[3]).rotateY(-qLeg[2])
          .invtranslate(legLink[2]).rotateDotX(-qLeg[1]).neg()
          .invtranslate(legLink[1]).rotateZ(-qLeg[0])
-         .invtranslate(legLink0);
+         .invtranslate(legLink0).translate(bodyCom);
     JacB2.invtranslate(legLink[6]).rotateX(-qLeg[5])
          .invtranslate(legLink[5]).rotateY(-qLeg[4])
          .invtranslate(legLink[4]).rotateY(-qLeg[3])
          .invtranslate(legLink[3]).rotateDotY(-qLeg[2]).neg()
          .invtranslate(legLink[2]).rotateX(-qLeg[1])
          .invtranslate(legLink[1]).rotateZ(-qLeg[0])
-         .invtranslate(legLink0);
+         .invtranslate(legLink0).translate(bodyCom);
     JacB3.invtranslate(legLink[6]).rotateX(-qLeg[5])
          .invtranslate(legLink[5]).rotateY(-qLeg[4])
          .invtranslate(legLink[4]).rotateDotY(-qLeg[3]).neg()
          .invtranslate(legLink[3]).rotateY(-qLeg[2])
          .invtranslate(legLink[2]).rotateX(-qLeg[1])
          .invtranslate(legLink[1]).rotateZ(-qLeg[0])
-         .invtranslate(legLink0);
+         .invtranslate(legLink0).translate(bodyCom);
     JacB4.invtranslate(legLink[6]).rotateX(-qLeg[5])
          .invtranslate(legLink[5]).rotateDotY(-qLeg[4]).neg()
          .invtranslate(legLink[4]).rotateY(-qLeg[3])
          .invtranslate(legLink[3]).rotateY(-qLeg[2])
          .invtranslate(legLink[2]).rotateX(-qLeg[1])
          .invtranslate(legLink[1]).rotateZ(-qLeg[0])
-         .invtranslate(legLink0);
+         .invtranslate(legLink0).translate(bodyCom);
     JacB5.invtranslate(legLink[6]).rotateDotX(-qLeg[5]).neg()
          .invtranslate(legLink[5]).rotateY(-qLeg[4])
          .invtranslate(legLink[4]).rotateY(-qLeg[3])
          .invtranslate(legLink[3]).rotateY(-qLeg[2])
          .invtranslate(legLink[2]).rotateX(-qLeg[1])
          .invtranslate(legLink[1]).rotateZ(-qLeg[0])
-         .invtranslate(legLink0);
+         .invtranslate(legLink0).translate(bodyCom);
 
 
 
   std::vector<double> torque(6);   
-  int i; 
-  double MassBody = grf/g;
-  for (i=0;i<6;i++) MassBody-=MassLeg[i];
+  
+  double MassBody = com_rest[3];
 
   torque[0] =     
     JacB0.getZ() * MassBody;

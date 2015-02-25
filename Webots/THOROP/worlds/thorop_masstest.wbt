@@ -4,7 +4,7 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "THOR-OP Only"
-  basicTimeStep 1
+  basicTimeStep 4
   ERP 0.1
   CFM 1e-05
 

@@ -242,7 +242,6 @@ function WebotsBody.entry(Body)
 
 	-- Ensure torqued on
 	Body.set_torque_enable(1)
-
 	-- Take a step to get some values
 	webots.wb_robot_step(timeStep)
 

@@ -306,7 +306,12 @@ std::vector<double> THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, c
 std::vector<double> THOROP_kinematics_calculate_com_positions(
     const double *qWaist,  const double *qLArm,   const double *qRArm,
     const double *qLLeg,   const double *qRLeg,   
-    double mLHand, double mRHand, double bodyPitch);
+    double mLHand, double mRHand, double bodyPitch,
+    int use_lleg, int use_rleg
+    );
+
+
+
 
 
 std::vector<double> THOROP_kinematics_calculate_zmp(const double *com0, const double *com1, 
@@ -317,7 +322,7 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
 
 
 std::vector<double> THOROP_kinematics_calculate_arm_torque(const double *qArm);
-std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft, double grf);
+std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft, const double *com_rest);
 
 
 

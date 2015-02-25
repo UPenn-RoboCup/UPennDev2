@@ -178,13 +178,19 @@ function Body.disable_read(chain)
   dcm_ch:send(mpack({bus=chain,key='enable_read', val=false}))
 end
 
+
+
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
 	require'wcm'
 	local WebotsBody
-  local webots = require'webots'
+--  local webots = require'webots'
+--now a global variable
+  webots = require'webots'
 	local ImageProc = require'ImageProc'
+
+  
 
   Body.enable_read = function(chain) end
   Body.disable_read = function(chain) end
@@ -195,6 +201,7 @@ if IS_WEBOTS then
   WebotsBody = require'WebotsBody'
   
 	-- Check if we are using the OLD api
+  last_webots_time=webots.wb_robot_get_time()
 	
 	function Body.entry()
 		WebotsBody.entry(Body)    
@@ -204,6 +211,7 @@ if IS_WEBOTS then
     WebotsBody.update(Body)
   end
   
+  get_time = webots.wb_robot_get_time
   --Force torque sensor based
   Body.get_lfoot_touched = function() return false end
   Body.get_rfoot_touched = function() return false end

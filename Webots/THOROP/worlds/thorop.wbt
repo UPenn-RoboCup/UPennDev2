@@ -52,8 +52,9 @@ DEF FLOOR Floor {
   ]
 }
 #WoodBox { translation 0.0108684 0.3 1.04426 }
-THOROP_UPENN {
-  translation 0 1.155 0
+#THOROP_UPENN {
+THOROP_UPENN_Fullmass {
+  translation 0 1.165 0
 	controller "thorop"
   controllerArgs "0 32"
   lidarRays 360

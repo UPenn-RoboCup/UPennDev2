@@ -740,54 +740,9 @@ std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,in
 
   std::vector<double> torque(6);
 
-  
-//  double net_grf = grf/g-MassLeg[0]-MassLeg[1]-MassLeg[2]-MassLeg[3]-MassLeg[4]-MassLeg[5];
   double net_grf= grf/g;
 
-//vertical grf act as negative gravitational force
-/*
   torque[0] = 
-    Jac00.getZ() * MassLeg[0]+
-    Jac10.getZ() * MassLeg[1]+
-    Jac20.getZ() * MassLeg[2]+
-    Jac30.getZ() * MassLeg[3]+
-    Jac40.getZ() * MassLeg[4]+
-    Jac50.getZ() * MassLeg[5]
-    -JacS0.getZ()* net_grf;
-
-  torque[1] =     
-    Jac11.getZ() * MassLeg[1]+
-    Jac21.getZ() * MassLeg[2]+
-    Jac31.getZ() * MassLeg[3]+
-    Jac41.getZ() * MassLeg[4]+
-    Jac51.getZ() * MassLeg[5]
-    -JacS1.getZ()* net_grf;
-        
-  torque[2] =         
-    Jac22.getZ() * MassLeg[2]+
-    Jac32.getZ() * MassLeg[3]+
-    Jac42.getZ() * MassLeg[4]+
-    Jac52.getZ() * MassLeg[5]
-    -JacS2.getZ()* net_grf;
-
-  torque[3] =             
-    Jac33.getZ() * MassLeg[3]+
-    Jac43.getZ() * MassLeg[4]+
-    Jac53.getZ() * MassLeg[5]
-    -JacS3.getZ()* net_grf;
-    
-
-  torque[4] =             
-    Jac44.getZ() * MassLeg[4]+
-    Jac54.getZ() * MassLeg[5]
-    -JacS4.getZ()* net_grf;
-    
-  torque[5] =                 
-    Jac55.getZ() * MassLeg[5]
-    -JacS5.getZ()* net_grf;
- */
-
-torque[0] = 
     Jac00.getZ() * MassLeg[0]+
     Jac10.getZ() * MassLeg[1]+
     Jac20.getZ() * MassLeg[2]+

@@ -38,7 +38,12 @@ if isempty(DEPTH_W) || ui.reset == 1
     loadPersistentVariables_0216;
 end
 
-Ccb = Rot;
+M =[0.9996         0   -0.0287
+    0.0017    0.9983    0.0576
+    0.0287   -0.0576    0.9979]; % should consider the x-y alignment (it only fixes z)
+
+Ccb = Rot'*M;
+Ccb = Ccb*[0 -1 0; 1 0 0; 0 0 1];
 Tcb = tr;
 if isempty(Ccb_prev)
     Ccb_prev = Ccb;
@@ -52,7 +57,7 @@ Points3D = [];
 Indices = [];                                           
 PlaneID = 0;
 nPlanes = 0; %#ok<NASGU>
-PlaneOfInterest = [];    
+PlaneOfInterest = 0;    
 
 %% Filtering     
 % Initialize mask
@@ -140,8 +145,8 @@ for tt = 1: size(finalMean,2)
                         bbox = getBoundingBox(yind_s,xind_s);
                         Bbox = zeros(3,size(bbox,1));
                         [dummy,whichcell__] = intersect(index_ , sub2ind(size(connImg), bbox(:,1), bbox(:,2)));   
-                        Bbox(1,:) = depth(index(whichcell__))*0.001;
-                        Bbox(2,:) = Yind_c(index(whichcell__))*Sy.*Bbox(1,:);
+                        Bbox(2,:) = depth(index(whichcell__))*0.001;
+                        Bbox(1,:) = -Yind_c(index(whichcell__))*Sy.*Bbox(1,:);
                         Bbox(3,:) = -Xind_c(index(whichcell__))*Sx.*Bbox(1,:);
                         
                         % 8-directional extreme points 
@@ -149,8 +154,8 @@ for tt = 1: size(finalMean,2)
                         if ~isempty(pts)                               
                             [dummy,whichcell_] = intersect(index_ , sub2ind(size(connImg), pts(:,1), pts(:,2)));  
                           
-                            Pts(1,:) = depth(index(whichcell_))*0.001;
-                            Pts(2,:) = Yind_c(index(whichcell_))*Sy.*Pts(1,:);
+                            Pts(2,:) = depth(index(whichcell_))*0.001;
+                            Pts(1,:) = -Yind_c(index(whichcell_))*Sy.*Pts(1,:);
                             Pts(3,:) = -Xind_c(index(whichcell_))*Sx.*Pts(1,:);                                                                              
                         end       
                         
@@ -162,16 +167,16 @@ for tt = 1: size(finalMean,2)
                         if ~isempty(c) && numel(ins) > 5 
                             c(1) = c(1)/Sx;
                             c(2) = c(2)/Sy;
-                            n_ = c;
+                            n_ = c([2 1 3]);
                             n_ = -n_/norm(n_);
-                            n__ = [n_(3) n_(2) -n_(1)]/norm(n_);
+                            n__ = [-n_(2) n_(3) -n_(1)]/norm(n_);
                            
                             z_ = depth(index(whichcell))*0.001;
                             z_mean = mean(z_);                                  
                             x_mean = mean((Xind(index(whichcell))-IMCX)/fx.*z_);
                             y_mean = mean((Yind(index(whichcell))-IMCY)/fy.*z_);
                                                                           
-                            Center = [ z_mean; y_mean; -x_mean];
+                            Center = [ -y_mean; z_mean; -x_mean];
  
                             PlaneID = PlaneID + 1;
                             Planes{PlaneID} = struct('Center',Center,...
@@ -183,7 +188,7 @@ for tt = 1: size(finalMean,2)
                            % if ui.clickType == 2 
                            %     Indices{PlaneID} = [Xind(index(whichcell)); Yind(index(whichcell))];
                             %elseif ui.clickType == 3                                 
-                                Points3D{PlaneID} = [  z_; (Yind(index(whichcell))-IMCY)/fy.*z_; -(Xind(index(whichcell))-IMCX)/fx.*z_];                   
+                                Points3D{PlaneID} = [  -(Yind(index(whichcell))-IMCY)/fy.*z_; z_;-(Xind(index(whichcell))-IMCX)/fx.*z_];                   
                            % end
                         end
                     end
@@ -207,16 +212,16 @@ if ui.figures(1) > 0
 end
 
 if ui.figures(3) 
-    figure(3), subplot(2,1,2);  
+     figure(3), subplot(2,1,2);  
     Ztemp = depth(validInd(10:10:end))*0.001;
-    Ytemp = Yind_c(validInd(10:10:end))*Sy.*Ztemp;
+    Ytemp = -Yind_c(validInd(10:10:end))*Sy.*Ztemp;
     Xtemp = -Xind_c(validInd(10:10:end))*Sx.*Ztemp;
-    Xvis = Ccb*[  Ztemp(:)'; Ytemp(:)'; Xtemp(:)'] + repmat(Tcb,1,length(Ztemp(:)));
+    Xvis = Ccb*[ Ytemp(:)'; Ztemp(:)'; Xtemp(:)'] + repmat(Tcb,1,length(Ztemp(:)));
     figure(3), [az,el] = view; hold off; 
-    scatter3(Xvis(1,:),  Xvis(2,:), Xvis(3,:), 2 ,[0.5 0.5 0.5] ,'filled'); axis equal; hold on;
-    %set(gca,'XDir','reverse');
-    xlabel('x');
-    ylabel('y');
+    scatter3(Xvis(2,:),  Xvis(1,:), Xvis(3,:), 2 ,[0.5 0.5 0.5] ,'filled'); axis equal; hold on;
+    set(gca,'XDir','reverse');
+    xlabel('y');
+    ylabel('x');
     zlabel('z','Rotation',0);        
   %  axis([0 4.0 -2 2 -0.2 2.0]);
     view(az,el);
@@ -247,10 +252,10 @@ if ~issame(Rot,eye(3))
         if 0 % visflag
             randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
             figure(visflag),    
-            scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,randcolor,'filled');
+            scatter3(Planes{t}.Points(2,:), Planes{t}.Points(1,:), Planes{t}.Points(3,:),15,randcolor,'filled');
             nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.2];
             figure(visflag),
-            plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
+            plot3(nvec(2,:), nvec(1,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
         end
     end
 else
@@ -271,24 +276,6 @@ if ui.taskMode == 1 % ground
         [val, idx] = max(cellfun(@(x) x.Size, Planes(candidates)));
         Planes{candidates(idx)}.Type = 'ground';
         PlaneOfInterest = candidates(idx);
-    end
-elseif ui.taskMode == 2
-    n_inner = abs([0 0 1]*Ns);
-    flag = (n_inner < 0.1);
-     % pick the largest
-    candidates = find(flag>0);
-    if ~isempty(candidates)
-        [val, idx] = max(cellfun(@(x) x.Size, Planes(candidates)));
-        Planes{candidates(idx)}.Type = 'wall';
-        PlaneOfInterest = candidates(idx);
-    end
-elseif ui.taskMode == 11
-    idx = find(cellfun(@(x) x.Size, Planes(:)) > 1000);    
-    if ~isempty(idx)
-        for i=1:length(idx)
-            Planes{idx(i)}.Type = 'large';
-        end
-        PlaneOfInterest = idx;
     end
 end
 
@@ -327,8 +314,8 @@ end
 %     end
 % else
 if  ui.figures(3) > 0    
-   %  for t = 1:PlaneID    
-   %      randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
+%     for t = 1:PlaneID    
+%         randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
 %         figure(3), 
 %         scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,randcolor,'filled');
 %         nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.2];
@@ -336,17 +323,15 @@ if  ui.figures(3) > 0
 %         plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
 %     end
     
-   if ~isempty(PlaneOfInterest)
-       for t_=1:length(PlaneOfInterest);
-        t = PlaneOfInterest(t_);
+    if PlaneOfInterest > 0 
+        t = PlaneOfInterest;
         randcolor = [1 0 0];%rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
         figure(3), subplot(2,1,2);        
         ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
         scatter3(ALL(1,:), ALL(2,:), ALL(3,:),5,randcolor,'filled');
-        scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,'k','filled');
-        nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.5];
+        scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,randcolor,'filled');
+        nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.2];
         plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', 'k', 'LineWidth',2);
-       end
     end
 end
     

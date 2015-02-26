@@ -9,13 +9,13 @@ RGB_H = 1080;
 % Set the path and names
 % The unpacked data will be saved under <foldername>/Unpacked/<datestamp> 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% foldername = '/home/leebhoram/Data/LOGS_THOR';
-% datestamp_kinect = '02.10.2015.17.15.17';
-% datestamp_lidar =  '02.10.2015.17.15.20';
+ foldername = '/home/leebhoram/Data/LOGS_THOR';
+ datestamp_kinect = [];'02.24.2015.17.21.57';
+ datestamp_lidar =  '02.24.2015.17.24.03';
 
-foldername = '/home/leebhoram/matlab_workspace/DRC/kinect2_on_robot';
-datestamp_kinect = '01.23.2015.14.48.29';
-datestamp_lidar =  []; %'01.23.2015.14.48.29';
+%foldername = '/home/leebhoram/matlab_workspace/DRC/kinect2_on_robot';
+%datestamp_kinect = '01.20.2015.12.04.49';
+%datestamp_lidar =  []; %'01.23.2015.14.48.29';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 filename_depth = sprintf('k2_depth_r_%s.log',datestamp_kinect);

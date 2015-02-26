@@ -24,7 +24,8 @@ PROTO THOROP_UPENN [
 	field SFFloat    max_torque_400w 44
 	field SFFloat    max_torque_200w 44
   field SFFloat    max_torque_100w 24
-
+  field SFFloat    damping1 0.1
+  field SFFloat    damping2 0.2
   # We may want wider FOV for head lidar	
   field SFString   name "THOR-OP"
 
@@ -96,7 +97,7 @@ Robot {
 			jointParameters HingeJointParameters {
 				axis 1 0 0
 				anchor 0 -0.17 0
-				dampingConstant 0.1                              
+				dampingConstant IS damping1
 			}
 			endPoint Solid {
 				translation 0 -0.17 0
@@ -184,7 +185,7 @@ Robot {
 									jointParameters HingeJointParameters {
 										axis 0 1 0
 										anchor -0.072 -0.232 0
-										dampingConstant 0.1                              
+										dampingConstant IS damping1
 									}
 									endPoint Solid {
 										translation -0.072 -0.232 0
@@ -215,7 +216,7 @@ Robot {
 												jointParameters HingeJointParameters {
 													# Out x for pitch
 													axis 0 0 1
-													dampingConstant 0.1                              
+													dampingConstant IS damping1                           
 												} # End of the PelvYR HingeJointParameters
 												endPoint Solid {
 												#################################################################		
@@ -238,7 +239,7 @@ Robot {
 															}
 															jointParameters HingeJointParameters {
 																axis 1 0 0
-																dampingConstant 0.1                              
+																dampingConstant IS damping1                          
 															}
 															endPoint Solid {
 																boundingObject Transform {    
@@ -269,7 +270,7 @@ Robot {
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
 																			anchor 0 -0.3 -0.03
-																			dampingConstant 0.1             
+																			dampingConstant IS damping1
 																		}
 																		endPoint Solid {
 																			translation 0 -0.3 -0.03
@@ -301,7 +302,7 @@ Robot {
 																					jointParameters HingeJointParameters {
 																						axis 1 0 0
 																						anchor 0 -0.3 0.03
-																						dampingConstant 0.1             
+																						dampingConstant IS damping1
 																					}
 																					endPoint Solid {
 																						translation 0 -0.3 0.03
@@ -327,7 +328,7 @@ Robot {
 																								} # End of the LegLowerR RotationalMotor
 																								jointParameters HingeJointParameters {
 																									axis 0 0 1
-																									dampingConstant 0.1             
+																									dampingConstant IS damping1
 																									}
 																								endPoint Solid {
                                                 	contactMaterial IS footContactMaterial															
@@ -394,7 +395,7 @@ Robot {
 									jointParameters HingeJointParameters {
 										axis 0 1 0
 										anchor 0.072 -0.232 0
-										dampingConstant 0.1                              
+										dampingConstant IS damping1
 									}
 									endPoint Solid {
 										translation 0.072 -0.232 0
@@ -424,7 +425,7 @@ Robot {
 												jointParameters HingeJointParameters {
 													# Out x for pitch
 													axis 0 0 1
-													dampingConstant 0.1                              
+													dampingConstant IS damping1
 												}
 												endPoint Solid {
 												##############################################################
@@ -448,7 +449,7 @@ Robot {
 															}
 															jointParameters HingeJointParameters {
 																axis 1 0 0
-																dampingConstant 0.1        
+																dampingConstant IS damping1
 															}
 															endPoint Solid {
 																boundingObject Transform {    
@@ -477,7 +478,7 @@ Robot {
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
 																			anchor 0 -0.3 -0.03
-																			dampingConstant 0.1             
+																			dampingConstant IS damping1
 																		}
 																		endPoint Solid {
 																			translation 0 -0.3 -0.03
@@ -505,12 +506,13 @@ Robot {
 																					device RotationalMotor {
 																						name "AnkleL"
 																						maxVelocity 2.9216811678
-																						maxTorque IS max_torque_200w																	
+																						maxTorque IS max_torque_200w															
 																						minPosition -2.92343 maxPosition 2.92343
 																					} # End of the LegLowerR RotationalMotor
 																					jointParameters HingeJointParameters {
 																						axis 1 0 0
 																						anchor 0 -0.3 0.03
+																						dampingConstant IS damping1
 																					} # End of the LegLowerR HingeJointParameters
 																					endPoint Solid {
 																						translation 0 -0.3 0.03
@@ -537,6 +539,7 @@ Robot {
 																								jointParameters HingeJointParameters {
 																									axis 0 0 1
 																									#anchor 0 -0.1115 0.018
+																									dampingConstant IS damping1
 																								}
 																								endPoint Solid {
                                                   contactMaterial IS footContactMaterial

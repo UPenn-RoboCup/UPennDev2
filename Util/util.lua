@@ -98,7 +98,7 @@ local function p_feedback(org,target, p_gain, max_vel, dt)
   return org + vel*dt
 end
 
-function util.pid_feedback(err, vel, dt)
+function util.pid_feedback(err, vel, dt, torque_factor)
   
   err_deadband = math.pi/180
   vel_p_gain = 2
@@ -116,7 +116,7 @@ function util.pid_feedback(err, vel, dt)
     if err[i]<0 then err_clamped = -err_clamped end
     local velTarget = math.max(-max_vel,math.min( max_vel, err_clamped*vel_p_gain ))
     local accTarget = math.max(-max_acc,math.min( max_acc,  acc_p_gain*(velTarget-vel[i])/dt ))
-    cmd[i] = accTarget + vel[i]*vel_d_gain
+    cmd[i] = (accTarget + vel[i]*vel_d_gain)*torque_factor[i]
   end
   return cmd
 end

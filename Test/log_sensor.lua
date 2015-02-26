@@ -56,7 +56,7 @@ while running do
 		print(sformat("Balancing: P Knee %.1f Ankle %.1f / R hip %.1f ankle %.1f",
 			RAD_TO_DEG*angleShift[3], RAD_TO_DEG*angleShift[1]  , RAD_TO_DEG*angleShift[4], RAD_TO_DEG*angleShift[2]))
 
-		print(sformat("FZ: %d %d PT: %.1f %.1f RT: %.1f %.1f",
+		print(sformat("FZ: %.1f %.1f PT: %.1f %.1f RT: %.1f %.1f",
 			lft[1],rft[1], lft[3],rft[3], lft[2],rft[2]
 			))
 		print(sformat("uZMPTarget: %.1f %.1f / uZMP: %.1f %.1f",

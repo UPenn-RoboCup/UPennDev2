@@ -180,8 +180,8 @@ const double legLink[7][3]={
 	{0,0.072,-0.282}, //waist-hipyaw
 	{0,0,0}, //hip yaw-roll
 	{0,0,0}, //hip roll-pitch
-	{0.030,0,-0.300}, //hip pitch-knee
-	{-0.030,0,-0.300}, //knee-ankle pitch
+	{-0.030,0,-0.300}, //hip pitch-knee
+	{0.030,0,-0.300}, //knee-ankle pitch
 	{0,0,0}, //ankle pitch-ankle roll
 	{0,0,-0.118}, //ankle roll - foot bottom
 };
@@ -323,7 +323,7 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
 
 
 std::vector<double> THOROP_kinematics_calculate_arm_torque(const double *qArm);
-std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft, const double *com_rest);
+std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft, double grf, const double *support);
 
 
 

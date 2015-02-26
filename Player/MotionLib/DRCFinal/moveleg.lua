@@ -409,10 +409,11 @@ function moveleg.set_leg_positions()
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
 
   -------------------Incremental COM filtering
+  local com_z = 0
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
-    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,3*DEG_TO_RAD)
+    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0, 1,1)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
@@ -428,9 +429,11 @@ function moveleg.set_leg_positions()
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
   
 --  print("uTorsoZ:",com[3]/com[4])
-
 --  print("uTorso:",uTorso[1],uLeft[1])
 --  print("Torso offset:",uTorsoOffset[1],uTorsoOffset[2])
+  mcm.set_stance_COMoffset({
+    -uTorsoOffset[1],-uTorsoOffset[2],com[3]/com[4]
+    })
 
 
   local legBias = vector.new(mcm.get_leg_bias())

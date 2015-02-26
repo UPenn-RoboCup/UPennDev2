@@ -42,6 +42,10 @@ shared.stance.singlesupport = vector.zeros(1) --we are doing quasi-static motion
 
 shared.stance.last_support = vector.zeros(3) --We keep last support point here
 
+shared.stance.COMoffset = vector.zeros(3)--relative COM position from waist joint
+
+
+
 
 
 --Used for drilling task

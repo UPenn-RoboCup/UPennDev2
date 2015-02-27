@@ -82,3 +82,7 @@ print'Exiting state wizard...'
 for _,my_fsm in pairs(state_machines) do
   my_fsm:exit()
 end
+
+if IS_WEBOTS then
+	wb_supervisor_simulation_revert()
+end

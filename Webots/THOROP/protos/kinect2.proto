@@ -8,6 +8,7 @@ PROTO kinect2 [
   field SFInt32 height 212 #212 #424
   field SFFloat fieldOfView 1.2217 #70 horizontal
   field SFFloat maxRange 8
+  field SFFloat mass 0.5
   field SFFloat colorNoise 0.0
   field SFFloat rangeNoise 0.0
   field SFString name "kinect"
@@ -258,7 +259,7 @@ Solid {
   boundingObject Box { size 0.28 0.038 0.064 }
   physics Physics {
     density -1
-    mass 0.5
+    mass IS mass
   }
 }
 }

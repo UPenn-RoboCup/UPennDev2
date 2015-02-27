@@ -36,6 +36,11 @@ walk.stanceLimitA = {-10*DEG_TO_RAD,30*DEG_TO_RAD}
 
 walk.bodyHeight = 0.93
 walk.footY = 0.095
+
+--FOR torque testing only!!!
+--if IS_WEBOTS then walk.footY = 0.072 end
+
+
 walk.footX = 0
 walk.bodyTilt = 3*DEG_TO_RAD
 

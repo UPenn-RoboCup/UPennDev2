@@ -365,10 +365,10 @@ static int calculate_arm_torque(lua_State *L) {
 static int calculate_leg_torque(lua_State *L) {
 	std::vector<double> qLeg = lua_checkvector(L, 1);
 	int isLeft = luaL_optnumber(L, 2, 0);
-    std::vector<double> com_rest = lua_checkvector(L, 3);//comx comy comz totalmass
-
+	double grf = luaL_optnumber(L, 3, 0.0);
+	std::vector<double> support = lua_checkvector(L, 4);
 	std::vector<double> r = 
-	  THOROP_kinematics_calculate_leg_torque(&qLeg[0],isLeft,&com_rest[0]);
+	  THOROP_kinematics_calculate_leg_torque(&qLeg[0],isLeft,grf,&support[0]);
 	lua_pushvector(L, r);
 	return 1;
 }

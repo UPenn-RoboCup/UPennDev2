@@ -145,28 +145,6 @@ function moveleg.get_ft()
   mcm.set_status_uZMPMeasured(uZMPMeasured) 
   mcm.set_status_uTorsoNeutral(uTorsoNeutral)
 
-
---[[
---why do we need those?
-
-  local z_shift_max = 0.05 --max 5cm difference
-  local z_vel_max_diff = 0.4 --max 40cm per sec
-  local z_vel_max_balance = 0.05 --max 5cm per sec
-  local k_const_z_diff = 0.5 / 100  -- 50cm/s for 100 N difference
-  local z_shift_diff_db = 50 --50N deadband
-
-
-
-  local k_balancing = 0.4 
-  local LR_pitch_err = -(uLeftTorso[1]-uRightTorso[1])*math.tan( imu.pitch_err)
-  local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(imu.roll_err)
-  local zvShiftTarget = util.procFunc( (LR_pitch_err + LR_roll_err) * k_balancing, 0, z_vel_max_balance )
---]]
-
-
-
-
-
   return ft,imu
 end
 
@@ -404,39 +382,38 @@ function moveleg.set_leg_positions()
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
 
-
-  local aShiftX=mcm.get_walk_aShiftX()
-  local aShiftY=mcm.get_walk_aShiftY()
+  
   local delta_legs = mcm.get_walk_delta_legs()  
 
 
 
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-  
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  local aShiftX = mcm.get_walk_aShiftX()
+  local aShiftY = mcm.get_walk_aShiftY()
 
-  local qWaist = Body.get_waist_position()
-  local qLArm = Body.get_larm_position()
-  local qRArm = Body.get_rarm_position()
 
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
+  --Initial guess 
   local uTorsoAdapt = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   local pTorso = vector.new({
-            uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
+    uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
-  local aShiftX = mcm.get_walk_aShiftX()
-  local aShiftY = mcm.get_walk_aShiftY()
-
+  
   local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
 
   -------------------Incremental COM filtering
+  local com_z = 0
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
-    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,3*DEG_TO_RAD)
+    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0, 1,1)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
@@ -446,13 +423,17 @@ function moveleg.set_leg_positions()
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
-
-
-
-
    qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
    count = count+1
   end
+  local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
+  
+--  print("uTorsoZ:",com[3]/com[4])
+--  print("uTorso:",uTorso[1],uLeft[1])
+--  print("Torso offset:",uTorsoOffset[1],uTorsoOffset[2])
+  mcm.set_stance_COMoffset({
+    -uTorsoOffset[1],-uTorsoOffset[2],com[3]/com[4]
+    })
 
 
   local legBias = vector.new(mcm.get_leg_bias())

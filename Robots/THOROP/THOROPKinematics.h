@@ -138,6 +138,12 @@ const double g = 9.81;
 const double MassBody[2]={
 	9.21, //torso
 	8.0,  //pelvis	
+
+
+//Mk2 values
+//	9.782 //torso
+//  0.657 //Waist middle section
+//  4.465 //Pelvis	
 };
 const double bodyCom[2][3]={
 	{-0.0208,0,0.1557},	//after shoulder pitch
@@ -147,6 +153,8 @@ const double bodyCom[2][3]={
 //Based on webots mass 
 const double MassArm[7]={
 	0.1, 2.89, 0.13, 0.81, 0.97, 0.1,	 0.1,	//gripper mass... TBD
+//MK2 values
+//	1.04, 0.752, 2.021, 1.161, 0.37, 0.102, 1.44	
 };
 
 const double armLink[7][3]={
@@ -174,6 +182,10 @@ const double armCom[7][3]={
 
 const double MassLeg[6]={
 	0.165, 1.122, 3.432, 2.464, 0.946, 1.133
+
+//MK2 values
+//	1.455, 1.022, 3.394, 4.745, 1.022, 1.32
+
 };
 
 const double legLink[7][3]={

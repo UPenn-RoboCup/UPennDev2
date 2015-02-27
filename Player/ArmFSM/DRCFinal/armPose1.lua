@@ -36,8 +36,8 @@ function state.entry()
   Body.set_lleg_torque_enable({1,1,1, 1,1,1}) --enable force control
   Body.set_rleg_torque_enable({1,1,1, 1,1,1}) --enable force control
 
-  Body.set_lleg_torque_enable({1,1,2,2,2,1}) --enable force control
-  Body.set_rleg_torque_enable({1,1,2,2,2,1}) --enable force control
+--  Body.set_lleg_torque_enable({1,1,2,2,2,1}) --enable force control
+--  Body.set_rleg_torque_enable({1,1,2,2,2,1}) --enable force control
 
 
   larm_pos_old = Body.get_larm_position()  

@@ -30,23 +30,6 @@ Transform& Transform::translate(const double* p) {
   return *this;
 }
 
-Transform& Transform::invtranslate(const double* p) {
-  t[0][3] -= t[0][0]*p[0] + t[0][1]*p[1] + t[0][2]*p[2];
-  t[1][3] -= t[1][0]*p[0] + t[1][1]*p[1] + t[1][2]*p[2];
-  t[2][3] -= t[2][0]*p[0] + t[2][1]*p[1] + t[2][2]*p[2];
-  return *this;
-}
-
-Transform& Transform::neg() {
-  for (int i = 0; i < 3; i++){ 
-    t[i][0] = -t[i][0];
-    t[i][1] = -t[i][1];
-    t[i][2] = -t[i][2];
-    t[i][3] = -t[i][3];
-  }
-  return *this;
-}
-
 Transform& Transform::translateX(double x) {
   t[0][3] += t[0][0]*x;
   t[1][3] += t[1][0]*x;
@@ -184,7 +167,13 @@ void Transform::apply0(double* x) {
   for (int i = 0; i < 3; i++) x[i] = t[i][3];  
 }
 
+
 double Transform::getZ() {return t[2][3];}
+void const Transform::getXYZ(double* ret) const{
+  ret[0]=t[0][3];
+  ret[1]=t[1][3];
+  ret[2]=t[2][3];
+}
 
 double const Transform::operator() (int i, int j) const {
   return t[i][j];
@@ -265,6 +254,26 @@ std::vector<double> position6D(const Transform &t1) {
   return p;
 }
 
+std::vector<double> getAngularVelocityTensor(const Transform &adot, const Transform &ainv){
+  std::vector<double> av(3);
+  Transform w = adot*ainv;  
+
+/*
+  printf("W matrix:\n");
+  printf("%.2f %.2f %.2f\n",w(0,0),w(1,0),w(2,0));
+  printf("%.2f %.2f %.2f\n",w(0,1),w(1,1),w(2,1));
+  printf("%.2f %.2f %.2f\n",w(0,2),w(1,2),w(2,2));
+*/
+
+  av[0]=w(1,2);
+  av[1]=w(2,0);
+  av[2]=w(0,1);
+  //printf("ang vel: x%.2f y%.2f z%.2f",av[0],av[1],av[2]);
+  return av;
+}
+
+
+
 void printTransform(Transform tr) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -276,7 +285,7 @@ void printTransform(Transform tr) {
 }
 
 void printVector(std::vector<double> v) {
-  for (int i = 0; i < v.size(); i++) {
+  for (int i = 0; i < (int) v.size(); i++) {
     printf("%.4g\n", v[i]);
   }
   printf("\n");

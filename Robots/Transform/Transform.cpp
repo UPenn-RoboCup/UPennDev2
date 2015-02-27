@@ -254,8 +254,7 @@ std::vector<double> position6D(const Transform &t1) {
   return p;
 }
 
-std::vector<double> getAngularVelocityTensor(const Transform &adot, const Transform &ainv){
-  std::vector<double> av(3);
+void getAngularVelocityTensor(const Transform &adot, const Transform &ainv, double* av){
   Transform w = adot*ainv;  
 
 /*
@@ -265,11 +264,12 @@ std::vector<double> getAngularVelocityTensor(const Transform &adot, const Transf
   printf("%.2f %.2f %.2f\n",w(0,2),w(1,2),w(2,2));
 */
 
+//pointer error here
+/*
   av[0]=w(1,2);
   av[1]=w(2,0);
   av[2]=w(0,1);
-  //printf("ang vel: x%.2f y%.2f z%.2f",av[0],av[1],av[2]);
-  return av;
+*/  
 }
 
 

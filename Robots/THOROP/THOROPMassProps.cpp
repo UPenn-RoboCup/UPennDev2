@@ -791,11 +791,6 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
         .rotateZ(qArm[5]).translate(armLink[6])
         .rotateDotX(qArm[6]).translate(armCom[6]);
 
-
-//2.54 0.17 -0.04 -0.12 0.00  
-
-
-
   Transform JacZZ;
   Jacobian7 J0,J1,J2,J3,J4,J5,J6;
   J0.calculate(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);  
@@ -806,12 +801,22 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
   J5.calculate(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,JacZZ);
   J6.calculate(COM6,Jac60,Jac61,Jac62,Jac63,Jac64,Jac65,Jac66);
 
-  
-//  double torque[7];
-//  for (int i=0;i<7;i++) torque[i]=0.0;
+  //diag( J' * Mx * J ) = joint inertia 
+  //assume point mass case (zero inertia matrix)
+
+
+
+
+
+  //Now we have 7 * 2 jacobian matrices
+  //where each one is 3 by 7 size
+  //Total size:  6 by 7 by 7
+
+
+
+
 
   std::vector<double> torque(7);
-
 
   J0.accumulate_torque(&torque[0], 0.0,0.0,MassArm[0]*g);
   J1.accumulate_torque(&torque[0], 0.0,0.0,MassArm[1]*g);

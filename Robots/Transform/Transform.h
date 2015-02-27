@@ -45,7 +45,7 @@ Transform trcopy (const Transform &t1);
 Transform transform6D(const double p[6]);
 std::vector<double> position6D(const Transform &t1);
 
-std::vector<double> getAngularVelocityTensor(const Transform &adot, const Transform &ainv);
+void getAngularVelocityTensor(const Transform &adot, const Transform &ainv, double *av);
 
 
 void printTransform(Transform tr);
@@ -68,9 +68,11 @@ public:
 
   void clear();
   void accumulate_torque(double* torque,double forcex, double forcey, double forcez);
+  void accumulate_inertia(double* inertia_matrix);
 private:
   double v[7][3];
   double w[7][3];
+  double inertia[7][7]; 
 };
 
 

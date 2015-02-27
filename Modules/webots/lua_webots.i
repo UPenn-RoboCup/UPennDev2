@@ -97,6 +97,8 @@ unsigned char * to_rgb( int tag ) {
   int i, len;
   if (match_suffix("$name", "_vec2f"))
     len = 2;
+  else if (match_suffix("$name", "_sf_vec3f"))
+    len = 3;
   else if (match_suffix("$name", "_sf_rotation"))
     len = 4;
   else if (match_suffix("$name", "_orientation"))
@@ -180,6 +182,7 @@ unsigned char * to_rgb( int tag ) {
   structCArray* p = (structCArray*)lua_touserdata(L, $input);
   $1 = (double *)p->ptr;
 }
+
 %include <webots/supervisor.h>
 // Reset now...
 %typemap(in) (const double values[3]);

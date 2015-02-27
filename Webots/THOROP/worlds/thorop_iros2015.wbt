@@ -25,7 +25,7 @@ Background {
   ]
 }
 #THOROP_UPENN {
-THOROP_UPENN_NEW {
+DEF ALVIN THOROP_UPENN_NEW {
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
@@ -64,24 +64,26 @@ simple_wall {
   size 3 1 0.01
   translation -2.5 0.5 4.5
 }
-QualStep {
+DEF STEP0 QualStep {
   translation -2 0 5.5
 }
-PitchRamp { translation -0.5 0 0.5 }
-QualStep {
+DEF STEP1 QualStep {
   rotation 0 1 0 1.57
   translation 0.5 0 1
 }
-QualStep {
+DEF STEP2 QualStep {
   rotation 0 1 0 1.57
   translation 0.5 0 2.5
 }
 
-OilBarrel {
+DEF RAMP0 PitchRamp {
+  translation -0.5 0 0.5
+}
+
+DEF OBSTACLE0 OilBarrel {
   translation 0.5 0.44 3.75
 }
 
-#Rubble field
 DEF RUBBLE_FIELD Transform{
 translation -0.5 0 2.5
 children [

@@ -1,6 +1,67 @@
 local WebotsBody = {}
 local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
+local vector = require'vector'
+local quaternion = require'quaternion'
+local carray = require'carray'
+
+-- TODO: Put in world config
+local IS_SUPERVISOR = true
+local q0
+local world_tags = {}
+local world_configurations = {}
+local world_obj = {
+	'ALVIN',
+	'STEP0',
+	'STEP1',
+	'STEP2',
+	'RAMP0',
+	'OBSTACLE0',
+	'RUBBLE_FIELD',
+}
+
+function WebotsBody.reset()
+	--[[
+	for name,history in pairs(world_configurations) do
+		print('name', name)
+		local obj = world_tags[name]
+		for i, config in ipairs(history) do
+			local t0 = config[1]
+			local r0 = config[2]
+		end
+		print('conf', t0, r0)
+	end
+	--]]
+	local obj = world_tags['ALVIN']
+	local history = world_configurations['ALVIN']
+	local config = history[1]
+	local t0 = config[1]
+	local r0 = config[2]
+	obj:set_translation(t0)
+	obj:set_rotation(r0)
+end
+
+-- Webots x is our y, Webots y is our z, Webots z is our x,
+-- Our x is Webots z, Our y is Webots x, Our z is Webots y
+local function get_translation(self)
+	local p = webots.wb_supervisor_field_get_sf_vec3f(self.translation)
+	return vector.new{p[3], p[1], p[2]}
+end
+local function set_translation(self, position)
+	local p_wbt = carray.double({position[2], position[3], position[1] })
+	webots.wb_supervisor_field_set_sf_vec3f( self.translation, p_wbt )
+end
+local function get_rotation(self)
+	local aa = webots.wb_supervisor_field_get_sf_rotation(self.rotation)
+	return quaternion.from_angle_axis(aa[4],{aa[3],aa[1],aa[2]})
+end
+local function set_rotation(self, orientation)
+	local angle, axis = quaternion.angle_axis(orientation)
+	webots.wb_supervisor_field_set_sf_rotation(
+		self.rotation,
+		carray.double{axis[2], axis[3], axis[1], angle}
+	)
+end
 
 function WebotsBody.entry()
 
@@ -21,6 +82,29 @@ function WebotsBody.entry()
   if fw then fw.entry() end
   if rw then rw.entry() end
   if kw and kw.entry then kw.entry() end
+
+	-- Check if supervisor
+	if IS_SUPERVISOR then
+		q0 = Body.get_position()
+		for i, obj_name in ipairs(world_obj) do
+			local node_tag = webots.wb_supervisor_node_get_from_def(obj_name)
+			world_tags[obj_name] = {
+				node = node_tag,
+				translation = webots.wb_supervisor_node_get_field(node_tag, "translation"),
+				rotation = webots.wb_supervisor_node_get_field(node_tag, "rotation"),
+				get_translation = get_translation,
+				set_translation = set_translation,
+				get_rotation = get_rotation,
+				set_rotation = set_rotation,
+			}
+			-- Supervisor
+			world_configurations[obj_name] = world_configurations[obj_name] or {}
+			local t0 = world_tags[obj_name]:get_translation()
+			local r0 = world_tags[obj_name]:get_rotation()
+			table.insert(world_configurations[obj_name], {t0, r0})
+		end
+	end
+
 end
 
 function WebotsBody.update_head_camera(img, sz, cnt, t)

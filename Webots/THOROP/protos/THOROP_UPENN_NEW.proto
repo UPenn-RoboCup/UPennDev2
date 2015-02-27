@@ -13,7 +13,7 @@
 #############################################
 
 PROTO THOROP_UPENN_NEW [
-  field SFVec3f    translation 0 1.155 0
+  field SFVec3f    translation 0 1.17 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
   field SFString   controllerArgs ""
@@ -31,7 +31,7 @@ PROTO THOROP_UPENN_NEW [
   field SFString   footContactMaterial "default"
 ]
 {
-Robot {
+Supervisor { #Robot {
   # General Characteristics
   translation IS translation
   rotation IS rotation

@@ -405,7 +405,7 @@ if IS_WEBOTS then
 		tags.gps = webots.wb_robot_get_device("GPS")
 		tags.compass = webots.wb_robot_get_device("Compass")
 		tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
-    
+
     if Config.sensors.head_camera then
   		tags.head_camera = webots.wb_robot_get_device("HeadCamera")
     end
@@ -465,6 +465,7 @@ if IS_WEBOTS then
 		dcm.set_sensor_position(positions)
 		dcm.set_actuator_command_position(positions)
 		WebotsBody = require'WebotsBody'
+    Body.WebotsBody = WebotsBody
 		WebotsBody.entry()
 	end
 

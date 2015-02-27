@@ -5,9 +5,9 @@ Jacobian7::Jacobian7() {clear();}
 void Jacobian7::clear() {
   // Initialize to identity matrix:
   for (int i = 0; i < 7; i++){
-    inertia[i]=0;
     for (int j = 0; j < 3; j++){
-      v[i][j]=0;
+			inertia[i][j]=0;
+			v[i][j]=0;
       w[i][j]=0;
     }
   }

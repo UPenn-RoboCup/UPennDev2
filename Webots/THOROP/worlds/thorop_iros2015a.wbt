@@ -80,12 +80,12 @@ DEF RAMP0 PitchRamp {
   translation -1 0 1
 }
 DEF RAMP1 PitchRamp {
-  translation 0 0 2
+  translation 1 0 3
 }
 DEF RAMP2 PitchRamp {
-  translation 1 0 3
+  translation 0 0 4
 }
 
 DEF OBSTACLE0 OilBarrel {
-  translation 1 0.44 3
+  translation 1 0.44 4
 }

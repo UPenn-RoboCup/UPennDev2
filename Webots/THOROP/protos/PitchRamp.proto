@@ -2,55 +2,46 @@
 #
 #  DARPA Trials Terrain: Pitch Ramp
 #  heqin@seas.upenn.edu
-#
 
 PROTO PitchRamp [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
 ]
-
-
 {
 Solid {
   translation IS translation
   rotation IS rotation
   children [
 		DEF ramp1 Transform{
-		  translation 0 0.08 0.3
+		  translation 0 0.08 -0.3
 		  rotation 1 0 0 -0.262
-		  children [		
+		  children [
 			  Shape {
-			     appearance Appearance {
-			       material Material {
-			         diffuseColor 1 1 0.5
-			       }
+			     appearance DEF ramp_app Appearance {
+			       material Material { diffuseColor 1 1 0.5 }
 			     }
 			     geometry DEF ramp_geo Box { size 1 0.02 0.62 }
 			  }
-			]					
+			]
 		}
 		DEF ramp2 Transform{
-		  translation 0 0.08 0.9
+		  translation 0 0.08 0.3
 		  rotation 1 0 0 0.262
-		  children [		
+		  children [
 			  Shape {
-			     appearance Appearance {
-			       material Material {
-			         diffuseColor 1 1 0.5
-			       }
-			     }
+			     appearance USE ramp_app
 					 geometry USE ramp_geo
 			  }
-			]					
-		}		
+			]
+		}
   ]
-	
+
   boundingObject Group {
 		children[
 			USE ramp1
 			USE ramp2
 		]
-  }  
+  }
  locked TRUE
 }
 }

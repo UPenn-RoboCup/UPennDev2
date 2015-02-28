@@ -1,0 +1,112 @@
+#VRML_SIM V6.0 utf8
+
+PROTO RubbleField [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+{
+
+Transform {
+translation IS translation
+rotation IS rotation
+children [
+  #Even
+  Rubble {
+    translation 0.2 0 0
+  }
+  Rubble {
+    translation 0.1 0 0
+  }
+  Rubble {
+    translation 0 0 0
+  }
+  Rubble {
+    translation -0.1 0 0
+  }
+  Rubble {
+    translation -0.2 0 0
+  }
+  #Odd
+  Rubble {
+    translation 0.15 0 0.05
+  }
+  Rubble {
+    translation 0.05 0 0.05
+  }
+  Rubble {
+    translation -0.05 0 0.05
+  }
+  Rubble {
+    translation -0.15 0 0.05
+  }
+  Rubble {
+    translation -0.25 0 0.05
+  }
+  # Even
+  Rubble {
+    translation 0.2 0 0.1
+  }
+  Rubble {
+    translation 0.1 0 0.1
+  }
+  Rubble {
+    translation 0 0 0.1
+  }
+  Rubble {
+    translation -0.1 0 0.1
+  }
+  Rubble {
+    translation -0.2 0 0.1
+  }
+  #Odd
+  Rubble {
+    translation 0.15 0 0.15
+  }
+  Rubble {
+    translation 0.05 0 0.15
+  }
+  Rubble {
+    translation -0.05 0 0.15
+  }
+  Rubble {
+    translation -0.15 0 0.15
+  }
+  Rubble {
+    translation -0.25 0 0.15
+  }
+  # Even
+  Rubble {
+    translation 0.2 0 0.2
+  }
+  Rubble {
+    translation 0.1 0 0.2
+  }
+  Rubble {
+    translation 0 0 0.2
+  }
+  Rubble {
+    translation -0.1 0 0.2
+  }
+  Rubble {
+    translation -0.2 0 0.2
+  }
+  #Odd
+  Rubble {
+    translation 0.15 0 0.25
+  }
+  Rubble {
+    translation 0.05 0 0.25
+  }
+  Rubble {
+    translation -0.05 0 0.25
+  }
+  Rubble {
+    translation -0.15 0 0.25
+  }
+  Rubble {
+    translation -0.25 0 0.25
+  }
+]
+}
+
+}

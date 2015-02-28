@@ -16,30 +16,13 @@ local world_obj = {
 	'STEP1',
 	'STEP2',
 	'RAMP0',
-	'OBSTACLE0',
-	'RUBBLE_FIELD',
+	'RAMP1',
+	'RAMP2',
+	'RUBBLE0',
+	'RUBBLE1',
+	'RUBBLE2',
+	'OBSTACLE0'
 }
-
-function WebotsBody.reset()
-	--[[
-	for name,history in pairs(world_configurations) do
-		print('name', name)
-		local obj = world_tags[name]
-		for i, config in ipairs(history) do
-			local t0 = config[1]
-			local r0 = config[2]
-		end
-		print('conf', t0, r0)
-	end
-	--]]
-	local obj = world_tags['ALVIN']
-	local history = world_configurations['ALVIN']
-	local config = history[1]
-	local t0 = config[1]
-	local r0 = config[2]
-	obj:set_translation(t0)
-	obj:set_rotation(r0)
-end
 
 -- Webots x is our y, Webots y is our z, Webots z is our x,
 -- Our x is Webots z, Our y is Webots x, Our z is Webots y
@@ -62,6 +45,50 @@ local function set_rotation(self, orientation)
 		carray.double{axis[2], axis[3], axis[1], angle}
 	)
 end
+
+local function reset()
+
+	-- Change objest configurations
+	for name,history in pairs(world_configurations) do
+		if name~='ALVIN' then
+			local obj = world_tags[name]
+			local t0, r0 = unpack(history[1])
+		end
+	end
+
+	-- Reset the Robot
+	local obj = world_tags['ALVIN']
+	local history = world_configurations['ALVIN']
+	-- Always use the first position
+	local t0, r0 = unpack(history[1])
+	obj:set_translation(t0)
+	obj:set_rotation(r0)
+	-- Debug
+	print('# of configurations', #history)
+end
+
+local function init()
+	for i, obj_name in ipairs(world_obj) do
+		local node_tag = webots.wb_supervisor_node_get_from_def(obj_name)
+		local tags = {
+			node = node_tag,
+			translation = webots.wb_supervisor_node_get_field(node_tag, "translation"),
+			rotation = webots.wb_supervisor_node_get_field(node_tag, "rotation"),
+			get_translation = get_translation,
+			set_translation = set_translation,
+			get_rotation = get_rotation,
+			set_rotation = set_rotation,
+		}
+		world_tags[obj_name] = tags
+		-- Save Configurations through a run
+		world_configurations[obj_name] = {
+			{tags:get_translation(), tags:get_rotation()}
+		}
+	end
+end
+
+-- Use it in WebotsBody
+WebotsBody.reset = reset
 
 function WebotsBody.entry()
 
@@ -86,23 +113,7 @@ function WebotsBody.entry()
 	-- Check if supervisor
 	if IS_SUPERVISOR then
 		q0 = Body.get_position()
-		for i, obj_name in ipairs(world_obj) do
-			local node_tag = webots.wb_supervisor_node_get_from_def(obj_name)
-			world_tags[obj_name] = {
-				node = node_tag,
-				translation = webots.wb_supervisor_node_get_field(node_tag, "translation"),
-				rotation = webots.wb_supervisor_node_get_field(node_tag, "rotation"),
-				get_translation = get_translation,
-				set_translation = set_translation,
-				get_rotation = get_rotation,
-				set_rotation = set_rotation,
-			}
-			-- Supervisor
-			world_configurations[obj_name] = world_configurations[obj_name] or {}
-			local t0 = world_tags[obj_name]:get_translation()
-			local r0 = world_tags[obj_name]:get_rotation()
-			table.insert(world_configurations[obj_name], {t0, r0})
-		end
+		init()
 	end
 
 end

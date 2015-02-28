@@ -26,10 +26,13 @@ Background {
 }
 #THOROP_UPENN {
 DEF ALVIN THOROP_UPENN_NEW {
+  translation 0 1.17 -0.25
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
   footContactMaterial "feet"
+  kwidth 512
+  kheight 424
 }
 DirectionalLight {
   ambientIntensity 0.8

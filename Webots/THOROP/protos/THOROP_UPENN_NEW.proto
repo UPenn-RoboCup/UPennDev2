@@ -24,6 +24,9 @@ PROTO THOROP_UPENN_NEW [
 	field SFFloat    max_torque_400w 44
 	field SFFloat    max_torque_200w 44
   field SFFloat    max_torque_100w 24
+  # Kinect dims
+  field SFInt32 kwidth 256
+  field SFInt32 kheight 212
 
   # We may want wider FOV for head lidar
   field SFString   name "THOR-OP"
@@ -654,6 +657,8 @@ Supervisor { #Robot {
 						} # End of the Head HingeJointParameters
 						##############################################################
 						endPoint kinect2 {
+              width IS kwidth
+              height IS kheight
               translation 0 0.12 0.03
       			  rotation 0 1 0 3.14159265
       			  mass 0.1

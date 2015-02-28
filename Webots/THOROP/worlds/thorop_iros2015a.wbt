@@ -87,5 +87,5 @@ DEF RAMP2 PitchRamp {
 }
 
 DEF OBSTACLE0 OilBarrel {
-  translation 1 0.44 4
+  translation 1 0 4
 }

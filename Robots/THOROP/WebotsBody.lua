@@ -10,6 +10,7 @@ local IS_SUPERVISOR = true
 local q0
 local world_tags = {}
 local world_configurations = {}
+local available_configurations = {}
 local world_obj = {
 	'ALVIN',
 	'STEP0',
@@ -48,23 +49,27 @@ end
 
 local function reset()
 
-	-- Change objest configurations
-	for name,history in pairs(world_configurations) do
-		if name~='ALVIN' then
-			local obj = world_tags[name]
-			local t0, r0 = unpack(history[1])
-		end
+	-- Generate random order
+	local idx, n = {}, #available_configurations
+	while #idx<n do
+		local r = math.random(n)
+		while vector.contains(idx, r) do r = math.random(n) end
+		table.insert(idx, r)
 	end
 
-	-- Reset the Robot
-	local obj = world_tags['ALVIN']
-	local history = world_configurations['ALVIN']
-	-- Always use the first position
-	local t0, r0 = unpack(history[1])
-	obj:set_translation(t0)
-	obj:set_rotation(r0)
-	-- Debug
-	print('# of configurations', #history)
+	-- Change objest configurations
+	for name,tags in pairs(world_tags) do
+		if name~='ALVIN' then
+			local config = available_configurations[table.remove(idx)]
+			local t, r = unpack(config)
+			print(name, t0, r0)
+			tags:set_translation(t)
+			--tags:set_rotation(r)
+		end
+	end
+	-- Reset the Robot: Always use the first position
+	world_tags.ALVIN:set_translation({0,0,1.17})
+	world_tags.ALVIN:set_rotation(quaternion.new())
 end
 
 local function init()
@@ -81,9 +86,13 @@ local function init()
 		}
 		world_tags[obj_name] = tags
 		-- Save Configurations through a run
-		world_configurations[obj_name] = {
-			{tags:get_translation(), tags:get_rotation()}
-		}
+		if obj_name~='ALVIN' then
+			local config = {tags:get_translation(), tags:get_rotation()}
+			table.insert(available_configurations, config)
+			-- Config ID
+			world_configurations[obj_name] = { #available_configurations }
+		end
+
 	end
 end
 

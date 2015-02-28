@@ -658,8 +658,7 @@ Supervisor { #Robot {
       			  rotation 0 1 0 3.14159265
       			  mass 0.1
               #TODO: add a pitch angle
-      			  maxRange 4
-
+      			  maxRange 6
       			}
       			##############################################################
 					} # End of the Head HingeJoint

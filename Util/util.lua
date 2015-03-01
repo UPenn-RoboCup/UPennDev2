@@ -98,28 +98,42 @@ local function p_feedback(org,target, p_gain, max_vel, dt)
   return org + vel*dt
 end
 
-function util.pid_feedback(err, vel, dt, torque_factor)
-  
-  err_deadband = math.pi/180
-  
+function util.pid_feedback(err, vel, dt, acc_factor, debug)
+  err_deadband = 0.5*math.pi/180
   max_vel = math.pi/2 --90 deg per sec 
-  vel_p_gain = 30 --slow down at 3 degree away
+  vel_p_gain = 30 --at 3 degree (3*math.pi/180) reach max accelleration
 
 
-  acc_p_gain = 1
-  max_acc = 1
 
+  acc_p_gain = 60 * math.pi/180 --1.5 sec to max vel
+  max_acc = 1 --max accelleration (m/s^2)
+
+  vel_d_gain = -1
   vel_d_gain = 0
     
-  local cmd={}
+  local velTarget=vector.zeros(7)  
+  local accTarget=vector.zeros(7)  
+  local acc={}
   for i=1,#err do
     local err_clamped = math.max(0,math.abs(err[i])-err_deadband)
     if err[i]<0 then err_clamped = -err_clamped end
-    local velTarget = math.max(-max_vel,math.min( max_vel, err_clamped*vel_p_gain ))
-    local accTarget = math.max(-max_acc,math.min( max_acc,  acc_p_gain*(velTarget-vel[i])/dt ))
-    cmd[i] = (accTarget + vel[i]*vel_d_gain)*torque_factor[i]
+    velTarget[i] = math.max(-max_vel,math.min( max_vel, err_clamped*vel_p_gain ))
+    accTarget[i] = math.max(-max_acc,math.min( max_acc,  acc_p_gain*(velTarget[i]-vel[i]) ))
+    acc[i] = (accTarget[i] + vel[i]*vel_d_gain)*acc_factor[i]
   end
-  return cmd
+
+  if debug then
+     print(string.format(" current    vel: %.3f %.3f %.3f/ %.3f /%.3f %.3f %.3f",
+          unpack(vel*180/math.pi) ))
+     print(string.format(" target    vel: %.3f %.3f %.3f/ %.3f /%.3f %.3f %.3f",
+          unpack(velTarget*180/math.pi) ))
+     print(string.format(" target    acc: %.3f %.3f %.3f/ %.3f /%.3f %.3f %.3f",
+          unpack(accTarget*180/math.pi) ))
+
+
+  end
+
+  return acc
 end
 
 function util.clamp_vector(values,min_values,max_values)

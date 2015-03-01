@@ -380,8 +380,8 @@ THOROP_kinematics_calculate_zmp(
 
 
 
-std::vector<double>
-THOROP_kinematics_calculate_arm_torque(
+void THOROP_kinematics_calculate_arm_torque(
+  double* stall_torque, double* acc_torque,
   const double *rpyangle,const double *qArm, const double *qArmAcc){
 
 
@@ -587,31 +587,29 @@ THOROP_kinematics_calculate_arm_torque(
 
   
   //sj: this seg faults if I just use vector 
+  
+  for (int i=0;i<7;i++) {
+    stall_torque[i]=0;
+    acc_torque[i]=0;
+  }
 
-  int i;
-  double t[7];
-  for (i=0;i<7;i++) t[i]=0;    
+  
+  J0.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[0]*g);
+  J1.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[1]*g);
+  J2.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[2]*g);
+  J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[3]*g);
+  J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[4]*g);
+  J5.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[5]*g);
+  J6.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[6]*g);
 
-  std::vector<double> torque(7);
-  J0.accumulate_stall_torque(t, 0.0,0.0,MassArm[0]*g);
-  J1.accumulate_stall_torque(t, 0.0,0.0,MassArm[1]*g);
-  J2.accumulate_stall_torque(t, 0.0,0.0,MassArm[2]*g);
-  J3.accumulate_stall_torque(t, 0.0,0.0,MassArm[3]*g);
-  J4.accumulate_stall_torque(t, 0.0,0.0,MassArm[4]*g);
-  J5.accumulate_stall_torque(t, 0.0,0.0,MassArm[5]*g);
-  J6.accumulate_stall_torque(t, 0.0,0.0,MassArm[6]*g);
-
-  J0.accumulate_acc_torque(t,&qArmAcc[0]);
-  J1.accumulate_acc_torque(t,&qArmAcc[0]);
-  J2.accumulate_acc_torque(t,&qArmAcc[0]);
-  J3.accumulate_acc_torque(t,&qArmAcc[0]);
-  J4.accumulate_acc_torque(t,&qArmAcc[0]);
-  J5.accumulate_acc_torque(t,&qArmAcc[0]);
-  J6.accumulate_acc_torque(t,&qArmAcc[0]);
-
-  for (i=0;i<7;i++) torque[i]=t[i];
-
-  return torque;
+  J0.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[0]);
+  J1.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[1]);
+  J2.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[2]);
+  J3.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[3]);
+  J4.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[4]);
+  J5.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[5]);
+  J6.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[6]);
+  
 }
 
 

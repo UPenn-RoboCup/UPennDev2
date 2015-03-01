@@ -334,9 +334,14 @@ int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm);
 int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
 
 
-std::vector<double> THOROP_kinematics_calculate_arm_torque(
+void THOROP_kinematics_calculate_arm_torque(
+	double* stall_torque,double* acc_torque,
+
 	const double *rpyangle,	const double *qArm, const double *qArmAcc);
-std::vector<double> THOROP_kinematics_calculate_leg_torque(
+
+
+std::vector<double> THOROP_kinematics_calculate_leg_torque(	
+
 	const double *rpyangle,const double *qLeg, const double *qLegAcc,
 	int isLeft, double grf, const double *support);
 

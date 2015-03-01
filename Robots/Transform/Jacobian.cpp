@@ -103,10 +103,10 @@ void Jacobian::accumulate_stall_torque(double* torque,
   }
 }
 
-void Jacobian::accumulate_acc_torque(double* torque, const double* qAcc){
+void Jacobian::accumulate_acc_torque(double* torque, const double* qAcc, double m){
   int i;
 
   for(i=0;i<num_of_joints;i++)
     for(int j=0;j<num_of_joints;j++)
-      torque[i]+=inertia[i][j]*qAcc[j];
+      torque[i]+=inertia[i][j]*qAcc[j]*m;
 }

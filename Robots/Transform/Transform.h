@@ -82,7 +82,7 @@ public:
 
   
   void accumulate_stall_torque(double* torque,double forcex, double forcey, double forcez);
-  void accumulate_acc_torque(double* torque, const double* qAcc);
+  void accumulate_acc_torque(double* torque, const double* qAcc, double m);
 
 private:
   int num_of_joints;

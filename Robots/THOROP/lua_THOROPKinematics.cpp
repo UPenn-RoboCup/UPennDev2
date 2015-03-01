@@ -355,20 +355,26 @@ static int calculate_com_pos2(lua_State *L) {
 
 
 static int calculate_arm_torque(lua_State *L) {
-	std::vector<double> qArm = lua_checkvector(L, 1);
+	std::vector<double> rpy = lua_checkvector(L, 1);
+	std::vector<double> qArm = lua_checkvector(L, 2);
+	std::vector<double> qArmAcc = lua_checkvector(L, 3);
 	std::vector<double> r = 
-	  THOROP_kinematics_calculate_arm_torque(&qArm[0]);
+	  THOROP_kinematics_calculate_arm_torque(&rpy[0],&qArm[0],&qArmAcc[0]);
 	lua_pushvector(L, r);
 	return 1;
 }
 
 static int calculate_leg_torque(lua_State *L) {
-	std::vector<double> qLeg = lua_checkvector(L, 1);
-	int isLeft = luaL_optnumber(L, 2, 0);
-	double grf = luaL_optnumber(L, 3, 0.0);
-	std::vector<double> support = lua_checkvector(L, 4);
+	std::vector<double> rpy = lua_checkvector(L, 1);
+	std::vector<double> qLeg = lua_checkvector(L, 2);
+	std::vector<double> qLegAcc = lua_checkvector(L, 3);
+	int isLeft = luaL_optnumber(L, 4, 0);
+	double grf = luaL_optnumber(L, 5, 0.0);
+	std::vector<double> support = lua_checkvector(L, 6);
 	std::vector<double> r = 
-	  THOROP_kinematics_calculate_leg_torque(&qLeg[0],isLeft,grf,&support[0]);
+	  
+	  THOROP_kinematics_calculate_leg_torque(
+  		&rpy[0],&qLeg[0],&qLegAcc[0],isLeft,grf,&support[0]);
 	lua_pushvector(L, r);
 	return 1;
 }

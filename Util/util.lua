@@ -101,13 +101,14 @@ end
 function util.pid_feedback(err, vel, dt, torque_factor)
   
   err_deadband = math.pi/180
-  vel_p_gain = 2
+  
   max_vel = math.pi/2 --90 deg per sec 
+  vel_p_gain = 30 --slow down at 3 degree away
+
 
   acc_p_gain = 1
   max_acc = 1
 
-  vel_d_gain = -1
   vel_d_gain = 0
     
   local cmd={}

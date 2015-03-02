@@ -748,13 +748,13 @@ void THOROP_kinematics_calculate_leg_torque(
        .rotateY(qLeg[4]).translate(legLink[5])
        .rotateDotX(qLeg[5]);
 
-  COMS = trcopy(COM5).translate(support[0],support[1],support[2]);
-  JacS0 = trcopy(Jac50).translate(support[0],support[1],support[2]);
-  JacS1 = trcopy(Jac51).translate(support[0],support[1],support[2]);
-  JacS2 = trcopy(Jac52).translate(support[0],support[1],support[2]);
-  JacS3 = trcopy(Jac53).translate(support[0],support[1],support[2]);
-  JacS4 = trcopy(Jac54).translate(support[0],support[1],support[2]);
-  JacS5 = trcopy(Jac55).translate(support[0],support[1],support[2]);
+  COMS = trcopy(COM5).translate(support[0],support[1],support[2]).translate(legLink[6]);
+  JacS0 = trcopy(Jac50).translate(support[0],support[1],support[2]).translate(legLink[6]);
+  JacS1 = trcopy(Jac51).translate(support[0],support[1],support[2]).translate(legLink[6]);
+  JacS2 = trcopy(Jac52).translate(support[0],support[1],support[2]).translate(legLink[6]);
+  JacS3 = trcopy(Jac53).translate(support[0],support[1],support[2]).translate(legLink[6]);
+  JacS4 = trcopy(Jac54).translate(support[0],support[1],support[2]).translate(legLink[6]);
+  JacS5 = trcopy(Jac55).translate(support[0],support[1],support[2]).translate(legLink[6]);
 
   Jac50.translate(legCom[index+5]);
   Jac51.translate(legCom[index+5]);
@@ -774,15 +774,14 @@ void THOROP_kinematics_calculate_leg_torque(
   J5.calculate6(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55);
   JS.calculate6(COMS,JacS0,JacS1,JacS2,JacS3,JacS4,JacS5);
 
-/*
   J0.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[0]*g);
   J1.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[1]*g);
   J2.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[2]*g);
   J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[3]*g);
   J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[4]*g);
   J5.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[5]*g);
-*/  
   JS.accumulate_stall_torque(stall_torque, 0.0,0.0,-grf);
+  
 
   J0.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[0], &InertiaLeg[index+0][0]);
   J1.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[1], &InertiaLeg[index+1][0]);

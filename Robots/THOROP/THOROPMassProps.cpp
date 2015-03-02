@@ -625,7 +625,7 @@ void THOROP_kinematics_calculate_leg_torque(
     Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,
     JacS0,JacS1,JacS2,JacS3,JacS4,JacS5;
 
-  for (int i=0;i<6;i++) {stall_torque[i]=0;acc_torque[i]=0;
+  for (int i=0;i<6;i++) {stall_torque[i]=0;acc_torque[i]=0;}
     
   Transform torso;
   torso.rotateX(rpyangle[0]).rotateY(rpyangle[1]);
@@ -710,7 +710,7 @@ void THOROP_kinematics_calculate_leg_torque(
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legLink[5])
-       .rotateX(qLeg[5]).translate(legCom[index+5]);
+       .rotateX(qLeg[5]);
   Jac50=trcopy(torso).rotateDotZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
@@ -748,14 +748,15 @@ void THOROP_kinematics_calculate_leg_torque(
        .rotateY(qLeg[4]).translate(legLink[5])
        .rotateDotX(qLeg[5]);
 
-  COMS = trcopy(COM5).translate(support[0],support[1],support[2]).translate(legLink[6]);
-  JacS0 = trcopy(Jac50).translate(support[0],support[1],support[2]).translate(legLink[6]);
-  JacS1 = trcopy(Jac51).translate(support[0],support[1],support[2]).translate(legLink[6]);
-  JacS2 = trcopy(Jac52).translate(support[0],support[1],support[2]).translate(legLink[6]);
-  JacS3 = trcopy(Jac53).translate(support[0],support[1],support[2]).translate(legLink[6]);
-  JacS4 = trcopy(Jac54).translate(support[0],support[1],support[2]).translate(legLink[6]);
-  JacS5 = trcopy(Jac55).translate(support[0],support[1],support[2]).translate(legLink[6]);
+  COMS = trcopy(COM5).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS0 = trcopy(Jac50).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS1 = trcopy(Jac51).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS2 = trcopy(Jac52).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS3 = trcopy(Jac53).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS4 = trcopy(Jac54).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS5 = trcopy(Jac55).translate(support[0],support[1],0).translate(legLink[6]);
 
+  COM5.translate(legCom[index+5]);
   Jac50.translate(legCom[index+5]);
   Jac51.translate(legCom[index+5]);
   Jac52.translate(legCom[index+5]);
@@ -765,7 +766,7 @@ void THOROP_kinematics_calculate_leg_torque(
 
   Transform JacZZ;
   Jacobian J0,J1,J2,J3,J4,J5,JS;
-  
+
   J0.calculate6(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);  
   J1.calculate6(COM1,Jac10,Jac11,JacZZ,JacZZ,JacZZ,JacZZ);
   J2.calculate6(COM2,Jac20,Jac21,Jac22,JacZZ,JacZZ,JacZZ);  
@@ -779,15 +780,13 @@ void THOROP_kinematics_calculate_leg_torque(
   J2.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[2]*g);
   J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[3]*g);
   J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[4]*g);
-  J5.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[5]*g);
   JS.accumulate_stall_torque(stall_torque, 0.0,0.0,-grf);
-  
-
+ 
   J0.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[0], &InertiaLeg[index+0][0]);
   J1.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[1], &InertiaLeg[index+1][0]);
   J2.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[2], &InertiaLeg[index+2][0]);
   J3.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[3], &InertiaLeg[index+3][0]);
   J4.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[4], &InertiaLeg[index+4][0]);
   J5.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[5], &InertiaLeg[index+5][0]);
-  }
+ 
 }

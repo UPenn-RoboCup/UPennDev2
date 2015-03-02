@@ -38,7 +38,6 @@ Jacobian& Jacobian::calculate6(
   getAngularVelocityTensor(Adot3, Ainv, w[3]);
   getAngularVelocityTensor(Adot4, Ainv, w[4]);
   getAngularVelocityTensor(Adot5, Ainv, w[5]);  
-
   return *this;
 }
 

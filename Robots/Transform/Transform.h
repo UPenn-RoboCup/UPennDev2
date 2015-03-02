@@ -30,6 +30,7 @@ public:
   
   double getZ();
   const void getXYZ(double* ret) const;
+  const double getZ() const;
   
   
   double& operator() (int i, int j);

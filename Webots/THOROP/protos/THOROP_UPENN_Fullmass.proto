@@ -191,6 +191,8 @@ Robot {
 										physics Physics {
 											#################################################################
 											density -1 mass 0.165
+											centerOfMass [0 0 0]
+											inertiaMatrix[0.000103125, 0.000103125, 0.000103125, 0,0,0]
 											#################################################################
 										}
 
@@ -218,7 +220,10 @@ Robot {
 			    									translation 0 0.0 0
     												children [Box {size 0.05 0.05 0.05}]
   												}    				
-                          physics Physics {density -1 mass 1.122}
+                          physics Physics {density -1 mass 1.122
+														centerOfMass [0 0 0]
+ 	                         inertiaMatrix[0.00070125, 0.00070125, 0.00070125, 0,0,0]
+                          }
                         #################################################################
 													children[
 														HIP_ROLL {
@@ -243,6 +248,7 @@ Robot {
                                 #################################################################
                                   density -1 mass 3.432																	
 																	centerOfMass [-0.014 -0.130 -0.029]
+																	inertiaMatrix[0.002145, 0.002145,0.002145, 0,0,0]
  	 												  		#################################################################
                                 }
 																
@@ -272,8 +278,9 @@ Robot {
 																			}
                                       physics Physics {
                                       #################################################################
-                                        density -1 mass 2.464
+                                        density -1 mass 2.464                       
 																				centerOfMass [-0.019 -0.119 0.031]
+																				inertiaMatrix[0.00154,0.00154,0.00154, 0,0,0]
 																			#################################################################
                                       }
 																			children[
@@ -303,7 +310,11 @@ Robot {
 			    																		translation 0 0.0 0
     																					children [Box {size 0.03 0.03 0.03}]
   																					}    				
-																						physics Physics {density -1 mass 0.946}
+																						physics Physics {density -1 
+																							mass 0.946
+																							centerOfMass [0 0 0]
+																							inertiaMatrix[0.00059125,0.00059125,0.00059125, 0,0,0]
+																							}
 																						#################################################################
 																						children[
 																							LEFT_ANKLE {
@@ -327,8 +338,11 @@ Robot {
 				    																					translation 0 0.0 0
 	    																								children [Box {size 0.03 0.03 0.03}]
 	  																								} 
-	  																								physics Physics {density -1 mass 0.2
+	  																								physics Physics {density -1 
+
+	  																									mass 0.2 #temp hack
 	  																									centerOfMass [0 -0.031 0]
+	  																									inertiaMatrix[0.000125,0.000125,0.000125, 0,0,0]
 	  																								}
 																									########################################################
 																									children [
@@ -352,6 +366,7 @@ Robot {
                                              	    			#density -1 mass 1.133
                                                   			density -1 mass 0.933
                                                   			centerOfMass [0 -0.031 0]
+                                                  			inertiaMatrix[0.000583125,0.000583125,0.000583125, 0,0,0]
                                                   		}
                                                       type "force-3d"                                                    
                                                     }
@@ -386,7 +401,7 @@ Robot {
 									jointParameters HingeJointParameters {
 										axis 0 1 0
 										anchor 0.072 -0.232 0
-										dampingConstant 0.1                              
+										dampingConstant 0.1
 									}
 									endPoint Solid {
 										translation 0.072 -0.232 0
@@ -397,6 +412,8 @@ Robot {
 										physics Physics {
 										##############################################################
 											density -1 mass 0.165
+											centerOfMass [0 0 0]
+											inertiaMatrix[0.000103125, 0.000103125, 0.000103125, 0,0,0]
 										##############################################################
 										}
 									
@@ -423,7 +440,11 @@ Robot {
 			    									translation 0 0.0 0
     												children [Box {size 0.05 0.05 0.05}]
   												}    				
-                          physics Physics {density -1 mass 1.122}
+                          physics Physics {
+                          	density -1 mass 1.122
+                          	centerOfMass [0 0 0]
+                          	inertiaMatrix[0.00070125, 0.00070125, 0.00070125, 0,0,0]
+                          	}
 	                      ##############################################################
 													children[
 														HIP_ROLL {
@@ -448,7 +469,8 @@ Robot {
 																physics Physics {
 															##############################################################
                                 density -1 mass 3.432																	
-																	centerOfMass [0.014 -0.130 -0.029]                        
+																	centerOfMass [0.014 -0.130 -0.029]
+																	inertiaMatrix[0.002145, 0.002145,0.002145, 0,0,0]                        
 															##############################################################
 																}
 																children [
@@ -481,6 +503,7 @@ Robot {
                                       ##############################################################
                                       density -1 mass 2.464
 																				centerOfMass [0.019 -0.119 0.031]
+																				inertiaMatrix[0.00154,0.00154,0.00154, 0,0,0]
 																			##############################################################
                                       }
 																			children[
@@ -508,7 +531,11 @@ Robot {
 			    																		translation 0 0.0 0
     																					children [Box {size 0.03 0.03 0.03}]
   																					}    				
-																						physics Physics {density -1 mass 0.946}
+																						physics Physics {
+																							density -1 mass 0.946
+																							inertiaMatrix[0.00059125,0.00059125,0.00059125, 0,0,0]
+																							centerOfMass [0 0 0]
+																						}
 																			  ##############################################################
 																						children[
 																							LEFT_ANKLE {
@@ -533,6 +560,7 @@ Robot {
   																								}    				
                                                   physics Physics {density -1 mass 0.2
                                                   	centerOfMass [0 -0.031 0]
+                                                  	inertiaMatrix[0.000125,0.000125,0.000125, 0,0,0]
                                                   }
 																						########################################################
 																									children [
@@ -559,6 +587,7 @@ Robot {
                                                   			#density -1 mass 1.133
                                                   			density -1 mass 0.933
                                                   			centerOfMass [0 -0.031 0]
+                                                  			inertiaMatrix[0.000583125,0.000583125,0.000583125, 0,0,0]
                                                   		}
                                                       type "force-3d"
                                                     }

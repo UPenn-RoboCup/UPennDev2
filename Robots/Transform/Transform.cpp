@@ -169,6 +169,8 @@ void Transform::apply0(double* x) {
 
 
 double Transform::getZ() {return t[2][3];}
+double const Transform::getZ() const{return t[2][3];}
+
 void const Transform::getXYZ(double* ret) const{
   ret[0]=t[0][3];
   ret[1]=t[1][3];

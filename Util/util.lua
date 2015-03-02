@@ -98,43 +98,49 @@ local function p_feedback(org,target, p_gain, max_vel, dt)
   return org + vel*dt
 end
 
-function util.pid_feedback(err, vel, dt, acc_factor, debug)
-  err_deadband = 0.5*math.pi/180
-  max_vel = math.pi/2 --90 deg per sec 
+function util.pid_feedback(err, vel, dt)
+  err_deadband = 0*math.pi/180
+  max_vel = 2.5 --close to spec
   vel_p_gain = 30 --at 3 degree (3*math.pi/180) reach max accelleration
+  acc_p_gain = 20 --Very stiff
 
 
+  --very soft
+  max_vel = 2 
+  acc_p_gain = 2 
 
-  acc_p_gain = 60 * math.pi/180 --1.5 sec to max vel
-  max_acc = 1 --max accelleration (m/s^2)
-
+  max_acc =  math.huge --max accelleration (m/s^2)  
   vel_d_gain = -1
-  vel_d_gain = 0
     
   local velTarget=vector.zeros(7)  
   local accTarget=vector.zeros(7)  
-  local acc={}
+  local acc=vector.zeros(7)
   for i=1,#err do
     local err_clamped = math.max(0,math.abs(err[i])-err_deadband)
     if err[i]<0 then err_clamped = -err_clamped end
     velTarget[i] = math.max(-max_vel,math.min( max_vel, err_clamped*vel_p_gain ))
     accTarget[i] = math.max(-max_acc,math.min( max_acc,  acc_p_gain*(velTarget[i]-vel[i]) ))
-    acc[i] = (accTarget[i] + vel[i]*vel_d_gain)*acc_factor[i]
+    acc[i] = accTarget[i] + vel[i]*vel_d_gain
   end
-
-  if debug then
-     print(string.format(" current    vel: %.3f %.3f %.3f/ %.3f /%.3f %.3f %.3f",
-          unpack(vel*180/math.pi) ))
-     print(string.format(" target    vel: %.3f %.3f %.3f/ %.3f /%.3f %.3f %.3f",
-          unpack(velTarget*180/math.pi) ))
-     print(string.format(" target    acc: %.3f %.3f %.3f/ %.3f /%.3f %.3f %.3f",
-          unpack(accTarget*180/math.pi) ))
-
-
-  end
-
-  return acc
+  return acc,velTarget
 end
+
+function util.linearize(torque0, vel, damping_factor, static_friction)
+  local torque=vector.zeros(#torque0);  
+  for i=1,#torque0 do
+    local t1 = torque0[i]+vel[i]*damping_factor[i];
+    if t1>0.05 then
+      torque[i]=static_friction[i]+t1;
+    elseif t1<-0.05 then
+      torque[i]=-static_friction[i]+t1;
+    else
+      torque[i]=0;
+    end
+  end
+  return torque
+end
+
+
 
 function util.clamp_vector(values,min_values,max_values)
 	local clamped = vector.new()

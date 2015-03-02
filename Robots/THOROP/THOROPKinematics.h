@@ -157,6 +157,18 @@ const double MassArm[7]={
 //	1.04, 0.752, 2.021, 1.161, 0.37, 0.102, 1.44	
 };
 
+const double InertiaArm[7][6]={
+	{0.0000625, 0.0000625, 0.0000625, 0,0,0},
+	{0.00180625, 0.00180625, 0.00180625, 0,0,0},
+	{0.00008125, 0.00008125, 0.00008125, 0,0,0},
+	{0.00050625,0.00050625, 0.00050625, 0,0,0},
+	{0.00060625,0.00060625, 0.00060625, 0,0,0},
+	{0.0000625,0.0000625,0.0000625, 0,0,0},
+	{0.0000625,0.0000625,0.0000625, 0,0,0}
+};
+
+
+
 const double armLink[7][3]={
 	{0,0.234,0.165}, //waist-shoulder roll 
 	{0,0,0}, //shoulder pitch-shoulder roll
@@ -185,8 +197,26 @@ const double MassLeg[6]={
 
 //MK2 values
 //	1.455, 1.022, 3.394, 4.745, 1.022, 1.32
-
 };
+
+const double InertiaLeg[12][6]={
+	//left
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+
+	//right
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0},
+	{0,0,0,0,0,0}	
+};
+
 
 const double legLink[7][3]={
 	{0,0.072,-0.282}, //waist-hipyaw
@@ -336,15 +366,11 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
 
 void THOROP_kinematics_calculate_arm_torque(
 	double* stall_torque,double* acc_torque,
-
 	const double *rpyangle,	const double *qArm, const double *qArmAcc);
 
-
-std::vector<double> THOROP_kinematics_calculate_leg_torque(	
-
-	const double *rpyangle,const double *qLeg, const double *qLegAcc,
+void THOROP_kinematics_calculate_leg_torque(
+	double* stall_torque,double* acc_torque,
+	const double *rpyangle,	const double *qLeg, const double *qLegAcc,
 	int isLeft, double grf, const double *support);
-
-
 
 #endif

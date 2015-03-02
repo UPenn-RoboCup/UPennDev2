@@ -78,18 +78,18 @@ public:
     const Transform &Adot6); 
 
   void clear();
-  void calculate_inertia();
+  
 
   
   void accumulate_stall_torque(double* torque,double forcex, double forcey, double forcez);
-  void accumulate_acc_torque(double* torque, const double* qAcc, double m);
+  void accumulate_acc_torque(double* torque, const double* qAcc, double m, const double* inertiamatrix);
+  void print();
 
 private:
   int num_of_joints;
 
   double v[7][3];
   double w[7][3];
-  double inertia[7][7]; 
 };
 
 

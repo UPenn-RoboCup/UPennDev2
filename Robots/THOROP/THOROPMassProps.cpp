@@ -379,233 +379,14 @@ THOROP_kinematics_calculate_zmp(
 }
 
 
-std::vector<double>
-THOROP_kinematics_calculate_arm_jacobian(const double *qArm){
 
- Transform tShoulder;
+void THOROP_kinematics_calculate_arm_torque(
+  double* stall_torque, double* acc_torque,
+  const double *rpyangle,const double *qArm, const double *qArmAcc){
 
-//COM jacobian matrix
 
   Transform 
-    TrNull,
     COM0,COM1,COM2,COM3,COM4,COM5,COM6,
-    Jac00,
-    Jac10,Jac11,
-    Jac20,Jac21,Jac22,
-    Jac30,Jac31,Jac32,Jac33,
-    Jac40,Jac41,Jac42,Jac43,Jac44,
-    Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,
-    Jac60,Jac61,Jac62,Jac63,Jac64,Jac65,Jac66;
-
-  //more compact calculation
-  COM0.rotateY(qArm[0]).translate(armCom[0]);
-  Jac00.rotateDotY(qArm[0]);  //d (com0) / dq0
-
-  COM1.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armCom[1]);
-  Jac10.rotateDotY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armCom[1]);
-  Jac11.rotateY(qArm[0]).translate(armLink[1])
-        .rotateDotZ(qArm[1]).translate(armCom[1]);
-
-  COM2.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armCom[2]);
-  Jac20.rotateDotY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armCom[2]);
-  Jac21.rotateY(qArm[0]).translate(armLink[1])
-        .rotateDotZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armCom[2]);
-  Jac22.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateDotX(qArm[2]).translate(armCom[2]);
-
-  COM3.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armCom[3]);
-  Jac30.rotateDotY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armCom[3]);
-  Jac31.rotateY(qArm[0]).translate(armLink[1]) 
-        .rotateDotZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armCom[3]);
-  Jac32.rotateY(qArm[0]).translate(armLink[1]) 
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateDotX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armCom[3]);
-  Jac33.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateDotY(qArm[3]).translate(armCom[3]);
-
-  COM4.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armCom[4]);
-  Jac40.rotateDotY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armCom[4]);
-  Jac41.rotateY(qArm[0]).translate(armLink[1]) 
-        .rotateDotZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armCom[4]);
-  Jac42.rotateY(qArm[0]).translate(armLink[1]) 
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateDotX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armCom[4]);
-  Jac43.rotateY(qArm[0]).translate(armLink[1]) 
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateDotY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armCom[4]);
-  Jac44.rotateY(qArm[0]).translate(armLink[1]) 
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateDotX(qArm[4]).translate(armCom[4]);
-
-  COM5.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac50.rotateDotY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac51.rotateY(qArm[0]).translate(armLink[1])
-        .rotateDotZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac52.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateDotX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac53.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateDotY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac54.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateDotX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac55.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateDotZ(qArm[5]).translate(armCom[5]);
-
-  COM6.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armLink[6])
-        .rotateX(qArm[6]).translate(armCom[6]);
-  Jac60.rotateDotY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armLink[6])
-        .rotateX(qArm[6]).translate(armCom[6]);
-  Jac61.rotateY(qArm[0]).translate(armLink[1])
-        .rotateDotZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armLink[6])
-        .rotateX(qArm[6]).translate(armCom[6]);
-  Jac62.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateDotX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armLink[6])
-        .rotateX(qArm[6]).translate(armCom[6]);
-  Jac63.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateDotY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armLink[6])
-        .rotateX(qArm[6]).translate(armCom[6]);
-  Jac64.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateDotX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armLink[6])
-        .rotateX(qArm[6]).translate(armCom[6]);
-  Jac65.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateDotZ(qArm[5]).translate(armLink[6])
-        .rotateX(qArm[6]).translate(armCom[6]);
-  Jac66.rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armLink[6])
-        .rotateDotX(qArm[6]).translate(armCom[6]);
-
-
-  Jacobian7 J0;
-  J0.calculate(COM0,
-    Jac00,TrNull,TrNull,TrNull,TrNull,TrNull,TrNull);
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-std::vector<double>
-THOROP_kinematics_calculate_arm_torque(const double *qArm){
-
-  Transform tShoulder;
-
-//COM jacobian matrix
-
-  Transform 
-    COM0,
-    COM1,
-    COM2,
-    COM3,
-    COM4,
-    COM5,
-    COM6,
 
     Jac00,
     Jac10,Jac11,
@@ -614,176 +395,181 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
     Jac40,Jac41,Jac42,Jac43,Jac44,
     Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,
     Jac60,Jac61,Jac62,Jac63,Jac64,Jac65,Jac66;
+  
+  for (int i=0;i<7;i++) {stall_torque[i]=0;acc_torque[i]=0;}
+
+  Transform torso;
+  torso.rotateX(rpyangle[0]).rotateY(rpyangle[1]);
 
   //more compact calculation
-  COM0.rotateY(qArm[0]).translate(armCom[0]);
-  Jac00.rotateDotY(qArm[0]);  //d (com0) / dq0
+  COM0 = trcopy(torso).rotateY(qArm[0]).translate(armCom[0]);
+  Jac00= trcopy(torso).rotateDotY(qArm[0]);  //d (com0) / dq0
 
-  COM1.rotateY(qArm[0]).translate(armLink[1])
+  COM1= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armCom[1]);
-  Jac10.rotateDotY(qArm[0]).translate(armLink[1])
+  Jac10= trcopy(torso).rotateDotY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armCom[1]);
-  Jac11.rotateY(qArm[0]).translate(armLink[1])
+  Jac11= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateDotZ(qArm[1]).translate(armCom[1]);
 
-  COM2.rotateY(qArm[0]).translate(armLink[1])
+  COM2= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armCom[2]);
-  Jac20.rotateDotY(qArm[0]).translate(armLink[1])
+  Jac20= trcopy(torso).rotateDotY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armCom[2]);
-  Jac21.rotateY(qArm[0]).translate(armLink[1])
+  Jac21= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateDotZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armCom[2]);
-  Jac22.rotateY(qArm[0]).translate(armLink[1])
+  Jac22= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateDotX(qArm[2]).translate(armCom[2]);
 
-  COM3.rotateY(qArm[0]).translate(armLink[1])
+  COM3= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armCom[3]);
-  Jac30.rotateDotY(qArm[0]).translate(armLink[1])
+  Jac30= trcopy(torso).rotateDotY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armCom[3]);
-  Jac31.rotateY(qArm[0]).translate(armLink[1]) 
+  Jac31= trcopy(torso).rotateY(qArm[0]).translate(armLink[1]) 
         .rotateDotZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armCom[3]);
-  Jac32.rotateY(qArm[0]).translate(armLink[1]) 
+  Jac32= trcopy(torso).rotateY(qArm[0]).translate(armLink[1]) 
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateDotX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armCom[3]);
-  Jac33.rotateY(qArm[0]).translate(armLink[1])
+  Jac33= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateDotY(qArm[3]).translate(armCom[3]);
 
-  COM4.rotateY(qArm[0]).translate(armLink[1])
+  COM4= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armCom[4]);
-  Jac40.rotateDotY(qArm[0]).translate(armLink[1])
+  Jac40= trcopy(torso).rotateDotY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armCom[4]);
-  Jac41.rotateY(qArm[0]).translate(armLink[1]) 
+  Jac41= trcopy(torso).rotateY(qArm[0]).translate(armLink[1]) 
         .rotateDotZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armCom[4]);
-  Jac42.rotateY(qArm[0]).translate(armLink[1]) 
+  Jac42= trcopy(torso).rotateY(qArm[0]).translate(armLink[1]) 
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateDotX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armCom[4]);
-  Jac43.rotateY(qArm[0]).translate(armLink[1]) 
+  Jac43= trcopy(torso).rotateY(qArm[0]).translate(armLink[1]) 
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateDotY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armCom[4]);
-  Jac44.rotateY(qArm[0]).translate(armLink[1]) 
+  Jac44= trcopy(torso).rotateY(qArm[0]).translate(armLink[1]) 
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateDotX(qArm[4]).translate(armCom[4]);
 
-  COM5.rotateY(qArm[0]).translate(armLink[1])
+  COM5= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac50.rotateDotY(qArm[0]).translate(armLink[1])
+  Jac50= trcopy(torso).rotateDotY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac51.rotateY(qArm[0]).translate(armLink[1])
+  Jac51= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateDotZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac52.rotateY(qArm[0]).translate(armLink[1])
+  Jac52= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateDotX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac53.rotateY(qArm[0]).translate(armLink[1])
+  Jac53= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateDotY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac54.rotateY(qArm[0]).translate(armLink[1])
+  Jac54= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateDotX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armCom[5]);
-  Jac55.rotateY(qArm[0]).translate(armLink[1])
+  Jac55= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateDotZ(qArm[5]).translate(armCom[5]);
 
-  COM6.rotateY(qArm[0]).translate(armLink[1])
+  COM6= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armLink[6])
         .rotateX(qArm[6]).translate(armCom[6]);
-  Jac60.rotateDotY(qArm[0]).translate(armLink[1])
+  Jac60= trcopy(torso).rotateDotY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armLink[6])
         .rotateX(qArm[6]).translate(armCom[6]);
-  Jac61.rotateY(qArm[0]).translate(armLink[1])
+  Jac61= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateDotZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armLink[6])
         .rotateX(qArm[6]).translate(armCom[6]);
-  Jac62.rotateY(qArm[0]).translate(armLink[1])
+  Jac62= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateDotX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armLink[6])
         .rotateX(qArm[6]).translate(armCom[6]);
-  Jac63.rotateY(qArm[0]).translate(armLink[1])
+  Jac63= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateDotY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armLink[6])
         .rotateX(qArm[6]).translate(armCom[6]);
-  Jac64.rotateY(qArm[0]).translate(armLink[1])
+  Jac64= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateDotX(qArm[4]).translate(armLink[5])
         .rotateZ(qArm[5]).translate(armLink[6])
         .rotateX(qArm[6]).translate(armCom[6]);
-  Jac65.rotateY(qArm[0]).translate(armLink[1])
+  Jac65= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
         .rotateX(qArm[4]).translate(armLink[5])
         .rotateDotZ(qArm[5]).translate(armLink[6])
         .rotateX(qArm[6]).translate(armCom[6]);
-  Jac66.rotateY(qArm[0]).translate(armLink[1])
+  Jac66= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
         .rotateZ(qArm[1]).translate(armLink[2])
         .rotateX(qArm[2]).translate(armLink[3])
         .rotateY(qArm[3]).translate(armLink[4])
@@ -792,73 +578,45 @@ THOROP_kinematics_calculate_arm_torque(const double *qArm){
         .rotateDotX(qArm[6]).translate(armCom[6]);
 
   Transform JacZZ;
-  Jacobian7 J0,J1,J2,J3,J4,J5,J6;
-  J0.calculate(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);  
-  J1.calculate(COM1,Jac10,Jac11,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);
-  J2.calculate(COM2,Jac20,Jac21,Jac22,JacZZ,JacZZ,JacZZ,JacZZ);  
-  J3.calculate(COM3,Jac30,Jac31,Jac32,Jac33,JacZZ,JacZZ,JacZZ);
-  J4.calculate(COM4,Jac40,Jac41,Jac42,Jac43,Jac44,JacZZ,JacZZ);  
-  J5.calculate(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,JacZZ);
-  J6.calculate(COM6,Jac60,Jac61,Jac62,Jac63,Jac64,Jac65,Jac66);
+  Jacobian J0,J1,J2,J3,J4,J5,J6;
+  J0.calculate7(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);  
+  J1.calculate7(COM1,Jac10,Jac11,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);
+  J2.calculate7(COM2,Jac20,Jac21,Jac22,JacZZ,JacZZ,JacZZ,JacZZ);  
+  J3.calculate7(COM3,Jac30,Jac31,Jac32,Jac33,JacZZ,JacZZ,JacZZ);
+  J4.calculate7(COM4,Jac40,Jac41,Jac42,Jac43,Jac44,JacZZ,JacZZ);  
+  J5.calculate7(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,JacZZ);
+  J6.calculate7(COM6,Jac60,Jac61,Jac62,Jac63,Jac64,Jac65,Jac66);
+  
+  J0.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[0]*g);
+  J1.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[1]*g);
+  J2.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[2]*g);
+  J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[3]*g);
+  J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[4]*g);
+  J5.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[5]*g);
+  J6.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[6]*g);
 
-  //diag( J' * Mx * J ) = joint inertia 
-  //assume point mass case (zero inertia matrix)
-
-
-
-
-
-  //Now we have 7 * 2 jacobian matrices
-  //where each one is 3 by 7 size
-  //Total size:  6 by 7 by 7
-
-
-
-
-
-  std::vector<double> torque(7);
-
-  J0.accumulate_torque(&torque[0], 0.0,0.0,MassArm[0]*g);
-  J1.accumulate_torque(&torque[0], 0.0,0.0,MassArm[1]*g);
-  J2.accumulate_torque(&torque[0], 0.0,0.0,MassArm[2]*g);
-  J3.accumulate_torque(&torque[0], 0.0,0.0,MassArm[3]*g);
-  J4.accumulate_torque(&torque[0], 0.0,0.0,MassArm[4]*g);
-  J5.accumulate_torque(&torque[0], 0.0,0.0,MassArm[5]*g);
-  J6.accumulate_torque(&torque[0], 0.0,0.0,MassArm[6]*g);
-
-/*
-  std::vector<double>  angvel63 = getAngularVelocityTensor(Jac63,inv(COM6));
-  printf("ep angular vel by joint 3: %.2f %.2f %.2f", angvel63[0],angvel63[1],angvel63[2]);
-
-  std::vector<double>  angvel62 = getAngularVelocityTensor(Jac62,inv(COM6));
-  printf("ep angular vel by joint 2: %.2f %.2f %.2f", angvel62[0],angvel62[1],angvel62[2]);
-
-  std::vector<double>  angvel61 = getAngularVelocityTensor(Jac61,inv(COM6));
-  printf("ep angular vel by joint 1: %.2f %.2f %.2f", angvel61[0],angvel61[1],angvel61[2]);
-
-*/
-
-  //Torque = (g*m)' J_i  
-//  for (i=0;i<7;i++) torque[i]*=g;
-/*
-  printf("Torque 1: %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n", 
-    torque[0],torque[1],torque[2],torque[3],torque[4],torque[5],torque[6]
-    );
-  printf("Torque 2: %.3f %.3f %.3f %.3f %.3f %.3f %.3f\n", 
-    torque2[0],torque2[1],torque2[2],torque2[3],torque2[4],torque2[5],torque2[6]
-    );
-*/
-  return torque;
+  J0.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[0], &InertiaArm[0][0]);
+  J1.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[1], &InertiaArm[1][0]);
+  J2.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[2], &InertiaArm[2][0]);
+  J3.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[3], &InertiaArm[3][0]);
+  J4.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[4], &InertiaArm[4][0]);
+  J5.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[5], &InertiaArm[5][0]);
+  J6.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[6], &InertiaArm[6][0]);
+  
 }
 
 
 
-std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,int isLeft, double grf, const double *support){
+void THOROP_kinematics_calculate_leg_torque(
+  double* stall_torque, double* acc_torque,
+  const double *rpyangle,const double *qLeg,const double *qLegAcc,
+  int isLeft, double grf, const double *support){
+
   int index = 6;
   if (isLeft>0) index = 0;
 
-
   Transform 
+    COM0,COM1,COM2,COM3,COM4,COM5,COMS,
     Jac00,
     Jac10,Jac11,
     Jac20,Jac21,Jac22,
@@ -866,118 +624,139 @@ std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,in
     Jac40,Jac41,Jac42,Jac43,Jac44,
     Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,
     JacS0,JacS1,JacS2,JacS3,JacS4,JacS5;
+
+  for (int i=0;i<6;i++) {stall_torque[i]=0;acc_torque[i]=0;}
     
+  Transform torso;
+  torso.rotateX(rpyangle[0]).rotateY(rpyangle[1]);
 
-  
+  COM0= trcopy(torso).rotateZ(qLeg[0]).translate(legCom[index]);
+  Jac00=trcopy(torso).rotateDotZ(qLeg[0]).translate(legCom[index]);
 
-
-  Jac00.rotateDotZ(qLeg[0]).translate(legCom[index]);
-
-  Jac10.rotateDotZ(qLeg[0]).translate(legLink[1])
+  COM1= trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legCom[index+1]);
-  Jac11.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac10=trcopy(torso).rotateDotZ(qLeg[0]).translate(legLink[1])
+       .rotateX(qLeg[1]).translate(legCom[index+1]);
+  Jac11=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateDotX(qLeg[1]).translate(legCom[index+1]);       
 
-  Jac20.rotateDotZ(qLeg[0]).translate(legLink[1])
+  COM2= trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legCom[index+2]);
-  Jac21.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac20=trcopy(torso).rotateDotZ(qLeg[0]).translate(legLink[1])
+       .rotateX(qLeg[1]).translate(legLink[2])
+       .rotateY(qLeg[2]).translate(legCom[index+2]);
+  Jac21=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateDotX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legCom[index+2]);
-  Jac22.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac22=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateDotY(qLeg[2]).translate(legCom[index+2]);
 
-  Jac30.rotateDotZ(qLeg[0]).translate(legLink[1])
+  COM3= trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legCom[index+3]);
-  Jac31.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac30=trcopy(torso).rotateDotZ(qLeg[0]).translate(legLink[1])
+       .rotateX(qLeg[1]).translate(legLink[2])
+       .rotateY(qLeg[2]).translate(legLink[3])
+       .rotateY(qLeg[3]).translate(legCom[index+3]);
+  Jac31=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateDotX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legCom[index+3]);
-  Jac32.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac32=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateDotY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legCom[index+3]);
-  Jac33.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac33=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateDotY(qLeg[3]).translate(legCom[index+3]);
 
-  Jac40.rotateDotZ(qLeg[0]).translate(legLink[1])
+  COM4=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legCom[index+4]);
-  Jac41.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac40=trcopy(torso).rotateDotZ(qLeg[0]).translate(legLink[1])
+       .rotateX(qLeg[1]).translate(legLink[2])
+       .rotateY(qLeg[2]).translate(legLink[3])
+       .rotateY(qLeg[3]).translate(legLink[4])
+       .rotateY(qLeg[4]).translate(legCom[index+4]);
+  Jac41=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateDotX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legCom[index+4]);
-  Jac42.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac42=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateDotY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legCom[index+4]);
-  Jac43.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac43=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateDotY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legCom[index+4]);
-  Jac44.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac44=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateDotY(qLeg[4]).translate(legCom[index+4]);
 
-  Jac50.rotateDotZ(qLeg[0]).translate(legLink[1])
+  COM5=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
-       .rotateY(qLeg[4]).translate(legLink[5]);
-
-
-  
-  Jac51.rotateZ(qLeg[0]).translate(legLink[1])
+       .rotateY(qLeg[4]).translate(legLink[5])
+       .rotateX(qLeg[5]);
+  Jac50=trcopy(torso).rotateDotZ(qLeg[0]).translate(legLink[1])
+       .rotateX(qLeg[1]).translate(legLink[2])
+       .rotateY(qLeg[2]).translate(legLink[3])
+       .rotateY(qLeg[3]).translate(legLink[4])
+       .rotateY(qLeg[4]).translate(legLink[5])
+       .rotateX(qLeg[5]);  
+  Jac51=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateDotX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legLink[5])
        .rotateX(qLeg[5]);
-  Jac52.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac52=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateDotY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legLink[5])
        .rotateX(qLeg[5]);
-  Jac53.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac53=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateDotY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legLink[5])
        .rotateX(qLeg[5]);
-  Jac54.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac54=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateDotY(qLeg[4]).translate(legLink[5])
        .rotateX(qLeg[5]);
-  Jac55.rotateZ(qLeg[0]).translate(legLink[1])
+  Jac55=trcopy(torso).rotateZ(qLeg[0]).translate(legLink[1])
        .rotateX(qLeg[1]).translate(legLink[2])
        .rotateY(qLeg[2]).translate(legLink[3])
        .rotateY(qLeg[3]).translate(legLink[4])
        .rotateY(qLeg[4]).translate(legLink[5])
        .rotateDotX(qLeg[5]);
 
+  COMS = trcopy(COM5).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS0 = trcopy(Jac50).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS1 = trcopy(Jac51).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS2 = trcopy(Jac52).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS3 = trcopy(Jac53).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS4 = trcopy(Jac54).translate(support[0],support[1],0).translate(legLink[6]);
+  JacS5 = trcopy(Jac55).translate(support[0],support[1],0).translate(legLink[6]);
 
-  JacS0 = trcopy(Jac50).translate(support[0],support[1],support[2]);
-  JacS1 = trcopy(Jac51).translate(support[0],support[1],support[2]);
-  JacS2 = trcopy(Jac52).translate(support[0],support[1],support[2]);
-  JacS3 = trcopy(Jac53).translate(support[0],support[1],support[2]);
-  JacS4 = trcopy(Jac54).translate(support[0],support[1],support[2]);
-  JacS5 = trcopy(Jac55).translate(support[0],support[1],support[2]);
-
+  COM5.translate(legCom[index+5]);
   Jac50.translate(legCom[index+5]);
   Jac51.translate(legCom[index+5]);
   Jac52.translate(legCom[index+5]);
@@ -985,51 +764,29 @@ std::vector<double> THOROP_kinematics_calculate_leg_torque(const double *qLeg,in
   Jac54.translate(legCom[index+5]);
   Jac55.translate(legCom[index+5]);
 
-  std::vector<double> torque(6);
+  Transform JacZZ;
+  Jacobian J0,J1,J2,J3,J4,J5,JS;
 
-  double net_grf= grf/g;
+  J0.calculate6(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);  
+  J1.calculate6(COM1,Jac10,Jac11,JacZZ,JacZZ,JacZZ,JacZZ);
+  J2.calculate6(COM2,Jac20,Jac21,Jac22,JacZZ,JacZZ,JacZZ);  
+  J3.calculate6(COM3,Jac30,Jac31,Jac32,Jac33,JacZZ,JacZZ);
+  J4.calculate6(COM4,Jac40,Jac41,Jac42,Jac43,Jac44,JacZZ);  
+  J5.calculate6(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55);
+  JS.calculate6(COMS,JacS0,JacS1,JacS2,JacS3,JacS4,JacS5);
 
-  torque[0] = 
-    Jac00.getZ() * MassLeg[0]+
-    Jac10.getZ() * MassLeg[1]+
-    Jac20.getZ() * MassLeg[2]+
-    Jac30.getZ() * MassLeg[3]+
-    Jac40.getZ() * MassLeg[4]+
-    Jac50.getZ() * MassLeg[5]
-    -JacS0.getZ()* net_grf;
-
-  torque[1] =     
-    Jac11.getZ() * MassLeg[1]+
-    Jac21.getZ() * MassLeg[2]+
-    Jac31.getZ() * MassLeg[3]+
-    Jac41.getZ() * MassLeg[4]+
-    Jac51.getZ() * MassLeg[5]
-    -JacS1.getZ()* net_grf;
-        
-  torque[2] =         
-    Jac22.getZ() * MassLeg[2]+
-    Jac32.getZ() * MassLeg[3]+
-    Jac42.getZ() * MassLeg[4]+
-    Jac52.getZ() * MassLeg[5]
-    -JacS2.getZ()* net_grf;
-
-  torque[3] =             
-    Jac33.getZ() * MassLeg[3]+
-    Jac43.getZ() * MassLeg[4]+
-    Jac53.getZ() * MassLeg[5]
-    -JacS3.getZ()* net_grf;
-    
-
-  torque[4] =             
-    Jac44.getZ() * MassLeg[4]+
-    Jac54.getZ() * MassLeg[5]
-    -JacS4.getZ()* (net_grf);
-    
-  torque[5] =                 
-    Jac55.getZ() * MassLeg[5]
-    -JacS5.getZ()* (net_grf);
-
-  //Torque = (g*m)' J_i  
-  for (int i=0;i<6;i++) torque[i]*=g;
-  return torque;
+  J0.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[0]*g);
+  J1.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[1]*g);
+  J2.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[2]*g);
+  J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[3]*g);
+  J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[4]*g);
+  JS.accumulate_stall_torque(stall_torque, 0.0,0.0,-grf);
+ 
+  J0.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[0], &InertiaLeg[index+0][0]);
+  J1.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[1], &InertiaLeg[index+1][0]);
+  J2.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[2], &InertiaLeg[index+2][0]);
+  J3.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[3], &InertiaLeg[index+3][0]);
+  J4.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[4], &InertiaLeg[index+4][0]);
+  J5.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[5], &InertiaLeg[index+5][0]);
+ 
 }

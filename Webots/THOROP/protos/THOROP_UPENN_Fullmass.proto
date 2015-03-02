@@ -9,6 +9,7 @@
 #  SJ: cleaned-up all mass properties according thorIK.h
 #  Fixed wrong arm lengths
 # unlimited arm torque and velocity (for arm motion testing)
+# Added inertia matrices for upper body
 #############################################
 
 PROTO THOROP_UPENN_Fullmass [
@@ -190,6 +191,8 @@ Robot {
 										physics Physics {
 											#################################################################
 											density -1 mass 0.165
+											centerOfMass [0 0 0]
+											inertiaMatrix[0.000103125, 0.000103125, 0.000103125, 0,0,0]
 											#################################################################
 										}
 
@@ -217,7 +220,10 @@ Robot {
 			    									translation 0 0.0 0
     												children [Box {size 0.05 0.05 0.05}]
   												}    				
-                          physics Physics {density -1 mass 1.122}
+                          physics Physics {density -1 mass 1.122
+														centerOfMass [0 0 0]
+ 	                         inertiaMatrix[0.00070125, 0.00070125, 0.00070125, 0,0,0]
+                          }
                         #################################################################
 													children[
 														HIP_ROLL {
@@ -242,6 +248,7 @@ Robot {
                                 #################################################################
                                   density -1 mass 3.432																	
 																	centerOfMass [-0.014 -0.130 -0.029]
+																	inertiaMatrix[0.002145, 0.002145,0.002145, 0,0,0]
  	 												  		#################################################################
                                 }
 																
@@ -271,8 +278,9 @@ Robot {
 																			}
                                       physics Physics {
                                       #################################################################
-                                        density -1 mass 2.464
+                                        density -1 mass 2.464                       
 																				centerOfMass [-0.019 -0.119 0.031]
+																				inertiaMatrix[0.00154,0.00154,0.00154, 0,0,0]
 																			#################################################################
                                       }
 																			children[
@@ -302,7 +310,11 @@ Robot {
 			    																		translation 0 0.0 0
     																					children [Box {size 0.03 0.03 0.03}]
   																					}    				
-																						physics Physics {density -1 mass 0.946}
+																						physics Physics {density -1 
+																							mass 0.946
+																							centerOfMass [0 0 0]
+																							inertiaMatrix[0.00059125,0.00059125,0.00059125, 0,0,0]
+																							}
 																						#################################################################
 																						children[
 																							LEFT_ANKLE {
@@ -326,7 +338,12 @@ Robot {
 				    																					translation 0 0.0 0
 	    																								children [Box {size 0.03 0.03 0.03}]
 	  																								} 
-	  																								physics Physics {density -1 mass 0.2}
+	  																								physics Physics {density -1 
+
+	  																									mass 0.2 #temp hack
+	  																									centerOfMass [0 -0.031 0]
+	  																									inertiaMatrix[0.000125,0.000125,0.000125, 0,0,0]
+	  																								}
 																									########################################################
 																									children [
 																										#FOOT {scale 0.001 0.001 0.001}
@@ -334,20 +351,22 @@ Robot {
 																											translation 0 0 -0.005
 																											children[FOOT {scale 0.001 0.001 0.000923}]
 																										}																										
-                                                    DEF Right_ankle_force TouchSensor {
-                                                      translation 0 -0.09 0
+                                                    DEF Right_ankle_force TouchSensor { 
                                                       lookupTable   [ 0 0 0, 5000 5000 0 ]
                                                       name "RAnkle_force"
                                                       contactMaterial IS footContactMaterial
                                                       boundingObject Transform {            
-                                                        translation 0 -0.003 0.01
+                                                        translation 0 -0.093 0.01
                                                         children [               
                                                           Box {size 0.147 0.05 0.240}
                                                         ]
                                                       }
                                                      	physics Physics {
-                                                     		density -1 mass 1.133
+                                                     		#we consider the mass of force sensor...
+                                             	    			#density -1 mass 1.133
+                                                  			density -1 mass 0.933
                                                   			centerOfMass [0 -0.031 0]
+                                                  			inertiaMatrix[0.000583125,0.000583125,0.000583125, 0,0,0]
                                                   		}
                                                       type "force-3d"                                                    
                                                     }
@@ -382,7 +401,7 @@ Robot {
 									jointParameters HingeJointParameters {
 										axis 0 1 0
 										anchor 0.072 -0.232 0
-										dampingConstant 0.1                              
+										dampingConstant 0.1
 									}
 									endPoint Solid {
 										translation 0.072 -0.232 0
@@ -393,6 +412,8 @@ Robot {
 										physics Physics {
 										##############################################################
 											density -1 mass 0.165
+											centerOfMass [0 0 0]
+											inertiaMatrix[0.000103125, 0.000103125, 0.000103125, 0,0,0]
 										##############################################################
 										}
 									
@@ -419,7 +440,11 @@ Robot {
 			    									translation 0 0.0 0
     												children [Box {size 0.05 0.05 0.05}]
   												}    				
-                          physics Physics {density -1 mass 1.122}
+                          physics Physics {
+                          	density -1 mass 1.122
+                          	centerOfMass [0 0 0]
+                          	inertiaMatrix[0.00070125, 0.00070125, 0.00070125, 0,0,0]
+                          	}
 	                      ##############################################################
 													children[
 														HIP_ROLL {
@@ -444,7 +469,8 @@ Robot {
 																physics Physics {
 															##############################################################
                                 density -1 mass 3.432																	
-																	centerOfMass [0.014 -0.130 -0.029]                        
+																	centerOfMass [0.014 -0.130 -0.029]
+																	inertiaMatrix[0.002145, 0.002145,0.002145, 0,0,0]                        
 															##############################################################
 																}
 																children [
@@ -477,6 +503,7 @@ Robot {
                                       ##############################################################
                                       density -1 mass 2.464
 																				centerOfMass [0.019 -0.119 0.031]
+																				inertiaMatrix[0.00154,0.00154,0.00154, 0,0,0]
 																			##############################################################
                                       }
 																			children[
@@ -504,7 +531,11 @@ Robot {
 			    																		translation 0 0.0 0
     																					children [Box {size 0.03 0.03 0.03}]
   																					}    				
-																						physics Physics {density -1 mass 0.946}
+																						physics Physics {
+																							density -1 mass 0.946
+																							inertiaMatrix[0.00059125,0.00059125,0.00059125, 0,0,0]
+																							centerOfMass [0 0 0]
+																						}
 																			  ##############################################################
 																						children[
 																							LEFT_ANKLE {
@@ -519,8 +550,7 @@ Robot {
 																								}
 																								jointParameters HingeJointParameters {
 																									axis 0 0 1
-																									#anchor 0 -0.1115 0.018
-																								}
+																									}
 																								endPoint Solid {
                                                   contactMaterial IS footContactMaterial
 																					########################################################						
@@ -528,7 +558,10 @@ Robot {
 			    																					translation 0 0.0 0
     																								children [Box {size 0.03 0.03 0.03}]
   																								}    				
-                                                  physics Physics {density -1 mass 0.2}
+                                                  physics Physics {density -1 mass 0.2
+                                                  	centerOfMass [0 -0.031 0]
+                                                  	inertiaMatrix[0.000125,0.000125,0.000125, 0,0,0]
+                                                  }
 																						########################################################
 																									children [
 																										#FOOT {scale 0.001 0.001 0.001}
@@ -538,12 +571,11 @@ Robot {
 																										}
 																										
                                                     DEF Left_ankle_force TouchSensor {
-                                                      translation 0 -0.09 0
                                                       lookupTable   [ 0 0 0, 5000 5000 0 ]
                                                       name "LAnkle_force"
                                                       contactMaterial IS footContactMaterial    
                                                       boundingObject Transform {
-                                                          translation 0 -0.003 0.010
+                                                          translation 0 -0.093 0.010
                                                           children [
                                                             Box {
                                                               size 0.147 0.05 0.240
@@ -551,8 +583,11 @@ Robot {
                                                           ]
                                                         }                                                 
                                                   		physics Physics {
-                                                  			density -1 mass 1.133
+                                                  			#sj - we have to consider the mass of touchsensor
+                                                  			#density -1 mass 1.133
+                                                  			density -1 mass 0.933
                                                   			centerOfMass [0 -0.031 0]
+                                                  			inertiaMatrix[0.000583125,0.000583125,0.000583125, 0,0,0]
                                                   		}
                                                       type "force-3d"
                                                     }
@@ -611,7 +646,8 @@ Robot {
   			}    
 				physics Physics {
 				##############################################################		
-					density -1 mass 0.1
+					#density -1 mass 0.1
+					density -1 mass 0.01
 					centerOfMass 0 0.06 0
 				##############################################################		
 				}
@@ -636,6 +672,7 @@ Robot {
 						endPoint kinect2 {      			  
               translation 0 0.12 0.03
       			  rotation 0 1 0 3.14159265
+      			  mass 0.01
               #TODO: add a pitch angle
       			  maxRange 4
       			 
@@ -669,6 +706,7 @@ Robot {
 				fieldOfView IS lidarFov
 				translation 0 0 0.1 				# Is if offset a bit from the axis, though?
 				rotation 0.707107 -0.707107 0 3.14159
+				mass 0.01
 			}
 			##############################################################		
 		} # End of the ChestLidarPan HingeJoint
@@ -693,12 +731,17 @@ Robot {
       } # End of the ShoulderR HingeJointParameters
       endPoint Solid {
         translation -0.234 0 0
+        ##############################################################
         boundingObject Transform {
         	translation 0.10 0 0
           children [Box {size 0.05 0.05 0.05}]
-        }
-        ##############################################################		
-        physics Physics {density -1 mass 0.1}
+        }        		
+        physics Physics {
+        	density -1 
+        	mass 0.1
+          centerOfMass 0 0.0 0
+      	  inertiaMatrix[0.0000625, 0.0000625, 0.0000625, 0,0,0]
+      	}
         ##############################################################		
         children [
           RIGHT_SHOULDER_PITCH {
@@ -718,14 +761,15 @@ Robot {
               dampingConstant 0.1                            
             } # End of the ArmUpperR HingeJointParameters
             endPoint Solid {
+            #########################################################
               boundingObject Transform {	          		
           			translation 0.01 0 0
           			children [Box {size 0.085 0.066 0.15}]
-        			}
-         ##############################################################		
+        			}         		
               physics Physics {
               	density -1 mass 2.89
-                centerOfMass 0 -0.1027 -0.008 #this assumes straight down arm posture
+                centerOfMass 0 -0.1027 -0.008
+                inertiaMatrix[0.00180625, 0.00180625, 0.00180625, 0,0,0]
               }
  				 ##############################################################
               ## Begin Shoulder Yaw
@@ -746,15 +790,16 @@ Robot {
                     axis 0 1 0
                      dampingConstant 0.1                    
                   }
-                  endPoint Solid {                    
+                  endPoint Solid {
+              ########################################################
 										boundingObject Transform {
 	          					translation 0 -0.07 0
           						children [Box {size 0.05 0.05 0.05}]
-        						}           
-           ##############################################################	
+        						}
                     physics Physics {
                  			density -1 mass 0.13
-                			centerOfMass 0 -0.246 0
+                			centerOfMass 0 -0.246 0.030
+                			inertiaMatrix[0.00008125, 0.00008125, 0.00008125, 0,0,0]
                 		}
 				#############################################################
                     children [
@@ -777,19 +822,16 @@ Robot {
                         }
                         endPoint Solid {
                           translation 0 -0.246 0.030
-                          boundingObject Group {
-                            children [
-                              Transform {
-                                rotation 1 0 0 0.7854
-                                children [Box {size 0.13 0.065 0.065}]
-                              }                              
-                            ]
-                          }
-                          ##############################################################		
+                          ##############################################################		                    
+                          boundingObject Transform {
+        							      rotation 1 0 0 0.7854
+                            children [Box {size 0.13 0.065 0.065}]
+        									}
                           physics Physics {
                             density -1 
                             mass 0.81
                             centerOfMass 0 -0.0464 0
+                            inertiaMatrix[0.00050625,0.00050625, 0.00050625, 0,0,0]
                           }
                           ##############################################################		
                           
@@ -809,6 +851,7 @@ Robot {
                               } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
                                 translation 0 -0.250 -0.03
+                                #############################################################	                                                   
 																boundingObject Transform {
 	          											translation 0 0.065 0
           												children [Box {size 0.05 0.05 0.05}]
@@ -817,7 +860,9 @@ Robot {
                                 	density -1 
                                 	mass 0.97
                                 	centerOfMass 0 0.040 0
+                                	inertiaMatrix[0.00060625,0.00060625, 0.00060625, 0,0,0]     	
                                 }
+                                #############################################################	                                                   
                                 children [
                                   DEF Right_wrist_roll HingeJoint {
                                     device RotationalMotor {
@@ -834,11 +879,15 @@ Robot {
                                     } # End of the RightWristRoll HingeJointParameters
                                     endPoint Solid {
                                     	translation 0 0 0 
+                                	 ##############################################################	
                                       boundingObject Box { size 0.05 0.05 0.1 }
 																		  physics Physics {
                                       	density -1
                                       	mass 0.1
+                                      	centerOfMass 0 0 0
+                                      	inertiaMatrix[0.0000625,0.0000625,0.0000625, 0,0,0]     
                                       }           
+ 				##############################################################	                                      
                                       children [
 																				WRIST {
                                       		translation 0 0 0
@@ -867,6 +916,8 @@ Robot {
 					                           	physics Physics{
 					                           		density -1
 					                           		mass 0.1
+					                           		centerOfMass 0 0.0 0
+					                           		inertiaMatrix[0.0000625,0.0000625,0.0000625, 0,0,0]     	
 					                              }
 					                    			}
 
@@ -923,13 +974,22 @@ Robot {
       }
       endPoint Solid {
         translation 0.234 0 0
+        ##############################################################		
         boundingObject Transform {
         	translation -0.10 0 0
           children [Box {size 0.05 0.05 0.05}]
           
+        }        
+        physics Physics {
+        	density -1          
+        	mass 0.1
+        	#Ixx = m/12*(s_y^2+s_z^2) for cuboid
+        	#for 5cm*5cm*5cm body, Ixx = m/1600
+        	#inertiaMatrix[I11 I22 I33, I12 I13 I23]
+        	centerOfMass 0 0.0 0
+        	inertiaMatrix[0.0000625, 0.0000625, 0.0000625, 0,0,0]
+
         }
-        ##############################################################		
-        physics Physics {density -1          mass 0.1}
         ##############################################################		
         children [
           LEFT_SHOULDER_PITCH {
@@ -946,17 +1006,20 @@ Robot {
             }
             jointParameters HingeJointParameters {
               axis 0 0 -1
-              dampingConstant 0.1              
+             dampingConstant 0.1              
+#             dampingConstant 0              
+              staticFriction 0
             }
             endPoint Solid {
+            ##############################################################		
             	boundingObject Transform {	          		
           			translation -0.01 0 0
           			children [Box {size 0.085 0.066 0.15}]
-        			}
-              ##############################################################		
+        			}              
               physics Physics {
               	density -1 mass 2.89
                 centerOfMass 0 -0.1027 -0.008 #this assumes straight down arm posture
+                inertiaMatrix[0.00180625, 0.00180625, 0.00180625, 0,0,0]
               }
               ##############################################################		
               ## Begin Shoulder Yaw
@@ -976,17 +1039,18 @@ Robot {
                   }
                   jointParameters HingeJointParameters {
                     axis 0 1 0
-                    dampingConstant 0.1                    
+                    dampingConstant 0.1                                  
                   }
                   endPoint Solid {
+                  	##############################################################		
 										boundingObject Transform {
 	          					translation 0 -0.07 0
           						children [Box {size 0.05 0.05 0.05}]
-        						}
-  						     ##############################################################		
+        						}  						     
                     physics Physics {
                     	density -1 mass 0.13
                     	centerOfMass 0 -0.246 0.030
+                    	inertiaMatrix[0.00008125, 0.00008125, 0.00008125, 0,0,0]
                     }  
                     ##############################################################		                    
                     children [
@@ -1006,9 +1070,12 @@ Robot {
                           axis 1 0 0
                           anchor 0 -0.246 0.030
                           dampingConstant 0.1                          
+#              						dampingConstant 0              
+              						staticFriction 0                          
                         }
                         endPoint Solid {
                           translation 0 -0.246 0.030
+                          ##############################################################		                    
                           boundingObject Transform {
         							      rotation 1 0 0 0.7854
                             children [Box {size 0.13 0.065 0.065}]
@@ -1017,7 +1084,9 @@ Robot {
                             density -1 
                             mass 0.81
                             centerOfMass 0 -0.0464 0
+                            inertiaMatrix[0.00050625,0.00050625, 0.00050625, 0,0,0]
                           }
+                          ##############################################################		                    
                           children [
 														RIGHT_ELBOW_LONG {
 															translation 0 -0.125 -0.03												
@@ -1036,6 +1105,7 @@ Robot {
                               } # End of the LeftWristYaw HingeJointParameters
                               endPoint Solid {                                
                                 translation 0 -0.25 -0.03 #lower arm length is 250mm
+				#############################################################	                                                   
                                 boundingObject Transform {
 	          											translation 0 0.065 0
           												children [Box {size 0.05 0.05 0.05}]
@@ -1044,7 +1114,9 @@ Robot {
                                 	density -1 
                                 	mass 0.97                                	
                                 	centerOfMass 0 0.040 0
+                           				inertiaMatrix[0.00060625,0.00060625, 0.00060625, 0,0,0]     	
                                 }
+	##############################################################		                                                    
                                 children [
                                   DEF Left_wrist_roll HingeJoint {
                                     device RotationalMotor {
@@ -1061,11 +1133,15 @@ Robot {
                                     } # End of the LeftWristRoll HingeJointParameters
                                     endPoint Solid {                                    	
                                       translation 0 0 0 
+                                      ##############################################################		    
                                       boundingObject Box { size 0.05 0.05 0.1 }
 																		  physics Physics {
                                       	density -1
                                       	mass 0.1
+                                      	centerOfMass 0 0.0 0
+                                      	inertiaMatrix[0.0000625,0.0000625,0.0000625, 0,0,0]     	
                                       }                                      
+                                      ##############################################################
                                       children [
                                       	WRIST {
                                       		translation 0 0 0
@@ -1097,11 +1173,15 @@ Robot {
 
 													endPoint Solid {
                             translation 0 -0.095 0
+                            ##############################################################		    
                             boundingObject Box { size 0.05 0.05 0.05 }
                            	physics Physics{
                            		density -1
                            		mass 0.1
+                           		centerOfMass 0 0 0
+               		          	inertiaMatrix[0.0000625,0.0000625,0.0000625, 0,0,0]     	
                               }
+                            ##############################################################		    
                     			}
 
 

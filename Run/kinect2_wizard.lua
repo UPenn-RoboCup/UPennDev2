@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = false
+local ENABLE_LOG = true
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014
@@ -116,8 +116,8 @@ local function update(rgb, depth)
     log_depth:record(m_depth, ranges)
   end
   -- Send
-	--color_net_ch:send({m_rgb, j_rgb})
-  --depth_net_ch:send({m_depth, ranges})
+	color_net_ch:send({m_rgb, j_rgb})
+  depth_net_ch:send({m_depth, ranges})
 	color_ch:send({m_rgb, j_rgb})
   depth_ch:send({m_depth, ranges})
   return t

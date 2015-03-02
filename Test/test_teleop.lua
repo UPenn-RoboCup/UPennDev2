@@ -212,7 +212,7 @@ local dWalk = 0.05
 local daWalk = 5*DEG_TO_RAD
 local walk = {
   i = dWalk * vector.new{1, 0, 0},
-  [','] = dWalk * vector.new{0, 0, -1},
+  [','] = dWalk * vector.new{-1, 0, 0},
   --
   j = dWalk * vector.new{0, 0, 1},
   l = dWalk * vector.new{0, 0, -1},

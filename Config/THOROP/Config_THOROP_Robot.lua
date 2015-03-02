@@ -65,6 +65,7 @@ local left_arm = {
 	37,
 	-- gripper
 	--65, 67
+	--64, 66
 },
 enable_read = true
 }
@@ -208,6 +209,8 @@ servo.joint_to_motor={
 	27,28, --Waist yaw/pitch
 	65,67, -- left gripper/trigger (This is the order)
 	64,66, -- right gripper/trigger
+	--64,66, -- right gripper/trigger
+	--65,67, -- left gripper/trigger (This is the order)
 	37, -- Lidar pan
 }
 
@@ -249,21 +252,20 @@ servo.rad_offset = vector.new({
 	0,0,0,45,0,0, --RLeg
 	90,-90,90,-45,-90,0,0, --RArm
 	0,0, -- Waist
-	75,-80, -- left gripper/trigger
+	55, -15, -- left gripper/trigger
 	55, -15, -- right gripper/trigger (UCLA verified)
 	0, -- Lidar pan
 })*DEG_TO_RAD
 
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
-	---90,-80, -- Head
 	-135,-80, -- Head
 	-90, 0, -90,    -160,   -180,-87,-180, --LArm
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-90,-87,-90,    -160,   -180,-87,-180, --RArm
 	-90,-45, -- Waist
-	-30, -30,
+	-60, -55,
 	-60, -55, -- right gripper/trigger (UCLA verified)
 	-60, -- Lidar pan
 })*DEG_TO_RAD

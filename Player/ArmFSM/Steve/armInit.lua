@@ -5,9 +5,8 @@
 local state = {}
 state._NAME = ...
 
-
 local NO_YAW_FIRST = true
-
+local USE_TR = true
 
 local Body   = require'Body'
 local vector = require'vector'
@@ -17,13 +16,15 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
---[[
+----[[
 local trLGoal = T.transform6D{0.1, 0.3, -0.3, 0, 30*DEG_TO_RAD, -45*DEG_TO_RAD}
 local trRGoal = T.transform6D{0.1, -0.32, -0.28, 15*DEG_TO_RAD, 35*DEG_TO_RAD, 70*DEG_TO_RAD}
 --]]
 -- From the IK solution above, in webots
+----[[
 local qLGoal = vector.new{140.055, 14.5738, 5, -82.3928, 65.0266, 38.4997, -59.7267} * DEG_TO_RAD
-local qRGoal = vector.new{157.166, -40.6751, -5, -101.136, -55.7423, -26.6821, 63.5934} * DEG_TO_RAD
+local qRGoal = vector.new{157.166, -50.6751, -5, -101.136, -55.7423, -26.6821, 63.5934} * DEG_TO_RAD
+--]]
 
 local shoulderLGoal, shoulderRGoal = 5*DEG_TO_RAD, -5*DEG_TO_RAD
 
@@ -37,9 +38,12 @@ function state.entry()
   t_update = t_entry
 
   -- To get to the IK solution
-  --lPathIter, rPathIter, qLGoal, qRGoal = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+	if USE_TR then
+  	lPathIter, rPathIter, qLGoal, qRGoal = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+	else
   -- Given the IK solution
-  lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
+	  lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
+	end
   if NO_YAW_FIRST then
     setShoulderYaw = true
   else
@@ -54,6 +58,8 @@ function state.entry()
 
 	-- Set Hardware limits in case
   for i=1,5 do
+		Body.set_larm_torque_enable(1)
+		Body.set_rarm_torque_enable(1)
     Body.set_larm_command_velocity(500)
     Body.set_rarm_command_velocity(500)
     Body.set_larm_command_acceleration(50)

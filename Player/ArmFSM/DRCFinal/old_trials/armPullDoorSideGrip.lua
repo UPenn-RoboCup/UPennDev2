@@ -154,8 +154,8 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(cur_cond[1])
   trRArm0 = Body.get_forward_rarm(cur_cond[2])  
 
-  print("trLArm:",arm_planner.print_transform(trLArm0))
-  print("trRArm:",arm_planner.print_transform(trRArm0))
+  print("trLArm:",util.print_transform(trLArm0))
+  print("trRArm:",util.print_transform(trRArm0))
 
   local wrist_seq = {{'move',trLArm0, trRArm0, 30*DEG_TO_RAD,0},}
   if arm_planner:plan_arm_sequence(wrist_seq) then stage = "bodyturn" end
@@ -199,8 +199,8 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
 
       if hcm.get_state_proceed()==1 then 
-        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trRArm:",arm_planner.print_transform(trRArm))
+        print("trLArm:",util.print_transform(trLArm))
+        print("trRArm:",util.print_transform(trRArm))
         hcm.set_state_proceed(0) --stop here and wait
       elseif hcm.get_state_proceed()==-1 then 
         local wrist_seq = {

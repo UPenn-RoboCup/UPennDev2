@@ -1,16 +1,14 @@
-#
+#VRML_SIM V6.0 utf8
 #  THOR-OP proto: extended wrist yaw
 #  heqin@seas.upenn.edu
-#
-
 
 PROTO RIGHT_ELBOW_LONG [
-  field SFVec3f translation 0 0 0
+  field SFVec3f translation 0 -0.125 0
   field SFRotation rotation 0 1 0 0
 ]
 {
 Solid {
-  translation 0 -0.125 0
+  translation IS translation
   rotation IS rotation
   children [
 	  Shape {

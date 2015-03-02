@@ -276,7 +276,7 @@ function state.update()
   elseif stage=="sidepush" then        
     if arm_planner:play_arm_sequence(t) then      
       if hcm.get_state_proceed()==1 then
-        print("trRArm:",arm_planner.print_transform(trRArm))        
+        print("trRArm:",util.print_transform(trRArm))        
         local wrist_seq = {         
           {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[1]},
 --          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[2]},

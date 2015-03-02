@@ -24,6 +24,13 @@ Background {
     0.678431 0.847059 0.901961
   ]
 }
+#THOROP_UPENN {
+DEF ALVIN THOROP_UPENN_NEW {
+  controller "thorop"
+  controllerArgs "0 32"
+  lidarRays 360
+  footContactMaterial "feet"
+}
 DirectionalLight {
   ambientIntensity 0.8
   direction -0.5 -2 -0.5
@@ -57,91 +64,124 @@ simple_wall {
   size 3 1 0.01
   translation -2.5 0.5 4.5
 }
-QualStep {
+DEF STEP0 QualStep {
   translation -2 0 5.5
 }
-THOROP_UPENN {
-  controller "thorop"
-  controllerArgs "0 32"
-  lidarRays 360
-  footContactMaterial "feet"
-}
-PitchRamp { translation -0.5 0 0.5 }
-QualStep {
+DEF STEP1 QualStep {
   rotation 0 1 0 1.57
   translation 0.5 0 1
 }
-QualStep {
+DEF STEP2 QualStep {
   rotation 0 1 0 1.57
   translation 0.5 0 2.5
 }
 
-OilBarrel {
+DEF RAMP0 PitchRamp {
+  translation -0.5 0 0.5
+}
+
+DEF OBSTACLE0 OilBarrel {
   translation 0.5 0.44 3.75
 }
 
-#Rubble field
-#Even
-Rubble {
-  translation -0.3 0 2.4
-}
-Rubble {
-  translation -0.4 0 2.4
-}
-Rubble {
-  translation -0.5 0 2.4
-}
-Rubble {
-  translation -0.6 0 2.4
-}
-Rubble {
-  translation -0.7 0 2.4
-}
-#Odd
-Rubble {
-  translation -0.35 0 2.5
-}
-Rubble {
-  translation -0.45 0 2.5
-}
-Rubble {
-  translation -0.55 0 2.5
-}
-Rubble {
-  translation -0.65 0 2.5
-}
-Rubble {
-  translation -0.75 0 2.5
-}
-# Even
-Rubble {
-  translation -0.3 0 2.6
-}
-Rubble {
-  translation -0.4 0 2.6
-}
-Rubble {
-  translation -0.5 0 2.6
-}
-Rubble {
-  translation -0.6 0 2.6
-}
-Rubble {
-  translation -0.7 0 2.6
-}
-#Odd
-Rubble {
-  translation -0.35 0 2.7
-}
-Rubble {
-  translation -0.45 0 2.7
-}
-Rubble {
-  translation -0.55 0 2.7
-}
-Rubble {
-  translation -0.65 0 2.7
-}
-Rubble {
-  translation -0.75 0 2.7
+DEF RUBBLE_FIELD Transform{
+translation -0.5 0 2.5
+children [
+  #Even
+  Rubble {
+    translation 0.2 0 0
+  }
+  Rubble {
+    translation 0.1 0 0
+  }
+  Rubble {
+    translation 0 0 0
+  }
+  Rubble {
+    translation -0.1 0 0
+  }
+  Rubble {
+    translation -0.2 0 0
+  }
+  #Odd
+  Rubble {
+    translation 0.15 0 0.05
+  }
+  Rubble {
+    translation 0.05 0 0.05
+  }
+  Rubble {
+    translation -0.05 0 0.05
+  }
+  Rubble {
+    translation -0.15 0 0.05
+  }
+  Rubble {
+    translation -0.25 0 0.05
+  }
+  # Even
+  Rubble {
+    translation 0.2 0 0.1
+  }
+  Rubble {
+    translation 0.1 0 0.1
+  }
+  Rubble {
+    translation 0 0 0.1
+  }
+  Rubble {
+    translation -0.1 0 0.1
+  }
+  Rubble {
+    translation -0.2 0 0.1
+  }
+  #Odd
+  Rubble {
+    translation 0.15 0 0.15
+  }
+  Rubble {
+    translation 0.05 0 0.15
+  }
+  Rubble {
+    translation -0.05 0 0.15
+  }
+  Rubble {
+    translation -0.15 0 0.15
+  }
+  Rubble {
+    translation -0.25 0 0.15
+  }
+  # Even
+  Rubble {
+    translation 0.2 0 0.2
+  }
+  Rubble {
+    translation 0.1 0 0.2
+  }
+  Rubble {
+    translation 0 0 0.2
+  }
+  Rubble {
+    translation -0.1 0 0.2
+  }
+  Rubble {
+    translation -0.2 0 0.2
+  }
+  #Odd
+  Rubble {
+    translation 0.15 0 0.25
+  }
+  Rubble {
+    translation 0.05 0 0.25
+  }
+  Rubble {
+    translation -0.05 0 0.25
+  }
+  Rubble {
+    translation -0.15 0 0.25
+  }
+  Rubble {
+    translation -0.25 0 0.25
+  }
+]
 }

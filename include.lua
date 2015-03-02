@@ -4,6 +4,8 @@
 -- It also adds very useful globals
 if DONE_INCLUDE then return end
 
+math.randomseed(10)
+
 -- Locate the Modules
 CWD = assert(os.getenv'PWD','No PWD variable set!')
 IS_WEBOTS = false

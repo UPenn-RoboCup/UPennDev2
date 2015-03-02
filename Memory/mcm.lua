@@ -42,6 +42,10 @@ shared.stance.singlesupport = vector.zeros(1) --we are doing quasi-static motion
 
 shared.stance.last_support = vector.zeros(3) --We keep last support point here
 
+shared.stance.COMoffset = vector.zeros(3)--relative COM position from waist joint
+
+
+
 
 
 --Used for drilling task
@@ -79,6 +83,17 @@ if Config.arm then
   shared.arm.lhandoffset = vector.new(Config.arm.handoffset.gripper)
   shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
 end
+
+
+--SJ: I will move to shared memory (from function arguments)
+
+shared.arm.handmass = vector.zeros(2) --Hand weight 
+shared.arm.holdmass = vector.zeros(2) --Additional holding mass weight
+shared.arm.endpoint_compensation = vector.zeros(2) --should we apply ik-based endpoint compensation?
+
+
+
+
 
 
 -- Walk Parameters (for tuning on the fly)

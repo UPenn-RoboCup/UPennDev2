@@ -7,12 +7,9 @@ local movearm = require'movearm'
 local libArmPlan = require 'libArmPlan'
 local arm_planner = libArmPlan.new_planner()
 
---Door opening state using HOOK
 local handle_clearance = vector.new({0,0,-0.05})
-local lhand_rpy0 = {0*DEG_TO_RAD,0,0}
-local rhand_rpy0 = {-0*DEG_TO_RAD,0,0}
-
-local rhand_rpy0 = {-0*DEG_TO_RAD,89*DEG_TO_RAD,0}
+local lhand_rpy0 = {0,0,45*DEG_TO_RAD}
+local rhand_rpy0 = {0,0,45*DEG_TO_RAD}
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local stage
@@ -35,7 +32,8 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
-  
+  arm_planner:set_hand_mass(0,0)
+  mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand
   arm_planner:set_shoulder_yaw_target(nil,nil)
   
   qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
@@ -72,6 +70,9 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
   
+
+
+
   if stage=="wristturn" then --Turn yaw angles first
     if arm_planner:play_arm_sequence(t) then stage="teleopwait" end
   elseif stage=="teleopwait" then       

@@ -63,6 +63,13 @@ function vector.sum(v1)
   return s
 end
 
+function vector.contains(v1, num)
+  for i, v in ipairs(v1) do
+    if v==num then return true end
+  end
+  return false
+end
+
 local function add(v1, v2)
   local v = {}
   for i = 1, #v1 do v[i] = v1[i] + v2[i] end

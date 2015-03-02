@@ -23,6 +23,13 @@ Transform& Transform::translate(double x, double y, double z) {
   return *this;
 }
 
+Transform& Transform::translate(const double* p) {
+  t[0][3] += t[0][0]*p[0] + t[0][1]*p[1] + t[0][2]*p[2];
+  t[1][3] += t[1][0]*p[0] + t[1][1]*p[1] + t[1][2]*p[2];
+  t[2][3] += t[2][0]*p[0] + t[2][1]*p[1] + t[2][2]*p[2];
+  return *this;
+}
+
 Transform& Transform::translateX(double x) {
   t[0][3] += t[0][0]*x;
   t[1][3] += t[1][0]*x;
@@ -80,6 +87,53 @@ Transform& Transform::rotateZ(double a) {
   return *this;
 }
 
+Transform& Transform::rotateDotX(double a) {
+  double ca = cos(a);
+  double sa = sin(a);
+  for (int i = 0; i < 3; i++) {
+    double ty = t[i][1];
+    double tz = t[i][2];
+    t[i][0] = 0;
+    t[i][1] = -sa*ty + ca*tz;
+    t[i][2] = -ca*ty -sa*tz;
+    t[i][3] = 0;
+  }
+  return *this;
+}
+
+Transform& Transform::rotateDotY(double a) {
+  double ca = cos(a);
+  double sa = sin(a);
+  for (int i = 0; i < 3; i++) {
+    double tx = t[i][0];
+    double tz = t[i][2];
+    t[i][0] = -sa*tx - ca*tz;
+    t[i][1] = 0;
+    t[i][2] = ca*tx - sa*tz;
+    t[i][3] = 0;
+  }
+  return *this;
+}
+
+Transform& Transform::rotateDotZ(double a) {
+  double ca = cos(a);
+  double sa = sin(a);
+  for (int i = 0; i < 3; i++) {
+    double tx = t[i][0];
+    double ty = t[i][1];
+    t[i][0] = -sa*tx + ca*ty;
+    t[i][1] = -ca*tx - sa*ty;
+    t[i][2] = 0;
+    t[i][3] = 0;
+  }
+  return *this;
+}
+
+
+
+
+
+
 Transform& Transform::mDH(double alpha, double a, double theta, double d) {
   /*
   Transform t1;
@@ -107,6 +161,18 @@ void Transform::apply(double x[3]) {
       x[i] += t[i][j]*x0[j];
     }
   }
+}
+
+void Transform::apply0(double* x) {  
+  for (int i = 0; i < 3; i++) x[i] = t[i][3];  
+}
+
+
+double Transform::getZ() {return t[2][3];}
+void const Transform::getXYZ(double* ret) const{
+  ret[0]=t[0][3];
+  ret[1]=t[1][3];
+  ret[2]=t[2][3];
 }
 
 double const Transform::operator() (int i, int j) const {
@@ -188,6 +254,26 @@ std::vector<double> position6D(const Transform &t1) {
   return p;
 }
 
+void getAngularVelocityTensor(const Transform &adot, const Transform &ainv, double* av){
+  Transform w = adot*ainv;  
+
+/*
+  printf("W matrix:\n");
+  printf("%.2f %.2f %.2f\n",w(0,0),w(1,0),w(2,0));
+  printf("%.2f %.2f %.2f\n",w(0,1),w(1,1),w(2,1));
+  printf("%.2f %.2f %.2f\n",w(0,2),w(1,2),w(2,2));
+*/
+
+//pointer error here
+/*
+  av[0]=w(1,2);
+  av[1]=w(2,0);
+  av[2]=w(0,1);
+*/  
+}
+
+
+
 void printTransform(Transform tr) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -199,7 +285,7 @@ void printTransform(Transform tr) {
 }
 
 void printVector(std::vector<double> v) {
-  for (int i = 0; i < v.size(); i++) {
+  for (int i = 0; i < (int) v.size(); i++) {
     printf("%.4g\n", v[i]);
   }
   printf("\n");

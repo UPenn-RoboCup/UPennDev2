@@ -1,6 +1,103 @@
 local WebotsBody = {}
 local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
+local vector = require'vector'
+local quaternion = require'quaternion'
+local carray = require'carray'
+
+-- TODO: Put in world config
+local IS_SUPERVISOR = true
+local q0
+local world_tags = {}
+local world_configurations = {}
+local available_configurations = {}
+local world_obj = {
+	'ALVIN',
+	'STEP0',
+	'STEP1',
+	'STEP2',
+	'RAMP0',
+	'RAMP1',
+	'RAMP2',
+	'RUBBLE0',
+	'RUBBLE1',
+	'RUBBLE2',
+	'OBSTACLE0'
+}
+
+-- Webots x is our y, Webots y is our z, Webots z is our x,
+-- Our x is Webots z, Our y is Webots x, Our z is Webots y
+local function get_translation(self)
+	local p = webots.wb_supervisor_field_get_sf_vec3f(self.translation)
+	return vector.new{p[3], p[1], p[2]}
+end
+local function set_translation(self, position)
+	local p_wbt = carray.double({position[2], position[3], position[1] })
+	webots.wb_supervisor_field_set_sf_vec3f( self.translation, p_wbt )
+end
+local function get_rotation(self)
+	local aa = webots.wb_supervisor_field_get_sf_rotation(self.rotation)
+	return quaternion.from_angle_axis(aa[4],{aa[3],aa[1],aa[2]})
+end
+local function set_rotation(self, orientation)
+	local angle, axis = quaternion.angle_axis(orientation)
+	webots.wb_supervisor_field_set_sf_rotation(
+		self.rotation,
+		carray.double{axis[2], axis[3], axis[1], angle}
+	)
+end
+
+local function reset()
+
+	-- Generate random order
+	local idx, n = {}, #available_configurations
+	while #idx<n do
+		local r = math.random(n)
+		while vector.contains(idx, r) do r = math.random(n) end
+		table.insert(idx, r)
+	end
+
+	-- Change objest configurations
+	for name,tags in pairs(world_tags) do
+		if name~='ALVIN' then
+			local config = available_configurations[table.remove(idx)]
+			local t, r = unpack(config)
+			print(name, t0, r0)
+			tags:set_translation(t)
+			--tags:set_rotation(r)
+		end
+	end
+	-- Reset the Robot: Always use the first position
+	world_tags.ALVIN:set_translation({-0.25,0,1.17})
+	world_tags.ALVIN:set_rotation(quaternion.new())
+end
+
+local function init()
+	for i, obj_name in ipairs(world_obj) do
+		local node_tag = webots.wb_supervisor_node_get_from_def(obj_name)
+		local tags = {
+			node = node_tag,
+			translation = webots.wb_supervisor_node_get_field(node_tag, "translation"),
+			rotation = webots.wb_supervisor_node_get_field(node_tag, "rotation"),
+			get_translation = get_translation,
+			set_translation = set_translation,
+			get_rotation = get_rotation,
+			set_rotation = set_rotation,
+		}
+		world_tags[obj_name] = tags
+		-- Save Configurations through a run
+		if obj_name~='ALVIN' then
+			local config = {tags:get_translation(), tags:get_rotation()}
+			table.insert(available_configurations, config)
+			-- Config ID
+			world_configurations[obj_name] = { #available_configurations }
+		end
+
+	end
+end
+
+-- Use it in WebotsBody
+WebotsBody.reset = reset
 
 function WebotsBody.entry()
 
@@ -21,6 +118,13 @@ function WebotsBody.entry()
   if fw then fw.entry() end
   if rw then rw.entry() end
   if kw and kw.entry then kw.entry() end
+
+	-- Check if supervisor
+	if IS_SUPERVISOR then
+		q0 = Body.get_position()
+		init()
+	end
+
 end
 
 function WebotsBody.update_head_camera(img, sz, cnt, t)
@@ -40,6 +144,7 @@ local depth_fl = ffi.new('float[?]', 1)
 local n_depth_fl = ffi.sizeof(depth_fl)
 local fl_sz = ffi.sizeof('float')
 function WebotsBody.update_chest_kinect(rgb, depth)
+	util.ptable(depth)
 	local n_pixels = depth.width * depth.height
 	if n_pixels~=n_depth_fl then depth_fl = ffi.new('float[?]', n_pixels) end
 	local byte_sz = n_pixels * fl_sz

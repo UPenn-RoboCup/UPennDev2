@@ -372,4 +372,10 @@ void THOROP_kinematics_calculate_leg_torque(
 	const double *rpyangle,	const double *qLeg, const double *qLegAcc,
 	int isLeft, double grf, const double *support);
 
+void THOROP_kinematics_calculate_support_leg_torque(
+  double* stall_torque, double* acc_torque,
+  const double *rpyangle,const double *qLeg,const double *qLegAcc,
+  int isLeft, double grf, const double *comUpperBody);
+
+
 #endif

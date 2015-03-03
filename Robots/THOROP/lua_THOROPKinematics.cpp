@@ -407,6 +407,34 @@ static int calculate_leg_torque(lua_State *L) {
 	return 1;
 }
 
+static int calculate_support_leg_torque(lua_State *L) {
+  double stall_torque[6];
+	double acc_torque[6];
+	std::vector<double> rpy = lua_checkvector(L, 1);
+	std::vector<double> qLeg = lua_checkvector(L, 2);
+	std::vector<double> qLegAcc = lua_checkvector(L, 3);
+	int isLeft = luaL_optnumber(L, 4, 0);
+	double grf = luaL_optnumber(L, 5, 0.0);
+	std::vector<double> com_upperbody = lua_checkvector(L, 6);
+	THOROP_kinematics_calculate_support_leg_torque(
+			&stall_torque[0],&acc_torque[0],
+  		&rpy[0],&qLeg[0],&qLegAcc[0],isLeft,grf,&com_upperbody[0]);
+	std::vector<double> vec_stall_torque(6);
+	std::vector<double> vec_acc_torque(6);
+	for (int i=0;i<6;i++){
+		vec_stall_torque[i]=stall_torque[i];
+		vec_acc_torque[i]=acc_torque[i];
+	}
+	lua_createtable(L, 0, 2);
+  lua_pushstring(L, "stall");
+	lua_pushvector(L, vec_stall_torque);
+  lua_rawset(L, -3);
+	lua_pushstring(L, "acc");
+	lua_pushvector(L, vec_acc_torque);
+  lua_rawset(L, -3);	
+	return 1;
+}
+
 
 
 static int calculate_zmp(lua_State *L) {
@@ -590,7 +618,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 
   {"calculate_arm_torque", calculate_arm_torque},
   {"calculate_leg_torque", calculate_leg_torque},
-
+  {"calculate_support_leg_torque", calculate_support_leg_torque},
 
 	{NULL, NULL}
 };

@@ -13,6 +13,7 @@ public:
   void clear();
   Transform &translate(double x, double y, double z);
   Transform &translate(const double *p);
+
   Transform &translateX(double x = 0);
   Transform &translateY(double y = 0);
   Transform &translateZ(double z = 0);
@@ -22,6 +23,12 @@ public:
   Transform &rotateDotX(double a = 0);
   Transform &rotateDotY(double a = 0);
   Transform &rotateDotZ(double a = 0);
+
+  Transform &translateNeg(const double *p);
+  Transform &rotateDotXNeg(double a = 0);
+  Transform &rotateDotYNeg(double a = 0);
+  Transform &rotateDotZNeg(double a = 0);
+
 
   Transform &mDH(double alpha, double a, double theta, double d);
   void apply(double x[3]);

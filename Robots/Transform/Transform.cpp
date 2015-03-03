@@ -30,6 +30,13 @@ Transform& Transform::translate(const double* p) {
   return *this;
 }
 
+Transform& Transform::translateNeg(const double* p) {
+  t[0][3] -= t[0][0]*p[0] + t[0][1]*p[1] + t[0][2]*p[2];
+  t[1][3] -= t[1][0]*p[0] + t[1][1]*p[1] + t[1][2]*p[2];
+  t[2][3] -= t[2][0]*p[0] + t[2][1]*p[1] + t[2][2]*p[2];
+  return *this;
+}
+
 Transform& Transform::translateX(double x) {
   t[0][3] += t[0][0]*x;
   t[1][3] += t[1][0]*x;
@@ -123,6 +130,50 @@ Transform& Transform::rotateDotZ(double a) {
     double ty = t[i][1];
     t[i][0] = -sa*tx + ca*ty;
     t[i][1] = -ca*tx - sa*ty;
+    t[i][2] = 0;
+    t[i][3] = 0;
+  }
+  return *this;
+}
+
+
+//d(rotateX(-q))/dt =  - d/dt(rotateX(-q))
+Transform& Transform::rotateDotXNeg(double a) {
+  double ca = cos(a);
+  double sa = sin(a);
+  for (int i = 0; i < 3; i++) {
+    double ty = t[i][1];
+    double tz = t[i][2];
+    t[i][0] = 0;
+    t[i][1] = -(-sa*ty + ca*tz);
+    t[i][2] = -(-ca*ty -sa*tz);
+    t[i][3] = 0;
+  }
+  return *this;
+}
+
+Transform& Transform::rotateDotYNeg(double a) {
+  double ca = cos(a);
+  double sa = sin(a);
+  for (int i = 0; i < 3; i++) {
+    double tx = t[i][0];
+    double tz = t[i][2];
+    t[i][0] = -(-sa*tx - ca*tz);
+    t[i][1] = 0;
+    t[i][2] = -(ca*tx - sa*tz);
+    t[i][3] = 0;
+  }
+  return *this;
+}
+
+Transform& Transform::rotateDotZNeg(double a) {
+  double ca = cos(a);
+  double sa = sin(a);
+  for (int i = 0; i < 3; i++) {
+    double tx = t[i][0];
+    double ty = t[i][1];
+    t[i][0] = -(-sa*tx + ca*ty);
+    t[i][1] = -(-ca*tx - sa*ty);
     t[i][2] = 0;
     t[i][3] = 0;
   }

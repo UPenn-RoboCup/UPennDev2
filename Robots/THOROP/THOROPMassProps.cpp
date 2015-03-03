@@ -790,3 +790,209 @@ void THOROP_kinematics_calculate_leg_torque(
   J5.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[5], &InertiaLeg[index+5][0]);
  
 }
+
+
+
+
+void THOROP_kinematics_calculate_support_leg_torque(
+  double* stall_torque, double* acc_torque,
+  const double *rpyangle,const double *qLeg,const double *qLegAcc,
+  int isLeft, double grf, const double *comUpperBody){
+
+  int index = 6;
+  const double* legLink0=rlegLink0;
+
+  if (isLeft>0) {
+    index = 0;
+    legLink0=llegLink0;
+  }
+
+  Transform 
+    COM0,COM1,COM2,COM3,COM4,COM5,COMB,
+    Jac45,
+    Jac34,Jac35,
+    Jac23,Jac24,Jac25,
+    Jac12,Jac13,Jac14,Jac15,
+    Jac01,Jac02,Jac03,Jac04,Jac05,
+    JacB0,JacB1,JacB2,JacB3,JacB4,JacB5;
+
+  for (int i=0;i<6;i++) {stall_torque[i]=0;acc_torque[i]=0;}
+  
+  //assumption: foot is on ground with zero angles
+
+  COM5.translateNeg(legLink[6]).translate(legCom[index+5]);
+
+  COM4.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).translate(legCom[index+4]);
+  Jac45.translateNeg(legLink[6]).rotateDotXNeg(-qLeg[5])
+       .translateNeg(legLink[5]).translate(legCom[index+4]);
+
+  COM3.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).translate(legCom[index+3]);
+  Jac34.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateDotYNeg(-qLeg[4])
+      .translateNeg(legLink[4]).translate(legCom[index+3]);
+  Jac35.translateNeg(legLink[6]).rotateDotXNeg(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).translate(legCom[index+3]);
+
+  COM2.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).translate(legCom[index+2]);
+  Jac23.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateDotYNeg(-qLeg[3])
+      .translateNeg(legLink[3]).translate(legCom[index+2]);
+  Jac24.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateDotYNeg(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).translate(legCom[index+2]);
+  Jac25.translateNeg(legLink[6]).rotateDotXNeg(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).translate(legCom[index+2]);
+
+  COM1.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).translate(legCom[index+1]);
+  Jac12.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateDotYNeg(-qLeg[2])
+      .translateNeg(legLink[2]).translate(legCom[index+1]);
+  Jac13.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateDotYNeg(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).translate(legCom[index+1]);
+  Jac14.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateDotYNeg(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).translate(legCom[index+1]);
+  Jac15.translateNeg(legLink[6]).rotateDotXNeg(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).translate(legCom[index+1]);
+
+  COM0.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).translate(legCom[index+0]);
+  Jac01.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateDotXNeg(-qLeg[1])
+      .translateNeg(legLink[1]).translate(legCom[index+0]);
+  Jac02.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateDotYNeg(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).translate(legCom[index+0]);
+  Jac03.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateDotYNeg(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).translate(legCom[index+0]);
+  Jac04.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateDotYNeg(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).translate(legCom[index+0]);
+  Jac05.translateNeg(legLink[6]).rotateDotXNeg(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).translate(legCom[index+0]);       
+
+  COMB.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).rotateZ(-qLeg[0])
+      .translateNeg(legLink0).translate(comUpperBody);
+  JacB0.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).rotateDotZNeg(-qLeg[0])
+      .translateNeg(legLink0).translate(comUpperBody);
+  JacB1.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateDotXNeg(-qLeg[1])
+      .translateNeg(legLink[1]).rotateZ(-qLeg[0])
+      .translateNeg(legLink0).translate(comUpperBody);
+  JacB2.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateDotYNeg(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).rotateZ(-qLeg[0])
+      .translateNeg(legLink0).translate(comUpperBody);
+  JacB3.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateDotYNeg(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).rotateZ(-qLeg[0])
+      .translateNeg(legLink0).translate(comUpperBody);
+  JacB4.translateNeg(legLink[6]).rotateX(-qLeg[5])
+      .translateNeg(legLink[5]).rotateDotYNeg(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).rotateZ(-qLeg[0])
+      .translateNeg(legLink0).translate(comUpperBody);
+  JacB5.translateNeg(legLink[6]).rotateDotXNeg(-qLeg[5])
+      .translateNeg(legLink[5]).rotateY(-qLeg[4])
+      .translateNeg(legLink[4]).rotateY(-qLeg[3])
+      .translateNeg(legLink[3]).rotateY(-qLeg[2])
+      .translateNeg(legLink[2]).rotateX(-qLeg[1])
+      .translateNeg(legLink[1]).rotateZ(-qLeg[0])
+      .translateNeg(legLink0).translate(comUpperBody);
+
+  Transform JacZZ;
+  Jacobian JB,J0,J1,J2,J3,J4;
+
+  JB.calculate6(COMB,JacB0,JacB1,JacB2,JacB3,JacB4,JacB5);
+  J0.calculate6(COM0,JacZZ,Jac01,Jac02,Jac03,Jac04,Jac05);  
+  J1.calculate6(COM0,JacZZ,JacZZ,Jac12,Jac13,Jac14,Jac15);  
+  J2.calculate6(COM0,JacZZ,JacZZ,JacZZ,Jac23,Jac24,Jac25);  
+  J3.calculate6(COM0,JacZZ,JacZZ,JacZZ,JacZZ,Jac34,Jac35);  
+  J4.calculate6(COM0,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ,Jac35);  
+  
+
+  double net_grf = grf-(MassLeg[0]+MassLeg[1]+MassLeg[2]+MassLeg[3]+MassLeg[4]+MassLeg[5])*g;
+
+  JB.accumulate_stall_torque(stall_torque, 0.0,0.0,net_grf);
+  J0.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[0]*g);
+  J1.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[1]*g);
+  J2.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[2]*g);
+  J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[3]*g);
+  J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[4]*g);
+  
+ /*
+  J0.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[0], &InertiaLeg[index+0][0]);
+  J1.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[1], &InertiaLeg[index+1][0]);
+  J2.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[2], &InertiaLeg[index+2][0]);
+  J3.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[3], &InertiaLeg[index+3][0]);
+  J4.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[4], &InertiaLeg[index+4][0]);
+  J5.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[5], &InertiaLeg[index+5][0]);
+ */
+}

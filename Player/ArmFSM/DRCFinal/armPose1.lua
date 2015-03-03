@@ -144,8 +144,17 @@ count=count+1
   local rsupport={0.037,0,0}
 
 
-  local lleg_torques = Body.Kinematics.calculate_leg_torque(
-    rpy_angle,lleg_pos,lleg_comp_acc, 1,lft[1] , lsupport  )
+  local lleg_torques = Body.Kinematics.calculate_leg_torque(rpy_angle,lleg_pos,lleg_comp_acc, 1,lft[1] , lsupport  )
+
+  local com_legless=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  0,0)
+
+--  local com_legless=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  0,1)  --right leg only
+  local com_offset_upperbody={com_legless[1]/com_legless[4],com_legless[2]/com_legless[4],com_legless[3]/com_legless[4]}
+
+
+  local lleg_torques2 = Body.Kinematics.calculate_support_leg_torque(rpy_angle,lleg_pos,lleg_comp_acc, 1,lft[1] , 
+    com_offset_upperbody)
+
   local rleg_torques = Body.Kinematics.calculate_leg_torque(
       --rpy_angle,rleg_pos,rleg_comp_acc, 0,0 , rsupport   )
     rpy_angle,rleg_pos,rleg_comp_acc, 0,rft[1] , rsupport   )
@@ -155,9 +164,11 @@ count=count+1
   local lleg_acc_torque = util.linearize(lleg_torques.acc,lleg_vel,leg_damping_factor,leg_static_friction);
   local rleg_acc_torque = util.linearize(rleg_torques.acc,rleg_vel,leg_damping_factor,leg_static_friction);
 
-  Body.set_lleg_command_torque(lleg_stall_torque+lleg_acc_torque)
-  Body.set_rleg_command_torque(rleg_stall_torque+rleg_acc_torque)
+--  Body.set_lleg_command_torque(lleg_stall_torque+lleg_acc_torque)
+--  Body.set_rleg_command_torque(rleg_stall_torque+rleg_acc_torque)
 
+  Body.set_lleg_command_torque(lleg_stall_torque)
+  Body.set_rleg_command_torque(rleg_stall_torque)
 
 
 
@@ -190,11 +201,11 @@ count=count+1
   
   local arm_p_gain,arm_d_gain = 10,-1
 
-  local lleg_comp_acc = larm_pos_err*arm_p_gain+larm_vel*arm_d_gain
-  local rleg_comp_acc = rarm_pos_err*arm_p_gain+rarm_vel*arm_d_gain
+  local larm_comp_acc = larm_pos_err*arm_p_gain+larm_vel*arm_d_gain
+  local rarm_comp_acc = rarm_pos_err*arm_p_gain+rarm_vel*arm_d_gain
 
-  local l_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,larm_pos,l_comp_acc)
-  local r_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,rarm_pos,r_comp_acc)
+  local l_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,larm_pos,larm_comp_acc)
+  local r_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,rarm_pos,rarm_comp_acc)
 
   local l_stall_torque = vector.new(l_torques.stall);
   local r_stall_torque = vector.new(r_torques.stall);
@@ -226,8 +237,10 @@ count=count+1
 
 ----------------------------------------------------------------------------
 
-  if count%300==0 then
-
+--  if count%300==0 then
+  if count%5==0 then
+    
+    print("Support:",-uTorsoLeft[1])
     print(string.format("Roll: %.1f Pitch:%.1f",rpy_angle[1],rpy_angle[2]))
 
     print("calculated forces: ",force_left,force_right)
@@ -237,14 +250,21 @@ count=count+1
     print(string.format("LLeg position error: %.3f %.3f/ %.3f %.3f %.3f / %.3f",
         unpack(lleg_pos_err*180/math.pi)))
 
-    print("Support:",-uTorsoLeft[1])
-
     print(string.format("LLeg actual torque: %.3f %.3f/ %.3f %.3f %.3f / %.3f",
-        unpack(lleg_actual_torque)))
+       unpack(lleg_actual_torque)))
     
-
     print(string.format("LLeg calced torque: %.3f %.3f/ %.2f %.2f %.2f / %.3f",
         unpack(lleg_stall_torque)))
+
+    print(string.format("LLeg calced2 torque: %.3f %.3f/ %.2f %.2f %.2f / %.3f",
+        unpack(lleg_torques2.stall)))
+
+
+
+    print(string.format("LLeg   comp torque: %.3f %.3f/ %.2f %.2f %.2f / %.3f",
+        unpack(lleg_acc_torque)))
+
+
 
     print(string.format("RLeg actual torque: %.3f %.3f / %.3f %.3f %.3f / %.3f",
         unpack(rleg_actual_torque)))

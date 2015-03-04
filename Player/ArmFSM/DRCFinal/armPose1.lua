@@ -14,8 +14,12 @@ local qLArm, qRArm
 
 local larm_pos_old,rarm_pos_old
 local lleg_pos_old,rleg_pos_old
-
 local l_comp_torque,r_comp_torque
+
+
+
+
+local r_cmd_pos, r_cmd_vel 
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -32,16 +36,15 @@ function state.entry()
   Body.set_rarm_torque_enable({1,1,1, 1,1,1,1}) --enable force control
 
   Body.set_larm_torque_enable({2,2,2, 2,2,2,2}) --enable force control
-
-    Body.set_larm_torque_enable({2,1,1, 1,1,1,1}) --enable force control
-    Body.set_larm_torque_enable({2,2,2, 2,2,1,2}) --enable force control
+  Body.set_larm_torque_enable({2,1,1, 1,1,1,1}) --enable force control
+  Body.set_larm_torque_enable({2,2,2, 2,2,1,2}) --enable force control
     
 
   Body.set_lleg_torque_enable({1,1,1, 1,1,1}) --enable force control
   Body.set_rleg_torque_enable({1,1,1, 1,1,1}) --enable force control
 
---  Body.set_lleg_torque_enable({1,1,2,2,2,1}) --enable force control
---  Body.set_rleg_torque_enable({1,1,2,2,2,1}) --enable force control
+--  Body.set_lleg_torque_enable({1,1,2,1,1,1}) --enable force control
+--  Body.set_rleg_torque_enable({1,1,2,1,1,1}) --enable force control
 
 
   larm_pos_old = Body.get_larm_position()  
@@ -52,7 +55,8 @@ function state.entry()
   l_comp_torque = vector.zeros(7)
   r_comp_torque = vector.zeros(7)
 
-  
+  r_cmd_pos = Body.get_rarm_command_position()
+  r_cmd_vel=vector.zeros(7)
 
 end
 
@@ -121,21 +125,30 @@ count=count+1
   local com_whole_body=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  1,1)
   local force_left = (rightDist/(leftDist+rightDist))*com_whole_body[4]*9.81
   local force_right = (leftDist/(leftDist+rightDist))*com_whole_body[4]*9.81
+  if force_left<0 then force_left,force_right=0,com_whole_body[4]*9.81 end
+  if force_right<0 then force_left,force_right=com_whole_body[4]*9.81,0 end
 
-  local leg_acc_gain = 20
-  local leg_damping_factor=vector.ones(7)*0 --internal damping of servo
-  local leg_static_friction = vector.new({0,0,0,0, 0,0,0});
+  local leg_acc_gain = 2
+  local leg_damping_factor=vector.ones(6)*0 --internal damping of servo
+  local leg_static_friction = vector.new({0,0,0,0, 0,0});
 
-  local lleg_comp_acc = util.pid_feedback(lleg_pos_err, lleg_vel, dt, leg_acc_gain)
-  local rleg_comp_acc = util.pid_feedback(rleg_pos_err, rleg_vel, dt, leg_acc_gain)
+  --local lleg_comp_acc = util.pid_feedback(lleg_pos_err, lleg_vel, dt, leg_acc_gain)
+  --local rleg_comp_acc = util.pid_feedback(rleg_pos_err, rleg_vel, dt, leg_acc_gain)
 
+  local leg_p_gain,leg_d_gain = 10,-1
 
-  lleg_comp_acc= vector.zeros(6)
+  local lleg_comp_acc = lleg_pos_err*leg_p_gain+lleg_vel*leg_d_gain
+  local rleg_comp_acc = rleg_pos_err*leg_p_gain+rleg_vel*leg_d_gain
+
+  local lsupport={0.037,0,0}
+  local rsupport={0.037,0,0}
+
 
   local lleg_torques = Body.Kinematics.calculate_leg_torque(
-    rpy_angle,lleg_pos,lleg_comp_acc, 1,lft[1] , {-uTorsoLeft[1],0,0}   )
+    rpy_angle,lleg_pos,lleg_comp_acc, 1,lft[1] , lsupport  )
   local rleg_torques = Body.Kinematics.calculate_leg_torque(
-    rpy_angle,rleg_pos,rleg_comp_acc, 0,rft[1] , {-uTorsoLeft[1],0,0}   )
+      --rpy_angle,rleg_pos,rleg_comp_acc, 0,0 , rsupport   )
+    rpy_angle,rleg_pos,rleg_comp_acc, 0,rft[1] , rsupport   )
 
   local lleg_stall_torque = vector.new(lleg_torques.stall);
   local rleg_stall_torque = vector.new(rleg_torques.stall);
@@ -147,6 +160,71 @@ count=count+1
 
 
 
+
+
+  
+
+--
+----------------------------------------------------------------------------
+-- Arm force-control code #1
+
+  local larm_cmdpos = Body.get_larm_command_position()
+  local rarm_cmdpos = Body.get_rarm_command_position()
+  local larm_pos = Body.get_larm_position()
+  local rarm_pos = Body.get_rarm_position()
+  local larm_pos_err = (larm_cmdpos-larm_pos)
+  local rarm_pos_err = (rarm_cmdpos-rarm_pos)
+  local larm_vel = (larm_pos-larm_pos_old)/dt;
+  local rarm_vel = (rarm_pos-rarm_pos_old)/dt;
+  larm_pos_old,rarm_pos_old = larm_pos,rarm_pos
+
+  local larm_actual_torque = Body.get_larm_current()
+  local rarm_actual_torque = Body.get_rarm_current()
+
+  local damping_factor=vector.ones(7)*0 --internal damping of servo
+  local static_friction = vector.new({0,0,0,0, 0,0,0});
+  local arm_acc_gain = 20 --very stiff
+
+  local l_comp_acc,l_vel_target = util.pid_feedback(larm_pos_err, larm_vel, dt, arm_acc_gain)
+  local r_comp_acc,r_vel_target = util.pid_feedback(rarm_pos_err, rarm_vel, dt, arm_acc_gain)
+  
+  local arm_p_gain,arm_d_gain = 10,-1
+
+  local lleg_comp_acc = larm_pos_err*arm_p_gain+larm_vel*arm_d_gain
+  local rleg_comp_acc = rarm_pos_err*arm_p_gain+rarm_vel*arm_d_gain
+
+  local l_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,larm_pos,l_comp_acc)
+  local r_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,rarm_pos,r_comp_acc)
+
+  local l_stall_torque = vector.new(l_torques.stall);
+  local r_stall_torque = vector.new(r_torques.stall);
+  local l_acc_torque = util.linearize(l_torques.acc,larm_vel,damping_factor,static_friction);
+  local r_acc_torque = util.linearize(r_torques.acc,rarm_vel,damping_factor,static_friction);
+
+  Body.set_larm_command_torque(l_stall_torque+l_acc_torque)
+  Body.set_rarm_command_torque(r_stall_torque+r_acc_torque)
+
+
+
+
+
+
+
+  local r_cmd_acc = (r_stall_torque-rarm_actual_torque)*0.5 - r_cmd_vel*1
+
+  --r_cmd_acc[7],r_cmd_acc[2],r_cmd_acc[3],r_cmd_acc[5],r_cmd_acc[6]=0,0,0,0,0
+  r_cmd_vel = r_cmd_vel + r_cmd_acc*dt;
+  r_cmd_pos = r_cmd_pos + r_cmd_vel*dt;
+  Body.set_rarm_command_position(r_cmd_pos)
+
+
+
+
+
+
+
+
+----------------------------------------------------------------------------
 
   if count%300==0 then
 
@@ -165,50 +243,27 @@ count=count+1
         unpack(lleg_actual_torque)))
     
 
-    print(string.format("LLeg calced torque: %.2f %.2f/ %.2f %.2f %.2f / %.3f",
+    print(string.format("LLeg calced torque: %.3f %.3f/ %.2f %.2f %.2f / %.3f",
         unpack(lleg_stall_torque)))
 
-    print(string.format("RLeg actual torque: %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+    print(string.format("RLeg actual torque: %.3f %.3f / %.3f %.3f %.3f / %.3f",
         unpack(rleg_actual_torque)))
-    print(string.format("RLeg calced torque: %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+    print(string.format("RLeg calced torque: %.3f %.3f / %.3f %.3f %.3f / %.3f",
         unpack(rleg_stall_torque)))
+
+
+    print(string.format("RArm actual torque: %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+        unpack(rarm_actual_torque)))
+    print(string.format("RArm calced torque: %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+        unpack(r_stall_torque)))
+
+    print(string.format("LArm calcu  torque: %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+          unpack( l_stall_torque ) ))
+        
+
+
 end
---]]  
 
---
-----------------------------------------------------------------------------
--- Arm force-control code #1
-
-  local larm_cmdpos = Body.get_larm_command_position()
-  local rarm_cmdpos = Body.get_rarm_command_position()
-  local larm_pos = Body.get_larm_position()
-  local rarm_pos = Body.get_rarm_position()
-  local larm_pos_err = (larm_cmdpos-larm_pos)
-  local rarm_pos_err = (rarm_cmdpos-rarm_pos)
-  local larm_vel = (larm_pos-larm_pos_old)/dt;
-  local rarm_vel = (rarm_pos-rarm_pos_old)/dt;
-  larm_pos_old,rarm_pos_old = larm_pos,rarm_pos
-
-  local damping_factor=vector.ones(7)*0 --internal damping of servo
-  local static_friction = vector.new({0,0,0,0, 0,0,0});
-  local arm_acc_gain = 20 --very stiff
-
-  local l_comp_acc,l_vel_target = util.pid_feedback(larm_pos_err, larm_vel, dt, arm_acc_gain)
-  local r_comp_acc,r_vel_target = util.pid_feedback(rarm_pos_err, rarm_vel, dt, arm_acc_gain)
-  
-  local l_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,larm_pos,l_comp_acc)
-  local r_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,rarm_pos,r_comp_acc)
-
-  local l_stall_torque = vector.new(l_torques.stall);
-  local r_stall_torque = vector.new(r_torques.stall);
-  local l_acc_torque = util.linearize(l_torques.acc,larm_vel,damping_factor,static_friction);
-  local r_acc_torque = util.linearize(r_torques.acc,rarm_vel,damping_factor,static_friction);
-
-  Body.set_larm_command_torque(l_stall_torque+l_acc_torque)
-  Body.set_rarm_command_torque(r_stall_torque+r_acc_torque)
-
-----------------------------------------------------------------------------
---
 
 
 end

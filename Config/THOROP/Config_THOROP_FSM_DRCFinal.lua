@@ -54,11 +54,19 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyStop'},
 
+  {'bodyStop', 'approach', 'bodyBlockApproach'},
+  {'bodyBlockApproach', 'done', 'bodyStep'},
+  {'bodyBlockApproach', 'end', 'bodyStop'},
+
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
   {'bodyStepPlace',   'done', 'bodyStop'},
 
   {'bodyStop', 'stepover1', 'bodyStep'},
-  {'bodyStep', 'done', 'bodyStop'},
+
+  
+  {'bodyStep', 'nextstep', 'bodyStep'},
+--  {'bodyStep', 'done', 'bodyStop'},
+  {'bodyStep', 'done', 'bodyBlockApproach'},
 }
 
 

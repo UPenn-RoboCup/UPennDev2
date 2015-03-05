@@ -386,14 +386,34 @@ function moveleg.set_leg_positions()
   local delta_legs = mcm.get_walk_delta_legs()  
 
 
+  local aShiftX = mcm.get_walk_aShiftX()
+  local aShiftY = mcm.get_walk_aShiftY()
 
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
+
+--ankle height compensation
+local ankle_height = 0.118
+
+
+local uLeftComp=util.pose_global( {math.sin(aShiftY[1])*ankle_height,0,0},uLeft)
+local uRightComp=util.pose_global( {math.sin(aShiftY[2])*ankle_height,0,0},uRight)
+local zLeftComp = (1-math.cos(aShiftY[1]))*ankle_height
+local zRightComp = (1-math.cos(aShiftY[2]))*ankle_height
+
+--
+zLeftComp,zRightComp = 0,0
+uLeftComp,uRightComp=uLeft,uRight
+--
+
+--  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+--  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
+
+  local pLLeg = vector.new({uLeftComp[1],uLeftComp[2],zLeft-zLeftComp,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRightComp[1],uRightComp[2],zRight-zRightComp,0,0,uRight[3]})
+
+
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  local aShiftX = mcm.get_walk_aShiftX()
-  local aShiftY = mcm.get_walk_aShiftY()
 
 
   local count,revise_max = 1,4

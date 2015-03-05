@@ -19,17 +19,18 @@ Solid {
   translation IS translation
   rotation IS rotation
   children [
-    Camera {
-      name IS name
-      fieldOfView IS fieldOfView
-      width IS width
-      height IS height
-      maxRange IS maxRange 
-      type "b"
-      colorNoise IS colorNoise
-      rangeNoise IS rangeNoise
-      windowPosition IS windowPosition
-    }
+
+#    Camera {
+#      name IS name
+#      fieldOfView IS fieldOfView
+#      width IS width
+#      height IS height
+#      maxRange IS maxRange 
+#      type "b"
+#      colorNoise IS colorNoise
+#      rangeNoise IS rangeNoise
+#      windowPosition IS windowPosition
+#    }
     Shape {
       appearance Appearance {
         material Material {

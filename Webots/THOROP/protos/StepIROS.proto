@@ -3,6 +3,7 @@ PROTO StepIROS [
 #  0.2m deep, 0.15m high, 1 meter wide
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
+  field SFVec3f boxsize 0.2 0.15 1.0
 ]
 {
 Solid {
@@ -16,12 +17,12 @@ Solid {
             specularColor 0 0 0
           }
         }
-        geometry Box {size 0.2 0.15 1.0}
+        geometry Box {size IS boxsize}
      }
   ]
   boundingObject Transform {
     translation 0 0 0
-    children [Box {size 0.2 0.15 1.0}]
+    children [Box {size IS boxsize}]
   }  
   locked TRUE 
 }

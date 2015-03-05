@@ -91,7 +91,6 @@ function state.entry()
   local uLeftTorso = util.pose_relative(uLeft,uTorso)
   local uRightTorso = util.pose_relative(uRight,uTorso)
 
-
   local leg_move_factor = math.abs(uLeftTorso[1]-uRightTorso[1])/0.25
 
 
@@ -125,6 +124,16 @@ function state.entry()
     st,wt = 0.3,1.5 
 --    st,wt = 0.1,0.5 
   end
+
+  local aShiftY0=mcm.get_walk_aShiftY()
+  
+  --[[
+  if aShiftY0[1]~=0 or aShiftY0[2]~=0 or step_zpr[2]~=0 then
+    print("ramp!")
+    st,wt = 2,2 
+  end
+--]]
+
 
   local leg_move_dist = 
     math.abs(step_relpos[1])+math.abs(step_relpos[2])+
@@ -244,7 +253,11 @@ function state.update()
   
   local dt = t - t_update
 
-  if not is_possible then return "done" end
+  if not is_possible then 
+    print("ENDEDENDED")
+    print("ENDEDENDED")
+    return "done" 
+  end
   -- Save this at the last update time
   t_update = t
   if mcm.get_walk_ismoving()==0 and t-t_stage>0.5 then    
@@ -252,12 +265,10 @@ function state.update()
       ready_for_input = false
     end    
     if stage==#step_queues then 
+      hcm.set_step_dir(1)
       motion_ch:send'stop'  
-      print("ended")
-      return 'done'
+      return 'nextstep'
     elseif hcm.get_state_proceed()==1 then     
-
-
       --Clear the zmp compensation value here between transition---------------------
       local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
       local uTorso = mcm.get_status_uTorso()
@@ -266,7 +277,7 @@ function state.update()
       mcm.set_status_uTorso(uTorso)
 
 
-      hcm.set_state_proceed(0)
+--      hcm.set_state_proceed(0)
       stage = stage+1
       calculate_footsteps(stage)
       motion_ch:send'stair'  

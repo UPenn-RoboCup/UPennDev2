@@ -13,7 +13,9 @@ Solid {
   rotation IS rotation
   children [
 		DEF ramp1 Transform{
-		  translation 0 0.08 -0.3
+		  #translation 0 0.07 -0.295	
+		  translation 0 0.07 -0.30	
+
 		  rotation 1 0 0 -0.262
 		  children [
 			  Shape {
@@ -25,7 +27,8 @@ Solid {
 			]
 		}
 		DEF ramp2 Transform{
-		  translation 0 0.08 0.3
+		  #translation 0 0.07 0.295
+		  translation 0 0.07 0.30
 		  rotation 1 0 0 0.262
 		  children [
 			  Shape {
@@ -42,6 +45,7 @@ Solid {
 			USE ramp2
 		]
   }
+  contactMaterial "ramp"
  locked TRUE
 }
 }

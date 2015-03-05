@@ -98,14 +98,16 @@ local function update(key_code)
 
 
 	elseif key_char_lower==("4") then
-		print("balance off")
-		hcm.set_legdebug_enable_balance({0,0})
+	--	print("balance off")
+	--hcm.set_legdebug_enable_balance({0,0})
+
+		body_ch:send'approach'		
 
 
 	elseif key_char_lower==("5") and Body.get_time()-last_input>input_delay then      
 		last_input = Body.get_time()
 
-
+	 	hcm.set_step_auto(1)
 
 		hcm.set_step_supportLeg(1)
 		hcm.set_step_relpos({0.25,0,0})

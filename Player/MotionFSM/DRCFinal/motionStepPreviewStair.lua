@@ -214,6 +214,10 @@ function walk.update()
     local lowerVelMax = 0.40
     local lowerVelDS = 0.40
 
+
+
+
+
     local leg_raise = 0
     if Config.raise_body then
       if zLeft>0 and zRight>0 then
@@ -252,9 +256,14 @@ function walk.update()
       local zpr_target = hcm.get_step_zpr()
       local wparam={walkParam[1],walkParam[2],walkParam[3]}
 
-      if aShiftY0[2]<0 and zpr_target[2]>0 then
+      local stride=util.pose_relative(uRight_next,uRight_now)
+      if math.sqrt(stride[1]*stride[1]+stride[2]*stride[2])>0.50 then
+        if zpr_target[1]<0.05 then wparam[2] = wparam[2]+0.15 end
+      elseif aShiftY0[2]<0 and zpr_target[2]>0 then
         wparam[2] = wparam[2]+0.05
       end
+
+
 
 
       uRight,zRight,liftp, landp = foot_traj_func(
@@ -263,37 +272,36 @@ function walk.update()
       zLeg0[1] = zLeg0[1] - leg_raise
       zLeg0[2] = zLeg0[2] - leg_raise
       mcm.set_status_zLeg0(zLeg0)
-
       zLeft = zLeg0[1]      
       zRight = zRight +zLeg0[2]
-
-
-      local aShiftY = {
-        aShiftY0[1],
-        liftp*aShiftY0[2] + (landp)*zpr_target[2]
-      }
+      local aShiftY = {aShiftY0[1],liftp*aShiftY0[2] + (landp)*zpr_target[2]}
       mcm.set_walk_aShiftY(aShiftY)
 
 
 
     elseif supportLeg==1 then    -- Right support    
+      local zpr_target = hcm.get_step_zpr()
+      local wparam={walkParam[1],walkParam[2],walkParam[3]}
+
+      local stride=util.pose_relative(uLeft_next,uLeft_now)
+      if math.sqrt(stride[1]*stride[1]+stride[2]*stride[2])>0.50 then
+        if zpr_target[1]<0.05 then wparam[2] = wparam[2]+0.15 end
+      elseif aShiftY0[2]<0 and zpr_target[2]>0 then
+        wparam[2] = wparam[2]+0.05
+      end
+
+
+
       uLeft,zLeft,liftp, landp = foot_traj_func(
-        phSingle,uLeft_now,uLeft_next,stepHeight,walkParam, zLeg[1], l_ft[3],touched)    
+        phSingle,uLeft_now,uLeft_next,stepHeight,wparam, zLeg[1], l_ft[3],touched)    
           
       zLeg0[1] = zLeg0[1] - leg_raise
       zLeg0[2] = zLeg0[2] - leg_raise
       mcm.set_status_zLeg0(zLeg0)
       zRight = zLeg0[2]    
       zLeft = zLeft +zLeg0[1]
-
-
-      local zpr_target = hcm.get_step_zpr()
-      local aShiftY = {
-        liftp*aShiftY0[1] + landp*zpr_target[2],
-        aShiftY0[2]
-      }
+      local aShiftY = {liftp*aShiftY0[1] + landp*zpr_target[2],aShiftY0[2]}
       mcm.set_walk_aShiftY(aShiftY)
-
     end
 
     

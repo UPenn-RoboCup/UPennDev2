@@ -12,58 +12,27 @@ local footY = Config.walk.footY
 
 --2D surfaces
 --x1 x2 y1 y2  z_center pitch
-
---Single block
 local surfaces2D={ 
---[[
-  {0,   0.40,     -0.5,0.5,     0.0,0}, 
-  {0.40,0.68,  -0.5,0.5,  0.15,0},  
-  {0.68,1.10,  -0.5,0.5,  0.0,0},    
---]]
+  {0,0.40,     -0.2,0.2,          0.0,0}, 
+  {0.40,0.80,  -0.2,0.2,  0.15,0},  
+  {0.80,1.20,  -0.2,0.2,  0.30,0},  
+  {1.20,1.60,  -0.2,0.2,  0.45,0}, 
+  {1.60,2.00,  -0.2,0.2,  0.60,0}, 
+  {2.00,2.40,  -0.2,0.2,  0.45,0},  
+  {2.40,2.80,  -0.2,0.2,  0.30,0},  
+  {2.80,3.20,  -0.2,0.2,  0.15,0},  
+  {3.20,3.60,  -0.2,0.2,  0.0,0},  
 
-  {0.46,0.86,  0.5,1.5,     0.0,0}, 
-  {0.86,1.14,  0.5,1.5,  0.15,0},  
-  {1.14,1.52,  0.5,1.5,  0.0,0},    
-
-  {1.50, 1.86,  -0.4,0.4,     0.0,0}, 
-  {1.86,2.14,  -0.4,0.4,  0.15,0},  
-  {2.14,2.52,  -0.4,0.4,  0.0,0},    
-
-  {2.46,2.86,  -1.5,-0.5,  0.0,0}, 
-  {2.86,3.14,  -1.5,-0.5,  0.15,0},  
-  {3.14,3.52,  -1.5,-0.5,  0.0,0},    
-
-
-
-  {0.44, 0.70,  -0.30,0.30, 0.0,0}, 
-  {0.70,1.20,  -0.30,0.30,  0.05,0},  
-  {1.20,1.60,  -0.5,0.5,  0.0,0},    
-
---[[
-  {1.44, 1.70,  0.25,1.25, 0.0,0}, 
-  {1.70,2.20,  0.25,1.25,  0.05,0},  
-  {2.20,2.70,  0.5,1.5,  0.0,0},    
-
-  {2.44, 2.70,  -0.25,0.25, 0.0,0}, 
-  {2.70,3.20,  -0.25,0.25,  0.05,0},  
-  {3.20,3.70,  -0.5,0.5,  0.0,0},    
---]]
-
-
-    {0.0,0.40,    -2.2,0.2,      0,   0}, 
-    {0.40,1.00,   -2.2,0.2,     0.08,   -0.262}, 
-    {1.00,1.60,   -2.2,0.2,     0.08,    0.262}, 
-    {1.60,2.00,    -2.2,0.2,      0,   0}, 
-
+  {0,0.40,     -0.6,-0.2,          0.0,0}, 
+  {0.40,0.80,  -0.6,-0.2,  0,0},  
+  {0.80,1.20,  -0.6,-0.2,  0.15,0},  
+  {1.20,1.60,  -0.6,-0.2,  0.30,0}, 
+  {1.60,2.00,  -0.6,-0.2,  0.45,0}, 
+  {2.00,2.40,  -0.6,-0.2,  0.60,0},  
+  {2.40,2.80,  -0.6,-0.2,  0.45,0},  
+  {2.80,3.20,  -0.6,-0.2,  0.30,0},  
+  {3.20,3.60,  -0.6,-0.2,  0.15,0},  
 }
-
-
---Single ramp at around 2.0m 
-
-
-
---]]
-
 
 
 --[[
@@ -117,11 +86,10 @@ local heelLandX = -0.15
 local feetY = 0.08 -- is it correct?
 
 
-
-
 local max_stride_x = 0.28
 local stepheight_max = 0.16
 local max_stride_land_x = 0.31
+
 
 
 local function check_side(v1,v2,v)
@@ -206,12 +174,16 @@ local function sample_landing_positions(uFoot, swing_z, support_z,support_pitch,
   local dir = hcm.get_step_dir()
   local s,e=0,0.32
   --
-  if math.abs(support_pitch)>5*math.pi/180 then
-    s,e=0,0.295
+  if math.abs(support_pitch)*5*math.pi/180 then
+    s,e=0,0.28
   end
   --
 
   if dir<0 then s,e = -0.32,0 end
+
+
+  
+
 
   for j=0,0.04,0.01 do
     for i=s,e,0.01 do    
@@ -220,6 +192,8 @@ local function sample_landing_positions(uFoot, swing_z, support_z,support_pitch,
 
       --Hack to track the center line
 --      uFoot2[2] = -leftsupport*feetY
+
+
 
       local stepheight,pitch = is_reachable(uFoot2,swing_z,support_z,support_pitch,uFoot)
       if stepheight then table.insert(possible_foot_positions,{uFoot2, {stepheight,pitch,0}} )end
@@ -266,14 +240,6 @@ local function select_best_landing_position(uFoot,candidate)
     hcm.set_step_dir(0)
     return    
   end
-
---[[
-  local h0,p0 = find_current_surface_height(uFoot)
-  local h1,p1 = find_current_surface_height(best_foot)
-  best_zpr[1]=h1-h0
-  --,best_zpr[2] = h1-h0,p1-p0
---]]
-
   print(sformat("Landing position selected: %.2f / %.2f p %d", best_foot[1], best_zpr[1],best_zpr[2]*180/math.pi ))
   hcm.set_step_relpos(util.pose_relative(best_foot,uFoot))
   hcm.set_step_zpr(best_zpr)

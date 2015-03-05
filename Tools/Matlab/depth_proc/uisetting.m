@@ -13,4 +13,4 @@ ui.taskMode = 2;
 ui.clickType = 0;
 ui.clickxy = [];
 ui.figures = [0 0 1];
-ui.undistortDepth = 1;
+ui.undistortDepth = 0;

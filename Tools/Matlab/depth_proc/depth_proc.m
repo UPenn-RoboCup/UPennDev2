@@ -19,7 +19,7 @@ switch ui.runningMode
     case 1, % logging 
         %logDepthData(data, meta);
     case 2, 
-        [res, meta] = detectPlanes(data, meta, ui);
+        [res, meta] = detectPlanes4(data, meta, ui);
 end
     
 end

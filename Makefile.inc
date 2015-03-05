@@ -15,14 +15,14 @@ LIBRT=-lrt
 SHLIBEXT=so
 STRIP=strip
 USE_TORCH=1
-INCLUDES=-I/usr/local/include
+INCLUDES=-I/usr/include -I/usr/local/include
 
 # Lua 5.1
-#INCLUDES+=-I/usr/include/lua5.1 -I/usr/local/include/lua5.1
+#INCLUDES+=-I/usr/include/lua5.1 
 #LUA_INC=$(pkg-config --cflags-only-I lua5.1)
 # LuaJIT 2.1
 #LUA_INC=$(pkg-config --cflags-only-I luajit)
-LUA_INC=-I/usr/local/include/luajit-2.1
+LUA_INC=-I/usr/include/luajit-2.0
 INCLUDES+=$(LUA_INC)
 
 # OS Specific overrides
@@ -30,7 +30,7 @@ ifeq ($(OSTYPE),darwin)
   LD=g++
   #LD=ld -macosx_version_min 10.8
 	#LDFLAGS=-lc++ -bundle -undefined dynamic_lookup
-	LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup -L/usr/local/lib
+	LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup -L/usr/local/lib -L/usr/lib
   LIBRT=
 	#	CFLAGS+=$(pkg-config lua5.1 --cflags)
 	# CXXFLAGS+=$(pkg-config lua5.1 --cflags)

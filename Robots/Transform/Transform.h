@@ -71,8 +71,8 @@ public:
     const Transform &Adot2,
     const Transform &Adot3,
     const Transform &Adot4,
-    const Transform &Adot5
-    ); 
+    const Transform &Adot5,
+    double mass, const double* inertiaMatrix); 
 
 
   Jacobian &calculate7(
@@ -83,19 +83,21 @@ public:
     const Transform &Adot3,
     const Transform &Adot4,
     const Transform &Adot5,
-    const Transform &Adot6); 
+    const Transform &Adot6,
+    double mass, const double* inertiaMatrix); 
 
   void clear();
   
 
-  
+  void calculate_b_matrix(const double*inertiaMatrix);
+  void dump_b_matrix(double* ret);
   void accumulate_stall_torque(double* torque,double forcex, double forcey, double forcez);
-  void accumulate_acc_torque(double* torque, const double* qAcc, double m, const double* inertiamatrix);
   void print();
 
 private:
   int num_of_joints;
-
+  double m;
+  double b[7][7];
   double v[7][3];
   double w[7][3];
 };

@@ -1,5 +1,60 @@
 #include "THOROPKinematics.h"
 
+void THOROP_kinematics_calculate_arm_com(const double* rpyangle,  
+   const double *qArm, int index,double *comxyz, double*comrpy){  
+
+  Transform torso, COM;
+  torso.rotateX(rpyangle[0]).rotateY(rpyangle[1]);
+
+  switch (index){
+  case 0:
+    COM = trcopy(torso).rotateY(qArm[0]).translate(armCom[0]);
+    break;
+  case 1:
+    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+         .rotateZ(qArm[1]).translate(armCom[1]);
+    break;
+  case 2:
+    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armCom[2]);
+    break;
+  case 3:
+    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armCom[3]);      
+    break;        
+  case 4:
+    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armCom[4]);
+    break;        
+  case 5:
+    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armCom[5]);
+    break;        
+  case 6:
+    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armLink[6])
+        .rotateX(qArm[6]).translate(armCom[6]);
+    break;
+  }  
+  COM.getXYZ(&comxyz[0]);
+  Transform COMinv = inv(COM);
+  getAngularVelocityTensor(COM,COMinv,&comrpy[0]);
+}
+
 
 
 std::vector<double>
@@ -379,11 +434,93 @@ THOROP_kinematics_calculate_zmp(
 }
 
 
+void THOROP_kinematics_calculate_arm_torque_adv(
+  double* stall_torque,double* acc_torque,double* acc_torque2,const double *rpyangle,
+  const double *qArm,const double *qArmVel,const double *qArmAcc,double dq){
+
+  double dummy[7];
+  double qArmDq[7];
+  double b_matrix0[49];
+  double b_matrix[7][49];
+
+  int i,j,k;
+  for (i=0;i<7;i++) {
+    qArmDq[i]=qArm[i];
+    stall_torque[i]=0;
+    acc_torque[i]=0;
+    acc_torque2[i]=0;
+  }
+
+  THOROP_kinematics_calculate_arm_torque(stall_torque, b_matrix0, rpyangle,qArm);    
+
+/*
+  printf("B matrix:\n");
+  for(i=0;i<7;i++){ 
+    for (j=0;j<7;j++)
+      printf("%.4f ",b_matrix0[i*7+j]);
+    printf("\n");
+  }
+  printf("\n");
+  */
+
+  qArmDq[0]=qArm[0]+dq;  
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[0], rpyangle,qArmDq);
+  qArmDq[0]=qArm[0];  
+  qArmDq[1]=qArm[1]+dq;  
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[1], rpyangle,qArmDq);
+  qArmDq[1]=qArm[1];  
+  qArmDq[2]=qArm[2]+dq;  
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[2], rpyangle,qArmDq);
+  qArmDq[2]=qArm[2];  
+  qArmDq[3]=qArm[3]+dq;  
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[3], rpyangle,qArmDq);
+  qArmDq[3]=qArm[3];  
+  qArmDq[4]=qArm[4]+dq;  
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[4], rpyangle,qArmDq);
+  qArmDq[4]=qArm[4];  
+  qArmDq[5]=qArm[5]+dq;  
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[5], rpyangle,qArmDq);
+  qArmDq[5]=qArm[5];  
+  qArmDq[6]=qArm[6]+dq;  
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[6], rpyangle,qArmDq);
+  qArmDq[6]=qArm[6];  
+
+  for(i=0;i<7;i++) for (j=0;j<49;j++)
+    b_matrix[i][j]=(b_matrix[i][j]-b_matrix0[j])/dq;
+/*
+  printf("B2 matrix:\n");
+  for(i=0;i<7;i++){ 
+    for (j=0;j<7;j++)
+      printf("%.4f ",b_matrix[2][i*7+j]);
+    printf("\n");
+  }
+  printf("\n");
+*/
+
+
+  for(k=0;k<7;k++){
+    for(j=0;j<7;j++){
+      //linear term
+      acc_torque[k]+=b_matrix0[k*7+j]*qArmAcc[j];
+
+      //quadratic term
+      for(i=0;i<7;i++){
+        acc_torque2[k]+=(b_matrix[i][k*7+j]-0.5*b_matrix[k][i*7+j]) *qArmVel[i]*qArmVel[j];
+      }
+    }
+  }
+
+
+
+}
+
+
+
 
 void THOROP_kinematics_calculate_arm_torque(
-  double* stall_torque, double* acc_torque,
-  const double *rpyangle,const double *qArm, const double *qArmAcc){
-
+  double* stall_torque, double* b_matrix,
+  const double *rpyangle,const double *qArm
+  ){
 
   Transform 
     COM0,COM1,COM2,COM3,COM4,COM5,COM6,
@@ -395,8 +532,9 @@ void THOROP_kinematics_calculate_arm_torque(
     Jac40,Jac41,Jac42,Jac43,Jac44,
     Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,
     Jac60,Jac61,Jac62,Jac63,Jac64,Jac65,Jac66;
-  
-  for (int i=0;i<7;i++) {stall_torque[i]=0;acc_torque[i]=0;}
+  int i;
+  for (i=0;i<7;i++) stall_torque[i]=0;
+  for (i=0;i<49;i++) b_matrix[i]=0;
 
   Transform torso;
   torso.rotateX(rpyangle[0]).rotateY(rpyangle[1]);
@@ -579,13 +717,13 @@ void THOROP_kinematics_calculate_arm_torque(
 
   Transform JacZZ;
   Jacobian J0,J1,J2,J3,J4,J5,J6;
-  J0.calculate7(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);  
-  J1.calculate7(COM1,Jac10,Jac11,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);
-  J2.calculate7(COM2,Jac20,Jac21,Jac22,JacZZ,JacZZ,JacZZ,JacZZ);  
-  J3.calculate7(COM3,Jac30,Jac31,Jac32,Jac33,JacZZ,JacZZ,JacZZ);
-  J4.calculate7(COM4,Jac40,Jac41,Jac42,Jac43,Jac44,JacZZ,JacZZ);  
-  J5.calculate7(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,JacZZ);
-  J6.calculate7(COM6,Jac60,Jac61,Jac62,Jac63,Jac64,Jac65,Jac66);
+  J0.calculate7(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ, MassArm[0],InertiaArm[0]);  
+  J1.calculate7(COM1,Jac10,Jac11,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ, MassArm[1],InertiaArm[1]);
+  J2.calculate7(COM2,Jac20,Jac21,Jac22,JacZZ,JacZZ,JacZZ,JacZZ, MassArm[2],InertiaArm[2]);  
+  J3.calculate7(COM3,Jac30,Jac31,Jac32,Jac33,JacZZ,JacZZ,JacZZ, MassArm[3],InertiaArm[3]);
+  J4.calculate7(COM4,Jac40,Jac41,Jac42,Jac43,Jac44,JacZZ,JacZZ, MassArm[4],InertiaArm[4]);  
+  J5.calculate7(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,JacZZ, MassArm[5],InertiaArm[5]);
+  J6.calculate7(COM6,Jac60,Jac61,Jac62,Jac63,Jac64,Jac65,Jac66, MassArm[6],InertiaArm[6]);
   
   J0.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[0]*g);
   J1.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[1]*g);
@@ -593,25 +731,25 @@ void THOROP_kinematics_calculate_arm_torque(
   J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[3]*g);
   J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[4]*g);
   J5.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[5]*g);
-  J6.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[6]*g);
+  J6.accumulate_stall_torque(stall_torque, 0.0,0.0,MassArm[6]*g);  
 
-  J0.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[0], &InertiaArm[0][0]);
-  J1.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[1], &InertiaArm[1][0]);
-  J2.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[2], &InertiaArm[2][0]);
-  J3.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[3], &InertiaArm[3][0]);
-  J4.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[4], &InertiaArm[4][0]);
-  J5.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[5], &InertiaArm[5][0]);
-  J6.accumulate_acc_torque(acc_torque, &qArmAcc[0], MassArm[6], &InertiaArm[6][0]);
-  
+  J0.dump_b_matrix(b_matrix);
+  J1.dump_b_matrix(b_matrix);
+  J2.dump_b_matrix(b_matrix);
+  J3.dump_b_matrix(b_matrix);
+  J4.dump_b_matrix(b_matrix);
+  J5.dump_b_matrix(b_matrix);
+  J6.dump_b_matrix(b_matrix);
 }
 
 
 
 void THOROP_kinematics_calculate_leg_torque(
-  double* stall_torque, double* acc_torque,
-  const double *rpyangle,const double *qLeg,const double *qLegAcc,
+  double* stall_torque,double* b_matrx,
+  const double *rpyangle,const double *qLeg,
   int isLeft, double grf, const double *support){
 
+/*
   int index = 6;
   if (isLeft>0) index = 0;
 
@@ -767,38 +905,32 @@ void THOROP_kinematics_calculate_leg_torque(
   Transform JacZZ;
   Jacobian J0,J1,J2,J3,J4,J5,JS;
 
-  J0.calculate6(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ);  
-  J1.calculate6(COM1,Jac10,Jac11,JacZZ,JacZZ,JacZZ,JacZZ);
-  J2.calculate6(COM2,Jac20,Jac21,Jac22,JacZZ,JacZZ,JacZZ);  
-  J3.calculate6(COM3,Jac30,Jac31,Jac32,Jac33,JacZZ,JacZZ);
-  J4.calculate6(COM4,Jac40,Jac41,Jac42,Jac43,Jac44,JacZZ);  
-  J5.calculate6(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55);
-  JS.calculate6(COMS,JacS0,JacS1,JacS2,JacS3,JacS4,JacS5);
-
+  J0.calculate6(COM0,Jac00,JacZZ,JacZZ,JacZZ,JacZZ,JacZZ,MassLeg[0],InertiaLeg[index+0]);  
+  J1.calculate6(COM1,Jac10,Jac11,JacZZ,JacZZ,JacZZ,JacZZ,MassLeg[1],InertiaLeg[index+1]);
+  J2.calculate6(COM2,Jac20,Jac21,Jac22,JacZZ,JacZZ,JacZZ,MassLeg[2],InertiaLeg[index+2]);  
+  J3.calculate6(COM3,Jac30,Jac31,Jac32,Jac33,JacZZ,JacZZ,MassLeg[3],InertiaLeg[index+3]);
+  J4.calculate6(COM4,Jac40,Jac41,Jac42,Jac43,Jac44,JacZZ,MassLeg[4],InertiaLeg[index+4]);  
+  J5.calculate6(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,MassLeg[5],InertiaLeg[index+5]);
+  J6.calculate6(COM5,Jac50,Jac51,Jac52,Jac53,Jac54,Jac55,0,InertiaLeg[index+0]);
+  
   J0.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[0]*g);
   J1.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[1]*g);
   J2.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[2]*g);
   J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[3]*g);
   J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[4]*g);
   JS.accumulate_stall_torque(stall_torque, 0.0,0.0,-grf);
- 
-  J0.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[0], &InertiaLeg[index+0][0]);
-  J1.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[1], &InertiaLeg[index+1][0]);
-  J2.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[2], &InertiaLeg[index+2][0]);
-  J3.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[3], &InertiaLeg[index+3][0]);
-  J4.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[4], &InertiaLeg[index+4][0]);
-  J5.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[5], &InertiaLeg[index+5][0]);
- 
+   
+*/ 
 }
 
 
 
 
 void THOROP_kinematics_calculate_support_leg_torque(
-  double* stall_torque, double* acc_torque,
-  const double *rpyangle,const double *qLeg,const double *qLegAcc,
+  double* stall_torque,double* b_matrx,
+  const double *rpyangle,const double *qLeg,
   int isLeft, double grf, const double *comUpperBody){
-
+/*
   int index = 6;
   const double* legLink0=rlegLink0;
 
@@ -987,12 +1119,13 @@ void THOROP_kinematics_calculate_support_leg_torque(
   J3.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[3]*g);
   J4.accumulate_stall_torque(stall_torque, 0.0,0.0,MassLeg[4]*g);
   
- /*
+ 
   J0.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[0], &InertiaLeg[index+0][0]);
   J1.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[1], &InertiaLeg[index+1][0]);
   J2.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[2], &InertiaLeg[index+2][0]);
   J3.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[3], &InertiaLeg[index+3][0]);
   J4.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[4], &InertiaLeg[index+4][0]);
   J5.accumulate_acc_torque(acc_torque, &qLegAcc[0], MassLeg[5], &InertiaLeg[index+5][0]);
- */
+*/ 
 }
+

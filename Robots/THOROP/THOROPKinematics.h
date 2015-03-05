@@ -184,7 +184,7 @@ const double rarmLink0[3] = {0,-0.234,0.165};
 const double armCom[7][3]={
 	{0,0,0},	//after shoulder pitch
 	{0.1027,0,-0.008},//after shoulder roll
-	{0.246,0,0}, //after shoulder yaw
+	{0.246,0,0.030}, //after shoulder yaw	
 	{0.0464,0,0},//after elbow
 	{-0.040,0,0}, //after wrist yaw 1
 	{0,0,0}, //after wrist roll
@@ -352,9 +352,8 @@ std::vector<double> THOROP_kinematics_calculate_com_positions(
     int use_lleg, int use_rleg
     );
 
-
-
-
+void THOROP_kinematics_calculate_arm_com(const double* rpyangle,  
+   const double *qArm, int index,double *comxyz, double*comrpy);  
 
 std::vector<double> THOROP_kinematics_calculate_zmp(const double *com0, const double *com1, 
 		const double *com2,double dt0, double dt1);
@@ -364,17 +363,22 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
 
 
 void THOROP_kinematics_calculate_arm_torque(
-	double* stall_torque,double* acc_torque,
-	const double *rpyangle,	const double *qArm, const double *qArmAcc);
+	double* stall_torque,double* b_matrx,
+	const double *rpyangle,	const double *qArm);
+
+
+void THOROP_kinematics_calculate_arm_torque_adv(
+  double* stall_torque,double* acc_torque,double* acc_torque2,const double *rpyangle,
+  const double *qArm,const double *qArmVel,const double *qArmAcc,double dq);
 
 void THOROP_kinematics_calculate_leg_torque(
-	double* stall_torque,double* acc_torque,
-	const double *rpyangle,	const double *qLeg, const double *qLegAcc,
+	double* stall_torque,double* b_matrx,
+	const double *rpyangle,	const double *qLeg,
 	int isLeft, double grf, const double *support);
 
 void THOROP_kinematics_calculate_support_leg_torque(
-  double* stall_torque, double* acc_torque,
-  const double *rpyangle,const double *qLeg,const double *qLegAcc,
+  double* stall_torque, double* b_matrx,
+  const double *rpyangle,const double *qLeg,
   int isLeft, double grf, const double *comUpperBody);
 
 

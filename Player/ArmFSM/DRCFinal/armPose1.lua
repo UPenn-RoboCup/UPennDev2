@@ -12,7 +12,7 @@ require'dcm'
 local qLArm, qRArm
 
 
-local larm_pos_old,rarm_pos_old
+local larm_pos_old,rarm_pos_old,larm_vel_old,rarm_vel_old
 local lleg_pos_old,rleg_pos_old
 local l_comp_torque,r_comp_torque
 
@@ -32,25 +32,31 @@ function state.entry()
 --
   
   
---  Body.set_larm_torque_enable({1,1,1, 1,1,1,1}) --enable force control
+  Body.set_larm_torque_enable({1,1,1, 1,1,1,1}) --enable force control
   Body.set_rarm_torque_enable({1,1,1, 1,1,1,1}) --enable force control
-
+--[[
   Body.set_larm_torque_enable({2,2,2, 2,2,2,2}) --enable force control
   Body.set_larm_torque_enable({2,1,1, 1,1,1,1}) --enable force control
   Body.set_larm_torque_enable({2,2,2, 2,2,1,2}) --enable force control
     
+--  Body.set_larm_torque_enable({2,2,1, 2,2,1,2}) --enable force control
+  Body.set_larm_torque_enable({1,1,2, 1,1,1,1}) --enable force control    
+  Body.set_larm_torque_enable({2,1,1, 1,1,1,1}) --enable force control    
 
   Body.set_lleg_torque_enable({1,1,1, 1,1,1}) --enable force control
   Body.set_rleg_torque_enable({1,1,1, 1,1,1}) --enable force control
 
 --  Body.set_lleg_torque_enable({1,1,2,1,1,1}) --enable force control
 --  Body.set_rleg_torque_enable({1,1,2,1,1,1}) --enable force control
-
+--]]
 
   larm_pos_old = Body.get_larm_position()  
   rarm_pos_old = Body.get_rarm_position()
   lleg_pos_old = Body.get_lleg_position()
   rleg_pos_old = Body.get_rleg_position()
+
+  larm_vel_old = vector.zeros(7)
+  rarm_vel_old = vector.zeros(7)
 
   l_comp_torque = vector.zeros(7)
   r_comp_torque = vector.zeros(7)
@@ -62,20 +68,11 @@ end
 
 local count=0
 
-function state.update()
---  print(state._NAME..' Update' )
-  -- Get the time of update
-  local t  = Body.get_time()
-  local dt = t - t_update
-  -- Save this at the last update time
-  t_update = t
-  --if t-t_entry > timeout then return'timeout' end
 
 
-  
 
---calculate theoretial weight distribution between two feet
---assuming zero ankle torque 
+
+function forcecontrol(dt)
 
 
 count=count+1
@@ -144,7 +141,7 @@ count=count+1
   local rsupport={0.037,0,0}
 
 
-  local lleg_torques = Body.Kinematics.calculate_leg_torque(rpy_angle,lleg_pos,lleg_comp_acc, 1,lft[1] , lsupport  )
+  local lleg_torques = Body.Kinematics.calculate_leg_torque(rpy_angle,lleg_pos, 1,lft[1] , lsupport  )
 
   local com_legless=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  0,0)
 
@@ -152,15 +149,23 @@ count=count+1
   local com_offset_upperbody={com_legless[1]/com_legless[4],com_legless[2]/com_legless[4],com_legless[3]/com_legless[4]}
 
 
-  local lleg_torques2 = Body.Kinematics.calculate_support_leg_torque(rpy_angle,lleg_pos,lleg_comp_acc, 1,lft[1] , 
+  local lleg_torques2 = Body.Kinematics.calculate_support_leg_torque(rpy_angle,lleg_pos,1,lft[1] , 
     com_offset_upperbody)
 
   local rleg_torques = Body.Kinematics.calculate_leg_torque(
       --rpy_angle,rleg_pos,rleg_comp_acc, 0,0 , rsupport   )
-    rpy_angle,rleg_pos,rleg_comp_acc, 0,rft[1] , rsupport   )
+    rpy_angle,rleg_pos, 0,rft[1] , rsupport   )
+
+
+
+
 
   local lleg_stall_torque = vector.new(lleg_torques.stall);
   local rleg_stall_torque = vector.new(rleg_torques.stall);
+  lleg_torques.acc = vector.zeros(6)
+  rleg_torques.acc = vector.zeros(6)
+
+
   local lleg_acc_torque = util.linearize(lleg_torques.acc,lleg_vel,leg_damping_factor,leg_static_friction);
   local rleg_acc_torque = util.linearize(rleg_torques.acc,rleg_vel,leg_damping_factor,leg_static_friction);
 
@@ -187,30 +192,59 @@ count=count+1
   local rarm_pos_err = (rarm_cmdpos-rarm_pos)
   local larm_vel = (larm_pos-larm_pos_old)/dt;
   local rarm_vel = (rarm_pos-rarm_pos_old)/dt;
+
+  local larm_acc = (larm_vel-larm_vel_old)/dt
+
   larm_pos_old,rarm_pos_old = larm_pos,rarm_pos
+  larm_vel_old,rarm_vel_old = larm_vel,rarm_vel
 
   local larm_actual_torque = Body.get_larm_current()
   local rarm_actual_torque = Body.get_rarm_current()
 
   local damping_factor=vector.ones(7)*0 --internal damping of servo
   local static_friction = vector.new({0,0,0,0, 0,0,0});
+
   local arm_acc_gain = 20 --very stiff
+  local larm_comp_acc,larm_vel_target = util.pid_feedback(larm_pos_err, larm_vel, dt, arm_acc_gain)
+  local rarm_comp_acc,rarm_vel_target = util.pid_feedback(rarm_pos_err, rarm_vel, dt, arm_acc_gain)
 
-  local l_comp_acc,l_vel_target = util.pid_feedback(larm_pos_err, larm_vel, dt, arm_acc_gain)
-  local r_comp_acc,r_vel_target = util.pid_feedback(rarm_pos_err, rarm_vel, dt, arm_acc_gain)
-  
+--[[  
   local arm_p_gain,arm_d_gain = 10,-1
-
   local larm_comp_acc = larm_pos_err*arm_p_gain+larm_vel*arm_d_gain
   local rarm_comp_acc = rarm_pos_err*arm_p_gain+rarm_vel*arm_d_gain
+--]]  
 
-  local l_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,larm_pos,larm_comp_acc)
-  local r_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,rarm_pos,rarm_comp_acc)
+  local l_torques,r_torques
+
+  l_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,larm_pos)
+  r_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,rarm_pos)
+
+  l_torques.acc=vector.zeros(7)
+  r_torques.acc=vector.zeros(7)
+
+  t0=unix.time()   
+  l_torques = Body.Kinematics.calculate_arm_torque_adv(rpy_angle,larm_pos,larm_vel,larm_comp_acc);
+
+  t1=unix.time()
 
   local l_stall_torque = vector.new(l_torques.stall);
   local r_stall_torque = vector.new(r_torques.stall);
+
+  
+  local l_acc2_torque = vector.new(l_torques.acc2);
+
+
+
+  damping_factor=vector.ones(7)*(-0.1)
+
+
   local l_acc_torque = util.linearize(l_torques.acc,larm_vel,damping_factor,static_friction);
   local r_acc_torque = util.linearize(r_torques.acc,rarm_vel,damping_factor,static_friction);
+
+
+  l_stall_torque[3]=l_stall_torque[3]*1.01
+
+
 
   Body.set_larm_command_torque(l_stall_torque+l_acc_torque)
   Body.set_rarm_command_torque(r_stall_torque+r_acc_torque)
@@ -238,8 +272,55 @@ count=count+1
 ----------------------------------------------------------------------------
 
 --  if count%300==0 then
-  if count%5==0 then
+--  if count%50==0 then
+  if false  then
     
+  
+--[[
+print((t1-t0)*1000, "ms spent for dynamics calc")
+    print(string.format("RArm actual torque: %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+        unpack(rarm_actual_torque)))
+    print(string.format("RArm calced torque: %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+        unpack(r_stall_torque)))
+--]]
+
+--[[
+
+    print(string.format("LArm   cur  vel     : %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+          unpack( larm_vel*RAD_TO_DEG) ))
+
+    print(string.format("LArm   cur  acc     : %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
+          unpack( larm_acc*RAD_TO_DEG) ))
+    
+    print(string.format("LArm calcu  acc   : %.3f %.3f %.5f/ %.3f %.3f %.3f / %.3f",
+          unpack( larm_comp_acc*RAD_TO_DEG) ))
+
+    print(string.format("LArm calcu  torque: %.3f %.3f %.5f/ %.3f %.3f %.3f / %.3f",
+          unpack( l_stall_torque ) ))
+
+    print(string.format("LArm   acc  torque: %.3f %.3f %.5f/ %.3f %.3f %.3f / %.3f",
+          unpack( l_acc_torque ) ))
+
+    print(string.format("LArm  acc2  torque: %.3f %.3f %.5f/ %.3f %.3f %.3f / %.3f",
+          unpack( l_acc2_torque) ))
+--]]    
+
+print(string.format("%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
+
+  Body.get_time(),
+  larm_pos_err[1],
+  larm_vel[1],
+  larm_acc[1],
+  larm_comp_acc[1],
+  l_stall_torque[1],
+  l_acc_torque[1],
+  l_acc2_torque[1] ));          
+
+
+
+
+
+--[[
     print("Support:",-uTorsoLeft[1])
     print(string.format("Roll: %.1f Pitch:%.1f",rpy_angle[1],rpy_angle[2]))
 
@@ -270,23 +351,29 @@ count=count+1
         unpack(rleg_actual_torque)))
     print(string.format("RLeg calced torque: %.3f %.3f / %.3f %.3f %.3f / %.3f",
         unpack(rleg_stall_torque)))
+--]]
 
 
-    print(string.format("RArm actual torque: %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
-        unpack(rarm_actual_torque)))
-    print(string.format("RArm calced torque: %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
-        unpack(r_stall_torque)))
-
-    print(string.format("LArm calcu  torque: %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
-          unpack( l_stall_torque ) ))
-        
-
-
+  end
 end
 
 
 
+
+
+function state.update()
+--  print(state._NAME..' Update' )
+  -- Get the time of update
+  local t  = Body.get_time()
+  local dt = t - t_update
+  -- Save this at the last update time
+  t_update = t
+  --if t-t_entry > timeout then return'timeout' end
 end
+
+
+
+
 
 function state.exit()
   print(state._NAME..' Exit' )

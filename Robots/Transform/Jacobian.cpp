@@ -20,9 +20,11 @@ Jacobian& Jacobian::calculate6(
     const Transform &Adot2,
     const Transform &Adot3,
     const Transform &Adot4,
-    const Transform &Adot5) {
+    const Transform &Adot5,
+    double mass, const double* inertiaMatrix){
 
   num_of_joints = 6;
+  m=mass;
 
   Adot0.getXYZ(v[0]);
   Adot1.getXYZ(v[1]);
@@ -38,6 +40,8 @@ Jacobian& Jacobian::calculate6(
   getAngularVelocityTensor(Adot3, Ainv, w[3]);
   getAngularVelocityTensor(Adot4, Ainv, w[4]);
   getAngularVelocityTensor(Adot5, Ainv, w[5]);  
+
+  this->calculate_b_matrix(inertiaMatrix);
   return *this;
 }
 
@@ -49,9 +53,11 @@ Jacobian& Jacobian::calculate7(
     const Transform &Adot3,
     const Transform &Adot4,
     const Transform &Adot5,
-    const Transform &Adot6) {
+    const Transform &Adot6,
+    double mass, const double* inertiaMatrix) {
 
   num_of_joints = 7;
+  m=mass;
 
   Adot0.getXYZ(v[0]);
   Adot1.getXYZ(v[1]);
@@ -71,6 +77,7 @@ Jacobian& Jacobian::calculate7(
   getAngularVelocityTensor(Adot5, Ainv, w[5]);
   getAngularVelocityTensor(Adot6, Ainv, w[6]);
 
+  this->calculate_b_matrix(inertiaMatrix);
   return *this;
 }
 
@@ -84,13 +91,11 @@ void Jacobian::accumulate_stall_torque(double* torque,
   }
 }
 
-void Jacobian::accumulate_acc_torque(double* torque, const double* qAcc, double m, const double* inertiamatrix){
-  int i;
-  for(i=0;i<num_of_joints;i++)
+void Jacobian::calculate_b_matrix(const double *inertiamatrix){
+  for(int i=0;i<num_of_joints;i++)
     for(int j=0;j<num_of_joints;j++){
       double inertia_v=
-        (v[i][0]*v[j][0]+v[i][1]*v[j][1]+v[i][2]*v[j][2])*m;      
-
+        (v[i][0]*v[j][0]+v[i][1]*v[j][1]+v[i][2]*v[j][2])*m;
       double inertia_w=
         w[i][0]*w[j][0]*inertiamatrix[0]+
         w[i][1]*w[j][1]*inertiamatrix[1]+
@@ -102,10 +107,16 @@ void Jacobian::accumulate_acc_torque(double* torque, const double* qAcc, double 
         w[i][2]*w[j][1]*inertiamatrix[5]+
         w[i][1]*w[j][2]*inertiamatrix[5];
 
-      torque[i]+=(inertia_v+inertia_w)*qAcc[j];     
+      b[i][j]=inertia_v + inertia_w;
     }
-
 }
+
+void Jacobian::dump_b_matrix(double* ret){
+  for(int i=0;i<num_of_joints;i++)
+    for(int j=0;j<num_of_joints;j++)
+      ret[i*num_of_joints+j]+=b[i][j];
+}
+
 
 void Jacobian::print(){
   int i,j;

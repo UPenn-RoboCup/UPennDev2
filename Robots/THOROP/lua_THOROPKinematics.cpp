@@ -44,6 +44,15 @@ static void lua_pushvector(lua_State *L, std::vector<double> v) {
 	}
 }
 
+static void lua_pushdarray(lua_State *L, double* v, int size) {
+	lua_createtable(L, size, 0);
+	for (int i = 0; i < size; i++) {
+		lua_pushnumber(L, v[i]);
+		lua_rawseti(L, -2, i+1);
+	}
+}
+
+
 static std::vector<double> lua_checkvector(lua_State *L, int narg) {
 	/*
 	if (!lua_istable(L, narg))
@@ -356,82 +365,106 @@ static int calculate_com_pos2(lua_State *L) {
 
 static int calculate_arm_torque(lua_State *L) {
 	double stall_torque[7];
-	double acc_torque[7];
+	double b_matrix[49];
 	std::vector<double> rpy = lua_checkvector(L, 1);
 	std::vector<double> qArm = lua_checkvector(L, 2);
-	std::vector<double> qArmAcc = lua_checkvector(L, 3);
 	THOROP_kinematics_calculate_arm_torque(
-	  	&stall_torque[0],&acc_torque[0],
-	  	&rpy[0],&qArm[0],&qArmAcc[0]);
-	std::vector<double> vec_stall_torque(7);
-	std::vector<double> vec_acc_torque(7);
-	for (int i=0;i<7;i++){
-		vec_stall_torque[i]=stall_torque[i];
-		vec_acc_torque[i]=acc_torque[i];
-	}
+	  	&stall_torque[0],&b_matrix[0],
+	  	&rpy[0],&qArm[0]);
 	lua_createtable(L, 0, 2);
-  lua_pushstring(L, "stall");
-	lua_pushvector(L, vec_stall_torque);
-  lua_rawset(L, -3);
-	lua_pushstring(L, "acc");
-	lua_pushvector(L, vec_acc_torque);
-  lua_rawset(L, -3);	
+  	lua_pushstring(L, "stall");  	
+	lua_pushdarray(L, stall_torque,7);
+  	lua_rawset(L, -3);
+    lua_pushstring(L, "b");
+	lua_pushdarray(L, b_matrix,49);
+    lua_rawset(L, -3);	
 	return 1;
 }
 
-static int calculate_leg_torque(lua_State *L) {
-  double stall_torque[6];
-	double acc_torque[6];
+
+static int calculate_arm_torque_adv(lua_State *L) {
+	double stall_torque[7];
+	double acc_torque[7];
+	double acc_torque2[7];
+	
 	std::vector<double> rpy = lua_checkvector(L, 1);
-	std::vector<double> qLeg = lua_checkvector(L, 2);
-	std::vector<double> qLegAcc = lua_checkvector(L, 3);
-	int isLeft = luaL_optnumber(L, 4, 0);
-	double grf = luaL_optnumber(L, 5, 0.0);
-	std::vector<double> support = lua_checkvector(L, 6);
-	THOROP_kinematics_calculate_leg_torque(
-			&stall_torque[0],&acc_torque[0],
-  		&rpy[0],&qLeg[0],&qLegAcc[0],isLeft,grf,&support[0]);
-	std::vector<double> vec_stall_torque(6);
-	std::vector<double> vec_acc_torque(6);
-	for (int i=0;i<6;i++){
-		vec_stall_torque[i]=stall_torque[i];
-		vec_acc_torque[i]=acc_torque[i];
-	}
+	std::vector<double> qArm = lua_checkvector(L, 2);
+	std::vector<double> qArmVel = lua_checkvector(L, 3);
+	std::vector<double> qArmAcc = lua_checkvector(L, 4);
+	double dq = luaL_optnumber(L, 5 , 0.1*3.1415/180);
+	
+	THOROP_kinematics_calculate_arm_torque_adv(
+	  	&stall_torque[0],&acc_torque[0],&acc_torque2[0],&rpy[0],
+	  	&qArm[0],&qArmVel[0],&qArmAcc[0],dq);
+
 	lua_createtable(L, 0, 2);
-  lua_pushstring(L, "stall");
-	lua_pushvector(L, vec_stall_torque);
-  lua_rawset(L, -3);
-	lua_pushstring(L, "acc");
-	lua_pushvector(L, vec_acc_torque);
-  lua_rawset(L, -3);	
+  	lua_pushstring(L, "stall");  	
+	lua_pushdarray(L, stall_torque,7);
+  	lua_rawset(L, -3);
+    lua_pushstring(L, "acc");
+	lua_pushdarray(L, acc_torque,7);
+    lua_rawset(L, -3);	
+    lua_pushstring(L, "acc2");
+	lua_pushdarray(L, acc_torque2,7);
+    lua_rawset(L, -3);	
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+static int calculate_leg_torque(lua_State *L) {
+  	double stall_torque[6];
+	double b_matrix[49];
+	std::vector<double> rpy = lua_checkvector(L, 1);
+	std::vector<double> qLeg = lua_checkvector(L, 2);	
+	int isLeft = luaL_optnumber(L, 3, 0);
+	double grf = luaL_optnumber(L, 4, 0.0);
+	std::vector<double> support = lua_checkvector(L, 5);
+	THOROP_kinematics_calculate_leg_torque(
+		&stall_torque[0],&b_matrix[0],
+  		&rpy[0],&qLeg[0],isLeft,grf,&support[0]);
+	lua_createtable(L, 0, 2);
+  	lua_pushstring(L, "stall");
+	lua_pushdarray(L, stall_torque,6);
+  	lua_rawset(L, -3);
+	lua_pushstring(L, "b");
+	lua_pushdarray(L, b_matrix,36);
+  	lua_rawset(L, -3);	
 	return 1;
 }
 
 static int calculate_support_leg_torque(lua_State *L) {
-  double stall_torque[6];
-	double acc_torque[6];
+  	double stall_torque[6];
+	double b_matrix[6];
 	std::vector<double> rpy = lua_checkvector(L, 1);
-	std::vector<double> qLeg = lua_checkvector(L, 2);
-	std::vector<double> qLegAcc = lua_checkvector(L, 3);
-	int isLeft = luaL_optnumber(L, 4, 0);
-	double grf = luaL_optnumber(L, 5, 0.0);
-	std::vector<double> com_upperbody = lua_checkvector(L, 6);
+	std::vector<double> qLeg = lua_checkvector(L, 2);	
+	int isLeft = luaL_optnumber(L, 3, 0);
+	double grf = luaL_optnumber(L, 4, 0.0);
+	std::vector<double> com_upperbody = lua_checkvector(L, 5);
 	THOROP_kinematics_calculate_support_leg_torque(
-			&stall_torque[0],&acc_torque[0],
-  		&rpy[0],&qLeg[0],&qLegAcc[0],isLeft,grf,&com_upperbody[0]);
-	std::vector<double> vec_stall_torque(6);
-	std::vector<double> vec_acc_torque(6);
-	for (int i=0;i<6;i++){
-		vec_stall_torque[i]=stall_torque[i];
-		vec_acc_torque[i]=acc_torque[i];
-	}
+		&stall_torque[0],&b_matrix[0],
+  		&rpy[0],&qLeg[0],isLeft,grf,&com_upperbody[0]);
 	lua_createtable(L, 0, 2);
-  lua_pushstring(L, "stall");
-	lua_pushvector(L, vec_stall_torque);
-  lua_rawset(L, -3);
-	lua_pushstring(L, "acc");
-	lua_pushvector(L, vec_acc_torque);
-  lua_rawset(L, -3);	
+	lua_pushstring(L, "stall");
+	lua_pushdarray(L, stall_torque,6);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "b");
+	lua_pushdarray(L, b_matrix,36);
+    lua_rawset(L, -3);	
 	return 1;
 }
 
@@ -617,6 +650,8 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"collision_check_single",collision_check_single},
 
   {"calculate_arm_torque", calculate_arm_torque},
+  {"calculate_arm_torque_adv", calculate_arm_torque_adv},
+
   {"calculate_leg_torque", calculate_leg_torque},
   {"calculate_support_leg_torque", calculate_support_leg_torque},
 

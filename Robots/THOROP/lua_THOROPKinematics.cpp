@@ -397,7 +397,8 @@ static int calculate_arm_torque_adv(lua_State *L) {
 	  	&stall_torque[0],&acc_torque[0],&acc_torque2[0],&rpy[0],
 	  	&qArm[0],&qArmVel[0],&qArmAcc[0],dq);
 
-	lua_createtable(L, 0, 2);
+
+	lua_createtable(L, 0, 3);
   	lua_pushstring(L, "stall");  	
 	lua_pushdarray(L, stall_torque,7);
   	lua_rawset(L, -3);

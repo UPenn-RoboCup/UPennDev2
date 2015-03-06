@@ -7,6 +7,8 @@ WorldInfo {
   basicTimeStep 4
   ERP 0.1
   CFM 1e-05
+  gravity 0 -9.81 0
+  #gravity 0 -0.9810 0
 
   FPS 15
   contactProperties [
@@ -47,6 +49,7 @@ DEF FLOOR Floor {
 WoodBox {
   translation 0.0108684 0.3 1.04426
 }
+#THOROP_UPENN_Fullmass_nosensor_2 {
 THOROP_UPENN_Fullmass_nosensor {
   translation 0 1.17 -0.03
   rotation 1 0 0 0
@@ -54,7 +57,12 @@ THOROP_UPENN_Fullmass_nosensor {
   controllerArgs "0 32"
   lidarRays 360
   footContactMaterial "feet" 
-  max_torque_400w 90 #double the torques
-  max_torque_200w 90 #double the torques
+#double the torques
+  max_torque_400w 90 
+  max_torque_200w 90 
   max_torque_100w 45
+#  max_torque_400w 40 
+#  max_torque_200w 40 
+#  max_torque_100w 22
+  damping_constant 0
  }

@@ -34,14 +34,19 @@ function state.entry()
   
   Body.set_larm_torque_enable({1,1,1, 1,1,1,1}) --enable force control
   Body.set_rarm_torque_enable({1,1,1, 1,1,1,1}) --enable force control
+
+
+
+  Body.set_larm_torque_enable({2,2,2, 2,2,2,2}) --enable force control
 --[[
   Body.set_larm_torque_enable({2,2,2, 2,2,2,2}) --enable force control
   Body.set_larm_torque_enable({2,1,1, 1,1,1,1}) --enable force control
   Body.set_larm_torque_enable({2,2,2, 2,2,1,2}) --enable force control
     
 --  Body.set_larm_torque_enable({2,2,1, 2,2,1,2}) --enable force control
-  Body.set_larm_torque_enable({1,1,2, 1,1,1,1}) --enable force control    
-  Body.set_larm_torque_enable({2,1,1, 1,1,1,1}) --enable force control    
+--  Body.set_larm_torque_enable({1,1,2, 1,1,1,1}) --enable force control    
+--  Body.set_larm_torque_enable({2,1,1, 2,1,1,1}) --enable force control    
+
 
   Body.set_lleg_torque_enable({1,1,1, 1,1,1}) --enable force control
   Body.set_rleg_torque_enable({1,1,1, 1,1,1}) --enable force control
@@ -49,6 +54,9 @@ function state.entry()
 --  Body.set_lleg_torque_enable({1,1,2,1,1,1}) --enable force control
 --  Body.set_rleg_torque_enable({1,1,2,1,1,1}) --enable force control
 --]]
+
+--  Body.set_larm_torque_enable({1,1,2, 1,1,1,1}) --enable force control
+
 
   larm_pos_old = Body.get_larm_position()  
   rarm_pos_old = Body.get_rarm_position()
@@ -204,47 +212,39 @@ count=count+1
   local damping_factor=vector.ones(7)*0 --internal damping of servo
   local static_friction = vector.new({0,0,0,0, 0,0,0});
 
+--[[  
   local arm_acc_gain = 20 --very stiff
   local larm_comp_acc,larm_vel_target = util.pid_feedback(larm_pos_err, larm_vel, dt, arm_acc_gain)
   local rarm_comp_acc,rarm_vel_target = util.pid_feedback(rarm_pos_err, rarm_vel, dt, arm_acc_gain)
+--]]  
 
---[[  
-  local arm_p_gain,arm_d_gain = 10,-1
+  local arm_p_gain,arm_d_gain = 4,-4
   local larm_comp_acc = larm_pos_err*arm_p_gain+larm_vel*arm_d_gain
   local rarm_comp_acc = rarm_pos_err*arm_p_gain+rarm_vel*arm_d_gain
---]]  
+
 
   local l_torques,r_torques
 
-  l_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,larm_pos)
-  r_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,rarm_pos)
-
-  l_torques.acc=vector.zeros(7)
-  r_torques.acc=vector.zeros(7)
-
   t0=unix.time()   
+
   l_torques = Body.Kinematics.calculate_arm_torque_adv(rpy_angle,larm_pos,larm_vel,larm_comp_acc);
+
+  r_torques = Body.Kinematics.calculate_arm_torque(rpy_angle,rarm_pos)
+  r_torques.acc=vector.zeros(7)
 
   t1=unix.time()
 
   local l_stall_torque = vector.new(l_torques.stall);
   local r_stall_torque = vector.new(r_torques.stall);
-
-  
+  local l_acc_torque = vector.new(l_torques.acc);
+  local r_acc_torque = vector.new(r_torques.acc);
   local l_acc2_torque = vector.new(l_torques.acc2);
 
+  damping_factor=vector.ones(7)*(0)
 
 
-  damping_factor=vector.ones(7)*(-0.1)
-
-
-  local l_acc_torque = util.linearize(l_torques.acc,larm_vel,damping_factor,static_friction);
-  local r_acc_torque = util.linearize(r_torques.acc,rarm_vel,damping_factor,static_friction);
-
-
-  l_stall_torque[3]=l_stall_torque[3]*1.01
-
-
+--  local l_acc_torque = util.linearize(l_torques.acc,larm_vel,damping_factor,static_friction);
+  --local r_acc_torque = util.linearize(r_torques.acc,rarm_vel,damping_factor,static_friction);
 
   Body.set_larm_command_torque(l_stall_torque+l_acc_torque)
   Body.set_rarm_command_torque(r_stall_torque+r_acc_torque)
@@ -254,14 +254,14 @@ count=count+1
 
 
 
-
+--[[
   local r_cmd_acc = (r_stall_torque-rarm_actual_torque)*0.5 - r_cmd_vel*1
 
   --r_cmd_acc[7],r_cmd_acc[2],r_cmd_acc[3],r_cmd_acc[5],r_cmd_acc[6]=0,0,0,0,0
   r_cmd_vel = r_cmd_vel + r_cmd_acc*dt;
   r_cmd_pos = r_cmd_pos + r_cmd_vel*dt;
   Body.set_rarm_command_position(r_cmd_pos)
-
+--]]
 
 
 
@@ -271,9 +271,10 @@ count=count+1
 
 ----------------------------------------------------------------------------
 
---  if count%300==0 then
---  if count%50==0 then
-  if false  then
+  if count%300==0 then
+--  if count%5==0 then
+--    if true then
+--  if false  then
     
   
 --[[
@@ -284,8 +285,9 @@ print((t1-t0)*1000, "ms spent for dynamics calc")
         unpack(r_stall_torque)))
 --]]
 
---[[
+--
 
+print("----------------------")
     print(string.format("LArm   cur  vel     : %.3f %.3f %.3f/ %.3f %.3f %.3f / %.3f",
           unpack( larm_vel*RAD_TO_DEG) ))
 
@@ -298,13 +300,13 @@ print((t1-t0)*1000, "ms spent for dynamics calc")
     print(string.format("LArm calcu  torque: %.3f %.3f %.5f/ %.3f %.3f %.3f / %.3f",
           unpack( l_stall_torque ) ))
 
-    print(string.format("LArm   acc  torque: %.3f %.3f %.5f/ %.3f %.3f %.3f / %.3f",
+    print(string.format("LArm   acc  torque: %.3f %.3f %.5f/ %.5f %.3f %.3f / %.3f",
           unpack( l_acc_torque ) ))
 
-    print(string.format("LArm  acc2  torque: %.3f %.3f %.5f/ %.3f %.3f %.3f / %.3f",
+    print(string.format("LArm  acc2  torque: %.3f %.3f %.5f/ %.5f %.5f %.3f / %.5f",
           unpack( l_acc2_torque) ))
---]]    
-
+--    
+--[[
 print(string.format("%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
 
   Body.get_time(),
@@ -315,7 +317,7 @@ print(string.format("%.3f %.3f %.3f %.3f %.3f %.3f %.3f %.3f",
   l_stall_torque[1],
   l_acc_torque[1],
   l_acc2_torque[1] ));          
-
+--]]
 
 
 
@@ -369,6 +371,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
+  forcecontrol(dt)
 end
 
 

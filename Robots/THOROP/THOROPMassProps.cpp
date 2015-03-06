@@ -457,11 +457,11 @@ void THOROP_kinematics_calculate_arm_torque_adv(
   printf("B matrix:\n");
   for(i=0;i<7;i++){ 
     for (j=0;j<7;j++)
-      printf("%.4f ",b_matrix0[i*7+j]);
+      printf("%.6f ",b_matrix0[i*7+j]);
     printf("\n");
   }
   printf("\n");
-  */
+*/
 
   qArmDq[0]=qArm[0]+dq;  
   THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[0], rpyangle,qArmDq);
@@ -509,9 +509,14 @@ void THOROP_kinematics_calculate_arm_torque_adv(
       }
     }
   }
-
-
-
+/*
+  printf("Acc torque:");
+  for(k=0;k<7;k++){printf("%.5f ",acc_torque[k]);}
+  printf("\n");
+  printf("Acc2 torque:");
+  for(k=0;k<7;k++){printf("%.5f ",acc_torque2[k]);}
+  printf("\n");
+*/
 }
 
 

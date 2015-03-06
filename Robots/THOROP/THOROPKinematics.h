@@ -152,7 +152,15 @@ const double bodyCom[2][3]={
 
 //Based on webots mass 
 const double MassArm[7]={
-	0.1, 2.89, 0.13, 0.81, 0.97, 0.1,	 0.1,	//gripper mass... TBD
+	0.1,
+	2.89,
+	0.13, 
+	0.81, 
+	0.97, 
+	0.1,	 
+	0.1,	//gripper mass... TBD
+//0,0,0,
+
 //MK2 values
 //	1.04, 0.752, 2.021, 1.161, 0.37, 0.102, 1.44	
 };
@@ -186,6 +194,7 @@ const double armCom[7][3]={
 	{0.1027,0,-0.008},//after shoulder roll
 	{0.246,0,0.030}, //after shoulder yaw	
 	{0.0464,0,0},//after elbow
+//	{-0.2036,0,0},//after elbow	
 	{-0.040,0,0}, //after wrist yaw 1
 	{0,0,0}, //after wrist roll
 	{0.095,0,0} //after wrist yaw 2

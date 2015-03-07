@@ -45,7 +45,7 @@ char_lut['9'] = function()
   motion_ch:send'hybridwalk'
 end
 
-char_lut['t'] = function()
+char_lut['r'] = function()
   if selected_arm==0 then
     local qLArm = hcm.get_teleop_larm()
     --print('Pre',qLArm*RAD_TO_DEG)
@@ -64,7 +64,7 @@ char_lut['t'] = function()
   end
 end
 
-char_lut['y'] = function()
+char_lut['t'] = function()
   if selected_arm==0 then
     local qLArm = hcm.get_teleop_larm()
 		local tr = K.forward_larm(qLArm)
@@ -212,7 +212,7 @@ local dWalk = 0.05
 local daWalk = 5*DEG_TO_RAD
 local walk = {
   i = dWalk * vector.new{1, 0, 0},
-  [','] = dWalk * vector.new{0, 0, -1},
+  [','] = dWalk * vector.new{-1, 0, 0},
   --
   j = dWalk * vector.new{0, 0, 1},
   l = dWalk * vector.new{0, 0, -1},
@@ -267,7 +267,7 @@ function show_status()
   )
   local rarm_info = string.format('\n%s %s %s\n%s\n%s',
     util.color('Right Arm', 'yellow'),
-    arm_mod and selected_arm==1 and '*' or '',
+    arm_mode and selected_arm==1 and '*' or '',
 		r_indicator,
     'q: '..tostring(qrarm*RAD_TO_DEG),
     'Pos6d: '..tostring(vector.new(T.position6D(fkR)))
@@ -287,8 +287,8 @@ function show_status()
     color('== Teleoperation ==', 'magenta'),
     'BodyFSM: '..color(gcm.get_fsm_Body(), 'green'),
     'ArmFSM: '..color(gcm.get_fsm_Arm(), 'green'),
-    'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),
-    'MotionFSM: '..color(gcm.get_fsm_Motion(), 'green'),
+--    'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),
+--    'MotionFSM: '..color(gcm.get_fsm_Motion(), 'green'),
     larm_info,
     rarm_info,
     head_info,

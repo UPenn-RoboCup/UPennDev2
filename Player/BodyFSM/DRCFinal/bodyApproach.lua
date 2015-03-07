@@ -69,7 +69,8 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
 
   local vStepTarget
 
-  if dist > 0.30 then --robot away from traget, aim for the center position
+--  if dist > 0.30 then --robot away from traget, aim for the center position
+  if false then    
     local angleTurn
     angleTurn = math.atan2(uTargetCenter[2],uTargetCenter[1])
     if dist>0.50 then 
@@ -77,10 +78,10 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
     else
       vStepTarget={uTargetCenter[1],uTargetCenter[2],uTargetCenter[3]}
     end
-  else  
-    local supportStr
-    
 
+
+  else  
+    local supportStr 
     if last_step==1 then
       if supportLeg==0 then 
         uRightTargetFromTorso = util.pose_global({0, -2*Config.walk.footY,0},uLeftFromTorso)

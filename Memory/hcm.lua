@@ -271,6 +271,11 @@ shared_data.legdebug.torso_angle=vector.zeros(2) --pitch roll
 
 
 
+shared_data.move={}
+shared_data.move.target=vector.zeros(3) --relative pos, x y a
+
+
+
 shared_data.step={}
 shared_data.step.supportLeg=vector.zeros(1)
 shared_data.step.relpos = vector.zeros(3)      --x y a

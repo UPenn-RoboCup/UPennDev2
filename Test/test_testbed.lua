@@ -22,17 +22,11 @@ RAD_TO_DEG = 1/DEG_TO_RAD
 
 local override_target=vector.new({0,0,0,  0,0,0,0})
 
+local movement_target=vector.new({0,0,0})
+
+
 
 local char_to_override = {
---[[
-  ['i'] = vector.new({0.01, 0, 0,   0,0,0,0}),
-  [','] = vector.new({-.01, 0, 0,   0,0,0,0}),
-  ['j'] = vector.new({0, 0.01, 0,   0,0,0,0}),
-  ['l'] = vector.new({0, -.01, 0,   0,0,0,0}),
-  ['u'] = vector.new({0, 0, 0.01,  0,0,0,0}),
-  ['m'] = vector.new({0,0, -.01,   0,0,0,0}),
-  --]]
-
   ['i'] = vector.new({0.04, 0, 0,   0,0,0,0}),
   [','] = vector.new({-.04, 0, 0,   0,0,0,0}),
   ['j'] = vector.new({0, 0.04, 0,   0,0,0,0}),
@@ -40,9 +34,6 @@ local char_to_override = {
   ['u'] = vector.new({0, 0, 0.04,  0,0,0,0}),
   ['m'] = vector.new({0,0, -.04,   0,0,0,0}),
   
-
-
-
   --Yaw
   ['h'] = vector.new({0,0,0,     0,0,1,0}),
   [';'] = vector.new({0,0,0,    0,0,-1,0}),
@@ -56,11 +47,22 @@ local char_to_override = {
   [']'] = vector.new({0,0,0,     1,0,0,1}),
 }
 
+local char_to_movetarget = {
+	['w'] = vector.new({0.05, 0, 0}),
+  ['x'] = vector.new({-.05, 0, 0}),
+  ['a'] = vector.new({0, 0.05, 0}),
+  ['d'] = vector.new({0, -.05, 0}),
+  ['q'] = vector.new({0, 0, 15*math.pi/180}),
+  ['e'] = vector.new({0,0, -15*math.pi/180}),
+}
+
+
 local char_to_state = {
   ['='] = 1,
   ['-'] = -1,  
 }
 
+--[[
 local char_to_lfinger = {
   ['z'] = vector.new({-5,-5}),
   ['a'] = vector.new({0,0}),
@@ -72,6 +74,7 @@ local char_to_rfinger = {
   ['s'] = vector.new({0,0}),
   ['w'] = vector.new({5,5}),
 }
+--]]
 
 local function print_override()
   print( util.color('Override:','yellow'), 
@@ -94,8 +97,6 @@ local function update(key_code)
 
   if key_char_lower==("1") then      body_ch:send'init'
 	elseif key_char_lower==("0") then      body_ch:send'uninit'
-
-
 	elseif key_char_lower==("8") then  
 --[[		
 		motion_ch:send'stand'
@@ -111,45 +112,27 @@ local function update(key_code)
 		motion_ch:send'hybridwalk'
 --
 
-
-
-
-
-
   elseif key_char_lower==("2") then  arm_ch:send'toolgrab'  
-  elseif key_char_lower==("3") then  arm_ch:send'teleop'
-
-
-  elseif key_char_lower==("=") then      
-    hcm.set_state_proceed(1)
-  elseif key_char_lower==("-") then          
-    hcm.set_state_proceed(-1)
-
-
-  elseif key_char_lower==("k") then          
-    override_target=vector.new({0,0,0,  0,0,0,0})
+  elseif key_char_lower==("3") then  arm_ch:send'teleop'  
+  elseif key_char_lower==("k") then  override_target=vector.new({0,0,0,  0,0,0,0})
   elseif key_char_lower==(" ") then
     hcm.set_state_override(override_target)    
+    hcm.set_move_target(movement_target)
+		body_ch:send'approach' --todo
     override_target = vector.zeros(6)
-    print_override()
+    movement_target = vector.zeros(3)
   end
 
   
   --notify target transform change
   local trmod = char_to_override[key_char_lower]
   if trmod then
-    --[[
-    local override_old = hcm.get_state_override()
-    local tr = vector.new(trmod) + vector.new(override_old)
-    --]]
     override_target = override_target+trmod
     print_override()   
-    --hcm.set_state_override_target(tr)    
-    
     return
   end
 
-
+--[[
   local lf = char_to_lfinger[key_char_lower]
   if lf then
     Body.move_lgrip1(lf[1])
@@ -163,8 +146,8 @@ local function update(key_code)
     Body.move_rgrip2(rf[2])
     return
   end
+--]]
 
- 
 
   local state_adj = char_to_state[key_char_lower]
   if state_adj then
@@ -173,6 +156,14 @@ local function update(key_code)
     return
   end
 
+ 	local movetarget_adj = char_to_movetarget[key_char_lower]
+ 	if movetarget_adj then
+ 		movement_target=movement_target+movetarget_adj
+ 		print( util.color('Move target: ','yellow'), 
+ 			string.format("%.2f %.2f %d",movement_target[1],movement_target[2],movement_target[3]*180/math.pi )
+ 			)
+ 		return
+ 	end
 end
 
 

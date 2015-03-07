@@ -57,18 +57,16 @@ fsm.Body = {
   {'bodyStop', 'uninit', 'bodyUnInit'},
   {'bodyUnInit', 'done', 'bodyIdle'},
 
+  {'bodyStop', 'approach', 'bodyApproach'},
+  {'bodyApproach', 'done', 'bodyStop'},  
 
 --[[
-  {'bodyStop', 'approach', 'bodyBlockApproach'},
-  {'bodyBlockApproach', 'done', 'bodyStep'},
-  {'bodyBlockApproach', 'end', 'bodyStop'},
-
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
   {'bodyStepPlace',   'done', 'bodyStop'},
 
   {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'nextstep', 'bodyStep'},
-  {'bodyStep', 'done', 'bodyBlockApproach'},
+  {'bodyStep', 'done', 'bodyStop'},
 --]]
 }
 

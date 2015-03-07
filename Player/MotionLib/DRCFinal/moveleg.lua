@@ -282,21 +282,33 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 		zLegComp[2] = math.max(-supportRatioLeft,zLegComp[2])
   end
 
+
+  local lft = mcm.get_status_LFT()
+  local rft = mcm.get_status_RFT()
+  local afloat_threshold = 50
+  local shiftL,shiftR=1,1
+
+  if lft[1]< afloat_threshold then --left foot afloat
+    shiftL=0
+  end
+  if rft[1]< afloat_threshold then --left foot afloat
+    shiftR=0
+  end
   
 
 
 
   delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
   delta_legs[3] = - hipPitchCompensation*supportRatioLeft
-  delta_legs[4] = angleShift[3] - kneePitchCompensation*supportRatioLeft-kneeComp[1]
-  delta_legs[5] = angleShift[1] - anklePitchCompensation*supportRatioLeft
-  delta_legs[6] = angleShift[2] + ankleRollCompensation*supportRatioLeft
+  delta_legs[4] = angleShift[3]*shiftL - kneePitchCompensation*supportRatioLeft-kneeComp[1]
+  delta_legs[5] = angleShift[1]*shiftL - anklePitchCompensation*supportRatioLeft
+  delta_legs[6] = angleShift[2]*shiftL + ankleRollCompensation*supportRatioLeft
 
   delta_legs[8]  = angleShift[4] - hipRollCompensation*supportRatioRight
   delta_legs[9] = -hipPitchCompensation*supportRatioRight
-  delta_legs[10] = angleShift[3] - kneePitchCompensation*supportRatioRight-kneeComp[2]
-  delta_legs[11] = angleShift[1] - anklePitchCompensation*supportRatioRight
-  delta_legs[12] = angleShift[2] - ankleRollCompensation
+  delta_legs[10] = angleShift[3]*shiftR - kneePitchCompensation*supportRatioRight-kneeComp[2]
+  delta_legs[11] = angleShift[1]*shiftR - anklePitchCompensation*supportRatioRight
+  delta_legs[12] = angleShift[2]*shiftR - ankleRollCompensation
 
   mcm.set_walk_delta_legs(delta_legs)  
 

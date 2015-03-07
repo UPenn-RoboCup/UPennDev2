@@ -9,11 +9,12 @@ local Body   = require'Body'
 local util   = require'util'
 local vector = require'vector'
 local movearm = require'movearm'
-local t_entry, t_update, t_finish
+local t_entry, t_update, t_finish, t_last_debug
 local timeout = 15.0
 
 -- Goal position is arm Init, with hands in front, ready to manipulate
 local qLArmTarget, qRArmTarget
+local last_error
 
 --SJ: now SLOWLY move joint one by one
 function state.entry()
@@ -25,6 +26,16 @@ function state.entry()
   t_finish = t
 
   stage = 1
+
+ if not IS_WEBOTS then
+    print('INIT setting params')
+    for i=1,10 do
+      Body.set_larm_command_velocity({500,500,500,500,500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_rarm_command_velocity({500,500,500,500,500,500})
+      unix.usleep(1e6*0.01);
+    end
+  end
 
   --Slowly close all fingers
 	--[[
@@ -60,6 +71,9 @@ function state.entry()
   mcm.set_stance_enable_torso_track(0)
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit_init)
   mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit_init)
+
+  t_last_debug=t_entry
+  last_error = 999
 end
 
 function state.update()
@@ -71,6 +85,28 @@ function state.update()
   local qRArm = Body.get_rarm_command_position()
   local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
   if ret==1 then return "done" end
+
+  local qLArmActual = Body.get_larm_position()
+  local qRArmActual = Body.get_rarm_position()
+  local qLArmCommand = Body.get_larm_command_position()
+  local qRArmCommand = Body.get_rarm_command_position()
+
+  local err=0
+  for i=1,7 do
+    err=err+math.abs(qLArmActual[i]-qLArmCommand[i])
+    err=err+math.abs(qRArmActual[i]-qRArmCommand[i])
+  end
+
+  if t>t_last_debug+1 then
+    t_last_debug=t
+    if math.abs(last_error-err)<0.2*math.pi/180 then 
+      print("Total joint reading err:",err*180/math.pi)
+      return 'done'  
+    end
+    last_error = err
+  end    
+
+
 end
 
 function state.exit()

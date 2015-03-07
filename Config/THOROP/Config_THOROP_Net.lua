@@ -8,15 +8,14 @@ local IP = {
   BHORAM = 54,
   ALVIN = 24,
   ALVIN_Z = 222,
+  ALVIN_B = 232,
   TEDDY = 26,
-	FIELD = 201,
+  FIELD = 201,
 }
 
 -- Who do we use?
-local WHO = IP.BHORAM
---local WHO = IP.STEVE
-local WHICH = IP.ALVIN_Z
---local WHICH = IP.TEDDY
+local WHO = IP.STEVE
+local WHICH = IP.ALVIN_B
 
 -- Network settings --
 local net = {

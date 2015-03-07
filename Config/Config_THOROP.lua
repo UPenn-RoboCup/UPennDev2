@@ -5,7 +5,7 @@ Config = {}
 
 -- General parameters
 Config.PLATFORM_NAME = 'THOROP'
-Config.nJoint = 35
+Config.nJoint = 36
 Config.use_localhost = false
 
 -- Printing of debug messages

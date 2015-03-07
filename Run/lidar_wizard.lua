@@ -4,7 +4,7 @@
 -- (c) Stephen McGill 2013, 2014
 dofile'../include.lua'
 
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 
 local libHokuyo  = require'libHokuyo'
 local signal = require'signal'.signal
@@ -59,8 +59,8 @@ local h0
 if HOSTNAME=='teddy' then
 	h0 = libHokuyo.new_hokuyo(10)
 elseif HOSTNAME == 'alvin' or true then
-	--h0 = libHokuyo.new_hokuyo(11)
-	h0 = libHokuyo.new_hokuyo('/dev/ttyACM1')
+	h0 = libHokuyo.new_hokuyo(11)
+	--h0 = libHokuyo.new_hokuyo('/dev/ttyACM1')
 else
 	print('WRONG HOST NAME !!')
 end

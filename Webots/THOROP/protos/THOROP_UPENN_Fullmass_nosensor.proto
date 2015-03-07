@@ -3,13 +3,14 @@
 # THOR-OP webots prototype file
 # Based on Robotis wbt
 # (c) Stephen McGill, 2014
-#  Changes: variable knee torque (needed for terrain tasks)
-#  Shrunk foot size according to actual robot
-#  MINIMUM number of bounding box for speed up
-#  SJ: cleaned-up all mass properties according thorIK.h
-#  Fixed wrong arm lengths
+# Changes: variable knee torque (needed for terrain tasks)
+# Shrunk foot size according to actual robot
+# MINIMUM number of bounding box for speed up
+# SJ: cleaned-up all mass properties according thorIK.h
+# Fixed wrong arm lengths
 # unlimited arm torque and velocity (for arm motion testing)
 # Added inertia matrices for upper body
+# got rid of any unmodelled masses
 #############################################
 
 PROTO THOROP_UPENN_Fullmass_nosensor [
@@ -19,16 +20,12 @@ PROTO THOROP_UPENN_Fullmass_nosensor [
   field SFString   controllerArgs ""
   field SFBool     synchronization TRUE
 	field SFFloat    lidarFov 3.1415926536
-	field SFInt32    lidarRays 720
-	#SJ - robotis rating is not enough to keep the robot standing
+	field SFInt32    lidarRays 720	
 	field SFFloat    max_torque_400w 44
 	field SFFloat    max_torque_200w 44
   field SFFloat    max_torque_100w 24
-  field SFFloat    damping_constant 0.1
-
-  # We may want wider FOV for head lidar	
+  field SFFloat    damping_constant 0.1  
   field SFString   name "THOR-OP"
-
   field SFString   footContactMaterial "default"
 ]
 {

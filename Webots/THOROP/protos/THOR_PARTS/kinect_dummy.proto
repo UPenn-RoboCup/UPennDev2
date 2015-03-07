@@ -1,7 +1,7 @@
 #VRML_SIM V7.2.5 utf8
 # Microsoft Kinect2 model based on Kinect model
 
-PROTO kinect2 [
+PROTO kinect_dummy [
   field SFVec3f translation 0 0.02 0
   field SFRotation rotation 0 1 0 0
   field SFInt32 width 256 #256 #512
@@ -19,17 +19,18 @@ Solid {
   translation IS translation
   rotation IS rotation
   children [
-    Camera {
-      name IS name
-      fieldOfView IS fieldOfView
-      width IS width
-      height IS height
-      maxRange IS maxRange 
-      type "b"
-      colorNoise IS colorNoise
-      rangeNoise IS rangeNoise
-      windowPosition IS windowPosition
-    }
+
+#    Camera {
+#      name IS name
+#      fieldOfView IS fieldOfView
+#      width IS width
+#      height IS height
+#      maxRange IS maxRange 
+#      type "b"
+#      colorNoise IS colorNoise
+#      rangeNoise IS rangeNoise
+#      windowPosition IS windowPosition
+#    }
     Shape {
       appearance Appearance {
         material Material {

@@ -108,8 +108,8 @@ arm.trRArm0 = {0.20, -0.25,-0.25,0,0,0}
 arm.trLArm1 = {0.20, 0.25,-0.25,0,0,-45*DEG_TO_RAD}
 arm.trRArm1 = {0.20, -0.25,-0.25,0,0,45*DEG_TO_RAD}
 
-arm.ShoulderYaw0 = {5*DEG_TO_RAD,-5*DEG_TO_RAD}
---arm.ShoulderYaw0=vector.new({0.1,-0.1})*DEG_TO_RAD
+--arm.ShoulderYaw0 = {5*DEG_TO_RAD,-5*DEG_TO_RAD}
+arm.ShoulderYaw0=vector.new({0.1,-0.1})*DEG_TO_RAD
 
 --Arm State specific infos
 armfsm = {}

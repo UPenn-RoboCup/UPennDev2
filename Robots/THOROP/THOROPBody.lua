@@ -190,8 +190,6 @@ if IS_WEBOTS then
   webots = require'webots'
 	local ImageProc = require'ImageProc'
 
-  
-
   Body.enable_read = function(chain) end
   Body.disable_read = function(chain) end
   Body.exit = function() end

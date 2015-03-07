@@ -4,8 +4,8 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "THOR-OP Only"  
-  basicTimeStep 8 #8ms default
-  #basicTimeStep 20
+  #basicTimeStep 8 #8ms default
+  basicTimeStep 20
 	#basicTimeStep 40
   FPS 15
   # TODO: Tune the friction a bit, comparing the F/T sensors
@@ -44,7 +44,7 @@ DirectionalLight {
   intensity 0.5
 }
 DEF FLOOR Floor {
-  tileSize 2 2
+#  tileSize 2 2
   size 10 10
   contactMaterial "floor"
   texture [
@@ -54,11 +54,15 @@ DEF FLOOR Floor {
 WoodBox {
   translation 0.0108684 0.3 1.04426
 }
+
 THOROP_UPENN {
   translation 0 1.17 -0.03
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
-  footContactMaterial "feet"
-}
+  footContactMaterial "feet" 
+  max_torque_400w 90 #double the torques
+  max_torque_200w 90 #double the torques
+  max_torque_100w 45
+ }

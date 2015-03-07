@@ -24,10 +24,9 @@ PROTO THOROP_UPENN_Fullmass [
 	field SFFloat    max_torque_400w 44
 	field SFFloat    max_torque_200w 44
   field SFFloat    max_torque_100w 24
-
+	field SFFloat    damping_constantant 0.1  
   # We may want wider FOV for head lidar	
   field SFString   name "THOR-OP"
-
   field SFString   footContactMaterial "default"
 ]
 {
@@ -95,7 +94,7 @@ Robot {
 			jointParameters HingeJointParameters {
 				axis 1 0 0
 				anchor 0 -0.17 0
-				dampingConstant 0.1                              
+				dampingConstant IS damping_constant                              
 			}
 			endPoint Solid {
 				translation 0 -0.17 0
@@ -123,7 +122,7 @@ Robot {
 							# Out x for pitch
 							axis 0 1 0
 							anchor 0 -0.038 0
-							dampingConstant 0.1                              
+							dampingConstant IS damping_constant                              
 						}
 						endPoint Solid {
 							translation 0 -0.050 0
@@ -180,7 +179,7 @@ Robot {
 									jointParameters HingeJointParameters {
 										axis 0 1 0
 										anchor -0.072 -0.232 0
-										dampingConstant 0.1                              
+										dampingConstant IS damping_constant                              
 									}
 									endPoint Solid {
 										translation -0.072 -0.232 0
@@ -212,7 +211,7 @@ Robot {
 												jointParameters HingeJointParameters {
 													# Out x for pitch
 													axis 0 0 1
-													dampingConstant 0.1                              
+													dampingConstant IS damping_constant                              
 												} # End of the PelvYR HingeJointParameters
 												endPoint Solid {
 												#################################################################		
@@ -237,7 +236,7 @@ Robot {
 															}
 															jointParameters HingeJointParameters {
 																axis 1 0 0
-																dampingConstant 0.1                              
+																dampingConstant IS damping_constant                              
 															}
 															endPoint Solid {
 																boundingObject Transform {    
@@ -268,7 +267,7 @@ Robot {
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
 																			anchor 0 -0.3 -0.03
-																			dampingConstant 0.1             
+																			dampingConstant IS damping_constant             
 																		}
 																		endPoint Solid {
 																			translation 0 -0.3 -0.03
@@ -300,7 +299,7 @@ Robot {
 																					jointParameters HingeJointParameters {
 																						axis 1 0 0
 																						anchor 0 -0.3 0.03
-																						dampingConstant 0.1             
+																						dampingConstant IS damping_constant             
 																					}
 																					endPoint Solid {
 																						translation 0 -0.3 0.03
@@ -329,7 +328,7 @@ Robot {
 																								} # End of the LegLowerR RotationalMotor
 																								jointParameters HingeJointParameters {
 																									axis 0 0 1
-																									dampingConstant 0.1             
+																									dampingConstant IS damping_constant             
 																									}
 																								endPoint Solid {
                                                 	contactMaterial IS footContactMaterial															
@@ -401,7 +400,7 @@ Robot {
 									jointParameters HingeJointParameters {
 										axis 0 1 0
 										anchor 0.072 -0.232 0
-										dampingConstant 0.1
+										dampingConstant IS damping_constant
 									}
 									endPoint Solid {
 										translation 0.072 -0.232 0
@@ -432,7 +431,7 @@ Robot {
 												jointParameters HingeJointParameters {
 													# Out x for pitch
 													axis 0 0 1
-													dampingConstant 0.1                              
+													dampingConstant IS damping_constant                              
 												}
 												endPoint Solid {
 												##############################################################
@@ -459,7 +458,7 @@ Robot {
 															}
 															jointParameters HingeJointParameters {
 																axis 1 0 0
-																dampingConstant 0.1        
+																dampingConstant IS damping_constant        
 															}
 															endPoint Solid {
 																boundingObject Transform {    
@@ -488,7 +487,7 @@ Robot {
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
 																			anchor 0 -0.3 -0.03
-																			dampingConstant 0.1             
+																			dampingConstant IS damping_constant             
 																		}
 																		endPoint Solid {
 																			translation 0 -0.3 -0.03
@@ -727,7 +726,7 @@ Robot {
       jointParameters HingeJointParameters {
         axis 1 0 0
         anchor -0.234 0 0
-        dampingConstant 0.1                              
+        dampingConstant IS damping_constant                              
       } # End of the ShoulderR HingeJointParameters
       endPoint Solid {
         translation -0.234 0 0
@@ -758,7 +757,7 @@ Robot {
             } # End of the ArmUpperR RotationalMotor
             jointParameters HingeJointParameters {
               axis 0 0 -1
-              dampingConstant 0.1                            
+              dampingConstant IS damping_constant                            
             } # End of the ArmUpperR HingeJointParameters
             endPoint Solid {
             #########################################################
@@ -788,7 +787,7 @@ Robot {
                   }
                   jointParameters HingeJointParameters {
                     axis 0 1 0
-                     dampingConstant 0.1                    
+                     dampingConstant IS damping_constant                    
                   }
                   endPoint Solid {
               ########################################################
@@ -818,7 +817,7 @@ Robot {
                         jointParameters HingeJointParameters {
                           axis -1 0 0
                           anchor 0 -0.246 0.030
-                          dampingConstant 0.1                                                    
+                          dampingConstant IS damping_constant                                                    
                         }
                         endPoint Solid {
                           translation 0 -0.246 0.030
@@ -847,7 +846,7 @@ Robot {
                                 axis 0 1 0
 																#anchor 0 -0.216 -0.03
 																anchor 0 -0.25 -0.03
-                                dampingConstant 0.1																			
+                                dampingConstant IS damping_constant																			
                               } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
                                 translation 0 -0.250 -0.03
@@ -875,7 +874,7 @@ Robot {
                                       # Straight out the z axis
                                       #fixed
                                       axis 0 0 -1
-                                      dampingConstant 0.1
+                                      dampingConstant IS damping_constant
                                     } # End of the RightWristRoll HingeJointParameters
                                     endPoint Solid {
                                     	translation 0 0 0 
@@ -906,7 +905,7 @@ Robot {
                                           jointParameters HingeJointParameters {
                                           	#fixed
                                             axis 0 -1 0
-                                            dampingConstant 0.1     
+                                            dampingConstant IS damping_constant     
                                           }
 #                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
 
@@ -970,7 +969,7 @@ Robot {
       jointParameters HingeJointParameters {
         axis 1 0 0
         anchor -0.234 0 0
-        dampingConstant 0.1                      
+        dampingConstant IS damping_constant                      
       }
       endPoint Solid {
         translation 0.234 0 0
@@ -1006,7 +1005,7 @@ Robot {
             }
             jointParameters HingeJointParameters {
               axis 0 0 -1
-#             dampingConstant 0.1              
+#             dampingConstant IS damping_constant              
              dampingConstant 0              
               staticFriction 0
             }
@@ -1039,7 +1038,7 @@ Robot {
                   }
                   jointParameters HingeJointParameters {
                     axis 0 1 0
-                    dampingConstant 0.1                                  
+                    dampingConstant IS damping_constant                                  
                   }
                   endPoint Solid {
                   	##############################################################		
@@ -1069,7 +1068,7 @@ Robot {
                         jointParameters HingeJointParameters {
                           axis 1 0 0
                           anchor 0 -0.246 0.030
-#                          dampingConstant 0.1                          
+#                          dampingConstant IS damping_constant                          
               						dampingConstant 0              
               						staticFriction 0                          
                         }
@@ -1101,7 +1100,7 @@ Robot {
                               	#fixed
                                 axis 0 1 0
 																anchor 0 -0.25 -0.03
-                                dampingConstant 0.1																
+                                dampingConstant IS damping_constant																
                               } # End of the LeftWristYaw HingeJointParameters
                               endPoint Solid {                                
                                 translation 0 -0.25 -0.03 #lower arm length is 250mm
@@ -1129,7 +1128,7 @@ Robot {
                                     jointParameters HingeJointParameters {
                                       # Straight out the z axis
                                       axis 0 0 -1
-                                      dampingConstant 0.1                                      
+                                      dampingConstant IS damping_constant                                      
                                     } # End of the LeftWristRoll HingeJointParameters
                                     endPoint Solid {                                    	
                                       translation 0 0 0 
@@ -1159,7 +1158,7 @@ Robot {
                                           }
                                           jointParameters HingeJointParameters {
                                             axis 0 -1 0
-																						dampingConstant 0.1                                            
+																						dampingConstant IS damping_constant                                            
                                           }
 																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
 																					#endPoint CHOPSTICKS {translation 0 -0.05 0}

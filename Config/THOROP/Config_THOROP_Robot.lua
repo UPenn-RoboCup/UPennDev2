@@ -53,7 +53,7 @@ local right_arm = {
 	--head
 	29, 30,
 	-- gripper
-	64, 66,
+--	64, 66,
 },
 enable_read = true,
 }

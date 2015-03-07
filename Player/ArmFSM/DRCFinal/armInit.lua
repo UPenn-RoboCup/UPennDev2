@@ -84,7 +84,7 @@ function state.update()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
-  if ret==1 then return "done" end
+--  if ret==1 then return "done" end
 
   local qLArmActual = Body.get_larm_position()
   local qRArmActual = Body.get_rarm_position()

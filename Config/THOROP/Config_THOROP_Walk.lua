@@ -287,6 +287,13 @@ end
 --COM compensation testing
   walk.supportX = 0.03 
   walk.supportY = 0.02
+
+
+  walk.supportX = 0.01 
+  walk.supportY = 0.04
+
+
+
 --higher ankle Y gain (helps SS)
   walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 

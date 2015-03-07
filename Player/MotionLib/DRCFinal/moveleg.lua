@@ -485,7 +485,7 @@ function moveleg.ft_compensate(t_diff)
 
   local enable_balance = hcm.get_legdebug_enable_balance()
   local ft,imu = moveleg.get_ft()
-  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
+--  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
 --  moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
 --  moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 end

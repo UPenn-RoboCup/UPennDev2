@@ -7,16 +7,19 @@ local P = require'libPlan'
 local K = require'K_ffi'
 local sanitize = K.sanitize
 
+local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
+local radiansPerSecond = degreesPerSecond * DEG_TO_RAD
+
 local lPlanner = P.new_planner(
 	vector.slice(Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
 	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
-	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD
+	radiansPerSecond
 ):set_chain(K.forward_larm, K.inverse_larm)
 
 local rPlanner = P.new_planner(
-	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]), 
+	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
 	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
-	vector.new{15,10,20, 15, 20,20,20}*DEG_TO_RAD -- Angular speedlimits
+	radiansPerSecond
 ):set_chain(K.forward_rarm, K.inverse_rarm)
 
 -- TODO: Add dt into the joint iterator
@@ -24,20 +27,20 @@ local dqLimit = DEG_TO_RAD / 3
 
 -- Take a desired Transformation matrix and move joint-wise to it
 function movearm.goto_tr_via_q(lwrist, rwrist, loptions, roptions)
-	local lPathIter, rPathIter
+	local lPathIter, rPathIter, iqLArm, iqRArm
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		local iqLArm = K.inverse_larm(lwrist, qLArm, unpack(loptions))
+		iqLArm = K.inverse_larm(lwrist, qLArm, unpack(loptions))
     sanitize(iqLArm, qLArm)
 		lPathIter = lPlanner:joint_iter(iqLArm, qLArm, dqLimit)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		local iqRArm = K.inverse_rarm(rwrist, qRArm, unpack(roptions))
+		iqRArm = K.inverse_rarm(rwrist, qRArm, unpack(roptions))
     sanitize(iqRArm, qRArm)
 		rPathIter = rPlanner:joint_iter(iqRArm, qRArm, dqLimit)
 	end
-	return lPathIter, rPathIter
+	return lPathIter, rPathIter, iqLArm, iqRArm
 end
 
 -- Take a desired Transformation matrix and move in a line towards it
@@ -59,11 +62,11 @@ function movearm.goto_q(lwrist, rwrist)
 	local lPathIter, rPathIter
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter = lPlanner:joint_iter(lwrist, qLArm, dqLimit)
+		lPathIter = lPlanner:joint_iter(lwrist, qLArm, dqLimit, true)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter = rPlanner:joint_iter(rwrist, qRArm, dqLimit)
+		rPathIter = rPlanner:joint_iter(rwrist, qRArm, dqLimit, true)
 	end
 	return lPathIter, rPathIter
 end

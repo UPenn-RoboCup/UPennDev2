@@ -2,7 +2,7 @@ dofile'../../include.lua'
 local vector = require'vector'
 local K = require'THOROPKinematics'
 local T = require'Transform'
-local K2 = require'fk2'
+local K2 = require'K_ffi'
 local torch = require'torch'
 local util = require'util'
 local ok, ffi = pcall(require, 'ffi')
@@ -29,26 +29,29 @@ if jit then
 	fL2a_d = fL2a_t:data()
 end
 
-dt_all = vector.zeros(6)
+-- Correctness
+fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
+fL2 = K2.forward_larm(qLArm)
+
+print(unpack(fL))
+print(T.position6D(fL2))
+
+dt_all = vector.zeros(4)
 local n = 1000
 for i=1,n do
 	t0 = unix.time()
 	fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
 	t1 = unix.time()
-	fL2 = K2.fk(qLArm)
+	fL2 = K2.forward_larm(qLArm)
 	t2 = unix.time()
-	if fL2_d then K2.fk_t(fL2_d, qLArm) end
-	t3 = unix.time()
 	fLa = K.l_arm_torso_7(qLArm2, 0, {0,0}, 0,0,0)
+	t3 = unix.time()
+	fL2a = K2.forward_larm(qLArm2)
 	t4 = unix.time()
-	fL2a = K2.fk(qLArm2)
-	t5 = unix.time()
-	if fL2a_d then K2.fk_t(fL2a_d, qLArm2) end
-	t6 = unix.time()
-	dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3,t5-t4,t6-t5}
+	dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3}
 	dt_all = dt_all + dt
 end
-print('Times:',dt_all)
+print('Times:', dt_all, n)
 
 -- Find the forward kinematics
 fL[2] = fL[2] - K.shoulderOffsetY
@@ -83,24 +86,28 @@ fLa[3] = fLa[3] + K.shoulderOffsetZ
 fL2_t4 = ffi.new('double[4][4]', fL2)
 fL2a_t4 = ffi.new('double[4][4]', fL2a)
 
-dt_all = vector.zeros(3)
+dt_all = vector.zeros(4)
 --n = 10
 for i=1,n do
 	t0 = unix.time()
 	iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)
 	t1 = unix.time()
-	iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
+	iqLArm1 = K2.inverse_larm(fL2, qLArm, 0)
 	t2 = unix.time()
-	iqLArm3 = ik2.ik2(fL2_t4, qLArm, 0, false)
+	iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
 	t3 = unix.time()
-	dt_all = vector.new{t1-t0, t2-t1, t3-t2} + dt_all
+	iqLArm3 = ik2.ik2(fL2_t4, qLArm, 0, false)
+	t4 = unix.time()
+	dt_all = vector.new{t1-t0, t2-t1, t3-t2, t4-t3} + dt_all
 end
+
+print('Time:', dt_all, n)
 
 iqLArm_a = K.inverse_l_arm_7(fLa, qLArm2, 0, 0, {0,0}, 0,0,0, 0)
 iqLArm2a = ik2.ik(fL2a_t, qLArm2, 0, false)
 iqLArm3a = ik2.ik2(fL2a_t4, qLArm2, 0, false)
 
-print('Time:', dt_all)
+
 print()
 print(qLArm)
 print(vector.new(iqLArm))
@@ -114,7 +121,7 @@ print(vector.new(iqLArm3a))
 
 --[[
 K2 = require'K_ffi'
-T = require'libTransform'
+T = require'Transform'
 
 q = Body.get_rarm_position()
 tr = K2.forward_r_arm(q)

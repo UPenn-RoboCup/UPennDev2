@@ -12,30 +12,18 @@ local T = require'Transform'
 local tremove = require'table'.remove
 local fabs = require'math'.abs
 
-local mt = {}
-local function tbl_iter(t,k)
-	return tremove(t)
-end
-mt.__call = tbl_iter
+local mt = {
+	__call = function(t,k) return tremove(t) end
+}
 
 local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
-	local diff, mod_diff
+	local diff0, mod_diff, diff
 	for i, v in ipairs(cur_qArm) do
-		diff = iqWaypoint[i] - v
-		mod_diff = mod_angle(diff)
-		if fabs(diff) > fabs(mod_diff) then
-			if dt then
-				iqWaypoint[i] = v + procFunc(mod_diff, 0, dqdt_limit[i]*dt)
-			else
-				iqWaypoint[i] = v + mod_diff
-			end
-		else
-			if dt then
-				iqWaypoint[i] = v + procFunc(diff, 0, dqdt_limit[i]*dt)
-			else
-				iqWaypoint[i] = v + diff
-			end
-		end
+		diff0 = iqWaypoint[i] - v
+		mod_diff = mod_angle(diff0)
+		-- Use the smaller diff
+		diff = fabs(diff0) < fabs(mod_diff) and diff0 or mod_diff
+		iqWaypoint[i] = v + (dt and procFunc(diff, 0, dqdt_limit[i] * dt) or diff)
 	end
 end
 
@@ -46,84 +34,6 @@ end
 -- to change the orientation through the singularity
 -- TODO: Handle goal of transform or just position
 -- Just position disables orientation checking
-
--- Plan a direct path using
--- a straight line
--- res_pos: resolution in meters
--- res_ang: resolution in radians
--- use_safe_inverse: Adjust for pseudo roll?
-local function line_stack(self, qArm, trGoal, res_pos, res_ang, use_safe_inverse)
-	res_pos = res_pos or 0.005
-	res_ang = res_ang or 1*DEG_TO_RAD
-	local K = self.K
-	-- If goal is position vector, then skip check
-	local skip_angles = type(trGoal[1])=='number'
-	-- Save the goal
-	local qGoal, posGoal, quatGoal
-	if skip_angles==true then
-		posGoal = trGoal
-		qGoal = K.inverse_arm_position(posGoal,qArm)
-	else
-		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		qGoal = K.inverse_arm(trGoal,qArm)
-	end
-	--
-	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
-	--
-	local fkGoal = K.forward_arm(qGoal)
-	local fkArm  = K.forward_arm(qArm)
-	if skip_angles==true then
-		posArm = vector.new{fkArm[1][4],fkArm[2][4],fkArm[3][4]}
-	else
-		quatGoal, posGoal = T.to_quaternion(fkGoal)
-		quatArm, posArm   = T.to_quaternion(fkArm)
-		vector.new(posGoal)
-	end
-	--
-	local nSteps
-	local dPos = posGoal - posArm
-	local distance = vector.norm(dPos)
-	local nSteps_pos = math.ceil(distance / res_pos)
-	if skip_angles==true then
-		nSteps = nSteps_pos
-	else
-		local quatDist = quatArm - quatGoal
-		local nSteps_ang = math.ceil(math.abs(quatDist) / res_ang)
-		nSteps = math.max(nSteps_pos,nSteps_ang)
-	end
-	--
-	local inv_nSteps = 1 / nSteps
-	--local dTransBack = T.trans(unpack(dPos/-nSteps))
-	local ddp = dPos/-nSteps
-	-- Form the precomputed stack
-	local qStack = {}
-	local cur_qArm, cur_posArm = vector.copy(qGoal), vector.copy(posGoal)
-	--local cur_trArm = trGoal
-	--local cur_quatArm = quatArm
-	for i=nSteps,1,-1 do
-		cur_posArm = cur_posArm + ddp
-		if skip_angles==true then
-			cur_qArm = K.inverse_arm_position(cur_posArm,cur_qArm)
-		else
-			local qSlerp = q.slerp( quatArm, quatGoal, i*inv_nSteps )
-			local trStep = T.from_quaternion( qSlerp, cur_posArm )
-			cur_qArm = K.inverse_arm( trStep, cur_qArm )
-		end
-		--[[
-		local trWaypoint = dTransBack * cur_trArm
-		local qSlerp = q.slerp(quatArm,quatGoal,i*inv_nSteps)
-		local trStep = T.from_quaternion(
-			qSlerp,
-			{trWaypoint[1][4],trWaypoint[2][4],trWaypoint[3][4]}
-		)
-		cur_qArm = K.inverse_arm(trStep,cur_qArm)
-		cur_trArm = trStep
-		--]]
-		table.insert(qStack,cur_qArm)
-	end
-	-- We return the stack and the final joint configuarion
-	return setmetatable(qStack, mt), qGoal
-end
 
 -- This should have exponential approach properties...
 -- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
@@ -154,12 +64,12 @@ local function line_iter(self, trGoal, qArm0, res_pos, res_ang, null_options)
 		vector.new(posGoal)
 		--print('posGoal Out', posGoal)
 	end
-	
+
 	local fkArm0, null_options0 = forward(qArm0)
 	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
 	local dPos0 = posGoal - posArm0
 	local distance0 = vector.norm(dPos0)
-	
+
 	local dqdt_limit = self.dqdt_limit
 	-- We return the iterator and the final joint configuarion
 	-- TODO: Add failure detection; if no dist/ang changes in a while
@@ -217,6 +127,120 @@ local function line_iter(self, trGoal, qArm0, res_pos, res_ang, null_options)
 	end, qGoal
 end
 
+-- TODO: Optimize the feedforward ratio
+local function joint_iter(self, qGoal0, qArm0, res_q, SKIP_SANITIZE)
+	res_q = res_q or 3 * DEG_TO_RAD
+	local dq_max = res_q * self.ones
+	local dq_min = -1 * dq_max
+	local qGoal = clamp_vector(qGoal0, self.min_q, self.max_q)
+	local dqdt_limit = self.dqdt_limit
+	if not SKIP_SANITIZE then sanitize(qGoal, qArm0, dt, dqdt_limit) end
+	local qPrev
+	return function(cur_qArm, dt)
+		-- Feedback
+		local dqFB = qGoal - cur_qArm
+		local distanceFB = vector.norm(dqFB)
+		-- Check if done
+		if distanceFB < res_q then return nil, qGoal end
+		local qWaypointFB = cur_qArm + clamp_vector(dqFB, dq_min, dq_max)
+		sanitize(qWaypointFB, cur_qArm, dt, dqdt_limit)
+		-- Feedforward
+		qPrev = qPrev or cur_qArm
+		local dqFF = qGoal - cur_qArm --qPrev
+		local distanceFF = vector.norm(dqFF)
+		local qWaypointFF
+		if distanceFF < res_q then
+			qWaypointFF = qGoal
+		else
+			qWaypointFF = qPrev + clamp_vector(dqFF, dq_min, dq_max)
+			sanitize(qWaypointFF, qPrev, dt, dqdt_limit)
+		end
+		-- Mix Feedback and Feedforward
+		local qWaypoint = 0.2 * qWaypointFB + 0.8 * qWaypointFF
+		qPrev = qWaypoint
+		return distanceFB, qWaypoint
+	end, qGoal
+end
+
+-- Plan a direct path using
+-- a straight line
+-- res_pos: resolution in meters
+-- res_ang: resolution in radians
+-- use_safe_inverse: Adjust for pseudo roll?
+local function line_stack(self, qArm, trGoal, res_pos, res_ang, use_safe_inverse)
+	res_pos = res_pos or 0.005
+	res_ang = res_ang or 1*DEG_TO_RAD
+	local forward, inverse = self.forward, self.inverse
+	-- If goal is position vector, then skip check
+	local skip_angles = type(trGoal[1])=='number'
+	-- Save the goal
+	local qGoal, posGoal, quatGoal
+	if skip_angles==true then
+		posGoal = trGoal
+		qGoal = inverse(posGoal,qArm)
+	else
+		-- Must also fix the rotation matrix, else the yaw will not be correct!
+		qGoal = forward(trGoal,qArm)
+	end
+	--
+	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
+	--
+	local fkGoal = forward(qGoal)
+	local fkArm  = forward(qArm)
+	if skip_angles==true then
+		posArm = vector.new{fkArm[1][4],fkArm[2][4],fkArm[3][4]}
+	else
+		quatGoal, posGoal = T.to_quaternion(fkGoal)
+		quatArm, posArm   = T.to_quaternion(fkArm)
+		vector.new(posGoal)
+	end
+	--
+	local nSteps
+	local dPos = posGoal - posArm
+	local distance = vector.norm(dPos)
+	local nSteps_pos = math.ceil(distance / res_pos)
+	if skip_angles==true then
+		nSteps = nSteps_pos
+	else
+		local quatDist = quatArm - quatGoal
+		local nSteps_ang = math.ceil(math.abs(quatDist) / res_ang)
+		nSteps = math.max(nSteps_pos,nSteps_ang)
+	end
+	--
+	local inv_nSteps = 1 / nSteps
+	--local dTransBack = T.trans(unpack(dPos/-nSteps))
+	local ddp = dPos/-nSteps
+	-- Form the precomputed stack
+	local qStack = {}
+	local cur_qArm, cur_posArm = vector.copy(qGoal), vector.copy(posGoal)
+	--local cur_trArm = trGoal
+	--local cur_quatArm = quatArm
+	for i=nSteps,1,-1 do
+		cur_posArm = cur_posArm + ddp
+		if skip_angles==true then
+			-- TODO: Does not exist
+			cur_qArm = K.inverse_arm_position(cur_posArm, cur_qArm)
+		else
+			local qSlerp = q.slerp( quatArm, quatGoal, i*inv_nSteps )
+			local trStep = T.from_quaternion( qSlerp, cur_posArm )
+			cur_qArm = inverse( trStep, cur_qArm )
+		end
+		--[[
+		local trWaypoint = dTransBack * cur_trArm
+		local qSlerp = q.slerp(quatArm,quatGoal,i*inv_nSteps)
+		local trStep = T.from_quaternion(
+			qSlerp,
+			{trWaypoint[1][4],trWaypoint[2][4],trWaypoint[3][4]}
+		)
+		cur_qArm = K.inverse_arm(trStep,cur_qArm)
+		cur_trArm = trStep
+		--]]
+		table.insert(qStack,cur_qArm)
+	end
+	-- We return the stack and the final joint configuarion
+	return setmetatable(qStack, mt), qGoal
+end
+
 local function joint_stack(self, qGoal, qArm, res_q)
 	res_q = res_q or 2*DEG_TO_RAD
 	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
@@ -232,40 +256,6 @@ local function joint_stack(self, qGoal, qArm, res_q)
 	return setmetatable(qStack, mt)
 end
 
-local function joint_iter(self, qGoal, qArm0, res_q)
-	res_q = res_q or 3 * DEG_TO_RAD
-	qGoal = vector.copy(clamp_vector(qGoal, self.min_q, self.max_q))
-	sanitize(qGoal, qArm0, dt, dqdt_limit)
-	local dq_min = -res_q * vector.ones(#qGoal)
-	local dq_max = res_q * vector.ones(#qGoal)
-	local dqdt_limit = self.dqdt_limit
-	local qPrev
-	return function(cur_qArm, dt)
-		-- Feedback
-		local dqFB = qGoal - cur_qArm
-		local distanceFB = vector.norm(dqFB)
-		-- Check if done
-		if distanceFB < res_q then return nil, vector.copy(qGoal) end
-		local qWaypointFB = cur_qArm + clamp_vector(dqFB, dq_min, dq_max)
-		sanitize(qWaypointFB, cur_qArm, dt, dqdt_limit)
-		-- Feedforward
-		qPrev = qPrev or vector.copy(cur_qArm)
-		local dqFF = qGoal - qPrev
-		local distanceFF = vector.norm(dqFF)
-		local qWaypointFF
-		if distanceFF < res_q then
-			qWaypointFF = vector.copy(qGoal)
-		else
-			qWaypointFF = qPrev + clamp_vector(dqFF, dq_min, dq_max)
-		end
-		sanitize(qWaypointFF, qPrev, dt, dqdt_limit)
-		-- Mix Feedback and Feedforward
-		local qWaypoint = 0.25 * qWaypointFB + 0.75 * qWaypointFF
-		qPrev = vector.copy(qWaypoint)
-		return distanceFB, qWaypoint
-	end
-end
-
 -- Set the forward and inverse
 local function set_chain(self, forward, inverse)
 	self.forward = forward
@@ -275,15 +265,17 @@ end
 
 -- Still must set the forward and inverse kinematics
 function libPlan.new_planner(min_q, max_q, dqdt_limit)
+	local armOnes = vector.ones(7)
 	return {
-		min_q = min_q or -90*DEG_TO_RAD*vector.ones(7),
-		max_q = max_q or 90*DEG_TO_RAD*vector.ones(7),
-		dqdt_limit = dqdt_limit or DEG_TO_RAD*vector.new{15,10,10, 15, 20,20,20},
+		min_q = min_q or -90*DEG_TO_RAD*armOnes,
+		max_q = max_q or 90*DEG_TO_RAD*armOnes,
+		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
 		line_stack = line_stack,
 		line_iter = line_iter,
 		joint_stack = joint_stack,
 		joint_iter = joint_iter,
-		set_chain = set_chain
+		set_chain = set_chain,
+		ones = armOnes,
 	}
 end
 

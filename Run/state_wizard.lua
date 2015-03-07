@@ -17,6 +17,8 @@ if not IS_WEBOTS then
   signal.signal("SIGTERM", shutdown)
 end
 
+local state_ch = require'simple_ipc'.new_subscriber('state!')
+
 -- Load the FSMs and attach event handler
 local state_machines = {}
 local function load_fsm ()
@@ -56,6 +58,18 @@ end
 -- Update loop
 while running do
   t = get_time()
+
+  local events = state_ch:receive(true)
+  if events then
+
+    for _, e in ipairs(events) do
+      print('here', e)
+      if e=='reset' and Body.WebotsBody then
+        Body.WebotsBody.reset()
+      end
+    end
+  end
+
   -- Update the state machines
   for _,my_fsm in pairs(state_machines) do my_fsm:update() end
 		-- If time for debug
@@ -81,4 +95,8 @@ end
 print'Exiting state wizard...'
 for _,my_fsm in pairs(state_machines) do
   my_fsm:exit()
+end
+
+if IS_WEBOTS then
+	wb_supervisor_simulation_revert()
 end

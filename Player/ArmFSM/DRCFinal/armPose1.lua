@@ -15,11 +15,13 @@ local qLArm, qRArm
 local larm_pos_old,rarm_pos_old,larm_vel_old,rarm_vel_old
 local lleg_pos_old,rleg_pos_old
 local l_comp_torque,r_comp_torque
-
-
-
-
 local r_cmd_pos, r_cmd_vel 
+
+
+
+
+local enable_force_control = false
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -34,6 +36,8 @@ function state.entry()
   
   Body.set_larm_torque_enable({1,1,1, 1,1,1,1}) --enable force control
   Body.set_rarm_torque_enable({1,1,1, 1,1,1,1}) --enable force control
+
+  if enable_force_control then
 
 
 
@@ -57,6 +61,8 @@ function state.entry()
 
 --  Body.set_larm_torque_enable({1,1,2, 1,1,1,1}) --enable force control
 
+
+  end
 
   larm_pos_old = Body.get_larm_position()  
   rarm_pos_old = Body.get_rarm_position()
@@ -371,7 +377,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-  forcecontrol(dt)
+  if enable_force_control then forcecontrol(dt) end
 end
 
 

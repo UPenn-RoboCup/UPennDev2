@@ -67,8 +67,8 @@ if IS_STEVE then
 		Config.kinect_timestep = 50
 	end
 else
-	Config.testfile = 'test_balance'
-  --Config.testfile = 'test_manipulation'
+	--Config.testfile = 'test_balance'
+  Config.testfile = 'test_testbed'
 	exo = {
 		'Robot','Walk','Net','Manipulation',
 		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'

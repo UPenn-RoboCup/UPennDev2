@@ -1,5 +1,5 @@
 % Starting timestamp
-datestamp0 = '12.03.2014.15.52.17';
+datestamp0 = '12.31.2008.19.18.14';
 
 prefix = 'k2_depth_m_';
 nprefix = numel(prefix);
@@ -18,20 +18,21 @@ DEPTH_W = 512;
 DEPTH_H = 424;
 DEPTH_MAX = 2000;%8000;
 DEPTH_MIN = 200;
-figure(1);
-h_depth = imagesc(zeros(DEPTH_H, DEPTH_W));
-caxis([DEPTH_MIN DEPTH_MAX]);
+%figure(1);
+%h_depth = imagesc(zeros(DEPTH_H, DEPTH_W));
+%caxis([DEPTH_MIN DEPTH_MAX]);
 %
-figure(3);
-h_ir = imagesc(zeros(DEPTH_H, DEPTH_W));
+%figure(3);
+%h_ir = imagesc(zeros(DEPTH_H, DEPTH_W));
 %caxis([DEPTH_MIN DEPTH_MAX]);
 %
 RGB_W = 1920;
 RGB_H = 1080;
-rgb_img = uint8(zeros([RGB_H, RGB_W, 3]));
-figure(2);
-h_rgb = image(rgb_img);
-
+%rgb_img = uint8(zeros([RGB_H, RGB_W, 3]));
+%figure(2);
+%h_rgb = image(rgb_img);
+RGB = {};
+DEPTH = {};
 n = numel(log_files);
 for idx=1:n
     datestamp = log_files(idx).name(nprefix+1:end-4);
@@ -46,16 +47,16 @@ for idx=1:n
     rgbMeta = fread(fid,Inf,'*uint8');
     fclose(fid);
     rgbMeta = msgpack('unpacker',rgbMeta,'uint8');
-    % RGB
-    fid = fopen(sprintf('Data/k2_ir_m_%s.log',datestamp));
-    irMeta = fread(fid,Inf,'*uint8');
-    fclose(fid);
-    irMeta = msgpack('unpacker',irMeta,'uint8');
+    % IR
+    %fid = fopen(sprintf('Data/k2_ir_m_%s.log',datestamp));
+    %irMeta = fread(fid,Inf,'*uint8');
+    %fclose(fid);
+    %irMeta = msgpack('unpacker',irMeta,'uint8');
     
     % Grab the Depth logged information
     f_depth = fopen(sprintf('Data/k2_depth_r_%s.log', datestamp));
     f_rgb = fopen(sprintf('Data/k2_rgb_r_%s.log', datestamp));
-    f_ir = fopen(sprintf('Data/k2_ir_r_%s.log', datestamp));
+    %f_ir = fopen(sprintf('Data/k2_ir_r_%s.log', datestamp));
     
     % Individual reading
     nlog = numel(depthMeta);
@@ -65,23 +66,30 @@ for idx=1:n
         %
         if DEPTH_W * DEPTH_H * 4 ~= meta.rsz, disp('Bad metadata!'); end
         depthRaw = fread(f_depth, [DEPTH_W, DEPTH_H], '*single');
-        set(h_depth, 'CData', depthRaw');
+        meta.depth = depthRaw;
+        DEPTH{numel(DEPTH)+1} = meta;
+        %set(h_depth, 'CData', depthRaw');
         %
         meta = rgbMeta{ilog};
         rgbJPEG = fread(f_rgb, meta.rsz, '*uint8');
         rgb_img0 = djpeg(rgbJPEG);
-        rgb_img(:,:,1) = rgb_img0(:,:,3);
-        rgb_img(:,:,2) = rgb_img0(:,:,2);
-        rgb_img(:,:,3) = rgb_img0(:,:,1);
-        set(h_rgb, 'CData', rgb_img);
+        meta.jpeg = rgbJPEG;
+        RGB{numel(RGB)+1} = meta;
+        %rgb_img(:,:,1) = rgb_img0(:,:,3);
+        %rgb_img(:,:,2) = rgb_img0(:,:,2);
+        %rgb_img(:,:,3) = rgb_img0(:,:,1);
+        %set(h_rgb, 'CData', rgb_img);
         %
-        irRaw = fread(f_ir, [DEPTH_W, DEPTH_H], '*single');
-        set(h_ir, 'CData', irRaw');
+        %irRaw = fread(f_ir, [DEPTH_W, DEPTH_H], '*single');
+        %set(h_ir, 'CData', irRaw');
         %
-        pause(0.5);
+        %pause(0.5);
     end
     fclose(f_depth);
     fclose(f_rgb);
 end
 
 clear fid f_raw f_rgb;
+
+save('rgb.mat', 'RGB');
+save('depth.mat', 'DEPTH');

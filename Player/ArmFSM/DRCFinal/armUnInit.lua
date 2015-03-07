@@ -51,9 +51,6 @@ function state.entry()
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0})
 
-  
---  qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
---  qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
 
   print("QLArmTarget:", util.print_jangle(qLArmTarget))
 
@@ -74,9 +71,8 @@ function state.update()
 end
 
 function state.exit()
-  local libArmPlan = require 'libArmPlan'
-  local arm_planner = libArmPlan.new_planner()
-  arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
+  
+
 --[[
   Body.move_lgrip1(0)
   Body.move_lgrip2(0)

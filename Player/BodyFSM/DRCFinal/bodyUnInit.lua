@@ -17,20 +17,10 @@ require'wcm'
 
 function state.entry()
   print(state._NAME..' Entry' )
-
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-  
-  -- Torque on the motors...
-  Body.set_larm_torque_enable(1)
-  Body.set_rarm_torque_enable(1)
-
-  arm_ch:send'uninit'
-  motion_ch:send'uninit'  
-  lidar_ch:send'stop'
-
 end
 
 function state.update()
@@ -40,15 +30,18 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  --if t-t_entry > timeout then return'timeout' end
 
-  --TODO: Check whether all FSMs have done initialzing 
-  return 'done'
-
+  if mcm.get_walk_ismoving()==0 then
+    arm_ch:send'uninit'
+    motion_ch:send'uninit'    
+    lidar_ch:send'stop'  
+    return 'done'
+  else
+    mcm.set_walk_stoprequest(1) 
+  end
 end
 
 function state.exit()
-
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
 end

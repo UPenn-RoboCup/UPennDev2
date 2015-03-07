@@ -54,6 +54,11 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyStop'},
 
+  {'bodyStop', 'uninit', 'bodyUnInit'},
+  {'bodyUnInit', 'done', 'bodyIdle'},
+
+
+--[[
   {'bodyStop', 'approach', 'bodyBlockApproach'},
   {'bodyBlockApproach', 'done', 'bodyStep'},
   {'bodyBlockApproach', 'end', 'bodyStop'},
@@ -62,11 +67,9 @@ fsm.Body = {
   {'bodyStepPlace',   'done', 'bodyStop'},
 
   {'bodyStop', 'stepover1', 'bodyStep'},
-
-  
   {'bodyStep', 'nextstep', 'bodyStep'},
---  {'bodyStep', 'done', 'bodyStop'},
   {'bodyStep', 'done', 'bodyBlockApproach'},
+--]]
 }
 
 
@@ -87,6 +90,13 @@ fsm.Arm = {
   {'armToolGrip', 'done', 'armPose1'},
 --  {'armToolGrip', 'hold', 'armToolHold'},
   {'armTeleop', 'done', 'armPose1'},
+
+
+  {'armPose1', 'uninit', 'armUnInit'},
+  {'armToolGrip', 'uninit', 'armUnInit'},
+  {'armTeleop', 'uninit', 'armUnInit'},
+
+  {'armUnInit', 'done', 'armIdle'},
 }
 
 
@@ -112,6 +122,10 @@ fsm.Motion = {
   {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
   {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
   {'motionHybridWalkEnd', 'done', 'motionStance'},
+
+  {'motionStance', 'uninit', 'motionUnInit'},
+  {'motionUnInit', 'done', 'motionIdle'},
+
 }
 
 fsm.dqNeckLimit = {

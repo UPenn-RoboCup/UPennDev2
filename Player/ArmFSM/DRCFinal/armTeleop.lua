@@ -15,47 +15,10 @@ local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local stage
 
 local qLArmInit0,qRArmInit0
+local plan_valid = true
 
-function state.entry()
-  print(state._NAME..' Entry' )
-  -- Update the time of entry
-  local t_entry_prev = t_entry
-  t_entry = Body.get_time()
-  t_update = t_entry
 
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
 
-  qLArm0 = qLArm
-  qRArm0 = qRArm
-  
-  trLArm0 = Body.get_forward_larm(qLArm0)
-  trRArm0 = Body.get_forward_rarm(qRArm0)  
-
-  arm_planner:set_hand_mass(0,0)
-  mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand (left arm fixed)
-  arm_planner:set_shoulder_yaw_target(nil,nil)
-  
-  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
-  qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
-  
-  trLArm1 = Body.get_forward_larm(qLArm1)
-  trRArm1 = Body.get_forward_rarm(qRArm1)  
-
-  hcm.set_hands_left_tr(trLArm1)
-  hcm.set_hands_right_tr(trRArm1)
-  hcm.set_hands_left_tr_target(trLArm1)
-  hcm.set_hands_right_tr_target(trRArm1)
-  
-  local wrist_seq = {    
-    {'wrist',trLArm1, trRArm1},
-  }
-
-  hcm.set_tool_model({trRArm1[1],trRArm1[2],trRArm1[3],0})
-
-  --hcm.get_tool_model()
-  if arm_planner:plan_arm_sequence2(wrist_seq) then stage = "wristturn" end
-end
 
 
 function check_override()
@@ -107,10 +70,52 @@ local function get_tool_tr()
 end
 
 
+
+function state.entry()
+  print(state._NAME..' Entry' )
+  -- Update the time of entry
+  local t_entry_prev = t_entry
+  t_entry = Body.get_time()
+  t_update = t_entry
+
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+
+  qLArm0 = qLArm
+  qRArm0 = qRArm
+  
+  trLArm0 = Body.get_forward_larm(qLArm0)
+  trRArm0 = Body.get_forward_rarm(qRArm0)  
+
+  arm_planner:set_hand_mass(0,0)
+  mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand (left arm fixed)
+  arm_planner:set_shoulder_yaw_target(nil,nil)
+  
+  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
+  qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
+  
+  trLArm1 = Body.get_forward_larm(qLArm1)
+  trRArm1 = Body.get_forward_rarm(qRArm1)  
+
+  hcm.set_hands_left_tr(trLArm1)
+  hcm.set_hands_right_tr(trRArm1)
+  hcm.set_hands_left_tr_target(trLArm1)
+  hcm.set_hands_right_tr_target(trRArm1)
+  
+  --local wrist_seq = {{'wrist',trLArm1, trRArm1}}
+ hcm.set_tool_model({trRArm1[1],trRArm1[2],trRArm1[3],0})
+
+  local wrist_seq = {{'wrist',nil,trRArm1}}
+  plan_valid,stage = arm_planner:plan_arm_sequence(wrist_seq,stage,"wristturn")  
+end
+
+
 function state.update()
 --  print(state._NAME..' Update' )
   -- Get the time of update
-  if plan_failed then return "planfail" end
+  if not plan_valid then 
+    print("PLANNING ERROR!!!!")
+    return "planfail" end
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
@@ -118,23 +123,25 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
   
   if stage=="wristturn" then --Turn yaw angles first
+
     if arm_planner:play_arm_sequence(t) then stage="teleopwait" end
   elseif stage=="teleopwait" then       
    
     if hcm.get_state_proceed(0)== -1 then 
       arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
       local arm_seq = {{'move',trLArm1, trRArm1}}
-      if arm_planner:plan_arm_sequence2(arm_seq) then stage="armposreset" end
+      plan_valid,stage = arm_planner:plan_arm_sequence(
+        arm_seq,stage,"armposreset")        
     else
-
       if check_override() then --Model modification
         update_override()        
         local arm_seq = {{'move',nil,get_tool_tr()}}   
-        if arm_planner:plan_arm_sequence2(arm_seq) then stage = "teleopmove" 
-        confirm_override()
-        else revert_override() end
+        plan_valid,stage = arm_planner:plan_arm_sequence(arm_seq,stage,"teleopmove")
+        if plan_valid then confirm_override()
+        else revert_override() 
+          plan_valid,stage=false,"teleopwait"
+        end
       end
-
 --[[
 
       local qLArm = Body.get_larm_command_position()
@@ -150,13 +157,12 @@ function state.update()
 --]]      
     end
   elseif stage=="teleopmove" then 
-    if arm_planner:play_arm_sequence(t) then 
-      stage="teleopwait"
-    end
+    if arm_planner:play_arm_sequence(t) then stage="teleopwait" end
   elseif stage=="armposreset" then 
     if arm_planner:play_arm_sequence(t) then 
       local wrist_seq = {{'wrist',trLArm0, trRArm0}}
-      if arm_planner:plan_arm_sequence2(wrist_seq) then stage="wristreset" end
+      plan_valid,stage = arm_planner:plan_arm_sequence(
+          wrist_seq,stage,"wristreset")      
     end
   elseif stage=="wristreset" then 
     if arm_planner:play_arm_sequence(t) then return "done" end

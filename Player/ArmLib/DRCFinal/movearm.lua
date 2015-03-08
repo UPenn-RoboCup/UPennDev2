@@ -24,7 +24,12 @@ function movearm.setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim)
   local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
   local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
 
+  
+
+
   --Dynamixel is STUPID so we should manually check for the direction
+  --SJ: this may induce arm corkscrewing - should check 360 degree jump and just solve it instead
+  
   for i=1,7 do
     local qL_increment = util.mod_angle(qL_approach[i]-qLArm[i])
     local qR_increment = util.mod_angle(qR_approach[i]-qRArm[i])

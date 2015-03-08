@@ -424,15 +424,9 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
 
   qLArmNext = self:search_shoulder_angle(qLArm,trLArm1,1, yawMag, qWaist,dt_step)
   qRArmNext = self:search_shoulder_angle(qRArm,trRArm1,0, yawMag, qWaist,dt_step)
-  
-
 
   if not qLArmNext or not qRArmNext then return end
-
-
-  Kinematics.collision_check(qLArmNext,qRArmNext)
-
-
+--  Kinematics.collision_check(qLArmNext,qRArmNext)
 
   local trLArmNext = Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist)
   local trRArmNext = Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
@@ -467,6 +461,9 @@ end
 local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local dpVelLeft = mcm.get_arm_dpVelLeft()
   local dpVelRight = mcm.get_arm_dpVelRight()
+
+  local t00 = unix.time()
+
 
   --param: {trLArm,trRArm} for move
   --param: {trLArm,trRArm} for wrist
@@ -553,6 +550,14 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local done2 = false
 
   while not done and not failed  do --we were skipping the last frame
+
+    local t01 = unix.time()
+    local time_passed=t01-t00    
+    if time_passed>1 then
+      print("SOMETHING VERY WRONG!!!!!!")
+      return
+    end
+
     if plantype=="move" then
       local distL = tr_dist(init_param[1],target_param[1])
       local distR = tr_dist(init_param[2],target_param[2])
@@ -565,9 +570,8 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpVelLeft*velL, dt_step )
       trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpVelRight*velR, dt_step )
 
-      --Waist yaw
+      --Waist yaw and pitch
       new_param[3],done3 = util.approachTol(current_param[3],target_param[3],vel_param[3],dt_step )
-      --Waist pitch
       new_param[4],done4 = util.approachTol(current_param[4],target_param[4],vel_param[4],dt_step )
 
       waistNext = {new_param[3], new_param[4]}
@@ -578,6 +582,9 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
       done = doneL and doneR and done3 and done4
     elseif plantype=="wrist" then
+
+      local t0 = unix.time()  
+
       trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpVelLeft, dt_step )      
       trRArmNext,doneR = util.approachTolWristTransform(trRArm, target_param[2], dpVelRight, dt_step )
       done = doneL and doneR
@@ -587,6 +594,9 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       trLArmNext = Body.get_forward_larm(qLArmTemp)
       trRArmNext = Body.get_forward_rarm(qRArmTemp)  
       waistNext = {current_cond[6], current_cond[7]}
+
+      local t1 = unix.time()  
+      print("time elapsed transform:",(t1-t0)*1000,"ms")
 
 --      print("waistNext:",unpack(waistNext))      
 
@@ -661,8 +671,13 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       waistNext = {current_cond[6], current_cond[7]}
     end
 
+    local t10 = unix.time()  
     local new_cond, dt_step_current, torsoCompDone=    
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2])
+    local t11 = unix.time()  
+    print("time elapsed at nextmovement:",(t11-t10)*1000,"ms")
+
+
 
     done = done and torsoCompDone
     if not new_cond then 
@@ -719,7 +734,7 @@ end
 
 
 
-local function plan_arm_sequence(self,arm_seq)
+local function plan_arm_sequence(self,arm_seq, current_stage_name,next_stage_name)
   --This function plans for a arm sequence using multiple arm target positions
   --and initializes the playback if it is possible
   
@@ -744,6 +759,7 @@ local function plan_arm_sequence(self,arm_seq)
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('move',
         init_cond,   {trLArm,trRArm},
         {arm_seq[i][2] or trLArm, arm_seq[i][3] or trRArm, arm_seq[i][4], arm_seq[i][5],} )
+
     elseif arm_seq[i][1] =='move0' then
       local trLArmTarget,trRArmTarget = trLArm,trRArm
       local lOffset,rOffset = mcm.get_arm_lhandoffset(),mcm.get_arm_rhandoffset()
@@ -754,10 +770,8 @@ local function plan_arm_sequence(self,arm_seq)
         {trLArmTarget,trRArmTarget, arm_seq[i][4], arm_seq[i][5]} )
 
     elseif arm_seq[i][1] =='wrist' then
-
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('wrist',
-        init_cond,
-        {trLArm,trRArm},
+        init_cond, {trLArm,trRArm},
         {arm_seq[i][2] or trLArm,  arm_seq[i][3] or trRArm} )
 
     elseif arm_seq[i][1] =='door' then
@@ -799,8 +813,8 @@ local function plan_arm_sequence(self,arm_seq)
     end
     if not LAP then 
       hcm.set_state_success(-1) --Report plan failure
-      print("FAIL")
-      return 
+      print("PLAN FAIL")
+      return nil,current_stage_name
     end
     init_cond = end_cond    
     if end_doorparam then self.init_doorparam = end_doorparam end
@@ -824,7 +838,7 @@ local function plan_arm_sequence(self,arm_seq)
   print(sformat("Total planning time: %.2f ms",(t1-t0)*1000))  
 
 
-  return true
+  return true, next_stage_name
 end
 
 

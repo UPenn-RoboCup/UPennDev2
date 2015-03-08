@@ -77,9 +77,8 @@ arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 30*DEG_TO_RAD,30*DEG_TO_RAD,3
 arm.vel_waist_limit = vector.new({3,3})*DEG_TO_RAD
 arm.shoulder_yaw_limit = 20*DEG_TO_RAD
 
---if IS_WEBOTS then 
-if false then  
-  speedup_factor = 1
+if IS_WEBOTS then 
+--if false then    
   speedup_factor = 3
   arm.shoulder_yaw_limit = arm.shoulder_yaw_limit*speedup_factor
   arm.vel_linear_limit = arm.vel_linear_limit*speedup_factor

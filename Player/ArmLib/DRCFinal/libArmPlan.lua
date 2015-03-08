@@ -62,6 +62,7 @@ local function calculate_margin(qArm,isLeft,trArm)
     if math.abs(qArm[6]) < 10*math.pi/180 then
       jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
     end
+    if math.abs(qArm[6]) > math.pi/2 then jointangle_margin=-1 end
   else --Right arm
 
     trCheck = Body.get_forward_rarm(qArm,mcm.get_stance_bodyTilt(),qWaist)
@@ -74,6 +75,7 @@ local function calculate_margin(qArm,isLeft,trArm)
     if math.abs(qArm[6]) < 10*math.pi/180 then
       jointangle_margin = math.min(jointangle_margin,math.abs(qArm[6])) 
     end
+    if math.abs(qArm[6]) > math.pi/2 then jointangle_margin=-1 end
   end
 
 --[[

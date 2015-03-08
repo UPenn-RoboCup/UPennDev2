@@ -417,7 +417,7 @@ if IS_WEBOTS then
 		-- TODO: Check the gripper
 		-1,1, -- Waist
 		1,1, -- left gripper
-		-1,-1, -- right gripper
+		-1,-1,-1, -- right gripper
 
 		1, -- Lidar pan
 	})
@@ -430,7 +430,7 @@ if IS_WEBOTS then
 		-90,0,0,  0,  0,0,0,
 		0,0,
 		0,0,
-		0,0,
+		0,0,0,
 		0,
 	})*DEG_TO_RAD
 
@@ -442,7 +442,7 @@ if IS_WEBOTS then
 		-90,-180,-90,-160,       -180,-87,-180, --RArm
 		-90,-45, -- Waist
 		120,80, --lhand
-		120,60,--rhand
+		120,60,60,--rhand
 
 		-60, -- Lidar pan
 	})*DEG_TO_RAD
@@ -455,11 +455,22 @@ if IS_WEBOTS then
 		160,-0,90,0,     180,87,180, --RArm
 		90,79, -- Waist
 		0,45,  --lhand
-		0,45,    --rhand
+		0,45,45,    --rhand
 		60, -- Lidar pan
 	})*DEG_TO_RAD
 
 end
+
+--[[
+print("Robot config loading")
+print(#jointNames,
+			#servo.rad_offset, --
+			#servo.min_rad,    --
+			#servo.steps,
+			#servo.direction,  --
+			#servo.joint_to_motor)
+print(nJoint)
+--]]
 
 assert(#jointNames==nJoint,'Bad servo rad_offset!')
 assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')

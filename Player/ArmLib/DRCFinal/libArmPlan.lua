@@ -7,6 +7,7 @@ local util = require'util'
 require'mcm'
 
 local movearm = require'movearm'
+local libTransform = require'libTransform'
 local sformat = string.format
 local K = Body.Kinematics
 --debug_on = true
@@ -121,6 +122,7 @@ end
 
 
 local function get_shoulder_yaw_angle_lookup(trArmNext,qArm)
+--[[  
   isLeft=0
   local xmin,xmax,div = Config.arm.iklookup.x[1],Config.arm.iklookup.x[2],Config.arm.iklookup.x[3]
   local ymin,ymax = Config.arm.iklookup.y[1],Config.arm.iklookup.y[2]
@@ -141,6 +143,7 @@ local function get_shoulder_yaw_angle_lookup(trArmNext,qArm)
   local qArmNext = Body.get_inverse_rarm(qArm,trArmNext, yawangle, 0, {0,0}) 
   if not qArmNext then print("NO SOLUTION WTF") end
   return qArmNext 
+--]]  
 end
 
 
@@ -737,9 +740,17 @@ local function plan_arm_sequence(self,arm_seq)
     local WP, end_doorparam --for door
     if arm_seq[i][1] =='move' then
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('move',
-        init_cond,
-        {trLArm,trRArm},
+        init_cond,   {trLArm,trRArm},
         {arm_seq[i][2] or trLArm, arm_seq[i][3] or trRArm, arm_seq[i][4], arm_seq[i][5],} )
+    elseif arm_seq[i][1] =='move0' then
+      local trLArmTarget,trRArmTarget = trLArm,trRArm
+      local lOffset,rOffset = mcm.get_arm_lhandoffset(),mcm.get_arm_rhandoffset()
+      if arm_seq[i][2] then trLArmTarget = libTransform.trans6D(arm_seq[i][2],lOffset) end 
+      if arm_seq[i][3] then trRArmTarget = libTransform.trans6D(arm_seq[i][3],rOffset) end
+      LAP, RAP, uTP, WP, end_cond  = self:plan_unified('move',
+        init_cond,   {trLArm,trRArm},
+        {trLArmTarget,trRArmTarget, arm_seq[i][4], arm_seq[i][5]} )
+
     elseif arm_seq[i][1] =='wrist' then
 
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('wrist',

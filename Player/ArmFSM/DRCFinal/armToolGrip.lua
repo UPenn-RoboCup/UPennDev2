@@ -121,7 +121,7 @@ function state.update()
         hcm.set_state_proceed(0) --stop here
       elseif hcm.get_state_proceed()==-1 then 
         arm_planner:set_shoulder_yaw_target(nil, Config.arm.ShoulderYaw0[2])   
-        local arm_seq = {{'move',nil, Config.arm.trRArm0}}
+        local arm_seq = {{'move0',nil, Config.arm.trRArm0}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage = "armbacktoinitpos" end
       end  
     end        

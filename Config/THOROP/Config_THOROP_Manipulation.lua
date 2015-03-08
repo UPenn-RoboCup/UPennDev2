@@ -77,15 +77,19 @@ arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 30*DEG_TO_RAD,30*DEG_TO_RAD,3
 arm.vel_waist_limit = vector.new({3,3})*DEG_TO_RAD
 arm.shoulder_yaw_limit = 20*DEG_TO_RAD
 
-if IS_WEBOTS then 
+--if IS_WEBOTS then 
+if false then  
   speedup_factor = 1
   speedup_factor = 3
-
   arm.shoulder_yaw_limit = arm.shoulder_yaw_limit*speedup_factor
   arm.vel_linear_limit = arm.vel_linear_limit*speedup_factor
   arm.vel_angular_limit = arm.vel_angular_limit*speedup_factor
   arm.vel_angular_limit_init = arm.vel_angular_limit_init*3 
 end
+
+
+
+
 
 --Servo limit
 -- 30rpm 30rpm 30rpm 30rpm 20rpm 20rpm 20rpm
@@ -102,11 +106,14 @@ arm.shoulder_yaw_limit = 30*DEG_TO_RAD
 arm.torso_comp_limit = vector.new({0.06,0.03})
 ------------------------------------------------------
 
+
+
 --Pose 1 left and right arm poses 
-arm.trLArm0 = {0.20, 0.25,-0.25,0,0,0}
-arm.trRArm0 = {0.20, -0.25,-0.25,0,0,0}
-arm.trLArm1 = {0.20, 0.25,-0.25,0,0,-45*DEG_TO_RAD}
-arm.trRArm1 = {0.20, -0.25,-0.25,0,0,45*DEG_TO_RAD}
+--SJ: now arm ready poses are hand-invariant (to handle asymmetric hands and stuff)
+arm.trLArm0 = {0.0, 0.25,-0.25,0,0,0}
+arm.trRArm0 = {0.0, -0.25,-0.25,0,0,0}
+arm.trLArm1 = {0.0, 0.25,-0.25,0,0,-45*DEG_TO_RAD}
+arm.trRArm1 = {0.0, -0.25,-0.25,0,0,45*DEG_TO_RAD}
 
 --[[
 --wider
@@ -155,6 +162,31 @@ armfsm.toolgrip.armpull={
 }
 
 
+
+
+--0.23 offset = (0.16,0.16) offset
+armfsm.toolgrip.arminit={
+  {'move0',nil,{0.13,-0.56,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move0',nil,{0.30,-0.56,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+}
+
+armfsm.toolgrip.armuninit={
+  {'move0',nil,{0.30,-0.56,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move0',nil,{0.13,-0.56,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+--  {'move0',nil,arm.trRArm1},
+  {'move0',nil,arm.trRArm0},
+}
+
+
+
+
+
+
+
+
+
+
+--[[
 --Load arm IK lookup table
 local fname = {Config.PLATFORM_NAME,'/iklookup'}  
 local c = require(table.concat(fname))
@@ -170,7 +202,7 @@ if c.iklookup then
     arm.iklookup.dat[i]=c.iklookup.dat[i]
   end
 end
-
+--]]
 
 
 ------------------------------------

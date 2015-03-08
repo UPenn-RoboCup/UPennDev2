@@ -54,13 +54,13 @@ function state.entry()
     vector.zeros(7),
     Config.arm.trLArm0,
     Config.arm.ShoulderYaw0[1],
-    mcm.get_stance_bodyTilt(),{0,0})
+    mcm.get_stance_bodyTilt(),{0,0},true)
 
   qRArmTarget = Body.get_inverse_rarm(
     vector.zeros(7),
     Config.arm.trRArm0,
     Config.arm.ShoulderYaw0[2],
-    mcm.get_stance_bodyTilt(),{0,0})
+    mcm.get_stance_bodyTilt(),{0,0},true)
 
   
 --  qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)

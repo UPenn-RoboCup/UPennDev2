@@ -397,18 +397,18 @@ Body.get_inverse_arm_given_wrist = function( q, tr, bodyTilt, qWaist)
 end
 
 
-Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
+Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist,ignore_hand_offset)
   local shoulder_flipped = 0
   if qL[2]>math.pi/2 then shoulder_flipped=1 end
+  local hand_offset = mcm.get_arm_lhandoffset()
+  if ignore_hand_offset then hand_offset={0,0,0} end
 
   local qL_target = Kinematics.inverse_l_arm_7(
     trL,qL,
     lShoulderYaw or qL[3],
     bodyTilt or mcm.get_stance_bodyTilt(),
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_lhandoffset()[1],
-    mcm.get_arm_lhandoffset()[2],
-    mcm.get_arm_lhandoffset()[3],
+    hand_offset[1],hand_offset[2],hand_offset[3],
     shoulder_flipped
     )
 
@@ -416,26 +416,25 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
     qL_target,
     bodyTilt or mcm.get_stance_bodyTilt(),
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_lhandoffset()[1],
-    mcm.get_arm_lhandoffset()[2],
-    mcm.get_arm_lhandoffset()[3]
+    hand_offset[1],hand_offset[2],hand_offset[3]
     )
 
   local passed = check_larm_bounds(qL_target) and check_ik_error( trL, trL_check)
   if passed then return qL_target end
 end
 --
-Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
+Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist,ignore_hand_offset)
   local shoulder_flipped = 0
   if qR[2]<-math.pi/2 then shoulder_flipped=1 end
+  local hand_offset = mcm.get_arm_lhandoffset()
+  if ignore_hand_offset then hand_offset={0,0,0} end
+
   local qR_target = Kinematics.inverse_r_arm_7(
     trR, qR,
     rShoulderYaw or qR[3],
     bodyTilt or mcm.get_stance_bodyTilt(),
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_rhandoffset()[1],
-    mcm.get_arm_rhandoffset()[2],
-    mcm.get_arm_rhandoffset()[3],
+    hand_offset[1],hand_offset[2],hand_offset[3],
     shoulder_flipped
     )
 
@@ -443,10 +442,7 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist)
     qR_target,
     bodyTilt or mcm.get_stance_bodyTilt(),
     qWaist or Body.get_waist_command_position(),
-    mcm.get_arm_rhandoffset()[1],
-    mcm.get_arm_rhandoffset()[2],
-    mcm.get_arm_rhandoffset()[3]
-    )
+    hand_offset[1],hand_offset[2],hand_offset[3])
 
   local passed = check_rarm_bounds(qR_target) and check_ik_error( trR, trR_check)
   if passed then return qR_target end

@@ -417,6 +417,7 @@ function util.print_jangle(q)
   end
 end
 
+
 function util.ptorch(data, W, Precision)
   local w = W or 5
   local precision = Precision or 10

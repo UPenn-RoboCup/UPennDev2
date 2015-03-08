@@ -83,7 +83,29 @@ function state.update()
   t_update = t
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-  local ret = movearm.setArmJoints(qLArmTarget,qRArmTarget,dt)
+  local ret
+  local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
+  if stage==1 then
+    --straighten shoulder yaw
+    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
+  elseif stage==2 then
+    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
+    qLArmTargetC[6],qRArmTargetC[6] = 0,0
+  elseif stage==3 then
+    --straighten wrist yaw
+    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
+    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
+    qLArmTargetC[6],qRArmTargetC[6] = 0,0
+    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
+  elseif stage==4 then
+    --straighten wrist roll
+    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+  elseif stage==5 then
+    return "done"
+  end
+
+  local dqArmLim = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
+  local ret = movearm.setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim)
 --  if ret==1 then return "done" end
 
   local qLArmActual = Body.get_larm_position()
@@ -97,11 +119,11 @@ function state.update()
     err=err+math.abs(qRArmActual[i]-qRArmCommand[i])
   end
 
-  if t>t_last_debug+1 then
+  if t>t_last_debug+0.2 then
     t_last_debug=t
-    if math.abs(last_error-err)<0.2*math.pi/180 then 
+    if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then 
+      stage = stage+1
       print("Total joint reading err:",err*180/math.pi)
-      return 'done'  
     end
     last_error = err
   end    

@@ -115,7 +115,7 @@ function state.update()
   -- Get the time of update
   if not plan_valid then 
     print("PLANNING ERROR!!!!")
-    return "planfail" end
+    return "done" end
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
@@ -139,7 +139,7 @@ function state.update()
         plan_valid,stage = arm_planner:plan_arm_sequence(arm_seq,stage,"teleopmove")
         if plan_valid then confirm_override()
         else revert_override() 
-          plan_valid,stage=false,"teleopwait"
+          plan_valid,stage=true,"teleopwait"
         end
       end
 --[[

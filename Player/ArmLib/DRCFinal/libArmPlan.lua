@@ -585,6 +585,12 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
       local t0 = unix.time()  
 
+print("dt:",dt_step)
+print("trRArm :".. util.print_transform(trRArm))
+print("trRArmT:".. util.print_transform(target_param[2]) )
+
+
+
       trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpVelLeft, dt_step )      
       trRArmNext,doneR = util.approachTolWristTransform(trRArm, target_param[2], dpVelRight, dt_step )
       done = doneL and doneR
@@ -674,9 +680,10 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
     local t10 = unix.time()  
     local new_cond, dt_step_current, torsoCompDone=    
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2])
-    local t11 = unix.time()  
-    print("time elapsed at nextmovement:",(t11-t10)*1000,"ms")
-
+    local t11 = unix.time()
+    if t11-t10>0.001 then  
+      print("time elapsed at nextmovement:",(t11-t10)*1000,"ms")
+    end
 
 
     done = done and torsoCompDone

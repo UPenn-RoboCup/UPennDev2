@@ -53,7 +53,7 @@ local right_arm = {
 	--head
 	29, 30,
 	-- gripper
-	63, 65, 67
+--	63, 65, 67
 },
 enable_read = true,
 }
@@ -64,7 +64,7 @@ local left_arm = {
 	-- lidar
 	37,
 	-- gripper
-	64, 66
+--	64, 66
 },
 enable_read = true
 }

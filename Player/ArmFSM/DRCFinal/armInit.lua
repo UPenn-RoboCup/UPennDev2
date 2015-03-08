@@ -28,11 +28,12 @@ function state.entry()
   stage = 1
 
  if not IS_WEBOTS then
+	local vel = 1000
     print('INIT setting params')
     for i=1,10 do
-      Body.set_larm_command_velocity({500,500,500,500,500,500})
+      Body.set_larm_command_velocity(vector.ones(7)*vel)
       unix.usleep(1e6*0.01);
-      Body.set_rarm_command_velocity({500,500,500,500,500,500})
+      Body.set_rarm_command_velocity(vector.ones(7)*vel)
       unix.usleep(1e6*0.01);
     end
   end
@@ -142,23 +143,16 @@ function state.exit()
   Body.move_rgrip2(0)
 --]]
 
---[[
+
   if not IS_WEBOTS then
-    for i=1,10 do      
-      Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
+    for i=1,10 do
+      Body.set_larm_command_velocity({0,0,0,0,0,0,0})
       unix.usleep(1e6*0.01);
-      Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
-      unix.usleep(1e6*0.01);  
-      Body.set_larm_comma0nd_acceleration({200,200,200,200,200,200,200})
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
+      Body.set_rarm_command_velocity({0,0,0,0,0,0,0})
       unix.usleep(1e6*0.01);
     end
   end
   
-  Body.set_lgrip_percent(0.9)
-  Body.set_rgrip_percent(0.9)
---]]
   print(state._NAME..' Exit' )
 end
 

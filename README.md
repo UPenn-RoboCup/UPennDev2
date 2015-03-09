@@ -60,15 +60,9 @@ tar xvvf boost_1_57_0.tar.bz2
 cd /usr/local
 sudo ln -s ~/src/boost_1_57_0/boost .
 
-Use commit: 5e8928b8ca40b1dd33956c807a9bf745b7999852
-diff --git a/libusb/os/linux_usbfs.h b/libusb/os/linux_usbfs.h
--#define MAX_ISO_BUFFER_LENGTH          32768
-+#define MAX_ISO_BUFFER_LENGTH          49152
-
-
 git clone https://github.com/libusb/libusb.git
 cd libusb
-** APPLY https://github.com/OpenKinect/libfreenect2/blob/master/depends/linux_usbfs_increase_max_iso_buffer_length.patch **
+git checkout 51b10191033ca3a3819dcf46e1da2465b99497c2
 ./autogen.sh
 make
 make install

@@ -106,4 +106,11 @@ sudo apt-get install build-essential ncurses-dev libncurses5-dev gettext
 cd ~/
 git clone https://github.com/smcgill3/UPennDev.git
 
+  GNU nano 2.2.6                       File: /etc/udev/rules.d/55-kinect2-usb.rules
+
+# Make kinect2 device mount with writing permissions (default is read only for unknown devices)
+# https://github.com/PrimeSense/Sensor/blob/unstable/Platform/Linux/Install/55-primesense-usb.rules
+SUBSYSTEM=="usb", ATTR{idProduct}=="02d8", ATTR{idVendor}=="045e", MODE:="0666", OWNER:="thor", GROUP:="video"
+SUBSYSTEM=="usb", ATTR{idProduct}=="02d9", ATTR{idVendor}=="045e", MODE:="0666", OWNER:="thor", GROUP:="video"
+
 sudo ldconfig

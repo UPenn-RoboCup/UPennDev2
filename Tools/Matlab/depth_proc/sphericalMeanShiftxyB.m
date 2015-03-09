@@ -108,9 +108,8 @@ while numInitPts > 0
         ite2 = ite2 + 1;
         prevdel = del;
         
-        if ite2 > 1000
-            finalMean = [];
-            return;
+        if ite2 > 100
+            break;
         end
     end    
     

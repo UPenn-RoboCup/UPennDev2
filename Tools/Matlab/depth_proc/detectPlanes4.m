@@ -1,4 +1,4 @@
-function  [Planes, metadata] = detectPlanes(data, meta, ui)
+function  [Planes, metadata] = detectPlanes4(data, meta, ui)
  
 
 if ~isempty(meta) && isfield(meta,'tr')    
@@ -16,10 +16,10 @@ if ui.undistortDepth == 1
 end
 
 if strcmp(char(meta.name),'depth')
-    [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v3(data,Rot,tr,ui);
+    [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v4(data,Rot,tr,ui);
     metadata = struct('PlaneOfInterest',PlaneOfInterest,'numPlanes',nPlanes);
 
-   % elseif strcmp(char(meta.name),'lidar') % ?? 
+   % elseif strcmp(char(meta.name),'lidar') % handles lidar here?? 
    % Planes = detectPlaneInstances_lidar(data,param,3);
 end
 

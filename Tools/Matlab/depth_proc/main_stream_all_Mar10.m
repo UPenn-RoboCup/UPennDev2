@@ -20,9 +20,9 @@ figure(2);
 h_rgb = image(rgb_img);
 
 % 1 second timeout
-s_depth = zmq('subscribe', 'tcp', '*', 43346);
-s_color = zmq('subscribe', 'tcp', '*', 43347);
-s_mesh = zmq('subscribe', 'tcp', '*', 43344);
+s_depth = zmq('subscribe', 'tcp', '192.168.123.222', 43346);
+s_color = zmq('subscribe', 'tcp', '192.168.123.222', 43347);
+s_mesh = zmq('subscribe', 'tcp', '192.168.123.222', 43344);
 
 log = 1;
 fig_id = 0;
@@ -32,7 +32,7 @@ while 1
     idx = zmq('poll',1000);  % assume only one channel
     if isempty(idx)
         disp('empty!');
-        return;
+       % return;
     end
     for s = 1:numel(idx)
         s_idx = idx(s);

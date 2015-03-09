@@ -56,7 +56,7 @@ function state.update()
   local zLeg = mcm.get_status_zLeg()
   
   local bodyHeight_now = mcm.get_stance_bodyHeight()
-  local bodyHeightTarget = 0.80 --lower torso
+  local bodyHeightTarget = 0.85 --lower torso
 
   bodyHeightTarget = math.max(0.75,math.min(Config.walk.bodyHeight,bodyHeightTarget))
   local bodyHeight,done = util.approachTol( bodyHeight_now, bodyHeightTarget, Config.stance.dHeight, t_diff )

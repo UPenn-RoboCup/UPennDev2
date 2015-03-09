@@ -64,7 +64,7 @@ local function get_tool_tr()
   local handrpy = rhand_rpy0
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3)  
-  local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], handrpy[1],handrpy[2],handrpy[3] + tool_model[4]}
+  local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], handrpy[1],handrpy[2],tool_model[4]}
 --  print("hand transform:",util.print_transform(tool_tr))                    
   return tool_tr
 end
@@ -77,6 +77,10 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
+
+
+  mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper3)
+  mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper3)
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
@@ -91,12 +95,8 @@ function state.entry()
   mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand (left arm fixed)
   arm_planner:set_shoulder_yaw_target(nil,nil)
   
-  qLArm1 = Body.get_inverse_arm_given_wrist( qLArm, {0,0,0, unpack(lhand_rpy0)})  
-  qRArm1 = Body.get_inverse_arm_given_wrist( qRArm, {0,0,0, unpack(rhand_rpy0)})
   
-  trLArm1 = Body.get_forward_larm(qLArm1)
-  trRArm1 = Body.get_forward_rarm(qRArm1)  
-
+--[[  
   hcm.set_hands_left_tr(trLArm1)
   hcm.set_hands_right_tr(trRArm1)
   hcm.set_hands_left_tr_target(trLArm1)
@@ -104,9 +104,9 @@ function state.entry()
   
   --local wrist_seq = {{'wrist',trLArm1, trRArm1}}
  hcm.set_tool_model({trRArm1[1],trRArm1[2],trRArm1[3],0})
+--]]
 
-  local wrist_seq = {{'wrist',nil,trRArm1}}
-  plan_valid,stage = arm_planner:plan_arm_sequence(wrist_seq,stage,"wristturn")  
+  plan_valid,stage = arm_planner:plan_arm_sequence(Config.armfsm.teleop.arminit,stage,"wristturn")  
 end
 
 
@@ -121,48 +121,60 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
+
+  local cur_cond = arm_planner:load_boundary_condition()
+  local trLArm = Body.get_forward_larm(cur_cond[1])
+  local trRArm = Body.get_forward_rarm(cur_cond[2])  
+
   
   if stage=="wristturn" then --Turn yaw angles first
-
-    if arm_planner:play_arm_sequence(t) then stage="teleopwait" end
-  elseif stage=="teleopwait" then       
-   
-    if hcm.get_state_proceed(0)== -1 then 
-      arm_planner:set_shoulder_yaw_target(qLArm0[3],qRArm0[3])
-      local arm_seq = {{'move',trLArm1, trRArm1}}
+    if arm_planner:play_arm_sequence(t) then 
+      hcm.set_tool_model({trRArm[1],trRArm[2],trRArm[3],trRArm[6]})
+      stage="teleopwait" 
+    end
+  elseif stage=="teleopwait" then          
+    if hcm.get_state_proceed(0)== -1 then       
       plan_valid,stage = arm_planner:plan_arm_sequence(
-        arm_seq,stage,"armposreset")        
-    else
+        Config.armfsm.teleop.armuninit,stage,"armposreset")        
+      if not plan_valid then
+        print("cannot return to initial pose!")
+        plan_valid=true
+      end
+    elseif hcm.get_state_proceed()==2 then --override
+      local trRArmTarget = hcm.get_hands_right_tr_target()
+      local trLArmTarget = hcm.get_hands_left_tr_target()
+      local arm_seq = {{'move',nil,trRArmTarget}}   
+      plan_valid,stage = arm_planner:plan_arm_sequence(arm_seq,stage,"teleopmove")
+      if plan_valid then           
+        hcm.set_tool_model({trRArmTarget[1],trRArmTarget[2],trRArmTarget[3],trRArmTarget[6]})
+      else
+        plan_valid=true
+      end
+      hcm.set_state_proceed(0)
+    else 
       if check_override() then --Model modification
         update_override()        
         local arm_seq = {{'move',nil,get_tool_tr()}}   
         plan_valid,stage = arm_planner:plan_arm_sequence(arm_seq,stage,"teleopmove")
-        if plan_valid then confirm_override()
+        if plan_valid then           
+          confirm_override()
         else revert_override() 
           plan_valid,stage=true,"teleopwait"
         end
       end
---[[
-
-      local qLArm = Body.get_larm_command_position()
-      print(unpack(vector.new(qLArm)*Body.RAD_TO_DEG))
-      local trLArmTarget=  hcm.get_hands_left_tr_target()
-      local trRArmTarget=  hcm.get_hands_right_tr_target()
-      local arm_seq = {{'move',trLArmTarget, trRArmTarget}}      
-      if arm_planner:plan_arm_sequence2(arm_seq) then 
-        stage="teleopmove" 
-        hcm.set_hands_left_tr(trLArmTarget)
-        hcm.set_hands_right_tr(trRArmTarget)
-      end
---]]      
     end
+
+
   elseif stage=="teleopmove" then 
-    if arm_planner:play_arm_sequence(t) then stage="teleopwait" end
+    if arm_planner:play_arm_sequence(t) then 
+      print("Current rarm:",util.print_transform(trRArm))
+      stage="teleopwait" 
+    end
   elseif stage=="armposreset" then 
     if arm_planner:play_arm_sequence(t) then 
       local wrist_seq = {{'wrist',trLArm0, trRArm0}}
-      plan_valid,stage = arm_planner:plan_arm_sequence(
-          wrist_seq,stage,"wristreset")      
+      arm_planner:set_shoulder_yaw_target(nil, Config.arm.ShoulderYaw0[2])   
+      plan_valid,stage = arm_planner:plan_arm_sequence(wrist_seq,stage,"wristreset")      
     end
   elseif stage=="wristreset" then 
     if arm_planner:play_arm_sequence(t) then return "done" end

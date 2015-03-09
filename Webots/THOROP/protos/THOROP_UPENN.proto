@@ -889,17 +889,19 @@ Robot {
                                           }
 #                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
 
+																		#stump pos:[0 -0.135 0]
 #                                    endPoint Solid {
 #					                            translation 0 -0.095 0
 #					                            boundingObject Box { size 0.05 0.05 0.05 }
+#					                            #boundingObject Box { size 0.05 0.08 0.05 }
 #					                           	physics Physics{density -1 mass 0.05}
 #					                    			}
 
-																				endPoint GRIPPER {
-																					translation 0 -0.095 0
-		  																		rotation 0 0 -1 0.707
+																				endPoint GRIPPER_3finger {
 																					trigger_name "r_trigger"
 																					grip_name "r_grip"
+																					extra_name "r_extra"
+																					translation 0 -0.28 0
 																				}
 
                                         } # End of the Wrist Yaw2 HingeJoint

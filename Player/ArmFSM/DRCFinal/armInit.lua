@@ -90,6 +90,8 @@ function state.update()
     --straighten shoulder yaw
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
   elseif stage==2 then
+    --straighten wrist roll (only if wrist yaw is off)
+
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
   elseif stage==3 then
@@ -105,7 +107,10 @@ function state.update()
     return "done"
   end
 
-  local dqArmLim = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
+  local dqArmLim = vector.new({10,10,10,10,45,30,45}) *DEG_TO_RAD
+
+
+
   local ret = movearm.setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim)
 --  if ret==1 then return "done" end
 

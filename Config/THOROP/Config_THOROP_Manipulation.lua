@@ -35,6 +35,12 @@ arm.handoffset.outerhook = {0.339,0,0.060} --Single hook (for door)
 arm.handoffset.chopstick = {0.440,0,0} --Two rod (for valve)
 
 
+
+--New 3 finger gripper
+arm.handoffset.gripper3 = {0.28,-0.05,0} 
+
+
+
 --Torques for finger controls
 arm.torque={}
 arm.torque.movement = 5
@@ -179,9 +185,17 @@ armfsm.toolgrip.armuninit={
 
 
 
+armfsm.teleop = {}
 
 
+armfsm.teleop.arminit={
+--  {'move0',nil,{0.0,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move0',nil,{0.10,-0.20,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+}
 
+armfsm.teleop.armuninit={
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+}
 
 
 

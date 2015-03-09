@@ -62,7 +62,7 @@ sudo ln -s ~/src/boost_1_57_0/boost .
 
 git clone https://github.com/libusb/libusb.git
 cd libusb
-** APPLY https://github.com/OpenKinect/libfreenect2/blob/master/depends/linux_usbfs_increase_max_iso_buffer_length.patch **
+git checkout 51b10191033ca3a3819dcf46e1da2465b99497c2
 ./autogen.sh
 make
 make install
@@ -105,5 +105,12 @@ sudo apt-get install build-essential ncurses-dev libncurses5-dev gettext
 
 cd ~/
 git clone https://github.com/smcgill3/UPennDev.git
+
+  GNU nano 2.2.6                       File: /etc/udev/rules.d/55-kinect2-usb.rules
+
+# Make kinect2 device mount with writing permissions (default is read only for unknown devices)
+# https://github.com/PrimeSense/Sensor/blob/unstable/Platform/Linux/Install/55-primesense-usb.rules
+SUBSYSTEM=="usb", ATTR{idProduct}=="02d8", ATTR{idVendor}=="045e", MODE:="0666", OWNER:="thor", GROUP:="video"
+SUBSYSTEM=="usb", ATTR{idProduct}=="02d9", ATTR{idVendor}=="045e", MODE:="0666", OWNER:="thor", GROUP:="video"
 
 sudo ldconfig

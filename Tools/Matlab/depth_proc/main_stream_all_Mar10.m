@@ -1,11 +1,13 @@
 clear all;
-% close all;
+close all;
 
 % 4 bytes in float (single precision)
 DEPTH_W = 512;
 DEPTH_H = 424;
 DEPTH_MAX = 2000;%8000;
 DEPTH_MIN = 200;
+
+datetime.setDefaultFormats('defaultdate','yyyy-MM-dd');
 
 figure(1);
 h_depth = imagesc(zeros(DEPTH_H, DEPTH_W));
@@ -18,9 +20,9 @@ figure(2);
 h_rgb = image(rgb_img);
 
 % 1 second timeout
-s_depth = zmq('subscribe', 'tcp', '*', 43346);
-s_color = zmq('subscribe', 'tcp', '*', 43347);
-s_mesh = zmq('subscribe', 'tcp', '*', 43344);
+s_depth = zmq('subscribe', 'tcp', '192.168.123.222', 43346);
+s_color = zmq('subscribe', 'tcp', '192.168.123.222', 43347);
+s_mesh = zmq('subscribe', 'tcp', '192.168.123.222', 43344);
 
 log = 1;
 fig_id = 0;
@@ -30,7 +32,7 @@ while 1
     idx = zmq('poll',1000);  % assume only one channel
     if isempty(idx)
         disp('empty!');
-        return;
+       % return;
     end
     for s = 1:numel(idx)
         s_idx = idx(s);
@@ -46,9 +48,9 @@ while 1
             else
                 
                 raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
-                uisetting; % See uisetting.m                
-                res = depth_proc(raw, metadata, ui);
-                             
+               % uisetting; % See uisetting.m                
+               % res = depth_proc(raw, metadata, ui);
+                figure(1), imagesc(raw');            
             end
         elseif strcmp(char(metadata.id), 'k2_rgb') %%%%%%%%%%%%%%%%%%%%%%%%% RGB
             rgb_img = djpeg(raw);

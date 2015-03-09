@@ -30,12 +30,13 @@ persistent thre_memberSize
 persistent param_meanShiftResol
 persistent param_meanShiftWeights
 
+
 if nargin < 4
     error('The number of input arguments must be 4');
 end
 
 if isempty(DEPTH_W) || ui.reset == 1
-    loadPersistentVariables_0216;
+    loadPersistentVariables_0228;
 end
 
 Ccb = Rot;
@@ -44,7 +45,6 @@ if isempty(Ccb_prev)
     Ccb_prev = Ccb;
     Tcb_prev = Tcb;
 end
-% Tcb = Tcb;%Ccb*tr_kinect2head;
 
 
 Planes =[]; 
@@ -76,8 +76,7 @@ validNormal = validNormal(find(S(4,validNormal)< thre_sValue));
 data = [  Xind_(validNormal) ; Yind_(validNormal)];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if ui.clickType == 0
-    
+if ui.clickType == 0    
     if ui.taskMode == 1 % ground
          stPoint = zeros(5,1);
          stPoint(3:5,:) = Ccb(3,:)';
@@ -95,102 +94,94 @@ if ui.clickType == 0
 end
 
 % compute Closest Point And Normal;
-
 [finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,A(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 
 % for each cluster
 blankConnImg = zeros(floor(DEPTH_W/param_normalComputation(2)),floor(DEPTH_H /param_normalComputation(2)));
 for tt = 1: size(finalMean,2)      
-    if nMembers(tt) > thre_clusterSize  % if cluster size is big enough
+    if nMembers(tt) > thre_clusterSize  % if cluster size is big enough 
+                 
+        if plane_dist(ui.taskMode,Ccb*finalMean(3:5,tt)) == true % if the normal is close to our models
+            connImg = blankConnImg;
+            index = validNormal(clusterXYcell{tt}); 
+            [index_x, index_y] = ind2sub([DEPTH_W DEPTH_H],index);
+            index_xsub = floor(index_x / param_normalComputation(2));
+            index_ysub = floor(index_y / param_normalComputation(2));
+            index_ = sub2ind(floor([DEPTH_W DEPTH_H]/param_normalComputation(2)),index_xsub, index_ysub);
+            connImg(index_) = 1;
         
-        connImg = blankConnImg;
-        index = validNormal(clusterXYcell{tt}); 
-        [index_x, index_y] = ind2sub([DEPTH_W DEPTH_H],index);
-        index_xsub = floor(index_x / param_normalComputation(2));
-        index_ysub = floor(index_y / param_normalComputation(2));
-        index_ = sub2ind(floor([DEPTH_W DEPTH_H]/param_normalComputation(2)),index_xsub, index_ysub);
-        connImg(index_) = 1;
-       %% Connectivity Check 
-        % Connected-component analysis 
-        % check an error related to "eqlabel"
-      
-        %CC = bwconncomp(connImg,4);
-        %numPixels = cellfun(@numel,CC.PixelIdxList);
-        %tic,
-        %[conn, ids, count_, indices ] = test4Connectivity(connImg);
-        %toc,
-        
-        L = bwlabel(connImg,4);
-        NL = max(L(:));
-        for t=1:NL
-            indices{t} = find(L==t);
-            count_(t) = length(indices{t});
-        end
-       
-        if NL >0
-            for t = 1: length(count_)                 
-                if count_(t) > thre_memberSize % if the connected bloc is big enough 
-                    [dummy,whichcell] = intersect(index_ , indices{t});    
-                    if ~isempty(whichcell)   
-                     %% Find center, bbox, boundary
-                        [yind_s, xind_s] = ind2sub(size(connImg),indices{t}');
-                        center_s = round(mean([xind_s;yind_s],2));
-                       
-                        Pts = [];
-                        bbox = getBoundingBox(yind_s,xind_s);
-                        Bbox = zeros(3,size(bbox,1));
-                        [dummy,whichcell__] = intersect(index_ , sub2ind(size(connImg), bbox(:,1), bbox(:,2)));   
-                        Bbox(1,:) = depth(index(whichcell__))*0.001;
-                        Bbox(2,:) = Yind_c(index(whichcell__))*Sy.*Bbox(1,:);
-                        Bbox(3,:) = -Xind_c(index(whichcell__))*Sx.*Bbox(1,:);
-                        
-                        % 8-directional extreme points 
-                        pts = find8ExtremePoints(L, center_s, t);
-                        if ~isempty(pts)                               
-                            [dummy,whichcell_] = intersect(index_ , sub2ind(size(connImg), pts(:,1), pts(:,2)));  
-                          
-                            Pts(1,:) = depth(index(whichcell_))*0.001;
-                            Pts(2,:) = Yind_c(index(whichcell_))*Sy.*Pts(1,:);
-                            Pts(3,:) = -Xind_c(index(whichcell_))*Sx.*Pts(1,:);                                                                              
-                        end       
-                        
-                     %% refinement 
-                        % (could test using svd and find the principal axes?)                       
-                        [c, ins] = estimatePlane_useall( Xind_c(index(whichcell)), Yind_c(index(whichcell)), ZZ(index(whichcell)));
-                       
-                      %% save output 
-                        if ~isempty(c) && numel(ins) > 5 
-                            c(1) = c(1)/Sx;
-                            c(2) = c(2)/Sy;
-                            n_ = c;
-                            n_ = -n_/norm(n_);
-                            n__ = [n_(3) n_(2) -n_(1)]/norm(n_);
-                           
-                            z_ = depth(index(whichcell))*0.001;
-                            z_mean = mean(z_);                                  
-                            x_mean = mean((Xind(index(whichcell))-IMCX)/fx.*z_);
-                            y_mean = mean((Yind(index(whichcell))-IMCY)/fy.*z_);
-                                                                          
-                            Center = [ z_mean; y_mean; -x_mean];
- 
-                            PlaneID = PlaneID + 1;
-                            Planes{PlaneID} = struct('Center',Center,...
-                                                     'Normal', n__',...
-                                                     'Points',[Pts Bbox],...
-                                                     'Size', numel(ins),...
-                                                     'Type','Else');   
-                                                 
-                           % if ui.clickType == 2 
-                           %     Indices{PlaneID} = [Xind(index(whichcell)); Yind(index(whichcell))];
-                            %elseif ui.clickType == 3                                 
-                                Points3D{PlaneID} = [  z_; (Yind(index(whichcell))-IMCY)/fy.*z_; -(Xind(index(whichcell))-IMCX)/fx.*z_];                   
-                           % end
+            %% Connectivity Check 
+            L = bwlabel(connImg,4);
+            NL = max(L(:));
+            for t=1:NL
+                indices{t} = find(L==t);
+                count_(t) = length(indices{t});
+            end
+
+            if NL >0
+                for t = 1: length(count_)                 
+                    if count_(t) > thre_memberSize % if the connected bloc is big enough 
+                        [dummy,whichcell] = intersect(index_ , indices{t});    
+                        if ~isempty(whichcell)   
+                         %% Find center, bbox, boundary
+                            [yind_s, xind_s] = ind2sub(size(connImg),indices{t}');
+                            center_s = round(mean([xind_s;yind_s],2));
+
+                            Pts = [];
+                            bbox = getBoundingBox(yind_s,xind_s);
+                            Bbox = zeros(3,size(bbox,1));
+                            [dummy,whichcell__] = intersect(index_ , sub2ind(size(connImg), bbox(:,1), bbox(:,2)));   
+                            Bbox(1,:) = depth(index(whichcell__))*0.001;
+                            Bbox(2,:) = Yind_c(index(whichcell__))*Sy.*Bbox(1,:);
+                            Bbox(3,:) = -Xind_c(index(whichcell__))*Sx.*Bbox(1,:);
+
+                            % 8-directional extreme points 
+                            pts = find8ExtremePoints(L, center_s, t);
+                            if ~isempty(pts)                               
+                                [dummy,whichcell_] = intersect(index_ , sub2ind(size(connImg), pts(:,1), pts(:,2)));  
+
+                                Pts(1,:) = depth(index(whichcell_))*0.001;
+                                Pts(2,:) = Yind_c(index(whichcell_))*Sy.*Pts(1,:);
+                                Pts(3,:) = -Xind_c(index(whichcell_))*Sx.*Pts(1,:);                                                                              
+                            end       
+
+                         %% refinement 
+                            % (could test using svd and find the principal axes?)                       
+                            [c, ins] = estimatePlane_useall( Xind_c(index(whichcell)), Yind_c(index(whichcell)), ZZ(index(whichcell)));
+
+                          %% save output 
+                            if ~isempty(c) && numel(ins) > 5 
+                                c(1) = c(1)/Sx;
+                                c(2) = c(2)/Sy;
+                                n_ = c;
+                                n_ = -n_/norm(n_);
+                                n__ = [n_(3) n_(2) -n_(1)];
+
+                                z_ = depth(index(whichcell))*0.001;
+                                z_mean = mean(z_);                                  
+                                x_mean = mean((Xind(index(whichcell))-IMCX)/fx.*z_);
+                                y_mean = mean((Yind(index(whichcell))-IMCY)/fy.*z_);
+
+                                Center = [ z_mean; y_mean; -x_mean];
+
+                                PlaneID = PlaneID + 1;
+                                Planes{PlaneID} = struct('Center',Center,...
+                                                         'Normal', n__',...
+                                                         'Points',[Pts Bbox],...
+                                                         'Size', numel(ins),...
+                                                         'Type','Else');   
+
+                               % if ui.clickType == 2 
+                               %     Indices{PlaneID} = [Xind(index(whichcell)); Yind(index(whichcell))];
+                                %elseif ui.clickType == 3                                 
+                                    Points3D{PlaneID} = [  z_; (Yind(index(whichcell))-IMCY)/fy.*z_; -(Xind(index(whichcell))-IMCX)/fx.*z_];                   
+                               % end
+                            end
                         end
                     end
                 end
             end
-        end
-        
+        end % process clusters of interest normals
     end % end of for each cluster
 end
     
@@ -220,9 +211,6 @@ if ui.figures(3)
     zlabel('z','Rotation',0);        
   %  axis([0 4.0 -2 2 -0.2 2.0]);
     view(az,el);
-
-   % figure(101), hold off;
-   % imagesc(depth'); axis equal
 end
     
 Ns = zeros(3,PlaneID);
@@ -230,8 +218,8 @@ Cs = zeros(3,PlaneID);
 Szs = zeros(1,PlaneID);
 
  % Coordinate Transformation
+prevNormals = zeros(3,PlaneID);
 if ~issame(Rot,eye(3))
-    prevNormals = zeros(3,PlaneID);
     for t = 1:PlaneID  
         Planes{t}.Center = Ccb*Planes{t}.Center + Tcb;
         Planes{t}.Points = Ccb*Planes{t}.Points + repmat(Tcb,1,size(Planes{t}.Points,2)) ;
@@ -242,19 +230,9 @@ if ~issame(Rot,eye(3))
         end
         
         % save normals for clustering in the next frame
-        prevNormals(:,t) = Planes{t}.Normal;
-        
-        if 0 % visflag
-            randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
-            figure(visflag),    
-            scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,randcolor,'filled');
-            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.2];
-            figure(visflag),
-            plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
-        end
+        prevNormals(:,t) = Planes{t}.Normal;       
     end
 else
-    prevNormals = zeros(3,PlaneID);
     for t = 1:PlaneID  
          prevNormals(:,t) = Planes{t}.Normal;
     end

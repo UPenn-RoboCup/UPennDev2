@@ -71,8 +71,11 @@ shared.arm.qlarmcomp = vector.zeros(7)
 shared.arm.qrarmcomp = vector.zeros(7)
 
 --Current arm velocity limit
-shared.arm.dpVelLeft = vector.zeros(7) --joint vel
-shared.arm.dpVelRight = vector.zeros(7)
+shared.arm.dqVelLeft = vector.zeros(7) 
+shared.arm.dqVelRight = vector.zeros(7)
+
+shared.arm.dpVelLeft = vector.zeros(6) --transform vel
+shared.arm.dpVelRight = vector.zeros(6)
 
 --hand offset X and Y (for hook)
 if Config.arm then

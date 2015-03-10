@@ -580,22 +580,23 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
 --print("waist:",new_param[3]*Body.RAD_TO_DEG,new_param[4]*Body.RAD_TO_DEG)
 
-
+--[[
 print("dt velR:",dt_step,velR)
 print("velRight:"..util.print_transform(dpVelRight))
 print("trRArm :".. util.print_transform(trRArm))
 print("trRArmT:".. util.print_transform(target_param[2]) )
-
+--]]
 
       done = doneL and doneR and done3 and done4
     elseif plantype=="wrist" then
 
       local t0 = unix.time()  
 
+--[[
 print("dt:",dt_step)
 print("trRArm :".. util.print_transform(trRArm))
 print("trRArmT:".. util.print_transform(target_param[2]) )
-
+--]]
 
 
       trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpVelLeft, dt_step )      

@@ -18,8 +18,8 @@ function state.entry()
   t_finish = t
 
   -- Torque OFF the motors
-  Body.set_larm_torque_enable(0)
-  Body.set_rarm_torque_enable(0)
+--  Body.set_larm_torque_enable(0)
+--  Body.set_rarm_torque_enable(0)
 
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()

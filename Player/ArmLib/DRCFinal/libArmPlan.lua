@@ -581,7 +581,8 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 --print("waist:",new_param[3]*Body.RAD_TO_DEG,new_param[4]*Body.RAD_TO_DEG)
 
 
-print("dt:",dt_step)
+print("dt velR:",dt_step,velR)
+print("velRight:"..util.print_transform(dpVelRight))
 print("trRArm :".. util.print_transform(trRArm))
 print("trRArmT:".. util.print_transform(target_param[2]) )
 

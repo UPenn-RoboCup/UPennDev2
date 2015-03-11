@@ -46,8 +46,8 @@ if IS_WEBOTS then
 
   Config.use_gps_pose = false
 end
-Config.use_imu_yaw = true
-Config.use_gps_pose = true
+--Config.use_imu_yaw = true
+--Config.use_gps_pose = true
 
 Config.enable_touchdown = false
 Config.raise_body = true

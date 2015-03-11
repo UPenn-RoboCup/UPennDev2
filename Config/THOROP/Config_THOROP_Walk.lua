@@ -300,6 +300,7 @@ end
     walk.supportY = 0.04
     walk.kneePitchCompensation = 0.5*DEG_TO_RAD
     walk.force_torque = false
+    walk.velLimitX = {-.10,.15} 
 
   end
 

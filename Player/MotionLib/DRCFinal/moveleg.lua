@@ -288,13 +288,15 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   local afloat_threshold = 50
   local shiftL,shiftR=1,1
 
+  if Config.walk.force_torque then
+
   if lft[1]< afloat_threshold then --left foot afloat
     shiftL=0
   end
   if rft[1]< afloat_threshold then --left foot afloat
     shiftR=0
   end
-  
+  end
 
 
 

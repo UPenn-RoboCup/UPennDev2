@@ -280,6 +280,7 @@ else
 --  walk.delay_threshold_angle = 2.5*math.pi/180
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.delay_factor = {0.8,1.7}
+  walk.velLimitX = {-.10,.20} 
 
 end
 
@@ -292,10 +293,18 @@ end
   walk.supportX = 0.01 
   walk.supportY = 0.04
 
+  walk.force_torque = true
 
+  if HOSTNAME == "teddy" then
+  --clown foot
+    walk.supportY = 0.04
+    walk.kneePitchCompensation = 0.5*DEG_TO_RAD
+    walk.force_torque = false
+
+  end
 
 --higher ankle Y gain (helps SS)
-  walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+--  walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 
 ------------------------------------
 -- Associate with the table

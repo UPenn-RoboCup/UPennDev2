@@ -105,7 +105,7 @@ function state.update()
   end
 
   local dqArmLim = vector.new({10,10,10,10,30,10,30}) *DEG_TO_RAD
-  local ret = movearm.setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim)
+  local ret = movearm.setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
 --  if ret==1 then return "done" end
 
   local qLArmActual = Body.get_larm_position()

@@ -79,12 +79,10 @@ fsm.Arm = {
   {'armInit', 'done', 'armPose1'},
 
   {'armPose1', 'teleop', 'armTeleop'},
-  {'armPose1', 'toolgrab', 'armToolGrip'},
-
+--  {'armPose1', 'toolgrab', 'armToolGrip'},
 --  {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
 --  {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
-
-
+  
   {'armToolGrip', 'done', 'armPose1'},
 --  {'armToolGrip', 'hold', 'armToolHold'},
   {'armTeleop', 'done', 'armPose1'},

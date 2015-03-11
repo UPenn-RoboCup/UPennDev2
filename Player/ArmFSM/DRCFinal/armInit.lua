@@ -25,7 +25,7 @@ function state.entry()
   t_update = t_entry
   t_finish = t
 
-  stage = 1
+  
 
  if not IS_WEBOTS then
 	local vel = 1000
@@ -68,6 +68,9 @@ function state.entry()
 --  qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
 
   print("QLArmTarget:", util.print_jangle(qLArmTarget))
+  print("QRArmTarget:", util.print_jangle(qRArmTarget))  
+
+
 
   mcm.set_stance_enable_torso_track(0)
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit_init)
@@ -75,6 +78,7 @@ function state.entry()
 
   t_last_debug=t_entry
   last_error = 999
+  stage = 1
 end
 
 function state.update()
@@ -90,21 +94,37 @@ function state.update()
     --straighten shoulder yaw
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
   elseif stage==2 then
-    --straighten wrist roll (only if wrist yaw is off)
-
-    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
-    qLArmTargetC[6],qRArmTargetC[6] = 0,0
+    if math.abs(qLArmTargetC[3]-qLArmTarget[3])<math.pi/2 and
+      math.abs(qLArmTargetC[3]-qLArmTarget[3])<math.pi/2 then     
+      stage=7  --no need to unscrew wrist yaw
+      return
+    else 
+      stage=3 
+      return
+    end --unscrew wrist yaw
   elseif stage==3 then
-    --straighten wrist yaw
+    --unscrew wrist yaw. First straighten wrist roll
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
-    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
-    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
   elseif stage==4 then
-    --straighten wrist roll
-    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+    --unscrew wrist yaw. after straighten wrist roll
+    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
+    qLArmTargetC[6],qRArmTargetC[6] = 0,0
+    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
+    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
   elseif stage==5 then
+    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+  elseif stage==6 then
     return "done"
+  elseif stage==7 then
+    --Straighten wrist yaws first (without touching roll)
+    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]    
+    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
+    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
+  elseif stage==8 then
+    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+  elseif stage==9 then
+    return "done"    
   end
 
   local dqArmLim = vector.new({10,10,10,10,45,30,45}) *DEG_TO_RAD

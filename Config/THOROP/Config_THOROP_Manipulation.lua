@@ -120,14 +120,6 @@ arm.trRArm0 = {0.0, -0.25,-0.25,0,0,0}
 arm.trLArm1 = {0.0, 0.25,-0.25,0,0,-45*DEG_TO_RAD}
 arm.trRArm1 = {0.0, -0.25,-0.25,0,0,45*DEG_TO_RAD}
 
---[[
---wider
-arm.trLArm0 = {0.20, 0.30,-0.25,0,0,0}
-arm.trRArm0 = {0.20, -0.30,-0.25,0,0,0}
-arm.trLArm1 = {0.20, 0.30,-0.25,0,0,-45*DEG_TO_RAD}
-arm.trRArm1 = {0.20, -0.30,-0.25,0,0,45*DEG_TO_RAD}
---]]
-
 --arm.ShoulderYaw0 = {5*DEG_TO_RAD,-5*DEG_TO_RAD}
 arm.ShoulderYaw0=vector.new({0.1,-0.1})*DEG_TO_RAD
 
@@ -187,15 +179,34 @@ armfsm.toolgrip.armuninit={
 
 armfsm.teleop = {}
 
-
+--[[
 armfsm.teleop.arminit={
---  {'move0',nil,{0.0,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move0',nil,{0.10,-0.20,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
-
 armfsm.teleop.armuninit={
   {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
 }
+--]]
+
+
+
+--FOR DRC TESTBED
+--Table height: 1.04 from grpund, 0.11 from waist center
+--Drill handle height: 1.15 from ground, 0.22 from waist center
+--Valve center: 1.09 from ground, 0.16 from waist center
+--Hose center: 1.25 from groundm 0.32 from waist center
+
+armfsm.teleop.arminit={
+  {'move0',nil,{0.20,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move',nil,{0.40,-0.05,0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+}
+armfsm.teleop.armuninit={
+  {'move',nil,{0.40,-0.05,0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+}
+
+
+
 
 
 

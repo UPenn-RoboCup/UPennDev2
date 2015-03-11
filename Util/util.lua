@@ -211,6 +211,10 @@ function util.approachTolTransform(values, targets, vellimit, dt)
     values[2] = values[2] + delta[2]/mag_delta * movement 
     values[3] = values[3] + delta[3]/mag_delta * movement 
     within_tolerance = false
+  else
+    values[1] = targets[1]
+    values[2] = targets[2]
+    values[3] = targets[3]    
   end
   
 
@@ -222,7 +226,9 @@ function util.approachTolTransform(values, targets, vellimit, dt)
       -- Ensure that we do not move motors too quickly
       delta = util.procFunc(delta,0,vellimit[i]*dt)
       values[i] = values[i]+delta
-    end    
+    else
+      values[i]=targets[i]
+    end
   end
   
   -- Return the next values to take and if we are within tolerance

@@ -115,6 +115,18 @@ local function update(rgb, depth)
     log_rgb:record(m_rgb, j_rgb)
     log_depth:record(m_depth, ranges)
   end
+	
+		-- Range compression method
+	--[[
+	local ddata = depth:data()
+	ffi.copy(ddata, payload_depth)
+	local bdata = depth_byte:data()
+	for ii=0,npx-1 do
+		bdata[ii] = min(max((ddata[ii] - near)/(far-near), 0), 255)
+	end
+	local c_depth = p_compress(bdata)
+	--]]
+	
   -- Send
 	color_net_ch:send({m_rgb, j_rgb})
   depth_net_ch:send({m_depth, ranges})

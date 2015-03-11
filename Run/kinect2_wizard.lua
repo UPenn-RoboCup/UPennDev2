@@ -1,6 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = true
-
+local ENABLE_LOG = false
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014
@@ -66,7 +65,7 @@ local function update(rgb, depth)
 		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
 	end
 	-- Send debug
-  if t - t_send < 2 then return t end
+  if t - t_send < 1 then return t end
   t_send = t
 	print('Kinect2 | t_send', t_send)
   local rpy = Body.get_rpy()

@@ -4,6 +4,7 @@ local ffi = require'ffi'
 local vector = require'vector'
 local quaternion = require'quaternion'
 local carray = require'carray'
+local mpack = require'msgpack.MessagePack'.pack
 
 -- TODO: Put in world config
 local IS_SUPERVISOR = true
@@ -49,6 +50,11 @@ end
 
 local function reset()
 
+	-- Save the previous
+	local n=#world_configurations[world_obj[#world_obj]]-1
+	local f = io.open('/tmp/world_config'..n..'.log', 'w')
+	f:write(mpack{n=n, world=world_configurations, available=available_configurations})
+
 	-- Generate random order
 	local idx, n = {}, #available_configurations
 	while #idx<n do
@@ -58,11 +64,13 @@ local function reset()
 	end
 
 	-- Change objest configurations
-	for name,tags in pairs(world_tags) do
-		if name~='ALVIN' then
-			local config = available_configurations[table.remove(idx)]
+	for obj_name,tags in pairs(world_tags) do
+		if obj_name~='ALVIN' then
+			local c_id = table.remove(idx)
+			table.insert(world_configurations[obj_name], c_id)
+			local config = available_configurations[c_id]
 			local t, r = unpack(config)
-			print(name, t0, r0)
+			print(obj_name, t0, r0)
 			tags:set_translation(t)
 			--tags:set_rotation(r)
 		end

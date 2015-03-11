@@ -13,19 +13,19 @@ Solid {
   rotation IS rotation
   children [
 		DEF ramp1 Transform{
-		  translation 0 0.08 -0.3
+		  translation 0 0.08 -0.23
 		  rotation 1 0 0 -0.262
 		  children [
 			  Shape {
 			     appearance DEF ramp_app Appearance {
 			       material Material { diffuseColor 1 1 0.5 }
 			     }
-			     geometry DEF ramp_geo Box { size 1 0.02 0.62 }
+			     geometry DEF ramp_geo Box { size 0.85 0.02 0.5 }
 			  }
 			]
 		}
 		DEF ramp2 Transform{
-		  translation 0 0.08 0.3
+		  translation 0 0.08 0.23
 		  rotation 1 0 0 0.262
 		  children [
 			  Shape {

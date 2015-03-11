@@ -16,13 +16,13 @@ Solid {
             specularColor 0 0 0
           }
         }
-        geometry Box {size 0.2 0.15 1.0}
+        geometry DEF BB Box {size 0.2 0.15 0.85}
      }
   ]
   boundingObject Transform {
     translation 0 0 0
-    children [Box {size 0.2 0.15 1.0}]
-  }  
-  locked TRUE 
+    children [USE BB]
+  }
+  locked TRUE
 }
 }

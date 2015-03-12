@@ -204,19 +204,6 @@ armfsm.teleop.armuninit={
   {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
 }
 
---[[
-
---Straight hand front (door?)
-armfsm.teleop.rhand_rpy0={-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.teleop.arminit={  
-  {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
-  {'move0',nil,{0.0,-0.25,-0.15,-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
-}
-armfsm.teleop.armuninit={  
-  {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
-  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
-}
---]]
 
 --Hose insert
 --Init tr: 0.24 -0.13 0.14 (90.0 -45.0 95.1)
@@ -248,6 +235,19 @@ armfsm.teleop.armuninit={
 
 
 
+--
+
+--Straight hand front (door?)
+armfsm.teleop.rhand_rpy0={-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.teleop.arminit={  
+  {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
+  {'move0',nil,{0.0,-0.25,-0.15,-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
+}
+armfsm.teleop.armuninit={  
+  {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+}
+--]]
 
 
 

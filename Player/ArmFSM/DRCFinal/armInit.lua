@@ -110,8 +110,16 @@ function state.update()
   t_update = t
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
+
   local ret
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
+
+print(unpak(qLArm))
+print(unpak(qRArm))
+
+
+
+
   if stage==1 then
     --straighten shoulder yaw
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
@@ -152,6 +160,8 @@ function state.update()
   local dqArmLim = vector.new({10,10,10,10,45,30,45}) *DEG_TO_RAD
   if IS_WEBOTS then dqArmLim = dqArmLim*10 end
 
+
+
   local ret = movearm.setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
 --  if ret==1 then return "done" end
 
@@ -171,6 +181,9 @@ function state.update()
     if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then 
       stage = stage+1
       print("Total joint reading err:",err*180/math.pi)
+    else
+
+     print(ret,stage,err)
     end
     last_error = err
   end    

@@ -4,7 +4,7 @@
 -- (c) Stephen McGill 2013, 2014
 dofile'../include.lua'
 
-local ENABLE_LOG = false
+local ENABLE_LOG = true
 
 local libHokuyo  = require'libHokuyo'
 local signal = require'signal'.signal

@@ -15,7 +15,7 @@ local Body = require'Body'
 
 require'vcm'
 
---local ENABLE_LOG = true
+local ENABLE_LOG = true
 
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep

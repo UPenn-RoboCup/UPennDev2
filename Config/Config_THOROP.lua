@@ -8,7 +8,7 @@ print("Config loading")
 Config.PLATFORM_NAME = 'THOROP'
 Config.nJoint = 36
 Config.use_localhost = false
-Config.IS_COMPETING = true
+--Config.IS_COMPETING = true
 
 -- Printing of debug messages
 Config.debug = {

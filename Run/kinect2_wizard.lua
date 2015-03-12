@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = false
+local ENABLE_LOG = true
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014
@@ -20,13 +20,13 @@ end
 print(Config.net.streams['kinect2_depth'].tcp, operator)
 local depth_net_ch, color_net_ch
 local depth_udp_ch, color_udp_ch
---if Config.IS_COMPETING then
-	depth_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_depth'].udp)
-	color_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_color'].udp)
---else
+if Config.IS_COMPETING then
+	depth_udp_ch = require'simple_ipc'.new_sender(operator, Config.net.streams['kinect2_depth'].udp)
+	color_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_color'].udp, operator)
+else
 	depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
 	color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
---end
+end
 
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
@@ -143,7 +143,7 @@ local function update(rgb, depth)
   depth_ch:send({m_depth, ranges})
 
   -- Log at 2Hz
-	if t - t_send < 0.5 then return t end
+	if t - t_send < 0.25 then return t end
   if ENABLE_LOG then
     log_rgb:record(m_rgb, j_rgb)
     log_depth:record(m_depth, ranges)

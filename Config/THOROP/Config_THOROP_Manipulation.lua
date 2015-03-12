@@ -223,7 +223,7 @@ armfsm.teleop.armuninit={
 }
 --]]
 
-
+--[[
 armfsm.teleop.arminit={  
   {'move0',nil,{0.20,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
   {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
@@ -232,10 +232,10 @@ armfsm.teleop.armuninit={
   {'move',nil,{0.40,-0.05, 0.0,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
   {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
 }
+--]]
 
 
-
---
+--[[
 
 --Straight hand front (door?)
 armfsm.teleop.rhand_rpy0={-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}

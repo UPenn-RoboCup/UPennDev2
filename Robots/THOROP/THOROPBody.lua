@@ -226,9 +226,9 @@ Body.Kinematics = Kinematics
 -- Add the gripper API
 ----------------------
 local lgrip1_id, lgrip2_id = unpack(Config.parts.LGrip)
-local rgrip1_id, rgrip2_id = unpack(Config.parts.RGrip)
+local rgrip1_id, rgrip2_id, rgrip3_id = unpack(Config.parts.RGrip)
 local lgrip_ids = {[lgrip1_id] = true, [lgrip2_id] = true}
-local rgrip_ids = {[rgrip1_id] = true, [rgrip2_id] = true}
+local rgrip_ids = {[rgrip1_id] = true, [rgrip2_id] = true, [rgrip3_id]=true}
 function Body.set_lgrip_mode(mode)
 	local msg = {wr_reg='torque_mode', ids=lgrip_ids}
 	if mode=='torque' then
@@ -241,9 +241,9 @@ end
 function Body.set_rgrip_mode(mode)
 	local msg = {wr_reg='torque_mode', ids=rgrip_ids}
 	if mode=='torque' then
-		msg.val = {[rgrip1_id] = 1, [rgrip2_id] = 1}
+		msg.val = {[rgrip1_id] = 1, [rgrip2_id] = 1, [rgrip3_id]=1}
 	elseif mode=='position' then
-		msg.val = {[rgrip1_id] = 0, [rgrip2_id] = 0}
+		msg.val = {[rgrip1_id] = 0, [rgrip2_id] = 0, [rgrip3_id]=0}
 	end
 	dcm_ch:send(mpack(msg))
 end

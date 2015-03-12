@@ -78,6 +78,24 @@ Body.set_rgrip_command_torque({0,0,0})
   print("QRArmTarget:", util.print_jangle(qRArmTarget))  
 
 
+--[[
+  -- Default qLArmTarget: 131 3 0  -81 87 49 -90
+  -- Default qRArmTarget: 131 -3 0 -81 -87 -49 90
+  qLArmTarget=vector.new({90, 0, 0, -150, 90,   40, -90})*DEG_TO_RAD
+  qRArmTarget=vector.new({90, 0, 0, -150, -90, -40, 90})*DEG_TO_RAD
+
+
+  qLArmTarget=vector.new({90, 0, 0, -150, 90,   -50, -90})*DEG_TO_RAD
+  qRArmTarget=vector.new({90, 0, 0, -150, -90,   50, 90})*DEG_TO_RAD
+
+
+  local trLArm = Body.get_forward_larm(qLArmTarget,0,{0,0},true)
+  local trRArm = Body.get_forward_rarm(qRArmTarget,0,{0,0},true)  
+
+  print("TRL:",util.print_transform(trLArm))
+  print("TRR:",util.print_transform(trRArm))
+--]]
+
 
   mcm.set_stance_enable_torso_track(0)
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit_init)
@@ -135,6 +153,7 @@ function state.update()
   end
 
   local dqArmLim = vector.new({10,10,10,10,45,30,45}) *DEG_TO_RAD
+  if IS_WEBOTS then dqArmLim = dqArmLim*10 end
 
   local ret = movearm.setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
 --  if ret==1 then return "done" end

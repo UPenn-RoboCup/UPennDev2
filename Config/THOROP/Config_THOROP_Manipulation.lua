@@ -117,8 +117,9 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 --SJ: now arm ready poses are hand-invariant (to handle asymmetric hands and stuff)
 arm.trLArm0 = {0.0, 0.25,-0.25,0,0,0}
 arm.trRArm0 = {0.0, -0.25,-0.25,0,0,0}
-arm.trLArm1 = {0.0, 0.25,-0.25,0,0,-45*DEG_TO_RAD}
-arm.trRArm1 = {0.0, -0.25,-0.25,0,0,45*DEG_TO_RAD}
+
+--arm.trLArm1 = {0.0, 0.25,-0.25,0,0,-45*DEG_TO_RAD}
+--arm.trRArm1 = {0.0, -0.25,-0.25,0,0,45*DEG_TO_RAD}
 
 --arm.ShoulderYaw0 = {5*DEG_TO_RAD,-5*DEG_TO_RAD}
 arm.ShoulderYaw0=vector.new({0.1,-0.1})*DEG_TO_RAD
@@ -158,9 +159,6 @@ armfsm.toolgrip.armpull={
   {'move',nil,{0.25,0.0,-0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 
-
-
-
 --0.23 offset = (0.16,0.16) offset
 armfsm.toolgrip.arminit={
   {'move0',nil,{0.13,-0.56,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
@@ -188,8 +186,6 @@ armfsm.teleop.armuninit={
 }
 --]]
 
-
-
 --FOR DRC TESTBED
 --Table height: 1.04 from grpund, 0.11 from waist center
 --Drill handle height: 1.15 from ground, 0.22 from waist center
@@ -206,8 +202,40 @@ armfsm.teleop.armuninit={
 }
 
 
+--[[
+--For hose reinsert task
+armfsm.teleop.arminit={
+  {'move0',nil,{0.05,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+  --{'move',nil,{0.20,-0.05,-0.15,0,0*DEG_TO_RAD, 90*DEG_TO_RAD}},  
+}
+--]]
+
+armfsm.teleop.arminit={  
+  {'move',nil,{0.40,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move',nil,{0.40,-0.25, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+}
 
 
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------
+-- High arm position testing
+
+
+--TRL: 0.14 0.23 0.35 (-180.0 -80.0 180.0)
+
+--arm.ShoulderYaw0=vector.new({0,0})*DEG_TO_RAD
+
+--Arm State specific infos
+--armfsm = {}
+
+
+--]]
 
 
 --[[

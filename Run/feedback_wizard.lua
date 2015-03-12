@@ -4,23 +4,33 @@ dofile'../include.lua'
 local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
 local Body = require'Body'
+local get_time = Body.get_time
+local usleep = require'unix'.usleep
+local debug_interval = 2
+local feedback_interval = 1
+local ping_rate = 5
+local t_sleep = 1e6 / ping_rate
 require'wcm'
 require'mcm'
 
--- 2 Hz feedback
-local t_sleep = 1e6 / 100
-local feedback_udp_ch
+local feedback_udp_ch, ping_ch
 local ret, err
 local feedback = {}
+local nBytes = 0
 
 local function entry()
-	feedback_udp_ch =
-	si.new_sender(Config.net.operator.wired, Config.net.streams.feedback.udp)
-	print('Connected to', Config.net.operator.wired)
-	print('Port', Config.net.streams.feedback.udp)
+	feedback_udp_ch = si.new_sender(
+		Config.net.operator.wired,
+		Config.net.streams.feedback.udp
+	)
+	-- Lossy channel test
+	ping_ch = si.new_sender(Config.net.operator.wired, Config.net.test)
 end
 
+
 local function update()
+	ping_ch:send'chocolate'
+	if t - t_feedback < feedback_interval then return end
 	feedback.t = Body.get_time()
 	feedback.p = Body.get_position()
 	feedback.cp = Body.get_command_position()
@@ -31,8 +41,10 @@ local function update()
 	feedback.bh = mcm.get_stance_bodyHeight()
 	feedback.battery = Body.get_battery()
 	ret, err = feedback_udp_ch:send(mpack(feedback))
-	if err and Config.debug.feedback then
-		print('Feedback UDP error',err)
+	if err then
+		io.write('Feedback | UDP error: ', err)
+	else
+		nBytes = nBytes + ret
 	end
 end
 
@@ -42,29 +54,27 @@ if ... and type(...)=='string' then
 end
 
 local running = true
-local function shutdown()
-	running = false
-end
+local function shutdown() running = false end
 local signal = require'signal'.signal
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
-local usleep = require'unix'.usleep
-local debug_interval = 2
-local t0 = Body.get_time()
+local t0 = get_time()
 local t, t_debug = 0, 0
 entry()
 while running do
 	update()
-  t = Body.get_time()
-    -- If time for debug
+  t = get_time()
+	-- If time for debug
   if t-t_debug>debug_interval then
     t_debug = t
     local kb = collectgarbage('count')
-    print(string.format('Feedback | Uptime: %d sec, Mem: %d kB', t-t0, kb))
+    io.write(string.format(
+			'Feedback | Uptime: %d sec, Mem: %d kB, Sent: %d bytes',
+			t-t0, kb, nBytes)
+		)
   end
-
+	-- Sleep a bit
   collectgarbage('step')
 	usleep(t_sleep)
-
 end

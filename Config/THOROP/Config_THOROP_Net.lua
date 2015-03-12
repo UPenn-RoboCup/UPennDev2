@@ -64,6 +64,12 @@ else
 	}
 end
 
+-- Check lossy link
+net.test = {
+	udp = 16999, -- unreliable
+	tcp = 1999 -- reliable
+}
+
 local streams = {}
 net.streams = streams
 -- Lossless link
@@ -78,9 +84,6 @@ streams.feedback = {
 	sub = 'feedback'
 }
 -- Lossy Link
-net.test = {
-	udp = 3000
-}
 streams.camera0 = {
   ws = 9003,
   udp = 17000,

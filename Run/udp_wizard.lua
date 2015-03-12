@@ -3,6 +3,11 @@ dofile'../include.lua'
 local Config = require'Config'
 local si = require'simple_ipc'
 
+if HOSTNAME=='alvin' or HOSTNAME=='teddy' then
+	-- Don't forward
+	os.exit()
+end
+
 local poller, lut
 local in_channels = {}
 local out_channels = {}
@@ -10,9 +15,7 @@ local function cb(skt)
 	local ch_id = lut[skt]
 	local in_ch = in_channels[ch_id]
 	local out_ch = out_channels[ch_id]
-	while in_ch:size()>0 do
-		out_ch:send(in_ch:receive())
-	end
+	while in_ch:size() > 0 do out_ch:send(in_ch:receive()) end
 end
 
 for key,stream in pairs(Config.net.streams) do

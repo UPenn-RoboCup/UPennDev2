@@ -25,8 +25,8 @@ local subnets = {
 }
 if Config.IS_COMPETING then
 	subnets = {
-		OPERATOR = '10.'..TEAM_NUMBER..'.1.',
-		FIELD = '10.'..TEAM_NUMBER..'.2.',
+		OPERATOR = '10.'..TEAM_NUMBER..'.2.',
+		FIELD = '10.'..TEAM_NUMBER..'.3.',
 		ROBOT = '10.'..TEAM_NUMBER..'.3.'
 	}
 end

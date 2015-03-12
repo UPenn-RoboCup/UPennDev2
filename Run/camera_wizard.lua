@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_NET = false
+local ENABLE_NET = true
 local ENABLE_LOG = false
 -----------------------------------
 -- Camera manager
@@ -61,7 +61,7 @@ local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
-print('Camera | ', operator, camera_identifier)
+print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
 -- Metadata for the operator for compressed image data
 local c_meta = {
@@ -111,6 +111,11 @@ local function update(img, sz, cnt, t)
 		elseif udp_ch then
 			udp_data = mp.pack(c_meta)..c_img
 			udp_ret, udp_err = udp_ch:send(udp_data)
+--[[
+print(udp_ret, udp_err, #udp_data)
+if type(udp_ret)=='table' then print(unpack(udp_ret)) end
+os.exit()
+--]]
 		end
 	end
 

@@ -27,13 +27,12 @@ if two_port then
 	print(string.format("MATLAB | send_fd:\n\t%s\n", tostring(udp_sender_matlab)) )
 end
 
-local uuid = 'gopro'
 for i=1,100 do
-	local ret = udp_sender:send_all( msg, uuid )
+	local ret, uuid = udp_sender:send_all( msg )
 	if not uuid and ret==#msg then
 		io.write('LOCAL | Sent ', ret, ' bytes of ', #msg, '\n')
 	elseif uuid then
-		io.write('LOCAL | Sent ', #msg, ' bytes in ', #ret, ' packets: ', table.concat(ret, ', '), '\n')
+		io.write(uuid,' | Sent ', #msg, ' bytes in ', #ret, ' packets: ', table.concat(ret, ', '), '\n')
 	else
 		print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
 	end

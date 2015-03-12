@@ -84,6 +84,18 @@ static structUdp * lua_checkudp(lua_State *L, int narg) {
   return (structUdp *)ud;
 }
 
+// http://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
+static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+char rand_uuid_buf[UUID_LENGTH];
+void gen_random() {
+    for (int i = 0; i < UUID_LENGTH; ++i) {
+        rand_uuid_buf[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+}
+
 static int lua_udp_close(lua_State *L) {
   structUdp *p = lua_checkudp(L, 1);
 
@@ -400,6 +412,7 @@ static int lua_udp_send_all(lua_State *L) {
     uuid = luaL_optstring(L, 4, NULL);
   }
   // if no uuid given, send with packing
+	/*
   if (uuid == NULL) {
 	  // Send the data
 	  int ret = send(ud->send_fd, data, size, 0);
@@ -412,6 +425,11 @@ static int lua_udp_send_all(lua_State *L) {
 	  }
 	  return 1;
   }
+	*/
+	if (uuid == NULL) {
+		gen_random();
+		uuid = rand_uuid_buf;
+	}
 
   size_t uuid_len = strlen(uuid);
   if (uuid_len > UUID_LENGTH){
@@ -460,8 +478,8 @@ static int lua_udp_send_all(lua_State *L) {
 //		printf("Sending... sum: %u | size: %d %d\n", packets[i].checksum, packets[i].size0, packets[i].size1);
 //    usleep((useconds_t) usec);
   }
-	
-  return 1;
+	lua_pushlstring(L, uuid, UUID_LENGTH);
+  return 2;
 }
 
 static int lua_udp_index(lua_State *L) {

@@ -34,7 +34,9 @@ Yida Zhang copyright 2013 <yida@seas.upenn.edu>
 // 1500 MTU - 8 UDP header - 20 IP header = 1472
 //#define MAX_LENGTH 1500
 #define MAX_LENGTH 1472
-#define UUID_LENGTH 8
+#define UUID_LENGTH 5
+// Extra is UUID+5
+#define EXTRA_LENGTH 10
 #define MAX_BODY_LENGTH 1462
 
 #define MT_NAME "udp_mt"
@@ -220,7 +222,6 @@ static int packet_update(structUdp *p) {
   }
 	
   int8_t * data = (int8_t *)pkt_msg.c_str() + UUID_LENGTH + 5;
-	
 	
   if (number == 1) {
     p->recv_queue->push_back(std::string((char *)data));
@@ -425,7 +426,8 @@ static int lua_udp_send_all(lua_State *L) {
 	
   std::vector<packet> packets;
   for (int i = 0; i < num_packets; i++) {
-    int packet_len = (i < (num_packets - 1))? MAX_BODY_LENGTH : size_last_packets;
+    int packet_len = (i < (num_packets - 1)) ? MAX_BODY_LENGTH : size_last_packets;
+		//printf("packet_len %d %d\n", packet_len, UUID_LENGTH);
     packet new_packet;
     memset(new_packet.uuid, 0x0, UUID_LENGTH * sizeof(uint8_t));
     memcpy(new_packet.uuid, uuid, uuid_len * sizeof(uint8_t));
@@ -442,19 +444,22 @@ static int lua_udp_send_all(lua_State *L) {
   
 //  useconds_t usec = 10000;
   size_t raw_len = 0, ret = 0;
+	/*
   size_t extra_bytes = 3 * sizeof(uint8_t) + sizeof(uint16_t) +
                           (UUID_LENGTH + 1) * sizeof(uint8_t);
+													*/
 
 	//fprintf(stdout, "npkt: %lu\n", packets.size());
-	
+	lua_createtable(L, packets.size(), 0);
   for (int i = 0; i < packets.size(); i++) {
-    raw_len = (packets[i].size1<<8 & 0xFF00) | packets[i].size0 * sizeof(uint8_t) + extra_bytes;
+    raw_len = EXTRA_LENGTH + ((packets[i].size1<<8 & 0xFF00) | packets[i].size0) * sizeof(uint8_t);
 	  ret = send(ud->send_fd, &packets[i], raw_len, 0);
+		lua_pushnumber(L, ret);
+		lua_rawseti(L, -2, i+1);
+//		printf("Sending %lu %lu\n", raw_len, ret);
 //		printf("Sending... sum: %u | size: %d %d\n", packets[i].checksum, packets[i].size0, packets[i].size1);
 //    usleep((useconds_t) usec);
   }
-
-	lua_pushnumber(L, packets.size());
 	
   return 1;
 }
@@ -505,8 +510,8 @@ static const struct luaL_Reg udp_function [] = {
 static const luaL_Reg udp_methods[] = {
   {"send_all", lua_udp_send_all},
   {"send", lua_udp_send},
-  {"receive", lua_udp_receive},
 	{"size", lua_udp_size},
+  {"receive", lua_udp_receive},
   {"descriptor", lua_udp_fd},
   {"close", lua_udp_close},
   {"__tostring", lua_udp_string},

@@ -11,10 +11,10 @@ assert(udp_receiver,"Bad udp receiver!")
 print(
 string.format("LOCAL | \nsend_fd:\n\t%s\nrecv_fd\n\t%s\n",tostring(udp_sender),tostring(udp_receiver) )
 )
-
+local unix = require'unix'
 
 local tbl = {}
-for i=1,500 do
+for i=1,10000 do
 	tbl[i] = i
 end
 msg = table.concat(tbl,',')
@@ -28,24 +28,20 @@ if two_port then
 end
 
 local uuid = 'gopro'
-for i=1,4 do
+for i=1,100 do
 	local ret = udp_sender:send_all( msg, uuid )
 	if not uuid and ret==#msg then
 		io.write('LOCAL | Sent ', ret, ' bytes of ', #msg, '\n')
 	elseif uuid then
-		io.write('LOCAL | Sent ', #msg, ' bytes in ', ret, ' packets\n')
+		io.write('LOCAL | Sent ', #msg, ' bytes in ', #ret, ' packets: ', table.concat(ret, ', '), '\n')
 	else
 		print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
 	end
 	local tbl_recv = {}
-	local full_pkt = ''
-  local data = udp_receiver:receive()
-	while data do
-		full_pkt = full_pkt..data
-		io.write('\tLOCAL | Received ', #data, ' bytes', '\n')
-    data = udp_receiver:receive()
-	end
-	print(full_pkt)
+	while udp_receiver:size()<1 do unix.usleep(1e5) end
+	local full_pkt = udp_receiver:receive()
+	--io.write('\tLOCAL | Received ', #full_pkt, ' bytes', '\n')
+	--print(full_pkt)
 	local f = full_pkt:gmatch('%d+')
 	for n in f do table.insert(tbl_recv, tonumber(n)) end
 	for ii, v in ipairs(tbl_recv) do
@@ -64,8 +60,11 @@ for i=1,4 do
 	end
 end
 
+print('GOOD')
+
 udp_sender:close()
 udp_receiver:close()
 if udp_sender_matlab then
 	udp_sender_matlab:close()
 end
+print('DONE')

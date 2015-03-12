@@ -7,6 +7,11 @@ local vector = require'vector'
 local shared = {}
 local shsize = {}
 
+-- DRC network
+shared.network = {}
+-- Time of last observed good conditions
+shared.network.tgood = vector.zeros(1)
+
 -- RoboCup Ball
 shared.ball = {}
 shared.ball.centroid = vector.zeros(2)

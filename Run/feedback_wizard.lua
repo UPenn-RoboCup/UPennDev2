@@ -17,6 +17,7 @@ local feedback_udp_ch, ping_ch
 local ret, err
 local feedback = {}
 local nBytes = 0
+local t = 0
 
 local function entry()
 	feedback_udp_ch = si.new_sender(
@@ -29,7 +30,7 @@ end
 
 
 local function update()
-	ping_ch:send'chocolate'
+	ping_ch:send(tostring(t))
 	if t - t_feedback < feedback_interval then return end
 	feedback.t = Body.get_time()
 	feedback.p = Body.get_position()
@@ -60,7 +61,7 @@ signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
 local t0 = get_time()
-local t, t_debug = 0, 0
+local t_debug = 0
 entry()
 while running do
 	update()

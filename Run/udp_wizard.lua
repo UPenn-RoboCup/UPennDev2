@@ -4,7 +4,18 @@ local Config = require'Config'
 local si = require'simple_ipc'
 
 if HOSTNAME=='alvin' or HOSTNAME=='teddy' then
-	-- Don't forward
+	
+	local s = si.new_subscriber(Config.net.test.tcp, Config.net.operator.wired)
+	s.callback = function()
+		local data = skt:recv_all()
+		for _, tping in ipairs(data) do
+			vcm.set_network_tgood(tping)
+		end
+		
+	end
+	poller:start()
+	
+	-- Don't forward if a robot
 	os.exit()
 end
 
@@ -28,6 +39,16 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(out_channels, s)
 	end
 end
+
+-- Forward the ping test packets back to the robot
+do
+	local r = si.new_receiver(Config.net.test.udp)
+	r.callback = cb
+	table.insert(in_channels, r)
+	local s = si.new_publisher(Config.net.test.tcp)
+	table.insert(out_channels, r)
+end
+
 poller = si.wait_on_channels(in_channels)
 lut = poller.lut
 poller:start()

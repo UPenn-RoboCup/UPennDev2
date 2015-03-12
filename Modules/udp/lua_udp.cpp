@@ -219,7 +219,7 @@ static int packet_update(structUdp *p) {
   uint16_t size = (size1 << 8 & 0xFF00) | size0;
   uint8_t checksum = pkt_msg[UUID_LENGTH + 4];
 	
-	/*
+/*
 	printf("UUID: %s\n", uuid_str.c_str());
 	printf("order %u\n", order);
 	printf("number %u\n", number);
@@ -227,16 +227,19 @@ static int packet_update(structUdp *p) {
   printf("checksum %u %u\n",
 				 checksum, checksum_gen(pkt_msg.c_str())
 				);
-	*/
+*/
   if (checksum != checksum_gen(pkt_msg.c_str())) {
+		//printf("BAD CHECKSUM\n");
     p->recv_queue->push_back(pkt_msg);
     return 0;
   }
 	
+	
   int8_t * data = (int8_t *)pkt_msg.c_str() + UUID_LENGTH + 5;
 	
   if (number == 1) {
-    p->recv_queue->push_back(std::string((char *)data));
+		//printf("ONLY ONE\n");
+    p->recv_queue->push_back(std::string((char *)data, size));
     return 0;
   }
 

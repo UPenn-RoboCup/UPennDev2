@@ -18,8 +18,16 @@ else
 	operator = Config.net.operator.wired
 end
 print(Config.net.streams['kinect2_depth'].tcp, operator)
-local depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
-local color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
+local depth_net_ch, color_net_ch
+local depth_udp_ch, color_udp_ch
+--if Config.IS_COMPETING then
+	depth_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_depth'].udp)
+	color_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_color'].udp)
+--else
+	depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
+	color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
+--end
+
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
 print(depth_net_ch.name)
@@ -65,7 +73,9 @@ local function update(rgb, depth)
 		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
 	end
 	-- Send debug
-  if t - t_send < 1 then return t end
+	if Config.IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
+  if t - t_send < 0.1 then return t end
+
   t_send = t
 	print('Kinect2 | t_send', t_send)
   local rpy = Body.get_rpy()
@@ -110,11 +120,6 @@ local function update(rgb, depth)
   depth.sz = #ranges
   depth.rsz = #ranges
   local m_depth = mpack(depth)
-  -- Log
-  if ENABLE_LOG then
-    log_rgb:record(m_rgb, j_rgb)
-    log_depth:record(m_depth, ranges)
-  end
 	
 		-- Range compression method
 	--[[
@@ -128,10 +133,22 @@ local function update(rgb, depth)
 	--]]
 	
   -- Send
+	if Config.IS_COMPETING then
+		color_udp_ch:send(m_rgb..j_rgb)
+		depth_udp_ch:send(m_depth..ranges)
+	end
 	color_net_ch:send({m_rgb, j_rgb})
   depth_net_ch:send({m_depth, ranges})
 	color_ch:send({m_rgb, j_rgb})
   depth_ch:send({m_depth, ranges})
+
+  -- Log at 2Hz
+	if t - t_send < 0.5 then return t end
+  if ENABLE_LOG then
+    log_rgb:record(m_rgb, j_rgb)
+    log_depth:record(m_depth, ranges)
+  end
+
   return t
 end
 

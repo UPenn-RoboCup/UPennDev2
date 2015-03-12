@@ -63,18 +63,20 @@ local char_to_state = {
 }
 
 --[[
-local char_to_lfinger = {
-  ['z'] = vector.new({-5,-5}),
-  ['a'] = vector.new({0,0}),
-  ['q'] = vector.new({5,5}),
-}
 
-local char_to_rfinger = {
-  ['x'] = vector.new({-5,-5}),
-  ['s'] = vector.new({0,0}),
-  ['w'] = vector.new({5,5}),
+local char_to_lfinger = {
+  ['t'] = vector.new({-5,-5}),
+  ['g'] = vector.new({0,0}),
+  ['b'] = vector.new({5,5}),
 }
 --]]
+
+
+local char_to_rfinger = {
+  ['t'] = vector.new({-10,-10,10}),--close
+  ['g'] = vector.new({0,0,0}),
+  ['b'] = vector.new({10,10,-10}), --open
+}
 
 local function print_override()
   print( util.color('Override:','yellow'), 
@@ -126,9 +128,12 @@ local function update(key_code)
   
   --notify target transform change
   local trmod = char_to_override[key_char_lower]
-  if trmod then
+  if trmod and hcm.get_state_proceed()==0 then
     local trRArmTarget = vector.new(hcm.get_hands_right_tr_target() )
+    hcm.set_hands_right_tr_target_old(trRArmTarget)
     trRArmTarget = trRArmTarget+trmod
+    print( util.color('Hand target: ','blue'), 
+    	util.print_transform(trRArmTarget) )
     hcm.set_hands_right_tr_target(trRArmTarget)
     hcm.set_state_proceed(2)
     return
@@ -141,14 +146,14 @@ local function update(key_code)
     Body.move_lgrip2(lf[2])
     return
   end
+--]]
 
   local rf = char_to_rfinger[key_char_lower]
   if rf then
-    Body.move_rgrip1(rf[1])
-    Body.move_rgrip2(rf[2])
+    Body.set_rgrip_command_torque(rf)
     return
   end
---]]
+
 
 
   local state_adj = char_to_state[key_char_lower]

@@ -215,24 +215,6 @@ armfsm.teleop.armuninit={
   {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
 }
 
---[[
---Hose reinsert?
-armfsm.teleop.rhand_rpy0={0*DEG_TO_RAD,-40*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.teleop.arminit={  
-  {'move',nil,{0.35,-0.30,-0.05,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
-  {'move',nil,{0.35,-0.30,0.05,0,-45*DEG_TO_RAD, 0*DEG_TO_RAD}},  
-  {'move',nil,{0.35,-0.30,0.15,0,-60*DEG_TO_RAD, 0*DEG_TO_RAD}},  
-  {'move',nil,{0.30,-0.30,0.30,0,-85*DEG_TO_RAD, 0*DEG_TO_RAD}},  
-  {'move',nil,{0.30,-0.30,0.30,0,-89*DEG_TO_RAD, 0*DEG_TO_RAD}},
-
-  {'move',nil,{0.30,-0.30,0.30,45*DEG_TO_RAD,-89*DEG_TO_RAD, 0}},  
-}
-armfsm.teleop.armuninit={  
-  {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
-  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
-}
---]]
-
 
 --Hose insert
 --Init tr: 0.24 -0.13 0.14 (90.0 -45.0 95.1)

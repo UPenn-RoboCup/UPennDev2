@@ -12,6 +12,7 @@ local lhand_rpy0 = {0,0,45*DEG_TO_RAD}
 local rhand_rpy0 = {0,0,45*DEG_TO_RAD}
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
+local trLArmLast, trRArmLast
 local stage
 
 local qLArmInit0,qRArmInit0
@@ -91,6 +92,8 @@ function state.entry()
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
 
+  trLArmLast, trRArmLast = Body.get_forward_larm(qLArm0), Body.get_forward_rarm(qRArm0)  
+
   arm_planner:set_hand_mass(0,0)
   mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand (left arm fixed)
   arm_planner:set_shoulder_yaw_target(nil,nil)
@@ -160,7 +163,8 @@ function state.update()
       if plan_valid then           
         hcm.set_tool_model({trRArmTarget[1],trRArmTarget[2],trRArmTarget[3],trRArmTarget[6]})
       else
-        plan_valid=true
+        hcm.set_hands_right_tr_target(hcm.get_hands_right_tr_target_old())
+        plan_valid,stage=true,"teleopwait"
       end
       hcm.set_state_proceed(0)
     else 

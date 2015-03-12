@@ -7,13 +7,12 @@ local util = require'util'
 if HOSTNAME=='alvin' or HOSTNAME=='teddy' then
 	
 	local s = si.new_subscriber(Config.net.test.tcp, Config.net.operator.wired)
-	s.callback = function()
+	s.callback = function(skt)
 		local data = skt:recv_all()
-		for _, tping in ipairs(data) do
-			vcm.set_network_tgood(tping)
-		end
-		
+		for _, tping in ipairs(data) do vcm.set_network_tgood(tping) end
 	end
+	poller = si.wait_on_channels{s}
+	lut = poller.lut
 	poller:start()
 	
 	-- Don't forward if a robot

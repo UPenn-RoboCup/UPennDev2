@@ -301,6 +301,14 @@ end
     walk.kneePitchCompensation = 0.5*DEG_TO_RAD
     walk.force_torque = false
     walk.velLimitX = {-.10,.15} 
+  end
+
+  if HOSTNAME == "alvin" then
+    walk.kneePitchCompensation = 0.5*DEG_TO_RAD
+    walk.force_torque = false
+--    walk.supportY = 0.03
+    walk.supportY = 0.02
+    walk.velLimitX = {-.06,.10} 
 
   end
 

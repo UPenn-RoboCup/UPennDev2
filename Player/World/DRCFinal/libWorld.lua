@@ -159,7 +159,7 @@ function libWorld.get_pose()
   --return vector.pose({0,0,0})
   --return vector.pose{poseFilter.get_pose()}
 
-print("POSE")
+--print("POSE")
 
   return wcm.get_robot_pose()
 

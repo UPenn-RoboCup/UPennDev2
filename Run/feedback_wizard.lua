@@ -8,7 +8,7 @@ local get_time = Body.get_time
 local usleep = require'unix'.usleep
 local debug_interval = 2
 local feedback_interval = 1
-local ping_rate = 5
+local ping_rate = 4
 local t_sleep = 1e6 / ping_rate
 require'wcm'
 require'mcm'
@@ -16,8 +16,9 @@ require'mcm'
 local feedback_udp_ch, ping_ch
 local ret, err
 local feedback = {}
-local nBytes = 0
+local nBytes, nBytesPing = 0, 0
 local t = 0
+local t_feedback = 0
 
 local function entry()
 	feedback_udp_ch = si.new_sender(
@@ -25,14 +26,20 @@ local function entry()
 		Config.net.streams.feedback.udp
 	)
 	-- Lossy channel test
-	ping_ch = si.new_sender(Config.net.operator.wired, Config.net.test)
+	ping_ch = si.new_sender(Config.net.operator.wired, Config.net.test.udp)
 end
 
-
+local msg
 local function update()
-	ping_ch:send(tostring(t))
+  msg = tostring(t)
+	ret, err = ping_ch:send(msg)
+	if type(ret)=='string' then
+		io.write('Feedback | Ping error: ', ret, '\n')
+	else
+		nBytesPing = nBytesPing + #msg
+	end
 	if t - t_feedback < feedback_interval then return end
-	feedback.t = Body.get_time()
+	feedback.t = t
 	feedback.p = Body.get_position()
 	feedback.cp = Body.get_command_position()
 	feedback.i = Body.get_current()
@@ -41,12 +48,15 @@ local function update()
 	feedback.pose = wcm.get_robot_odometry()--wcm.get_robot_pose()
 	feedback.bh = mcm.get_stance_bodyHeight()
 	feedback.battery = Body.get_battery()
-	ret, err = feedback_udp_ch:send(mpack(feedback))
-	if err then
-		io.write('Feedback | UDP error: ', err)
+  --
+  msg = mpack(feedback)
+	ret, err = feedback_udp_ch:send(msg)
+	if type(ret)=='string' then
+		io.write('Feedback | UDP error: ', ret, '\n')
 	else
-		nBytes = nBytes + ret
+		nBytes = nBytes + #msg
 	end
+  t_feedback = t
 end
 
 -- If required from Webots, return the table
@@ -71,8 +81,8 @@ while running do
     t_debug = t
     local kb = collectgarbage('count')
     io.write(string.format(
-			'Feedback | Uptime: %d sec, Mem: %d kB, Sent: %d bytes',
-			t-t0, kb, nBytes)
+			'Feedback | Uptime: %d sec, Mem: %d kB, Sent: %d bytes\nPing %d bytes\n',
+			t-t0, kb, nBytes, nBytesPing)
 		)
   end
 	-- Sleep a bit

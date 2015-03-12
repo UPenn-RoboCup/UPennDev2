@@ -17,6 +17,16 @@ if not IS_WEBOTS then
   signal.signal("SIGTERM", shutdown)
 end
 
+local lW
+if not IS_WEBOTS then
+ --world update for robot
+  lW=require'libWorld'
+  lW.entry()
+end
+
+
+
+
 local state_ch = require'simple_ipc'.new_subscriber('state!')
 
 -- Load the FSMs and attach event handler
@@ -80,6 +90,19 @@ while running do
 		  print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, kb))
     end
   end
+
+  if not IS_WEBOTS then
+    if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
+    else uOdometry0 = uOdometry end
+    uOdometry = mcm.get_status_odometry()
+    dOdometry = util.pose_relative(uOdometry,uOdometry0)
+    lW.update(dOdometry)
+    wcm.set_robot_pose(lW.get_pose())
+   --world update for robot
+  end
+
+
+
 
   -- If not webots, then wait the update cycle rate
   if IS_WEBOTS then

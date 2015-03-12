@@ -117,7 +117,7 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
       --Last step was left support step (right foot movement)
       --Next step should be left foot movement
       supportStr='Left foot move next'
-print("Left foot move next")
+--print("Left foot move next")
       uLSupportNext = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftFromTorso)
       uRSupportNext = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTargetFromTorso)
 --[[            
@@ -132,7 +132,7 @@ print("Left foot move next")
       
     else
       supportStr='Right foot move next'
-print("R foot move next")
+--print("R foot move next")
       uLSupportNext = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftFromTorso)
       uRSupportNext = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTargetFromTorso)
 --[[            
@@ -199,7 +199,7 @@ print("approach vel:",unpack(vStep))
   local uTorsoTargetActual = util.pose_global(vStep,uTorsoCurrent)
 
 
-
+--[[
   print()
   print("uTorsoTargetCurrent:",unpack(uTorsoCurrent))
   print("uLeftGlobal:",unpack(uLeftGlobal))
@@ -213,7 +213,7 @@ print("approach vel:",unpack(vStep))
   
   print("vStep:",unpack(vStep))
   print("uTorsoTargetActual:",unpack(uTorsoTargetActual))
-  
+  --]]
 
 
 
@@ -228,12 +228,12 @@ print("approach vel:",unpack(vStep))
     local uRight2 = util.pose_global(uRightLeft,uLeft)
     local uRNextGlobal = util.pose_global( util.pose_relative(uRight2,uTorso) ,pose)
 
---
+--[[
     print("pose:",unpack(pose))
     print("uRNext:",unpack(uRNext))
     print("uRNextGlobal:",unpack(uRNextGlobal))
     print("uRNextGlobaT:",unpack(uRightGlobalTarget))
---
+--]]
     if math.abs(uRNextGlobal[1]-uRightGlobalTarget[1])<0.01 and
       math.abs(uRNextGlobal[2]-uRightGlobalTarget[2])<0.03 and
 --      math.abs(util.mod_angle(uRNextGlobal[3]-uRightGlobalTarget[3]))<5*math.pi/180 then
@@ -256,12 +256,12 @@ print("approach vel:",unpack(vStep))
     local uLeft2 = util.pose_global(uLeftRight,uRight)
     local uLNextGlobal = util.pose_global( util.pose_relative(uLeft2,uTorso) ,pose)
 
---
+--[[
     print("pose:",unpack(pose))
     print("uLNext:",unpack(uLNext))
     print("uLNextGlobal:",unpack(uLNextGlobal))
     print("uLNextGlobaT:",unpack(uLeftGlobalTarget))
---
+--]]
 
     if math.abs(uLNextGlobal[1]-uLeftGlobalTarget[1])<0.01 and
       math.abs(uLNextGlobal[2]-uLeftGlobalTarget[2])<0.03 and

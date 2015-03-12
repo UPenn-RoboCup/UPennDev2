@@ -1,6 +1,6 @@
 % Starting timestamp
 prefix0 = 'mesh';
-datestamp0 = '03.11.2015.15.24.14';
+datestamp0 = '03.11.2015.15.25.59';
 prefix = strcat(prefix0, '_m_');
 
 log_files0 = dir(strcat('./Data/',prefix,'*.log'));
@@ -34,7 +34,13 @@ for idx=1:n
     fprintf('Unpack %d\n', numel(obj));
     f_raw = fopen(sprintf('./Data/%s_r_%s.log', prefix0, datestamp));
     for i=1:numel(obj)
-        raw = fread(f_raw, obj{i}.rsz, '*uchar');
+        o = obj{i};
+        raw = fread(f_raw, o.rsz, '*uchar');
+        s = typecast(raw, 'single');
+        s(s>4)=0;
+        s = reshape(s, flip(o.dims));
+        imagesc(s);
+        pause(0.25);
     end
     fclose(f_raw);
 end

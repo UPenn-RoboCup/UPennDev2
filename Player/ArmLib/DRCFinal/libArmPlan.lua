@@ -28,6 +28,8 @@ local function movfunc(cdist,dist)
   local acc_factor = 1 /0.02 --accellerate 2X over 2cm
   local dcc_factor = 1 /0.03 --accellerate 2X over 3cm
   local max_vel_factor = 2 --max 3X speed
+
+  
   
 
   local vel = math.min(
@@ -104,6 +106,9 @@ local function calculate_margin(qArm,isLeft,trArm)
 
 
   local tr_err = math.abs(trArm[1]-trCheck[1])+math.abs(trArm[2]-trCheck[2])+math.abs(trArm[3]-trCheck[3])
+  local tr_err2 = math.abs(util.mod_angle(trArm[4]-trCheck[4]))+
+                  math.abs(util.mod_angle(trArm[5]-trCheck[5]))+
+                  math.abs(util.mod_angle(trArm[6]-trCheck[6]))
   if jointangle_margin>0 and tr_err>0.005 then 
     print("IK ERROR"    )
     jointangle_margin = 0 

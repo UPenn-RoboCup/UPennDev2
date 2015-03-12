@@ -12,6 +12,7 @@ local lhand_rpy0 = {0,0,45*DEG_TO_RAD}
 local rhand_rpy0 = {0,0,45*DEG_TO_RAD}
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
+local trLArmLast, trRArmLast
 local stage
 
 local qLArmInit0,qRArmInit0
@@ -61,10 +62,10 @@ end
 local function confirm_override() hcm.set_state_override({0,0,0,0,0,0,0}) end
 
 local function get_tool_tr()
-  local handrpy = rhand_rpy0
+  local handrpy = Config.armfsm.teleop.rhand_rpy0
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3)  
-  local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], handrpy[1],handrpy[2],tool_model[4]}
+  local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], handrpy[1],handrpy[2],handrpy[3]}
 --  print("hand transform:",util.print_transform(tool_tr))                    
   return tool_tr
 end
@@ -90,6 +91,8 @@ function state.entry()
   
   trLArm0 = Body.get_forward_larm(qLArm0)
   trRArm0 = Body.get_forward_rarm(qRArm0)  
+
+  trLArmLast, trRArmLast = Body.get_forward_larm(qLArm0), Body.get_forward_rarm(qRArm0)  
 
   arm_planner:set_hand_mass(0,0)
   mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand (left arm fixed)
@@ -134,8 +137,8 @@ function state.update()
   local Lwrist2 = qLArm[7]+math.pi/2
   local Rwrist2 = qRArm[7]-math.pi/2
 
-  if math.abs(Lwrist1)>math.pi 
-    or math.abs(Lwrist1)>math.pi then
+  if math.abs(Rwrist1)>math.pi 
+    or math.abs(Rwrist1)>math.pi then
     print("wrist1 out of range!!!")
   end
 
@@ -160,17 +163,18 @@ function state.update()
       if plan_valid then           
         hcm.set_tool_model({trRArmTarget[1],trRArmTarget[2],trRArmTarget[3],trRArmTarget[6]})
       else
-        plan_valid=true
+        hcm.set_hands_right_tr_target(hcm.get_hands_right_tr_target_old())
+        plan_valid,stage=true,"teleopwait"
       end
       hcm.set_state_proceed(0)
     else 
       if check_override() then --Model modification
-        update_override()        
-        local arm_seq = {{'move',nil,get_tool_tr()}}   
+        update_override()
+        local arm_seq = {{'move',nil,get_tool_tr()}}
         plan_valid,stage = arm_planner:plan_arm_sequence(arm_seq,stage,"teleopmove")
-        if plan_valid then           
+        if plan_valid then
           confirm_override()
-        else revert_override() 
+        else revert_override()
           plan_valid,stage=true,"teleopwait"
         end
       end

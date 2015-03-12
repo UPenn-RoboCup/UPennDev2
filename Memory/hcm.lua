@@ -80,6 +80,11 @@ shared_data.hands.right_tr = vector.zeros(6)
 --This variable should contain TARGET hand transforms
 shared_data.hands.left_tr_target = vector.zeros(6)
 shared_data.hands.right_tr_target = vector.zeros(6)
+
+--They store previous hand target transforms (in case movement is not possible)
+shared_data.hands.left_tr_target_old = vector.zeros(6)
+shared_data.hands.right_tr_target_old = vector.zeros(6)
+
 -- for the left and right hands
 shared_data.hands.read = vector.zeros(2)
 

@@ -135,7 +135,10 @@ mxArray* mex_unpack_map(msgpack_object obj) {
       field_name[i] = (char*)mxCalloc(obj_kv.key.via.raw.size + 1, sizeof(char));
       memcpy((char*)field_name[i], obj_kv.key.via.raw.ptr, obj_kv.key.via.raw.size * sizeof(char));
     } else {
-      mexPrintf("not string key\n");
+        field_name[i] = (char*)mxCalloc(8, sizeof(char));
+        memcpy((char*)field_name[i], "unknown", 8 * sizeof(char));
+      //mexPrintf("not string key %d %d\n", obj_kv.key.type, obj_kv.key.via.u64);
+//return 0;
     }
   }
   mxArray *ret = mxCreateStructMatrix(1, 1, obj.via.map.size, (const char**)field_name);

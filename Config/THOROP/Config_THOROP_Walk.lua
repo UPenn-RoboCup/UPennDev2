@@ -308,6 +308,8 @@ end
     walk.force_torque = false
 --    walk.supportY = 0.03
     walk.supportY = 0.02
+    walk.velLimitX = {-.06,.10} 
+
   end
 
 --higher ankle Y gain (helps SS)

@@ -73,7 +73,9 @@ local char_to_lfinger = {
 
 
 local char_to_rfinger = {
+--  ['t'] = vector.new({-10,-10,10}),--close
   ['t'] = vector.new({-10,-10,10}),--close
+  ['r'] = vector.new({-10,-50,10}),--close
   ['g'] = vector.new({0,0,0}),
   ['b'] = vector.new({10,10,-10}), --open
 }

@@ -54,7 +54,7 @@ local operator
 if Config.net.use_wireless then
 	operator = Config.net.operator.wireless
 else
-	operator = Config.net.operator.wired_broadcast
+	operator = Config.net.operator.wired
 end
 -- Network Channels/Streams
 local camera_identifier = 'camera'..(camera_id-1)

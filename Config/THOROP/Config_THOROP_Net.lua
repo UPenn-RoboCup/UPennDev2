@@ -9,13 +9,13 @@ local IP = {
   ALVIN = 24,
   ALVIN_Z = 222,
   ALVIN_B = 232,
-  TEDDY = 26,
+  TEDDY = 24,
   FIELD = 201,
 }
 
 -- Who do we use?
 local WHO = IP.STEVE
-local ROBOT_IP = IP.ALVIN_B
+local ROBOT_IP = IP.TEDDY
 local TEAM_NUMBER = 8
 
 local subnets = {
@@ -78,26 +78,29 @@ streams.feedback = {
 	sub = 'feedback'
 }
 -- Lossy Link
+net.test = {
+	udp = 3000
+}
 streams.camera0 = {
   ws = 9003,
-  udp = 2048,
+  udp = 17000,
 	sub = 'camera0',
 }
 streams.mesh = {
 	ws = 9001,
-	udp = 2049,
+	udp = 17001,
 	tcp = 43344,
   sub = 'mesh0'
 }
 streams.kinect2_depth = {
   ws = 9010,
-	udp = 2050,
+	udp = 17002,
   tcp = 43346,
 	sub = 'kinect2_depth'
 }
 streams.kinect2_color = {
   ws = 9011,
-	udp = 2051,
+	udp = 17003,
   tcp = 43347,
 	sub = 'kinect2_color'
 }

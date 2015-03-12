@@ -53,7 +53,7 @@ local type2prefix = {
 -- Use UDP directly
 if type(udp)=='table' and not udp.ffi then
 	local function udp_send(self, data)
-		self.sender:send(data)
+		self.sender:send_all(data)
 	end
 	local function udp_receive(self)
 		return self.receiver:receive()
@@ -65,6 +65,9 @@ if type(udp)=='table' and not udp.ffi then
 		local skt_buffer = {}
 		while self:size() > 0 do tinsert(skt_buffer, self:receive()) end
 		return skt_buffer
+	end
+	local function udp_size(self)
+		return self.receiver:size()
 	end
   function simple_ipc.new_sender(ip, port)
 		local sender = udp.new_sender(ip, port)
@@ -86,6 +89,7 @@ if type(udp)=='table' and not udp.ffi then
 			fd = receiver:descriptor(),
 			receive = udp_receive,
 			recv_all = udp_recv_all,
+			size = udp_size,
 		}
 		return obj
 	end
@@ -344,7 +348,7 @@ function simple_ipc.wait_on_channels(channels)
 		assert(not lut[s], 'Duplicate poller channel!')
 		assert(ch.callback, 'No callback for poller!')
 		poll_obj:add(s, zmq.POLLIN, ch.callback)
-		lut[s] = ch
+		lut[s] = i
 	end
 	poll_obj.lut = lut
 	poll_obj.n = n_ch

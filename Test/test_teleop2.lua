@@ -24,7 +24,7 @@ local override_target=vector.new({0,0,0,  0,0,0,0})
 
 local movement_target=vector.new({0,0,0})
 
-
+local multiplier = 1
 
 local char_to_override = {
   ['i'] = vector.new({0.04, 0, 0,   0,0,0}),
@@ -43,8 +43,8 @@ local char_to_override = {
   ['n'] = vector.new({0,0,0,     0,1,  0}) *5*math.pi/180,
 
   --Roll
-  ['-'] = vector.new({0,0,0,     -1,0, 0}) *5*math.pi/180,
-  ['='] = vector.new({0,0,0,     1,0,  0}) *5*math.pi/180,
+  ['o'] = vector.new({0,0,0,     -1,0, 0}) *5*math.pi/180,
+  ['.'] = vector.new({0,0,0,     1,0,  0}) *5*math.pi/180,
 }
 
 local char_to_movetarget = {
@@ -99,30 +99,29 @@ local function update(key_code)
 
   if key_char_lower==("1") then      body_ch:send'init'
 	elseif key_char_lower==("0") then      body_ch:send'uninit'
+
+
+  elseif key_char_lower==("5") then
+    print( util.color("Fine control mode",'green')) 
+    multiplier = 0.25
+  elseif key_char_lower==("6") then
+    print( util.color("Coarse control mode",'red'))     
+    multiplier = 1
+
 	elseif key_char_lower==("8") then  
---[[		
-		motion_ch:send'stand'
-		body_ch:send'stop'
-		head_ch:send'teleop'
-		hcm.set_motion_headangle({0,0*math.pi/180})
---]]		
 		if mcm.get_walk_ismoving()>0 then 
 			print("requesting stop")
 			mcm.set_walk_stoprequest(1) 
 		end
-	elseif key_char_lower==("9") then  
-		motion_ch:send'hybridwalk'
---
-
---  elseif key_char_lower==("2") then  arm_ch:send'toolgrab'  
-  elseif key_char_lower==("3") then  arm_ch:send'teleop'  
+  elseif key_char_lower==("2") then  arm_ch:send'teleop'  
   elseif key_char_lower==("k") then  override_target=vector.new({0,0,0,  0,0,0,0})
   elseif key_char_lower==(" ") then
-    hcm.set_state_override(override_target)    
     hcm.set_move_target(movement_target)
 		body_ch:send'approach' --todo
-    override_target = vector.zeros(6)
     movement_target = vector.zeros(3)
+
+--    override_target = vector.zeros(6)
+--    hcm.set_state_override(override_target)        
   end
 
   
@@ -131,7 +130,7 @@ local function update(key_code)
   if trmod and hcm.get_state_proceed()==0 then
     local trRArmTarget = vector.new(hcm.get_hands_right_tr_target() )
     hcm.set_hands_right_tr_target_old(trRArmTarget)
-    trRArmTarget = trRArmTarget+trmod
+    trRArmTarget = trRArmTarget+trmod*multiplier
     print( util.color('Hand target: ','blue'), 
     	util.print_transform(trRArmTarget) )
     hcm.set_hands_right_tr_target(trRArmTarget)

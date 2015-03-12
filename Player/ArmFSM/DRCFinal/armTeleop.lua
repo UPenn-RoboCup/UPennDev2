@@ -169,12 +169,12 @@ function state.update()
       hcm.set_state_proceed(0)
     else 
       if check_override() then --Model modification
-        update_override()        
-        local arm_seq = {{'move',nil,get_tool_tr()}}   
+        update_override()
+        local arm_seq = {{'move',nil,get_tool_tr()}}
         plan_valid,stage = arm_planner:plan_arm_sequence(arm_seq,stage,"teleopmove")
-        if plan_valid then           
+        if plan_valid then
           confirm_override()
-        else revert_override() 
+        else revert_override()
           plan_valid,stage=true,"teleopwait"
         end
       end

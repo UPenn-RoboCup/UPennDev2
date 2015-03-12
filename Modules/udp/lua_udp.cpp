@@ -27,9 +27,15 @@ Yida Zhang copyright 2013 <yida@seas.upenn.edu>
 
 #include <lua.hpp>
 
-#define MAX_LENGTH 65536
-#define MAX_BODY_LENGTH 60000
-#define UUID_LENGTH 8 
+//#define MAX_LENGTH 65536
+//#define MAX_BODY_LENGTH 60000
+//#define UUID_LENGTH 8
+// DARPA Robotics Challenge
+// 1500 MTU - 8 UDP header - 20 IP header = 1472
+//#define MAX_LENGTH 1500
+#define MAX_LENGTH 1472
+#define UUID_LENGTH 8
+#define MAX_BODY_LENGTH 1462
 
 #define MT_NAME "udp_mt"
 
@@ -39,7 +45,8 @@ typedef struct {
   uint8_t uuid[UUID_LENGTH];
   uint8_t order;
   uint8_t number;
-  uint16_t size;
+  uint8_t size0;
+	uint8_t size1;
   uint8_t checksum;
   int8_t data[MAX_BODY_LENGTH];
 } packet;
@@ -61,9 +68,9 @@ const int maxQueueSize = 12;
 // receiver buffer
 static std::map<std::string, std::map<char, std::string> > uuid_buf;
 
-inline char checksum_gen(const char *header) {
+inline uint8_t checksum_gen(const char *header) {
   char sum = 0;
-  for (int i = 0; i < (UUID_LENGTH+3); i++) {
+  for (int i = 0; i < (UUID_LENGTH+4); i++) {
     sum ^= header[i];
   }
   return sum;
@@ -193,14 +200,28 @@ static int packet_update(structUdp *p) {
   std::string uuid_str = pkt_msg.substr(0, UUID_LENGTH);
   uint8_t order = pkt_msg[UUID_LENGTH];
   uint8_t number = pkt_msg[UUID_LENGTH + 1];
-  uint16_t size = pkt_msg[UUID_LENGTH + 3] << 8 | pkt_msg[UUID_LENGTH + 2];
+	uint8_t size0 = pkt_msg[UUID_LENGTH + 2];
+	uint8_t size1 = pkt_msg[UUID_LENGTH + 3];
+  uint16_t size = (size1 << 8 & 0xFF00) | size0;
   uint8_t checksum = pkt_msg[UUID_LENGTH + 4];
-//  printf("checksum %d %d\n", checksum, checksum_gen(pkt_msg.c_str()));
+	
+	/*
+	printf("UUID: %s\n", uuid_str.c_str());
+	printf("order %u\n", order);
+	printf("number %u\n", number);
+	printf("size: %u [%u|%u]\n", size, size0, size1);
+  printf("checksum %u %u\n",
+				 checksum, checksum_gen(pkt_msg.c_str())
+				);
+	*/
   if (checksum != checksum_gen(pkt_msg.c_str())) {
     p->recv_queue->push_back(pkt_msg);
     return 0;
   }
+	
   int8_t * data = (int8_t *)pkt_msg.c_str() + UUID_LENGTH + 5;
+	
+	
   if (number == 1) {
     p->recv_queue->push_back(std::string((char *)data));
     return 0;
@@ -246,14 +267,26 @@ static int comm_update(structUdp *p) {
 	assert( p->init_recv );
 	// Process incoming messages:
 	socklen_t source_addr_len = sizeof(source_addr);
-	int len = 
-		recvfrom(p->recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
+	int len = recvfrom(
+		p->recv_fd,
+		data,
+		MAX_LENGTH,
+		0,
+		(struct sockaddr *) &source_addr,
+		&source_addr_len
+	);
 
 	while (len > 0) {
 		std::string msg((const char *) data, len);
     p->raw_recv_queue->push_back(msg);
-
-		len = recvfrom(p->recv_fd, data, MAX_LENGTH, 0, (struct sockaddr *) &source_addr, &source_addr_len);
+		len = recvfrom(
+			p->recv_fd,
+			data,
+			MAX_LENGTH,
+			0,
+			(struct sockaddr *) &source_addr,
+			&source_addr_len
+		);
 	}
 
   while (p->raw_recv_queue->size() > 0) {
@@ -356,8 +389,8 @@ static int lua_udp_send_all(lua_State *L) {
   if (lua_isstring(L, 2)) {
     data = lua_tolstring(L, 2, &size);
     // Grab the size of the data if given
-    size = luaL_optinteger(L, 3, size);
-    uuid = luaL_optstring(L, 4, NULL);
+    //size = luaL_optinteger(L, 3, size);
+    uuid = luaL_optstring(L, 3, NULL);
   } else if (lua_islightuserdata(L, 2)) {
     if ((data = (const char *)lua_touserdata(L, 2)) == NULL) {
       return luaL_error(L, "Input is NULL");
@@ -380,11 +413,16 @@ static int lua_udp_send_all(lua_State *L) {
   }
 
   size_t uuid_len = strlen(uuid);
-  if (uuid_len > UUID_LENGTH) uuid_len = UUID_LENGTH;
+  if (uuid_len > UUID_LENGTH){
+		uuid_len = UUID_LENGTH;
+	}
   
   uint8_t num_packets = size / MAX_BODY_LENGTH;
   uint16_t size_last_packets = size % MAX_BODY_LENGTH;
+	//printf("num_packets: %d\n", num_packets);
   if (size_last_packets > 0) num_packets ++;
+	//printf("num_packets*: %d\n", num_packets);
+	
   std::vector<packet> packets;
   for (int i = 0; i < num_packets; i++) {
     int packet_len = (i < (num_packets - 1))? MAX_BODY_LENGTH : size_last_packets;
@@ -393,25 +431,31 @@ static int lua_udp_send_all(lua_State *L) {
     memcpy(new_packet.uuid, uuid, uuid_len * sizeof(uint8_t));
     new_packet.order = i;
     new_packet.number = num_packets;
-    new_packet.size = packet_len;
-    new_packet.checksum = checksum_gen((const char *)&new_packet); 
+    new_packet.size0 = packet_len & 0xFF;
+		new_packet.size1 = (packet_len>>8) & 0xFF;
+    new_packet.checksum = checksum_gen((const char *)&new_packet);
     memset(new_packet.data, 0x0, MAX_BODY_LENGTH * sizeof(uint8_t));
     memcpy(new_packet.data, (uint8_t *)data, packet_len * sizeof(uint8_t));
     data += packet_len;
     packets.push_back(new_packet);
   }
   
-  useconds_t usec = 10000;
-  size_t raw_len = 0, extra_byte = 0, ret = 0;
+//  useconds_t usec = 10000;
+  size_t raw_len = 0, ret = 0;
   size_t extra_bytes = 3 * sizeof(uint8_t) + sizeof(uint16_t) +
                           (UUID_LENGTH + 1) * sizeof(uint8_t);
 
+	//fprintf(stdout, "npkt: %lu\n", packets.size());
+	
   for (int i = 0; i < packets.size(); i++) {
-    raw_len = packets[i].size * sizeof(uint8_t) + extra_bytes;
+    raw_len = (packets[i].size1<<8 & 0xFF00) | packets[i].size0 * sizeof(uint8_t) + extra_bytes;
 	  ret = send(ud->send_fd, &packets[i], raw_len, 0);
+//		printf("Sending... sum: %u | size: %d %d\n", packets[i].checksum, packets[i].size0, packets[i].size1);
 //    usleep((useconds_t) usec);
   }
 
+	lua_pushnumber(L, packets.size());
+	
   return 1;
 }
 

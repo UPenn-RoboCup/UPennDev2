@@ -12,6 +12,13 @@ print(
 string.format("LOCAL | \nsend_fd:\n\t%s\nrecv_fd\n\t%s\n",tostring(udp_sender),tostring(udp_receiver) )
 )
 
+
+local tbl = {}
+for i=1,500 do
+	tbl[i] = i
+end
+msg = table.concat(tbl,',')
+
 if two_port then
 	msg2 = 'world';
 	print('Setting up MATLAB udp...')
@@ -20,17 +27,29 @@ if two_port then
 	print(string.format("MATLAB | send_fd:\n\t%s\n", tostring(udp_sender_matlab)) )
 end
 
+local uuid = 'gopro'
 for i=1,4 do
-	local ret = udp_sender:send( msg )
-	if ret==#msg then
-		print('LOCAL |  Sent '..ret..' bytes out of '..#msg)
+	local ret = udp_sender:send_all( msg, uuid )
+	if not uuid and ret==#msg then
+		io.write('LOCAL | Sent ', ret, ' bytes of ', #msg, '\n')
+	elseif uuid then
+		io.write('LOCAL | Sent ', #msg, ' bytes in ', ret, ' packets\n')
 	else
 		print('!!! LOCAL |  Sent '..ret..' bytes out of '..#msg..' !!!')
 	end
+	local tbl_recv = {}
+	local full_pkt = ''
   local data = udp_receiver:receive()
 	while data do
-		print(string.format('\tLOCAL | Received %d bytes:',#data),data )
+		full_pkt = full_pkt..data
+		io.write('\tLOCAL | Received ', #data, ' bytes', '\n')
     data = udp_receiver:receive()
+	end
+	print(full_pkt)
+	local f = full_pkt:gmatch('%d+')
+	for n in f do table.insert(tbl_recv, tonumber(n)) end
+	for ii, v in ipairs(tbl_recv) do
+		assert(v==tbl[ii], v..'->'..tbl[ii]..'@'..ii)
 	end
 
 	if udp_sender_matlab then

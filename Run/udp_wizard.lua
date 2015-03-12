@@ -2,6 +2,7 @@
 dofile'../include.lua'
 local Config = require'Config'
 local si = require'simple_ipc'
+local util = require'util'
 
 if HOSTNAME=='alvin' or HOSTNAME=='teddy' then
 	
@@ -19,35 +20,42 @@ if HOSTNAME=='alvin' or HOSTNAME=='teddy' then
 	os.exit()
 end
 
---local f_j = io.open('/tmp/me.jpeg','w')
---local util = require'util'
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
+local function procMP(data)
+	local tbl, offset = munpack(data)
+	--print('offset', offset)
+	if offset==#data then
+		return mpack(tbl)
+	else
+		return {mpack(tbl), data:sub(offset+1)}
+	end
+	
+end
+
+local function procRaw(data)
+	--print('data',data, #data)
+	return data
+end
 
 
 local nsz = 0
 local poller, lut
 local in_channels = {}
 local out_channels = {}
+local ch_processing = {}
 local function cb(skt)
 	local ch_id = lut[skt]
 	local in_ch = in_channels[ch_id]
 	local out_ch = out_channels[ch_id]
+	
+	local fn = ch_processing[ch_id]
 	local sz = in_ch:size()
 	local data
 	while sz > 0 do
 		nsz = nsz + sz
 		data = in_ch:receive()
-		local tbl, offset = munpack(data)
-		--print('ndata', #data)
-		--print('offset',offset)
-		--util.ptable(tbl)
-		out_ch:send({mpack(tbl), data:sub(offset+1)})
-		--[[
-		f_j:write(data:sub(offset+1))
-		f_j:close()
-		os.exit()
-		--]]
+		out_ch:send(fn(data))
 		sz = in_ch:size()
 	end
 end
@@ -60,6 +68,7 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(in_channels, r)
 		local s = si.new_publisher(stream.sub)
 		table.insert(out_channels, s)
+		table.insert(ch_processing, procMP)
 	end
 end
 
@@ -69,7 +78,8 @@ do
 	r.callback = cb
 	table.insert(in_channels, r)
 	local s = si.new_publisher(Config.net.test.tcp)
-	table.insert(out_channels, r)
+	table.insert(out_channels, s)
+	table.insert(ch_processing, procRaw)
 end
 
 poller = si.wait_on_channels(in_channels)

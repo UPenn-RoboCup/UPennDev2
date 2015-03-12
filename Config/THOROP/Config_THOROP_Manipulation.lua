@@ -192,33 +192,64 @@ armfsm.teleop.armuninit={
 --Valve center: 1.09 from ground, 0.16 from waist center
 --Hose center: 1.25 from groundm 0.32 from waist center
 
-armfsm.teleop.arminit={
+
+--Drill?
+armfsm.teleop.arminit={  
   {'move0',nil,{0.20,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.40,-0.05,0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 armfsm.teleop.armuninit={
-  {'move',nil,{0.40,-0.05,0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move',nil,{0.40,-0.05, 0.0,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
 }
 
 
+--Straight hand front (door?)
+armfsm.teleop.rhand_rpy0={-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.teleop.arminit={  
+  {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
+  {'move0',nil,{0.0,-0.25,-0.15,-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
+}
+armfsm.teleop.armuninit={  
+  {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+}
+
 --[[
---For hose reinsert task
-armfsm.teleop.arminit={
-  {'move0',nil,{0.05,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
-  --{'move',nil,{0.20,-0.05,-0.15,0,0*DEG_TO_RAD, 90*DEG_TO_RAD}},  
+--Hose reinsert?
+armfsm.teleop.rhand_rpy0={0*DEG_TO_RAD,-40*DEG_TO_RAD, 0*DEG_TO_RAD}
+armfsm.teleop.arminit={  
+  {'move',nil,{0.35,-0.30,-0.05,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
+  {'move',nil,{0.35,-0.30,0.05,0,-45*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+  {'move',nil,{0.35,-0.30,0.15,0,-60*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+  {'move',nil,{0.30,-0.30,0.30,0,-85*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+  {'move',nil,{0.30,-0.30,0.30,0,-89*DEG_TO_RAD, 0*DEG_TO_RAD}},
+
+  {'move',nil,{0.30,-0.30,0.30,45*DEG_TO_RAD,-89*DEG_TO_RAD, 0}},  
+}
+armfsm.teleop.armuninit={  
+  {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
 }
 --]]
 
-armfsm.teleop.arminit={  
-  {'move',nil,{0.40,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.40,-0.25, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-}
+
+--Hose insert
+--Init tr: 0.24 -0.13 0.14 (90.0 -45.0 95.1)
+--0.40 0.15 0.30 (90.0 -45.0 95.1)
+--0.40 -0.17 0.30 
 
 
 
 
 
+
+
+
+
+--finer grain search
+--arm.plan.dt_step0 = 0.05
+--arm.plan.dt_step = 0.1
 
 
 

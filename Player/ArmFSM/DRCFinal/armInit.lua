@@ -81,12 +81,9 @@ Body.set_rgrip_command_torque({0,0,0})
 --[[
   -- Default qLArmTarget: 131 3 0  -81 87 49 -90
   -- Default qRArmTarget: 131 -3 0 -81 -87 -49 90
-  qLArmTarget=vector.new({90, 0, 0, -150, 90,   40, -90})*DEG_TO_RAD
-  qRArmTarget=vector.new({90, 0, 0, -150, -90, -40, 90})*DEG_TO_RAD
+  qLArmTarget=vector.new({90, 0, 0, -150, 90,   29, -90})*DEG_TO_RAD
+  qRArmTarget=vector.new({90, 0, 0, -150, -90, -29, 90})*DEG_TO_RAD
 
-
-  qLArmTarget=vector.new({90, 0, 0, -150, 90,   -50, -90})*DEG_TO_RAD
-  qRArmTarget=vector.new({90, 0, 0, -150, -90,   50, 90})*DEG_TO_RAD
 
 
   local trLArm = Body.get_forward_larm(qLArmTarget,0,{0,0},true)

@@ -61,10 +61,10 @@ end
 local function confirm_override() hcm.set_state_override({0,0,0,0,0,0,0}) end
 
 local function get_tool_tr()
-  local handrpy = rhand_rpy0
+  local handrpy = Config.armfsm.teleop.rhand_rpy0
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3)  
-  local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], handrpy[1],handrpy[2],tool_model[4]}
+  local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], handrpy[1],handrpy[2],handrpy[3]}
 --  print("hand transform:",util.print_transform(tool_tr))                    
   return tool_tr
 end
@@ -134,8 +134,8 @@ function state.update()
   local Lwrist2 = qLArm[7]+math.pi/2
   local Rwrist2 = qRArm[7]-math.pi/2
 
-  if math.abs(Lwrist1)>math.pi 
-    or math.abs(Lwrist1)>math.pi then
+  if math.abs(Rwrist1)>math.pi 
+    or math.abs(Rwrist1)>math.pi then
     print("wrist1 out of range!!!")
   end
 

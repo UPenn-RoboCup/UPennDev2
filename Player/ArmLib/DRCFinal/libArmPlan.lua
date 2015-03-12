@@ -28,6 +28,8 @@ local function movfunc(cdist,dist)
   local acc_factor = 1 /0.02 --accellerate 2X over 2cm
   local dcc_factor = 1 /0.03 --accellerate 2X over 3cm
   local max_vel_factor = 2 --max 3X speed
+
+  
   
 
   local vel = math.min(

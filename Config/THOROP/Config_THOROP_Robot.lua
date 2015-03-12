@@ -60,7 +60,8 @@ enable_read = true,
 local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
-	m_ids = {2,4,6,8,10,12,14,
+--ALVIN SPECIFIC - this hould be hostname-specific afterwards
+	m_ids = {2,4,6,8,10,12,--14,
 	-- lidar
 	37,
 	-- gripper
@@ -96,6 +97,21 @@ local arms_rc = {
 	m_ids = {11, 12, 13, 14},
 	enable_read = true,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if OPERATING_SYSTEM=='darwin' then
 	right_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0A'
@@ -460,6 +476,18 @@ if IS_WEBOTS then
 	})*DEG_TO_RAD
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
 
 --[[
 print("Robot config loading")

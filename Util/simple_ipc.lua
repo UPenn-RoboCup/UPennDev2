@@ -53,7 +53,9 @@ local type2prefix = {
 -- Use UDP directly
 if type(udp)=='table' and not udp.ffi then
 	local function udp_send(self, data)
-		return self.sender:send_all(data)
+		-- Double send since packet loss is a possibility
+		local ret, uuid = self.sender:send_all(data)
+		return self.sender:send_all(data, uuid)
 	end
 	local function udp_receive(self)
 		return self.receiver:receive()

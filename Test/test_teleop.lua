@@ -24,7 +24,8 @@ char_lut['1'] = function()
   body_ch:send'init'
 end
 char_lut['2'] = function()
-	arm_ch:send'ready'
+	arm_ch:send'teleop'
+	--arm_ch:send'ready'
   head_ch:send'teleop'
 end
 --[[

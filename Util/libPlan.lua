@@ -128,13 +128,13 @@ local function line_iter(self, trGoal, qArm0, res_pos, res_ang, null_options)
 end
 
 -- TODO: Optimize the feedforward ratio
-local function joint_iter(self, qGoal0, qArm0, res_q, SKIP_SANITIZE)
+local function joint_iter(self, qGoal0, qArm0, res_q, SANITIZE)
 	res_q = res_q or 3 * DEG_TO_RAD
 	local dq_max = res_q * self.ones
 	local dq_min = -1 * dq_max
 	local qGoal = clamp_vector(qGoal0, self.min_q, self.max_q)
 	local dqdt_limit = self.dqdt_limit
-	if not SKIP_SANITIZE then sanitize(qGoal, qArm0, dt, dqdt_limit) end
+	if SANITIZE then sanitize(qGoal, qArm0, dt, dqdt_limit) end
 	local qPrev
 	return function(cur_qArm, dt)
 		-- Feedback

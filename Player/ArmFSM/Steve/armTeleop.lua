@@ -29,15 +29,15 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
   
   -- See if commanded a new position
   if qLGoal~=hcm.get_teleop_larm() or qRGoal~=hcm.get_teleop_rarm() then
     -- Get the goal from hcm
     qLGoal = hcm.get_teleop_larm()
     qRGoal = hcm.get_teleop_rarm()
-    -- Make the iterators
-    lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
+    -- Make the iterators, sanitize the output
+    lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, true)
   end
   
 	-- Timing necessary
@@ -60,6 +60,7 @@ function state.update()
 	local qRArm = Body.get_rarm_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm)
 	--]]
+	--if moreR then print(moreR, qRArm, q_rWaypoint) end
 	Body.set_rarm_command_position(moreR and q_rWaypoint or qRGoal)
   
 end

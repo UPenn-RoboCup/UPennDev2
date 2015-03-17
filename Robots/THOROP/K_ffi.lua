@@ -178,10 +178,10 @@ end
 -- Mounting Transform offsets
 -- Left: Assume UCLA gripper
 local preLArm, postLArm = Ttrans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, -handOffsetY, handOffsetZ)
- * Ttrans(0.045,0,0) * TrotZ(-45*DEG_TO_RAD) -- Add translation to the center of the palm, or what?
+-- * Ttrans(0.045,0,0) * TrotZ(-45*DEG_TO_RAD) -- Add translation to the center of the palm, or what?
 -- Right: UCLA Gripper
 local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ)
-* Ttrans(0.08,0,0) * TrotZ(45*DEG_TO_RAD)
+--* Ttrans(0.08,0,0) * TrotZ(45*DEG_TO_RAD)
 -- Forward with respect to the torso
 function K.forward_larm(qLArm)
 	return preLArm * fk_arm(qLArm) * postLArm, {qLArm[3]}

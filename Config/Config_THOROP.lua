@@ -47,7 +47,6 @@ Config.enable_touchdown = false
 Config.raise_body = true
 
 
-
 ----------------------------------
 -- Application specific Configs --
 ----------------------------------
@@ -58,13 +57,15 @@ if IS_STEVE then
 		'Robot', 'Walk', 'Net',
 		'FSM_Steve', 'Arm_Steve', 'Vision_Steve' --, 'World_Steve'
 	}
-	Config.sensors.world = nil
-	--[[
+
 	if IS_WEBOTS then
+		Config.sensors.world = nil
+		--[[
 		Config.sensors.kinect = 'kinect2_wizard'
 		Config.kinect_timestep = 50
+		--]]
 	end
-	--]]
+
 else
 	--Config.testfile = 'test_balance'
   Config.testfile = 'test_testbed'

@@ -34,8 +34,6 @@ arm.handoffset.outerhook = {0.339,0,0.060} --Single hook (for door)
 --FROM EMPIRICAL DATA
 arm.handoffset.chopstick = {0.440,0,0} --Two rod (for valve)
 
-
-
 --New 3 finger gripper
 arm.handoffset.gripper3 = {0.28,-0.05,0} 
 

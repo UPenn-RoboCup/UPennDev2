@@ -178,50 +178,6 @@ function Body.disable_read(chain)
   dcm_ch:send(mpack({bus=chain,key='enable_read', val=false}))
 end
 
-
-
-----------------------
--- Webots compatibility
-if IS_WEBOTS then
-	require'wcm'
-	local WebotsBody
---  local webots = require'webots'
---now a global variable
-  webots = require'webots'
-	local ImageProc = require'ImageProc'
-
-  Body.enable_read = function(chain) end
-  Body.disable_read = function(chain) end
-  Body.exit = function() end
-
-  webots.wb_robot_init()
-  Body.timeStep = webots.wb_robot_get_basic_time_step()  
-  WebotsBody = require'WebotsBody'
-  
-	-- Check if we are using the OLD api
-  last_webots_time=webots.wb_robot_get_time()
-	
-	function Body.entry()
-		WebotsBody.entry(Body)    
-	end
-
-  function Body.update()
-    WebotsBody.update(Body)
-  end
-  
-  get_time = webots.wb_robot_get_time
-  --Force torque sensor based
-  Body.get_lfoot_touched = function() return false end
-  Body.get_rfoot_touched = function() return false end
-end
-
--- Exports for use in other functions
-Body.get_time = get_time
-Body.nJoint = nJoint
-Body.jointNames = jointNames
-Body.parts = Config.parts
-Body.Kinematics = Kinematics
-
 ----------------------
 -- Add the gripper API
 ----------------------
@@ -466,12 +422,46 @@ end
 -- Positive force value for closing
 -- Negative force value for openning
 ---------------------------------------------
+Body.move_lgrip1 = Body.set_ltrigger_command_torque
+  Body.move_lgrip2 = Body.set_lgrip_command_torque
+  Body.move_rgrip1 = Body.set_rtrigger_command_torque
+  Body.move_rgrip2 = Body.set_rgrip_command_torque
 
-
---Used only for webots
-
+----------------------
+-- Webots compatibility
 if IS_WEBOTS then
-  Body.finger_target={0,0,0,0}
+	require'wcm'
+	local WebotsBody
+--  local webots = require'webots'
+--now a global variable
+  webots = require'webots'
+	local ImageProc = require'ImageProc'
+
+  Body.enable_read = function(chain) end
+  Body.disable_read = function(chain) end
+  Body.exit = function() end
+
+  webots.wb_robot_init()
+  Body.timeStep = webots.wb_robot_get_basic_time_step()  
+  WebotsBody = require'WebotsBody'
+  
+	-- Check if we are using the OLD api
+  last_webots_time=webots.wb_robot_get_time()
+	
+	function Body.entry()
+		WebotsBody.entry(Body)    
+	end
+
+  function Body.update()
+    WebotsBody.update(Body)
+  end
+  
+  get_time = webots.wb_robot_get_time
+  --Force torque sensor based
+  Body.get_lfoot_touched = function() return false end
+  Body.get_rfoot_touched = function() return false end
+	
+	  Body.finger_target={0,0,0,0}
   Body.finger_pos={0,0,0,0}
 
   Body.control_finger= function(finger_index,force)
@@ -495,15 +485,14 @@ if IS_WEBOTS then
   Body.move_lgrip2 = function(force) Body.control_finger(2, force) end
   Body.move_rgrip1 = function(force) Body.control_finger(3, force) end
   Body.move_rgrip2 = function(force) Body.control_finger(4, force) end
-
-else
-  Body.move_lgrip1 = Body.set_ltrigger_command_torque
-  Body.move_lgrip2 = Body.set_lgrip_command_torque
-  Body.move_rgrip1 = Body.set_rtrigger_command_torque
-  Body.move_rgrip2 = Body.set_rgrip_command_torque
 end
 
-
+-- Exports for use in other functions
+Body.get_time = get_time
+Body.nJoint = nJoint
+Body.jointNames = jointNames
+Body.parts = Config.parts
+Body.Kinematics = Kinematics
 
 
 return Body

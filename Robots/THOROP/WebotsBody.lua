@@ -272,16 +272,18 @@ function WebotsBody.entry(Body)
 end
 
 
+--local depth_array = carray.float(depth.data, n_pixels)
 local depth_fl = ffi.new('float[?]', 1)
 local n_depth_fl = ffi.sizeof(depth_fl)
 local fl_sz = ffi.sizeof('float')
 function WebotsBody.update_chest_kinect(rgb, depth)
+	util.ptable(depth)
 	local n_pixels = depth.width * depth.height
 	if n_pixels~=n_depth_fl then depth_fl = ffi.new('float[?]', n_pixels) end
 	local byte_sz = n_pixels * fl_sz
 	ffi.copy(depth_fl, depth.data, byte_sz)
 	-- Convert to mm
-	for i=1,n_pixels do depth_fl[i] = 1000 * depth_fl[i] end
+	for i=0,n_pixels-1 do depth_fl[i] = 1000 * depth_fl[i] end
 	depth.data = ffi.string(depth_fl, byte_sz)
 	depth.bpp = fl_sz
 	if kw then kw.update(rgb, depth) end

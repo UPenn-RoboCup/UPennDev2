@@ -22,9 +22,6 @@ Mac
 * `brew install lua boost png libusb jpeg-turbo msgpack zeromq swig`
 * `brew link --force jpeg-turbo`
 
-Ubuntu
-* Install dependencies https://github.com/smcgill3/UPennDev/wiki/install-dependencies-for-UpennDev-in-Ubuntu
-
 Torch
 * git clone https://github.com/smcgill3/torch7.git
 * cd torch7
@@ -39,9 +36,16 @@ Making
 speaker-test -c1 -Dsysdefault:Device
 pulseaudio -k; and sudo alsa force-reload
 
+Ubuntu
+
+* Install Server
+- http://www.ubuntu.com/download/server
+- user: thor
+
 sudo chown -R thor /usr/local
 sudo usermod -a -G dialout thor
-sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev libpng12-dev libjpeg-dev
+sudo usermod -a -G video thor
+sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev libpng12-dev libjpeg-dev libtool
 
 cd ~/
 mkdir -p src
@@ -53,13 +57,14 @@ git checkout v2.1
 make
 make install
 ln -sf luajit-2.1.0-alpha /usr/local/bin/luajit
-cd ~/src
 
+cd ~/src
 wget http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2
 tar xvvf boost_1_57_0.tar.bz2
 cd /usr/local
-sudo ln -s ~/src/boost_1_57_0/boost .
+ln -s ~/src/boost_1_57_0/boost .
 
+cd ~/src
 git clone https://github.com/libusb/libusb.git
 cd libusb
 git checkout 51b10191033ca3a3819dcf46e1da2465b99497c2
@@ -67,6 +72,7 @@ git checkout 51b10191033ca3a3819dcf46e1da2465b99497c2
 make
 make install
 
+cd ~/src
 git clone https://github.com/msgpack/msgpack-c.git
 cd msgpack-c
 ./bootstrap
@@ -74,18 +80,20 @@ cd msgpack-c
 make
 make install
 
-wget http://download.zeromq.org/zeromq-4.0.5.tar.gz
-tar xvvf zeromq-4.0.5.tar.gz
-cd zeromq-4.0.5
+cd ~/src
+wget http://download.zeromq.org/zeromq-4.1.0-rc1.tar.gz
+tar xvvf zeromq-4.1.0*.tar.gz
+cd zeromq-4.1.0*
 ./autogen.sh
 ./configure
 make
 make install PREFIX=/usr/local
 
+cd ~/src
 git clone https://github.com/xianyi/OpenBLAS.git
 cd OpenBLAS
 make
-make install
+make install PREFIX=/usr/local
 
 git clone https://github.com/smcgill3/torch7.git
 cd torch7

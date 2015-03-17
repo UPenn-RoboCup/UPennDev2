@@ -1,7 +1,6 @@
 -- Global Config
 Config = {}
 
-print("Config loading")
 --IS_STEVE = true
 
 -- General parameters
@@ -84,8 +83,6 @@ end
 -- Load Paths and Configurations --
 -----------------------------------
 
-print("Config loading")
-
 -- Custom Config files
 for _,v in ipairs(exo) do
 	local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}
@@ -110,7 +107,5 @@ for _,sm in ipairs(Config.fsm.enabled) do
     package.path = table.concat(pname)
   end
 end
-
-print("Config loading done")
 
 return Config

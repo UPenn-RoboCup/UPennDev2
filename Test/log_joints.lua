@@ -44,9 +44,9 @@ while running do
 	if t - t_debug > 5 then
 		t_debug = t
 		io.write('Joint Logger: ', count,'\n')
-                logger:stop()
-                logger = libLog.new('joint', true)
-                io.write('Open new log!\n')
+		logger:stop()
+		logger = libLog.new('joint', true)
+		io.write('Open new log!\n')
 	end
 
 

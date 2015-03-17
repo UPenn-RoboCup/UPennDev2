@@ -32,7 +32,7 @@ shared.game.tplaying = vector.zeros(1)
 -- Use the Config'd FSMs
 shared.fsm = {}
 if Config and Config.fsm then
-  for _,sm in ipairs(Config.fsm.enabled) do
+  for sm, en in pairs(Config.fsm.enabled) do
     shared.fsm[sm] = ''
   end
 end

@@ -36,10 +36,10 @@ fsm_chs = {}
 local fsm_send = function(t, evt)
   rpc_req:send(mp.pack({fsm=t.fsm,evt=evt}))
 end
-for _,sm in ipairs(Config.fsm.enabled) do
+for sm, en in pairs(Config.fsm.enabled) do
   local fsm_name = sm..'FSM'
   table.insert(fsm_chs, fsm_name)
-  _G[sm:lower()..'_ch'] = {fsm=fsm_name, send=fsm_send}
+  _G[sm:lower()..'_ch'] = en and {fsm=fsm_name, send=fsm_send} or si.new_dummy()
 end
 
 -- Shared memory

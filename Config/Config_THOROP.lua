@@ -27,8 +27,6 @@ if IS_WEBOTS then
   -- Default Webots sensors
   Config.sensors = {
 		ft = true,
-
-
 		--feedback = 'feedback_wizard',
     --head_camera = 'camera_wizard',
     --chest_lidar = 'mesh_wizard',
@@ -99,15 +97,17 @@ for i,sm in pairs(Config.fsm.libraries) do
 end
 
 -- Finite state machine paths
-for _,sm in ipairs(Config.fsm.enabled) do
-  local selected = Config.fsm.select[sm]
-  if selected then
-    local pname = {HOME, '/Player/', sm, 'FSM/', selected, '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  else --default fsm
-    local pname = {HOME, '/Player/', sm, 'FSM/', '?.lua;', package.path}
-    package.path = table.concat(pname)
-  end
+for sm, en in pairs(Config.fsm.enabled) do
+	if en then
+		local selected = Config.fsm.select[sm]
+		if selected then
+			local pname = {HOME, '/Player/', sm, 'FSM/', selected, '/?.lua;', package.path}
+			package.path = table.concat(pname)
+		else --default fsm
+			local pname = {HOME, '/Player/', sm, 'FSM/', '?.lua;', package.path}
+			package.path = table.concat(pname)
+		end
+	end
 end
 
 return Config

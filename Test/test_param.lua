@@ -22,7 +22,7 @@ require'gcm'
 -- FSM communicationg
 local fsm_chs = {}
 
-for _,sm in ipairs(Config.fsm.enabled) do
+for sm,en in pairs(Config.fsm.enabled) do
   local fsm_name = sm..'FSM'
   table.insert(fsm_chs, fsm_name)
   _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")

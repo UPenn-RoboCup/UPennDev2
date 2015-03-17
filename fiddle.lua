@@ -27,9 +27,9 @@ end
 
 -- FSM communicationg
 fsm_chs = {}
-for _,sm in ipairs(Config.fsm.enabled) do
+for sm, en in pairs(Config.fsm.enabled) do
 	local fsm_name = sm..'FSM'
-	local ch = si.new_publisher(fsm_name.."!")
+	local ch = en and si.new_publisher(fsm_name.."!") or si.new_dummy()
 	_G[sm:lower()..'_ch'] = ch
 	fsm_chs[fsm_name] = ch
 end

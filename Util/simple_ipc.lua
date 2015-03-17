@@ -339,18 +339,24 @@ end
 -- Callbacks set in the code
 function simple_ipc.wait_on_channels(channels)
 	assert(type(channels)=='table', 'Bad wait channels!')
-	local n_ch = #channels
+	-- Remove dummy functions
+	local n_ch = 0
+	for _, ch in ipairs(channels) do
+		if not ch.is_dummy then n_ch = n_ch + 1 end
+	end	
 	local poll_obj = poller.new(n_ch)
 	-- Add lookup table for keeping track of duplicates
 	local lut, s = {}
 	for i, ch in ipairs(channels) do
-    -- UDP case is FD as a number
-		s = ch.socket or ch.fd
-		assert(s, 'No socket for poller!')
-		assert(not lut[s], 'Duplicate poller channel!')
-		assert(ch.callback, 'No callback for poller!')
-		poll_obj:add(s, zmq.POLLIN, ch.callback)
-		lut[s] = i
+		if not ch.is_dummy then
+			-- UDP case is FD as a number
+			s = ch.socket or ch.fd
+			assert(s, 'No socket for poller!')
+			assert(not lut[s], 'Duplicate poller channel!')
+			assert(ch.callback, 'No callback for poller!')
+			poll_obj:add(s, zmq.POLLIN, ch.callback)
+			lut[s] = i
+		end
 	end
 	poll_obj.lut = lut
 	poll_obj.n = n_ch
@@ -360,6 +366,12 @@ end
 
 function simple_ipc.import_context(existing_ctx)
 	CTX = zmq.init_ctx(existing_ctx)
+end
+
+local null_func = function() end
+
+function simple_ipc.new_dummy()
+	return {send=null_func, receive=null_func, is_dummy=true}
 end
 
 return simple_ipc

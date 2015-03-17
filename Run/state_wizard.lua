@@ -29,18 +29,20 @@ local state_ch = require'simple_ipc'.new_subscriber('state!')
 -- Load the FSMs and attach event handler
 local state_machines = {}
 local function load_fsm ()
-  for _,sm in ipairs(Config.fsm.enabled) do
-    local my_fsm = require(sm..'FSM')
-		assert(type(my_fsm)=='table', "Bad FSM: "..sm)
-    local set_gcm_fsm = gcm and gcm['set_fsm_'..sm]
-    if set_gcm_fsm then
-      my_fsm.sm:set_state_debug_handle(function(cur_state_name, event)
-        set_gcm_fsm(cur_state_name)
-      end)
-      set_gcm_fsm('UNKNOWN')
-    end
-    state_machines[sm] = my_fsm
-    print('State | Loaded', sm)
+  for sm, en in pairs(Config.fsm.enabled) do
+		if en then
+			local my_fsm = require(sm..'FSM')
+			assert(type(my_fsm)=='table', "Bad FSM: "..sm)
+			local set_gcm_fsm = gcm and gcm['set_fsm_'..sm]
+			if set_gcm_fsm then
+				my_fsm.sm:set_state_debug_handle(function(cur_state_name, event)
+					set_gcm_fsm(cur_state_name)
+				end)
+				set_gcm_fsm('UNKNOWN')
+			end
+			state_machines[sm] = my_fsm
+			print('State | Loaded', sm)
+		end
   end
 end
 

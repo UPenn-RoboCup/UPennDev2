@@ -12,11 +12,12 @@ fsm.update_rate = 100
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
-  'Body',
-  'Arm',
-  'Motion',
-  'Head',
-  'Lidar'
+  Arm = true,
+  Body = true,
+  Head = true,
+  Motion = true,
+  Lidar = true,
+	Gripper = false
 }
 
 --SJ: now we can have multiple FSM options

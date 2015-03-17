@@ -19,7 +19,7 @@ All code sources associated with this project are:
 
 * UPenn E-mail:     upennalizers@gmail.com
 * UPenn Website:    https://fling.seas.upenn.edu/~robocup/wiki/index.php
-  
+
 # Mac Setup
 ```
 brew install lua boost png libusb jpeg-turbo msgpack zeromq swig
@@ -39,7 +39,9 @@ cd src
 sudo chown -R thor /usr/local
 sudo usermod -a -G dialout thor
 sudo usermod -a -G video thor
-sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev libpng12-dev libjpeg-dev libtool libncurses5-dev
+sudo apt-get install git htop build-essential automake gfortran pkg-config \
+libtool libudev-dev zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev \
+libpng12-dev libjpeg-dev libncurses5-dev uvcdynctrl
 ```
 
 ### Speaker

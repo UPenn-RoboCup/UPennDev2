@@ -3,6 +3,11 @@ state._NAME = ...
 local Body = require'Body'
 local movearm = require'movearm'
 
+--[[
+SJ's arm compensation:
+calculate_com_pos -> get_torso_compensation -> get_next_movement -> plan_unified -> plan_arm_sequence -> armTeleop
+--]]
+
 local t_entry, t_update, t_finish
 local timeout = 10.0
 local lPathIter, rPathIter

@@ -178,3 +178,20 @@ cd UPennDev
 make -j8
 make THOROP
 ```
+
+## Configurations
+```
+cd ~/
+ln -s UPennDev/Scripts/vimrc .vimrc
+```
+sudo nano /usr/share/nano/lua.nanorc
+```
+Get from here:
+https://github.com/scopatz/nanorc/raw/master/lua.nanorc
+```
+sudo nano /etc/nanorc
+```
+Add:
+```
+include "/usr/share/nano/lua.nanorc"
+```

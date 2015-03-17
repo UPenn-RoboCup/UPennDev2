@@ -114,8 +114,8 @@ function state.update()
   local ret
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
 
-print(unpak(qLArm))
-print(unpak(qRArm))
+--print('qL init',unpack(qLArm))
+--print('qR init',unpack(qRArm))
 
 
 
@@ -182,8 +182,7 @@ print(unpak(qRArm))
       stage = stage+1
       print("Total joint reading err:",err*180/math.pi)
     else
-
-     print(ret,stage,err)
+     --print('armInit',ret,stage,err)
     end
     last_error = err
   end    

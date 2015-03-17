@@ -1,22 +1,16 @@
+#VRML_SIM V6.0 utf8
 PROTO GRIPPER_3finger2 [
-  field SFVec3f translation 0 0 0
-  field SFRotation rotation  0 1 0 0
-	field SFString trigger_name "trigger"
-	field SFString grip_name "grip"
-  field SFString extra_name "extra"
-]
-
-
-
-
 #3 finger gripper
 #stump position: 13.5cm front
 #gripper position:28cm front, 5cm to side 
 #gripper palm relative pos: 14.5cm front
 #Gripper with different direction
-
-
-
+  field SFVec3f translation 0 0 0
+#  field SFRotation rotation  0 1 0 0
+	field SFString trigger_name "trigger"
+	field SFString grip_name "grip"
+  field SFString extra_name "extra"
+]
 {
 			Solid {
 					translation IS translation

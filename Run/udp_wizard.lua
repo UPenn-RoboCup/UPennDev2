@@ -81,6 +81,14 @@ do
 	table.insert(ch_processing, procRaw)
 end
 
+local function shutdown()
+  poller:stop()
+end
+
+local signal = require'signal'.signal
+signal("SIGINT", shutdown)
+signal("SIGTERM", shutdown)
+
 poller = si.wait_on_channels(in_channels)
 lut = poller.lut
 poller:start()

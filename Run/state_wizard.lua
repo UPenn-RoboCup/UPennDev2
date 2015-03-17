@@ -24,9 +24,6 @@ if not IS_WEBOTS then
   lW.entry()
 end
 
-
-
-
 local state_ch = require'simple_ipc'.new_subscriber('state!')
 
 -- Load the FSMs and attach event handler

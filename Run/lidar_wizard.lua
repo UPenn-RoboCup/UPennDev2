@@ -4,7 +4,8 @@
 -- (c) Stephen McGill 2013, 2014
 dofile'../include.lua'
 
-local unix = unix or require'unix'
+local ENABLE_LOG = true
+
 local libHokuyo  = require'libHokuyo'
 local signal = require'signal'.signal
 local get_time = unix.time
@@ -14,17 +15,37 @@ local si = require'simple_ipc'
 local Body = require'Body'
 require'wcm'
 
+
+local libLog, logger, nlog
+if ENABLE_LOG then
+	libLog = require'libLog'
+	logger = libLog.new('lidar', true)
+	nlog = 0
+end
+
 local cb = function(self, data)
-	self.ch:send({
-	mpack({
+	local metadata = 
+	{
 		t = get_time(),
 		n = self.n,
 		res = self.res,
 		angle = Body.get_lidar_position(),
     rpy = Body.get_rpy(), 
-    pose = wcm.get_robot_odometry()
-	}),
-	data})
+    pose = wcm.get_robot_odometry(),
+		rsz = #data,
+	}
+	self.ch:send({mpack(metadata),data})
+
+	if ENABLE_LOG then
+		logger:record(metadata, data)
+		nlog = nlog + 1
+		if nlog % 400 == 0 then
+			logger:stop()
+			logger = libLog.new('lidar', true)
+			print('Open new log!')
+		end
+	end
+
 end
 
 -- Setup the Hokuyos array
@@ -39,6 +60,7 @@ if HOSTNAME=='teddy' then
 	h0 = libHokuyo.new_hokuyo(10)
 elseif HOSTNAME == 'alvin' or true then
 	h0 = libHokuyo.new_hokuyo(11)
+	--h0 = libHokuyo.new_hokuyo('/dev/ttyACM1')
 else
 	print('WRONG HOST NAME !!')
 end
@@ -56,6 +78,9 @@ local function shutdown()
     h:close()
     print('Closed Hokuyo',i)
   end
+	if ENABLE_LOG then
+		logger:stop()
+	end
   os.exit()
 end
 signal("SIGINT", shutdown)

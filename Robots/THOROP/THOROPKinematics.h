@@ -6,6 +6,9 @@
 #include <math.h>
 #include <vector>
 
+enum {LEG_LEFT = 0, LEG_RIGHT = 1};
+enum {ARM_LEFT = 0, ARM_RIGHT = 1};
+
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
@@ -38,8 +41,11 @@ const double tibiaLength = 0.30;
 const double kneeOffsetX = 0.03;
 
 const double footHeight = 0.118; // Webots value
+
+//SJ: Measured from NEW (smaller) feet
 const double footToeX = 0.130; //from ankle to toe
-const double footHeelX = 0.130; //from ankle to heel
+const double footHeelX = 0.110; //from ankle to heel
+
 
 //=================================================================
 
@@ -116,6 +122,7 @@ const double Mass[22] = {
 	8.8, 10.131}; // Mass of Each Body Part
 */
 
+
 const double Mass[22]={
 	mUpperLeg,mLowerLeg,mFoot,0,0,0,
 	mUpperLeg,mLowerLeg,mFoot,0,0,0,
@@ -125,6 +132,135 @@ const double Mass[22]={
 	mPelvis
 };
 
+
+const double g = 9.81;
+
+const double MassBody[2]={
+	9.21, //torso
+	8.0,  //pelvis	
+
+
+//Mk2 values
+//	9.782 //torso
+//  0.657 //Waist middle section
+//  4.465 //Pelvis	
+};
+const double bodyCom[2][3]={
+	{-0.0208,0,0.1557},	//after shoulder pitch
+	{-0.0264,0,-0.1208},//after shoulder roll	
+};
+
+//Based on webots mass 
+const double MassArm[7]={
+	0.1,
+	2.89,
+	0.13, 
+	0.81, 
+	0.97, 
+	0.1,	 
+	0.1,	//gripper mass... TBD
+//0,0,0,
+
+//MK2 values
+//	1.04, 0.752, 2.021, 1.161, 0.37, 0.102, 1.44	
+};
+
+const double InertiaArm[7][6]={
+	{0.0000625, 0.0000625, 0.0000625, 0,0,0},
+	{0.00180625, 0.00180625, 0.00180625, 0,0,0},
+	{0.00008125, 0.00008125, 0.00008125, 0,0,0},
+	{0.00050625,0.00050625, 0.00050625, 0,0,0},
+	{0.00060625,0.00060625, 0.00060625, 0,0,0},
+	{0.0000625,0.0000625,0.0000625, 0,0,0},
+	{0.0000625,0.0000625,0.0000625, 0,0,0}
+};
+
+
+
+const double armLink[7][3]={
+	{0,0.234,0.165}, //waist-shoulder roll 
+	{0,0,0}, //shoulder pitch-shoulder roll
+	{0,0,0}, //shouder roll-shoulder yaw
+	{0.246,0,0.030},//shoulder yaw-elbow 
+	{0.250,0,-0.030},//elbow to wrist yaw 1
+	{0,0,0},//wrist yaw1 to wrist roll
+	{0,0,0}//wrist roll to wrist yaw2
+};
+const double rarmLink0[3] = {0,-0.234,0.165};
+
+//Com position from joint center
+const double armCom[7][3]={
+	{0,0,0},	//after shoulder pitch
+	{0.1027,0,-0.008},//after shoulder roll
+	{0.246,0,0.030}, //after shoulder yaw	
+	{0.0464,0,0},//after elbow
+//	{-0.2036,0,0},//after elbow	
+	{-0.040,0,0}, //after wrist yaw 1
+	{0,0,0}, //after wrist roll
+	{0.095,0,0} //after wrist yaw 2
+};
+
+
+const double MassLeg[6]={
+	0.165, 1.122, 3.432, 2.464, 0.946, 1.133
+
+//MK2 values
+//	1.455, 1.022, 3.394, 4.745, 1.022, 1.32
+};
+
+
+
+
+const double legLink[7][3]={
+	{0,0.072,-0.282}, //waist-hipyaw
+	{0,0,0}, //hip yaw-roll
+	{0,0,0}, //hip roll-pitch
+	{-0.030,0,-0.300}, //hip pitch-knee
+	{0.030,0,-0.300}, //knee-ankle pitch
+	{0,0,0}, //ankle pitch-ankle roll
+	{0,0,-0.118}, //ankle roll - foot bottom
+};
+
+
+const double llegLink0[3] = {0,0.072,-0.282};
+const double rlegLink0[3] = {0,-0.072,-0.282};
+
+const double legCom[12][3]={
+	//left
+	{0,0,0},	//after hip yaw
+	{0,0,0},	//after hip roll
+	{-0.029, 0.014,-0.130},	//after hip pitch (upper leg)
+	{0.031,  0.019,-0.119},	//after knee (lower leg)
+	{0,0,0}, //after ankle pitch
+	{0,0,-0.031}, //after ankle pitch	
+
+	//right
+	{0,0,0},	//after hip yaw
+	{0,0,0},	//after hip roll
+	{-0.029, -0.014,-0.130},	//after hip pitch (upper leg)
+	{0.031,  -0.019,-0.119},	//after knee (lower leg)
+	{0,0,0}, //after ankle pitch
+	{0,0,-0.031}, //after ankle pitch	
+};
+
+
+const double InertiaLeg[12][6]={
+	//left
+	{0.000103125,0.000103125,0.000103125,0,0,0},
+	{0.00070125,0.00070125,0.00070125,0,0,0},
+	{0.002145,0.002145,0.002145,0,0,0},
+	{0.00154,0.00154,0.00154,0,0,0},
+	{0.00059125,0.00059125,0.00059125,0,0,0},
+	{0.000708125,0.000708125,0.000708125,0,0,0},
+
+	//right
+	{0.000103125,0.000103125,0.000103125,0,0,0},
+	{0.00070125,0.00070125,0.00070125,0,0,0},
+	{0.002145,0.002145,0.002145,0,0,0},
+	{0.00154,0.00154,0.00154,0,0,0},
+	{0.00059125,0.00059125,0.00059125,0,0,0},
+	{0.000708125,0.000708125,0.000708125,0,0,0}
+};
 
 const double comOffsetMm[22][3]={//in mm
 	//RLEG
@@ -162,15 +298,24 @@ const double servoOffset[] = {
   0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 };
 
-//void printTransform(Transform tr);
-//void printVector(std::vector<double> v);
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+// COM and ZMP generation functions
+///////////////////////////////////////////////////////////////////////////////////////
 
 Transform THOROP_kinematics_forward_head(const double *q);
-//Transform THOROP_kinematics_forward_l_arm(const double *q);
-//Transform THOROP_kinematics_forward_r_arm(const double *q);
 Transform THOROP_kinematics_forward_l_leg(const double *q);
 Transform THOROP_kinematics_forward_r_leg(const double *q);
-std::vector<double> THOROP_kinematics_forward_joints(const double *r);
+std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg, double aShiftX, double aShiftY);
+std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg, double aShiftX, double aShiftY);
+
+///////////////////////////////////////////////////////////////////////////////////////
+// Arm FK / IK
+///////////////////////////////////////////////////////////////////////////////////////
+
 
 
 Transform THOROP_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const double *qWaist,
@@ -185,53 +330,65 @@ std::vector<double> THOROP_kinematics_inverse_l_arm_7(
 	const Transform trArm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist,
 	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int flip_shoulderroll);
 
+std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<double>& qOrg, double shoulderYaw, bool flip_shoulderroll);
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+// Wrist FK / IK
+///////////////////////////////////////////////////////////////////////////////////////
+
+//std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, std::vector<double>& qOrg, double shoulderYaw);
+
+std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist); 
+
 Transform THOROP_kinematics_forward_l_wrist(const double *q, double bodyPitch, const double *qWaist);
 Transform THOROP_kinematics_forward_r_wrist(const double *q, double bodyPitch, const double *qWaist);
 
 std::vector<double> THOROP_kinematics_inverse_r_wrist(const Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist);
 std::vector<double> THOROP_kinematics_inverse_l_wrist(const Transform trWrist, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist); 
-
 std::vector<double> THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist); 
 
 
 
-std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg);
-std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg);
-std::vector<double> THOROP_kinematics_inverse_joints(const double *q);
-
-std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch, double mLHand, double mRHand); 
-
+///////////////////////////////////////////////////////////////////////////////////////
+// COM and ZMP generation
+///////////////////////////////////////////////////////////////////////////////////////
 
 std::vector<double> THOROP_kinematics_calculate_com_positions(
     const double *qWaist,  const double *qLArm,   const double *qRArm,
     const double *qLLeg,   const double *qRLeg,   
-    double mLHand, double mRHand, double bodyPitch);
+    double mLHand, double mRHand, double bodyPitch,
+    int use_lleg, int use_rleg
+    );
 
-std::vector<double> THOROP_kinematics_calculate_com_positions_global(
-    const double *qWaist,  const double *qLArm,   const double *qRArm,
-    const double *qLLeg,   const double *qRLeg,   
-    const double *uSupport, int supportLeg);
+void THOROP_kinematics_calculate_arm_com(const double* rpyangle,  
+   const double *qArm, int index,double *comxyz, double*comrpy);  
 
+std::vector<double> THOROP_kinematics_calculate_zmp(const double *com0, const double *com1, 
+		const double *com2,double dt0, double dt1);
 
-
-std::vector<double> THOROP_kinematics_com_upperbody_2(
-	const double *com_pos_current, double mLHand, double mRHand);
-
-std::vector<double> THOROP_kinematics_calculate_zmp(
-	const double *com0, const double *com1, const double *com2,
-	double dt0, double dt1
-	);
-
-std::vector<double> THOROP_kinematics_calculate_foot_lift(
-	Transform trLeg, int leg);
-
-std::vector<double> THOROP_kinematics_inverse_leg_tilt(
-	const Transform trLeg, double footTilt, int leg);
+int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm);
+int THOROP_kinematics_check_collision_single(const double *qArm,int is_left);
 
 
-double THOROP_kinematics_calculate_knee_height(const double *q);
+void THOROP_kinematics_calculate_arm_torque(
+	double* stall_torque,double* b_matrx,
+	const double *rpyangle,	const double *qArm);
 
-std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<double>& qOrg, double shoulderYaw, bool flip_shoulderroll);
-std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, std::vector<double>& qOrg, double shoulderYaw);
+
+void THOROP_kinematics_calculate_arm_torque_adv(
+  double* stall_torque,double* acc_torque,double* acc_torque2,const double *rpyangle,
+  const double *qArm,const double *qArmVel,const double *qArmAcc,double dq);
+
+void THOROP_kinematics_calculate_leg_torque(
+	double* stall_torque,double* b_matrx,
+	const double *rpyangle,	const double *qLeg,
+	int isLeft, double grf, const double *support);
+
+void THOROP_kinematics_calculate_support_leg_torque(
+  double* stall_torque, double* b_matrx,
+  const double *rpyangle,const double *qLeg,
+  int isLeft, double grf, const double *comUpperBody);
+
 
 #endif

@@ -7,8 +7,8 @@ local t_entry, t_update, t_finish
 local timeout = 10.0
 
 local T = require'Transform'
-local trLGoal = T.transform6D{0.205487, 0.233293, -0.0680029, 0, 0, -90*DEG_TO_RAD}
-local trRGoal = T.transform6D({0.20, -0.25, -0.12, 0, 0, 35*DEG_TO_RAD})
+local trLGoal = T.transform6D{0.2, 0.25, -0.05, 0, 0, -90*DEG_TO_RAD}
+local trRGoal = T.transform6D({0.2, -0.25, -0.12, 0, 0, 90*DEG_TO_RAD})
 
 local lPathIter, rPathIter
 
@@ -17,7 +17,8 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-	lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {-20*DEG_TO_RAD}, {10*DEG_TO_RAD})
+	--lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {-20*DEG_TO_RAD}, {10*DEG_TO_RAD})
+  lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {-25*DEG_TO_RAD}, {25*DEG_TO_RAD})
 end
 
 function state.update()
@@ -37,7 +38,7 @@ function state.update()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]
 	Body.set_larm_command_position(q_lWaypoint)
-	
+
 	----[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
@@ -53,7 +54,7 @@ function state.update()
 	end
 end
 
-function state.exit()  
+function state.exit()
   print(state._NAME..' Exit' )
 end
 

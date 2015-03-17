@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = false
+local ENABLE_LOG = true
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014
@@ -18,8 +18,16 @@ else
 	operator = Config.net.operator.wired
 end
 print(Config.net.streams['kinect2_depth'].tcp, operator)
-local depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
-local color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
+local depth_net_ch, color_net_ch
+local depth_udp_ch, color_udp_ch
+if Config.IS_COMPETING then
+	depth_udp_ch = require'simple_ipc'.new_sender(operator, Config.net.streams['kinect2_depth'].udp)
+	color_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_color'].udp, operator)
+else
+	depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
+	color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
+end
+
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
 print(depth_net_ch.name)
@@ -65,61 +73,82 @@ local function update(rgb, depth)
 		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
 	end
 	-- Send debug
-  if t - t_send > 1 then
-    t_send = t
-    local rpy = Body.get_rpy()
-    local bh = mcm.get_walk_bodyHeight()
-    local qHead = Body.get_head_position()
-    local tr = flatten(get_transform(qHead, rpy, bh))
-		local odom = mcm.get_status_odometry()
-		local vel = mcm.get_walk_vel()
-	  -- Form color
-    rgb.t = t
-    rgb.c = 'jpeg'
-    rgb.id = 'k2_rgb'
-    rgb.head_angles = qHead
-    rgb.body_height = bh
-    rgb.imu_rpy = rpy
-    rgb.tr = tr
-		rgb.odom = odom
-		rgb.vel = vel
-    local j_rgb
-    if IS_WEBOTS then
-      j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
-    else
-      j_rgb = rgb.data
-    end
-    rgb.data = nil
-    rgb.sz = #j_rgb
-    rgb.rsz = #j_rgb
-    local m_rgb = mpack(rgb)
+	if Config.IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
+  if t - t_send < 0.1 then return t end
 
-	  -- Form depth (TODO: zlib)
-    depth.t = t
-    depth.c = 'raw'
-    depth.id = 'k2_depth'
-    depth.head_angles = qHead
-    depth.body_height = bh
-    depth.imu_rpy = rpy
-    depth.tr = tr
-		depth.odom = odom
-		depth.vel = vel
-	  local ranges = depth.data
-	  depth.data = nil
-	  depth.sz = #ranges
-    depth.rsz = #ranges
-    local m_depth = mpack(depth)
-    -- Log
-    if ENABLE_LOG then
-      log_rgb:record(m_rgb, j_rgb)
-      log_depth:record(m_depth, ranges)
-    end
-    -- Send
-		color_net_ch:send({m_rgb, j_rgb})
-    depth_net_ch:send({m_depth, ranges})
-		--color_ch:send({m_rgb, j_rgb})
-    --depth_ch:send({m_depth, ranges})
+  t_send = t
+	print('Kinect2 | t_send', t_send)
+  local rpy = Body.get_rpy()
+  local bh = mcm.get_walk_bodyHeight()
+  local qHead = Body.get_head_position()
+  local tr = flatten(get_transform(qHead, rpy, bh))
+	local odom = mcm.get_status_odometry()
+	local vel = mcm.get_walk_vel()
+  -- Form color
+  rgb.t = t
+  rgb.c = 'jpeg'
+  rgb.id = 'k2_rgb'
+  rgb.head_angles = qHead
+  rgb.body_height = bh
+  rgb.imu_rpy = rpy
+  rgb.tr = tr
+	rgb.odom = odom
+	rgb.vel = vel
+  local j_rgb
+  if IS_WEBOTS then
+    j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+  else
+    j_rgb = rgb.data
   end
+  rgb.data = nil
+  rgb.sz = #j_rgb
+  rgb.rsz = #j_rgb
+  local m_rgb = mpack(rgb)
+
+  -- Form depth (TODO: zlib)
+  depth.t = t
+  depth.c = 'raw'
+  depth.id = 'k2_depth'
+  depth.head_angles = qHead
+  depth.body_height = bh
+  depth.imu_rpy = rpy
+  depth.tr = tr
+	depth.odom = odom
+	depth.vel = vel
+  local ranges = depth.data
+  depth.data = nil
+  depth.sz = #ranges
+  depth.rsz = #ranges
+  local m_depth = mpack(depth)
+	
+		-- Range compression method
+	--[[
+	local ddata = depth:data()
+	ffi.copy(ddata, payload_depth)
+	local bdata = depth_byte:data()
+	for ii=0,npx-1 do
+		bdata[ii] = min(max((ddata[ii] - near)/(far-near), 0), 255)
+	end
+	local c_depth = p_compress(bdata)
+	--]]
+	
+  -- Send
+	if Config.IS_COMPETING then
+		color_udp_ch:send(m_rgb..j_rgb)
+		depth_udp_ch:send(m_depth..ranges)
+	end
+	color_net_ch:send({m_rgb, j_rgb})
+  depth_net_ch:send({m_depth, ranges})
+	color_ch:send({m_rgb, j_rgb})
+  depth_ch:send({m_depth, ranges})
+
+  -- Log at 2Hz
+	if t - t_send < 0.25 then return t end
+  if ENABLE_LOG then
+    log_rgb:record(m_rgb, j_rgb)
+    log_depth:record(m_depth, ranges)
+  end
+
   return t
 end
 

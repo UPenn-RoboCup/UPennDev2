@@ -5,7 +5,6 @@
 local libHokuyo = {}
 local HokuyoPacket = require'HokuyoPacket'
 local stty = require'stty'
-local unix = require'unix'
 local unix = unix or require'unix'
 local tcp = require'tcp'
 
@@ -88,15 +87,15 @@ local data_encoding = {
 local create_scan_request = 
 function(scan_start, scan_end, scan_skip, encoding, scan_type, num_scans)
 
-	local enc = assert(data_encoding[encoding], "BAD ENCODING")
+	local enc = assert(data_encoding[encoding], "BAD ENCODING: "..tostring(encoding))
 --	assert(num_scans~=0, 'Invalid scan request')
 
-	return string.format(
+	local request = string.format(
 		"%s%04d%04d%02x0%02d\n",
 		enc,
 		scan_start, scan_end, scan_skip, num_scans
 	)
-
+	return request
 end
 
 ---------------------------
@@ -277,10 +276,10 @@ function(ttyname, serial_number, ttybaud, char_encoding )
 	local fd = unix.open( ttyname, unix.O_RDWR + unix.O_NOCTTY)
 	-- Check if opened correctly
 	if fd<3 then
-    print(string.format("Open: %s, (%d)\n", name, fd))
+    print(string.format("Open: %s, (%d)\n", ttyname, fd))
 		return nil
 	end
-  
+ 
   -----------
   -- Serial port settings
 	stty.raw(fd)
@@ -310,8 +309,8 @@ function(ttyname, serial_number, ttybaud, char_encoding )
   obj.get_sensor_params = get_sensor_params
   obj.get_sensor_info = get_sensor_info
   obj.callback = nil
-	obj.char_encoding = char_encoding
-	if char_encoding==2 then
+	obj.char_encoding = char_encoding or 3
+	if obj.char_encoding==2 then
 		-- URG-04LX
 		obj.scan_request = create_scan_request(44, 725, 1, obj.char_encoding, 0, 0)
 		obj.parse = HokuyoPacket.parse2
@@ -330,7 +329,7 @@ function(ttyname, serial_number, ttybaud, char_encoding )
 
 	-----------
 	-- Setup the Hokuyo properly
-  if not obj:stream_off() then
+	if not obj:stream_off() then
     obj:close()
     return nil
   end

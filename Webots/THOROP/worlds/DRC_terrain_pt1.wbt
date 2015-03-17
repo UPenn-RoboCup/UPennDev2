@@ -1,0 +1,57 @@
+#VRML_SIM V6.0 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "handletest"
+  basicTimeStep 8
+  FPS 10
+  contactProperties [
+    ContactProperties {
+      material1 "feet"
+      material2 "floor"
+      coulombFriction 0.5
+      forceDependentSlip 0.0001
+    }
+  ]
+}
+Viewpoint {
+  orientation -0.0828432 -0.988846 -0.123779 2.0257
+  position -8.158 3.93252 -2.27488
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1.6
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF FLOOR MetricFloor {
+  color 0.95 0.95 0.95
+}
+THOROP_UPENN {
+  translation 0 1.17 -0.03
+  rotation 1 0 0 0
+  controller "thorop"
+  controllerArgs "0 32"
+  lidarRays 360
+  footContactMaterial "feet"
+  max_knee_torque 90
+}
+CinderStair {
+  translation 0 0 1.8
+}
+CinderStair {
+  translation -0.4 0 2.2
+}
+CinderStair {
+  translation -0.8 0 2.6
+}

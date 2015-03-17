@@ -227,7 +227,7 @@ function state.update()
   elseif stage=="hookrelease" then --Move the arm forward using IK now     
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
-        print("trRArm:",arm_planner.print_transform(trRArm))        
+        print("trRArm:",util.print_transform(trRArm))        
         arm_planner:set_shoulder_yaw_target(qLArm0[3],nil)
         local arm_seq = {
             {'move',trLArm1,Config.armfsm.dooropenleft.rhand_push[2]},

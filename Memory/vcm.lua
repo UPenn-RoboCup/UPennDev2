@@ -7,6 +7,11 @@ local vector = require'vector'
 local shared = {}
 local shsize = {}
 
+-- DRC network
+shared.network = {}
+-- Time of last observed good conditions
+shared.network.tgood = vector.zeros(1)
+
 -- RoboCup Ball
 shared.ball = {}
 shared.ball.centroid = vector.zeros(2)
@@ -37,16 +42,15 @@ shared.us.distance  = vector.zeros(2)
 -- Mesh formation
 shared.mesh = {}
 -- Sweep: Field of View (radians), time to complete sweep (seconds)
-shared.mesh.sweep = {80 * DEG_TO_RAD, 2}
+shared.mesh.sweep = {60 * DEG_TO_RAD, 3}
 -- fov: In a single scan, which ranges to use (field of view)
 -- Like pitch: positive is down, negative is up. 90 deg is straight down
 shared.mesh.fov = {0, math.pi/2}
 -- Net: {request, destination, compression}
 -- request: 1 means mesh needs to be sent to destination
--- destination: 0 is udp, 1 is tcp PUB
 -- compression: 0 is JPEG, 1 is PNG, 2 is RAW
 -- is_streaming: 1 is LidarFSM setting mesh_net on each sweep
-shared.mesh.net = {0, 0, 1, 1}
+shared.mesh.net = {0, 1, 1}
 -- Net: {direction}
 -- direction (set by LidarFSM): -1 left, 0 unknown, 1 right
 shared.mesh.state = {0}

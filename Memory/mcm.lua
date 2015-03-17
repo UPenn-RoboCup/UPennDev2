@@ -42,6 +42,10 @@ shared.stance.singlesupport = vector.zeros(1) --we are doing quasi-static motion
 
 shared.stance.last_support = vector.zeros(3) --We keep last support point here
 
+shared.stance.COMoffset = vector.zeros(3)--relative COM position from waist joint
+
+
+
 
 
 --Used for drilling task
@@ -67,11 +71,11 @@ shared.arm.qlarmcomp = vector.zeros(7)
 shared.arm.qrarmcomp = vector.zeros(7)
 
 --Current arm velocity limit
-shared.arm.dqVelLeft = vector.zeros(6) --linear vel
-shared.arm.dpVelLeft = vector.zeros(7) --joint vel
+shared.arm.dqVelLeft = vector.zeros(7) 
+shared.arm.dqVelRight = vector.zeros(7)
 
-shared.arm.dqVelRight = vector.zeros(6)
-shared.arm.dpVelRight = vector.zeros(7)
+shared.arm.dpVelLeft = vector.zeros(6) --transform vel
+shared.arm.dpVelRight = vector.zeros(6)
 
 --hand offset X and Y (for hook)
 if Config.arm then
@@ -79,6 +83,17 @@ if Config.arm then
   shared.arm.lhandoffset = vector.new(Config.arm.handoffset.gripper)
   shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
 end
+
+
+--SJ: I will move to shared memory (from function arguments)
+
+shared.arm.handmass = vector.zeros(2) --Hand weight 
+shared.arm.holdmass = vector.zeros(2) --Additional holding mass weight
+shared.arm.endpoint_compensation = vector.zeros(2) --should we apply ik-based endpoint compensation?
+
+
+
+
 
 
 -- Walk Parameters (for tuning on the fly)
@@ -167,7 +182,7 @@ shared.status.zGround = vector.zeros(0) -- if feet on a higher ground
 
 shared.status.uTorso = vector.zeros(3)
 shared.status.uTorsoZMPComp = vector.zeros(3) --zmp-based reactive torso compensation
-
+shared.status.uTorsoNeutral = vector.zeros(3) --center torso position between two legs
 
 
 shared.status.uSupport = vector.zeros(3)
@@ -193,12 +208,11 @@ shared.status.t0 = vector.zeros(1)
 shared.status.t1 = vector.zeros(1)
 
 
---Normal forces and zmp error at each foot
-shared.status.forceZ = vector.zeros(2)
-shared.status.forceTotal = vector.zeros(2)
+shared.status.LFT = vector.zeros(3) --fZ tx ty
+shared.status.RFT = vector.zeros(3) --fz tx ty
 shared.status.LZMP = vector.zeros(3)
 shared.status.RZMP = vector.zeros(3)
-
+shared.status.IMU = vector.zeros(4) --r p vr vp
 
 
 --If we are kneeling, we don't need quasistatic balancing

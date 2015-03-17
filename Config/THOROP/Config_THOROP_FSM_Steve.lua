@@ -39,6 +39,8 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   --
   {'bodyInit', 'done', 'bodyStop'},
+  --
+  {'bodyStop', 'init', 'bodyInit'},
 }
 
 fsm.Head = {
@@ -72,6 +74,7 @@ fsm.Arm = {
   {'armStance', 'timeout', 'armStance'},
   {'armStance', 'ready', 'armReady'},
   {'armStance', 'teleop', 'armTeleop'},
+  {'armStance', 'null', 'armNull'},
   -- Ready pose (for manipulating)
   {'armReady', 'timeout', 'armReady'},
   {'armReady', 'done', 'armTeleop'},
@@ -95,6 +98,10 @@ fsm.Arm = {
   {'armGrab', 'teleop', 'armTeleop'},
   {'armGrab', 'ready', 'armReady'},
   {'armGrab', 'init', 'armInit'},
+  -- Push around the arm in the null space of our IK
+  {'armNull', 'null', 'armNull'},
+  {'armNull', 'teleop', 'armTeleop'},
+  {'armNull', 'done', 'armStance'},
 }
 
 fsm.Motion = {

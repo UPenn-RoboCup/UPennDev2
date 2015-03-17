@@ -1,6 +1,6 @@
 local util = {}
 local vector = require'vector'
-
+local sformat = string.format
 local abs = math.abs
 
 function util.mod_angle(a)
@@ -98,6 +98,49 @@ local function p_feedback(org,target, p_gain, max_vel, dt)
   return org + vel*dt
 end
 
+function util.pid_feedback(err, vel, dt)
+  err_deadband = 0*math.pi/180
+  max_vel = 2.5 --close to spec
+  vel_p_gain = 30 --at 3 degree (3*math.pi/180) reach max accelleration
+  acc_p_gain = 20 --Very stiff
+
+
+  --very soft
+  max_vel = 2 
+  acc_p_gain = 2 
+
+  max_acc =  math.huge --max accelleration (m/s^2)  
+  vel_d_gain = -1
+    
+  local velTarget=vector.zeros(7)  
+  local accTarget=vector.zeros(7)  
+  local acc=vector.zeros(7)
+  for i=1,#err do
+    local err_clamped = math.max(0,math.abs(err[i])-err_deadband)
+    if err[i]<0 then err_clamped = -err_clamped end
+    velTarget[i] = math.max(-max_vel,math.min( max_vel, err_clamped*vel_p_gain ))
+    accTarget[i] = math.max(-max_acc,math.min( max_acc,  acc_p_gain*(velTarget[i]-vel[i]) ))
+    acc[i] = accTarget[i] + vel[i]*vel_d_gain
+  end
+  return acc,velTarget
+end
+
+function util.linearize(torque0, vel, damping_factor, static_friction)
+  local torque=vector.zeros(#torque0);  
+  for i=1,#torque0 do
+    local t1 = torque0[i]+vel[i]*damping_factor[i];
+    if t1>0.05 then
+      torque[i]=static_friction[i]+t1;
+    elseif t1<-0.05 then
+      torque[i]=-static_friction[i]+t1;
+    else
+      torque[i]=0;
+    end
+  end
+  return torque
+end
+
+
 
 function util.clamp_vector(values,min_values,max_values)
 	local clamped = vector.new()
@@ -148,8 +191,10 @@ end
 
 --SJ: This approaches to the DIRECTION of the target position
 
-function util.approachTolTransform(values, targets, vellimit, dt, tolerance)
-  tolerance = tolerance or 1e-6
+function util.approachTolTransform(values, targets, vellimit, dt)
+  local tolerance_dist = 0.001
+  local tolerance_angle = 0.1*math.pi/180
+
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
   -- Iterate through the limits of movements to approach
@@ -160,24 +205,30 @@ function util.approachTolTransform(values, targets, vellimit, dt, tolerance)
   local delta = target_pos - cur_pos
   local mag_delta = math.sqrt(delta[1]*delta[1] + delta[2]*delta[2] + delta[3]*delta[3])
   
-  if math.abs(mag_delta)>tolerance then
+  if math.abs(mag_delta)>tolerance_dist then
     movement = math.min(mag_delta, linearvellimit*dt)
     values[1] = values[1] + delta[1]/mag_delta * movement 
     values[2] = values[2] + delta[2]/mag_delta * movement 
     values[3] = values[3] + delta[3]/mag_delta * movement 
     within_tolerance = false
+  else
+    values[1] = targets[1]
+    values[2] = targets[2]
+    values[3] = targets[3]    
   end
   
 
   for i=4,6 do --Transform 
     -- Target value minus present value
     local delta = targets[i] - values[i]    
-    if math.abs(delta) > tolerance then
+    if math.abs(delta) > tolerance_angle then
       within_tolerance = false
       -- Ensure that we do not move motors too quickly
       delta = util.procFunc(delta,0,vellimit[i]*dt)
       values[i] = values[i]+delta
-    end    
+    else
+      values[i]=targets[i]
+    end
   end
   
   -- Return the next values to take and if we are within tolerance
@@ -356,6 +407,22 @@ function util.ptable(t)
   -- print a table key, value pairs
   for k,v in pairs(t) do print(k,v) end
 end
+
+function util.print_transform(tr)
+  if not tr then return end
+  local str= sformat("%.2f %.2f %.2f (%.1f %.1f %.1f)",
+    tr[1],tr[2],tr[3],tr[4]*180/math.pi,tr[5]*180/math.pi,tr[6]*180/math.pi)
+  return str
+end
+
+function util.print_jangle(q)
+  if #q==6 then
+    return sformat("%d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  )
+  elseif #q==7 then
+    return sformat("%d %d %d %d %d %d %d", unpack(vector.new(q)*180/math.pi)  ) 
+  end
+end
+
 
 function util.ptorch(data, W, Precision)
   local w = W or 5

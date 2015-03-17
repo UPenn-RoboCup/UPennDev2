@@ -15,6 +15,7 @@ PROTO hokuyo [
   field SFFloat fieldOfView 4.71238
   field SFFloat maxRange 30
   field SFInt32 width 1081
+  field SFFloat mass 0.37
 ]
 {
 Camera {
@@ -3871,10 +3872,10 @@ Camera {
   #    }
   #  ]
   #}
-  #physics Physics {
-  #  density -1
-  #  mass 0.37
-  #}
+  physics Physics {
+    density -1
+    mass IS mass
+  }
   fieldOfView IS fieldOfView
   width IS width
   height 1

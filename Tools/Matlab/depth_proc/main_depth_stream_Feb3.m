@@ -1,10 +1,12 @@
 clear all;
 % close all;
+
 % 4 bytes in float (single precision)
 DEPTH_W = 512;
 DEPTH_H = 424;
 DEPTH_MAX = 2000;%8000;
 DEPTH_MIN = 200;
+
 figure(1);
 h_depth = imagesc(zeros(DEPTH_H, DEPTH_W));
 caxis([DEPTH_MIN DEPTH_MAX]);
@@ -44,25 +46,17 @@ while 1
             else
                 
                 raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
-                                
+                uisetting; % See uisetting.m                
                 res = depth_proc(raw, metadata, ui);
                              
             end
         elseif strcmp(char(metadata.id), 'k2_rgb') %%%%%%%%%%%%%%%%%%%%%%%%% RGB
             rgb_img = djpeg(raw);
-            set(h_rgb, 'CData', rgb_img);
-            
-            
+            set(h_rgb, 'CData', rgb_img);            
          
         else
             disp(char(metadata.id));
-            
-
-         %   if fig_id < 100
-         %       fig_id = fig_id + 1;
-         %       save(strcat('Temp_figures/LIDARraw_',int2str(fig_id),'.mat'),'raw','metadata');
-          %  end  
-            
+         
         end
     end
     drawnow;

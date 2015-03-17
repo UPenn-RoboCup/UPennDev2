@@ -185,6 +185,8 @@ table.insert(Config.camera,
 
     focal_length = 395.17,
     focal_base = 640,
+auto_param = {}, param = {},
+--[[
     auto_param = {
       {'White Balance Temperature, Auto', 0},
       {'Exposure, Auto', 0},
@@ -193,6 +195,7 @@ table.insert(Config.camera,
 			{'Focus, Auto', 0}
     },
 		param = m308_param,
+--]]
     --param = grasp_afternoon_param,
   })
 

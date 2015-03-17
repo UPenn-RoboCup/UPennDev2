@@ -80,6 +80,11 @@ shared_data.hands.right_tr = vector.zeros(6)
 --This variable should contain TARGET hand transforms
 shared_data.hands.left_tr_target = vector.zeros(6)
 shared_data.hands.right_tr_target = vector.zeros(6)
+
+--They store previous hand target transforms (in case movement is not possible)
+shared_data.hands.left_tr_target_old = vector.zeros(6)
+shared_data.hands.right_tr_target_old = vector.zeros(6)
+
 -- for the left and right hands
 shared_data.hands.read = vector.zeros(2)
 
@@ -271,10 +276,19 @@ shared_data.legdebug.torso_angle=vector.zeros(2) --pitch roll
 
 
 
+shared_data.move={}
+shared_data.move.target=vector.zeros(3) --relative pos, x y a
+
+
+
 shared_data.step={}
 shared_data.step.supportLeg=vector.zeros(1)
 shared_data.step.relpos = vector.zeros(3)      --x y a
 shared_data.step.zpr = vector.zeros(2)         --z p r
+shared_data.step.nosolution = vector.zeros(1)         --z p r
+
+shared_data.step.dir = vector.zeros(1)         --temporary
+shared_data.step.auto = vector.zeros(1)         --temporary
 
 
 --These variables are only used for offline testing of arm states

@@ -16,6 +16,7 @@ local supportY = Config.walk.supportY
 local torsoX    = Config.walk.torsoX
 
 local DEG_TO_RAD = math.pi/180
+local RAD_TO_DEG = 1/DEG_TO_RAD
 local sformat = string.format
 
 -- Gyro stabilization parameters
@@ -30,6 +31,17 @@ local ankleRollCompensation = Config.walk.ankleRollCompensation or 0
 local anklePitchCompensation = Config.walk.anklePitchCompensation or 0
 local kneePitchCompensation = Config.walk.kneePitchCompensation or 0
 local hipPitchCompensation = Config.walk.hipPitchCompensation or 0
+
+
+local queue_count, queue_size = 1,5
+local lf_queue = vector.zeros(queue_size)
+local rf_queue = vector.zeros(queue_size)
+local ltx_queue = vector.zeros(queue_size)
+local rtx_queue = vector.zeros(queue_size)
+local lty_queue = vector.zeros(queue_size)
+local rty_queue = vector.zeros(queue_size)
+
+
 
 function moveleg.get_ph_single(ph,phase1,phase2) return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))end
 
@@ -54,7 +66,8 @@ function moveleg.get_ft()
     lf_y=l_ft[2],rf_y=r_ft[2],
     lf_z=l_ft[3],rf_z=r_ft[3],
     lt_x=-l_ft[4],rt_x=-r_ft[4],
-    lt_y=l_ft[5],rt_y=r_ft[5]
+    lt_y=l_ft[5],rt_y=r_ft[5],
+    lt_z=0, rt_z=0 --do we ever need yaw torque?
   }
   if IS_WEBOTS then
     ft.lt_y, ft.rt_y = -l_ft[4],-r_ft[5]      
@@ -66,6 +79,72 @@ function moveleg.get_ft()
     roll_err = rpy[1], pitch_err = rpy[2]-y_angle_zero,  
     v_roll = gyro[1], v_pitch = gyro[2]
   }
+
+
+  --moving window 
+  lf_queue[queue_count] = math.sqrt(ft.lf_z^2+ft.lf_y^2+ft.lf_x^2)
+  rf_queue[queue_count] = math.sqrt(ft.rf_z^2+ft.rf_y^2+ft.rf_x^2)
+  ltx_queue[queue_count] = ft.lt_x
+  rtx_queue[queue_count] = ft.rt_x
+  lty_queue[queue_count] = ft.lt_y
+  rty_queue[queue_count] = ft.rt_y
+  queue_count = queue_count+1
+  if queue_count>queue_size then queue_count=1 end
+  mcm.set_status_LFT({
+    vector.sum(lf_queue)/queue_size,    
+    vector.sum(ltx_queue)/queue_size,    
+    vector.sum(lty_queue)/queue_size
+    })
+  mcm.set_status_RFT({
+    vector.sum(rf_queue)/queue_size,    
+    vector.sum(rtx_queue)/queue_size,    
+    vector.sum(rty_queue)/queue_size
+    })
+
+
+  mcm.set_status_IMU({imu.roll_err, imu.pitch_err, v_roll,v_pitch})
+
+  local zf_touchdown = 50
+  if IS_WEBOTS then zf_touchdown = 1 end
+
+
+
+
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()  
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+
+  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
+  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)  
+  local uTorsoNeutral = util.se2_interpolate(0.5,uLeftSupport, uRightSupport)
+
+  local zmp_err_left = {0,0,0}
+  local zmp_err_right = {0,0,0}
+  local forceLeft, forceRight = 0,0
+
+  local uZMP = mcm.get_status_uZMP()  
+  local uZMPLeft=mcm.get_status_uLeft()
+  local uZMPRight=mcm.get_status_uRight()
+
+  if ft.lf_z>zf_touchdown then
+    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z, 0}
+    uZMPLeft = util.pose_global(zmp_err_left, uLeft)
+    forceLeft = ft.lf_z
+  end
+  if ft.rf_z>zf_touchdown then
+    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z, 0}
+    uZMPRight = util.pose_global(zmp_err_right, uRight)
+    forceRight = ft.rf_z
+  end
+  local uZMPMeasured= (forceLeft*uZMPLeft + forceRight*uZMPRight) / (forceLeft+forceRight)
+
+  mcm.set_status_LZMP({zmp_err_left[1],zmp_err_left[2],0})
+  mcm.set_status_RZMP({zmp_err_right[1],zmp_err_right[2],0})  
+  mcm.set_status_uZMPMeasured(uZMPMeasured) 
+  mcm.set_status_uTorsoNeutral(uTorsoNeutral)
+
   return ft,imu
 end
 
@@ -203,21 +282,35 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 		zLegComp[2] = math.max(-supportRatioLeft,zLegComp[2])
   end
 
-  
+
+  local lft = mcm.get_status_LFT()
+  local rft = mcm.get_status_RFT()
+  local afloat_threshold = 50
+  local shiftL,shiftR=1,1
+
+  if Config.walk.force_torque then
+
+  if lft[1]< afloat_threshold then --left foot afloat
+    shiftL=0
+  end
+  if rft[1]< afloat_threshold then --left foot afloat
+    shiftR=0
+  end
+  end
 
 
 
   delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
   delta_legs[3] = - hipPitchCompensation*supportRatioLeft
-  delta_legs[4] = angleShift[3] - kneePitchCompensation*supportRatioLeft-kneeComp[1]
-  delta_legs[5] = angleShift[1] - anklePitchCompensation*supportRatioLeft
-  delta_legs[6] = angleShift[2] + ankleRollCompensation*supportRatioLeft
+  delta_legs[4] = angleShift[3]*shiftL - kneePitchCompensation*supportRatioLeft-kneeComp[1]
+  delta_legs[5] = angleShift[1]*shiftL - anklePitchCompensation*supportRatioLeft
+  delta_legs[6] = angleShift[2]*shiftL + ankleRollCompensation*supportRatioLeft
 
   delta_legs[8]  = angleShift[4] - hipRollCompensation*supportRatioRight
   delta_legs[9] = -hipPitchCompensation*supportRatioRight
-  delta_legs[10] = angleShift[3] - kneePitchCompensation*supportRatioRight-kneeComp[2]
-  delta_legs[11] = angleShift[1] - anklePitchCompensation*supportRatioRight
-  delta_legs[12] = angleShift[2] - ankleRollCompensation
+  delta_legs[10] = angleShift[3]*shiftR - kneePitchCompensation*supportRatioRight-kneeComp[2]
+  delta_legs[11] = angleShift[1]*shiftR - anklePitchCompensation*supportRatioRight
+  delta_legs[12] = angleShift[2]*shiftR - ankleRollCompensation
 
   mcm.set_walk_delta_legs(delta_legs)  
 
@@ -259,12 +352,25 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkPa
   end
   tf = math.max(0,math.min(1,tf))
 
-  if tf < lift/total_dist then xf,zf =0,tf*total_dist +zHeight0
-  elseif tf <(lift+move)/total_dist then xf,zf = (tf*total_dist-lift)/move, stepHeight
-  else xf,zf= 1,(1-tf)*total_dist +zHeight1   end   
+  local lift_phase, land_phase = 0,0
+
+
+  if tf < lift/total_dist then 
+    xf,zf =0,tf*total_dist +zHeight0
+    lift_phase = 1 - tf / (lift/total_dist) --1 to 0
+
+
+
+
+  elseif tf <(lift+move)/total_dist then 
+    xf,zf = (tf*total_dist-lift)/move, stepHeight
+
+  else xf,zf= 1,(1-tf)*total_dist +zHeight1   
+    land_phase = (tf*total_dist - (lift+move))/land
+  end   
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
 
-  return uFoot, zf
+  return uFoot, zf, lift_phase, land_phase
 end
 
 
@@ -290,35 +396,58 @@ function moveleg.set_leg_positions()
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
 
-
-  local aShiftX=mcm.get_walk_aShiftX()
-  local aShiftY=mcm.get_walk_aShiftY()
+  
   local delta_legs = mcm.get_walk_delta_legs()  
 
 
+  local aShiftX = mcm.get_walk_aShiftX()
+  local aShiftY = mcm.get_walk_aShiftY()
 
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-  
 
-  local qWaist = Body.get_waist_position()
-  local qLArm = Body.get_larm_position()
-  local qRArm = Body.get_rarm_position()
+--ankle height compensation
+local ankle_height = 0.118
+
+
+local uLeftComp=util.pose_global( {math.sin(aShiftY[1])*ankle_height,0,0},uLeft)
+local uRightComp=util.pose_global( {math.sin(aShiftY[2])*ankle_height,0,0},uRight)
+local zLeftComp = (1-math.cos(aShiftY[1]))*ankle_height
+local zRightComp = (1-math.cos(aShiftY[2]))*ankle_height
+
+--
+zLeftComp,zRightComp = 0,0
+uLeftComp,uRightComp=uLeft,uRight
+--
+
+--  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+--  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
+
+  local pLLeg = vector.new({uLeftComp[1],uLeftComp[2],zLeft-zLeftComp,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRightComp[1],uRightComp[2],zRight-zRightComp,0,0,uRight[3]})
+
+
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+
 
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
+  --Initial guess 
   local uTorsoAdapt = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   local pTorso = vector.new({
-            uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
+    uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
+
+  
+  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
 
   -------------------Incremental COM filtering
+  local com_z = 0
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
-    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,3*DEG_TO_RAD)
+    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0, 1,1)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
@@ -327,9 +456,18 @@ function moveleg.set_leg_positions()
    local pTorso = vector.new({
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso)
+
+   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
    count = count+1
   end
+  local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
+  
+--  print("uTorsoZ:",com[3]/com[4])
+--  print("uTorso:",uTorso[1],uLeft[1])
+--  print("Torso offset:",uTorsoOffset[1],uTorsoOffset[2])
+  mcm.set_stance_COMoffset({
+    -uTorsoOffset[1],-uTorsoOffset[2],com[3]/com[4]
+    })
 
 
   local legBias = vector.new(mcm.get_leg_bias())
@@ -361,9 +499,9 @@ function moveleg.ft_compensate(t_diff)
 
   local enable_balance = hcm.get_legdebug_enable_balance()
   local ft,imu = moveleg.get_ft()
-  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
+--  moveleg.process_ft_height(ft,imu,t_diff) -- height adaptation
 --  moveleg.process_ft_roll(ft,t_diff) -- roll adaptation
-  moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
+--  moveleg.process_ft_pitch(ft,t_diff) -- pitch adaptation
 end
 
 
@@ -375,154 +513,136 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   --------------------------------------------------------------------------------------------------------
   -- Foot height differential adaptation
 
-  local zf_touchdown = 50
-  local zf_touchdown_confirm = 50
-  local zf_support = 150
-
-  local z_shift_max = 0.05 --max 5cm difference
-  local z_vel_max_diff = 0.4 --max 40cm per sec
-  local z_vel_max_balance = 0.05 --max 5cm per sec
-  local k_const_z_diff = 0.5 / 100  -- 50cm/s for 100 N difference
-  local z_shift_diff_db = 50 --50N deadband
-  local k_balancing = 0.4 
-
-
-  local enable_balance = hcm.get_legdebug_enable_balance()
-
-
-  local uLeft = mcm.get_status_uLeft()
-  local uRight = mcm.get_status_uRight()
-  local uTorso = mcm.get_status_uTorso()  
-
-  local uLeftTorso = util.pose_relative(uLeft,uTorso)
-  local uRightTorso = util.pose_relative(uRight,uTorso)
-
   local zvShift={0,0}
-  local balancing_type=0
 
-
-  local enable_adapt = true
-
-  local LR_pitch_err = -(uLeftTorso[1]-uRightTorso[1])*math.tan( imu.pitch_err)
-  local LR_roll_err =  (uLeftTorso[2]-uRightTorso[2])*math.tan(imu.roll_err)
-  local zvShiftTarget = util.procFunc( (LR_pitch_err + LR_roll_err) * k_balancing, 0, z_vel_max_balance )
-
-  local zmp_err_left = {0,0,0}
-  local zmp_err_right = {0,0,0}
-
-
-  local uZMP = mcm.get_status_uZMP()  
-  local uZMPLeft=mcm.get_status_uLeft()
-  local uZMPRight=mcm.get_status_uRight()
-  local forceLeft, forceRight = 0,0
-
-  if ft.lf_z>zf_touchdown then
-    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z, 0}
-    uZMPLeft = util.pose_global(zmp_err_left, uLeft)
-    forceLeft = ft.lf_z
-  end
-  if ft.rf_z>zf_touchdown then
-    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z, 0}
-    uZMPRight = util.pose_global(zmp_err_right, uRight)
-    forceRight = ft.rf_z
-  end
-
-  local uZMPMeasured= (forceLeft*uZMPLeft + forceRight*uZMPRight) / (forceLeft+forceRight)
-
-  local force_total = {0,0}
-
-  force_total[1] = math.sqrt(ft.lf_z^2+ft.lf_x^2+ft.lf_y^2)
-  force_total[2] = math.sqrt(ft.rf_z^2+ft.rf_x^2+ft.rf_y^2)
-
-
-  mcm.set_status_LZMP({zmp_err_left[1],zmp_err_left[2],0})
-  mcm.set_status_RZMP({zmp_err_right[1],zmp_err_right[2],0})
-  mcm.set_status_forceZ({forceLeft,forceRight})
-  mcm.set_status_forceTotal(force_total)
-  mcm.set_status_uZMPMeasured(uZMPMeasured) 
-  
-
-  local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
-
---  local zmp_err_db = 0.01 
-  local zmp_err_db = 0.0025  
+  --Torso movement for zmp-based balancing
+  local zmp_err_db = {0.01  ,0.0025}  
   local k_zmp_err = -0.25 --0.5cm per sec for 1cm error
-  local max_torso_vel = 0.01 --1cm per sec
+  local max_torso_vel = {0.0,0.01} --1cm per sec
   local max_zmp_comp = 0.04
 
-  local foot_z_vel = -0.02
 
+  --Touchdown detection 
+  local zf_touchdown = 50
+  local zf_touchdown2 = 100
+  local zf_support = 200
+
+  local foot_z_vel = -0.02
 --  local foot_z_vel = -0.03
 
+  if IS_WEBOTS then
+    foot_z_vel = -0.02
 
-	local foot_z_flex_lift = 0.01
-	local foot_z_flex_lift = 0.00
+    zf_support = 130 --for webots, total mass is ~260N    
 
-	if (ft.lf_z>zf_support*2 and ft.rf_z<zf_touchdown) or enable_balance[2]>0 then
-
-      local torso_x_comp = util.procFunc(zmp_err_left[1]*k_zmp_err,zmp_err_db,max_torso_vel)
-      local torso_y_comp = util.procFunc(zmp_err_left[2]*k_zmp_err,zmp_err_db,max_torso_vel)
-  --    uTorsoZMPComp[1] = util.procFunc(uTorsoZMPComp[1]+ torso_x_comp*t_diff,0,max_zmp_comp)
-      uTorsoZMPComp[2] = util.procFunc(uTorsoZMPComp[2]+ torso_y_comp*t_diff,0,max_zmp_comp)
-
-      mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
+    zf_touchdown = 20    
+    zf_touchdown2= 90
 
 
-  elseif  (ft.rf_z>zf_support*2 and ft.lf_z<zf_touchdown) or enable_balance[1]>0 then
+    zmp_err_db = {0.0025  ,0.0025}  
+    max_torso_vel = {0.01,0.01} --1cm per sec
 
-      local torso_x_comp = util.procFunc(zmp_err_right[1]*k_zmp_err,zmp_err_db,max_torso_vel)
-      local torso_y_comp = util.procFunc(zmp_err_right[2]*k_zmp_err,zmp_err_db,max_torso_vel)
-  --    uTorsoZMPComp[1] = uTorsoZMPComp[1] + torso_x_comp*t_diff
-      uTorsoZMPComp[2] = uTorsoZMPComp[2] + torso_y_comp*t_diff
+    max_zmp_comp = 0.08
 
-      mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
+
+    zf_touchdown = 20    
+    zf_touchdown2= 50
+
+
+
 
 
   end
 
-  if ft.lf_z>zf_support and ft.rf_z>zf_support then --double support
-  elseif ft.lf_z>zf_support then --left support
+  local lft = mcm.get_status_LFT()
+  local rft = mcm.get_status_RFT()
+
+  local enable_balance = hcm.get_legdebug_enable_balance()
+  local zmp_err_left = mcm.get_status_LZMP()
+  local zmp_err_right = mcm.get_status_RZMP()
+  local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
+
+
+  local lf_z,rf_z = lft[1],rft[1]
+  local lt_y,rt_y = lft[3],rft[3]
+
+
+
+
+	if (lf_z>zf_support and rf_z<zf_touchdown) or enable_balance[2]>0 then
+      local torso_x_comp = util.procFunc((zmp_err_left[1]-supportX)*k_zmp_err,zmp_err_db[1],max_torso_vel[1])
+      local torso_y_comp = util.procFunc(zmp_err_left[2]*k_zmp_err,zmp_err_db[2],max_torso_vel[2])
+      uTorsoZMPComp[1] = util.procFunc(uTorsoZMPComp[1]+ torso_x_comp*t_diff,0,max_zmp_comp)
+      uTorsoZMPComp[2] = util.procFunc(uTorsoZMPComp[2]+ torso_y_comp*t_diff,0,max_zmp_comp)
+      mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
+
+  elseif  (rf_z>zf_support and lf_z<zf_touchdown) or enable_balance[1]>0 then
+      local torso_x_comp = util.procFunc((zmp_err_right[1]-supportX)*k_zmp_err,zmp_err_db[1],max_torso_vel[1])
+      local torso_y_comp = util.procFunc(zmp_err_right[2]*k_zmp_err,zmp_err_db[2],max_torso_vel[2])
+      uTorsoZMPComp[1] = util.procFunc(uTorsoZMPComp[1]+ torso_x_comp*t_diff,0,max_zmp_comp)
+      uTorsoZMPComp[2] = util.procFunc(uTorsoZMPComp[2]+ torso_y_comp*t_diff,0,max_zmp_comp)
+      mcm.set_status_uTorsoZMPComp(uTorsoZMPComp)
+  else --Both feet on the ground, so balance them
+--    mcm.set_status_uTorsoNeutral(uTorsoNeutral)
+    local k_heightbalance = 1/50 * 0.01
+    local k_heightreturn = -1
+
+    local foot_z_vel_balance = 
+      util.procFunc((lf_z - rf_z) *k_heightbalance, 0.01, 0.02)
+
+    local zShift = mcm.get_status_zLeg()    
+    local zAvg = (zShift[1]+zShift[2])/2
+
+
+    foot_z_vel_balance = 0
+
+    local foot_z_vel_height =0
+
+
+
+
+    if foot_z_vel_balance==0 then 
+      if zAvg>0.02 then foot_z_vel_height = -0.01
+      elseif zAvg<-0.02 then foot_z_vel_height = 0.01
+      end
+    end
+
+  
+
+    zvShift[1] = foot_z_vel_balance+foot_z_vel_height
+    zvShift[2] = -foot_z_vel_balance+foot_z_vel_height
+  end
+
+  local twist_db = 0.2
+
+
+
+  if lf_z>zf_support  then --left support
 
     if enable_balance[2]>0 then --left support  
-      if ft.rf_z<zf_touchdown and uTorsoZMPComp[2]>-0.02 then
+      if rf_z<zf_touchdown2 and uTorsoZMPComp[2]>-0.02 then
           zvShift[2] = foot_z_vel --Lower left feet 
-  --      elseif zmp_err_left[2]>0.01 then 
-          --zvShift[2] = 0.01 --Raise the foot
       end
-      if ft.rf_z>zf_touchdown_confirm and uTorsoZMPComp[2]<-0.02 then
+
+      if rf_z>zf_touchdown2 and uTorsoZMPComp[2]<-0.02 then
         print("Touchdown detected")
         enable_balance[2]=0
         hcm.set_legdebug_enable_balance(enable_balance)
         hcm.set_state_proceed(1) --auto advance!
-
---[[
-			  local zShift = mcm.get_status_zLeg()
-				mcm.set_status_zLeg({zShift[1],zShift[2]+foot_z_flex_lift})
-				mcm.set_status_zLegComp({0,-foot_z_flex_lift})
---]]
       end
     end
 
-  elseif ft.rf_z>zf_support then  --right support
+  elseif rf_z>zf_support  then  --right support
 
     if enable_balance[1]>0 then --right support
-
-
-
-      if ft.lf_z<zf_touchdown and uTorsoZMPComp[2]<0.02 then
+      if lf_z<zf_touchdown2 and uTorsoZMPComp[2]<0.02 then
         zvShift[1] = foot_z_vel --Lower left feet 
       end
-
-      if ft.lf_z>zf_touchdown_confirm and uTorsoZMPComp[2]>0.02 then
+      if lf_z>zf_touchdown2 and uTorsoZMPComp[2]>0.02 then
         print("Touchdown detected")
         enable_balance[1]=0
         hcm.set_legdebug_enable_balance(enable_balance)
         hcm.set_state_proceed(1) --auto advance!
---[[
-			  local zShift = mcm.get_status_zLeg()
-				mcm.set_status_zLeg({zShift[1]+foot_z_flex_lift,zShift[2]})
-				mcm.set_status_zLegComp({-foot_z_flex_lift,0})
---]]
       end
     end
   end
@@ -532,9 +652,13 @@ function moveleg.process_ft_height(ft,imu,t_diff)
   local zShift = mcm.get_status_zLeg()
   local z_min = -0.05
 
+  zShift[1] = zShift[1]+zvShift[1]*t_diff
+  zShift[2] = zShift[2]+zvShift[2]*t_diff
+
+--[[
   zShift[1] = math.max(z_min, zShift[1]+zvShift[1]*t_diff)
   zShift[2] = math.max(z_min, zShift[2]+zvShift[2]*t_diff)
-
+--]]
   mcm.set_walk_zvShift(zvShift)
   mcm.set_walk_zShift(zShift)
   mcm.set_status_zLeg(zShift)
@@ -560,7 +684,7 @@ function moveleg.process_ft_roll(ft,t_diff)
   local ax_vel_max = 10*math.pi/180 
 
 
-  if IS_WEBOT and false then
+  if IS_WEBOTS and false then
     k_const_tx = k_const_tx*3
     ax_vel_max = ax_vel_max*3
   end
@@ -620,11 +744,15 @@ function moveleg.process_ft_pitch(ft,t_diff)
 
   local df_max = 100 --full damping beyond this
   local df_min = 30 -- zero damping 
+  local ay_offset = 0
 
 
-if IS_WEBOT and false then
-    k_cosnt_ty = k_cosnt_ty*3
-    ay_vel_max = ay_vel_max*3
+  if IS_WEBOTS then
+    --for webots, the torque range is much smaller
+    k_const_ty =  20 *   math.pi/180 / 1
+    r_const_ty = 0 --no damping for webots  
+    ay_shift_db = 0.05
+    ay_offset = 0.11         
   end
 
   ----------------------------------------------------------------------------------------
@@ -637,23 +765,19 @@ if IS_WEBOT and false then
 
   local left_damping_factor = math.max(0,math.min(1, (ft.lf_z-df_min)/df_max))
   local right_damping_factor = math.max(0,math.min(1, (ft.rf_z-df_min)/df_max))
-
-
     
-  avShiftY[1] = util.procFunc(  ft.lt_y*k_const_ty + 
+  avShiftY[1] = util.procFunc(  (ft.lt_y-ay_offset)*k_const_ty + 
     avShiftY[1]*r_const_ty*left_damping_factor 
-      ,k_const_ty*ay_shift_db*left_damping_factor , 
+      ,k_const_ty*ay_shift_db, 
       ay_vel_max)
-  avShiftY[2] = util.procFunc(  ft.rt_y*k_const_ty + 
+  avShiftY[2] = util.procFunc(  (ft.rt_y-ay_offset)*k_const_ty + 
     avShiftY[2]*r_const_ty*right_damping_factor    
-      ,k_const_ty*ay_shift_db*right_damping_factor , 
+      ,k_const_ty*ay_shift_db, 
       ay_vel_max)
 
 	--if foot is firmly on the ground, lower the gain a lot (to reduce vibration)
 	if ft.lf_z>100 then avShiftY[1] = avShiftY[1]*0.25  end
 	if ft.rf_z>100 then avShiftY[2] = avShiftY[2]*0.25  end
-
-
 
 --[[
   --foot idle, return to heel strike position

@@ -1,0 +1,30 @@
+#VRML_SIM V6.0 utf8
+
+PROTO RubbleField [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+{
+
+	Solid {
+		translation IS translation
+		rotation IS rotation
+
+		children [
+		  RubbleRow { translation -0.025 0 -0.225 }
+		  RubbleRow { translation 0.025 0 -0.15 }
+		  RubbleRow { translation -0.025 0 -0.075 }
+		  RubbleRow { translation 0.025 0 0 }
+		  RubbleRow { translation -0.025 0 0.075 }
+		  RubbleRow { translation 0.025 0 0.15 }
+		  RubbleRow { translation -0.025 0 0.225 }
+		]
+
+		boundingObject Transform {
+		  translation 0 0 0
+		  children [Box {size 0.50 0.10 0.50}]
+		}  
+		locked TRUE
+	}
+
+}

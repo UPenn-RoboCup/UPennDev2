@@ -53,18 +53,19 @@ local right_arm = {
 	--head
 	29, 30,
 	-- gripper
-	64, 66,
+	63, 65, 67
 },
 enable_read = true,
 }
 local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
-	m_ids = {2,4,6,8,10,12,14,
+--ALVIN SPECIFIC - this hould be hostname-specific afterwards
+	m_ids = {2,4,6,8,10,12,--14,
 	-- lidar
 	37,
 	-- gripper
-	--65, 67
+--	64, 66
 },
 enable_read = true
 }
@@ -96,6 +97,21 @@ local arms_rc = {
 	m_ids = {11, 12, 13, 14},
 	enable_read = true,
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if OPERATING_SYSTEM=='darwin' then
 	right_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0A'
@@ -156,10 +172,10 @@ local nJointWaist = 2
 local indexLGrip = 31 -- Grippers
 local nJointLGrip = 2
 local indexRGrip = 33
-local nJointRGrip = 2
-local indexLidar = 35 -- Lidar
+local nJointRGrip = 3
+local indexLidar = 36 -- Lidar
 local nJointLidar = 1
-local nJoint = 35
+local nJoint = 36
 
 Config.parts = {
 	Head = vector.count(indexHead,nJointHead),
@@ -189,7 +205,7 @@ local jointNames = {
 	"TorsoYaw","TorsoPitch",
 	-- Gripper
 	"l_grip", "l_trigger",
-	"r_grip", "r_trigger",
+	"r_grip", "r_trigger", "r_extra",
 	-- lidar movement
 	"ChestLidarPan",
 }
@@ -206,8 +222,8 @@ servo.joint_to_motor={
 	15,17,19,21,23,25, -- right leg
 	1,3,5,7,9,11,13,  --RArm
 	27,28, --Waist yaw/pitch
-	65,67, -- left gripper/trigger (This is the order)
-	64,66, -- right gripper/trigger
+	64,66, -- left gripper/trigger (This is the order)
+	63,67,65, -- right gripper/trigger/extra
 	37, -- Lidar pan
 }
 
@@ -222,7 +238,7 @@ servo.steps = 2 * vector.new({
 	251000,251000,251000,251000,151875,151875,151875, --RArm
 	251000,251000, -- Waist
 	2048,2048, -- Left gripper
-	2048,2048, -- Right gripper
+	2048,2048,2048, -- Right gripper
 	2048, -- Lidar pan
 })
 
@@ -237,7 +253,7 @@ servo.direction = vector.new({
 	-1,-1,1,-1, 1,1,1, --RArm
 	-1, -1, -- Waist
 	1,-1, -- left gripper TODO
-	-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
+	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
 	-1, -- Lidar pan
 })
 
@@ -249,22 +265,21 @@ servo.rad_offset = vector.new({
 	0,0,0,45,0,0, --RLeg
 	90,-90,90,-45,-90,0,0, --RArm
 	0,0, -- Waist
-	75,-80, -- left gripper/trigger
-	55, -15, -- right gripper/trigger (UCLA verified)
+	55, -15, -- left gripper/trigger
+	70, -125, 0, -- right gripper/trigger (UCLA verified)
 	0, -- Lidar pan
 })*DEG_TO_RAD
 
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
-	---90,-80, -- Head
 	-135,-80, -- Head
 	-90, 0, -90,    -160,   -180,-87,-180, --LArm
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-90,-87,-90,    -160,   -180,-87,-180, --RArm
 	-90,-45, -- Waist
-	-30, -30,
-	-60, -55, -- right gripper/trigger (UCLA verified)
+	-60, -55,
+	-60, -35, -60, -- right gripper/trigger (UCLA verified)
 	-60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -277,7 +292,7 @@ servo.max_rad = vector.new({
 	160,-0,90,   0,     180,87,180, --RArm
 	90,45, -- Waist
 	65,65, -- lgrip
-	110,95, -- right gripper/trigger (UCLA verified)
+	80,40,55, -- right gripper/trigger (UCLA verified)
 	60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -418,7 +433,7 @@ if IS_WEBOTS then
 		-- TODO: Check the gripper
 		-1,1, -- Waist
 		1,1, -- left gripper
-		-1,-1, -- right gripper
+		-1,-1,-1, -- right gripper
 
 		1, -- Lidar pan
 	})
@@ -431,7 +446,7 @@ if IS_WEBOTS then
 		-90,0,0,  0,  0,0,0,
 		0,0,
 		0,0,
-		0,0,
+		0,0,0,
 		0,
 	})*DEG_TO_RAD
 
@@ -443,7 +458,7 @@ if IS_WEBOTS then
 		-90,-180,-90,-160,       -180,-87,-180, --RArm
 		-90,-45, -- Waist
 		120,80, --lhand
-		120,60,--rhand
+		120,60,60,--rhand
 
 		-60, -- Lidar pan
 	})*DEG_TO_RAD
@@ -456,11 +471,34 @@ if IS_WEBOTS then
 		160,-0,90,0,     180,87,180, --RArm
 		90,79, -- Waist
 		0,45,  --lhand
-		0,45,    --rhand
+		0,45,45,    --rhand
 		60, -- Lidar pan
 	})*DEG_TO_RAD
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+--[[
+print("Robot config loading")
+print(#jointNames,
+			#servo.rad_offset, --
+			#servo.min_rad,    --
+			#servo.steps,
+			#servo.direction,  --
+			#servo.joint_to_motor)
+print(nJoint)
+--]]
 
 assert(#jointNames==nJoint,'Bad servo rad_offset!')
 assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')

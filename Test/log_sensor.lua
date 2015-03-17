@@ -4,7 +4,9 @@ local ok = pcall(dofile,'../fiddle.lua')
 if not ok then dofile'fiddle.lua' end
 
 local t_last = Body.get_time()
-local tDelay = 0.005*1E6
+local tDelay = 0.1*1E6
+
+
 
 local RAD_TO_DEG= 180/math.pi
 
@@ -17,12 +19,15 @@ local sformat = string.format
 
 require'mcm'
 require'hcm'
+require'wcm'
 
 count = 0
 
 while running do
-	local forceZ = mcm.get_status_forceZ()
-	local forceTotal = mcm.get_status_forceTotal()
+	local lft = mcm.get_status_LFT()
+	local rft = mcm.get_status_RFT()
+	local imu = mcm.get_status_IMU()
+
 	local uZMP = mcm.get_status_uZMP()
 	local uZMPMeasured = mcm.get_status_uZMPMeasured()
 
@@ -38,21 +43,22 @@ while running do
 
   	local enable_balance = hcm.get_legdebug_enable_balance()
 
-
   	local angleShift = mcm.get_walk_angleShift()
+
+	local pose = wcm.get_robot_pose()
 
 
 	count = count + 1
 
-	if count%10 ==0 then
+	if count%2 ==0 then
 		os.execute('clear')
 
 		print(sformat("Balancing: P Knee %.1f Ankle %.1f / R hip %.1f ankle %.1f",
 			RAD_TO_DEG*angleShift[3], RAD_TO_DEG*angleShift[1]  , RAD_TO_DEG*angleShift[4], RAD_TO_DEG*angleShift[2]))
 
-
-
-		print(sformat("force Z: %d %d Total: %d %d",forceZ[1],forceZ[2],forceTotal[1],forceTotal[2]))
+		print(sformat("FZ: %.1f %.1f PT: %.1f %.1f RT: %.1f %.1f",
+			lft[1],rft[1], lft[3],rft[3], lft[2],rft[2]
+			))
 		print(sformat("uZMPTarget: %.1f %.1f / uZMP: %.1f %.1f",
 			uZMP[1]*100, uZMP[2]*100, uZMPMeasured[1]*100,	uZMPMeasured[2]*100
 
@@ -66,8 +72,11 @@ while running do
 		zLeg[1]*100,zLeg[2]*100))
 
 		print(sformat("Foot angles: Left P%.1f R%.1f  Right P%.1f R%.1f",
-			RAD_TO_DEG*aShiftX[1],RAD_TO_DEG*aShiftY[1],RAD_TO_DEG*aShiftX[2],RAD_TO_DEG*aShiftY[2]            
+			RAD_TO_DEG*aShiftY[1],RAD_TO_DEG*aShiftX[1],RAD_TO_DEG*aShiftY[2],RAD_TO_DEG*aShiftX[2]            
 			))
+
+		print()
+		print(sformat("Pose: %.2f %.2f %d(deg)",pose[1],pose[2],pose[3]*180/math.pi))
 	end
 
 	unix.usleep(tDelay);

@@ -11,6 +11,9 @@ require'wcm'
 
 require'mcm'
 
+local footstepplanner = require'footstepplanner'
+
+
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
 local motion_ch = simple_ipc.new_publisher('MotionFSM!')
@@ -25,108 +28,15 @@ local uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next
 local supportLeg
 
 
---for deflection test
-local sh1,sh2 = 0.10, 0.0
-local step1,step2 = 0.25, 0.25
-
-
---local sh1,sh2 = 0.10, 0.05
-
-local sh1,sh2 = 0.10, 0.0
---local sh1,sh2 = 0.0, 0.0
-
-local step1,step2 = 0.25, 0.25
-local side_adj = Config.walk.supportY - 0.00
-
-
-local step1,step2 = 0.0, 0.0
-
-
-
-local com_side = Config.walk.footY+Config.walk.supportY-side_adj
-
-local st = 2.0
-local wt = 3.0
-local wt_pre = 1.0
-
-
-
-if IS_WEBOTS then st,wt = 1.0,1.0 end
-
-
---Faster
-step_queues={
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
-    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
-    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },    
-    {{step1,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
-    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-}
-
-
-
-if IS_WEBOTS then st,wt = 1.0,1.0 
-
-
-end
-
-
-step_queues={
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
-   },
-
-   {
-    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
-    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },  
-   },
-
-   {  
-    {{step1,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
-    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-}
-
-
---Larger step
-
-
-step_queues={
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {0  , com_side},{0,0,0} },    
-   },
-
-   {
-    {{step1,0,0},0,  0.1,wt,0.1 ,   {0,-side_adj}, {0,sh1,sh2}   ,  {-step1/2  , com_side}},   --LS    
-    {{0,0,0},2,        st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-
-   {
-    {{0,0,0},2,        st, 0.1, 0.1,   {step1/2  , -com_side},{0,0,0} },  
-   },
-
-   {  
-    {{step1*2,0,0},1,   wt_pre,wt,0.1,  {0,side_adj},  {0,sh1,sh2},  {0 ,-com_side}},    --RS    
-    {{0,0,0}, 2,      st, 0.1, 0.1,   {0,0},  {0,0,0}},    
-   },
-}
-
-
-
 
 
 local stage = 1
 local ready_for_input = true
+
+local is_possible = true
+
+
+
 
 local function calculate_footsteps(stage)
   local step_queue = step_queues[stage]
@@ -181,15 +91,74 @@ function state.entry()
   local uLeftTorso = util.pose_relative(uLeft,uTorso)
   local uRightTorso = util.pose_relative(uRight,uTorso)
 
-
   local leg_move_factor = math.abs(uLeftTorso[1]-uRightTorso[1])/0.25
 
-  local wt2 = wt +(1+leg_move_factor)
 
-  supportLeg = hcm.get_step_supportLeg()
+
+  is_possible = true
+
+  hcm.set_step_nosolution(0)
+  supportLeg = footstepplanner.getnextstep()
+
+  if hcm.get_step_nosolution()>0 then
+    --don't start step if there's no foot positions available!
+    is_possible = false
+    return
+  end
+
+
+  local step_min = 0.05
+  local step_min = 0.10
+
+  
   step_relpos = hcm.get_step_relpos() 
   step_zpr = hcm.get_step_zpr()
-  sh1,sh2 = step_zpr[1]+0.06, step_zpr[1]
+  if step_zpr[1]>0 then sh1,sh2 = step_zpr[1]+step_min, step_zpr[1]
+  else sh1,sh2 = step_min, step_zpr[1]
+  end
+
+  local st,wt = 1.0,3.0
+  if IS_WEBOTS then st,wt = 1.0,1.0 end
+  if IS_WEBOTS and not Config.enable_touchdown then 
+    st,wt = 0.3,1.0 
+    st,wt = 0.3,1.5 
+--    st,wt = 0.1,0.5 
+  end
+
+  local aShiftY0=mcm.get_walk_aShiftY()
+  
+  --[[
+  if aShiftY0[1]~=0 or aShiftY0[2]~=0 or step_zpr[2]~=0 then
+    print("ramp!")
+    st,wt = 2,2 
+  end
+--]]
+
+
+  local leg_move_dist = 
+    math.abs(step_relpos[1])+math.abs(step_relpos[2])+
+    math.abs(step_zpr[1])+step_min+step_min
+  local wt2 = wt *  math.max(1,  leg_move_dist / 0.20) 
+
+
+
+
+  --[[
+
+
+
+
+  --automatic detect
+  supportLeg = 0 --right support
+  if step_relpos[1]>0 then --walk forward
+    if uLeftTorso[1]>uRightTorso[1] then supportLeg=1 end--LF is leading foot, so left support
+  else
+    if uLeftTorso[1]<uRightTorso[1] then supportLeg=1 end--RF is leading foot, so left support
+  end
+--]]
+
+
+  
 
 
 
@@ -204,17 +173,30 @@ function state.entry()
     local side_adj = Config.walk.supportY - 0.00
     local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 
-    step_queues={
-       {
-        {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-        {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
-       },
 
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
-       },
-    }
+    if Config.enable_touchdown then
 
+
+      step_queues={
+         {
+          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+          {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+         },
+
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+    else
+      step_queues={
+         {
+          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+          {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+
+    end
 
   else
     --Take left step
@@ -223,19 +205,32 @@ function state.entry()
     local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRight)
     local uTorsoTarget = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
     local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
+    local side_adj = Config.walk.supportY - 0.00
+    local com_side = Config.walk.footY+Config.walk.supportY-side_adj
     
-    step2 = -(uLeftTorso[1]-uRightTorso[1]) + step1
-    step_queues={
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-       
-       },
+    if Config.enable_touchdown then
+      step_queues={
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+          {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+         
+         },
 
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
-       },
-    }
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+    else
+      step_queues={
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+          {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+    end
+
+
   end
 
 
@@ -257,6 +252,12 @@ function state.update()
   -- Get the time of update
   
   local dt = t - t_update
+
+  if not is_possible then 
+    print("ENDEDENDED")
+    print("ENDEDENDED")
+    return "done" 
+  end
   -- Save this at the last update time
   t_update = t
   if mcm.get_walk_ismoving()==0 and t-t_stage>0.5 then    
@@ -264,12 +265,10 @@ function state.update()
       ready_for_input = false
     end    
     if stage==#step_queues then 
+      hcm.set_step_dir(1)
       motion_ch:send'stop'  
-      print("ended")
-      return 'done'
+      return 'nextstep'
     elseif hcm.get_state_proceed()==1 then     
-
-
       --Clear the zmp compensation value here between transition---------------------
       local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
       local uTorso = mcm.get_status_uTorso()
@@ -278,7 +277,7 @@ function state.update()
       mcm.set_status_uTorso(uTorso)
 
 
-      hcm.set_state_proceed(0)
+--      hcm.set_state_proceed(0)
       stage = stage+1
       calculate_footsteps(stage)
       motion_ch:send'stair'  
@@ -294,6 +293,9 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   mcm.set_stance_singlesupport(0)
+  if hcm.get_step_auto()==0 then
+    hcm.set_step_dir(0)
+  end
 end
 
 return state

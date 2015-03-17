@@ -136,7 +136,7 @@ function state.update()
   if stage=="wristyawturn" then --Turn wrist angles without moving arms
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then        
-        print("trLArm:",arm_planner.print_transform(trLArm))        
+        print("trLArm:",util.print_transform(trLArm))        
         local trRArmTarget1 = movearm.getDoorHandlePosition({0,0,0}, 0, 0)
         local arm_seq = {
           {'move',Config.armfsm.dooropen.lhand_support[2],trRArmTarget1},
@@ -155,7 +155,7 @@ function state.update()
   elseif stage=="opendoor" then --Move the hook below the door knob
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then
-        print("trLArm:",arm_planner.print_transform(trLArm))        
+        print("trLArm:",util.print_transform(trLArm))        
 --      arm_seq={{'move',Config.armfsm.dooropen.lhand_support[6],nil}}
 
         --Rotate waist and support with left hand
@@ -208,7 +208,7 @@ hcm.set_state_proceed(0)
   elseif stage=="hookrollback" then
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then
---print("trRArm:",arm_planner.print_transform(trRArm))
+--print("trRArm:",util.print_transform(trRArm))
 --        arm_planner:set_shoulder_yaw_target(qLArm0[3], qRArm0[3]) 
         local arm_seq={
           {'move',nil,{trRArm[1]-0.10,trRArm[2],trRArm[3],trRArm[4],trRArm[5],trRArm[6]}},
@@ -232,7 +232,7 @@ hcm.set_state_proceed(0)
   elseif stage=="sidepush" then        
     if arm_planner:play_arm_sequence(t) then      
       if hcm.get_state_proceed()==1 then
-        print("trRArm:",arm_planner.print_transform(trRArm))        
+        print("trRArm:",util.print_transform(trRArm))        
         local wrist_seq = {         
           {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[1]},
         }
@@ -254,7 +254,7 @@ hcm.set_state_proceed(0)
 
   elseif stage=="armreturn2" then
     if arm_planner:play_arm_sequence(t) then 
-      print("trLArm:",arm_planner.print_transform(trLArm))              
+      print("trLArm:",util.print_transform(trLArm))              
       local wrist_seq = {
         {'move',Config.armfsm.dooropen.lhand_unsupport[1],nil},
         {'wrist',Config.armfsm.dooropen.lhand_unsupport[2],nil},
@@ -264,7 +264,7 @@ hcm.set_state_proceed(0)
     end
   elseif stage=="armbacktoinitpos" then
     if arm_planner:play_arm_sequence(t) then 
---print("trLArm:",arm_planner.print_transform(trLArm))              
+--print("trLArm:",util.print_transform(trLArm))              
 --          {'wrist',nil, Config.armfsm.dooropen.rhand_sidepush[3]},
 --          {'move',nil, trRArm0}
    

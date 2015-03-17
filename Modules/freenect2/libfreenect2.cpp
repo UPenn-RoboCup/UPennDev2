@@ -485,24 +485,24 @@ void Freenect2DeviceImpl::start()
   ir_camera_params_.k3 = ir_p->k3;
   ir_camera_params_.p1 = ir_p->p1;
   ir_camera_params_.p2 = ir_p->p2;
-  
+
   std::cout << "[Freenect2DeviceImpl] Done IR parameters" << std::endl;
 
   command_tx_.execute(ReadP0TablesCommand(nextCommandSeq()), result);
   std::cout << "[Freenect2DeviceImpl] P0Tables response" << std::endl;
   //std::cout << GenericResponse(result.data, result.length).toString() << std::endl;
-  
+
   depth_packet_processor_.loadP0TablesFromCommandResponse(result.data, result.length);
-  
+
   std::cout << "[Freenect2DeviceImpl] Loaded P0Tables " << std::endl;
 
   command_tx_.execute(ReadRgbCameraParametersCommand(nextCommandSeq()), result);
   RgbCameraParamsResponse *rgb_p = reinterpret_cast<RgbCameraParamsResponse *>(result.data);
 
-  rgb_camera_params_.fx = rgb_p->intrinsics[0];
-  rgb_camera_params_.fy = rgb_p->intrinsics[0];
-  rgb_camera_params_.cx = rgb_p->intrinsics[1];
-  rgb_camera_params_.cy = rgb_p->intrinsics[2];
+  rgb_camera_params_.fx = rgb_p->color_f;
+  rgb_camera_params_.fy = rgb_p->color_f;
+  rgb_camera_params_.cx = rgb_p->color_cx;
+  rgb_camera_params_.cy = rgb_p->color_cy;
 
   command_tx_.execute(ReadStatus0x090000Command(nextCommandSeq()), result);
   std::cout << "[Freenect2DeviceImpl] ReadStatus0x090000 response" << std::endl;
@@ -690,7 +690,7 @@ Freenect2Device *Freenect2::openDevice(int idx, bool attempting_reset)
   {
     r = libusb_reset_device(dev_handle);
 
-    if(r == LIBUSB_ERROR_NOT_FOUND) 
+    if(r == LIBUSB_ERROR_NOT_FOUND)
     {
       // From libusb documentation:
       // "If the reset fails, the descriptors change, or the previous state

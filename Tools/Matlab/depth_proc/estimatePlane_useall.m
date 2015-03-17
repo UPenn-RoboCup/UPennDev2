@@ -5,7 +5,7 @@ A = zeros(4,1);
 N = length(x);
 itr = 0;
 if isempty(required_itr)
-    required_itr = ceil(log(1-0.99)/log(1-(1-0.1)^3));  
+    required_itr = ceil(log(1-0.99)/log(1-(1-0.15)^3));  
 end
 
 thre = 0.013^2;

@@ -5,17 +5,31 @@
 local state = {}
 state._NAME = ...
 
+local NO_YAW_FIRST = true
+local USE_TR = false
+
 local Body   = require'Body'
 local vector = require'vector'
-local movearm = require'movearm'
-local t_entry, t_update, t_finish
-local timeout = 15.0
-
 local T = require'Transform'
-local trLGoal = T.transform6D{0.12, 0.24, -0.3, 0, 30*DEG_TO_RAD, -45*DEG_TO_RAD}
-local trRGoal = T.transform6D{0.12, -0.265, -0.3, 0, 30*DEG_TO_RAD, 0}
+local movearm = require'movearm'
+
+local t_entry, t_update, t_finish
+local timeout = 30.0
+
+----[[
+local trLGoal = T.transform6D{0.1, 0.3, -0.3, 0, 30*DEG_TO_RAD, -45*DEG_TO_RAD}
+local trRGoal = T.transform6D{0.1, -0.32, -0.28, 15*DEG_TO_RAD, 35*DEG_TO_RAD, 70*DEG_TO_RAD}
+--]]
+-- From the IK solution above, in webots
+----[[
+local qLGoal = vector.new{140.055, 14.5738, 5, -82.3928, 65.0266, 38.4997, -59.7267} * DEG_TO_RAD
+local qRGoal = vector.new{157.166, -50.6751, -5, -101.136, -55.7423, -26.6821, 63.5934} * DEG_TO_RAD
+--]]
+
+local shoulderLGoal, shoulderRGoal = 5*DEG_TO_RAD, -5*DEG_TO_RAD
 
 local lPathIter, rPathIter
+local setShoulderYaw
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -23,10 +37,32 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {10*DEG_TO_RAD}, {-5*DEG_TO_RAD})
-	
+	local qL = Body.get_larm_position()
+	local qR = Body.get_rarm_position()
+
+  -- To get to the IK solution
+	if USE_TR then
+  	lPathIter, rPathIter, qLGoal, qRGoal = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+	else
+		-- Given the IK solution
+		lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
+		print('qL0', qL*RAD_TO_DEG, qLGoal*RAD_TO_DEG)
+		print('qR0',qR*RAD_TO_DEG, qRGoal*RAD_TO_DEG)
+	end
+  if NO_YAW_FIRST then
+    setShoulderYaw = true
+  else
+    -- First, ignore the shoulderYaw, since it can cause issues of self collision
+    qL[3] = -20*DEG_TO_RAD
+    qR[3] = 20*DEG_TO_RAD
+    lPathIter, rPathIter = movearm.goto_q(qL, qR)
+    setShoulderYaw = false
+  end
+
 	-- Set Hardware limits in case
-  for i=1,10 do
+  for i=1,5 do
+		Body.set_larm_torque_enable(1)
+		Body.set_rarm_torque_enable(1)
     Body.set_larm_command_velocity(500)
     Body.set_rarm_command_velocity(500)
     Body.set_larm_command_acceleration(50)
@@ -43,7 +79,7 @@ function state.update()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
-	
+
 	-- Timing necessary
 	--[[
 	local qLArm = Body.get_larm_command_position()
@@ -55,7 +91,7 @@ function state.update()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]
 	Body.set_larm_command_position(q_lWaypoint)
-	
+
 	--[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
@@ -67,7 +103,14 @@ function state.update()
 	Body.set_rarm_command_position(q_rWaypoint)
 	-- Check if done
 	if not moreL and not moreR then
-		return 'done'
+    print('setShoulderYaw', setShoulderYaw)
+    if setShoulderYaw then
+  		return 'done'
+    else
+			-- ignore sanitization for the init position, which is absolutely known
+      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, 1*DEG_TO_RAD, true)
+      setShoulderYaw = true
+    end
 	end
 
 end
@@ -75,13 +118,13 @@ end
 function state.exit()
 
 	-- Undo the hardware limits
-  for i=1,10 do
+  for i=1,5 do
     Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
     Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
-    --Body.set_larm_position_p(32)
-    --Body.set_rarm_position_p(32)
+    Body.set_larm_position_p(32)
+    Body.set_rarm_position_p(32)
     if not IS_WEBOTS then unix.usleep(1e5) end
   end
 

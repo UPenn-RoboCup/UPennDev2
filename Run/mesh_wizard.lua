@@ -11,10 +11,11 @@ local munpack = require('msgpack.MessagePack')['unpack']
 local p_compress = require'png'.compress
 local j_compress = require'jpeg'.compressor'gray'
 local vector = require'vector'
-require'vcm'
-require'Body'
+local Body = require'Body'
 
---local ENABLE_LOG = true
+require'vcm'
+
+local ENABLE_LOG = true
 
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
@@ -31,11 +32,15 @@ if Config.net.use_wireless then
 else
 	operator = Config.net.operator.wired
 end
-local stream = Config.net.streams['mesh']
+local stream = Config.net.streams.mesh
+local mesh_udp_ch
 local mesh_tcp_ch = stream.tcp and si.new_publisher(stream.tcp)
-local mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
 local mesh_ch = stream.sub and si.new_publisher(stream.sub)
-print("OPERATOR", operator, stream.udp)
+-- Need UDP when competing
+if Config.IS_COMPETING then
+	print("UDP", operator, stream.udp)
+	mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
+end
 
 local libLog, logger, nlog
 if ENABLE_LOG then
@@ -151,7 +156,7 @@ local compression = {
   [2] = 'raw'
 }
 
-local function send_mesh(destination, compression, dynrange)
+local function send_mesh(compression, dynrange)
   local near, far = unpack(dynrange)
 	if near>far then
 		print('Near greater than far...')
@@ -164,6 +169,10 @@ local function send_mesh(destination, compression, dynrange)
   mesh_adj[torch.lt(mesh_adj,0)] = 0
   mesh_adj[torch.gt(mesh_adj,255)] = 255
   mesh_byte:copy(mesh_adj)
+	-- Update relevant metadata
+	metadata.c = compression
+	metadata.dr = dynrange
+	metadata.t = Body.get_time()
   -- Compression
   local c_mesh
   if compression=='jpeg' then
@@ -172,31 +181,21 @@ local function send_mesh(destination, compression, dynrange)
     c_mesh = p_compress(mesh_byte)
   else
     -- Raw
-    print('compressing RAW...')
     c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
   end
-	-- Update relevant metadata
-	metadata.c = compression
-	metadata.dr = dynrange
 	-- Send away
-	if IS_WEBOTS and mesh_ch then
-    mesh_ch:send{mpack(metadata), c_mesh}
-    print('Mesh | Sent PUB')
-	elseif destination then
-		mesh_tcp_ch:send{mpack(metadata), c_mesh}
-		print('Mesh | Sent TCP')
-	else
-		local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
-		print('Mesh | Sent UDP', err or 'successfully')
-	end
+	mesh_ch:send{mpack(metadata), c_mesh}
+	mesh_tcp_ch:send{mpack(metadata), c_mesh}
+	local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
+	print('Mesh | Sent UDP', err or 'successfully')
 end
 
 local function check_send_mesh()
 	local net = vcm.get_mesh_net()
-	local request, destination, comp = unpack(net)
+	local request, comp = unpack(net)
 	if request==0 then return end
 	local dynrange = vcm.get_mesh_dynrange()
-	send_mesh(destination==1, compression[comp], dynrange)
+	send_mesh(compression[comp], dynrange)
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)

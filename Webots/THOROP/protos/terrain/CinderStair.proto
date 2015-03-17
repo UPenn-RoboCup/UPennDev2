@@ -1,0 +1,62 @@
+#VRML_SIM V7.4.3 utf8
+#16 8 6 block, we assume the size of 40 20 15cm instead
+PROTO CinderStair [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+
+
+
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+		DEF block Transform{
+			translation 0 0.225 0
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}
+			     geometry Box { size 0.40 0.15 2.0 }
+			  }
+			]			
+		}
+		DEF block2 Transform{
+			  	translation 0 0.375 0
+					children[
+						DEF cinderblock Shape {
+			     		appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}
+			     		geometry Box { size 0.40 0.15 1.2 }
+			  		}
+			  	]
+		  	}	
+	  	DEF block3 Transform{
+		  	translation 0 0.525 0
+				children[
+					DEF cinderblock Shape {
+		     		appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}
+		     		geometry Box { size 0.40 0.15 0.40 }
+		  		}
+		  	]
+	  	}
+	  	DEF block4 Transform{
+		  	translation 0 0.075 0
+				children[
+					DEF cinderblock Shape {
+		     		appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}
+		     		geometry Box { size 0.40 0.15 2.80 }
+		  		}
+		  	]
+	  	}		
+  ]
+  boundingObject Group {
+		children [
+			USE block
+			USE block2
+			USE block3
+			USE block4
+		]
+  }  
+ locked TRUE
+}
+}

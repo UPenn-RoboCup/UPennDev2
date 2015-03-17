@@ -277,6 +277,47 @@ function libTransform.inv(a)
   return t
 end
 
+
+
+
+function libTransform.trans6D(p, xyz)
+--enter 6D transform and apply translation by xyz
+--and return 6D transform
+
+
+  local cwx = cos(p[4])
+  local swx = sin(p[4])
+  local cwy = cos(p[5])
+  local swy = sin(p[5])
+  local cwz = cos(p[6])
+  local swz = sin(p[6])
+
+  local t = torch.eye(4)
+
+  t[1][1] = cwy*cwz
+  t[1][2] = swx*swy*cwz-cwx*swz
+  t[1][3] = cwx*swy*cwz+swx*swz
+  t[1][4] = p[1]
+  t[2][1] = cwy*swz
+  t[2][2] = swx*swy*swz+cwx*cwz
+  t[2][3] = cwx*swy*swz-swx*cwz
+  t[2][4] = p[2]
+  t[3][1] = -swy
+  t[3][2] = swx*cwy
+  t[3][3] = cwx*cwy
+  t[3][4] = p[3]
+
+
+
+  local xoffset = t[1][1]*xyz[1]+t[1][2]*xyz[2]+t[1][3]*xyz[3]
+  local yoffset = t[2][1]*xyz[1]+t[2][2]*xyz[2]+t[2][3]*xyz[3]
+  local zoffset = t[3][1]*xyz[1]+t[3][2]*xyz[2]+t[3][3]*xyz[3]
+
+  return{p[1]+xoffset,p[2]+yoffset,p[3]+zoffset,p[4],p[5],p[6]}
+end
+
+
+
 -- Find the closest Orthonormal matrix for the rotaiton component
 -- Calculating square roots via LAPACK:
 -- http://math.stackexchange.com/questions/106774/matrix-square-root

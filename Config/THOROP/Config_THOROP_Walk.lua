@@ -36,8 +36,16 @@ walk.stanceLimitA = {-10*DEG_TO_RAD,30*DEG_TO_RAD}
 
 walk.bodyHeight = 0.93
 walk.footY = 0.095
+
+--FOR torque testing only!!!
+--if IS_WEBOTS then walk.footY = 0.072 end
+
+
 walk.footX = 0
-walk.bodyTilt = 3*DEG_TO_RAD
+--walk.bodyTilt = 3*DEG_TO_RAD
+walk.bodyTilt = 0 --NOW TESTING ZERO BODY TILT
+
+
 walk.torsoX = 0.02     -- com-to-body-center offset
 
 ------------------------------------
@@ -56,8 +64,10 @@ walk.supportY = 0.06
 ------------------------------------
 -- Compensation parameters
 ------------------------------------
+
 gyroFactorX = 490.23/(251000/180)*0.5
 gyroFactorY = 490.23/(251000/180)*0.5
+--if IS_WEBOTS then gyroFactorX,gyroFactorY=0,0 end
 walk.ankleImuParamX={1, 0.9*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 walk.kneeImuParamX= {1, -0.3*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 walk.ankleImuParamY={1, 1.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
@@ -74,8 +84,15 @@ walk.velDelta  = {0.025,0.02,0.1}
 walk.foot_traj = 1 --curved step
 
 if IS_WEBOTS or (HOSTNAME ~="alvin" and HOSTNAME ~= "teddy") then
+
+  --relative COM z: -0.203
+  --Actual COM height = 0.93-0.203 = 0.727
+  --tZMP: 0.272
   walk.foot_traj = 2 --square step
-  walk.tZMP = 0.40 
+--  walk.tZMP = 0.40 
+--  walk.tZMP = 0.272
+  walk.tZMP = 0.33 --the same value as actual robot
+
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1*DEG_TO_RAD
   walk.ankleRollCompensation = 1.2*DEG_TO_RAD
@@ -250,6 +267,8 @@ if not IS_WEBOTS then
   walk.footSagCompensation = {0.00,0.00}
 else
 
+  --WEBOTS
+
   walk.torsoX = -0.03     -- com-to-body-center offset
   walk.supportX = 0.03 --better
   walk.supportY = 0.05
@@ -261,6 +280,7 @@ else
 --  walk.delay_threshold_angle = 2.5*math.pi/180
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.delay_factor = {0.8,1.7}
+  walk.velLimitX = {-.10,.20} 
 
 end
 
@@ -268,8 +288,32 @@ end
 --COM compensation testing
   walk.supportX = 0.03 
   walk.supportY = 0.02
+
+
+  walk.supportX = 0.01 
+  walk.supportY = 0.04
+
+  walk.force_torque = true
+
+  if HOSTNAME == "teddy" then
+  --clown foot
+    walk.supportY = 0.04
+    walk.kneePitchCompensation = 0.5*DEG_TO_RAD
+    walk.force_torque = false
+    walk.velLimitX = {-.10,.15} 
+  end
+
+  if HOSTNAME == "alvin" then
+    walk.kneePitchCompensation = 0.5*DEG_TO_RAD
+    walk.force_torque = false
+--    walk.supportY = 0.03
+    walk.supportY = 0.02
+    walk.velLimitX = {-.06,.10} 
+
+  end
+
 --higher ankle Y gain (helps SS)
-  walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+--  walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 
 ------------------------------------
 -- Associate with the table

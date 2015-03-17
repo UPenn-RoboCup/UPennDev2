@@ -14,7 +14,7 @@ local si = require'simple_ipc'
 local libLog = require'libLog'
 local Body = require('Body')
 local logger = libLog.new'joint'
-local sample_hz = 100
+local sample_hz = 120
 
 local get_time, usleep, max = unix.time, unix.usleep, math.max
 local t0, t_sleep = get_time(), 1 / sample_hz
@@ -39,14 +39,19 @@ while running do
 	e.pose = wcm.get_robot_odometry()
 	e.battery = Body.get_battery()
 	-- Write the log
-  logger:record(e)
+	logger:record(e)
 	-- Status message
-	if t - t_debug > 1 then
+	if t - t_debug > 5 then
 		t_debug = t
-		print('Joint Logger', count)
+		io.write('Joint Logger: ', count,'\n')
+		logger:stop()
+		logger = libLog.new('joint', true)
+		io.write('Open new log!\n')
 	end
+
+
   -- Garbage collection for timing reasons
-	collectgarbage('step')
+  collectgarbage('step')
   t_diff = get_time() - t
   usleep(1e6 * max(t_sleep - t_diff, 0))
 end

@@ -38,9 +38,6 @@ if IS_WEBOTS then
   -- Config.camera_timestep = 33
   -- Config.lidar_timestep = 200 --slower
   -- Config.kinect_timestep = 30
-
-
-
   Config.use_gps_pose = false
 end
 --Config.use_imu_yaw = true
@@ -61,6 +58,7 @@ if IS_STEVE then
 		'Robot', 'Walk', 'Net',
 		'FSM_Steve', 'Arm_Steve', 'Vision_Steve' --, 'World_Steve'
 	}
+	Config.sensors.world = nil
 	--[[
 	if IS_WEBOTS then
 		Config.sensors.kinect = 'kinect2_wizard'

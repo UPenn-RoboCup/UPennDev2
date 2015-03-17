@@ -45,7 +45,7 @@ Ubuntu
 sudo chown -R thor /usr/local
 sudo usermod -a -G dialout thor
 sudo usermod -a -G video thor
-sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev libpng12-dev libjpeg-dev libtool
+sudo apt-get install git htop build-essential gfortran automake libudev-dev pkg-config zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev libpng12-dev libjpeg-dev libtool libncurses5-dev
 
 cd ~/
 mkdir -p src
@@ -95,26 +95,40 @@ cd OpenBLAS
 make
 make install PREFIX=/usr/local
 
+cd ~/src
 git clone https://github.com/smcgill3/torch7.git
 cd torch7
 git checkout build-fixes
 make prep
 make
 make install
-cd ~/src
 
-git clone git clone https://github.com/ggreer/the_silver_searcher.git
+cd ~/src
+git clone https://github.com/ggreer/the_silver_searcher.git
 cd the_silver_searcher
 ./build.sh
 make install
 
 # Fish
-sudo apt-get install build-essential ncurses-dev libncurses5-dev gettext
+cd ~/src
+git clone https://github.com/fish-shell/fish-shell.git
+cd fish-shell
+autoconf
+./configure
+make
+make install
+sudo -s
+echo `which fish` >> /etc/shells
+exit
+chsh -s /usr/local/bin/fish
+
+# SSH Keys
+https://help.github.com/articles/generating-ssh-keys/
 
 cd ~/
 git clone https://github.com/smcgill3/UPennDev.git
 
-  GNU nano 2.2.6                       File: /etc/udev/rules.d/55-kinect2-usb.rules
+/etc/udev/rules.d/55-thor-usb.rules
 
 # Make kinect2 device mount with writing permissions (default is read only for unknown devices)
 # https://github.com/PrimeSense/Sensor/blob/unstable/Platform/Linux/Install/55-primesense-usb.rules

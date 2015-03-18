@@ -79,7 +79,9 @@ local function compensate_arms(qLGoal, qRGoal)
 	lPathIter, rPathIter = movearm.goto_q(qLComp, qRComp, true)
 	--]]
 
-	lPathIter, rPathIter, iqLGoal, iqRGoal = movearm.goto_tr_via_q(fkLComp, fkRComp)
+	lPathIter, rPathIter, iqLGoal, iqRGoal = movearm.goto_tr_via_q(
+		fkLComp, fkRComp, {qLGoal[3]}, {qRGoal[3]}
+	)
 	mcm.set_stance_uTorsoComp(uTorsoComp)
 
 	return iqLGoal, iqRGoal, uTorsoComp

@@ -59,9 +59,11 @@ function state.update()
 			local uTorsoAdapt, uTorso = movearm.get_compensation()
 			uTorso0 = uTorso
 			uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
+			-- Apply the compensation
+			local fkLComp, fkRComp = movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
 			-- Form the iterator
 			lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
-				movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
+				movearm.goto_tr_via_q(fkLComp, fkRComp, {qLGoal[3]}, {qRGoal[3]})
 		else
 			-- #nofilter
 			qLGoalFiltered, qRGoalFiltered = qLGoal, qRGoal

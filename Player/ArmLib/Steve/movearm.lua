@@ -145,7 +145,7 @@ function movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
 	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
 	local fkLComp = trComp * fkL
 	local fkRComp = trComp * fkR
-	return movearm.goto_tr_via_q(fkLComp, fkRComp, {qLGoal[3]}, {qRGoal[3]})
+	return fkLComp, fkRComp
 end
 
 return movearm

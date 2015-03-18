@@ -129,6 +129,10 @@ char_lut['-'] = function()
   end
 end
 
+function get_compensation()
+
+end
+
 --[[
 local zyz = T.to_zyz(desired_tr)
 print('des zyz:',zyz[1],zyz[2],zyz[3])
@@ -149,6 +153,7 @@ local function apply_pre(d_tr)
 		sanitize(iqArm, qRArm)
 		hcm.set_teleop_rarm(iqArm)
 	end
+	get_compenstation()
 end
 
 local function apply_post(d_tr)
@@ -167,6 +172,7 @@ local function apply_post(d_tr)
 		sanitize(iqArm, qRArm)
 		hcm.set_teleop_rarm(iqArm)
 	end
+	get_compenstation()
 end
 
 -- Translate the end effector
@@ -288,15 +294,15 @@ function show_status()
     color('== Teleoperation ==', 'magenta'),
     'BodyFSM: '..color(gcm.get_fsm_Body(), 'green'),
     'ArmFSM: '..color(gcm.get_fsm_Arm(), 'green'),
---    'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),
---    'MotionFSM: '..color(gcm.get_fsm_Motion(), 'green'),
+    'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),
+    'MotionFSM: '..color(gcm.get_fsm_Motion(), 'green'),
     larm_info,
     rarm_info,
     head_info,
     walk_info,
     '\n'
   }
-  io.write(table.concat(info,'\n'))
+  if not IS_WEBOTS then io.write(table.concat(info,'\n')) end
 end
 
 -- Run the generic keypress library

@@ -8,6 +8,8 @@ local K = Body.Kinematics
 local K2 = require'K_ffi'
 local T = require'Transform'
 
+local USE_COMPENSATION = true
+
 --[[
 SJ's arm compensation:
 calculate_com_pos -> get_torso_compensation -> get_next_movement -> plan_unified -> plan_arm_sequence -> armTeleop
@@ -19,6 +21,8 @@ local lPathIter, rPathIter
 local qLGoal, qRGoal
 local qLGoalFiltered, qRGoalFiltered
 local qcLArm, qcRArm, qcWaist, qLArm, qRArm, qWaist
+local qLD, qRD
+local uTorso0, uTorsoComp
 
 -- Compensation items
 local torsoX = Config.walk.torsoX
@@ -61,30 +65,16 @@ local function get_compensation()
 		)
 		uTorsoAdapt = uTorsoAdapt + adapt_factor * (uTorso - uCOM)
 	end
-	return util.pose_relative(uTorsoAdapt, uTorso)
+	return uTorsoAdapt, uTorso
 end
 
-local function compensate_arms(qLGoal, qRGoal)
-	-- Find the compensation needed for this joint request
-	local uTorsoComp = get_compensation()
+local function compensate_arms(qLGoal, qRGoal, uTorsoComp)
 	local fkL = K2.forward_larm(qLGoal)
 	local fkR = K2.forward_rarm(qRGoal)
 	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
 	local fkLComp = trComp * fkL
 	local fkRComp = trComp * fkR
-	-- TODO: Find the best shoulder angle to achieve this transform
-	--[[
-	local iqLGoal = K2.inverse_larm(fkLComp, qcLArm)
-	local iqRGoal = K2.inverse_rarm(fkRComp, qcRArm)
-	lPathIter, rPathIter = movearm.goto_q(qLComp, qRComp, true)
-	--]]
-
-	lPathIter, rPathIter, iqLGoal, iqRGoal = movearm.goto_tr_via_q(
-		fkLComp, fkRComp, {qLGoal[3]}, {qRGoal[3]}
-	)
-	mcm.set_stance_uTorsoComp(uTorsoComp)
-
-	return iqLGoal, iqRGoal, uTorsoComp
+	return movearm.goto_tr_via_q(fkLComp, fkRComp, {qLGoal[3]}, {qRGoal[3]})
 end
 
 function state.entry()
@@ -98,7 +88,9 @@ function state.entry()
 	qcRArm = Body.get_rarm_command_position()
   hcm.set_teleop_larm(qcLArm)
   hcm.set_teleop_rarm(qcRArm)
+	-- Make sure to reset
 	qLGoal, qRGoal = qcLArm, qcRArm
+	lPathIter, rPathIter = nil, nil
 end
 
 function state.update()
@@ -114,11 +106,11 @@ function state.update()
 	qcLArm = Body.get_larm_command_position()
 	qcRArm = Body.get_rarm_command_position()
 	qcWaist = Body.get_waist_command_position()
-
 	qLArm = Body.get_larm_position()
 	qRArm = Body.get_rarm_position()
 	qWaist = Body.get_waist_position()
 
+	-- Check reset conditions
 	if hcm.get_teleop_larm()~=qLGoal then lPathIter = nil end
 	if hcm.get_teleop_rarm()~=qRGoal then rPathIter = nil end
 
@@ -128,13 +120,21 @@ function state.update()
     qLGoal = hcm.get_teleop_larm()
     qRGoal = hcm.get_teleop_rarm()
 
-		-- No filter
-		--qLGoalFiltered, qRGoalFiltered = qLGoal, qRGoal
-
-		-- Filter to use with the compensation
-		qLGoalFiltered, qRGoalFiltered = compensate_arms(qLGoal, qRGoal)
-    -- Make the iterators, sanitize the output
-    --lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, true)
+		if USE_COMPENSATION then
+			-- Grab the torso compensation
+			local uTorsoAdapt, uTorso = get_compensation()
+			uTorso0 = uTorso
+			uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
+			-- Form the iterator
+			lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
+				compensate_arms(qLGoal, qRGoal, uTorsoComp)
+			--mcm.set_stance_uTorsoComp(uTorsoComp)
+		else
+			-- #nofilter
+			qLGoalFiltered, qRGoalFiltered = qLGoal, qRGoal
+			lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
+				movearm.goto_q(qLGoal, qRGoal, true)
+		end
 
   end
 
@@ -147,6 +147,15 @@ function state.update()
 
 	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
 	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
+
+	local phaseL = moreL and moreL/qLD or 0
+	local phaseR = moreR and moreR/qRD or 0
+
+	if USE_COMPENSATION then
+		local phase = math.max(phaseL, phaseR)
+		local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
+		mcm.set_stance_uTorsoComp(uTorsoNow)
+	end
 
 	-- Send to the joints
 	Body.set_larm_command_position(qLNext)

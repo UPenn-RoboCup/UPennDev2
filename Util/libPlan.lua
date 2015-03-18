@@ -135,6 +135,7 @@ local function joint_iter(self, qGoal0, qArm0, res_q, SANITIZE)
 	local qGoal = clamp_vector(qGoal0, self.min_q, self.max_q)
 	local dqdt_limit = self.dqdt_limit
 	if SANITIZE then sanitize(qGoal, qArm0, dt, dqdt_limit) end
+	local distance0 = vector.norm(qGoal - qArm0)
 	local qPrev
 	return function(cur_qArm, dt)
 		-- Feedback
@@ -159,7 +160,7 @@ local function joint_iter(self, qGoal0, qArm0, res_q, SANITIZE)
 		local qWaypoint = 0.2 * qWaypointFB + 0.8 * qWaypointFF
 		qPrev = qWaypoint
 		return distanceFB, qWaypoint
-	end, qGoal
+	end, qGoal, distance0
 end
 
 -- Plan a direct path using

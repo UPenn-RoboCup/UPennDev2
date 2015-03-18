@@ -191,9 +191,9 @@ local pre_arm = {
 
 -- Rotate (locally) the end effector
 local post_arm = {
-  ['e'] = T.rotY(dr),
+  e = T.rotY(dr),
   ['c'] = T.rotY(-dr),
-  ["a"] = T.rotZ(dr),
+  a = T.rotZ(dr),
   ['d'] = T.rotZ(-dr),
   ["q"] = T.trans(0,0,ds),
   ['z'] = T.trans(0,0,-ds),

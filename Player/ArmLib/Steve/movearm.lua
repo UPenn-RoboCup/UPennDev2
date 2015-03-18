@@ -30,13 +30,13 @@ function movearm.goto_tr_via_q(lwrist, rwrist, loptions, roptions)
 	local lPathIter, rPathIter, iqLArm, iqRArm
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		iqLArm = K.inverse_larm(lwrist, qLArm, unpack(loptions))
+		iqLArm = K.inverse_larm(lwrist, qLArm, unpack(loptions or {}))
     sanitize(iqLArm, qLArm)
 		lPathIter = lPlanner:joint_iter(iqLArm, qLArm, dqLimit)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		iqRArm = K.inverse_rarm(rwrist, qRArm, unpack(roptions))
+		iqRArm = K.inverse_rarm(rwrist, qRArm, unpack(roptions or {}))
     sanitize(iqRArm, qRArm)
 		rPathIter = rPlanner:joint_iter(iqRArm, qRArm, dqLimit)
 	end

@@ -4,6 +4,9 @@ local Body = require'Body'
 local movearm = require'movearm'
 -- Use SJ's kinematics for the mass properties
 local K = Body.Kinematics
+-- Use Steve's kinematics for arm kinematics
+local K2 = require'K_ffi'
+local T = require'Transform'
 
 --[[
 SJ's arm compensation:
@@ -14,6 +17,7 @@ local t_entry, t_update, t_finish
 local timeout = 10.0
 local lPathIter, rPathIter
 local qLGoal, qRGoal
+local qLGoalFiltered, qRGoalFiltered
 local qcLArm, qcRArm, qcWaist, qLArm, qRArm, qWaist
 
 -- Compensation items
@@ -60,6 +64,27 @@ local function get_compensation()
 	return util.pose_relative(uTorsoAdapt, uTorso)
 end
 
+local function compensate_arms(qLGoal, qRGoal)
+	-- Find the compensation needed for this joint request
+	local uTorsoComp = get_compensation()
+	local fkL = K2.forward_larm(qLGoal)
+	local fkR = K2.forward_rarm(qRGoal)
+	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
+	local fkLComp = trComp * fkL
+	local fkRComp = trComp * fkR
+	-- TODO: Find the best shoulder angle to achieve this transform
+	--[[
+	local iqLGoal = K2.inverse_larm(fkLComp, qcLArm)
+	local iqRGoal = K2.inverse_rarm(fkRComp, qcRArm)
+	lPathIter, rPathIter = movearm.goto_q(qLComp, qRComp, true)
+	--]]
+
+	lPathIter, rPathIter, iqLGoal, iqRGoal = movearm.goto_tr_via_q(fkLComp, fkRComp)
+	mcm.set_stance_uTorsoComp(uTorsoComp)
+
+	return iqLGoal, iqRGoal, uTorsoComp
+end
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -71,9 +96,7 @@ function state.entry()
 	qcRArm = Body.get_rarm_command_position()
   hcm.set_teleop_larm(qcLArm)
   hcm.set_teleop_rarm(qcRArm)
-  qLGoal = hcm.get_teleop_larm()
-  qRGoal = hcm.get_teleop_rarm()
-  lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
+	qLGoal, qRGoal = qcLArm, qcRArm
 end
 
 function state.update()
@@ -85,15 +108,6 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  -- See if commanded a new position
-  if qLGoal~=hcm.get_teleop_larm() or qRGoal~=hcm.get_teleop_rarm() then
-    -- Get the goal from hcm
-    qLGoal = hcm.get_teleop_larm()
-    qRGoal = hcm.get_teleop_rarm()
-    -- Make the iterators, sanitize the output
-    lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, true)
-  end
-  
 	-- Update our measurements availabl in the state
 	qcLArm = Body.get_larm_command_position()
 	qcRArm = Body.get_rarm_command_position()
@@ -103,22 +117,38 @@ function state.update()
 	qRArm = Body.get_rarm_position()
 	qWaist = Body.get_waist_position()
 
-	-- Find the compenstation needed
-	local comp = get_compensation()
-	print('Compensation', comp)
+	if hcm.get_teleop_larm()~=qLGoal then lPathIter = nil end
+	if hcm.get_teleop_rarm()~=qRGoal then rPathIter = nil end
+
+  -- See if commanded a new position
+  if not lPathIter or not rPathIter then
+    -- Get the goal from hcm
+    qLGoal = hcm.get_teleop_larm()
+    qRGoal = hcm.get_teleop_rarm()
+
+		-- No filter
+		--qLGoalFiltered, qRGoalFiltered = qLGoal, qRGoal
+
+		-- Filter to use with the compensation
+		qLGoalFiltered, qRGoalFiltered = compensate_arms(qLGoal, qRGoal)
+    -- Make the iterators, sanitize the output
+    --lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, true)
+
+  end
 
 	-- Timing necessary
 	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
+	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
 	-- No time needed
 	--local moreL, q_lWaypoint = lPathIter(qLArm)
-	Body.set_larm_command_position(moreL and q_lWaypoint or qLGoal)
-	
-	-- Timing
-	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
-	-- No time
 	--local moreR, q_rWaypoint = rPathIter(qRArm)
-	--if moreR then print(moreR, qRArm, q_rWaypoint) end
-	Body.set_rarm_command_position(moreR and q_rWaypoint or qRGoal)
+
+	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
+	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
+
+	-- Send to the joints
+	Body.set_larm_command_position(qLNext)
+	Body.set_rarm_command_position(qRNext)
   
 end
 

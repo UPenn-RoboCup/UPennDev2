@@ -153,7 +153,7 @@ local function apply_pre(d_tr)
 		sanitize(iqArm, qRArm)
 		hcm.set_teleop_rarm(iqArm)
 	end
-	get_compenstation()
+	get_compensation()
 end
 
 local function apply_post(d_tr)
@@ -172,7 +172,7 @@ local function apply_post(d_tr)
 		sanitize(iqArm, qRArm)
 		hcm.set_teleop_rarm(iqArm)
 	end
-	get_compenstation()
+	get_compensation()
 end
 
 -- Translate the end effector

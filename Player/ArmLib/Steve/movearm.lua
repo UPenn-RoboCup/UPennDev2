@@ -45,17 +45,31 @@ function movearm.goto_q(lwrist, rwrist, safe)
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end
 
+local shoulderAngles = {}
+do
+	local granularity = 3*DEG_TO_RAD
+	local minShoulder, maxShoulder = -math.pi/2, math.pi/2
+	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
+	for i=0,n do
+		table.insert(shoulderAngles, minShoulder + i * granularity)
+	end
+end
+local function find_shoulderL(trL)
+
+	iqLArm = K.inverse_larm(trL, qLArm, unpack(loptions or {}))
+end
+
 -- Take a desired Transformation matrix and move joint-wise to it
-function movearm.goto_tr_via_q(lwrist, rwrist, loptions, roptions)
+function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 	if lwrist then
 		local qLArm = Body.get_larm_command_position()
-		iqLArm = K.inverse_larm(lwrist, qLArm, unpack(loptions or {}))
+		iqLArm = K.inverse_larm(trL, qLArm, unpack(loptions or {}))
 		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qLArm, dqLimit, true)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		iqRArm = K.inverse_rarm(rwrist, qRArm, unpack(roptions or {}))
+		iqRArm = K.inverse_rarm(trR, qRArm, unpack(roptions or {}))
 		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qRArm, dqLimit, true)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist

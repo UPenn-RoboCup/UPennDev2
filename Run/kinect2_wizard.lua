@@ -72,12 +72,12 @@ local function update(rgb, depth)
 		detection.update(rgb, depth)
 		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
 	end
-	-- Send debug
+	-- Timing
 	if Config.IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
   if t - t_send < 0.1 then return t end
-
   t_send = t
 	print('Kinect2 | t_send', t_send)
+
   local rpy = Body.get_rpy()
   local bh = mcm.get_walk_bodyHeight()
   local qHead = Body.get_head_position()
@@ -142,11 +142,18 @@ local function update(rgb, depth)
 	color_ch:send({m_rgb, j_rgb})
   depth_ch:send({m_depth, ranges})
 
-  -- Log at 2Hz
+  -- Log at 4Hz
 	if t - t_send < 0.25 then return t end
   if ENABLE_LOG then
     log_rgb:record(m_rgb, j_rgb)
     log_depth:record(m_depth, ranges)
+		if log_rgb.n >= 10 then
+			log_rgb:stop()
+			log_depth:stop()
+			print('Open new log!')
+			log_rgb = libLog.new('k2_rgb', true)
+			log_depth = libLog.new('k2_depth', true)
+		end
   end
 
   return t

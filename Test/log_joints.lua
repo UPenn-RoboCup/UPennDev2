@@ -9,11 +9,11 @@ end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
-require'wcm'
+local Body = require('Body')
 local si = require'simple_ipc'
 local libLog = require'libLog'
-local Body = require('Body')
 local logger = libLog.new'joint'
+require'wcm'
 local sample_hz = 120
 
 local get_time, usleep, max = unix.time, unix.usleep, math.max
@@ -41,7 +41,7 @@ while running do
 	-- Write the log
 	logger:record(e)
 	-- Status message
-	if t - t_debug > 5 then
+	if t - t_debug > 10 then
 		t_debug = t
 		io.write('Joint Logger: ', count,'\n')
 		logger:stop()

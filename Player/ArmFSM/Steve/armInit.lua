@@ -42,13 +42,17 @@ function state.entry()
 
   -- To get to the IK solution
 	if USE_TR then
-  	lPathIter, rPathIter, qLGoal, qRGoal = movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+  	lPathIter, rPathIter, qLGoal, qRGoal =
+			movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
 	else
 		-- Given the IK solution
 		lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
-		print('qL0', qL*RAD_TO_DEG, qLGoal*RAD_TO_DEG)
-		print('qR0',qR*RAD_TO_DEG, qRGoal*RAD_TO_DEG)
 	end
+
+	-- Ensure we have them
+	assert(lPathIter, 'No left iterator')
+	assert(rPathIter, 'No right iterator')
+
   if NO_YAW_FIRST then
     setShoulderYaw = true
   else

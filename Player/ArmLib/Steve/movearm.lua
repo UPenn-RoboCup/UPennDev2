@@ -9,6 +9,8 @@ local K = require'K_ffi'
 -- Use SJ's kinematics for the mass properties
 local K0 = Body.Kinematics
 local sanitize = K.sanitize
+local min, max = math.min, math.max
+local abs = math.abs
 
 local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
 local radiansPerSecond = degreesPerSecond * DEG_TO_RAD
@@ -19,11 +21,15 @@ local dqLimit = DEG_TO_RAD / 3
 local torsoX = Config.walk.torsoX
 local torso0 = vector.new({-torsoX,0,0})
 
-local lPlanner = P.new_planner(
-	vector.slice(Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
-	vector.slice(Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]),
-	radiansPerSecond
-):set_chain(K.forward_larm, K.inverse_larm)
+local minLArm = vector.slice(
+	Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]
+)
+local maxLArm = vector.slice(
+	Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]
+)
+
+local lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond)
+	:set_chain(K.forward_larm, K.inverse_larm)
 
 local rPlanner = P.new_planner(
 	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
@@ -50,27 +56,42 @@ do
 	local granularity = 3*DEG_TO_RAD
 	local minShoulder, maxShoulder = -math.pi/2, math.pi/2
 	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
-	for i=0,n do
-		table.insert(shoulderAngles, minShoulder + i * granularity)
-	end
+	for i=0,n do table.insert(shoulderAngles, minShoulder + i * granularity) end
 end
-local function find_shoulderL(trL)
-
-	iqLArm = K.inverse_larm(trL, qLArm, unpack(loptions or {}))
+local function find_shoulderL(trL, qLArm)
+	local iqLArm, margin, qBest
+	--local imax
+	local maxmargin = -math.huge
+	for i, q in ipairs(shoulderAngles) do
+		iqLArm = K.inverse_larm(trL, qLArm, q)
+		local margin = math.huge
+		for ii, vv in ipairs(iqLArm - minLArm) do margin = min(abs(vv), margin) end
+		for ii, vv in ipairs(iqLArm - maxLArm) do margin = min(abs(vv), margin) end
+		if margin > maxmargin then
+			maxmargin = margin
+			qBest = iqLArm
+			--imax = i
+		end
+	end
+	return qBest
 end
 
 -- Take a desired Transformation matrix and move joint-wise to it
 function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
-	if lwrist then
-		local qLArm = Body.get_larm_command_position()
-		iqLArm = K.inverse_larm(trL, qLArm, unpack(loptions or {}))
-		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qLArm, dqLimit, true)
+	if trL then
+		local qcLArm = Body.get_larm_command_position()
+		if loptions then
+			iqLArm = K.inverse_larm(trL, qcLArm, unpack(loptions))
+		else
+			iqLArm = find_shoulderL(trL, qcLArm)
+		end
+		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, dqLimit, true)
 	end
-	if rwrist then
-		local qRArm = Body.get_rarm_command_position()
-		iqRArm = K.inverse_rarm(trR, qRArm, unpack(roptions or {}))
-		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qRArm, dqLimit, true)
+	if trR then
+		local qcRArm = Body.get_rarm_command_position()
+		iqRArm = K.inverse_rarm(trR, qcRArm, unpack(roptions or {}))
+		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, dqLimit, true)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end

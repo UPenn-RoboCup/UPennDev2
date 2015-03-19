@@ -41,8 +41,8 @@ function state.update()
 	-- Update our measurements availabl in the state
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
-	local qLArm = Body.get_larm_position()
-	local qRArm = Body.get_rarm_position()
+	--local qLArm = Body.get_larm_position()
+	--local qRArm = Body.get_rarm_position()
 
 	-- Check reset conditions
 	if hcm.get_teleop_larm()~=qLGoal then lPathIter = nil end
@@ -50,6 +50,9 @@ function state.update()
 
   -- See if commanded a new position
   if not lPathIter or not rPathIter then
+		-- Check if using the compensation
+		USE_COMPENSATION = hcm.get_teleop_compensation()==1
+
     -- Get the goal from hcm
     qLGoal = hcm.get_teleop_larm()
     qRGoal = hcm.get_teleop_rarm()
@@ -63,7 +66,9 @@ function state.update()
 			local fkLComp, fkRComp = movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
 			-- Form the iterator
 			lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
-				movearm.goto_tr_via_q(fkLComp, fkRComp, {qLGoal[3]}, {qRGoal[3]})
+				movearm.goto_tr_via_q(fkLComp, fkRComp
+				--, {qLGoal[3]}, {qRGoal[3]}
+			)
 		else
 			-- #nofilter
 			qLGoalFiltered, qRGoalFiltered = qLGoal, qRGoal

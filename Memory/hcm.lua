@@ -17,10 +17,13 @@ local shared_data = {}
 local shared_data_sz = {}
 
 shared_data.teleop = {
+	-- Head angles
   head = zeros(2),
   -- Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),
+	-- Use compensation when moving the arm?
+	compensation = ones(1)
 }
 
 shared_data.assist = {

@@ -11,10 +11,20 @@ local q = require'quaternion'
 local T = require'Transform'
 local tremove = require'table'.remove
 local fabs = require'math'.abs
+local min, max = math.min, math.max
 
 local mt = {
 	__call = function(t,k) return tremove(t) end
 }
+
+local function sanitize0(iqArm, cur_qArm)
+	local diff, mod_diff
+	for i, v in ipairs(cur_qArm) do
+		diff = iqArm[i] - v
+		mod_diff = mod_angle(diff)
+    iqArm[i] = (fabs(diff) > fabs(mod_diff)) and v + mod_diff or iqArm[i]
+	end
+end
 
 local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 	local diff0, mod_diff, diff
@@ -25,6 +35,29 @@ local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 		diff = fabs(diff0) < fabs(mod_diff) and diff0 or mod_diff
 		iqWaypoint[i] = v + (dt and procFunc(diff, 0, dqdt_limit[i] * dt) or diff)
 	end
+end
+
+local function find_shoulder(self, tr, qArm)
+	local minArm, maxArm, invArm = self.min_q, self.max_q, self.inverse
+	local iqArm, margin, qBest
+	local dMin, dMax, margin
+	local maxmargin = -math.huge
+	for i, q in ipairs(self.shoulderAngles) do
+		iqArm = invArm(tr, qArm, q)
+		-- Sanitize before, so we compare our actual usage
+		-- NOTE: Be careful here with sanitize for far changes in tr from qArm!
+		--sanitize0(iqArm, qArm)
+		dMin = iqArm - minArm
+		dMax = iqArm - maxArm
+		margin = math.huge
+		for _, v in ipairs(dMin) do margin = min(fabs(v), margin) end
+		for _, v in ipairs(dMax) do margin = min(fabs(v), margin) end
+		if margin > maxmargin then
+			maxmargin = margin
+			qBest = iqArm
+		end
+	end
+	return qBest
 end
 
 -- TODO List for the planner
@@ -267,7 +300,7 @@ end
 -- Still must set the forward and inverse kinematics
 function libPlan.new_planner(min_q, max_q, dqdt_limit)
 	local armOnes = vector.ones(7)
-	return {
+	local obj = {
 		min_q = min_q or -90*DEG_TO_RAD*armOnes,
 		max_q = max_q or 90*DEG_TO_RAD*armOnes,
 		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
@@ -277,7 +310,16 @@ function libPlan.new_planner(min_q, max_q, dqdt_limit)
 		joint_iter = joint_iter,
 		set_chain = set_chain,
 		ones = armOnes,
+		shoulderAngles = {},
+		find_shoulder = find_shoulder,
 	}
+	do
+		local granularity = 3*DEG_TO_RAD
+		local minShoulder, maxShoulder = obj.min_q[3], obj.max_q[3]
+		local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
+		for i=0,n do table.insert(obj.shoulderAngles, minShoulder + i * granularity) end
+	end
+	return obj
 end
 
 return libPlan

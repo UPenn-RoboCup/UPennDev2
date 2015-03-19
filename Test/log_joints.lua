@@ -18,12 +18,11 @@ local sample_hz = 120
 
 local get_time, usleep, max = unix.time, unix.usleep, math.max
 local t0, t_sleep = get_time(), 1 / sample_hz
-local count, t, t_last, t_debug = 0, t0, t0, t0
+local count, t, t_debug = 0, t0, t0
 print('Begin logging joints...')
 local e = {}
 while running do
   count = count + 1
-  t_last = t
   t = get_time()
 	-- Update the entry
 	e.t = t
@@ -48,8 +47,6 @@ while running do
 		logger = libLog.new('joint', true)
 		io.write('Open new log!\n')
 	end
-
-
   -- Garbage collection for timing reasons
   collectgarbage('step')
   t_diff = get_time() - t

@@ -8,9 +8,6 @@ local P = require'libPlan'
 local K = require'K_ffi'
 -- Use SJ's kinematics for the mass properties
 local K0 = Body.Kinematics
-local sanitize = K.sanitize
-local min, max = math.min, math.max
-local abs = math.abs
 
 local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
 local radiansPerSecond = degreesPerSecond * DEG_TO_RAD
@@ -51,31 +48,6 @@ function movearm.goto_q(lwrist, rwrist, safe)
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end
 
-local shoulderAngles = {}
-do
-	local granularity = 3*DEG_TO_RAD
-	local minShoulder, maxShoulder = -math.pi/2, math.pi/2
-	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
-	for i=0,n do table.insert(shoulderAngles, minShoulder + i * granularity) end
-end
-local function find_shoulderL(trL, qLArm)
-	local iqLArm, margin, qBest
-	--local imax
-	local maxmargin = -math.huge
-	for i, q in ipairs(shoulderAngles) do
-		iqLArm = K.inverse_larm(trL, qLArm, q)
-		local margin = math.huge
-		for ii, vv in ipairs(iqLArm - minLArm) do margin = min(abs(vv), margin) end
-		for ii, vv in ipairs(iqLArm - maxLArm) do margin = min(abs(vv), margin) end
-		if margin > maxmargin then
-			maxmargin = margin
-			qBest = iqLArm
-			--imax = i
-		end
-	end
-	return qBest
-end
-
 -- Take a desired Transformation matrix and move joint-wise to it
 function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
@@ -84,7 +56,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 		if loptions then
 			iqLArm = K.inverse_larm(trL, qcLArm, unpack(loptions))
 		else
-			iqLArm = find_shoulderL(trL, qcLArm)
+			iqLArm = lPlanner:find_shoulder(trL, qcLArm)
 		end
 		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, dqLimit, true)
 	end

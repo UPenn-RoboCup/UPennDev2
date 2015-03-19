@@ -22,7 +22,7 @@ ifeq ($(OSTYPE),darwin)
   LD=g++
   #LD=ld -macosx_version_min 10.8
 	#LDFLAGS=-lc++ -bundle -undefined dynamic_lookup
-	LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup
+	LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup -L/usr/local/lib
   LIBRT=
 	#	CFLAGS+=$(pkg-config lua5.1 --cflags)
 	# CXXFLAGS+=$(pkg-config lua5.1 --cflags)

@@ -2,12 +2,23 @@ import sympybotics
 
 print('Define the Robot')
 
+'''
+    .mDH(-PI/2, 0, q[0], 0)
+    .mDH(PI/2, 0, PI/2+q[1], 0)
+    .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
+    .mDH(PI/2, elbowOffsetX, q[3], 0)
+    .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength)
+    .mDH(-PI/2, 0, q[5], 0)
+    .mDH(PI/2, 0, q[6], 0)
+    .mDH(-PI/2, 0, -PI/2, 0)
+'''
+
 dh_params = [
 ('-pi/2', 0, 0, 'q'),
 ('pi/2', 0, 0, 'q+pi/2'),
-('pi/2', 0, 0.246, 'q+pi/2'),
-('pi/2', 0.030, 0, 'q'),
-('-pi/2', -0.030, 0.250, 'q-pi/2'),
+('pi/2', 0, 'upperArmLength', 'q+pi/2'),
+('pi/2', 'elbowOffsetX', 0, 'q'),
+('-pi/2', '-elbowOffsetX', 'lowerArmLength', 'q-pi/2'),
 ('-pi/2', 0, 0, 'q'),
 ('pi/2', 0, 0, 'q'),
 ('-pi/2', 0, 0, '-pi/2')

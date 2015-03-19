@@ -11,7 +11,7 @@ local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
 local Body = require'Body'
 require'hcm'
-require'wcm'
+--require'wcm'
 local get_time = Body.get_time
 
 -- Grab the metadata for this camera
@@ -129,17 +129,23 @@ local function update(img, sz, cnt, t)
 	-- Do the logging if we wish
 	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
 		metadata.rsz = sz
-    metadata.obs = wcm.get_obstacle_enable()
-    metadata.head = Body.get_head_command_position()
-    metadata.head = Body.get_head_position() --TODO: which one?
-    metadata.rpy = Body.get_rpy()
-    metadata.pose = wcm.get_robot_pose()
+-- metadata.head = Body.get_head_command_position()
+-- metadata.pose = wcm.get_robot_pose()
+    metadata.head = Body.get_head_position()
+    metadata.rpy = Body.get_rpy() 
     --TODO: log joint angles
 		for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
 		logger:record(metadata, img, sz)
 		t_log = t
 		nlog = nlog + 1
-		if nlog % 10 == 0 then print("# camera logs: "..nlog) end
+		if nlog % 10 == 0 then
+			print("# camera logs: "..nlog)
+			if nlog % 100 == 0 then
+				logger:stop()
+				logger = libLog.new('yuyv', true)
+				print('Open new log!')
+			end
+		end
 	end
 
 	-- Update the vision routines

@@ -168,13 +168,14 @@ function state.update()
     Body.set_larm_command_position( (1-ph)*qLArm0 + ph*qLArm1 )
 
     --hack to fix weird motion
+    --[[
     local qRArmCurrent={}
     local qLArmCurrent={}
     for i=1,7 do
       qRArmCurrent[i] = qRArm0[i] + util.mod_angle(qRArm1[i]-qRArm0[i])*ph
       qLArmCurrent[i] = qLArm0[i] + util.mod_angle(qLArm1[i]-qLArm0[i])*ph
     end
-
+--]]
 
     Body.set_rarm_command_position(qRArm0 + ph * (qRArm1-qRArm0))
 --    Body.set_rarm_command_position(qRArmCurrent)

@@ -52,9 +52,9 @@ local right_arm = {
   ttyname = '/dev/ttyUSB0',
   m_ids = {1,3,5,7,9,11,13,
         --head
-        29, 30,
+--        29, 30,
 				-- gripper
---				66, 67
+				66, 67
         },
 	enable_read = true,
 }
@@ -63,7 +63,7 @@ local left_arm = {
   ttyname = '/dev/ttyUSB1',
   m_ids = {2,4,6,8,10,12,14,
   -- lidar
-  37,
+  --37,
 },
   enable_read = true
 }
@@ -171,6 +171,28 @@ Config.parts = {
   Lidar = vector.count(indexLidar,nJointLidar)
 }
 
+local jointNames = {
+  "Neck","Head", -- Head (Yaw,pitch)
+  -- Left Arm
+  "ShoulderL", "ArmUpperL", "LeftShoulderYaw",
+  "ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
+  -- Left leg
+  "PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
+  -- Right leg
+  "PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
+  --Right arm
+  "ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
+  "RightWristYaw","RightWristRoll","RightWristYaw2",
+  -- Waist
+  "TorsoYaw","TorsoPitch",
+  -- Gripper
+  "l_grip", "l_trigger",
+  "r_grip", "r_trigger",
+  -- lidar movement
+  "ChestLidarPan",
+}
+Config.jointNames = jointNames
+
 ----------------------
 -- Servo Properties --
 ----------------------
@@ -226,7 +248,7 @@ servo.rad_offset = vector.new({
   90,-90,90,-45,-90,0,0, --RArm
   0,0, -- Waist
   0,0, -- left gripper
-  -20, 26, -- right gripper
+  35, -35, -- right gripper
   0, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -235,7 +257,7 @@ servo.min_rad = vector.new({
   ---90,-80, -- Head
   -135,-80, -- Head
   -90, 0, -90,    -160,   -180,-87,-180, --LArm
-  -175,-175,-175,-175,-175,-175, --LLeg
+  -175,-25,-175,-175,-175,-175, --LLeg
   -175,-175,-175,-175,-175,-175, --RLeg
   -90,-87,-90,    -160,   -180,-87,-180, --RArm
   -90,-45, -- Waist
@@ -248,7 +270,7 @@ servo.max_rad = vector.new({
   --90,80, -- Head
   135,80, -- Head
   160,87,90,   0,     180,87,180, --LArm
-  175,175,175,175,175,175, --LLeg
+  175,25,175,175,175,175, --LLeg
   175,175,175,175,175,175, --RLeg
   160,-0,90,   0,     180,87,180, --RArm
   90,45, -- Waist
@@ -393,7 +415,7 @@ if IS_WEBOTS then
     -- TODO: Check the gripper
     -1,1, -- Waist
     1,-1, -- left gripper
-    -1,-1, -- right gripper
+    1,1, -- right gripper
 
     1, -- Lidar pan
   })
@@ -437,6 +459,7 @@ if IS_WEBOTS then
 
 end
 
+assert(#jointNames==nJoint,'Bad servo rad_offset!')
 assert(#servo.rad_offset==nJoint,'Bad servo rad_offset!')
 assert(#servo.min_rad==nJoint,'Bad servo min_rad!')
 assert(#servo.max_rad==nJoint,'Bad servo max_rad!')

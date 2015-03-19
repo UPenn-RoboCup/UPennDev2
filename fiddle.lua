@@ -21,7 +21,7 @@ for _,lib in ipairs(libs) do
     _G[lib] = lib_tbl
   else
     print("Failed to load", lib)
-		--print(lib_tbl)
+		print(lib_tbl)
   end
 end
 

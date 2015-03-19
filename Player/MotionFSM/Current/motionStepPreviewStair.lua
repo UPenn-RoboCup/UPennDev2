@@ -24,6 +24,7 @@ local tStep
 local stepHeight  = Config.walk.stepHeight
 
 local zLeft,zRight --Step landing heights
+local zLeft0,zRight0
 local aLeft,aRight = 0,0
 -- Save gyro stabilization variables between update cycles
 -- They are filtered.  TODO: Use dt in the filters
@@ -34,11 +35,10 @@ local iStep
 -- What foot trajectory are we using?
 local foot_traj_func  
 --foot_traj_func = moveleg.foot_trajectory_base
---foot_traj_func = moveleg.foot_trajectory_square
 foot_traj_func = moveleg.foot_trajectory_square_stair
---foot_traj_func = moveleg.foot_trajectory_square_stair_2
+--foot_traj_func = moveleg.foot_trajectory_square_stair_touchdown
 
-
+local touched =false
 
 
 local t, t_discrete
@@ -95,7 +95,7 @@ function walk.entry()
   
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, zLeft, zRight =
       step_planner:init_stance()
-
+  zLeft0,zRight0 = zLeft,zRight
   print(string.format("Current torso: %.2f %.2f",
     uTorso_now[1],uTorso_now[2]))
 
@@ -109,7 +109,7 @@ function walk.entry()
   init_odometry(uTorso_now)  
 
   roll_max = 0
-
+  touched = false
 
 --print("Init Y:",uLeft_now[2],uTorso_now[2],uRight_now[2])
 
@@ -167,11 +167,10 @@ function walk.update()
     uLeft_now, uRight_now, uLeft_next, uRight_next,
       supportLeg, ph, ended, walkParam = zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
 
+    --TODO: get step duration information!!! 
     if ended and zmp_solver:can_stop() then return "done"  end
-  
-    --Get the current COM position
+      --Get the current COM position
     com_pos,zmp_pos = zmp_solver:update_state()
-  
   end
 
   if discrete_updated then
@@ -181,16 +180,35 @@ function walk.update()
     --Calculate Leg poses 
     local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
     local uLeft, uRight = uLeft_now, uRight_now
-    
+    local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
+--    print("Z force:",l_ft[3],r_ft[3])    
+
+    local zLeg = mcm.get_status_zLeg()
+    local zLeg0 = mcm.get_status_zLeg0()
+--    print('f:',l_ft[3],r_ft[3])
+
+    --Correctly set initial foot Z height 
+    if phSingle<1 and walkParam then
+      if supportLeg == 0 then  -- Left support    
+        walkParam[1] = zLeg0[2]
+      else
+        walkParam[1] = zLeg0[1]
+      end
+    end
+
     if supportLeg == 0 then  -- Left support    
-      uRight,zRight,aRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
---      if walkParam then print(unpack(walkParam))end
+      uRight,zRight,aRight,touched = foot_traj_func(
+        phSingle,uRight_now,uRight_next,stepHeight,walkParam, zLeg[2],r_ft[3],touched)    
     elseif supportLeg==1 then    -- Right support    
-      uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
---      if walkParam then print(unpack(walkParam))end
+      uLeft,zLeft,aLeft,touched = foot_traj_func(
+        phSingle,uLeft_now,uLeft_next,stepHeight,walkParam, zLeg[1], l_ft[3],touched)    
     elseif supportLeg == 2 then --Double support
       aLeft,aRight = 0,0
+      zLeft = zLeg[1]
+      zRight = zLeg[2]
     end
+
+
     step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
     --Update the odometry variable
@@ -205,17 +223,9 @@ function walk.update()
     --Calculate how close the ZMP is to each foot
     local uLeftSupport,uRightSupport = 
       step_planner.get_supports(uLeft,uRight)
-    local dZmpL = math.sqrt(
-      (uZMP[1]-uLeftSupport[1])^2+
-      (uZMP[2]-uLeftSupport[2])^2);
-
-    local dZmpR = math.sqrt(
-      (uZMP[1]-uRightSupport[1])^2+
-      (uZMP[2]-uRightSupport[2])^2);
-
+    local dZmpL = math.sqrt((uZMP[1]-uLeftSupport[1])^2+(uZMP[2]-uLeftSupport[2])^2);
+    local dZmpR = math.sqrt((uZMP[1]-uRightSupport[1])^2+(uZMP[2]-uRightSupport[2])^2);
     local supportRatio = dZmpL/(dZmpL+dZmpR);
-
---print(unpack(uTorso),unpack(uLeft),unpack(uRight))
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
@@ -231,97 +241,34 @@ function walk.update()
 
     --Move legs
     local uTorsoComp = mcm.get_stance_uTorsoComp()
-    local uTorsoCompensated = util.pose_global(
-      {uTorsoComp[1],uTorsoComp[2],0},uTorso)
+    local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
+    moveleg.set_leg_positions_ankletilt(uTorsoCompensated,uLeft,uRight,  
+      zLeft,zRight,delta_legs)    
 
-    moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,  
-      zLeft,zRight,delta_legs,aLeft,aRight)    
+    --store last step height
+    if phSingle==1 then 
+      mcm.set_status_zLeg0({zLeft,zRight}) 
+      touched = false
+    end
 
 
-
---print("Y:",uLeft[2],uTorso[2],uRight[2])
 
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG
-    
-    if math.abs(roll)>roll_max then
-      roll_max = math.abs(roll)
-      --print("IMU roll angle:",roll_max)
-    end
-
+    if math.abs(roll)>roll_max then roll_max = math.abs(roll)  end
    -- local roll_threshold = 5 --this is degree
     local roll_threshold = 555555 --this is degree
-
     if roll_max>roll_threshold and hcm.get_motion_estop()==0 then
       print("EMERGENCY STOPPING")
       print("IMU roll angle:",roll_max)
       hcm.set_motion_estop(1)
     end
-
-
-  end
-
-  if debug_on then
-
-    local qLLeg, qRLeg
-    if read_test then
-      qLLeg = Body.get_lleg_position()
-      qRLeg = Body.get_rleg_position()
-    else
-      qLLeg = Body.get_lleg_command_position()
-      qRLeg = Body.get_rleg_command_position()
-    end
-    local qLLegCommand = Body.get_lleg_command_position()
-    local qRLegCommand = Body.get_rleg_command_position()
-    local rpy = Body.get_sensor_rpy()
-    debugdata=debugdata..
-    string.format("%f,  %f,%f,%f,%f,%f,  %f,%f,%f,%f,%f,  %f,%f,  %f,%f,%f,%f,%f,  %f,%f,%f,%f,%f\n",      
-      t-t0,
-      qRLeg[2]*Body.RAD_TO_DEG,
-      qRLeg[3]*Body.RAD_TO_DEG,
-      qRLeg[4]*Body.RAD_TO_DEG,
-      qRLeg[5]*Body.RAD_TO_DEG,
-      qRLeg[6]*Body.RAD_TO_DEG,
-
-      qRLegCommand[2]*Body.RAD_TO_DEG,
-      qRLegCommand[3]*Body.RAD_TO_DEG,
-      qRLegCommand[4]*Body.RAD_TO_DEG,
-      qRLegCommand[5]*Body.RAD_TO_DEG,
-      qRLegCommand[6]*Body.RAD_TO_DEG,                 
-      
-      rpy[1]*Body.RAD_TO_DEG,
-      rpy[2]*Body.RAD_TO_DEG,      
-
-      qLLeg[2]*Body.RAD_TO_DEG,
-      qLLeg[3]*Body.RAD_TO_DEG,
-      qLLeg[4]*Body.RAD_TO_DEG,
-      qLLeg[5]*Body.RAD_TO_DEG,
-      qLLeg[6]*Body.RAD_TO_DEG,
-
-      qLLegCommand[2]*Body.RAD_TO_DEG,
-      qLLegCommand[3]*Body.RAD_TO_DEG,
-      qLLegCommand[4]*Body.RAD_TO_DEG,
-      qLLegCommand[5]*Body.RAD_TO_DEG,
-      qLLegCommand[6]*Body.RAD_TO_DEG               
-      )
-      print("Roll: ",rpy[1]*Body.RAD_TO_DEG," Pitch:",rpy[2]*Body.RAD_TO_DEG)
   end
 end -- walk.update
 
 function walk.exit()
-
-
-
-
   print(walk._NAME..' Exit')  
   mcm.set_walk_ismoving(0) --We stopped moving
-  if debug_on then
-    local savefile = string.format("Log/debugdata_%s",os.date());
-    local debugfile=assert(io.open(savefile,"w")); 
-    debugfile:write(debugdata);
-    debugfile:flush();
-    debugfile:close();  
-  end
 end
 
 return walk

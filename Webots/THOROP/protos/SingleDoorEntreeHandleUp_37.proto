@@ -8,17 +8,11 @@ PROTO SingleDoorEntreeHandleUp_37 [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
   field SFColor mainColor 1 1 1
-  field MFString mainTextureUrl [
-    "textures/single_door_entree.png"
-  ]
-  field SFColor frameColor 1 1 1
-  field MFString frameTextureUrl [
-    "textures/metal.png"
-  ]
+  #field MFString mainTextureUrl [ "textures/single_door_entree.png" ]
+  #field SFColor frameColor 1 1 1
+  #field MFString frameTextureUrl [  "textures/metal.png"]
   field SFColor handleColor 1 1 1
-  field MFString handleTextureUrl [
-    "textures/metal.png"
-  ]
+  field MFString handleTextureUrl [ "textures/metal.png" ]
 ]
 {
   Solid {

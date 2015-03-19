@@ -2,6 +2,8 @@
 local torch = require'torch'
 local vector = require'vector'
 local quaternion = require'quaternion'
+local cos = math.cos
+local sin = math.sin
 
 -- TODO: Is this actually a good name?
 local libTransform = {}
@@ -14,8 +16,8 @@ end
 libTransform.rotX = function(t)
   -- Homogeneous transformation representing a rotation of theta
   -- about the X axis.
-  local ct = math.cos(t)
-  local st = math.sin(t)
+  local ct = cos(t)
+  local st = sin(t)
   local r = torch.eye(4)
   r[2][2] = ct
   r[3][3] = ct
@@ -27,8 +29,8 @@ end
 libTransform.rotY = function(t)
   -- Homogeneous transformation representing a rotation of theta
   -- about the Y axis.
-  local ct = math.cos(t)
-  local st = math.sin(t)
+  local ct = cos(t)
+  local st = sin(t)
   local r = torch.eye(4)
   r[1][1] = ct
   r[3][3] = ct
@@ -40,8 +42,8 @@ end
 libTransform.rotZ = function(t)
   -- Homogeneous transformation representing a rotation of theta
   -- about the Z axis.
-  local ct = math.cos(t)
-  local st = math.sin(t)
+  local ct = cos(t)
+  local st = sin(t)
   local r = torch.eye(4)
   r[1][1] = ct
   r[2][2] = ct
@@ -105,16 +107,16 @@ libTransform.from_rpy = function( rpy )
   local beta  = rpy[2]
   local gamma = rpy[1]
   local t = torch.eye(4)
-  t[1][1] = math.cos(alpha)
-  t[1][1] = math.cos(alpha) * math.cos(beta)
-  t[2][1] = math.sin(alpha) * math.cos(beta)
-  t[3][1] = -math.sin(beta)
-  t[1][2] = math.cos(alpha) * math.sin(beta) * math.sin(gamma) - math.sin(alpha) * math.cos(gamma)
-  t[2][2] = math.sin(alpha) * math.sin(beta) * math.sin(gamma) + math.cos(alpha) * math.cos(gamma)
-  t[3][2] = math.cos(beta) * math.sin(gamma)
-  t[1][3] = math.cos(alpha) * math.sin(beta) * math.cos(gamma) + math.sin(alpha) * math.sin(gamma)
-  t[2][3] = math.sin(alpha) * math.sin(beta) * math.cos(gamma) - math.cos(alpha) * math.sin(gamma)
-  t[3][3] = math.cos(beta) * math.cos(gamma)
+  t[1][1] = cos(alpha)
+  t[1][1] = cos(alpha) * cos(beta)
+  t[2][1] = sin(alpha) * cos(beta)
+  t[3][1] = -sin(beta)
+  t[1][2] = cos(alpha) * sin(beta) * sin(gamma) - sin(alpha) * cos(gamma)
+  t[2][2] = sin(alpha) * sin(beta) * sin(gamma) + cos(alpha) * cos(gamma)
+  t[3][2] = cos(beta) * sin(gamma)
+  t[1][3] = cos(alpha) * sin(beta) * cos(gamma) + sin(alpha) * sin(gamma)
+  t[2][3] = sin(alpha) * sin(beta) * cos(gamma) - cos(alpha) * sin(gamma)
+  t[3][3] = cos(beta) * cos(gamma)
   return t
 end
 
@@ -204,8 +206,8 @@ function libTransform.from_angle_axis( angle, axis )
   local x = axis[1]
   local y = axis[2]
   local z = axis[3]
-  local s = math.sin(angle)
-  local c = math.cos(angle)
+  local s = sin(angle)
+  local c = cos(angle)
   local nc = 1-c
   local t = torch.eye(4)
   t[1][1] = x*x*nc+c
@@ -233,12 +235,12 @@ end
 -- from 6d x,y,z,r,p,y
 function libTransform.transform6D(p)
 
-  local cwx = math.cos(p[4])
-  local swx = math.sin(p[4])
-  local cwy = math.cos(p[5])
-  local swy = math.sin(p[5])
-  local cwz = math.cos(p[6])
-  local swz = math.sin(p[6])
+  local cwx = cos(p[4])
+  local swx = sin(p[4])
+  local cwy = cos(p[5])
+  local swy = sin(p[5])
+  local cwz = cos(p[6])
+  local swz = sin(p[6])
 
   local t = torch.eye(4)
 
@@ -258,7 +260,7 @@ function libTransform.transform6D(p)
   return t
 end
 
-function libTransform.get_pos(tr)
+function libTransform.position(tr)
   return vector.new(tr:select(2,4):narrow(1,1,3))
 end
 

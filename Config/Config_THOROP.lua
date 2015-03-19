@@ -1,16 +1,12 @@
+-- Global Config
 Config = {}
 
-------------------------
--- General parameters --
-------------------------
+-- General parameters
 Config.PLATFORM_NAME = 'THOROP'
 Config.nJoint = 35
+Config.use_localhost = false
 -- Dummy arms are the two MX-106R motors per arm
 Config.USE_DUMMY_ARMS = false
-
------------------------
--- Device Interfaces --
------------------------
 Config.dev = {
 	body         = 'THOROPBody',
 	gender       = 'boy',
@@ -24,22 +20,15 @@ Config.sensors = {
   head_camera = true,
   chest_lidar = true,
   head_lidar = false,
-  fsr = false,
+  fsr = false}
+--=======
+-- Default motion libraries
+Config.libs = {
+  ArmLib = 'DRCTrials',
+  MotionLib = 'RoboCup',  
+  World = 'DRCNew'  
+-->>>>>>> dev-master
 }
-if IS_WEBOTS then
-  -- Tune which wizards to run in webots
-  Config.wizards.feedback = 'feedback_wizard'
-  Config.wizards.mesh = 'mesh_wizard_sitevisit'
-  Config.wizards.world = 'world_wizard'
-  Config.wizards.camera = 'camera_wizard'
-  Config.wizards.test = 'post_mesh_wizard'
-  --Config.wizards.slam = 'slam_wizard'
-  -- Adjust the tiemsteps if desired
-  --Config.camera_timestep = 33
---  Config.lidar_timestep = 200 --slower
-
-  Config.use_localhost = true
-end
 
 -- Printing of debug messages
 Config.debug = {
@@ -50,110 +39,171 @@ Config.debug = {
   planning = false,
   goalpost = false,
   world = false,
+  feedback = false,
 }
 
--- Monitor and logging
+-- Tune for Webots
+if IS_WEBOTS then
+  Config.use_localhost = true
+  Config.wizards = {
+    feedback = 'feedback_wizard',
+    mesh = 'mesh_wizard',
+    world = 'world_wizard',
+    --camera = 'camera_wizard'
+  }
+  -- Default Webots sensors
+  Config.sensors = {
+    ft = true,
+    head_camera = false,
+    chest_lidar = false,
+    head_lidar = false,
+    kinect = false,
+    fsr = false,
+  }
+  -- Adjust the tiemsteps if desired
+  -- Config.camera_timestep = 33
+  -- Config.lidar_timestep = 200 --slower
+  -- Config.kinect_timestep = 30
+  Config.use_gps_pose = false
+end
+
+-- TODO: Get rid of these
 Config.enable_monitor = true
-Config.enable_log = false
-Config.use_log = false
 Config.torque_legs = true
 
---Default motion libraries
-Config.libs={
-  ArmLib = 'DRCTrials',
-  MotionLib = 'RoboCup',  
-  World = 'DRCNew'  
-}
+----------------------------------
+-- Application specific Configs --
+----------------------------------
 
-
---SJ: now we can choose which config, fsm and mid-level libraries to use
-
---Robocup 
+-- Robocup
 --[[
 Config.libs.World = 'RoboCup'
 local exo = {
   'Robot','Walk','Net','Manipulation',
- -- 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup' 
+ 'FSM_RoboCup','World_RoboCup','Vision_RoboCup'
+ -- 'FSM_KickDemo','World_RoboCup','Vision_RoboCup'
 }
 Config.testfile = 'test_robocup'
 Config.sensors.chest_lidar = false
-Config.wizards.test = nil
-Config.wizards.mesh = nil
+if IS_WEBOTS then
+  Config.wizards.mesh = nil
+end
 --]]
 
 
---[[
---DRC Trials
-local exo = {'Robot','Walk','Net','Manipulation',
-'FSM_DRCTrials','World_RoboCup','Vision_DRCTrials'
-}
-Config.testfile = 'test_robocup'
---]]
 
-
----[[
---DRC Site visit 2014
+-- DRC Test Heejin Jeong
 --We are not doing any lidar based stuff
 --Config.libs.World = 'SiteVisit'   
---Config.wizards.mesh = 'mesh_wizard_sitevisit'
---Config.sensors.chest_lidar = true
-
-
-Config.libs.World = 'RoboCup'
+Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
   'FSM_HJ','World_RoboCup','Vision_RoboCup' 
 }
+if IS_WEBOTS then
+  Config.sensors.chest_lidar = false
+	Config.sensors.head_camera = false --true
+  Config.wizards.mesh = nil
+  Config.testfile = 'test_webot_hj'
+end
+--]]
 
+
+-- DRC Final setup
+-- for testing new walk controller
 --[[
 Config.libs.World = 'SiteVisit'   
 local exo = {
   'Robot','Walk','Net','Manipulation',
-  'FSM_SiteVisit','World_DRCTrials','Vision_RoboCup' 
+  'FSM_DRCFinal','World_DRCTrials','Vision_RoboCup' 
 }
+<<<<<<< HEAD
 --]]
 Config.sensors.chest_lidar = false
 Config.wizards.test = nil
 Config.wizards.mesh = nil
 Config.testfile = 'test_webot_hj'
 --Config.testfile = 'test_arms_new'
+--[[=======
+if IS_WEBOTS then
+  Config.sensors.chest_lidar = false
+  Config.wizards.test = nil
+  Config.wizards.mesh = nil
+  Config.testfile = 'test_sitevisit'
+end
+>>>>>>> dev-master
 --]]
 
 
-
---[[
 -- Teach robot to go up steps
+--[[
 Config.libs.MotionLib = 'Teach'
+Config.libs.ArmLib = 'Teach'
+Config.libs.World = 'Teach'
 -- Precedence in loading, for overrides!
 local exo = {
-	'Robot', 'Walk', 'Net', 'FSM_Teach'
+	'Robot', 'Walk', 'Net', 'FSM_Teach', 'Arm_Teach', 'Vision_Teach' --, 'World_Teach'
 }
-Config.testfile = 'test_teach'
+if IS_WEBOTS then
+  Config.testfile = 'test_teleop'--'test_teach'
+  Config.wizards = {
+		feedback = 'feedback_wizard',
+		camera = 'camera_wizard',
+		kinect = 'kinect2_wizard',
+	}
+  Config.sensors = {ft = true, head_camera = true, kinect = true}
+end
 --]]
 
---Add path to selected librares
+-- Remote Control
+--[[
+local exo = {
+	'Robot', 'Walk', 'Net', 'FSM_Remote'
+}
+Config.libs.MotionLib = 'RoboCup'
+if IS_WEBOTS then
+  Config.wizards = {
+    feedback = 'feedback_wizard',
+    --remote = 'remote_wizard',
+  }
+  Config.testfile = 'test_remote'
+  Config.sensors.chest_lidar = false
+end
+--]]
+
+
+
+
+
+
+
+
+-----------------------------------
+-- Load Paths and Configurations --
+-----------------------------------
+
+-- Custom motion libraries
 for i,sm in pairs(Config.libs) do
   local pname = {HOME, '/Player/', i,'/' ,sm, '/?.lua;', package.path}
   package.path = table.concat(pname)
 end
 
--- Complementary Configs --
--- Load each exogenous Config file
+-- Custom Config files
 for _,v in ipairs(exo) do
-	--[[
-  --local fname = {HOME, '/Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
-  local fname = {'Config/Config_', Config.PLATFORM_NAME, '_', v, '.lua'}
-  dofile(table.concat(fname))
-	--]]
-	----[[
 	local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}  
   require(table.concat(fname))
-	--]]
 end
 
-Config.use_gps_pose = false
-Config.use_imu_yaw = true
-Config.use_single_scan = true
+-- Finite state machine paths
+for _,sm in ipairs(Config.fsm.enabled) do
+  local selected = Config.fsm.select[sm]
+  if selected then
+    local pname = {HOME, '/Player/', sm, 'FSM/', selected, '/?.lua;', package.path}
+    package.path = table.concat(pname)
+  else --default fsm
+    local pname = {HOME, '/Player/', sm, 'FSM/', '?.lua;', package.path}
+    package.path = table.concat(pname)
+  end  
+end
 
 return Config

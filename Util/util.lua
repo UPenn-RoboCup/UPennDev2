@@ -1,7 +1,40 @@
 local util = {}
 local vector = require'vector'
-
 local abs = math.abs
+local atan2 = math.atan2  
+
+function util.ypr(R,n,ypr_now)
+  local orivec = {}
+  orivec[1] = atan2(R[3][2],R[3][3])--yaw
+  orivec[2] = atan2(-R[3][1],math.sqrt( R[3][2]^2 + R[3][3]^2) )--pitch
+  orivec[3] = n*atan2(R[2][1],R[1][1])--roll
+  
+  if math.abs(orivec[1] - ypr_now[1]) >= math.pi then
+    orivec[1] = orivec[1] - util.sign(orivec[1])*math.pi*2
+  end
+  if math.abs(orivec[2] - ypr_now[2]) >= math.pi then
+    orivec[2] = orivec[2] - util.sign(orivec[2])*math.pi*2
+  end
+  if math.abs(orivec[3] - ypr_now[3]) >= math.pi then
+    orivec[3] = orivec[3] - util.sign(orivec[3])*math.pi*2
+  end
+
+  return setmetatable(orivec, matrix_meta)
+end
+
+function util.concat(v1,v2)
+  local output = {}
+  for i=1, #v1 do
+    output[i] = v1[i]
+  end
+
+  for j=1, #v2 do
+    output[#v1 + j] = v2[j]
+  end
+
+  return setmetatable(output,matrix_meta)
+end
+
 
 function util.mod_angle(a)
   -- Reduce angle to [-pi, pi)
@@ -13,7 +46,7 @@ end
 
 function util.sign(x)
   -- return sign of the number (-1, 0, 1)
-  if x > 0 then return 1
+  if x >= 0 then return 1
   elseif x < 0 then return -1
   else return 0
   end
@@ -329,6 +362,72 @@ end
 function util.ptable(t)
   -- print a table key, value pairs
   for k,v in pairs(t) do print(k,v) end
+end
+
+function util.type( mtx )
+  local e = mtx[1][1]
+  if type(e) == "table" then
+    if e.type then
+      return e:type()
+    end
+    return "tensor"
+  end
+  return "number"
+end
+
+function util.transpose(m1)
+  --local docopy = util.type( m1 ) == "number" and num_copy or t_copy
+  local mtx = {}
+  for i = 1,#m1[1] do
+    mtx[i] = {}
+    for j = 1,#m1 do
+      mtx[i][j] = m1[j][i]
+    end
+  end
+  return setmetatable( mtx, matrix_meta )
+end
+
+function util.mulvec (R,v)
+  if #R ~= #v then
+    print("dimension error")
+  end
+
+  local mtx ={}
+  for i = 1,#R do
+    num = 0
+    for j= 1,#v do
+      num = num + R[i][j] * v[j]
+    end
+    mtx[i] = num
+  end
+  return setmetatable( mtx, matrix_meta )
+end
+
+
+function util.mul( m1, m2 )
+  -- multiply rows with columns
+  local mtx = {}
+  for i = 1,#m2 do
+    mtx[i] = {}
+
+    if #m2[1] == 1 then
+      local num = m1[i][1]
+      for n = 2,#m1[1] do
+        num = num + m1[i][n]*m2[n]
+      end
+      mtx[i] = num
+    else
+      for j = 1,#m2[1] do
+        local num = m1[i][1] * m2[1][j]
+        for n = 2,#m1[1] do
+          num = num + m1[i][n] * m2[n][j]
+        end
+        mtx[i][j] = num
+      end
+    end
+
+  end
+  return setmetatable( mtx, matrix_meta )
 end
 
 function util.ptorch(data, W, Precision)

@@ -14,19 +14,18 @@ jointNames = { ...
 	'ChestLidarPan',...
 };
 
-joint = 'AnkleL';
-joint_idx = 1;
-for i=1:numel(jointNames)
-    str = jointNames{i};
-    if strncmp(str, joint, 4)==1
-        joint_idx = i;
-    end
-end
-clear str;
-
 %% Aquire the body joint angles
-timestamp = '08.27.2014.19.03.15';
-fid = fopen(strcat('Logs/joint_m_',timestamp,'.log'));
+%timestamp = '10.06.2014.16.00.04'; % Walking
+%timestamp = '10.06.2014.17.07.04'; % Walk & turn
+%timestamp = '10.07.2014.11.42.26'; % Stand on one leg
+%timestamp = '10.09.2014.15.08.25'; % Marcell
+%timestamp = '10.16.2014.16.46.42'; % With current readings
+timestamp = '10.24.2014.14.12.36'; % Poke x
+
+% TODO: Check if already available
+%load(strcat('Data/joint_m_',timestamp,'.mat'));
+
+fid = fopen(strcat('Data/joint_m_',timestamp,'.log'));
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
 clear fid;
@@ -40,41 +39,24 @@ t0 = jobjs{1}.t;
 ts  = zeros(numel(jobjs), 1);
 pos = zeros(numel(jobjs), numel(jobjs{1}.p));
 cmd = zeros(numel(jobjs), numel(jobjs{1}.cp));
+cur = zeros(numel(jobjs), numel(jobjs{1}.i));
 ft_l = zeros(numel(jobjs), numel(jobjs{1}.ft_l));
 ft_r = zeros(numel(jobjs), numel(jobjs{1}.ft_r));
 gyro = zeros(numel(jobjs), numel(jobjs{1}.gyro));
 acc = zeros(numel(jobjs), numel(jobjs{1}.acc));
+rpy = zeros(numel(jobjs), numel(jobjs{1}.rpy));
 for i=1:numel(jobjs)
     jobj = jobjs{i};
     ts(i)    = jobj.t - t0;
     pos(i,:) = jobj.p;
     cmd(i,:) = jobj.cp;
+    cur(i,:) = jobj.i;
     ft_l(i,:) = jobj.ft_l;
     ft_r(i,:) = jobj.ft_r;
     gyro(i,:) = jobj.gyro;
     acc(i,:) = jobj.acc;
+    rpy(i,:) = jobj.rpy;
 end
 clear jobj
 %% Save
-% clear jobjs;
-save(strcat('Logs/joint_m_',timestamp,'.mat'));
-%% Plot a joint
-%load('Logs/joint_06.04.2014.13.54.20.mat')
-figure(1);
-plot( ts, pos(:, joint_idx), ...
-    ts, cmd(:, joint_idx) ...
-    );
-legend('Position', 'Command');
-title('Command vs. Position');
-
-figure(2);
-plot(ft_l);
-title('Left Force Torque');
-
-figure(3);
-plot(ft_r);
-title('Right Force Torque');
-
-figure(4);
-plot(gyro);
-title('Gyro');
+clear jobjs;save(strcat('Data/joint_m_',timestamp,'.mat'));

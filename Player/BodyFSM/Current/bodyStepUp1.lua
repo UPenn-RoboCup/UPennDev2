@@ -28,6 +28,17 @@ local supportLeg
 local sh1,sh2 = 0.18, 0.142
 local step1,step2 = 0.30, 0.27
 
+
+
+--for higher box
+local sh1,sh2 = 0.22, 0.19
+local step1,step2 = 0.30, 0.27
+
+
+--touchdown sensing test
+local sh1,sh2 = 0.23, 0
+local step1,step2 = 0.31, 0.27
+
 --[[
 local step_queues={
     --put first step up
@@ -55,6 +66,7 @@ local step_queues={
 }
 --]]
 
+--[[
 --ZMP modulation testing
 
 step_queues={
@@ -89,12 +101,80 @@ step_queues={
   }
 
 }
+--]]
 
 
+--[[
+step_queues={
+   {
+    {{0,0,0},   2,  0.1, 1, 0.1,    {0,0},  {0, 0, 0}},
+--    {{step1,0,0},0,  1, 3, 0.5,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2*0.8  ,Config.walk.footY*0.4}},   --LS
+
+    {{step1,0,0},0,  1, 6, 0.5,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2*0.8  ,Config.walk.footY*0.4}},   --LS    
+
+    {{0,0,0},   2,  1, 1, 0.1,      {-step1/2*0.8,Config.walk.footY*0.4},  {0, 0, 0},{-step1/2*0.8,Config.walk.footY*0.4}},
+    {{0,0,0},   2,  4, 1, 0.1,     {step1/2,-Config.walk.footY*0.8},  {0, 0, 0}, {step1/2,-Config.walk.footY*0.8}},    
+   },
+
+  { --put second step up
+    {{step1,0,0},1,  1,   6, 1,  {0.0,0},  {0,sh1,sh2}},    --RS    
+    {{0,0,0},   2,  0.1, 1, 0.1,   {0,0},  {0, 0, 0}},
+  },
 
 
+  {  --landing
+    {{step2,0,0} ,0, 2,   6,  1,  {-0.0,-0.00,0},  {sh2,sh1,0.0},{-step1/2,Config.walk.footY*0.8}},--LS
+    {{0,0,0},   2,  1, 1, 0.1,      {-step1/2,Config.walk.footY*0.8},  {0, 0, 0},{-step1/2,Config.walk.footY*0.8}},
+  },
+
+  {
+    {{0,0,0},   2,  2, 1, 0.1,    {-0.00,0,0},  {0, 0, 0}},
+  },
+
+  {
+    {{step2,0,0}, 1,  1,  6, 1,   {0,0.00,0},  {sh2,sh1,0.0}},--RS
+    {{0,0,0,},  2,   0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
+  }
+
+}
+--]]
+
+--[[
+step_queues={
+   {
+    {{0,0,0},   2,  0.1, 1, 0.1,    {0,0},  {0, 0, 0}},
+    {{step1,0,0},0,  1, 6, 0.5,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2*0.8  ,Config.walk.footY*0.4}},   --LS    
+    {{0,0,0},   2,    1, 0.1, 0.1,      {-step1/2*0.8,Config.walk.footY*0.4},  {0, 0, 0},{-step1/2*0.8,Config.walk.footY*0.4}},
+    {{0,0,0},   2,    1, 0.1, 0.1,     {step1/2,-Config.walk.footY*0.8},  {0, 0, 0}, {step1/2,-Config.walk.footY*0.8}},    
+    {{step1,0,0},1,   1, 6, 1,  {0.0,0},  {0,sh1,sh2}},    --RS    
+    {{0,0,0},   2,    0.1, 1, 0.1,   {0,0},  {0, 0, 0}},
+  
+    {{step2,0,0} ,0,   2, 6,  1,  {-0.0,-0.00,0},  {sh2,sh1,0.0},{-step1/2,Config.walk.footY*0.8}},--LS
+    {{0,0,0},   2,    1, 0.1, 0.1,      {-step1/2,Config.walk.footY*0.8},  {0, 0, 0},{-step1/2,Config.walk.footY*0.8}},
+    {{0,0,0},   2,    1, 0.1, 0.1,    {-0.00,0,0},  {0, 0, 0}},
+    {{step2,0,0}, 1,  1,  6, 1,   {0,0.00,0},  {sh2,sh1,0.0}},--RS
+    {{0,0,0,},  2,    0.1, 2, 1,     {0,0.0,0},  {0, 0, 0}},                  --DS
+  }
+}
+--]]
+
+--for deflection test
+local sh1,sh2 = 0.15, 0.10
+local step1,step2 = 0.10, 0.10
+step_queues={
+   {
+    {{0,0,0},   2,  0.1, 1, 0.1,    {0,0},  {0, 0, 0}},
+    {{step1,0,0},0,  1, 6, 4,   {0,-0.04}, {0,sh1,sh2}   ,  {-step1/2  ,Config.walk.footY+0.04}},   --LS    
+    {{0,0,0},   2,    0.1, 4, 0.1,   {-step1/2,Config.walk.footY+0.04},  {-step1/2,Config.walk.footY+0.04,0}},
+   },
 
 
+   {
+    {{step1,0,0},1,   1, 6, 1,  {0.0,0},  {0,sh1,sh2}},    --RS    
+    {{0,0,0},   2,    0.1, 1, 0.1,   {0,0},  {0, 0, 0}},
+   }
+}
+ 
 local stage = 1
 local ready_for_input = true
 

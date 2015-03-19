@@ -122,8 +122,10 @@ shared.status.falling    = vector.zeros(1)
 --Current Foot and Torso Poses
 shared.status.uLeft = vector.zeros(3)
 shared.status.uRight = vector.zeros(3)
-shared.status.zLeg = vector.zeros(2) -- left, right
-shared.status.aLeg = vector.zeros(2) --foot pitch angles
+
+shared.status.zLeg0 = vector.zeros(2) -- left, right height at the beginning of the step
+shared.status.zLeg = vector.zeros(2) -- left, right height of the last frame
+shared.status.aLeg = vector.zeros(2) --foot pitch angles of the last frame
 shared.status.zGround = vector.zeros(0) -- if feet on a higher ground
 
 

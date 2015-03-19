@@ -32,18 +32,21 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+	
+	-- Shared memory status
   uTorso = mcm.get_status_uTorso()  
   uLeft, uRight = mcm.get_status_uLeft(), mcm.get_status_uRight()
   zLeft, zRight = unpack(mcm.get_status_zLeg())
   side = mcm.get_teach_sway()
+	
+	-- Local variables
   side = side=='none' and 'left' or side
-  print('Support on the', side)
-  
   supportDir = side=='left' and 1 or -1
   supportFoot = side=='left' and uLeft or uRight
   supportPoint = util.pose_global({supportX, supportDir*supportY, 0}, supportFoot)
-  print('SUPPORT POINT', supportPoint, uTorso)
-
+	
+	--
+  print(state._NAME, side, 'foot. SUPPORT POINT:', supportPoint, uTorso)
 end
 
 function state.update()

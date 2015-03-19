@@ -132,7 +132,7 @@ local function update(key_code)
 		body_ch:send'approach'
 
 
-	elseif key_char_lower==("x") then      
+	elseif key_char_lower==("f") then      
 		motion_ch:send'getup'
 
 	elseif key_char_lower==("z") then

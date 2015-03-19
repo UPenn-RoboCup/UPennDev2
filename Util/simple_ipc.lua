@@ -57,7 +57,10 @@ if type(udp)=='table' and not udp.ffi then
 		self.sender:send(data)
 	end
 	local function udp_receive(self)
-		return self.sender:receive()
+		return self.receiver:receive()
+	end
+	local function udp_descriptor(self)
+		return (self.sender or self.receiver):descriptor()
 	end
 	local function recv_all(self)
 		local skt_buffer = {}
@@ -79,8 +82,9 @@ if type(udp)=='table' and not udp.ffi then
   function simple_ipc.new_receiver(port)
 		local receiver = udp.new_receiver(port)
 		local obj = {
+      receiver = receiver,
 			port = port,
-			fd = fd,
+			fd = receiver:descriptor(),
 			receive = udp_receive,
 			recv_all = udp_recv_all,
 		}

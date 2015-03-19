@@ -62,16 +62,6 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry

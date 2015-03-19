@@ -146,8 +146,8 @@ fsm.Motion = {
   {'motionStance', 'done_step', 'motionHybridWalkKick'},
 
 -----
-  {'motionStance', 'getupback','motionGetupBack'},
-  {'motionStance', 'getup', 'motionGetupFront'},  
+  {'motionStance', 'getupback','motionGetupBack_new'},
+  {'motionStance', 'getup', 'motionGetupFront_ver3'},  
   {'motionGetupFront', 'done', 'motionInit'},
 
   {'motionStance', 'stair', 'motionStepPreviewStair'}, --- stair

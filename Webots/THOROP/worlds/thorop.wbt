@@ -4,7 +4,8 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "THOR-OP Only"
-  basicTimeStep 8
+  #basicTimeStep 8
+  basicTimeStep 20
 	#basicTimeStep 40
   FPS 15
   # TODO: Tune the friction a bit, comparing the F/T sensors

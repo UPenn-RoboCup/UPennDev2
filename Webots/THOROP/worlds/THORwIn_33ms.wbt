@@ -64,7 +64,7 @@ DEF BALL BallGPS {
   radius 0.11
 }
 DEF OBS1 ObjectGPS {
-  translation -2.56736 0.45 -3.27277
+  translation -2.56736 0.45 -1
   controllerArgs "1"
 }
 DEF OBS2 ObjectGPS {
@@ -74,7 +74,8 @@ DEF OBS2 ObjectGPS {
 DEF OPPONENT Block {
   translation -4.2 0.5 0
 }
-THOROP_RoboCup {
+# THOROP_RoboCup {
+THOROP_UPENN {
   translation 0 1.155 0
   rotation 0 1 0 -1.5708
   controller "thorop"

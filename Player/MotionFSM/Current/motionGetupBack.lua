@@ -13,6 +13,7 @@ local unix   = require'unix'
 local util   = require'util'
 local moveleg = require'moveleg'
 local movearm = require'movearm'
+--local webot = require'webot'
 
 require'mcm'
 require'hcm'
@@ -213,13 +214,17 @@ function state.entry()
   stage = 0  
   hcm.set_state_proceed(1)
   head_ch:send'teleop'
+  body_ch:send'init'
 end
 
 function state.update()
   -- Get the time of update
+  --local torque=webot.wb_motor_get_torque_feedback()
   local t = Body.get_time()
   local t_diff = t - t_start
-print("update")
+
+  --print("Torque: %.2f",torque)
+  print("update")
   print(stage)
   
   print(#keyframe)

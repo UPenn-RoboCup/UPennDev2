@@ -4,6 +4,20 @@
 */
 
 #include <lua.hpp>
+
+// For pushing/pulling torch objects
+#ifdef TORCH
+#include <torch/luaT.h>
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <torch/TH/TH.h>
+#ifdef __cplusplus
+}
+#endif
+#endif
+
 #include "THOROPKinematics.h"
 
 /* Copied from lua_unix */
@@ -99,14 +113,14 @@ static int forward_r_arm(lua_State *L) {
 static int forward_l_leg(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	Transform t = THOROP_kinematics_forward_l_leg(&q[0]);
-	lua_pushtransform(L, t);
+	lua_pushvector(L, position6D(t));
 	return 1;
 }
 
 static int forward_r_leg(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
 	Transform t = THOROP_kinematics_forward_r_leg(&q[0]);
-	lua_pushtransform(L, t);
+	lua_pushvector(L, position6D(t));
 	return 1;
 }
 
@@ -144,6 +158,64 @@ static int r_arm_torso_7(lua_State *L) {
 	lua_pushvector(L, position6D(t));
 	return 1;
 }
+
+/* ADDED by HEEJIN Nov.21.2014 ------------------------------------------------------*/
+
+static int l_arm_origins(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	double bodyPitch = luaL_optnumber(L, 2,0.0);
+	std::vector<double> qWaist = lua_checkvector(L, 3);
+
+	double handOffsetXNew = luaL_optnumber(L, 4,handOffsetX);
+	double handOffsetYNew = luaL_optnumber(L, 5,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 6,handOffsetZ);
+	int idxNew = luaL_optnumber(L, 7, 0);
+
+	
+
+	Transform t = THOROP_kinematics_forward_l_arm_o(&q[0],bodyPitch,&qWaist[0],
+		handOffsetXNew, handOffsetYNew, handOffsetZNew, idxNew);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
+
+static int r_arm_origins(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	double bodyPitch = luaL_optnumber(L, 2,0.0);
+	std::vector<double> qWaist = lua_checkvector(L, 3);
+
+	double handOffsetXNew = luaL_optnumber(L, 4,handOffsetX);
+	double handOffsetYNew = luaL_optnumber(L, 5,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 6,handOffsetZ);
+	int idxNew = luaL_optnumber(L, 7,0);
+
+	Transform t = THOROP_kinematics_forward_r_arm_o(&q[0],bodyPitch,&qWaist[0], 
+		handOffsetXNew, handOffsetYNew, handOffsetZNew, idxNew);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
+
+
+static int l_leg_origins(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	int idxNew = luaL_optnumber(L,2,0);
+
+	Transform t = THOROP_kinematics_forward_l_leg_o(&q[0], idxNew);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
+
+
+static int r_leg_origins(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	int idxNew = luaL_optnumber(L,2,0);
+
+	Transform t = THOROP_kinematics_forward_r_leg_o(&q[0], idxNew);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
+
+/* --------------------------------------------------------------------------------- */
 
 static int l_wrist_torso(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
@@ -255,14 +327,6 @@ static int inverse_arm_given_wrist(lua_State *L) {
 	lua_pushvector(L, qArm);
 	return 1;
 }
-
-
-
-
-
-
-
-
 
 static int l_leg_torso(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
@@ -386,7 +450,7 @@ static int inverse_l_leg(lua_State *L) {
 	std::vector<double> qLeg;
 	std::vector<double> pLeg = lua_checkvector(L, 1);
 	Transform trLeg = transform6D(&pLeg[0]);
-	qLeg = THOROP_kinematics_inverse_r_leg(trLeg);
+	qLeg = THOROP_kinematics_inverse_l_leg(trLeg);
 	lua_pushvector(L, qLeg);
 	return 1;
 }
@@ -395,7 +459,7 @@ static int inverse_r_leg(lua_State *L) {
 	std::vector<double> qLeg;
 	std::vector<double> pLeg = lua_checkvector(L, 1);
 	Transform trLeg = transform6D(&pLeg[0]);
-	qLeg = THOROP_kinematics_inverse_l_leg(trLeg);
+	qLeg = THOROP_kinematics_inverse_r_leg(trLeg);
 	lua_pushvector(L, qLeg);
 	return 1;
 }
@@ -409,6 +473,16 @@ static int inverse_legs(lua_State *L) {
 	Transform trLLeg = transform6D(&pLLeg[0]);
 	Transform trRLeg = transform6D(&pRLeg[0]);
 	Transform trTorso = transform6D(&pTorso[0]);
+	
+	/*
+	printf("inv(trTorso)\n");
+	printTransform(inv(trTorso));
+	printf("trLLeg\n");
+	printTransform(trLLeg);
+	printf("trRLeg\n");
+	printTransform(trRLeg);
+	*/
+	
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 
@@ -417,6 +491,197 @@ static int inverse_legs(lua_State *L) {
 	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
 
 	lua_pushvector(L, qLLeg);
+	return 1;
+}
+
+static int calculate_foot_tilt(lua_State *L) {
+	std::vector<double> qLFootLift(4), qRFootLift;
+	std::vector<double> pLLeg = lua_checkvector(L, 1);
+	std::vector<double> pRLeg = lua_checkvector(L, 2);
+	std::vector<double> pTorso = lua_checkvector(L, 3);
+
+	Transform trLLeg = transform6D(&pLLeg[0]);
+	Transform trRLeg = transform6D(&pRLeg[0]);
+	Transform trTorso = transform6D(&pTorso[0]);
+	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
+	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
+
+	qLFootLift = THOROP_kinematics_calculate_foot_lift(trTorso_LLeg,0);
+	qRFootLift = THOROP_kinematics_calculate_foot_lift(trTorso_RLeg,1);
+
+	qLFootLift.insert(qLFootLift.end(), 
+		qRFootLift.begin(), qRFootLift.end());
+	//LHeel LToe RHeel RToe
+	lua_pushvector(L, qLFootLift);
+	return 1;
+}
+
+static int inverse_legs_foot_tilt(lua_State *L) {
+	std::vector<double> qLLeg(12), qRLeg;
+	std::vector<double> pLLeg = lua_checkvector(L, 1);
+	std::vector<double> pRLeg = lua_checkvector(L, 2);
+	std::vector<double> pTorso = lua_checkvector(L, 3);
+	std::vector<double> qFootLift = lua_checkvector(L, 4);
+
+	Transform trLLeg = transform6D(&pLLeg[0]);
+	Transform trRLeg = transform6D(&pRLeg[0]);
+	Transform trTorso = transform6D(&pTorso[0]);
+	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
+	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
+
+	qLLeg = THOROP_kinematics_inverse_leg_tilt(trTorso_LLeg,qFootLift[0],0);
+	qRLeg = THOROP_kinematics_inverse_leg_tilt(trTorso_RLeg,qFootLift[1],1);
+	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
+
+	lua_pushvector(L, qLLeg);
+	return 1;
+}
+
+/* Extra definitions */
+
+#ifdef TORCH
+static Transform luaT_checktransform(lua_State *L, int narg) {
+  const THDoubleTensor * _t =
+		(THDoubleTensor *) luaT_checkudata(L, narg, "torch.DoubleTensor");
+  // Check the dimensions
+  if(_t->size[0]!=4||_t->size[1]!=4)
+    luaL_error(L, "Bad dimensions: %ld x %ld",_t->size[0],_t->size[1]);
+
+  // Form into our Transform type
+  Transform tr;
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      tr(i,j) = THTensor_fastGet2d( _t, i, j );
+
+  return tr;
+}
+static void luaT_pushtransform(lua_State *L, Transform t) {
+  // Make the Tensor
+  THLongStorage *sz = THLongStorage_newWithSize(2);
+  sz->data[0] = 4;
+  sz->data[1] = 4;
+  THDoubleTensor *_t = THDoubleTensor_newWithSize(sz,NULL);
+
+  // Copy the data
+  //double* dest = _t->storage->data;
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      THTensor_fastSet2d( _t, i, j, t(i,j) );
+
+  // Push the Tensor
+	luaT_pushudata(L, _t, "torch.DoubleTensor");
+}
+#endif
+static Transform lua_checktransform(lua_State *L, int narg) {
+  // Table of tables
+  luaL_checktype(L, narg, LUA_TTABLE);
+#if LUA_VERSION_NUM == 502
+	int n_el = lua_rawlen(L, 1);
+#else
+  int n_el = lua_objlen(L, 1);
+#endif
+  if(n_el!=4)
+    luaL_error(L, "Bad dimension! %d x ?",n_el);
+
+  // Make the Transform
+  Transform tr;
+  int i, j;
+
+  // Loop through the transform
+  for (i = 1; i <= 4; i++) {
+    // Grab the table entry
+    lua_rawgeti(L, narg, i);
+    // Get the top of the stack
+    int top_tbl = lua_gettop(L);
+    //printf("Top of stack: %d\n",top_arg);
+
+    luaL_checktype(L, top_tbl, LUA_TTABLE);
+    #if LUA_VERSION_NUM == 502
+      int n_el2 = lua_rawlen(L, 1);
+    #else
+      int n_el2 = lua_objlen(L, 1);
+    #endif
+    if(n_el!=4)
+      luaL_error(L, "Bad dimension! %d x %d",i,n_el2);
+
+    // Work with the table, which is pushed
+    for (j = 1; j <= 4; j++) {
+      // Grab the table entry on top of the stack (of 2 things?)
+      lua_rawgeti(L, top_tbl, j);
+      int top_num = lua_gettop(L);
+      // The number is now on the top of the stack
+      double el = luaL_checknumber(L, top_num);
+      // Work with the table, which is pushed
+      //printf("El @ (%d,%d)=%lf\n",i,j,el);
+      tr(i-1,j-1) = el;
+      // Remove the number from the stack
+      lua_pop(L, 1);
+    }
+    // Remove from the stack
+    lua_pop(L, 1);
+  }
+
+  // Return the Transform
+  return tr;
+}
+
+// Assume just the Left arm
+// TODO: Add any extra flags
+static int luaTHOROP_inverse_arm(lua_State *L) {
+	std::vector<double> qArm;
+	double shoulderYaw;
+	bool flip_shoulderroll;
+
+	// Current joint angles must be given as arg 2
+  if( !lua_istable(L,1) ){
+		Transform tr = luaT_checktransform(L, 1);
+		std::vector<double> qArm0 = lua_checkvector(L, 2);
+		shoulderYaw = luaL_checknumber(L, 3);
+		flip_shoulderroll = lua_toboolean(L, 4);
+    qArm = THOROP_kinematics_inverse_arm(
+			tr,
+			qArm0,
+			shoulderYaw,
+			flip_shoulderroll
+		);
+	} else {
+		Transform tr = lua_checktransform(L, 1);
+		std::vector<double> qArm0 = lua_checkvector(L, 2);
+		shoulderYaw = luaL_checknumber(L, 3);
+		flip_shoulderroll = lua_toboolean(L, 4);
+    qArm = THOROP_kinematics_inverse_arm(tr, qArm0, shoulderYaw, flip_shoulderroll);
+	}
+	lua_pushvector(L, qArm);
+	// Push the shoulder yaw is the indicator of the current null space setup
+	//lua_pushnumber(L, qArm[2]);
+	// NOTE: Just for forward, actually :P we know from the inverse input
+	// TODO: Common API to mean a float value for interpolation?
+	// TODO: Is COM compensation a good null space option?
+	return 1;
+}
+
+// Assume just the Left arm
+static int luaTHOROP_inverse_wrist(lua_State *L) {
+	std::vector<double> qArm;
+	double shoulderYaw;
+	//char is_reach_back;
+
+	// Current joint angles must be given as arg 2
+  if( !lua_istable(L, 1) ){
+		Transform tr = luaT_checktransform(L, 1);
+		std::vector<double> qArm0 = lua_checkvector(L, 2);
+		shoulderYaw = luaL_optnumber(L, 3, 0.0);
+		// TODO: Add any extra flags
+    qArm = THOROP_kinematics_inverse_wrist(tr, qArm0, shoulderYaw);
+	} else {
+		Transform tr = lua_checktransform(L, 1);
+		std::vector<double> qArm0 = lua_checkvector(L, 2);
+		shoulderYaw = luaL_optnumber(L, 3, 0.0);
+    qArm = THOROP_kinematics_inverse_wrist(tr, qArm0, shoulderYaw);
+	}
+	lua_pushvector(L, qArm);
+	// TODO:  some other indicator...
+	//lua_pushnumber(L, is_reach_back);
 	return 1;
 }
 
@@ -466,6 +731,18 @@ static const struct luaL_Reg kinematics_lib [] = {
 
 	{"com_upperbody_2",com_upperbody_2},
 
+	{"calculate_foot_tilt",calculate_foot_tilt},
+	{"inverse_legs_foot_tilt",inverse_legs_foot_tilt},
+
+	/* Extras */
+	{"inverse_arm", luaTHOROP_inverse_arm},
+	{"inverse_wrist", luaTHOROP_inverse_wrist},
+
+	{"l_arm_origins", l_arm_origins},
+	{"r_arm_origins", r_arm_origins},
+
+	{"l_leg_origins", l_leg_origins},
+	{"r_leg_origins", r_leg_origins},
 
 	{NULL, NULL}
 };
@@ -481,7 +758,7 @@ static const def_info kinematics_constants[] = {
   {"elbowOffsetX", elbowOffsetX},
   {"handOffsetX", handOffsetX},
   {"handOffsetY", handOffsetY},
-  {"handOffsetZ", handOffsetZ},
+  {"handOffsetZ", handOffsetZ},  
   {NULL, 0}
 };
 

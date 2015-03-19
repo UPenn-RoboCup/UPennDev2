@@ -1,11 +1,11 @@
 assert(Config, 'Need a pre-existing Config table!')
 
--- Override! Disable the wizards
--- Based on the master config, our fsm config has the highest priority!
-Config.wizards = {}
-Config.sensors = {ft = true}
-
 local fsm = {}
+
+Config.demo = false
+--Config.demo = true
+
+Config.torque_legs = true
 
 -- Update rate in Hz
 fsm.update_rate = 100
@@ -13,12 +13,16 @@ fsm.update_rate = 100
 -- Which FSMs should be enabled?
 fsm.enabled = {
 --  'Body',
+	'Arm',
   'Motion',
+	'Head'
 }
 
 --SJ: now we can have multiple FSM options 
 fsm.select = {
+	Arm = 'Teach',
   Body = 'Teach',
+	Head = 'Teach',
   Motion = 'Teach'
 }
 
@@ -26,6 +30,37 @@ fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   --
   {'bodyInit', 'done', 'bodyStop'},
+}
+
+fsm.Head = {
+  {'headIdle', 'init', 'headCenter'},
+	{'headCenter', 'trackhand', 'headTrackHand'},
+}
+
+fsm.Arm = {
+	-- Idle
+  {'armIdle', 'timeout', 'armIdle'},
+	{'armIdle', 'init', 'armInit'},
+	-- Init
+	{'armInit', 'timeout', 'armInit'},
+  {'armInit', 'done', 'armStance'},
+	-- Stance pose (for walking)
+	{'armStance', 'timeout', 'armStance'},
+	{'armStance', 'ready', 'armReady'},
+	{'armStance', 'teleop', 'armTeleop'},
+	-- Ready pose (for manipulating)
+	{'armReady', 'timeout', 'armReady'},
+	{'armReady', 'done', 'armTeleop'},
+	{'armReady', 'teleop', 'armTeleop'},
+	-- Teleop
+	{'armTeleop', 'timeout', 'armTeleop'},
+	{'armTeleop', 'init', 'armInit'},
+	{'armTeleop', 'ready', 'armReady'},
+	{'armTeleop', 'poke', 'armPoke'},
+	-- Poke
+	{'armPoke', 'timeout', 'armPoke'},
+	{'armPoke', 'done', 'armTeleop'},
+	{'armPoke', 'touch', 'armTeleop'},
 }
 
 fsm.Motion = {
@@ -70,26 +105,5 @@ fsm.Motion = {
 }
 
 Config.fsm = fsm
-
-for _,sm in ipairs(Config.fsm.enabled) do
-  if Config.fsm.select[sm] then
-    local pname = {HOME, '/Player/', sm, 'FSM/',Config.fsm.select[sm], '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  else --default fsm
-    local pname = {HOME, '/Player/', sm, 'FSM', '/?.lua;', package.path}
-    package.path = table.concat(pname)
-  end  
-end
-
-Config.stop_at_neutral = true --false for walk testing
-
-Config.demo = false
---Config.demo = true
-
---  Config.use_walkkick = true
-Config.use_walkkick = false
-
---Config.torque_legs = false
-Config.torque_legs = true
 
 return Config

@@ -386,7 +386,19 @@ return;
     if DATA.viewmode 
       class=LUT(DATA.cindex);
       cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
-      cmap=[cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
+      ccy=[.1 .1 1];
+      cmg=[1 0 .3];
+      cmap=[cbk; %0
+          cr; %1
+          cy;cy; %2
+          cb;cb;cb;cb; %4
+          cg;cg;cg;cg;cg;cg;cg;cg; %8
+          cw;cw;cw;cw;cw;cw;cw;cw;cw;cw;cw;cw;cw;cw;cw;cw; %16
+          %32
+          ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;ccy;
+          %64
+          cmg;
+          ];
       r_cast=cmap(:,1)*255;
       g_cast=cmap(:,2)*255;
       b_cast=cmap(:,3)*255;

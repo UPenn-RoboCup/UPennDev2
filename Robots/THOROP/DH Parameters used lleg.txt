@@ -1,0 +1,2 @@
+(alpha, a, d, theta)
+[(0, 0, 0, 'q+pi/2'), ('pi/2', 0, 0, 'q+pi/2'), ('pi/2', 0, 0, 'q+aThigh'), ('0', '-dThigh', 0, 'q-aTibia-aThigh'), ('0', '-dTibia', 0, 'q+aTibia'), ('-pi/2', 0, 0, 'q')]

@@ -1,5 +1,4 @@
 local libLog = {}
-local mt_log = {}
 local LOG_DIR = '/tmp'
 local carray
 if ffi then
@@ -15,9 +14,11 @@ else
 	carray = require'carray'
 end
 local torch = require'torch'
-local mp = require'msgpack'
---local mp = require'msgpack.MessagePack'
+local mpack = require'msgpack.MessagePack'.pack
+-- Need the C version for unpacker
+local munpacker = require'msgpack'.unpacker
 
+-- TODO: __gc should call stop
 local function stop(self)
 	-- Close the files
 	self.f_meta:close()
@@ -32,7 +33,7 @@ local function record(self, meta, raw, n_raw)
 	if mtype=='string' then
 		m_ok = self.f_meta:write(meta)
 	elseif mtype then
-		local metapack = mp.pack(meta)
+		local metapack = mpack(meta)
 		m_ok = self.f_meta:write(metapack)
 	end
 	-- Record the raw
@@ -50,10 +51,11 @@ local function record(self, meta, raw, n_raw)
 			local data = carray.byte(raw,n_raw)
 			r_ok = self.f_raw:write(tostring(data))
 		end
-	elseif rt=='string' then
+	elseif rtype=='string' then
 		r_ok = self.f_raw:write(raw)
 	end
 	-- Return the status of the writes
+  self.n = self.n + 1
 	return m_ok, r_ok
 end
 
@@ -73,6 +75,7 @@ function libLog.new(prefix, has_raw)
 	t.f_meta = f_meta
 	t.record = record
 	t.stop = stop
+  t.n = 0
 	return t
 end
 
@@ -81,7 +84,7 @@ local function unroll_meta(self)
 	local f_m = assert(io.open(self.m_name,'r'))
 	-- Must use an unpacker...
 	local metadata = {}
-	local u = mp.unpacker(2048)
+	local u = munpacker(2048)
 	local buf, nbuf = f_m:read(512),0
 	while buf do
 		nbuf = nbuf + #buf
@@ -106,11 +109,13 @@ local function log_iter(self)
 	local function iter(param, state)
 		i = i + 1
 		if i>n then
-			f_r:close()
+			if f_r then f_r:close() end
 			return nil
 		end
 		--if not param then return end
 		local m = metadata[i]
+		-- Metadata only
+		if not f_r then return i, m end
 		if C then
 			buf_t:resize(m.rsz)
 			local n_read = C.fread(buf_t:data(),1,m.rsz,f_r)

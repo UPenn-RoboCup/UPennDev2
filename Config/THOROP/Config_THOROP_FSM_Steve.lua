@@ -59,6 +59,13 @@ fsm.Head = {
 
 fsm.Gripper = {
   {'gripperIdle', 'init', 'gripperCenter'},
+	{'gripperIdle', 'teleop', 'gripperTeleop'},
+	--
+	{'gripperCenter', 'idle', 'gripperIdle'},
+  {'gripperCenter', 'teleop', 'gripperTeleop'},
+	--
+	{'gripperTeleop', 'idle', 'gripperIdle'},
+	{'gripperTeleop', 'init', 'gripperCenter'},
 }
 
 fsm.Lidar = {

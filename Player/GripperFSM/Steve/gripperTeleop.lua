@@ -6,7 +6,8 @@ local util = require'util'
 local vector = require'vector'
 local t_entry, t_update
 
-local function get_torque_requirement(qGrip, qDesired, tqDesired)
+local function get_torque_requirement(qGrip, tqDesired, qDesired)
+	if not qDesired then return tqDesired end
 	local tq = 0 * qGrip
 	for i, q in ipairs(qGrip) do
 		tq[i] = util.sign(q - qDesired[i]) * -tqDesired[i]
@@ -46,9 +47,13 @@ function state.update()
 	local qLGrip = Body.get_lgrip_position()
 	local qRGrip = Body.get_rgrip_position()
 
-	-- Find the torque to go to the zero position
-  local tqL = get_torque_requirement(qLGrip)
-	local tqR = get_torque_requirement(qRGrip)
+	-- Find the torque
+	local tqL = get_torque_requirement(
+		qLGrip,
+		tqL,
+		hcm.get_teleop_lgrip_mode()==1 and hcm.get_teleop_lgrip_position()
+	)
+	--local tqR = get_torque_requirement(qRGrip)
   
 end
 

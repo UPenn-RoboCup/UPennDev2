@@ -17,7 +17,7 @@ fsm.enabled = {
   Head = true,
   Motion = true,
   Lidar = true,
-	Gripper = false
+	Gripper = true
 }
 
 --SJ: now we can have multiple FSM options
@@ -55,6 +55,10 @@ fsm.Head = {
   --
   {'headTeleop', 'init', 'headCenter'},
   {'headTeleop', 'trackhand', 'headTrackHand'},
+}
+
+fsm.Gripper = {
+  {'gripperIdle', 'init', 'gripperCenter'},
 }
 
 fsm.Lidar = {

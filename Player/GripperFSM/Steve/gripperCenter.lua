@@ -1,15 +1,22 @@
+local state = {}
+state._NAME = ...
+
 local Body = require'Body'
 local util = require'util'
 local vector = require'vector'
 local t_entry, t_update
-local state = {}
-state._NAME = ...
 
--- TODO: need to compensate the torso pose
-local headSpeed = vector.ones(2) * 5 * DEG_TO_RAD
+local gripperTorque = 10
+local function get_torque_requirement(qGrip)
+	local tq = 0 * qGrip
+	for i, q in ipairs(qGrip) do
+		tq[i] = util.sign(q) * -gripperTorque
+	end
+	return tq
+end
 
 function state.entry()
-  print(state._NAME..' Entry' )
+  io.write(state._NAME..' Entry\n')
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -25,16 +32,22 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-	local centerAngles = {0, 0*DEG_TO_RAD-Body.get_rpy()[2]}
-	local headNow = Body.get_head_command_position()
-  local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt)
-	Body.set_head_command_position(apprAng)
+	-- Grab our current position
+	local qLGrip = Body.get_lgrip_position()
+	local qRGrip = Body.get_rgrip_position()
 
-  return doneHead and 'done'
+	-- Find the torque to go to the zero position
+  local tqL = get_torque_requirement(qLGrip)
+	local tqR = get_torque_requirement(qRGrip)
+
+	-- Write the torque
+	Body.set_lgrip_command_torque(tqL)
+	Body.set_rgrip_command_torque(tqR)
+
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+  io.write(state._NAME..' Exit\n')
 end
 
 return state

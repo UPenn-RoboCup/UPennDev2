@@ -161,8 +161,8 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 	  wristYaw_b = atan2(-rotWrist[3][1], -rotWrist[2][1])
 	  wristYaw2_b = atan2(-rotWrist[1][3], rotWrist[1][2])
   end
-  local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % (2*PI) ) - PI
-  local err_b = ( (qOrg[5] - wristYaw_b+5*PI) % (2*PI) ) - PI
+  local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % TWO_PI ) - PI
+  local err_b = ( (qOrg[5] - wristYaw_b+5*PI) % TWO_PI ) - PI
   if err_a^2 < err_b^2 then
     qArm[5] = wristYaw_a
     qArm[6] = wristRoll_a

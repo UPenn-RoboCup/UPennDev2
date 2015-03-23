@@ -40,24 +40,63 @@ local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 end
 
 local function find_shoulder(self, tr, qArm)
-	local minArm, maxArm, invArm = self.min_q, self.max_q, self.inverse
+	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
+	local halfway = self.halves
+	local invArm = self.inverse
 	local iqArm, margin, qBest
-	local dMin, dMax, margin
-	local maxmargin = -math.huge
+	local dMin, dMax
+	--
+	--local maxmargin, margin = -math.huge
+	local minusage, usage = math.huge
 	for i, q in ipairs(self.shoulderAngles) do
 		iqArm = invArm(tr, qArm, q)
-		-- Sanitize before, so we compare our actual usage
-		-- NOTE: Be careful here with sanitize for far changes in tr from qArm!
-		--sanitize0(iqArm, qArm)
+
+		-- Minimize the maximum usage
+		----[[
+		sanitize0(iqArm, qArm)
+		dRelative = (iqArm - minArm) / rangeArm - halfway
+		--[[
+		print('Usage', (iqArm - minArm)*RAD_TO_DEG)
+		print('rangeArm', rangeArm*RAD_TO_DEG)
+		print('Relative', (iqArm - minArm) / rangeArm)
+		print('dRelative', dRelative)
+		--]]
+		usage = -math.huge
+		for iq, v in ipairs(dRelative) do
+			local av = fabs(v)
+			if av>0.5 then
+				usage = math.huge
+				break
+			elseif iq~=4 and iq~=6 then
+				usage = max(av, usage)
+			end
+
+		end
+		if usage < minusage then
+			minusage = usage
+			qBest = iqArm
+		end
+		--]]
+
+		--[[
 		dMin = iqArm - minArm
 		dMax = iqArm - maxArm
 		margin = math.huge
-		for _, v in ipairs(dMin) do margin = min(fabs(v), margin) end
-		for _, v in ipairs(dMax) do margin = min(fabs(v), margin) end
+		for _, v in ipairs(dMin) do
+			if iq~=4 and iq~=6 then -- don't worry about the yaw ones
+				margin = min(fabs(v), margin)
+			end
+		end
+		for _, v in ipairs(dMax) do
+			if iq~=4 and iq~=6 then
+				margin = min(fabs(v), margin)
+			end
+		end
 		if margin > maxmargin then
 			maxmargin = margin
 			qBest = iqArm
 		end
+		--]]
 	end
 	return qBest
 end
@@ -351,6 +390,8 @@ function libPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 	local armOnes = vector.ones(7)
 	local obj = {
 		ones = armOnes,
+		halves = armOnes * 0.5,
+		--
 		min_q = min_q or -90*DEG_TO_RAD*armOnes,
 		max_q = max_q or 90*DEG_TO_RAD*armOnes,
 		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
@@ -369,6 +410,7 @@ function libPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 		set_resolution = set_resolution,
 		set_limits = set_limits,
 	}
+	obj.range_q = obj.max_q - obj.min_q
 	-- Setup the shoulder angles
 	set_shoulder_angles(obj)
 	--

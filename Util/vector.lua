@@ -120,6 +120,11 @@ end
 local function div(v1, v2)
   if type(v2) == "number" then
     return divnum(v1, v2)
+	else
+		-- pointwise
+		local v = {}
+		for i,val in ipairs(v1) do v[i] = val / v2[i] end
+		return setmetatable(v, mt)
   end
 end
 

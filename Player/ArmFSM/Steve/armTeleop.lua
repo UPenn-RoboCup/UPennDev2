@@ -3,7 +3,10 @@ state._NAME = ...
 local Body = require'Body'
 local movearm = require'movearm'
 
-local USE_COMPENSATION = true
+-- Compensation
+-- 1: Use the compensation, but search for the shoulder
+-- 2: Use the compenstation, and use the teleop shoulder options
+local USE_COMPENSATION = 1
 
 local t_entry, t_update, t_finish
 local timeout = 10.0
@@ -51,24 +54,34 @@ function state.update()
   -- See if commanded a new position
   if not lPathIter or not rPathIter then
 		-- Check if using the compensation
-		USE_COMPENSATION = hcm.get_teleop_compensation()==1
+		USE_COMPENSATION = hcm.get_teleop_compensation()
 
     -- Get the goal from hcm
     qLGoal = hcm.get_teleop_larm()
     qRGoal = hcm.get_teleop_rarm()
 
-		if USE_COMPENSATION then
+		if USE_COMPENSATION > 0 then
 			-- Grab the torso compensation
 			local uTorsoAdapt, uTorso = movearm.get_compensation()
 			uTorso0 = uTorso
 			uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
 			-- Apply the compensation
 			local fkLComp, fkRComp = movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
-			-- Form the iterator
-			lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
-				movearm.goto_tr_via_q(fkLComp, fkRComp
-				--, {qLGoal[3]}, {qRGoal[3]}
-			)
+
+			-- Do we have desired null space options?
+			if USE_COMPENSATION==2 then
+				local loptions = hcm.get_teleop_loptions()
+				local roptions = hcm.get_teleop_roptions()
+				-- Form the iterator
+				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
+					movearm.goto_tr_via_q(fkLComp, fkRComp, loptions, roptions)
+			else
+				-- Form the iterator
+				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
+					movearm.goto_tr_via_q(fkLComp, fkRComp)
+			end
+
+
 		else
 			-- #nofilter
 			qLGoalFiltered, qRGoalFiltered = qLGoal, qRGoal
@@ -91,7 +104,7 @@ function state.update()
 	local phaseL = moreL and moreL/qLD or 0
 	local phaseR = moreR and moreR/qRD or 0
 
-	if USE_COMPENSATION then
+	if USE_COMPENSATION > 0 then
 		local phase = math.max(phaseL, phaseR)
 		local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
 		mcm.set_stance_uTorsoComp(uTorsoNow)

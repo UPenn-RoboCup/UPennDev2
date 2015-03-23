@@ -24,6 +24,7 @@ fsm.enabled = {
 fsm.select = {
   Arm = 'Steve',
   Body = 'Steve',
+	Gripper = 'Steve',
   Head = 'Steve',
   Motion = 'Steve'
 }

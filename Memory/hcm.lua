@@ -22,16 +22,19 @@ shared_data.teleop = {
   -- Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),
+	-- Null space options (Shoulder angle, flip_roll)
+  loptions = zeros(2),
+  roptions = zeros(2),
 	-- Use compensation when moving the arm?
-	compensation = ones(1)
+	compensation = ones(1),
 	-- Gripper has some modes it can use: 0 is torque, 1 is position
-	lgrip_mode = zeros(1)
-	rgrip_mode = zeros(1)
+	lgrip_mode = zeros(1),
+	rgrip_mode = zeros(1),
 	-- We have three fingers
-	lgrip_torque = zeros(3)
-	rgrip_torque = zeros(3)
-	lgrip_position = zeros(3)
-	rgrip_position = zeros(3)
+	lgrip_torque = zeros(3),
+	rgrip_torque = zeros(3),
+	lgrip_position = zeros(3),
+	rgrip_position = zeros(3),
 
 }
 

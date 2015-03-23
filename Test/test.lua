@@ -5,8 +5,8 @@ local function update(key_code)
 	local key_char_lower = string.lower(key_char)
   
   local code_f, char_f, lower_f = code_lut[key_code], char_lut[key_char], lower_lut[key_char_lower]
-  print(key_code,key_char,key_char_lower)
-  print(code_f, char_f, lower_f)
+  print('Keycodes', key_code,key_char,key_char_lower)
+  print('Functions',code_f, char_f, lower_f)
   -- Precedence
   if type(code_f)=='function' then
     code_f()

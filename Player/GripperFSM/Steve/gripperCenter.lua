@@ -48,6 +48,12 @@ end
 
 function state.exit()
   io.write(state._NAME..' Exit\n')
+	-- Save our settings
+	-- Try to retain the position of 0
+	hcm.set_teleop_lgrip_position({0,0,0})
+  hcm.set_teleop_rgrip_position({0,0,0})
+	hcm.set_teleop_lgrip_mode(1)
+  hcm.set_teleop_rgrip_mode(1)
 end
 
 return state

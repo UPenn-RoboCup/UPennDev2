@@ -35,15 +35,15 @@ local rPlanner = P.new_planner(
 ):set_chain(K.forward_rarm, K.inverse_rarm)
 
 -- Take a desired joint configuration and move linearly in each joint towards it
-function movearm.goto_q(lwrist, rwrist, safe)
+function movearm.goto_q(qL, qR, safe)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
-	if lwrist then
+	if qL then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(lwrist, qLArm, dqLimit, safe)
+		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(qL, qLArm, dqLimit, safe)
 	end
-	if rwrist then
+	if qR then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(rwrist, qRArm, dqLimit, safe)
+		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(qR, qRArm, dqLimit, safe)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end
@@ -69,15 +69,15 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 end
 
 -- Take a desired Transformation matrix and move in a line towards it
-function movearm.goto_tr(lwrist, rwrist, loptions, roptions)
+function movearm.goto_tr(trL, rwrist, loptions, roptions)
 	local lPathIter, rPathIter
-	if lwrist then
+	if trL then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter = lPlanner:line_iter(lwrist, qLArm, 0.01, 3*DEG_TO_RAD, loptions)
+		lPathIter = lPlanner:line_iter(trL, qLArm, loptions)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter = rPlanner:line_iter(rwrist, qRArm, 0.01, 3*DEG_TO_RAD, roptions)
+		rPathIter = rPlanner:line_iter(rwrist, qRArm, roptions)
 	end
 	return lPathIter, rPathIter
 end

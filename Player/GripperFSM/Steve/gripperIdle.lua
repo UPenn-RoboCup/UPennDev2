@@ -48,6 +48,11 @@ function state.exit()
 		Body.set_rgrip_mode('torque')
 		if not IS_WEBOTS then unix.usleep(1e5) end
 	end
+
+	-- We are in torque mode to retain 0 torque
+	hcm.set_teleop_lgrip_mode(0)
+  hcm.set_teleop_rgrip_mode(0)
+
 end
 
 return state

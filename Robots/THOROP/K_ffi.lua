@@ -187,7 +187,6 @@ function K.forward_larm(qLArm)
 	return preLArm * fk_arm(qLArm) * postLArm, {qLArm[3]}
 end
 
-
 function K.forward_rarm(qRArm)
 	return preRArm * fk_arm(qRArm) * postRArm, {qRArm[3]}
 end
@@ -199,7 +198,7 @@ function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll)
 		preLArmInv * trL * postLArmInv,
 		qLArm,
 		shoulderYaw or qLArm[3],
-		flipRoll and PI
+		flipRoll==1 and PI
 	)
 end
 local preRArmInv, postRArmInv = Tinv(preRArm), Tinv(postRArm)
@@ -208,7 +207,7 @@ function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll)
 		preRArmInv * trR * postRArmInv,
 		qRArm,
 		shoulderYaw or qRArm[3],
-		flipRoll and -PI
+		flipRoll==1 and -PI
 	)
 end
 

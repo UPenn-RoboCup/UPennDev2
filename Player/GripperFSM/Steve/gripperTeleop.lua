@@ -16,7 +16,7 @@ local function get_torque_requirement(qGrip, tqDesired, qDesired)
 end
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  io.write(state._NAME..' Entry\n' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -24,14 +24,19 @@ function state.entry()
   t_update = t_entry
 
 	-- Reset the human desire
+	local tqLGrip = Body.get_lgrip_command_torque()
+	local tqRGrip = Body.get_rgrip_command_torque()
+	hcm.set_teleop_lgrip_torque(tqLGrip)
+  hcm.set_teleop_rgrip_torque(tqRGrip)
+	-- NOTE: Assume torque here...? Must track this in hcm maybe
+	--[[
 	local qLGrip = Body.get_lgrip_position()
 	local qRGrip = Body.get_rgrip_position()
 	hcm.set_teleop_lgrip_position(qLGrip)
   hcm.set_teleop_rgrip_position(qRGrip)
-	hcm.set_teleop_lgrip_torque(0)
-  hcm.set_teleop_rgrip_torque(0)
 	hcm.set_teleop_lgrip_mode(0)
   hcm.set_teleop_rgrip_mode(0)
+	--]]
 
 end
 
@@ -53,12 +58,14 @@ function state.update()
 		tqL,
 		hcm.get_teleop_lgrip_mode()==1 and hcm.get_teleop_lgrip_position()
 	)
-	--local tqR = get_torque_requirement(qRGrip)
+
+	-- Set the torques
+	Body.set_lgrip_command_torque(tqL)
   
 end
 
 function state.exit()  
-  print(state._NAME..' Exit' )
+  io.write(state._NAME..' Exit\n' )
 end
 
 return state

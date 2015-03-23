@@ -53,7 +53,6 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 	local flipL, flipR
 	if trL then
-
 		local qcLArm = Body.get_larm_command_position()
 		if loptions then
 			iqLArm = K.inverse_larm(trL, qcLArm, unpack(loptions))
@@ -64,10 +63,14 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 	end
 	if trR then
 		local qcRArm = Body.get_rarm_command_position()
-		iqRArm = K.inverse_rarm(trR, qcRArm, unpack(roptions or {}))
+		if roptions then
+			iqRArm = K.inverse_rarm(trR, qcRArm, unpack(roptions))
+		else
+			iqRArm, flipR = rPlanner:find_shoulder(trR, qcRArm)
+		end
 		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, dqLimit, true)
 	end
-	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
+	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist, flipL, flipR
 end
 
 -- Take a desired Transformation matrix and move in a line towards it

@@ -48,7 +48,6 @@ local function find_shoulder_margin(self, tr, qArm)
 	local maxmargin, margin = -math.huge
 	for i, q in ipairs(self.shoulderAngles) do
 		iqArm = invArm(tr, qArm, q)
-
 		-- Maximize the minimum margin
 		dMin = iqArm - minArm
 		dMax = iqArm - maxArm

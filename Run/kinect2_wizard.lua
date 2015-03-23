@@ -76,7 +76,7 @@ local function update(rgb, depth)
 	if Config.IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
   if t - t_send < 0.1 then return t end
   t_send = t
-	print('Kinect2 | t_send', t_send)
+	if not IS_WEBOTS then io.write('Kinect2 | t_send', t_send,'\n') end
 
   local rpy = Body.get_rpy()
   local bh = mcm.get_walk_bodyHeight()

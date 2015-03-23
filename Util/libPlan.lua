@@ -39,46 +39,17 @@ local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 	end
 end
 
-local function find_shoulder(self, tr, qArm)
+local function find_shoulder_margin(self, tr, qArm)
 	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
-	local halfway = self.halves
 	local invArm = self.inverse
 	local iqArm, margin, qBest
 	local dMin, dMax
 	--
-	--local maxmargin, margin = -math.huge
-	local minusage, usage = math.huge
+	local maxmargin, margin = -math.huge
 	for i, q in ipairs(self.shoulderAngles) do
 		iqArm = invArm(tr, qArm, q)
 
-		-- Minimize the maximum usage
-		----[[
-		sanitize0(iqArm, qArm)
-		dRelative = (iqArm - minArm) / rangeArm - halfway
-		--[[
-		print('Usage', (iqArm - minArm)*RAD_TO_DEG)
-		print('rangeArm', rangeArm*RAD_TO_DEG)
-		print('Relative', (iqArm - minArm) / rangeArm)
-		print('dRelative', dRelative)
-		--]]
-		usage = -math.huge
-		for iq, v in ipairs(dRelative) do
-			local av = fabs(v)
-			if av>0.5 then
-				usage = math.huge
-				break
-			elseif iq~=4 and iq~=6 then
-				usage = max(av, usage)
-			end
-
-		end
-		if usage < minusage then
-			minusage = usage
-			qBest = iqArm
-		end
-		--]]
-
-		--[[
+		-- Maximize the minimum margin
 		dMin = iqArm - minArm
 		dMax = iqArm - maxArm
 		margin = math.huge
@@ -96,9 +67,64 @@ local function find_shoulder(self, tr, qArm)
 			maxmargin = margin
 			qBest = iqArm
 		end
-		--]]
 	end
 	return qBest
+end
+
+local function find_shoulder(self, tr, qArm)
+	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
+	local halfway = self.halves
+	local invArm = self.inverse
+	local iqArm, margin, qBest
+	--
+	local flip_roll
+	local minusage, usage = math.huge
+	for i, q in ipairs(self.shoulderAngles) do
+		iqArm = invArm(tr, qArm, q)
+		-- Minimize the maximum usage
+		sanitize0(iqArm, qArm, 0)
+		dRelative = (iqArm - minArm) / rangeArm - halfway
+		usage = -math.huge
+		for iq, v in ipairs(dRelative) do
+			local av = fabs(v)
+			if av>0.5 then
+				-- out of range
+				usage = math.huge
+				break
+			elseif iq~=4 and iq~=6 then
+				usage = max(av, usage)
+			end
+		end
+		if usage < minusage then
+			flip_roll = 0
+			minusage = usage
+			qBest = iqArm
+		end
+	end
+	-- flip_roll
+	for i, q in ipairs(self.shoulderAngles) do
+		iqArm = invArm(tr, qArm, q, 1)
+		-- Minimize the maximum usage
+		sanitize0(iqArm, qArm)
+		dRelative = (iqArm - minArm) / rangeArm - halfway
+		usage = -math.huge
+		for iq, v in ipairs(dRelative) do
+			local av = fabs(v)
+			if av>0.5 then
+				-- out of range
+				usage = math.huge
+				break
+			elseif iq~=4 and iq~=6 then
+				usage = max(av, usage)
+			end
+		end
+		if usage < minusage then
+			flip_roll = 1
+			minusage = usage
+			qBest = iqArm
+		end
+	end
+	return qBest, flip_roll
 end
 
 -- TODO List for the planner

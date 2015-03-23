@@ -51,12 +51,14 @@ end
 -- Take a desired Transformation matrix and move joint-wise to it
 function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
+	local flipL, flipR
 	if trL then
+
 		local qcLArm = Body.get_larm_command_position()
 		if loptions then
 			iqLArm = K.inverse_larm(trL, qcLArm, unpack(loptions))
 		else
-			iqLArm = lPlanner:find_shoulder(trL, qcLArm)
+			iqLArm, flipL = lPlanner:find_shoulder(trL, qcLArm)
 		end
 		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, dqLimit, true)
 	end

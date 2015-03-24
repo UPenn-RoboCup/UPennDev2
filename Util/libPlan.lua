@@ -70,18 +70,18 @@ local function find_shoulder_margin(self, tr, qArm)
 	return qBest
 end
 
-local function find_shoulder(self, tr, qArm)
+local function find_shoulder(self, tr, qArm, flip_roll)
 	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
 	local halfway = self.halves
 	local invArm = self.inverse
 	local iqArm, margin, qBest
 	--
-	local flip_roll
+	flip_roll = flip_roll or 0
 	local minusage, usage = math.huge
 	for i, q in ipairs(self.shoulderAngles) do
 		iqArm = invArm(tr, qArm, q)
 		-- Minimize the maximum usage
-		sanitize0(iqArm, qArm, 0)
+		sanitize0(iqArm, qArm, flip_roll)
 		dRelative = (iqArm - minArm) / rangeArm - halfway
 		usage = -math.huge
 		for iq, v in ipairs(dRelative) do
@@ -100,30 +100,7 @@ local function find_shoulder(self, tr, qArm)
 			qBest = iqArm
 		end
 	end
-	-- flip_roll
-	for i, q in ipairs(self.shoulderAngles) do
-		iqArm = invArm(tr, qArm, q, 1)
-		-- Minimize the maximum usage
-		sanitize0(iqArm, qArm)
-		dRelative = (iqArm - minArm) / rangeArm - halfway
-		usage = -math.huge
-		for iq, v in ipairs(dRelative) do
-			local av = fabs(v)
-			if av>0.5 then
-				-- out of range
-				usage = math.huge
-				break
-			elseif iq~=4 and iq~=6 then
-				usage = max(av, usage)
-			end
-		end
-		if usage < minusage then
-			flip_roll = 1
-			minusage = usage
-			qBest = iqArm
-		end
-	end
-	return qBest, flip_roll
+	return qBest, {qBest[3], flip_roll}
 end
 
 -- TODO List for the planner
@@ -137,7 +114,6 @@ end
 -- This should have exponential approach properties...
 -- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
 local function line_iter(self, trGoal, qArm0, null_options)
-	null_options = null_options or {}
 	local dqdt_limit = self.dqdt_limit
 	local res_pos = self.res_pos
 	local res_ang = self.res_ang
@@ -152,19 +128,17 @@ local function line_iter(self, trGoal, qArm0, null_options)
 		qGoal = inverse_position(posGoal, qArm0, unpack(null_options))
 	else
 		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		qGoal = inverse(trGoal, qArm0, unpack(null_options))
-	end
-	--
-	qGoal = clamp_vector(qGoal, self.min_q, self.max_q)
-	--
-	local fkGoal, null_options0 = forward(qGoal)
-	if not skip_angles then
-		--print('posGoal In ', trGoal)
+		if null_options then
+			qGoal = inverse(trGoal, qArm0, unpack(null_options))
+			sanitize0(qGoal, qArm0)
+		else
+			qGoal, null_options = find_shoulder(self, trGoal, qArm0)
+		end
+		local fkGoal = forward(qGoal)
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
 		vector.new(posGoal)
-		--print('posGoal Out', posGoal)
 	end
-
+	--
 	local fkArm0, null_options0 = forward(qArm0)
 	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
 	local dPos0 = posGoal - posArm0
@@ -223,10 +197,13 @@ local function line_iter(self, trGoal, qArm0, null_options)
 		if null_options then
 			local null_options_tmp = {}
 			local null_ph = 1 - max(0, min(1, distance / distance0))
+			--[[
 			for i, v in ipairs(null_options) do
 				null_options_tmp[i] = null_options0[i] * (1-null_ph) + v * null_ph
 			end
-			iqWaypoint = inverse(trStep, cur_qArm, unpack(null_options_tmp))
+			--]]
+			local shoulderBlend = null_options0[1] * (1-null_ph) + null_options[1] * null_ph
+			iqWaypoint = inverse(trStep, cur_qArm, shoulderBlend, null_options0[2])
 		else
 			iqWaypoint = find_shoulder(self, trStep, cur_qArm)
 		end
@@ -237,7 +214,7 @@ local function line_iter(self, trGoal, qArm0, null_options)
 			sanitize0(iqWaypoint, cur_qArm)
 		end
 		return distance, iqWaypoint
-	end, qGoal
+	end, qGoal, distance0
 end
 
 -- TODO: Optimize the feedforward ratio

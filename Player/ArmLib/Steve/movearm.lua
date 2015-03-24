@@ -9,7 +9,8 @@ local K = require'K_ffi'
 -- Use SJ's kinematics for the mass properties
 local K0 = Body.Kinematics
 
-local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
+--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
+local degreesPerSecond = vector.ones(7) * 30
 local radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 -- TODO: Add dt into the joint iterator
 local dqLimit = DEG_TO_RAD / 3
@@ -57,7 +58,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 		if loptions then
 			iqLArm = K.inverse_larm(trL, qcLArm, unpack(loptions))
 		else
-			iqLArm, flipL = lPlanner:find_shoulder(trL, qcLArm)
+			iqLArm = lPlanner:find_shoulder(trL, qcLArm)
 		end
 		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, dqLimit, true)
 	end
@@ -66,11 +67,11 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 		if roptions then
 			iqRArm = K.inverse_rarm(trR, qcRArm, unpack(roptions))
 		else
-			iqRArm, flipR = rPlanner:find_shoulder(trR, qcRArm)
+			iqRArm = rPlanner:find_shoulder(trR, qcRArm)
 		end
 		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, dqLimit, true)
 	end
-	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist, flipL, flipR
+	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end
 
 -- Take a desired Transformation matrix and move in a line towards it
@@ -78,13 +79,13 @@ function movearm.goto_tr(trL, rwrist, loptions, roptions)
 	local lPathIter, rPathIter
 	if trL then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter = lPlanner:line_iter(trL, qLArm, loptions)
+		lPathIter, iqLArm, pLDist = lPlanner:line_iter(trL, qLArm, loptions)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter = rPlanner:line_iter(rwrist, qRArm, roptions)
+		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qRArm, roptions)
 	end
-	return lPathIter, rPathIter
+	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
 end
 
 function movearm.goto_wrists(lwrist, rwrist)

@@ -7,18 +7,40 @@ local t_entry, t_update, t_finish
 local timeout = 10.0
 
 local T = require'Transform'
-local trLGoal = T.transform6D{0.2, 0.25, -0.05, 0, 0, -90*DEG_TO_RAD}
-local trRGoal = T.transform6D({0.2, -0.25, -0.12, 0, 0, 90*DEG_TO_RAD})
+
+local trLGoal = T.transform6D(Config.arm.trLArm1)
+local trRGoal = T.transform6D(Config.arm.trRArm1)
 
 local lPathIter, rPathIter
+local qLD, qRD
+local qLGoalFiltered, qRGoalFiltered
 
 function state.entry()
   print(state._NAME..' Entry')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-	--lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {-20*DEG_TO_RAD}, {10*DEG_TO_RAD})
-  lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {-25*DEG_TO_RAD}, {25*DEG_TO_RAD})
+
+
+	-- Grab the torso compensation
+	local uTorsoAdapt, uTorso = movearm.get_compensation()
+	uTorso0 = uTorso
+	uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
+	-- Apply the compensation
+	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
+	local trLArmComp = trComp * trLGoal
+	local trRArmComp = trComp * trRGoal
+	-- Form the iterator
+	lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
+		movearm.goto_tr(trLArmComp, trRArmComp)
+	--[[
+	lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
+		movearm.goto_tr_via_q(fkLComp, fkRComp)
+	--]]
+
+	-- no compensation
+	--lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal)
+  --lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal)
 end
 
 function state.update()
@@ -28,26 +50,22 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 	-- Timing necessary
-	----[[
+
 	local qLArm = Body.get_larm_command_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
-	--]]
-	-- No time needed
-	--[[
-	local qLArm = Body.get_larm_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm)
-	--]]
-	Body.set_larm_command_position(q_lWaypoint)
 
-	----[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
-	--]]
-	--[[
-	local qRArm = Body.get_rarm_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm)
-	--]]
+
+	local phaseL = moreL and moreL/qLD or 0
+	local phaseR = moreR and moreR/qRD or 0
+	local phase = math.max(phaseL, phaseR)
+	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
+	mcm.set_stance_uTorsoComp(uTorsoNow)
+
+	Body.set_larm_command_position(q_lWaypoint)
 	Body.set_rarm_command_position(q_rWaypoint)
+
 	-- Check if done
 	if not moreL and not moreR then
 		return 'done'
@@ -56,6 +74,7 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
+	print(Body.get_larm_command_position())
 end
 
 return state

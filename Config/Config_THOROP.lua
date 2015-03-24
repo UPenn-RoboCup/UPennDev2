@@ -60,7 +60,7 @@ if IS_STEVE then
 
 	if IS_WEBOTS then
 		Config.sensors.world = nil
-		----[[
+		--[[
 		Config.sensors.kinect = 'kinect2_wizard'
 		Config.kinect_timestep = 50
 		--]]

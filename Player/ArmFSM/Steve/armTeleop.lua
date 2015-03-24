@@ -61,6 +61,7 @@ function state.update()
     qRGoal = hcm.get_teleop_rarm()
 
 		if USE_COMPENSATION > 0 then
+
 			-- Grab the torso compensation
 			local uTorsoAdapt, uTorso = movearm.get_compensation()
 			uTorso0 = uTorso
@@ -80,7 +81,6 @@ function state.update()
 				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
 					movearm.goto_tr_via_q(fkLComp, fkRComp)
 			end
-
 
 		else
 			-- #nofilter

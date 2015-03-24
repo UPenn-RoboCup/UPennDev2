@@ -134,7 +134,8 @@ local function find_shoulder(self, tr, qArm)
 	-- TODO: Tune the weights on a per-task basis (some tight, but not door)
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
-		tinsert(cost, valid and (5*ctight[ic] + 3*cusage[ic] + 1*cdiff[ic]) or INFINITY)
+		--tinsert(cost, valid and (5*ctight[ic] + 3*cusage[ic] + 1*cdiff[ic]) or INFINITY)
+		tinsert(cost, valid and (cusage[ic] + cdiff[ic]) or INFINITY)
 	end
 	-- Find the smallest cost
 	local cmin, imin = umin(cost)

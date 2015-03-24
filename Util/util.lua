@@ -3,11 +3,11 @@ local vector = require'vector'
 local sformat = string.format
 local abs = math.abs
 
+local PI, TWO_PI = math.pi, 2*math.pi
 function util.mod_angle(a)
   -- Reduce angle to [-pi, pi)
-  local b = a % (2*math.pi)
-  if b >= math.pi then return (b - 2*math.pi) end
-  return b
+  local b = a % TWO_PI
+	return b >= PI and (b - TWO_PI) or b
 end
 
 
@@ -36,11 +36,11 @@ end
 function util.max(t)
   -- find the maximum element in the array table
   -- returns the min value and its index
-  local imax = 1 --0
-  local tmax = -1*math.huge
-  for i=1,#t do
-    if t[i] > tmax then
-      tmax = t[i]
+  local imax = 0
+  local tmax = -math.huge
+	for i,v in ipairs(t)  do
+    if v > tmax then
+      tmax = v
       imax = i
     end
   end

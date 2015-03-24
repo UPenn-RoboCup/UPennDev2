@@ -4,7 +4,7 @@ local Body = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
 local t_entry, t_update, t_finish
-local timeout = 10.0
+local timeout = 30.0
 
 local piterators
 local lPathIter, rPathIter

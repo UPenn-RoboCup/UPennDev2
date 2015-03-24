@@ -9,28 +9,35 @@ local timeout = 10.0
 local T = require'Transform'
 
 local stage
+-- Stages: L, R (Transforms/joints), type of motion
 local stages = {
-	[1] = {T.transform6D(Config.arm.trLArm1), T.transform6D(Config.arm.trRArm1)},
-	[2] = {T.transform6D(Config.arm.trLArm2), T.transform6D(Config.arm.trRArm2)},
+	[1] = {T.transform6D(Config.arm.trLArm1), T.transform6D(Config.arm.trRArm1), 'goto_tr',},
+	[2] = {T.transform6D(Config.arm.trLArm2), T.transform6D(Config.arm.trRArm2), 'goto_tr',}
 }
 
 local lPathIter, rPathIter
 local qLD, qRD
 local qLGoalFiltered, qRGoalFiltered
 
+-- TODO: Allow no compensation
 local function get_iters(s)
-	local trLGoal, trRGoal = unpack(stages[s])
+	-- Grab the goals and the method
+	local lGoal, rGoal, via = unpack(stages[s])
+	-- NOTE: Compensation requires goto_tr or goto_tr_via_q...
+	local go = movearm[via]
 
+	-- FK goals for use with copmensation
 	local fkLComp, fkRComp
-	fkLComp, fkRComp, uTorsoComp, uTorso0 =
-		movearm.apply_tr_compensation(trLGoal, trRGoal, movearm.get_compensation())
+	if via:find'tr' then
+		fkLComp, fkRComp, uTorsoComp, uTorso0 =
+			movearm.apply_tr_compensation(lGoal, rGoal, movearm.get_compensation())
+	else
+		fkLComp, fkRComp, uTorsoComp, uTorso0 =
+			movearm.apply_q_compensation(lGoal, rGoal, movearm.get_compensation())
+	end
 
 	-- Form the iterator
-	return movearm.goto_tr(fkLComp, fkRComp)
-	--return movearm.goto_tr_via_q(fkLComp, fkRComp)
-	-- no compensation
-	--return movearm.goto_tr(trLGoal, trRGoal)
-  --return movearm.goto_tr_via_q(trLGoal, trRGoal)
+	return go(fkLComp, fkRComp)
 end
 
 function state.entry()

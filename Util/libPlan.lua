@@ -101,8 +101,9 @@ local function valid_cost(iq, minArm, maxArm)
 	for i, q in ipairs(iq) do if q<minArm[i] or q>maxArm[i] then return INFINITY end end
 	return 0
 end
--- TODO: minimize the second angle, so we can work in cramped spaces
-local function find_shoulder(self, tr, qArm)
+local defaultWeights = {1,1,0}
+local function find_shoulder(self, tr, qArm, weights)
+	weights = weights or defaultWeights
 	-- Form the inverses
 	local iqArms = solve_inverses(tr, qArm, self.inverse, self.shoulderAngles)
 	--
@@ -118,7 +119,7 @@ local function find_shoulder(self, tr, qArm)
 	local ctight = {}
 	-- The margin from zero degrees away from the body
 	local margin, ppi = 5*DEG_TO_RAD, util.sign(qArm[2])*math.pi
-	for _, iq in ipairs(iqArms) do tinsert(ctight, iq[2]/ppi-margin) end
+	for _, iq in ipairs(iqArms) do tinsert(ctight, fabs((iq[2]-margin))/ppi) end
 	-- Usage cost (Worst Percentage)
 	local cusage, dRelative = {}
 	for _, iq in ipairs(iqArms) do
@@ -134,8 +135,7 @@ local function find_shoulder(self, tr, qArm)
 	-- TODO: Tune the weights on a per-task basis (some tight, but not door)
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
-		--tinsert(cost, valid and (5*ctight[ic] + 3*cusage[ic] + 1*cdiff[ic]) or INFINITY)
-		tinsert(cost, valid and (cusage[ic] + cdiff[ic]) or INFINITY)
+		tinsert(cost, valid + weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic])
 	end
 	-- Find the smallest cost
 	local cmin, imin = umin(cost)
@@ -155,7 +155,7 @@ end
 
 -- This should have exponential approach properties...
 -- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
-local function line_iter(self, trGoal, qArm0, null_options)
+local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 	local dqdt_limit = self.dqdt_limit
 	local res_pos = self.res_pos
 	local res_ang = self.res_ang
@@ -174,7 +174,7 @@ local function line_iter(self, trGoal, qArm0, null_options)
 			qGoal = inverse(trGoal, qArm0, unpack(null_options))
 			sanitize0(qGoal, qArm0)
 		else
-			qGoal, null_options = find_shoulder(self, trGoal, qArm0)
+			qGoal, null_options = find_shoulder(self, trGoal, qArm0, shoulder_weights)
 		end
 		local fkGoal = forward(qGoal)
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
@@ -247,7 +247,7 @@ local function line_iter(self, trGoal, qArm0, null_options)
 			local shoulderBlend = null_options0[1] * (1-null_ph) + null_options[1] * null_ph
 			iqWaypoint = inverse(trStep, cur_qArm, shoulderBlend, null_options0[2])
 		else
-			iqWaypoint = find_shoulder(self, trStep, cur_qArm)
+			iqWaypoint = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
 		end
 		-- Sanitize to avoid trouble with wrist yaw
 		if dt then

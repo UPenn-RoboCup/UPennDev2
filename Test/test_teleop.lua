@@ -110,7 +110,7 @@ end
 char_lut['r'] = function()
   if selected_arm==0 then
 		local options = hcm.get_teleop_loptions()
-		options[1] = options[1] - DEG_TO_RAD
+		options[1] = math.max(options[1] - DEG_TO_RAD, 0)
 		hcm.set_teleop_loptions(options)
 		--[[
 		local qLArm = get_larm()
@@ -123,7 +123,7 @@ char_lut['r'] = function()
 		--]]
   else
 		local options = hcm.get_teleop_roptions()
-		options[1] = options[1] - DEG_TO_RAD
+		options[1] = math.min(options[1] - DEG_TO_RAD, 0)
 		hcm.set_teleop_roptions(options)
 		--[[
     local qRArm = get_rarm()
@@ -139,7 +139,7 @@ end
 char_lut['t'] = function()
   if selected_arm==0 then
 		local options = hcm.get_teleop_loptions()
-		options[1] = options[1] + DEG_TO_RAD
+		options[1] = math.min(options[1] + DEG_TO_RAD, 90*DEG_TO_RAD)
 		hcm.set_teleop_loptions(options)
 		--[[
     local qLArm = get_larm()
@@ -151,7 +151,7 @@ char_lut['t'] = function()
 		--]]
   else
 		local options = hcm.get_teleop_roptions()
-		options[1] = options[1] + DEG_TO_RAD
+		options[1] = math.max(options[1] + DEG_TO_RAD, -90*DEG_TO_RAD)
 		hcm.set_teleop_roptions(options)
 		--[[
     local qRArm = get_rarm()

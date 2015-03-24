@@ -52,7 +52,7 @@ function movearm.goto_q(qL, qR, safe)
 end
 
 -- Take a desired Transformation matrix and move joint-wise to it
-function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
+function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 	local flipL, flipR
 	if trL then
@@ -60,7 +60,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 		if loptions then
 			iqLArm = K.inverse_larm(trL, qcLArm, unpack(loptions))
 		else
-			iqLArm = lPlanner:find_shoulder(trL, qcLArm)
+			iqLArm = lPlanner:find_shoulder(trL, qcLArm, lweights)
 		end
 		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, dqLimit, true)
 	end
@@ -69,7 +69,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 		if roptions then
 			iqRArm = K.inverse_rarm(trR, qcRArm, unpack(roptions))
 		else
-			iqRArm = rPlanner:find_shoulder(trR, qcRArm)
+			iqRArm = rPlanner:find_shoulder(trR, qcRArm, rweights)
 		end
 		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, dqLimit, true)
 	end
@@ -77,15 +77,15 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
 end
 
 -- Take a desired Transformation matrix and move in a line towards it
-function movearm.goto_tr(trL, rwrist, loptions, roptions)
+function movearm.goto_tr(trL, rwrist, loptions, roptions, lweights, rweights)
 	local lPathIter, rPathIter
 	if trL then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, pLDist = lPlanner:line_iter(trL, qLArm, loptions)
+		lPathIter, iqLArm, pLDist = lPlanner:line_iter(trL, qLArm, loptions, lweights)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qRArm, roptions)
+		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qRArm, roptions, rweights)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
 end
@@ -162,7 +162,7 @@ function movearm.path_iterators(list)
 	-- return a coroutine
 	return coroutine.wrap(function()
 		for i, entry in ipairs(list) do
-			local lGoal, rGoal, via = unpack(entry)
+			local lGoal, rGoal, via, lw, rw = unpack(entry)
 			local go = movearm[via]
 			-- FK goals for use with copmensation
 			local fkLComp, fkRComp
@@ -173,7 +173,7 @@ function movearm.path_iterators(list)
 				fkLComp, fkRComp, uTorsoComp, uTorso0 =
 					movearm.apply_q_compensation(lGoal, rGoal, movearm.get_compensation())
 			end
-			coroutine.yield({go(fkLComp, fkRComp)}, uTorsoComp, uTorso0)
+			coroutine.yield({go(fkLComp, fkRComp,nil,nil,lw,rw)}, uTorsoComp, uTorso0)
 		end
 	end)
 end

@@ -11,10 +11,17 @@ local arm = {}
 arm.trLArm0 = {0.0, 0.30, -0.25,0,0,0}
 arm.trRArm0 = {0.0, -0.30, -0.25,0,0,0}
 
--- Stages: L, R (Transforms/joints), type of motion
+-- Stages: L, R (Transforms or joints), type of motion, left shoulder search weights, right weights
+-- Planner: usage, diff, tight
 arm.readyFromInitStages = {
-	{tr6D{0.3, 0.2, -0.1,  0,0,0}, tr6D{0.3, -0.2, -0.1, 0,0,0}, 'goto_tr_via_q'},
-	{tr6D{0.3, 0.2, 0,  0,0,-45*DEG_TO_RAD}, tr6D{0.3, -0.2, 0, 0,0,45*DEG_TO_RAD}, 'goto_tr'},
+	{
+		tr6D{0.3, 0.2, -0.1,  0,0,0}, tr6D{0.3, -0.2, -0.1, 0,0,0},
+		'goto_tr', {1,1,0}, {1,1,0}
+	},
+	{
+		tr6D{0.3, 0.2, 0,  0,0,-45*DEG_TO_RAD}, tr6D{0.3, -0.2, 0, 0,0,45*DEG_TO_RAD},
+		'goto_tr_via_q', {1,0,1}, {1,0,1}
+	},
 }
 
 

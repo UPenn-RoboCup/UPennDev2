@@ -1118,7 +1118,7 @@ Robot {
 																						dampingConstant 0.1                                            
                                           }
 																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
-																					#endPoint CHOPSTICKS {translation 0 -0.05 0}
+#																					endPoint CHOPSTICKS {translation 0 -0.05 0}
 #                                          endPoint GRIPPER {
 #                                            #translation 0 -0.05 0
 #                                            translation 0 -0.095 0
@@ -1127,15 +1127,15 @@ Robot {
 #																						grip_name "l_grip"
 #																					}
 
-													endPoint Solid {
-                            translation 0 -0.095 0
-                            boundingObject Box { size 0.05 0.05 0.05 }
-                           	physics Physics{
-                           		density -1
-                           		#mass 0.1
-                           		mass 0.05
-                              }
-                    			}
+																					endPoint Solid {
+																						translation 0 -0.095 0
+																						boundingObject Box { size 0.05 0.05 0.05 }
+																						physics Physics{
+																							density -1
+																							mass 0.05
+																						}
+																						children[CHOPSTICKS {translation 0 -0.015 0}]
+																					}
 
 
 

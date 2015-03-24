@@ -9,31 +9,33 @@ local K = require'K_ffi'
 -- Use SJ's kinematics for the mass properties
 local K0 = Body.Kinematics
 
---local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-local degreesPerSecond = vector.ones(7) * 30
-local radiansPerSecond = degreesPerSecond * DEG_TO_RAD
--- TODO: Add dt into the joint iterator
 local dqLimit = DEG_TO_RAD / 3
+local radiansPerSecond, torso0
+do
+	--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
+	local degreesPerSecond = vector.ones(7) * 30
+	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
+	-- Compensation items
+	local torsoX = Config.walk.torsoX
+	torso0 = vector.new({-torsoX,0,0})
+end
 
--- Compensation items
-local torsoX = Config.walk.torsoX
-local torso0 = vector.new({-torsoX,0,0})
-
-local minLArm = vector.slice(
-	Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]
-)
-local maxLArm = vector.slice(
-	Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]
-)
-
-local lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond)
-	:set_chain(K.forward_larm, K.inverse_larm, 'larm')
-
-local rPlanner = P.new_planner(
-	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
-	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
-	radiansPerSecond
-):set_chain(K.forward_rarm, K.inverse_rarm, 'rarm')
+local lPlanner, rPlanner
+do
+	local minLArm = vector.slice(
+		Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm])
+	local maxLArm = vector.slice(
+		Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm])
+	local minRArm = vector.slice(
+		Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm])
+	local maxRArm = vector.slice(
+		Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm])
+	--
+	lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond):set_chain(
+		K.forward_larm, K.inverse_larm, 'larm')
+	rPlanner = P.new_planner(minRArm, maxRArm, radiansPerSecond):set_chain(
+		K.forward_rarm, K.inverse_rarm, 'rarm')
+end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto_q(qL, qR, safe)
@@ -152,6 +154,28 @@ function movearm.apply_tr_compensation(fkL, fkR, uTorsoAdapt, uTorso0)
 	local fkLComp = trComp * fkL
 	local fkRComp = trComp * fkR
 	return fkLComp, fkRComp, uTorsoComp, uTorso0
+end
+
+-- list entry format: {tr, tr, }
+-- Uses the quasi-static compensation
+function movearm.path_iterators(list)
+	-- return a coroutine
+	return coroutine.wrap(function()
+		for i, entry in ipairs(list) do
+			local lGoal, rGoal, via = unpack(entry)
+			local go = movearm[via]
+			-- FK goals for use with copmensation
+			local fkLComp, fkRComp
+			if via:find'tr' then
+				fkLComp, fkRComp, uTorsoComp, uTorso0 =
+					movearm.apply_tr_compensation(lGoal, rGoal, movearm.get_compensation())
+			else
+				fkLComp, fkRComp, uTorsoComp, uTorso0 =
+					movearm.apply_q_compensation(lGoal, rGoal, movearm.get_compensation())
+			end
+			coroutine.yield({go(fkLComp, fkRComp)}, uTorsoComp, uTorso0)
+		end
+	end)
 end
 
 return movearm

@@ -1,5 +1,7 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
+local T = require'Transform'
+local tr6D = require'Transform'.transform6D
 
 ------------------------------------
 -- For the arm FSM
@@ -8,12 +10,12 @@ local arm = {}
 -- Default init position
 arm.trLArm0 = {0.0, 0.30, -0.25,0,0,0}
 arm.trRArm0 = {0.0, -0.30, -0.25,0,0,0}
--- Default ready position (stage 1)
-arm.trLArm1 = {0.3, 0.2, -0.1,  0,0,0}
-arm.trRArm1 = {0.3, -0.2, -0.1, 0,0,0}
--- Default ready position (stage 2)
-arm.trLArm2 = {0.3, 0.2, 0,  0,0,-45*DEG_TO_RAD}
-arm.trRArm2 = {0.3, -0.2, 0, 0,0,45*DEG_TO_RAD}
+
+-- Stages: L, R (Transforms/joints), type of motion
+arm.readyFromInitStages = {
+	{tr6D{0.3, 0.2, -0.1,  0,0,0}, tr6D{0.3, -0.2, -0.1, 0,0,0}, 'goto_tr_via_q'},
+	{tr6D{0.3, 0.2, 0,  0,0,-45*DEG_TO_RAD}, tr6D{0.3, -0.2, 0, 0,0,45*DEG_TO_RAD}, 'goto_tr'},
+}
 
 
 --Gripper end position offsets (Y is inside)
@@ -29,7 +31,6 @@ arm.handoffset.outerhook = {0.339,0,0.060} --Single hook (for door)
 arm.handoffset.chopstick = {0.440,0,0} --Two rod (for valve)
 --New 3 finger gripper
 arm.handoffset.gripper3 = {0.28,-0.05,0}
-
 
 
 -- Export

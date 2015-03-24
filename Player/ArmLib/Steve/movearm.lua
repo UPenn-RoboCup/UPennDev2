@@ -27,13 +27,13 @@ local maxLArm = vector.slice(
 )
 
 local lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond)
-	:set_chain(K.forward_larm, K.inverse_larm)
+	:set_chain(K.forward_larm, K.inverse_larm, 'larm')
 
 local rPlanner = P.new_planner(
 	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
 	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
 	radiansPerSecond
-):set_chain(K.forward_rarm, K.inverse_rarm)
+):set_chain(K.forward_rarm, K.inverse_rarm, 'rarm')
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto_q(qL, qR, safe)

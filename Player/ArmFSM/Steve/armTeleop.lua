@@ -54,6 +54,11 @@ function state.update()
 	if hcm.get_teleop_compensation()~=USE_COMPENSATION then
 		lPathIter = nil
 		rPathIter = nil
+		if USE_COMPENSATION==2 then
+			-- Assume flip_roll is 0...
+			hcm.set_teleop_loptions(loptions or {qcLArm[3], 0})
+			hcm.set_teleop_roptions(roptions or {qcRArm[3], 0})
+		end
 	elseif USE_COMPENSATION==2 then
 		if hcm.get_teleop_loptions()~=loptions then lPathIter = nil end
 		if hcm.get_teleop_roptions()~=roptions then rPathIter = nil end
@@ -86,6 +91,8 @@ function state.update()
 				-- Form the iterator
 				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
 					movearm.goto_tr_via_q(fkLComp, fkRComp)
+				loptions = qLGoalFiltered[3]
+				roptions = qRGoalFiltered[3]
 			end
 
 		else

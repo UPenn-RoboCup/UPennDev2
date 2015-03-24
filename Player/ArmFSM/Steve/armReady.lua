@@ -11,8 +11,8 @@ local T = require'Transform'
 local stage
 -- Stages: L, R (Transforms/joints), type of motion
 local stages = {
-	[1] = {T.transform6D(Config.arm.trLArm1), T.transform6D(Config.arm.trRArm1), 'goto_tr',},
-	[2] = {T.transform6D(Config.arm.trLArm2), T.transform6D(Config.arm.trRArm2), 'goto_tr',}
+	[1] = {T.transform6D(Config.arm.trLArm1), T.transform6D(Config.arm.trRArm1), 'goto_tr_via_q',},
+	[2] = {T.transform6D(Config.arm.trLArm2), T.transform6D(Config.arm.trRArm2), 'goto_tr_via_q',}
 }
 
 local lPathIter, rPathIter
@@ -91,7 +91,7 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
 	-- For teleop if called next
-	hcm.set_teleop_compensation(2)
+	--hcm.set_teleop_compensation(2)
 	hcm.set_teleop_loptions({qLGoalFiltered[3], 0})
 	hcm.set_teleop_roptions({qRGoalFiltered[3], 0})
 end

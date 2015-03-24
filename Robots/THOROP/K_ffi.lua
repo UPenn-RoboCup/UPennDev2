@@ -172,7 +172,8 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
     qArm[6] = wristRoll_b
     qArm[7] = wristYaw2_b
   end
-  return vnew(qArm)
+	return qArm
+  --return vnew(qArm)
 end
 
 -- Mounting Transform offsets

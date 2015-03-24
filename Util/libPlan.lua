@@ -7,15 +7,29 @@ local procFunc = require'util'.procFunc
 local mod_angle = require'util'.mod_angle
 local clamp_vector = require'util'.clamp_vector
 local vector = require'vector'
+local vnorm = require'vector'.norm
 local q = require'quaternion'
 local T = require'Transform'
 local tremove = require'table'.remove
+local tinsert = require'table'.insert
 local fabs = require'math'.abs
 local min, max = require'math'.min, require'math'.max
+local INFINITY = require'math'.huge
 
 local mt = {
 	__call = function(t,k) return tremove(t) end
 }
+
+local function qDiff(iq, q0)
+	local diff_use = {}
+	local diff, mod_diff
+	for i, q in ipairs(q0) do
+		diff = iq[i] - q
+		mod_diff = mod_angle(diff)
+		diff_use[i] = (fabs(diff) > fabs(mod_diff)) and mod_diff or diff
+	end
+	return diff_use
+end
 
 -- No dt needed
 local function sanitize0(iqArm, cur_qArm)
@@ -25,6 +39,7 @@ local function sanitize0(iqArm, cur_qArm)
 		mod_diff = mod_angle(diff)
     iqArm[i] = (fabs(diff) > fabs(mod_diff)) and v + mod_diff or iqArm[i]
 	end
+	return diff_use
 end
 
 -- Requires dt
@@ -39,19 +54,20 @@ local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 	end
 end
 
+-- Similar to SJ's method
 local function find_shoulder_margin(self, tr, qArm)
 	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
 	local invArm = self.inverse
 	local iqArm, margin, qBest
 	local dMin, dMax
 	--
-	local maxmargin, margin = -math.huge
+	local maxmargin, margin = -INFINITY
 	for i, q in ipairs(self.shoulderAngles) do
 		iqArm = invArm(tr, qArm, q)
 		-- Maximize the minimum margin
 		dMin = iqArm - minArm
 		dMax = iqArm - maxArm
-		margin = math.huge
+		margin = INFINITY
 		for _, v in ipairs(dMin) do
 			if iq~=4 and iq~=6 then -- don't worry about the yaw ones
 				margin = min(fabs(v), margin)
@@ -70,7 +86,70 @@ local function find_shoulder_margin(self, tr, qArm)
 	return qBest
 end
 
-local function find_shoulder(self, tr, qArm, flip_roll)
+-- Get a table of the inverses
+local function solve_inverses(tr, qArm, invArm, shoulderAngles)
+	-- Form the inverses
+	local iqArms = {}
+	for _, q in ipairs(shoulderAngles) do tinsert(iqArms, invArm(tr, qArm, q)) end
+	-- Sanitize
+	for _, iq in ipairs(iqArms) do sanitize0(iq, qArm, flip_roll) end
+	return iqArms
+end
+local function valid_cost(iq, minArm, maxArm)
+	for i, q in ipairs(iq) do if q<minArm[i] or q>maxArm[i] then return INFINITY end end
+	return 0
+end
+-- TODO: minimize the second angle, so we can work in cramped spaces
+local function find_shoulder(self, tr, qArm)
+	-- Form the inverses
+	local iqArms = solve_inverses(tr, qArm, self.inverse, self.shoulderAngles)
+	--
+	local minArm, maxArm = self.min_q, self.max_q
+	local rangeArm, halfway = self.range_q, self.halves
+
+	-- Cost for valid configurations
+	local cvalid = {}
+	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, minArm, maxArm) ) end
+
+	-- Minimum Difference in angles
+	local cdiff = {}
+	for ic, iq in ipairs(iqArms) do tinsert(cdiff, vnorm(qDiff(iq, qArm))) end
+
+	-- Cost for being tight (Percentage)
+	local ctight = {}
+	for _, iq in ipairs(iqArms) do tinsert(ctight, fabs(iq[2]/math.pi)) end
+	-- Usage cost (Worst Percentage)
+	local cusage, dRelative = {}
+	for _, iq in ipairs(iqArms) do
+		dRelative = ((iq - minArm) / rangeArm) - halfway
+		-- Don't use the infinite yaw ones
+		tremove(dRelative, 7)
+		tremove(dRelative, 5)
+		tinsert(cusage, max(fabs(min(unpack(dRelative))), fabs(max(unpack(dRelative)))))
+	end
+	-- Combined cost
+	local cost = {}
+	for ic, valid in ipairs(cvalid) do
+		tinsert(cost, valid and (2*ctight[ic] + 2*cusage[ic] + cdiff[ic]) or INFINITY)
+	end
+	--[[
+	io.write(self.name,' Tight:\n')
+	for ic, c in ipairs(ctight) do io.write(c, ' ') end
+	io.write('\n')
+	io.write(self.name,' Usage:\n')
+	for ic, c in ipairs(cusage) do io.write(c, ' ') end
+	io.write('\n')
+	--]]
+	-- Find the smallest cost
+	local imin, cmin = 0, INFINITY
+	for i, c in ipairs(cost) do if c<cmin then cmin = c; imin = i end end
+	assert(imin>0, 'No valid arm angles!')
+	-- Yield the first one
+	return iqArms[imin]
+end
+
+-- Stay close to the scale. Scale penalty by the range of motion
+local function find_shoulder_usage(self, tr, qArm, flip_roll)
 	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
 	local halfway = self.halves
 	local invArm = self.inverse
@@ -90,7 +169,7 @@ local function find_shoulder(self, tr, qArm, flip_roll)
 				-- out of range
 				usage = math.huge
 				break
-			elseif iq~=4 and iq~=6 then
+			elseif iq~=5 and iq~=7 then
 				usage = max(av, usage)
 			end
 		end
@@ -358,9 +437,10 @@ local function joint_stack(self, qGoal, qArm)
 end
 
 -- Set the forward and inverse
-local function set_chain(self, forward, inverse)
+local function set_chain(self, forward, inverse, name)
 	self.forward = assert(forward)
 	self.inverse = assert(inverse)
+	self.name = name
   return self
 end
 

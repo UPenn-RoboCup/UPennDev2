@@ -15,6 +15,7 @@ local qLGoal, qRGoal
 local qLGoalFiltered, qRGoalFiltered
 local qLD, qRD
 local uTorso0, uTorsoComp
+local loptions, roptions
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -50,6 +51,13 @@ function state.update()
 	-- Check reset conditions
 	if hcm.get_teleop_larm()~=qLGoal then lPathIter = nil end
 	if hcm.get_teleop_rarm()~=qRGoal then rPathIter = nil end
+	if hcm.get_teleop_compensation()~=USE_COMPENSATION then
+		lPathIter = nil
+		rPathIter = nil
+	elseif USE_COMPENSATION==2 then
+		if hcm.get_teleop_loptions()~=loptions then lPathIter = nil end
+		if hcm.get_teleop_roptions()~=roptions then rPathIter = nil end
+	end
 
   -- See if commanded a new position
   if not lPathIter or not rPathIter then
@@ -71,8 +79,8 @@ function state.update()
 
 			-- Do we have desired null space options?
 			if USE_COMPENSATION==2 then
-				local loptions = hcm.get_teleop_loptions()
-				local roptions = hcm.get_teleop_roptions()
+				loptions = hcm.get_teleop_loptions()
+				roptions = hcm.get_teleop_roptions()
 				-- Form the iterator
 				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
 					movearm.goto_tr_via_q(fkLComp, fkRComp, loptions, roptions)
@@ -118,6 +126,7 @@ end
 
 function state.exit()  
   print(state._NAME..' Exit' )
+	hcm.set_teleop_compensation(1)
 end
 
 return state

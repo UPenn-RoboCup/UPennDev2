@@ -45,7 +45,11 @@ code_lut, char_lut, lower_lut = {}, {}, {}
 local USE_COMPENSATION = hcm.get_teleop_compensation()
 code_lut[127] = function()
 	-- Disable the compensation
-	USE_COMPENSATION = 1 - USE_COMPENSATION
+	--[[
+	USE_COMPENSATION = USE_COMPENSATION + 1
+	USE_COMPENSATION = USE_COMPENSATION>2 and 0 or USE_COMPENSATION
+	--]]
+	USE_COMPENSATION = USE_COMPENSATION==1 and 2 or 1
 	hcm.set_teleop_compensation(USE_COMPENSATION)
 end
 
@@ -101,13 +105,18 @@ end
 
 char_lut['r'] = function()
   if selected_arm==0 then
-    local qLArm = get_larm()
+		local options = hcm.get_teleop_loptions()
+		options[1] = options[1] - DEG_TO_RAD
+		hcm.set_teleop_loptions(options)
+		--[[
+		local qLArm = get_larm()
     --print('Pre',qLArm*RAD_TO_DEG)
 		local tr = K.forward_larm(qLArm)
 		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] - DEG_TO_RAD)
 		local itr = K.forward_larm(iqArm)
 		sanitize(iqArm, qLArm)
 		set_larm(iqArm, DO_IMMEDIATE)
+		--]]
   else
     local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
@@ -120,12 +129,17 @@ end
 
 char_lut['t'] = function()
   if selected_arm==0 then
+		local options = hcm.get_teleop_loptions()
+		options[1] = options[1] + DEG_TO_RAD
+		hcm.set_teleop_loptions(options)
+		--[[
     local qLArm = get_larm()
 		local tr = K.forward_larm(qLArm)
 		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] + DEG_TO_RAD)
 		local itr = K.forward_larm(iqArm)
 		sanitize(iqArm, qLArm)
 		set_larm(iqArm, DO_IMMEDIATE)
+		--]]
   else
     local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
@@ -346,6 +360,7 @@ function show_status()
     color('== Teleoperation ==', 'magenta'),
 		'1: init, 2: head teleop, 3: armReady, 4: armTeleop, 5: headTrack, 6: poke',
 		color(DO_IMMEDIATE and 'Immediate Send' or 'Delayed Send', DO_IMMEDIATE and 'red' or 'yellow'),
+		'Compensation: '..USE_COMPENSATION,
     'BodyFSM: '..color(gcm.get_fsm_Body(), 'green'),
     'ArmFSM: '..color(gcm.get_fsm_Arm(), 'green'),
     'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),

@@ -67,14 +67,15 @@ function state.update()
 	Body.set_rarm_command_position(q_rWaypoint)
 
 	-- Check if done
-	if not moreL and not moreR then
-		return 'done'
-	end
+	if not moreL and not moreR then return 'done' end
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
-	print(Body.get_larm_command_position())
+	-- For teleop if called next
+	hcm.set_teleop_compensation(2)
+	hcm.set_teleop_loptions({qLGoalFiltered[3], 0})
+	hcm.set_teleop_roptions({qRGoalFiltered[3], 0})
 end
 
 return state

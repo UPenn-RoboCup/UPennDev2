@@ -12,8 +12,8 @@ arm.trRArm0 = {0.0, -0.30, -0.25,0,0,0}
 arm.trLArm1 = {0.3, 0.2, -0.1,  0,0,0}
 arm.trRArm1 = {0.3, -0.2, -0.1, 0,0,0}
 -- Default ready position (stage 2)
-arm.trLArm2 = {0.3, 0.2, 0,  0,0,-60*DEG_TO_RAD}
-arm.trRArm2 = {0.3, -0.2, 0, 0,0,60*DEG_TO_RAD}
+arm.trLArm2 = {0.3, 0.2, 0,  0,0,-45*DEG_TO_RAD}
+arm.trRArm2 = {0.3, -0.2, 0, 0,0,45*DEG_TO_RAD}
 
 
 --Gripper end position offsets (Y is inside)

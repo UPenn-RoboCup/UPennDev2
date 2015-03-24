@@ -12,7 +12,7 @@ local stage
 -- Stages: L, R (Transforms/joints), type of motion
 local stages = {
 	[1] = {T.transform6D(Config.arm.trLArm1), T.transform6D(Config.arm.trRArm1), 'goto_tr_via_q',},
-	[2] = {T.transform6D(Config.arm.trLArm2), T.transform6D(Config.arm.trRArm2), 'goto_tr_via_q',}
+	[2] = {T.transform6D(Config.arm.trLArm2), T.transform6D(Config.arm.trRArm2), 'goto_tr',}
 }
 
 local lPathIter, rPathIter

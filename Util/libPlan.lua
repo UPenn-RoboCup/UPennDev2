@@ -6,6 +6,7 @@ local util = require'util'
 local procFunc = require'util'.procFunc
 local mod_angle = require'util'.mod_angle
 local clamp_vector = require'util'.clamp_vector
+local umin = require'util'.min
 local vector = require'vector'
 local vnorm = require'vector'.norm
 local q = require'quaternion'
@@ -54,8 +55,8 @@ local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 	end
 end
 
--- Similar to SJ's method
-local function find_shoulder_margin(self, tr, qArm)
+-- Similar to SJ's method for the margin
+local function find_shoulder_sj(self, tr, qArm)
 	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
 	local invArm = self.inverse
 	local iqArm, margin, qBest
@@ -69,12 +70,12 @@ local function find_shoulder_margin(self, tr, qArm)
 		dMax = iqArm - maxArm
 		margin = INFINITY
 		for _, v in ipairs(dMin) do
-			if iq~=4 and iq~=6 then -- don't worry about the yaw ones
+			if iq~=5 and iq~=7 then -- don't worry about the yaw ones
 				margin = min(fabs(v), margin)
 			end
 		end
 		for _, v in ipairs(dMax) do
-			if iq~=4 and iq~=6 then
+			if iq~=5 and iq~=7 then
 				margin = min(fabs(v), margin)
 			end
 		end
@@ -92,6 +93,7 @@ local function solve_inverses(tr, qArm, invArm, shoulderAngles)
 	local iqArms = {}
 	for _, q in ipairs(shoulderAngles) do tinsert(iqArms, invArm(tr, qArm, q)) end
 	-- Sanitize
+	-- NOTE: In practice, this seems to have no effect; qDiff is used, so that may help
 	--for _, iq in ipairs(iqArms) do sanitize0(iq, qArm, flip_roll) end
 	return iqArms
 end
@@ -101,7 +103,6 @@ local function valid_cost(iq, minArm, maxArm)
 end
 -- TODO: minimize the second angle, so we can work in cramped spaces
 local function find_shoulder(self, tr, qArm)
-	--local t0 = unix.time()
 	-- Form the inverses
 	local iqArms = solve_inverses(tr, qArm, self.inverse, self.shoulderAngles)
 	--
@@ -115,7 +116,9 @@ local function find_shoulder(self, tr, qArm)
 	for ic, iq in ipairs(iqArms) do tinsert(cdiff, vnorm(qDiff(iq, qArm))) end
 	-- Cost for being tight (Percentage)
 	local ctight = {}
-	for _, iq in ipairs(iqArms) do tinsert(ctight, fabs(iq[2]/math.pi)) end
+	-- The margin from zero degrees away from the body
+	local margin, ppi = 5*DEG_TO_RAD, util.sign(qArm[2])*math.pi
+	for _, iq in ipairs(iqArms) do tinsert(ctight, iq[2]/ppi-margin) end
 	-- Usage cost (Worst Percentage)
 	local cusage, dRelative = {}
 	for _, iq in ipairs(iqArms) do
@@ -123,31 +126,21 @@ local function find_shoulder(self, tr, qArm)
 		-- Don't use the infinite yaw ones
 		tremove(dRelative, 7)
 		tremove(dRelative, 5)
+		-- Don't use a cost based on the shoulderAngle
+		tremove(dRelative, 3)
 		tinsert(cusage, max(fabs(min(unpack(dRelative))), fabs(max(unpack(dRelative)))))
 	end
 	-- Combined cost
+	-- TODO: Tune the weights on a per-task basis (some tight, but not door)
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
-		tinsert(cost, valid and (0*ctight[ic] + cusage[ic] + cdiff[ic]) or INFINITY)
+		tinsert(cost, valid and (5*ctight[ic] + 3*cusage[ic] + 1*cdiff[ic]) or INFINITY)
 	end
-	--[[
-	io.write(self.name,' Tight:\n')
-	for ic, c in ipairs(ctight) do io.write(c, ' ') end
-	io.write('\n')
-	io.write(self.name,' Usage:\n')
-	for ic, c in ipairs(cusage) do io.write(c, ' ') end
-	io.write('\n')
-	--]]
 	-- Find the smallest cost
-	local imin, cmin = 0, INFINITY
-	for i, c in ipairs(cost) do if c<cmin then cmin = c; imin = i end end
+	local cmin, imin = umin(cost)
 	-- TODO: Never have an assert in the planner
 	assert(imin>0, 'No valid arm angles!')
-	-- Yield the first one
-	
-	--local t1 = unix.time()
-	--print('Computation', t1-t0)
-	
+	-- Yield the least cost arms
 	return iqArms[imin]
 end
 

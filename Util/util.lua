@@ -24,8 +24,7 @@ function util.min(t)
   -- returns the min value and its index
   local imin = 0
   local tmin = math.huge
-  for i=1,#t do
-    local v = t[i]
+  for i,v in ipairs(t)  do
     if v < tmin then
       tmin = v
       imin = i

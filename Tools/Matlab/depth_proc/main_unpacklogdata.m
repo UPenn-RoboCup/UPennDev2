@@ -9,13 +9,10 @@ RGB_H = 1080;
 % Set the path and names
 % The unpacked data will be saved under <foldername>/Unpacked/<datestamp> 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- foldername = '/home/leebhoram/Data/LOGS_THOR';
- datestamp_kinect = [];'02.24.2015.17.21.57';
- datestamp_lidar =  '02.24.2015.17.24.03';
-
-%foldername = '/home/leebhoram/matlab_workspace/DRC/kinect2_on_robot';
-%datestamp_kinect = '01.20.2015.12.04.49';
-%datestamp_lidar =  []; %'01.23.2015.14.48.29';
+foldername = '~/Data';
+datestamp_kinect = '03.11.2015.11.57.52';
+datestamp_lidar = [];% '02.24.2015.17.24.03'; 
+showkinectimage = false;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 filename_depth = sprintf('k2_depth_r_%s.log',datestamp_kinect);
@@ -75,7 +72,9 @@ if  ~isempty(flag_depth) && ~isempty(flag_rgb),
    
         metad = depthMeta{ilog}; 
         depthRaw = fread(f_depth, [DEPTH_W, DEPTH_H], '*single');
-        figure(1), imagesc(depthRaw'); axis equal;
+        if showkinectimage == true
+            figure(1), imagesc(depthRaw'); axis equal;
+        end
         
         metar = rgbMeta{ilog};
         rgbJPEG = fread(f_rgb, metar.rsz, '*uint8');
@@ -83,11 +82,13 @@ if  ~isempty(flag_depth) && ~isempty(flag_rgb),
         rgb_img(:,:,1) = rgb_img0(:,:,1);
         rgb_img(:,:,2) = rgb_img0(:,:,2);
         rgb_img(:,:,3) = rgb_img0(:,:,3);       
-        figure(2), imshow(rgb_img);       
+     	if showkinectimage == true
+            figure(2), imshow(rgb_img);     
+        end
     
         save(strcat(foldername,'/Unpacked/',datestamp_kinect,'/',sprintf('%04d.mat',ilog)),'depthRaw', 'rgb_img', 'metad', 'metar');
     
-        pause(0.2);
+      %  pause(0.2);
         
         disp(strcat('kinect :',int2str(ilog) ,'/', int2str(Nlog)));
     end

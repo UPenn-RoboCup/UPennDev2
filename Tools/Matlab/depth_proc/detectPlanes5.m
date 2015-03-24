@@ -1,4 +1,4 @@
-function  [Planes, metadata] = detectPlanes4sc(data, meta, ui)
+function  [Planes, metadata] = detectPlanes5(data, meta, ui)
  
 
 if ~isempty(meta) && isfield(meta,'tr')    
@@ -13,7 +13,7 @@ else
 end
 
 if ui.undistortDepth == 1
-    
+    data = undistort_depth(data); 
 end
 
 % if strcmp(char(meta.name),'depth')

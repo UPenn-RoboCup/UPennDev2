@@ -108,6 +108,12 @@ void CFitPlane::fitPlane()
                  double norm = 1.0;
                  // compute normals and singular values
                  Eigen::JacobiSVD<Eigen::MatrixXd> svd(P, Eigen::ComputeThinU );
+                 
+                // if (test == 0){
+               //  std::cout << P << std::endl; 
+               //  test = 1;
+              //   }
+                         
                  Eigen::MatrixXd U =  svd.matrixU();
                  vecSValues.col(cind) = svd.singularValues();              
                  vecCoeffs.col(cind) = U.col(3);   

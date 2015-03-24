@@ -12,7 +12,7 @@ function [pcx, pcy, pcz, r, g, b] = depthToCloud(depth, rgbImg)
 % pcloud - the point cloud, where each channel is the x, y, and z euclidean coordinates respectively. 
 %          Missing values are NaN.
 topleft = [1 1];
-depth= double(depth-30);
+depth= double(depth);
 depth(depth == 0) = nan;
 r = [];
 g = [];
@@ -31,9 +31,9 @@ pcx = xgrid.*depth/fx;
 pcy = ygrid.*depth/fy;
 pcz = depth;
 
-if nargin > 1
+dvalidInd = find(~isnan(depth));
 
-    dvalidInd = find(~isnan(depth));
+if nargin > 1
 
     pcx = xgrid(dvalidInd).*depth(dvalidInd)/fx;
     pcy = ygrid(dvalidInd).*depth(dvalidInd)/fy;
@@ -71,6 +71,14 @@ if nargin > 1
     pcx = pcx(rvalidInd);
     pcy = pcy(rvalidInd);
     pcz = pcz(rvalidInd);
+else
+    pcx = pcx(dvalidInd);
+    pcy = pcy(dvalidInd);
+    pcz = pcz(dvalidInd);
+end
+
+    
+
     
 end
 

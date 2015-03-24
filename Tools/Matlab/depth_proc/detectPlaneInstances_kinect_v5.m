@@ -16,6 +16,7 @@ persistent Xind_
 persistent Yind_
 persistent Xind_c
 persistent Yind_c 
+persistent MASK
 
 persistent Ccb_prev
 persistent Tcb_prev
@@ -57,11 +58,11 @@ PlaneOfInterest = [];
 clickxy = [];
 
 %% Filtering     
-% Initialize mask
-depth = double(depthRaw);
+depth = flip(double(depthRaw)',2)-20;
 depth(depth(:) <= DEPTH_MIN) = 0;
 depth(depth(:) >= DEPTH_MAX) = 0;   
 depth = medfilt2(depth,[7 7]);
+depth = MASK.*depth;
 validInd = find(depth>0);
 mask = zeros(size(depth));
 mask(validInd) = 1;
@@ -209,7 +210,8 @@ if ui.figures(3)
     Xtemp = -Xind_c(validInd(10:10:end))*Sx.*Ztemp;
     Xvis = Ccb*[  Ztemp(:)';  Xtemp(:)'; Ytemp(:)';] + repmat(Tcb,1,length(Ztemp(:)));
     figure(3), [az,el] = view; hold off; 
-    scatter3(Xvis(1,:),  Xvis(2,:), Xvis(3,:), 2 ,[0.5 0.5 0.5] ,'filled'); axis equal; hold on;
+    showPointCloud([Xvis(1,:)' Xvis(2,:)' Xvis(3,:)'], [0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
+    hold on;
     %set(gca,'XDir','reverse');
     xlabel('x');
     ylabel('y');
@@ -349,10 +351,14 @@ if  ui.figures(3) > 0
             randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
             figure(3),% subplot(2,1,2);        
             ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
-            scatter3(ALL(1,:), ALL(2,:), ALL(3,:),5,randcolor,'filled');
-            scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,'k','filled');
-            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.5];
+            showPointCloud([ALL(1,:)' ALL(2,:)' ALL(3,:)'], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
+            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
             plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', 'k', 'LineWidth',2);
+            
+            figure(12),
+            showPointCloud([-ALL(2,:)' -ALL(3,:)' ALL(1,:)' ], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
+            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
+            plot3(-nvec(2,:), nvec(3,:), nvec(1,:), '-', 'Color', 'k', 'LineWidth',2);
        end
     end
 end

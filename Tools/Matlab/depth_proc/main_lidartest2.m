@@ -2,7 +2,7 @@ clear;
 %close all
 
 % Starting timestamp
-load('/home/leebhoram/Development/UPennDev/Tools/Matlab/Temp_figures/LIDARraw_2.mat');
+load('/home/leebhoram/Data/mesh_log/Unpacked/03.11.2015.15.24.14l/1dar04d.mat');
     
 n_scanlines = metadata.dims(1);
 n_returns = metadata.dims(2);

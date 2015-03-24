@@ -10,6 +10,7 @@ pts = [];
 %%%%% 
 % Let's use getmapcell from ray
 
+
 t_ind1 = find(L(:,center_s(1))==id);
 
 if ~isempty(t_ind1)

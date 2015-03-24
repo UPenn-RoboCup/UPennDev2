@@ -1,4 +1,4 @@
-function [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v4sc( depthRaw, Rot, tr, ui )
+function [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v4ese650( depthRaw, Rot, tr, ui )
 
 persistent DEPTH_W       % Width
 persistent DEPTH_H       % Height
@@ -36,8 +36,8 @@ if nargin < 4
     error('The number of input arguments must be 4');
 end
 
-if 1 %isempty(DEPTH_W) || ui.reset == 1
-    loadPersistentVariables_0320;
+if isempty(DEPTH_W) || ui.reset == 1
+    loadPersistentVariables_0310;
 end
 
 Ccb = Rot;
@@ -58,13 +58,13 @@ clickxy = [];
 
 %% Filtering     
 % Initialize mask
-depth = double(depthRaw);
-depth(depth(:) <= DEPTH_MIN) = 0;
-depth(depth(:) >= DEPTH_MAX) = 0;   
+mask = ones(DEPTH_W, DEPTH_H);
+mask(depthRaw(:) <= DEPTH_MIN) = 0;
+mask(depthRaw(:) >= DEPTH_MAX) = 0;    
+% Filter depth
+depth = depthRaw.*mask;    
 depth = medfilt2(depth,[7 7]);
-validInd = find(depth>0);
-mask = zeros(size(depth));
-mask(validInd) = 1;
+validInd = find(mask>0);
 
  % inverse depth
 ZZ = double(1000./depth);
@@ -98,18 +98,49 @@ end
 % compute Closest Point And Normal;
 [finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,A(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 
+[Xs,Ys,Zs] = sphere(20);
+figure(5), h = mesh(Xs,Ys,Zs); hold on;
+set(h,'FaceAlpha',0);
+set(h,'EdgeColor',[0.7 0.7 0.7]);
+axis equal;
+set(gca,'XTick',[])
+set(gca,'YTick',[])
+set(gca,'ZTick',[])
+figure(5), scatter3(A(1,validNormal),A(2,validNormal),A(3,validNormal),5,'filled');
+
+figure(15), h = mesh(Xs,Ys,Zs); hold on;
+set(h,'FaceAlpha',0);
+set(h,'EdgeColor',[0.7 0.7 0.7]);
+axis equal;
+set(gca,'XTick',[])
+set(gca,'YTick',[])
+set(gca,'ZTick',[])
+
+
+
 % for each cluster
-blankConnImg = zeros(floor(DEPTH_H/param_normalComputation(2)),floor(DEPTH_W /param_normalComputation(2)));
+blankConnImg = zeros(floor(DEPTH_W/param_normalComputation(2)),floor(DEPTH_H /param_normalComputation(2)));
 for tt = 1: size(finalMean,2)      
     if nMembers(tt) > thre_clusterSize  % if cluster size is big enough 
-                 
-        if plane_dist(ui.taskMode,Ccb*finalMean(3:5,tt)) == true % if the normal is close to our models
+       
+        randcol = rand([1 3]);
+        index = validNormal(clusterXYcell{tt}); 
+        figure(15), scatter3(A(1,index),A(2,index),A(3,index),5,randcol,'filled');
+        
+        Pts = [];
+        Pts(1,:) = depth(index)*0.001;
+        Pts(2,:) = Yind_c(index)*Sy.*Pts(1,:);
+        Pts(3,:) = Xind_c(index)*Sx.*Pts(1,:);  
+        
+        figure(4), showPointCloud(Pts(3,:),Pts(2,:),Pts(1,:),randcol,'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down'); hold on;
+        
+        if 0 %plane_dist(ui.taskMode,Ccb*finalMean(3:5,tt)) == true % if the normal is close to our models
             connImg = blankConnImg;
             index = validNormal(clusterXYcell{tt}); 
-            [index_y, index_x] = ind2sub([DEPTH_H DEPTH_W],index);
+            [index_x, index_y] = ind2sub([DEPTH_W DEPTH_H],index);
             index_xsub = floor(index_x / param_normalComputation(2));
             index_ysub = floor(index_y / param_normalComputation(2));
-            index_ = sub2ind(floor([DEPTH_H DEPTH_W]/param_normalComputation(2)),index_ysub, index_xsub);
+            index_ = sub2ind(floor([DEPTH_W DEPTH_H]/param_normalComputation(2)),index_xsub, index_ysub);
             connImg(index_) = 1;
         
             %% Connectivity Check 
@@ -134,20 +165,23 @@ for tt = 1: size(finalMean,2)
                             Bbox = zeros(3,size(bbox,1));
                             [dummy,whichcell__] = intersect(index_ , sub2ind(size(connImg), bbox(:,1), bbox(:,2)));   
                             Bbox(1,:) = depth(index(whichcell__))*0.001;
-                            Bbox(2,:) = -Xind_c(index(whichcell__))*Sx.*Bbox(1,:);
-                            Bbox(3,:) = -Yind_c(index(whichcell__))*Sy.*Bbox(1,:);
+                            Bbox(2,:) = Yind_c(index(whichcell__))*Sy.*Bbox(1,:);
+                            Bbox(3,:) = -Xind_c(index(whichcell__))*Sx.*Bbox(1,:);
 
                             % 8-directional extreme points 
                             pts = find8ExtremePoints(L, center_s, t);
-                                                        
-                            %pts = findVertSidePoints(L, center_s, t, bbox);                                                       
+                            
+                            
+                            %pts = findVertSidePoints(L, center_s, t, bbox);
+                            
+                            
                             
                             if ~isempty(pts)                               
                                 [dummy,whichcell_] = intersect(index_ , sub2ind(size(connImg), pts(:,1), pts(:,2)));  
 
                                 Pts(1,:) = depth(index(whichcell_))*0.001;
-                                Pts(2,:) = -Xind_c(index(whichcell_))*Sx.*Pts(1,:);   
-                                Pts(3,:) = -Yind_c(index(whichcell_))*Sy.*Pts(1,:);                                                                           
+                                Pts(2,:) = Yind_c(index(whichcell_))*Sy.*Pts(1,:);
+                                Pts(3,:) = -Xind_c(index(whichcell_))*Sx.*Pts(1,:);                                                                              
                             end       
 
                          %% refinement 
@@ -160,14 +194,14 @@ for tt = 1: size(finalMean,2)
                                 c(2) = c(2)/Sy;
                                 n_ = c;
                                 n_ = -n_/norm(n_);
-                                n__ = [n_(3) -n_(1) -n_(2)];
+                                n__ = [n_(3) n_(2) -n_(1)];
 
                                 z_ = depth(index(whichcell))*0.001;
                                 z_mean = mean(z_);                                  
                                 x_mean = mean((Xind(index(whichcell))-IMCX)/fx.*z_);
                                 y_mean = mean((Yind(index(whichcell))-IMCY)/fy.*z_);
 
-                                Center = [ z_mean; -x_mean; -y_mean;];
+                                Center = [ z_mean; y_mean; -x_mean];
 
                                 PlaneID = PlaneID + 1;
                                 Planes{PlaneID} = struct('Center',Center,...
@@ -179,7 +213,7 @@ for tt = 1: size(finalMean,2)
                                 if ui.clickType == 2 
                                     Indices{PlaneID} = [Xind(index(whichcell)); Yind(index(whichcell))];
                                 else %if ui.clickType == 3                                 
-                                    Points3D{PlaneID} = [  z_; -(Xind(index(whichcell))-IMCX)/fx.*z_ ; -(Yind(index(whichcell))-IMCY)/fy.*z_; ];                   
+                                    Points3D{PlaneID} = [  z_; (Yind(index(whichcell))-IMCY)/fy.*z_; -(Xind(index(whichcell))-IMCX)/fx.*z_];                   
                                 end
                             end
                         end
@@ -205,9 +239,9 @@ end
 if ui.figures(3) 
     figure(3),% subplot(2,1,2);  
     Ztemp = depth(validInd(10:10:end))*0.001;
-    Ytemp = -Yind_c(validInd(10:10:end))*Sy.*Ztemp;
+    Ytemp = Yind_c(validInd(10:10:end))*Sy.*Ztemp;
     Xtemp = -Xind_c(validInd(10:10:end))*Sx.*Ztemp;
-    Xvis = Ccb*[  Ztemp(:)';  Xtemp(:)'; Ytemp(:)';] + repmat(Tcb,1,length(Ztemp(:)));
+    Xvis = Ccb*[  Ztemp(:)'; Ytemp(:)'; Xtemp(:)'] + repmat(Tcb,1,length(Ztemp(:)));
     figure(3), [az,el] = view; hold off; 
     scatter3(Xvis(1,:),  Xvis(2,:), Xvis(3,:), 2 ,[0.5 0.5 0.5] ,'filled'); axis equal; hold on;
     %set(gca,'XDir','reverse');

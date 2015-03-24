@@ -7,10 +7,10 @@ persistent P_kinect_m2
 persistent P_m2_b
 
 if isempty(motor_offsets)
-    motor_offsets = [0 -0.02];
-    yang_offset = -0.02;
+    motor_offsets = [0 0.02];
+    yang_offset = 0;
     Cb_init = eulr2dcm([ yang_offset 0 0]');
-    P_kinect_m2 = Cb_init*[0.015, 0.015, 0.03]';    
+    P_kinect_m2 = Cb_init*[0.015, 0.015, 0.08]';    
     P_m2_b = [0.0 0.0 1.25]';
 end
 

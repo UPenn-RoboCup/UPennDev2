@@ -42,7 +42,6 @@ local function set_rarm(q, do_now)
 		RARM_DIRTY = true
 	end
 	if q==true or do_now==true then
-		print('right')
 		hcm.set_teleop_rarm(qRtmp)
 		RARM_DIRTY = false
 	end

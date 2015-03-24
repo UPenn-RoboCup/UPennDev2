@@ -92,7 +92,7 @@ local function solve_inverses(tr, qArm, invArm, shoulderAngles)
 	local iqArms = {}
 	for _, q in ipairs(shoulderAngles) do tinsert(iqArms, invArm(tr, qArm, q)) end
 	-- Sanitize
-	for _, iq in ipairs(iqArms) do sanitize0(iq, qArm, flip_roll) end
+	--for _, iq in ipairs(iqArms) do sanitize0(iq, qArm, flip_roll) end
 	return iqArms
 end
 local function valid_cost(iq, minArm, maxArm)
@@ -106,15 +106,12 @@ local function find_shoulder(self, tr, qArm)
 	--
 	local minArm, maxArm = self.min_q, self.max_q
 	local rangeArm, halfway = self.range_q, self.halves
-
 	-- Cost for valid configurations
 	local cvalid = {}
 	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, minArm, maxArm) ) end
-
 	-- Minimum Difference in angles
 	local cdiff = {}
 	for ic, iq in ipairs(iqArms) do tinsert(cdiff, vnorm(qDiff(iq, qArm))) end
-
 	-- Cost for being tight (Percentage)
 	local ctight = {}
 	for _, iq in ipairs(iqArms) do tinsert(ctight, fabs(iq[2]/math.pi)) end
@@ -130,7 +127,7 @@ local function find_shoulder(self, tr, qArm)
 	-- Combined cost
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
-		tinsert(cost, valid and (2*ctight[ic] + 2*cusage[ic] + cdiff[ic]) or INFINITY)
+		tinsert(cost, valid and (0*ctight[ic] + cusage[ic] + cdiff[ic]) or INFINITY)
 	end
 	--[[
 	io.write(self.name,' Tight:\n')
@@ -143,45 +140,10 @@ local function find_shoulder(self, tr, qArm)
 	-- Find the smallest cost
 	local imin, cmin = 0, INFINITY
 	for i, c in ipairs(cost) do if c<cmin then cmin = c; imin = i end end
+	-- TODO: Never have an assert in the planner
 	assert(imin>0, 'No valid arm angles!')
 	-- Yield the first one
 	return iqArms[imin]
-end
-
--- Stay close to the scale. Scale penalty by the range of motion
-local function find_shoulder_usage(self, tr, qArm, flip_roll)
-	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
-	local halfway = self.halves
-	local invArm = self.inverse
-	local iqArm, margin, qBest
-	--
-	flip_roll = flip_roll or 0
-	local minusage, usage = math.huge
-	for i, q in ipairs(self.shoulderAngles) do
-		iqArm = invArm(tr, qArm, q)
-		-- Minimize the maximum usage
-		sanitize0(iqArm, qArm, flip_roll)
-		dRelative = (iqArm - minArm) / rangeArm - halfway
-		usage = -math.huge
-		for iq, v in ipairs(dRelative) do
-			local av = fabs(v)
-			if av>0.5 then
-				-- out of range
-				usage = math.huge
-				break
-			elseif iq~=5 and iq~=7 then
-				usage = max(av, usage)
-			end
-		end
-		if usage < minusage then
-			flip_roll = 0
-			minusage = usage
-			qBest = iqArm
-		end
-	end
-	-- TODO: Make sure to find a shoulder angle...
-	assert(qBest, 'SHOULDER FIND FAIL')
-	return qBest, {qBest[3], flip_roll}
 end
 
 -- TODO List for the planner

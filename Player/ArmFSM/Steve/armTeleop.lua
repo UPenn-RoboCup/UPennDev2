@@ -71,11 +71,9 @@ function state.update()
 		if USE_COMPENSATION > 0 then
 
 			-- Grab the torso compensation
-			local uTorsoAdapt, uTorso = movearm.get_compensation()
-			uTorso0 = uTorso
-			uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
-			-- Apply the compensation
-			local fkLComp, fkRComp = movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
+			local fkLComp, fkRComp
+			fkLComp, fkRComp, uTorsoComp, uTorso0 =
+				movearm.apply_q_compensation(qLGoal, qRGoal, movearm.get_compensation())
 
 			-- Do we have desired null space options?
 			if USE_COMPENSATION==2 then

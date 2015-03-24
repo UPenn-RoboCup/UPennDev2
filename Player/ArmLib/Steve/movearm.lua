@@ -135,13 +135,23 @@ function movearm.get_compensation()
 	return uTorsoAdapt, uTorso
 end
 
-function movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
+function movearm.apply_q_compensation(qLGoal, qRGoal, uTorsoAdapt, uTorso0)
 	local fkL = K.forward_larm(qLGoal)
 	local fkR = K.forward_rarm(qRGoal)
+	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
 	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
 	local fkLComp = trComp * fkL
 	local fkRComp = trComp * fkR
-	return fkLComp, fkRComp
+	return fkLComp, fkRComp, uTorsoComp, uTorso0
+end
+
+-- uTorsoAdapt, uTorso0: global frame torso positions
+function movearm.apply_tr_compensation(fkL, fkR, uTorsoAdapt, uTorso0)
+	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
+	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
+	local fkLComp = trComp * fkL
+	local fkRComp = trComp * fkR
+	return fkLComp, fkRComp, uTorsoComp, uTorso0
 end
 
 return movearm

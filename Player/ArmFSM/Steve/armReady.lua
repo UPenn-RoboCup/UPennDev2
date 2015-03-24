@@ -8,12 +8,30 @@ local timeout = 10.0
 
 local T = require'Transform'
 
-local trLGoal = T.transform6D(Config.arm.trLArm1)
-local trRGoal = T.transform6D(Config.arm.trRArm1)
+local stage
+local stages = {
+	[1] = {T.transform6D(Config.arm.trLArm1), T.transform6D(Config.arm.trRArm1)},
+	[2] = {T.transform6D(Config.arm.trLArm2), T.transform6D(Config.arm.trRArm2)},
+}
 
 local lPathIter, rPathIter
 local qLD, qRD
 local qLGoalFiltered, qRGoalFiltered
+
+local function get_iters(s)
+	local trLGoal, trRGoal = unpack(stages[s])
+
+	local fkLComp, fkRComp
+	fkLComp, fkRComp, uTorsoComp, uTorso0 =
+		movearm.apply_tr_compensation(trLGoal, trRGoal, movearm.get_compensation())
+
+	-- Form the iterator
+	return movearm.goto_tr(fkLComp, fkRComp)
+	--return movearm.goto_tr_via_q(fkLComp, fkRComp)
+	-- no compensation
+	--return movearm.goto_tr(trLGoal, trRGoal)
+  --return movearm.goto_tr_via_q(trLGoal, trRGoal)
+end
 
 function state.entry()
   print(state._NAME..' Entry')
@@ -21,26 +39,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-
-	-- Grab the torso compensation
-	local uTorsoAdapt, uTorso = movearm.get_compensation()
-	uTorso0 = uTorso
-	uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
-	-- Apply the compensation
-	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
-	local trLArmComp = trComp * trLGoal
-	local trRArmComp = trComp * trRGoal
-	-- Form the iterator
-	lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
-		movearm.goto_tr(trLArmComp, trRArmComp)
-	--[[
-	lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
-		movearm.goto_tr_via_q(fkLComp, fkRComp)
-	--]]
-
-	-- no compensation
-	--lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal)
-  --lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal)
+	-- TODO: Autodetect a stage, based on our current position
+	stage = 1
 end
 
 function state.update()
@@ -49,7 +49,10 @@ function state.update()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
-	-- Timing necessary
+
+	if not lPathIter or not rPathIter then
+		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD = get_iters(stage)
+	end
 
 	local qLArm = Body.get_larm_command_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
@@ -67,7 +70,15 @@ function state.update()
 	Body.set_rarm_command_position(q_rWaypoint)
 
 	-- Check if done
-	if not moreL and not moreR then return 'done' end
+	if not moreL and not moreR then
+		-- Reset the iterators
+		lPathIter, rPathIter = nil, nil
+		if stage==2 then
+			return 'done'
+		else
+			stage = stage + 1
+		end
+	end
 end
 
 function state.exit()

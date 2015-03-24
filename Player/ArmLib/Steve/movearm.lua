@@ -88,23 +88,6 @@ function movearm.goto_tr(trL, rwrist, loptions, roptions)
 	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
 end
 
-function movearm.goto_wrists(lwrist, rwrist)
-	local lPathIter, rPathIter
-	if lwrist then
-	  local qLArm = Body.get_larm_position()
-	  local qLWrist = Body.get_inverse_lwrist(qLArm, unpack(lwrist, 1, 2))
-	  local qLGoal = Body.get_inverse_arm_given_wrist(qLWrist, lwrist[3])
-		lPathIter = lPlanner:joint_iter(qLGoal, qLArm, dqLimit)
-	end
-	if rwrist then
-		local qRArm = Body.get_rarm_position()
-	  local qRWrist = Body.get_inverse_rwrist(qRArm, unpack(rwrist, 1, 2))
-	  local qRGoal = Body.get_inverse_arm_given_wrist(qRWrist, rwrist[3])
-		rPathIter = rPlanner:joint_iter(qRGoal, qRArm, dqLimit)
-	end
-	return lPathIter, rPathIter
-end
-
 --[[
 SJ's arm compensation:
 calculate_com_pos -> get_torso_compensation -> get_next_movement -> plan_unified -> plan_arm_sequence -> armTeleop

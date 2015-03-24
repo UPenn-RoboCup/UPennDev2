@@ -118,12 +118,17 @@ char_lut['r'] = function()
 		set_larm(iqArm, DO_IMMEDIATE)
 		--]]
   else
+		local options = hcm.get_teleop_roptions()
+		options[1] = options[1] - DEG_TO_RAD
+		hcm.set_teleop_roptions(options)
+		--[[
     local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
 		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] - DEG_TO_RAD)
 		local itr = K.forward_rarm(iqArm)
 		sanitize(iqArm, qRArm)
 		set_rarm(iqArm, DO_IMMEDIATE)
+		--]]
   end
 end
 
@@ -141,12 +146,17 @@ char_lut['t'] = function()
 		set_larm(iqArm, DO_IMMEDIATE)
 		--]]
   else
+		local options = hcm.get_teleop_roptions()
+		options[1] = options[1] + DEG_TO_RAD
+		hcm.set_teleop_roptions(options)
+		--[[
     local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
 		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] + DEG_TO_RAD)
 		local itr = K.forward_rarm(iqArm)
 		sanitize(iqArm, qRArm)
 		set_rarm(iqArm, DO_IMMEDIATE)
+		--]]
   end
 end
 

@@ -1,4 +1,4 @@
-function [ Planes ] = detectPlaneInstances_lidar_v1( meshRaw, params, visflag, resetParam )
+function [ Planes ] = detectPlaneInstances_lidar_v1( meshRaw, visflag, resetParam )
 
 persistent ONESCAN_         % single scan resolution 
 persistent NUMSCAN_      % number of scans (in horizontal direction)
@@ -24,16 +24,7 @@ if isempty(Ccb_prev)
     Ccb_prev = Ccb;
     Tcb_prev = Tcb;
 end
-if ~isempty(params)
-    Ccb = params{1};
-    if sum(size(Ccb) ~= [3 3])
-        Ccb = eye(3);
-    end
-    Tcb = params{2};
-    if length(Tcb) ~= 3
-        Tcb = zeros(3,1);
-    end
-end
+
 
 %Tcb = Tcb + Ccb*tr_kinect2head;
 
@@ -50,9 +41,9 @@ ms_resol = 0.5;% 0.6;         % mean shift resolution
 ms_weights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
 
 %%
-meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
+% meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
 meshRaw(meshRaw>5) = 0;             % clamp on ranges
-meshRaw(meshRaw<0.1) = 0;
+meshRaw(meshRaw<0.5) = 0;
 [mesh_, s_, v_] = scan2DepthImg_spherical( meshRaw, s_angles, v_angles); % remove repeated measure   
 NUMS_ = size(mesh_,1);
 NUMV_ = size(mesh_,2);
@@ -182,7 +173,7 @@ end
     end
     
  % Coordinate Transformation
-if ~isempty(params)
+if 1 %~isempty(params)
     for t = 1:PlaneID  
         
         Planes{t}.Center = Ccb*Planes{t}.Center + Tcb;

@@ -42,7 +42,7 @@ Planes = [];
 PlaneID = 0;
     
 % parameters 
-normalComp_param = [2 4]; %  (w^2 + 1) half-window size
+normalComp_param = [3 1]; %  (w^2 + 1) half-window size
 thre_svalue = 0.02; % The smaller it is, the flatter the plane fit is 
 thre_clusterSize = 50; % number of clusters
 thre_memberSize = 30; % number of connected members (in the image domain)

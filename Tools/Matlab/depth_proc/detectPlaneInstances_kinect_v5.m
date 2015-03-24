@@ -226,7 +226,7 @@ Szs = zeros(1,PlaneID);
 
  % Coordinate Transformation
 prevNormals = zeros(3,PlaneID);
-if ~issame(Rot,eye(3))
+if ~isequal(Rot,eye(3))
     for t = 1:PlaneID  
         Planes{t}.Center = Ccb*Planes{t}.Center + Tcb;
         Planes{t}.Points = Ccb*Planes{t}.Points + repmat(Tcb,1,size(Planes{t}.Points,2)) ;

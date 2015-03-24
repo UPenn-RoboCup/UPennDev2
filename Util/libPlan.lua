@@ -101,6 +101,7 @@ local function valid_cost(iq, minArm, maxArm)
 end
 -- TODO: minimize the second angle, so we can work in cramped spaces
 local function find_shoulder(self, tr, qArm)
+	local t0 = unix.time()
 	-- Form the inverses
 	local iqArms = solve_inverses(tr, qArm, self.inverse, self.shoulderAngles)
 	--
@@ -143,6 +144,10 @@ local function find_shoulder(self, tr, qArm)
 	-- TODO: Never have an assert in the planner
 	assert(imin>0, 'No valid arm angles!')
 	-- Yield the first one
+	
+	local t1 = unix.time()
+	print('Computation', t1-t0)
+	
 	return iqArms[imin]
 end
 

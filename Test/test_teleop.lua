@@ -8,6 +8,14 @@ local K = require'K_ffi'
 local sanitize = K.sanitize
 local vector = require'vector'
 
+-- Look up tables for the test.lua script (NOTE: global)
+code_lut, char_lut, lower_lut = {}, {}, {}
+
+local narm = #Body.get_larm_position()
+local selected_arm = 0 -- left to start
+
+local DO_IMMEDIATE = true
+local LARM_DIRTY, RARM_DIRTY = false, false
 local function get_larm(refresh)
 	if refresh then qLtmp = hcm.get_teleop_larm() end
 	return qLtmp
@@ -16,9 +24,11 @@ local qLtmp = get_larm(true)
 local function set_larm(q, do_now)
 	if type(q)=='table' and #q==#qLtmp then
 		vector.copy(q, qLtmp)
+		LARM_DIRTY = true
 	end
 	if q==true or do_now==true then
 		hcm.set_teleop_larm(qLtmp)
+		LARM_DIRTY = false
 	end
 end
 local function get_rarm(refresh)
@@ -29,17 +39,23 @@ local qRtmp = get_rarm(true)
 local function set_rarm(q, do_now)
 	if type(q)=='table' and #q==#qRtmp then
 		vector.copy(q, qRtmp)
+		RARM_DIRTY = true
 	end
 	if q==true or do_now==true then
 		hcm.set_teleop_rarm(qRtmp)
+		RARM_DIRTY = false
 	end
 end
+-- Immediately write the changes?
+char_lut["'"] = function()
+  DO_IMMEDIATE = not DO_IMMEDIATE
+end
 
-local narm = #Body.get_larm_position()
-local selected_arm = 0 -- left to start
-
--- Look up tables for the test.lua script (NOTE: global)
-code_lut, char_lut, lower_lut = {}, {}, {}
+-- Sync the delayed sending
+char_lut[' '] = function()
+	if LARM_DIRTY then set_larm(true) end
+	if RARM_DIRTY then set_rarm(true) end
+end
 
 -- Backspace (Win/Linux) / Delete (OSX)
 local USE_COMPENSATION = hcm.get_teleop_compensation()
@@ -57,18 +73,6 @@ end
 local arm_mode = true
 char_lut['`'] = function()
   arm_mode = not arm_mode
-end
-
--- Immediately write the changes?
-local DO_IMMEDIATE = true
-char_lut["'"] = function()
-  DO_IMMEDIATE = not DO_IMMEDIATE
-end
-
--- Sync the delayed sending
-char_lut[' '] = function()
-	set_larm(true)
-	set_rarm(true)
 end
 
 -- State Machine events

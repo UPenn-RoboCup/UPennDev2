@@ -100,7 +100,7 @@ local function find_shoulder(self, tr, qArm, flip_roll)
 			qBest = iqArm
 		end
 	end
-
+	-- TODO: Make sure to find a shoulder angle...
 	assert(qBest, 'SHOULDER FIND FAIL')
 	return qBest, {qBest[3], flip_roll}
 end

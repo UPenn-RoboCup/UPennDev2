@@ -895,12 +895,12 @@ Robot {
 #					                            #boundingObject Box { size 0.05 0.08 0.05 }
 #					                           	physics Physics{density -1 mass 0.05}
 #					                    			}
-																				endPoint GRIPPER_3finger2 {
+																				endPoint GRIPPER_3finger {
 																					trigger_name "r_trigger"
 																					grip_name "r_grip"
 																					extra_name "r_extra"
-																					#28cm from joint
-																					translation 0 -0.28 0
+																					# UCLA has shorter gripper length
+																					translation 0 -0.10 0
 																				}
 
                                         } # End of the Wrist Yaw2 HingeJoint

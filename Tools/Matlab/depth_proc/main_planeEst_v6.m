@@ -26,7 +26,7 @@ datestamp = '03.25.2015.16.36.47';
  
 ts = 0;
 prevts = 0;
-for ilog=1:length(fileSequence)
+for ilog=150:3:length(fileSequence)
     ilog
     metad = [];
     load(fileSequence{ilog}); 
@@ -42,14 +42,14 @@ for ilog=1:length(fileSequence)
       
     %depthRaw = undistort_depth(depthRaw); 
     if 1
-    D = depthRaw'-20;
-    D(D>4000) = 0;
-    D(D<400) = 0;
-    %load MASK2.mat;
-    %D = D.*double(bw);
-    [pcx, pcy, pcz, r, g ,b] = depthToCloud(D, rgb_img);
-    figure(12), hold off;
-    showPointCloud([-pcx pcy pcz]*0.001, [r' g' b']/255,'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down'); hold on;
+        D = depthRaw'-20;
+        D(D>4000) = 0;
+        D(D<400) = 0;
+        %load MASK2.mat;
+        %D = D.*double(bw);
+        [pcx, pcy, pcz, r, g ,b] = depthToCloud(D, rgb_img);
+        figure(12), hold off;
+        showPointCloud([-pcx pcy pcz]*0.001, [r' g' b']/255,'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down'); hold on;
     end
     
     if 1
@@ -62,6 +62,13 @@ for ilog=1:length(fileSequence)
      
     ui.taskMode = 11 ;
     [res, meta] = detectPlanes6(depthRaw, metad, ui);
+    
+    if numel(res) > 0
+        d1= res{1}.Normal'*res{1}.Center
+        if  numel(res) > 1
+            d2= res{2}.Normal'*res{2}.Center
+        end
+    end
     
     ilog
     
@@ -78,7 +85,7 @@ for ilog=1:length(fileSequence)
      
   
    %if ilog == 53   
-   % pause(0.1);  
+    pause(0.1);  
    % end
     end
    % prevts = metad.t;   

@@ -273,12 +273,14 @@ elseif ui.taskMode == 11
      
     [Planes,PlaneID,PlaneOfInterest,Points3D] = mergePlanes(Planes,PlaneID,PlaneOfInterest,Points3D);
   
-    idx = find(cellfun(@(x) x.Size, Planes(:)) > 100);    
-    if ~isempty(idx)
-        for i=1:length(idx)
-            Planes{idx(i)}.Type = 'large';
+    if~isempty(Planes)
+        idx = find(cellfun(@(x) x.Size, Planes(:)) > 100);    
+        if ~isempty(idx)
+            for i=1:length(idx)
+                Planes{idx(i)}.Type = 'large';
+            end
+            PlaneOfInterest = idx;
         end
-        PlaneOfInterest = idx;
     end
 elseif ui.taskMode == 101 
     if ~isempty(ui.clickxy) 

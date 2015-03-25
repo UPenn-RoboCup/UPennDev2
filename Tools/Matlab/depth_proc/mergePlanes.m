@@ -41,13 +41,17 @@ if numPlanes < 8
                 mergedP3d{j} = P3d{mInd(j)};
             end
         end
+    else
+        mergedPoi = Poi;
+        mergedPlanes = Planes;
+        mergedP3d = P3d;
     end
 else
 
     mergedPlanes = Planes;
     mergedNumPlanes = numPlanes;
     mergedPot = Poi;
-
+    mergedP3d = P3d;
 end
 
 end

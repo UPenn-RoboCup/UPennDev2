@@ -3,7 +3,10 @@ state._NAME = ...
 local Body = require'Body'
 local movearm = require'movearm'
 
-local USE_COMPENSATION = true
+-- Compensation
+-- 1: Use the compensation, but search for the shoulder
+-- 2: Use the compenstation, and use the teleop shoulder options
+local USE_COMPENSATION = 1
 
 local t_entry, t_update, t_finish
 local timeout = 10.0
@@ -12,6 +15,7 @@ local qLGoal, qRGoal
 local qLGoalFiltered, qRGoalFiltered
 local qLD, qRD
 local uTorso0, uTorsoComp
+local loptions, roptions
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -47,28 +51,50 @@ function state.update()
 	-- Check reset conditions
 	if hcm.get_teleop_larm()~=qLGoal then lPathIter = nil end
 	if hcm.get_teleop_rarm()~=qRGoal then rPathIter = nil end
+	if hcm.get_teleop_compensation()~=USE_COMPENSATION then
+		lPathIter = nil
+		rPathIter = nil
+		if USE_COMPENSATION==2 then
+			-- Assume flip_roll is 0...
+			hcm.set_teleop_loptions(loptions or {qcLArm[3], 0})
+			hcm.set_teleop_roptions(roptions or {qcRArm[3], 0})
+		end
+	elseif USE_COMPENSATION==2 then
+		if hcm.get_teleop_loptions()~=loptions then lPathIter = nil end
+		if hcm.get_teleop_roptions()~=roptions then rPathIter = nil end
+	end
 
   -- See if commanded a new position
   if not lPathIter or not rPathIter then
 		-- Check if using the compensation
-		USE_COMPENSATION = hcm.get_teleop_compensation()==1
+		USE_COMPENSATION = hcm.get_teleop_compensation()
 
     -- Get the goal from hcm
     qLGoal = hcm.get_teleop_larm()
     qRGoal = hcm.get_teleop_rarm()
 
-		if USE_COMPENSATION then
+		if USE_COMPENSATION > 0 then
+
 			-- Grab the torso compensation
-			local uTorsoAdapt, uTorso = movearm.get_compensation()
-			uTorso0 = uTorso
-			uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
-			-- Apply the compensation
-			local fkLComp, fkRComp = movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
-			-- Form the iterator
-			lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
-				movearm.goto_tr_via_q(fkLComp, fkRComp
-				--, {qLGoal[3]}, {qRGoal[3]}
-			)
+			local fkLComp, fkRComp
+			fkLComp, fkRComp, uTorsoComp, uTorso0 =
+				movearm.apply_q_compensation(qLGoal, qRGoal, movearm.get_compensation())
+
+			-- Do we have desired null space options?
+			if USE_COMPENSATION==2 then
+				loptions = hcm.get_teleop_loptions()
+				roptions = hcm.get_teleop_roptions()
+				-- Form the iterator
+				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
+					movearm.goto_tr_via_q(fkLComp, fkRComp, loptions, roptions)
+			else
+				-- Form the iterator
+				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
+					movearm.goto_tr_via_q(fkLComp, fkRComp)
+				loptions = qLGoalFiltered[3]
+				roptions = qRGoalFiltered[3]
+			end
+
 		else
 			-- #nofilter
 			qLGoalFiltered, qRGoalFiltered = qLGoal, qRGoal
@@ -91,7 +117,7 @@ function state.update()
 	local phaseL = moreL and moreL/qLD or 0
 	local phaseR = moreR and moreR/qRD or 0
 
-	if USE_COMPENSATION then
+	if USE_COMPENSATION > 0 then
 		local phase = math.max(phaseL, phaseR)
 		local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
 		mcm.set_stance_uTorsoComp(uTorsoNow)
@@ -105,6 +131,7 @@ end
 
 function state.exit()  
   print(state._NAME..' Exit' )
+	hcm.set_teleop_compensation(1)
 end
 
 return state

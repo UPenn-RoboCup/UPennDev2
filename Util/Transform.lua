@@ -4,10 +4,10 @@ local mt = {}
 local vector = require'vector'
 local quaternion = require'quaternion'
 
-local cos = math.cos
-local sin = math.sin
-local atan2 = math.atan2
-local sqrt = math.sqrt
+local cos = require'math'.cos
+local sin = require'math'.sin
+local atan2 = require'math'.atan2
+local sqrt = require'math'.sqrt
 local vnew, vcopy = vector.new, vector.copy
 
 function Transform.inv(a)

@@ -277,7 +277,7 @@ local depth_fl = ffi.new('float[?]', 1)
 local n_depth_fl = ffi.sizeof(depth_fl)
 local fl_sz = ffi.sizeof('float')
 function WebotsBody.update_chest_kinect(rgb, depth)
-	util.ptable(depth)
+	--util.ptable(depth)
 	local n_pixels = depth.width * depth.height
 	if n_pixels~=n_depth_fl then depth_fl = ffi.new('float[?]', n_pixels) end
 	local byte_sz = n_pixels * fl_sz

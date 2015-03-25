@@ -16,8 +16,8 @@ function vector.new(t)
   end
   return setmetatable(t, mt)
 end
-function vector.copy(t)
-  local tt = {}
+function vector.copy(t, tt)
+  tt = tt or {}
   for i=1,#t do tt[i] = t[i] end
   return setmetatable(t, mt)
 end
@@ -120,6 +120,11 @@ end
 local function div(v1, v2)
   if type(v2) == "number" then
     return divnum(v1, v2)
+	else
+		-- pointwise
+		local v = {}
+		for i,val in ipairs(v1) do v[i] = val / v2[i] end
+		return setmetatable(v, mt)
   end
 end
 

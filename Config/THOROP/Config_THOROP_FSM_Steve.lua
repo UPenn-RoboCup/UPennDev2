@@ -17,13 +17,14 @@ fsm.enabled = {
   Head = true,
   Motion = true,
   Lidar = true,
-	Gripper = false
+	Gripper = true
 }
 
 --SJ: now we can have multiple FSM options
 fsm.select = {
   Arm = 'Steve',
   Body = 'Steve',
+	Gripper = 'Steve',
   Head = 'Steve',
   Motion = 'Steve'
 }
@@ -55,6 +56,17 @@ fsm.Head = {
   --
   {'headTeleop', 'init', 'headCenter'},
   {'headTeleop', 'trackhand', 'headTrackHand'},
+}
+
+fsm.Gripper = {
+  {'gripperIdle', 'init', 'gripperCenter'},
+	{'gripperIdle', 'teleop', 'gripperTeleop'},
+	--
+	{'gripperCenter', 'idle', 'gripperIdle'},
+  {'gripperCenter', 'teleop', 'gripperTeleop'},
+	--
+	{'gripperTeleop', 'idle', 'gripperIdle'},
+	{'gripperTeleop', 'init', 'gripperCenter'},
 }
 
 fsm.Lidar = {

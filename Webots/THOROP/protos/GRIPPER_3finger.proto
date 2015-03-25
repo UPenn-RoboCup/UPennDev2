@@ -1,187 +1,188 @@
+#VRML_SIM V6.0 utf8
 PROTO GRIPPER_3finger [
+	#3 finger gripper: UCLA modeled
+	#stump position: 13.5cm front
+	#gripper position:28cm front, 5cm to side 
+	#gripper palm relative pos: 14.5cm front
+	
   field SFVec3f translation 0 0 0
-  field SFRotation rotation  0 1 0 0
+  #field SFRotation rotation  0 0 1 -0.785
+	field SFRotation rotation  1 0 0 0
 	field SFString trigger_name "trigger"
 	field SFString grip_name "grip"
   field SFString extra_name "extra"
 ]
-#3 finger gripper
-#stump position: 13.5cm front
-#gripper position:28cm front, 5cm to side 
-#gripper palm relative pos: 14.5cm front
-
-
 {
-			Solid {
-					translation IS translation
-					rotation 0 0 1 -0.785
-					boundingObject Box { size 0.08 0.005 0.08 }
-					physics Physics {
-						density -1
-						mass 0.01
-					}
-					children [
-						Solid {
-							translation -0.05 0.05 0
-							rotation 0 0 1 0.785
-							children[Shape { geometry Box { size 0.05 0.14 0.05 } }]
-							}
-						Shape { geometry Box { size 0.08 0.005 0.08 } }
+	Solid {
+		translation IS translation
+		rotation IS rotation
+		boundingObject Box { size 0.08 0.005 0.08 }
+		physics Physics {
+			density -1
+			mass 0.01
+		}
+		children [
+			#Solid {
+			#	translation -0.05 0.05 0
+			#	rotation 0 0 1 0.785
+			#	children[Shape { geometry Box { size 0.05 0.14 0.05 } }]
+			#}
+			Shape { geometry Box { size 0.08 0.005 0.08 } }
 			# Begin Extra
-						DEF EXTRA_NUB Solid {
-							translation -0.03 -0.01 0
-							children [
-								DEF EXTRA_NUB_PLATE Shape {
-									geometry Box { size 0.02 0.02 0.02 }
-						      appearance DEF ROBOT_GREEN Appearance {
-						        material Material {
-						          diffuseColor 0.4 1 0.4
-						          emissiveColor 0.1 0.04 0.08
-						          shininess 0.5
-						          specularColor 0.2 0.08 0.16
-						        }
-						      }
-								}
-								DEF EXTRA HingeJoint {
-									device RotationalMotor {
-										name IS extra_name							
-										maxTorque 8							
-										minPosition -2.92343
-										maxPosition 2.92343
-									}
-									jointParameters HingeJointParameters {
-										axis 0 0 -1
-										anchor 0 -0.01 0
-									}
-									endPoint Solid {
-										translation 0 -0.04 0
-										boundingObject Box { size 0.02 0.06 0.02 }
-										physics Physics {
-											density -1
-											mass 0.01
-										}
-										children[
-											Shape {
-												geometry Box { size 0.02 0.06 0.02 }
-									      appearance USE ROBOT_GREEN
-											}
-										]
-									}
-								}
-							]
-							boundingObject USE EXTRA_NUB_PLATE
+			DEF EXTRA_NUB Solid {
+				translation -0.03 -0.01 0
+				children [
+					DEF EXTRA_NUB_PLATE Shape {
+						geometry Box { size 0.02 0.02 0.02 }
+						appearance DEF ROBOT_GREEN Appearance {
+							material Material {
+								diffuseColor 0.4 1 0.4
+								emissiveColor 0.1 0.04 0.08
+								shininess 0.5
+								specularColor 0.2 0.08 0.16
+							}
+						}
+					}
+					DEF EXTRA HingeJoint {
+						device RotationalMotor {
+							name IS extra_name							
+							maxTorque 8							
+							minPosition -2.92343
+							maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 0 0 -1
+							anchor 0 -0.01 0
+						}
+						endPoint Solid {
+							translation 0 -0.04 0
+							boundingObject Box { size 0.02 0.06 0.02 }
 							physics Physics {
 								density -1
 								mass 0.01
 							}
-						}
-						
-			# Begin Trigger
-						DEF TRIGGER_NUB Solid {
-							translation 0.03 -0.01 -0.03
-							children [
-								DEF TRIGGER_NUB_PLATE Shape {
-									geometry Box { size 0.02 0.02 0.02 }
-						      appearance DEF ROBOT_PINK Appearance {
-						        material Material {
-						          diffuseColor 1 0.4 0.8
-						          emissiveColor 0.1 0.04 0.08
-						          shininess 0.5
-						          specularColor 0.2 0.08 0.16
-						        }
-						      }
-								}
-								DEF TRIGGER HingeJoint {
-									device RotationalMotor {
-										name IS trigger_name
-										#maxVelocity 5.65486677646
-										maxTorque 8
-										# Not sure of these...
-										minPosition -2.92343
-										maxPosition 2.92343
-									}
-									jointParameters HingeJointParameters {
-										axis 0 0 1
-										anchor 0 -0.01 0
-									}
-									endPoint Solid {
-										translation 0 -0.04 0
-										boundingObject Box { size 0.02 0.06 0.02 }
-										physics Physics {
-											density -1
-											mass 0.01
-										}
-										children[
-											Shape {
-												geometry Box { size 0.02 0.06 0.02 }
-									      appearance USE ROBOT_PINK
-											}
-										]
-									}
+							children[
+								Shape {
+									geometry Box { size 0.02 0.06 0.02 }
+									appearance USE ROBOT_GREEN
 								}
 							]
-							boundingObject USE TRIGGER_NUB_PLATE
-							physics Physics {
-								density -1
-								mass 0.01
-							}
 						}
-			# End Trigger
-
-			# Begin Grip
-						DEF GRIP_NUB Solid {
-							translation 0.03 -0.01 0.03
-							children [
-								DEF GRIP_NUB_PLATE Shape {
-									geometry Box { size 0.02 0.02 0.02 }
-						      appearance DEF ROBOT_BLUE Appearance {
-						        material Material {
-						          diffuseColor 0 0.75 1
-						          emissiveColor 0 0.075 0.1
-						          shininess 0.5
-						          specularColor 0 0.15 0.2
-						        }
-						      }
-								}
-								DEF Grip HingeJoint {
-									device RotationalMotor {
-										name IS grip_name
-										#maxVelocity 5.65486677646
-										maxTorque 8
-										# Not sure of these...
-										minPosition -2.92343
-										maxPosition 2.92343
-									}
-									jointParameters HingeJointParameters {
-										axis 0 0 1
-										anchor 0 -0.01 0
-									}
-									endPoint Solid {
-										translation 0 -0.04 0
-										boundingObject Box { size 0.02 0.06 0.02 }
-										physics Physics {
-											density -1
-											mass 0.01
-										}
-										children[
-											Shape {
-												geometry Box { size 0.02 0.06 0.02 }
-									      appearance USE ROBOT_BLUE
-											}
-										]
-									}
-								}
-							]
-							boundingObject USE GRIP_NUB_PLATE
-							physics Physics {
-								density -1
-								mass 0.01
-							}
-						}
-			# End Grip
-
-					]
+					}
+				]
+				boundingObject USE EXTRA_NUB_PLATE
+				physics Physics {
+					density -1
+					mass 0.01
 				}
+			}
+
+# Begin Trigger
+			DEF TRIGGER_NUB Solid {
+				translation 0.03 -0.01 -0.03
+				children [
+					DEF TRIGGER_NUB_PLATE Shape {
+						geometry Box { size 0.02 0.02 0.02 }
+						appearance DEF ROBOT_PINK Appearance {
+							material Material {
+								diffuseColor 1 0.4 0.8
+								emissiveColor 0.1 0.04 0.08
+								shininess 0.5
+								specularColor 0.2 0.08 0.16
+							}
+						}
+					}
+					DEF TRIGGER HingeJoint {
+						device RotationalMotor {
+							name IS trigger_name
+							#maxVelocity 5.65486677646
+							maxTorque 8
+							# Not sure of these...
+							minPosition -2.92343
+							maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 0 0 1
+							anchor 0 -0.01 0
+						}
+						endPoint Solid {
+							translation 0 -0.04 0
+							boundingObject Box { size 0.02 0.06 0.02 }
+							physics Physics {
+								density -1
+								mass 0.01
+							}
+							children[
+								Shape {
+									geometry Box { size 0.02 0.06 0.02 }
+									appearance USE ROBOT_PINK
+								}
+							]
+						}
+					}
+				]
+				boundingObject USE TRIGGER_NUB_PLATE
+				physics Physics {
+					density -1
+					mass 0.01
+				}
+			}
+# End Trigger
+
+# Begin Grip
+			DEF GRIP_NUB Solid {
+				translation 0.03 -0.01 0.03
+				children [
+					DEF GRIP_NUB_PLATE Shape {
+						geometry Box { size 0.02 0.02 0.02 }
+						appearance DEF ROBOT_BLUE Appearance {
+							material Material {
+								diffuseColor 0 0.75 1
+								emissiveColor 0 0.075 0.1
+								shininess 0.5
+								specularColor 0 0.15 0.2
+							}
+						}
+					}
+					DEF Grip HingeJoint {
+						device RotationalMotor {
+							name IS grip_name
+							#maxVelocity 5.65486677646
+							maxTorque 8
+							# Not sure of these...
+							minPosition -2.92343
+							maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 0 0 1
+							anchor 0 -0.01 0
+						}
+						endPoint Solid {
+							translation 0 -0.04 0
+							boundingObject Box { size 0.02 0.06 0.02 }
+							physics Physics {
+								density -1
+								mass 0.01
+							}
+							children[
+								Shape {
+									geometry Box { size 0.02 0.06 0.02 }
+									appearance USE ROBOT_BLUE
+								}
+							]
+						}
+					}
+				]
+				boundingObject USE GRIP_NUB_PLATE
+				physics Physics {
+					density -1
+					mass 0.01
+				}
+			}
+# End Grip
+
+		]
+	}
 
 
 

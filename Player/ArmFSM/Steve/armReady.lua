@@ -4,21 +4,22 @@ local Body = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
 local t_entry, t_update, t_finish
-local timeout = 10.0
+local timeout = 30.0
 
-local T = require'Transform'
-local trLGoal = T.transform6D{0.2, 0.25, -0.05, 0, 0, -90*DEG_TO_RAD}
-local trRGoal = T.transform6D({0.2, -0.25, -0.12, 0, 0, 90*DEG_TO_RAD})
-
+local piterators
 local lPathIter, rPathIter
+local qLD, qRD
+local uTorsoComp, uTorso0
 
 function state.entry()
   print(state._NAME..' Entry')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-	--lPathIter, rPathIter = movearm.goto_tr(trLGoal, trRGoal, {-20*DEG_TO_RAD}, {10*DEG_TO_RAD})
-  lPathIter, rPathIter = movearm.goto_tr_via_q(trLGoal, trRGoal, {-25*DEG_TO_RAD}, {25*DEG_TO_RAD})
+
+	-- TODO: Autodetect which stges to use, based on our initial position
+	piterators = movearm.path_iterators(Config.arm.readyFromInitStages)
+
 end
 
 function state.update()
@@ -27,35 +28,43 @@ function state.update()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
-	-- Timing necessary
-	----[[
+
+	if not lPathIter or not rPathIter then
+		local it
+		it, uTorsoComp, uTorso0 = piterators()
+		-- We are done if the coroutine emits nothing
+		if not it then return'done' end
+		local qLGoalFiltered, qRGoalFiltered
+		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD = unpack(it)
+		hcm.set_teleop_loptions({qLGoalFiltered[3], 0})
+		hcm.set_teleop_roptions({qRGoalFiltered[3], 0})
+	end
+
+	-- Find the next arm position
 	local qLArm = Body.get_larm_command_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
-	--]]
-	-- No time needed
-	--[[
-	local qLArm = Body.get_larm_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm)
-	--]]
-	Body.set_larm_command_position(q_lWaypoint)
-
-	----[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
-	--]]
-	--[[
-	local qRArm = Body.get_rarm_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm)
-	--]]
+
+	-- Find the torso compensation position
+	local phaseL = moreL and moreL/qLD or 0
+	local phaseR = moreR and moreR/qRD or 0
+	local phase = math.max(phaseL, phaseR)
+	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
+
+	-- Set the arm and torso commands
+	mcm.set_stance_uTorsoComp(uTorsoNow)
+	Body.set_larm_command_position(q_lWaypoint)
 	Body.set_rarm_command_position(q_rWaypoint)
-	-- Check if done
-	if not moreL and not moreR then
-		return 'done'
-	end
+
+	-- Check if done and reset the iterators
+	if not moreL and not moreR then lPathIter, rPathIter = nil, nil end
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
+	-- For teleop if called next
+	--hcm.set_teleop_compensation(2)
 end
 
 return state

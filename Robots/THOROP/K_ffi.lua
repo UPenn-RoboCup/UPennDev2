@@ -161,8 +161,8 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 	  wristYaw_b = atan2(-rotWrist[3][1], -rotWrist[2][1])
 	  wristYaw2_b = atan2(-rotWrist[1][3], rotWrist[1][2])
   end
-  local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % (2*PI) ) - PI
-  local err_b = ( (qOrg[5] - wristYaw_b+5*PI) % (2*PI) ) - PI
+  local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % TWO_PI ) - PI
+  local err_b = ( (qOrg[5] - wristYaw_b+5*PI) % TWO_PI ) - PI
   if err_a^2 < err_b^2 then
     qArm[5] = wristYaw_a
     qArm[6] = wristRoll_a
@@ -172,7 +172,8 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
     qArm[6] = wristRoll_b
     qArm[7] = wristYaw2_b
   end
-  return vnew(qArm)
+	return qArm
+  --return vnew(qArm)
 end
 
 -- Mounting Transform offsets
@@ -187,7 +188,6 @@ function K.forward_larm(qLArm)
 	return preLArm * fk_arm(qLArm) * postLArm, {qLArm[3]}
 end
 
-
 function K.forward_rarm(qRArm)
 	return preRArm * fk_arm(qRArm) * postRArm, {qRArm[3]}
 end
@@ -199,7 +199,7 @@ function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll)
 		preLArmInv * trL * postLArmInv,
 		qLArm,
 		shoulderYaw or qLArm[3],
-		flipRoll and PI
+		flipRoll==1 and PI
 	)
 end
 local preRArmInv, postRArmInv = Tinv(preRArm), Tinv(postRArm)
@@ -208,7 +208,7 @@ function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll)
 		preRArmInv * trR * postRArmInv,
 		qRArm,
 		shoulderYaw or qRArm[3],
-		flipRoll and -PI
+		flipRoll==1 and -PI
 	)
 end
 

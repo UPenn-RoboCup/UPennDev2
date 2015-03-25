@@ -6,12 +6,68 @@ pcall(dofile, '../fiddle.lua')
 local T = require'Transform'
 local K = require'K_ffi'
 local sanitize = K.sanitize
+local vector = require'vector'
+
+-- Look up tables for the test.lua script (NOTE: global)
+code_lut, char_lut, lower_lut = {}, {}, {}
 
 local narm = #Body.get_larm_position()
 local selected_arm = 0 -- left to start
 
--- Look up tables for the test.lua script (NOTE: global)
-code_lut, char_lut, lower_lut = {}, {}, {}
+local DO_IMMEDIATE = true
+local LARM_DIRTY, RARM_DIRTY = false, false
+local function get_larm(refresh)
+	if refresh then qLtmp = hcm.get_teleop_larm() end
+	return qLtmp
+end
+local qLtmp = get_larm(true)
+local function set_larm(q, do_now)
+	if type(q)=='table' and #q==#qLtmp then
+		vector.copy(q, qLtmp)
+		LARM_DIRTY = true
+	end
+	if q==true or do_now==true then
+		hcm.set_teleop_larm(qLtmp)
+		LARM_DIRTY = false
+	end
+end
+local function get_rarm(refresh)
+	if refresh then qRtmp = hcm.get_teleop_rarm() end
+	return qRtmp
+end
+local qRtmp = get_rarm(true)
+local function set_rarm(q, do_now)
+	if type(q)=='table' and #q==#qRtmp then
+		vector.copy(q, qRtmp)
+		RARM_DIRTY = true
+	end
+	if q==true or do_now==true then
+		hcm.set_teleop_rarm(qRtmp)
+		RARM_DIRTY = false
+	end
+end
+-- Immediately write the changes?
+char_lut["'"] = function()
+  DO_IMMEDIATE = not DO_IMMEDIATE
+end
+
+-- Sync the delayed sending
+char_lut[' '] = function()
+	if LARM_DIRTY then set_larm(true) end
+	if RARM_DIRTY then set_rarm(true) end
+end
+
+-- Backspace (Win/Linux) / Delete (OSX)
+local USE_COMPENSATION = hcm.get_teleop_compensation()
+code_lut[127] = function()
+	-- Disable the compensation
+	--[[
+	USE_COMPENSATION = USE_COMPENSATION + 1
+	USE_COMPENSATION = USE_COMPENSATION>2 and 0 or USE_COMPENSATION
+	--]]
+	USE_COMPENSATION = USE_COMPENSATION==1 and 2 or 1
+	hcm.set_teleop_compensation(USE_COMPENSATION)
+end
 
 -- Switch to head teleop
 local arm_mode = true
@@ -24,16 +80,21 @@ char_lut['1'] = function()
   body_ch:send'init'
 end
 char_lut['2'] = function()
-	arm_ch:send'teleop'
-	--arm_ch:send'ready'
-  head_ch:send'teleop'
+	head_ch:send'teleop'
 end
---[[
 char_lut['3'] = function()
-  arm_ch:send'grab'
+	arm_ch:send'ready'
+end
+char_lut['4'] = function()
+	arm_ch:send'teleop'
+end
+char_lut['5'] = function()
   head_ch:send'trackhand'
 end
---]]
+char_lut['6'] = function()
+  arm_ch:send'poke'
+end
+
 char_lut['8'] = function()
   head_ch:send'teleop'
   motion_ch:send'stand'
@@ -48,38 +109,58 @@ end
 
 char_lut['r'] = function()
   if selected_arm==0 then
-    local qLArm = hcm.get_teleop_larm()
+		local options = hcm.get_teleop_loptions()
+		options[1] = math.max(options[1] - DEG_TO_RAD, 0)
+		hcm.set_teleop_loptions(options)
+		--[[
+		local qLArm = get_larm()
     --print('Pre',qLArm*RAD_TO_DEG)
 		local tr = K.forward_larm(qLArm)
 		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] - DEG_TO_RAD)
 		local itr = K.forward_larm(iqArm)
 		sanitize(iqArm, qLArm)
-		hcm.set_teleop_larm(iqArm)
+		set_larm(iqArm, DO_IMMEDIATE)
+		--]]
   else
-    local qRArm = hcm.get_teleop_rarm()
+		local options = hcm.get_teleop_roptions()
+		options[1] = math.min(options[1] - DEG_TO_RAD, 0)
+		hcm.set_teleop_roptions(options)
+		--[[
+    local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
 		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] - DEG_TO_RAD)
 		local itr = K.forward_rarm(iqArm)
 		sanitize(iqArm, qRArm)
-		hcm.set_teleop_rarm(iqArm)
+		set_rarm(iqArm, DO_IMMEDIATE)
+		--]]
   end
 end
 
 char_lut['t'] = function()
   if selected_arm==0 then
-    local qLArm = hcm.get_teleop_larm()
+		local options = hcm.get_teleop_loptions()
+		options[1] = math.min(options[1] + DEG_TO_RAD, 90*DEG_TO_RAD)
+		hcm.set_teleop_loptions(options)
+		--[[
+    local qLArm = get_larm()
 		local tr = K.forward_larm(qLArm)
 		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] + DEG_TO_RAD)
 		local itr = K.forward_larm(iqArm)
 		sanitize(iqArm, qLArm)
-		hcm.set_teleop_larm(iqArm)
+		set_larm(iqArm, DO_IMMEDIATE)
+		--]]
   else
-    local qRArm = hcm.get_teleop_rarm()
+		local options = hcm.get_teleop_roptions()
+		options[1] = math.max(options[1] + DEG_TO_RAD, -90*DEG_TO_RAD)
+		hcm.set_teleop_roptions(options)
+		--[[
+    local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
 		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] + DEG_TO_RAD)
 		local itr = K.forward_rarm(iqArm)
 		sanitize(iqArm, qRArm)
-		hcm.set_teleop_rarm(iqArm)
+		set_rarm(iqArm, DO_IMMEDIATE)
+		--]]
   end
 end
 
@@ -100,37 +181,33 @@ end
 
 char_lut['='] = function()
   if selected_arm==0 then
-    local pos = hcm.get_teleop_larm()
+    local pos = get_larm()
     local q0 = pos[selected_joint]
     q0 = q0 + 5 * DEG_TO_RAD
     pos[selected_joint] = q0
-		hcm.set_teleop_larm(pos)
+		set_larm(pos, DO_IMMEDIATE)
   else
-    local pos = hcm.get_teleop_rarm()
+    local pos = get_rarm()
     local q0 = pos[selected_joint]
     q0 = q0 + 5 * DEG_TO_RAD
     pos[selected_joint] = q0
-		hcm.set_teleop_rarm(pos)
+		set_rarm(pos, DO_IMMEDIATE)
   end
 end
 char_lut['-'] = function()
   if selected_arm==0 then
-    local pos = hcm.get_teleop_larm()
+    local pos = get_larm()
     local q0 = pos[selected_joint]
     q0 = q0 - 5 * DEG_TO_RAD
     pos[selected_joint] = q0
-		hcm.set_teleop_larm(pos)
+		set_larm(pos, DO_IMMEDIATE)
   else
-    local pos = hcm.get_teleop_rarm()
+    local pos = get_rarm()
     local q0 = pos[selected_joint]
     q0 = q0 - 5 * DEG_TO_RAD
     pos[selected_joint] = q0
-		hcm.set_teleop_rarm(pos)
+		set_rarm(pos, DO_IMMEDIATE)
   end
-end
-
-function get_compensation()
-
 end
 
 --[[
@@ -139,40 +216,38 @@ print('des zyz:',zyz[1],zyz[2],zyz[3])
 --]]
 local function apply_pre(d_tr)
 	if selected_arm==0 then --left
-		local qLArm = hcm.get_teleop_larm()
+		local qLArm = get_larm()
 		local fkL = K.forward_larm(qLArm)
 		local trLGoal = d_tr * fkL
 		local iqArm = vector.new(K.inverse_larm(trLGoal, qLArm))
 		sanitize(iqArm, qLArm)
-		hcm.set_teleop_larm(iqArm)
+		set_larm(iqArm, DO_IMMEDIATE)
 	else
-		local qRArm = hcm.get_teleop_rarm()
+		local qRArm = get_rarm()
 		local fkR = K.forward_rarm(qRArm)
 		local trRGoal = d_tr * fkR
 		local iqArm = vector.new(K.inverse_rarm(trRGoal, qRArm))
 		sanitize(iqArm, qRArm)
-		hcm.set_teleop_rarm(iqArm)
+		set_rarm(iqArm, DO_IMMEDIATE)
 	end
-	get_compensation()
 end
 
 local function apply_post(d_tr)
 	if selected_arm==0 then --left
-		local qLArm = hcm.get_teleop_larm()
+		local qLArm = get_larm()
 		local fkL = K.forward_larm(qLArm)
 		local trLGoal = fkL * d_tr
 		local iqArm = vector.new(K.inverse_larm(trLGoal, qLArm))
 		sanitize(iqArm, qLArm)
-		hcm.set_teleop_larm(iqArm)
+		set_larm(iqArm, DO_IMMEDIATE)
 	else
-		local qRArm = hcm.get_teleop_rarm()
+		local qRArm = get_rarm()
 		local fkR = K.forward_rarm(qRArm)
 		local trRGoal = fkR * d_tr
 		local iqArm = vector.new(K.inverse_rarm(trRGoal, qRArm))
 		sanitize(iqArm, qRArm)
-		hcm.set_teleop_rarm(iqArm)
+		set_rarm(iqArm, DO_IMMEDIATE)
 	end
-	get_compensation()
 end
 
 -- Translate the end effector
@@ -244,12 +319,15 @@ setmetatable(char_lut, {
       else
         apply_walk(walk[k])
       end
+			return
     elseif pre_arm[k] then
 			apply_pre(pre_arm[k])
+			return
 		elseif post_arm[k] then
 			apply_post(post_arm[k])
+			return
 		end
-    return Body.get_time
+		print('Unknown char')
 	end
 })
 
@@ -265,19 +343,21 @@ function show_status()
   local r_indicator = vector.zeros(#qlarm)
   r_indicator[selected_joint] = selected_arm==1 and 1 or 0
 	--
-  local larm_info = string.format('\n%s %s %s\n%s\n%s',
+  local larm_info = string.format('\n%s %s %s\n%s\n%s\n%s',
     util.color('Left Arm', 'yellow'),
     arm_mode and selected_arm==0 and '*' or '',
 		l_indicator,
     'q: '..tostring(qlarm*RAD_TO_DEG),
-		'Pos6d: '..tostring(vector.new(T.position6D(fkL)))
+		'tr: '..tostring(vector.new(T.position6D(fkL))),
+		'teleop: '..tostring(qLtmp*RAD_TO_DEG)
   )
-  local rarm_info = string.format('\n%s %s %s\n%s\n%s',
+  local rarm_info = string.format('\n%s %s %s\n%s\n%s\n%s',
     util.color('Right Arm', 'yellow'),
     arm_mode and selected_arm==1 and '*' or '',
 		r_indicator,
     'q: '..tostring(qrarm*RAD_TO_DEG),
-    'Pos6d: '..tostring(vector.new(T.position6D(fkR)))
+    'tr: '..tostring(vector.new(T.position6D(fkR))),
+		'teleop: '..tostring(qRtmp*RAD_TO_DEG)
   )
   local head_info = string.format('\n%s %s\n%s',
     util.color('Head', 'yellow'),
@@ -292,6 +372,9 @@ function show_status()
   )
   local info = {
     color('== Teleoperation ==', 'magenta'),
+		'1: init, 2: head teleop, 3: armReady, 4: armTeleop, 5: headTrack, 6: poke',
+		color(DO_IMMEDIATE and 'Immediate Send' or 'Delayed Send', DO_IMMEDIATE and 'red' or 'yellow'),
+		'Compensation: '..USE_COMPENSATION,
     'BodyFSM: '..color(gcm.get_fsm_Body(), 'green'),
     'ArmFSM: '..color(gcm.get_fsm_Arm(), 'green'),
     'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),

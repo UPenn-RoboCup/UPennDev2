@@ -76,7 +76,7 @@ function state.update()
 		vcm.set_mesh_state({forward and 1 or -1})
 		local net = vcm.get_mesh_net()
 		-- If streaming, then LidarFSM should request a mesh be sent
-		if net[4]==1 then
+		if net[3]==1 then
 			net[1] = 1
 			vcm.set_mesh_net(net)
 		end

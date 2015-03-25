@@ -4,7 +4,7 @@
 -- (c) Stephen McGill 2013, 2014
 dofile'../include.lua'
 
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 
 local libHokuyo  = require'libHokuyo'
 local signal = require'signal'.signal
@@ -15,6 +15,16 @@ local si = require'simple_ipc'
 local Body = require'Body'
 require'wcm'
 
+-- Setup the Hokuyos array
+local hokuyos = {}
+
+-- Initialize the Hokuyos
+--local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
+--local h0 = libHokuyo.new_hokuyo('/dev/cu.usbmodem1411',nil,9600)
+local h0 = libHokuyo.new_hokuyo(11)
+--local h0 = libHokuyo.new_hokuyo(10)
+h0.name = 'chest'
+h0.ch = si.new_publisher'lidar0'
 
 local libLog, logger, nlog
 if ENABLE_LOG then
@@ -30,11 +40,11 @@ local cb = function(self, data)
 		n = self.n,
 		res = self.res,
 		angle = Body.get_lidar_position(),
-    rpy = Body.get_rpy(), 
-    pose = wcm.get_robot_odometry(),
+		rpy = Body.get_rpy(), 
+		pose = wcm.get_robot_odometry(),
 		rsz = #data,
 	}
-	self.ch:send({mpack(metadata),data})
+	local ret = self.ch:send({mpack(metadata),data})
 
 	if ENABLE_LOG then
 		logger:record(metadata, data)
@@ -48,43 +58,25 @@ local cb = function(self, data)
 
 end
 
--- Setup the Hokuyos array
-local hokuyos = {}
-
--- Initialize the Hokuyos
---local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
---local h0 = libHokuyo.new_hokuyo('/dev/cu.usbmodem1411',nil,9600)
-
-local h0
-if HOSTNAME=='teddy' then
-	h0 = libHokuyo.new_hokuyo(10)
-elseif HOSTNAME == 'alvin' or true then
-	h0 = libHokuyo.new_hokuyo(11)
-	--h0 = libHokuyo.new_hokuyo('/dev/ttyACM1')
-else
-	print('WRONG HOST NAME !!')
-end
-
-h0.name = 'front'
-h0.ch = si.new_publisher'lidar0'
-h0.callback = cb
-table.insert(hokuyos, h0)
 
 -- Ensure that we shutdown the devices properly
 local function shutdown()
-  print'Shutting down the Hokuyos...'
-  for i,h in ipairs(hokuyos) do
-    h:stream_off()
-    h:close()
-    print('Closed Hokuyo',i)
-  end
+	print'Shutting down the Hokuyos...'
+	for i,h in ipairs(hokuyos) do
+		h:stream_off()
+		h:close()
+		print('Closed Hokuyo',i)
+	end
 	if ENABLE_LOG then
 		logger:stop()
 	end
-  os.exit()
+	os.exit()
 end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
+
+h0.callback = cb
+table.insert(hokuyos, h0)
 
 -- Begin to service
 os.execute('clear')
@@ -92,26 +84,26 @@ assert(#hokuyos>0, "No hokuyos detected!")
 print( color('Servicing '..#hokuyos..' Hokuyos','green') )
 
 local main = function()
-  local main_cnt = 0
-  local t0 = get_time()
-  while true do
-    main_cnt = main_cnt + 1
-    local t_now = get_time()
-    local t_diff = t_now - t0
-    if t_diff>1 then
-      local debug_str = string.format('\nMain loop: %7.2f Hz',main_cnt/t_diff)
-      debug_str = color(debug_str,'yellow')
-      for i,h in ipairs(hokuyos) do
-        debug_str = debug_str..string.format(
-        '\n\t%s Hokuyo:\t%5.1fHz\t%4.1f ms ago',h.name, 1/h.t_diff, (t_now-h.t_last)*1000)
-      end
-      os.execute('clear')
-      print(debug_str)
-      t0 = t_now
-      main_cnt = 0
-    end
-    coroutine.yield()
-  end
+	local main_cnt = 0
+	local t0 = get_time()
+	while true do
+		main_cnt = main_cnt + 1
+		local t_now = get_time()
+		local t_diff = t_now - t0
+		if t_diff>1 then
+			local debug_str = string.format('\nMain loop: %7.2f Hz',main_cnt/t_diff)
+			debug_str = color(debug_str,'yellow')
+			for i,h in ipairs(hokuyos) do
+				debug_str = debug_str..string.format(
+				'\n\t%s Hokuyo:\t%5.1fHz\t%4.1f ms ago',h.name, 1/h.t_diff, (t_now-h.t_last)*1000)
+			end
+			os.execute('clear')
+			print(debug_str)
+			t0 = t_now
+			main_cnt = 0
+		end
+		coroutine.yield()
+	end
 end
 
 libHokuyo.service( hokuyos, main )

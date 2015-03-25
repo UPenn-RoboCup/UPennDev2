@@ -46,7 +46,7 @@ local libLog, logger, nlog
 if ENABLE_LOG then
 	libLog = require'libLog'
 	logger = libLog.new('mesh', true)
-  nlog = 0
+	nlog = 0
 end
 
 local metadata = {
@@ -65,11 +65,11 @@ local function setup_mesh(meta)
 	local min_view, max_view = unpack(ranges_fov)
 	assert(fov > max_view-min_view, 'Not enough FOV available')
 	-- Find the offset for copying lidar readings into the mesh
-  -- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
-  -- if fov is from 0 to fov/2 degrees, then offset_idx is sensor_width/2
-  local fov_offset = min_view / res + n / 2
+	-- if fov is from -fov/2 to fov/2 degrees, then offset_idx is zero
+	-- if fov is from 0 to fov/2 degrees, then offset_idx is sensor_width/2
+	local fov_offset = min_view / res + n / 2
 	-- Round the offset (0 based offset)
-  offset_idx = math.floor(fov_offset + 0.5)
+	offset_idx = math.floor(fov_offset + 0.5)
 	-- Round to get the number of returns for each scanline
 	n_returns = math.floor((max_view - min_view) / res + 0.5)
 	print("n_returns", n_returns, max_view, min_view, res)
@@ -77,28 +77,28 @@ local function setup_mesh(meta)
 	-- Indexed by the actuator angle
 	-- Depends on the speed we use
 	n_scanlines = math.floor(t_sweep / t_scan + 0.5)
-  -- In-memory mesh
-  mesh = torch.FloatTensor(n_scanlines, n_returns):zero()
-  -- Mesh buffers for compressing and sending to the user
+	-- In-memory mesh
+	mesh = torch.FloatTensor(n_scanlines, n_returns):zero()
+	-- Mesh buffers for compressing and sending to the user
 	mesh_adj  = torch.FloatTensor(n_scanlines, n_returns):zero()
-  mesh_byte = torch.ByteTensor(n_scanlines, n_returns):zero()
-  -- Data for each scanline
+	mesh_byte = torch.ByteTensor(n_scanlines, n_returns):zero()
+	-- Data for each scanline
 	if TORCH_SCANLINE_INFO then
 		scan_angles = torch.DoubleTensor(n_scanlines):zero()
 		scan_x = scan_angles:clone()
 		scan_y = scan_angles:clone()
 		scan_a = scan_angles:clone()
-    scan_pitch = scan_angles:clone()
-    scan_roll = scan_angles:clone()
-    scan_pose = torch.DoubleTensor(n_scanlines,3):zero()
+		scan_pitch = scan_angles:clone()
+		scan_roll = scan_angles:clone()
+		scan_pose = torch.DoubleTensor(n_scanlines,3):zero()
 	else
 		scan_angles = vector.zeros(n_scanlines)
 		scan_x = vector.zeros(n_scanlines)
 		scan_y = vector.zeros(n_scanlines)
 		scan_a = vector.zeros(n_scanlines)
-    scan_pitch = vector.zeros(n_scanlines)
-    scan_roll = vector.zeros(n_scanlines)
-    scan_pose = {}
+		scan_pitch = vector.zeros(n_scanlines)
+		scan_roll = vector.zeros(n_scanlines)
+		scan_pose = {}
 	end
 	-- Metadata for the mesh
 	metadata.rfov = ranges_fov
@@ -108,21 +108,21 @@ local function setup_mesh(meta)
 	metadata.py = scan_y
 	metadata.pa = scan_a
 	-- Add Orientation for pitch and roll
-  metadata.pitch = scan_pitch
-  metadata.roll = scan_roll
-  -- Odometry
-  metadata.pose = scan_pose
-  -- Add the dimensions (useful for raw)
-  metadata.dims = {n_scanlines, n_returns}
+	metadata.pitch = scan_pitch
+	metadata.roll = scan_roll
+	-- Odometry
+	metadata.pose = scan_pose
+	-- Add the dimensions (useful for raw)
+	metadata.dims = {n_scanlines, n_returns}
 end
 
 -- Convert a pan angle to a column of the chest mesh image
 local scanline, direction
 local function angle_to_scanlines(rad)
 	-- Find the scanline
-  local ratio = (rad + mag_sweep / 2) / mag_sweep
-  local scanline_now = math.floor(ratio*n_scanlines+.5)
-  scanline_now = math.max(math.min(scanline_now, n_scanlines), 1)
+	local ratio = (rad + mag_sweep / 2) / mag_sweep
+	local scanline_now = math.floor(ratio*n_scanlines+.5)
+	scanline_now = math.max(math.min(scanline_now, n_scanlines), 1)
 	local prev_scanline = scanline or scanline_now
 	scanline = scanline_now
 	-- Find the direction
@@ -131,12 +131,12 @@ local function angle_to_scanlines(rad)
 	direction = direction_now
 	-- If unknown, then only populate a single scanline
 	if direction == 0 then return {scanline} end
-  -- Find the set of scanlines for copying the lidar reading
-  local scanlines = {}
+	-- Find the set of scanlines for copying the lidar reading
+	local scanlines = {}
 	-- No direction change
-  if direction==prev_direction then
-    -- Fill all lines between previous and now
-    for s=prev_scanline+direction,scanline,direction do table.insert(scanlines,s) end
+	if direction==prev_direction then
+		-- Fill all lines between previous and now
+		for s=prev_scanline+direction,scanline,direction do table.insert(scanlines,s) end
 		return scanlines
 	end
 	-- Changed directions, so populate the borders, too
@@ -147,71 +147,77 @@ local function angle_to_scanlines(rad)
 		local fill_line = math.min(prev_scanline + 1, scanline)
 		for s=fill_line,n_scanlines do table.insert(scanlines, s) end
 	end
-  return scanlines
+	return scanlines
 end
 
 local compression = {
-  [0] = 'jpeg',
-  [1] = 'png',
-  [2] = 'raw'
+	[0] = 'jpeg',
+	[1] = 'png',
+	[2] = 'raw'
 }
 
 local function send_mesh(compression, dynrange)
-  local near, far = unpack(dynrange)
+	local near, far = unpack(dynrange)
 	if near>far then
 		print('Near greater than far...')
 		return
 	end
-  -- Enhance the dynamic range of the mesh image
-  mesh_adj:copy(mesh):add(-near)
-  mesh_adj:mul(255/(far-near))
-  -- Ensure that we are between 0 and 255
-  mesh_adj[torch.lt(mesh_adj,0)] = 0
-  mesh_adj[torch.gt(mesh_adj,255)] = 255
-  mesh_byte:copy(mesh_adj)
+	-- Enhance the dynamic range of the mesh image
+	mesh_adj:copy(mesh):add(-near)
+	mesh_adj:mul(255/(far-near))
+	-- Ensure that we are between 0 and 255
+	mesh_adj[torch.lt(mesh_adj,0)] = 0
+	mesh_adj[torch.gt(mesh_adj,255)] = 255
+	mesh_byte:copy(mesh_adj)
 	-- Update relevant metadata
 	metadata.c = compression
 	metadata.dr = dynrange
 	metadata.t = Body.get_time()
-  -- Compression
-  local c_mesh
-  if compression=='jpeg' then
+	-- Compression
+	local c_mesh
+	if compression=='jpeg' then
 		c_mesh = j_compress:compress(mesh_byte)
-  elseif compression=='png' then
-    c_mesh = p_compress(mesh_byte)
-  else
-    -- Raw
-    c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
-  end
+	elseif compression=='png' then
+		c_mesh = p_compress(mesh_byte)
+	else
+		-- Raw
+		c_mesh = ffi.string(mesh:data(), mesh:nElement() * ffi.sizeof'float')
+	end
 	-- Send away
 	mesh_ch:send{mpack(metadata), c_mesh}
 	mesh_tcp_ch:send{mpack(metadata), c_mesh}
-	local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
-	print('Mesh | Sent UDP', err or 'successfully')
+	if mesh_udp_ch then
+		local ret, err = mesh_udp_ch:send(mpack(metadata)..c_mesh)
+		print('Mesh | Sent UDP', err or 'successfully')
+	end
 end
 
 local function check_send_mesh()
 	local net = vcm.get_mesh_net()
 	local request, comp = unpack(net)
+
 	if request==0 then return end
 	local dynrange = vcm.get_mesh_dynrange()
 	send_mesh(compression[comp], dynrange)
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)
+
+
 	-- Log
 	-- Do the logging if we wish
 	if ENABLE_LOG then
 		metadata.rsz = mesh:nElement() * ffi.sizeof'float'
 		logger:record(metadata, mesh:data(), metadata.rsz)
 		nlog = nlog + 1
-		print("# mesh logs: "..nlog, metadata.rsz)
+		print(request, "# mesh logs: "..nlog, metadata.rsz)
 		if nlog % 100 == 0 then
 			logger:stop()
 			logger = libLog.new('mesh', true)
 			print('Open new log!')
 		end
 	end
+
 end
 
 local function update(meta, ranges)
@@ -228,31 +234,31 @@ local function update(meta, ranges)
 		setup_mesh(meta)
 		print('Mesh | Updated containers')
 	end
-  -- Metadata
-  -- NOTE: Orientation should include the joint positions as well!
-  local roll, pitch, yaw = unpack(meta.rpy)
-  -- Body pose
-  local pose = meta.pose
+	-- Metadata
+	-- NOTE: Orientation should include the joint positions as well!
+	local roll, pitch, yaw = unpack(meta.rpy)
+	-- Body pose
+	local pose = meta.pose
 
-  -- Find the scanline indices
+	-- Find the scanline indices
 	local rad_angle = meta.angle
-  local scanlines = angle_to_scanlines(rad_angle)
+	local scanlines = angle_to_scanlines(rad_angle)
 	local byte_sz = mesh:size(2) * ffi.sizeof'float'
 	local float_ranges = ffi.cast('float*', ranges)
 	local dest
-  for _,line in ipairs(scanlines) do
+	for _,line in ipairs(scanlines) do
 		if line >= 1 and line<=n_scanlines then
 			dest = mesh:select(1, line) -- NOTE: must be contiguous
 			ffi.copy(dest:data(), float_ranges + offset_idx, byte_sz)
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
 			-- TODO: Save the pose
-      scan_pose[line] = vector.new(pose)
-      -- Save the orientation
-      scan_pitch[line] = pitch
-      scan_roll[line] = roll
+			scan_pose[line] = vector.new(pose)
+			-- Save the orientation
+			scan_pitch[line] = pitch
+			scan_roll[line] = roll
 		end
-  end
+	end
 	-- Check for sending out on the wire
 	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
 	check_send_mesh()
@@ -275,8 +281,8 @@ local poller = si.wait_on_channels({lidar_ch})
 -- Cleanly exit on Ctrl-C
 local running = true
 local function shutdown()
-  print('Shutdown!')
-  poller:stop()
+	print('Shutdown!')
+	poller:stop()
 end
 
 local signal = require'signal'.signal

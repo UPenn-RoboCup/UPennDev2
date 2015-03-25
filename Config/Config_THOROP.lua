@@ -55,7 +55,7 @@ if IS_STEVE then
 	Config.testfile = 'test_teleop'
 	exo = {
 		'Robot', 'Walk', 'Net',
-		'FSM_Steve', 'Arm_Steve', 'Vision_Steve' --, 'World_Steve'
+		'FSM_Steve', 'Arm_Steve', 'Vision_Steve', 'World_Steve'
 	}
 
 	if IS_WEBOTS then

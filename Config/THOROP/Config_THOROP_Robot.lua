@@ -61,7 +61,7 @@ local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 --ALVIN SPECIFIC - this hould be hostname-specific afterwards
-	m_ids = {2,4,6,8,10,12,--14,
+	m_ids = {2,4,6,8,10,12,14,
 	-- lidar
 	37,
 	-- gripper

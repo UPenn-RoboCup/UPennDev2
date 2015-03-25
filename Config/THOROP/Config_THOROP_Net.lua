@@ -6,6 +6,7 @@ local IP = {
   SJ = 200,
   KAREN = 30,
   BHORAM = 54,
+  JQ = 150,
   ALVIN = 24,
   ALVIN_Z = 222,
   ALVIN_B = 232,
@@ -14,7 +15,8 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.STEVE
+--local WHO = IP.STEVE
+local WHO = IP.JQ
 local ROBOT_IP = IP.TEDDY
 local TEAM_NUMBER = 8
 

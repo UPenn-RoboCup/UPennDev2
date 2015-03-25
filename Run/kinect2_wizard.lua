@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014
@@ -74,7 +74,7 @@ local function update(rgb, depth)
 	end
 	-- Timing
 	if Config.IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
-	if t - t_send < 0.1 then return t end
+	if t - t_send < 1 then return t end
 	t_send = t
 	if not IS_WEBOTS then io.write('Kinect2 | t_send', t_send,'\n') end
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env luajit
+local ENABLE_LOG = false
 -- Mesh Wizard for Team THOR
 -- Accumulate lidar readings into an image for mesh viewing
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
@@ -14,9 +15,6 @@ local vector = require'vector'
 local Body = require'Body'
 
 require'vcm'
-
-local ENABLE_LOG = true
-
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
 -- mag_sweep: How much will we sweep over

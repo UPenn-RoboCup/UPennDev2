@@ -1,4 +1,4 @@
-function [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v4sc( depthRaw, Rot, tr, ui )
+function [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v5( depthRaw, Rot, tr, ui )
 
 persistent DEPTH_W       % Width
 persistent DEPTH_H       % Height

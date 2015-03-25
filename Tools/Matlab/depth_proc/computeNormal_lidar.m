@@ -1,13 +1,13 @@
-function [A, S] = computeNormal_lidar(X0, Y0, Z0, mask, wnd)
+function [A, S] = computeNormal_lidar(X0, Y0, Z0, mask, wnd,stepsz)
 
 w = size(mask,2);
 h = size(mask,1);
 A = zeros(4,w*h);
 S = zeros(4,w*h);
 for k=(wnd+1):1:(w-wnd)
-    for j=(4*wnd+1):4:(h-4*wnd)
+    for j=(stepsz*wnd+1):stepsz:(h-stepsz*wnd)
         
-        X1_ = (j-4*wnd):4:(j+4*wnd);
+        X1_ = (j-stepsz*wnd):stepsz:(j+stepsz*wnd);
         X2_  = (k-wnd):(k+wnd);
         
         nbhood = mask(X1_,X2_);

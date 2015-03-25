@@ -9,15 +9,18 @@
 clear all;
 close all;
 
-foldername = '/home/leebhoram/Data/mesh_logs/Unpacked/';
-datestamp = '03.11.2015.15.30.41l'; % Testbed: walls (near valve)
-datestamp = '03.11.2015.15.45.07l';
+% foldername = '/home/leebhoram/Data/mesh_logs/Unpacked/';
+% datestamp = '03.11.2015.15.30.41l'; % Testbed: walls (near valve)
+% datestamp = '03.11.2015.15.45.07l';
+
+foldername = '/home/leebhoram/Data/LOGS_Lab_0324/Unpacked/';
+datestamp = '03.25.2015.12.48.31l'; 
 
 [ fileSequence] = getMatFilesFromFolder( strcat(foldername,datestamp));
  
 ts = 0;
 prevts = 0;
-for ilog=10:length(fileSequence)
+for ilog=1:length(fileSequence)
     ilog
     metal = [];
     load(fileSequence{ilog}); 
@@ -30,21 +33,7 @@ for ilog=10:length(fileSequence)
     
     ilog
      
-   
-    % object candidates
-    
-    
-%    toc,
-%    angFromRobot(:,ilog) = metad.imu_rpy*180/pi;
-%    disp(strcat('R:',num2str(angFromRobot(1,ilog)),...
-%               ' P:',num2str(angFromRobot(2,ilog)),...
-%               ' Y:',num2str(angFromRobot(3,ilog))));
-   
-     
-  
-   %if ilog == 53   
-   % pause(0.1);  
-   % end
+
     end
    % prevts = metad.t;   
   %  F(iLog) = getframe(gcf);    

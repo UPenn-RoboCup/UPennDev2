@@ -59,7 +59,7 @@ PlaneOfInterest = [];
 clickxy = [];
 
 %% Filtering     
-depth = flip(double(depthRaw)',2)-20;
+depth = flip(double(depthRaw)',2);%-20;
 depth(depth(:) <= DEPTH_MIN) = 0;
 depth(depth(:) >= DEPTH_MAX) = 0;   
 depth = medfilt2(depth,[7 7]);
@@ -362,10 +362,10 @@ if  ui.figures(3) > 0
             nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
             plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', 'k', 'LineWidth',2);
             
-            figure(12),
-            showPointCloud([-ALL(2,:)' -ALL(3,:)' ALL(1,:)' ], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
-            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
-            plot3(-nvec(2,:), -nvec(3,:), nvec(1,:), '-', 'Color', 'k', 'LineWidth',2);
+%             figure(12),
+%             showPointCloud([-ALL(2,:)' -ALL(3,:)' ALL(1,:)' ], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
+%             nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
+%             plot3(-nvec(2,:), -nvec(3,:), nvec(1,:), '-', 'Color', 'k', 'LineWidth',2);
        end
     end
 end

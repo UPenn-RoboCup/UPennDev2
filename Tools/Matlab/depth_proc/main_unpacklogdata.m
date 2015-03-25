@@ -9,11 +9,12 @@ RGB_H = 1080;
 % Set the path and names
 % The unpacked data will be saved under <foldername>/Unpacked/<datestamp> 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-foldername = '~/Data';
-datestamp_kinect = '03.11.2015.11.57.52';
-datestamp_lidar = [];% '02.24.2015.17.24.03'; 
-showkinectimage = false;
+foldername = '~/Data/LOGS_Lab_0324_3';
+datestamp_kinect =[]; '03.25.2015.16.42.08';
+datestamp_lidar = [];'03.25.2015.12.48.31';%[];% '02.24.2015.17.24.03'; 
+showkinectimage = true;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+OFFSET = 0;
 
 filename_depth = sprintf('k2_depth_r_%s.log',datestamp_kinect);
 filename_rgb = sprintf('k2_rgb_r_%s.log', datestamp_kinect);
@@ -45,7 +46,7 @@ if ~isempty(flag_depth) && ~isempty(flag_rgb)
     olderFolder = cd(foldername);
     if ~exist('Unpacked','dir'),mkdir('Unpacked');end
     cd('Unpacked');
-    if ~exist(datestamp_kinect,'dir'),mkdir(datestamp_kinect);end
+    % if ~exist(datestamp_kinect,'dir'),mkdir(datestamp_kinect);end
     cd(olderFolder);
 end
 
@@ -83,12 +84,13 @@ if  ~isempty(flag_depth) && ~isempty(flag_rgb),
         rgb_img(:,:,2) = rgb_img0(:,:,2);
         rgb_img(:,:,3) = rgb_img0(:,:,3);       
      	if showkinectimage == true
-            figure(2), imshow(rgb_img);     
+        %    figure(2), imshow(rgb_img);     
         end
     
-        save(strcat(foldername,'/Unpacked/',datestamp_kinect,'/',sprintf('%04d.mat',ilog)),'depthRaw', 'rgb_img', 'metad', 'metar');
+        %save(strcat(foldername,'/Unpacked/',datestamp_kinect,'/',sprintf('%04d.mat',ilog+OFFSET)),'depthRaw', 'rgb_img', 'metad', 'metar');
+         save(strcat(foldername,'/Unpacked/03.25.2015.16.40.27/',sprintf('%04d.mat',ilog+OFFSET)),'depthRaw', 'rgb_img', 'metad', 'metar');
     
-      %  pause(0.2);
+        pause(0.05);
         
         disp(strcat('kinect :',int2str(ilog) ,'/', int2str(Nlog)));
     end

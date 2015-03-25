@@ -11,8 +11,14 @@ close all;
 
 foldername = '/home/leebhoram/Data/LOGS_SC2/Unpacked/';
 datestamp = '03.12.2015.13.19.00'; % Testbed: walls (near valve)
+
+foldername = '/home/leebhoram/Data/LOGS_Lab_0324_3/Unpacked/';
+datestamp = '03.25.2015.12.48.39'; % Testbed: walls (near valve)
 % datestamp = '03.12.2015.13.23.19'; % Testbed: walls (near valve)
 
+
+foldername = '/home/leebhoram/Data/LOGS_Lab_0324_2/Unpacked/';
+datestamp = '03.25.2015.16.36.47';
 %foldername = '/home/leebhoram/Data/corner/Unpacked/';
 %datestamp = '03.19.2015.17.53.03'; % Testbed: walls (near valve)
 
@@ -20,7 +26,7 @@ datestamp = '03.12.2015.13.19.00'; % Testbed: walls (near valve)
  
 ts = 0;
 prevts = 0;
-for ilog=14:length(fileSequence)
+for ilog=1:length(fileSequence)
     ilog
     metad = [];
     load(fileSequence{ilog}); 
@@ -39,8 +45,8 @@ for ilog=14:length(fileSequence)
     D = depthRaw'-20;
     D(D>4000) = 0;
     D(D<400) = 0;
-    load MASK2.mat;
-    D = D.*double(bw);
+    %load MASK2.mat;
+    %D = D.*double(bw);
     [pcx, pcy, pcz, r, g ,b] = depthToCloud(D, rgb_img);
     figure(12), hold off;
     showPointCloud([-pcx pcy pcz]*0.001, [r' g' b']/255,'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down'); hold on;
@@ -51,7 +57,7 @@ for ilog=14:length(fileSequence)
     uisetting; % See uisetting.m       size(D)
     % ui.undistortDepth = 1;
     
-    metad = [];
+    %metad = [];
  %    [res, meta] = detectPlanes5(depthRaw, metad, ui);
      
     ui.taskMode = 11 ;

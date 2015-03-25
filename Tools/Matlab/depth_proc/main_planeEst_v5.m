@@ -16,6 +16,8 @@ datestamp = '03.12.2015.13.19.00'; % Testbed: walls (near valve)
 foldername = '/home/leebhoram/Data/corner/Unpacked/';
 datestamp = '03.19.2015.17.53.03'; % Testbed: walls (near valve)
 
+foldername = '/Volumes/Macintosh/Users/jianqiaoli/Desktop/corner/Unpacked/';
+datestamp = 'kinect2';
 [ fileSequence] = getMatFilesFromFolder( strcat(foldername,datestamp));
  
 ts = 0;

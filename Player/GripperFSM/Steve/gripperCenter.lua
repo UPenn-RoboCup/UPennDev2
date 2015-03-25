@@ -7,11 +7,11 @@ local vector = require'vector'
 local t_entry, t_update
 local procFunc = require'util'.procFunc
 
-local tqGain = maxTorque / maxPosition
-local minPosition = 5*DEG_TO_RAD
+local deadPosition = 5*DEG_TO_RAD
 local maxPosition = 30*DEG_TO_RAD
 local maxTorque = 10
-local minTorque = minPosition * tqGain
+local tqGain = maxTorque / maxPosition
+local minTorque = deadPosition * tqGain
 local function get_torque_requirement(qGrip)
 	local tq = 0 * qGrip
 	for i, q in ipairs(qGrip) do

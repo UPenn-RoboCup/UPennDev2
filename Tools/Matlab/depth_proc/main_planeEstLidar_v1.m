@@ -11,12 +11,13 @@ close all;
 
 foldername = '/home/leebhoram/Data/mesh_logs/Unpacked/';
 datestamp = '03.11.2015.15.30.41l'; % Testbed: walls (near valve)
+datestamp = '03.11.2015.15.45.07l';
 
 [ fileSequence] = getMatFilesFromFolder( strcat(foldername,datestamp));
  
 ts = 0;
 prevts = 0;
-for ilog=1:length(fileSequence)
+for ilog=10:length(fileSequence)
     ilog
     metal = [];
     load(fileSequence{ilog}); 

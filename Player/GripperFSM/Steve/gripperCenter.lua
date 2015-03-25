@@ -5,12 +5,17 @@ local Body = require'Body'
 local util = require'util'
 local vector = require'vector'
 local t_entry, t_update
+local procFunc = require'util'.procFunc
 
-local gripperTorque = 10
+local tqGain = maxTorque / maxPosition
+local minPosition = 5*DEG_TO_RAD
+local maxPosition = 30*DEG_TO_RAD
+local maxTorque = 10
+local minTorque = minPosition * tqGain
 local function get_torque_requirement(qGrip)
 	local tq = 0 * qGrip
 	for i, q in ipairs(qGrip) do
-		tq[i] = util.sign(q) * -gripperTorque
+		tq[i] = procFunc(-tqGain * q, minTorque, maxTorque)
 	end
 	return tq
 end

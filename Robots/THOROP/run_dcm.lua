@@ -743,6 +743,7 @@ local function initialize(bus)
 				-- Save the mode
 				gripper_mode[j_id] = parse(unpack(status.parameter))
 				--if status then break end
+				if gripper_mode[j_id]==1 then break end
 				n = n + 1
 			until n > 5
 			assert(gripper_mode[j_id] == 1, 'Too many attempts at setting torque mode')

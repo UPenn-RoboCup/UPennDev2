@@ -42,12 +42,12 @@ classdef BayesianFilter1D
                
         function s = Sig2_y(fp,param)
             % s = (1*param + 0.03)^2; % sig ~ linear     
-            s = (0.03)^2; % sig ~ linear     
+            s = (0.05)^2; % sig ~ linear     
         end
         
         function s = Sig2_x(pf,param)
             % s = (1*param + 0.01)^2; % sig ~ linear     
-            s = (0.01)^2; % sig ~ linear    
+            s = (0.02)^2; % sig ~ linear    
         end
         
     end

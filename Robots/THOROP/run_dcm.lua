@@ -85,6 +85,7 @@ signal.signal("SIGTERM", shutdown)
 local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 local c_parse = lD.byte_to_number[lD.nx_registers.current[2]]
+local c_parse_mx = lD.byte_to_number[lD.mx_registers.current[2]]
 
 -- Standard Lua Cache
 local min, max, floor = math.min, math.max, math.floor
@@ -331,6 +332,73 @@ local function parse_read_arm(pkt, bus)
 	return read_j_id
 end
 
+
+------------------------
+-- Tick tock - get gripper current on every other arm read
+------------------------
+local function form_arm_read_cmd2(bus)
+	local rd_addrs, has_mx, has_nx = {}, false, false
+	for _, m_id in ipairs(bus.m_ids) do
+		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
+		if is_mx then
+			-- Position through temperature (NOTE: No current)
+			table.insert(rd_addrs, lD.mx_registers.current)
+			has_mx = true
+		else
+			assert(
+			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
+			'Bad Indirect addresses for the arm chain ID '..m_id
+			)
+			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
+			has_nx = true
+		end
+	end
+	-- Set the default reading command for the bus
+	if has_mx and has_nx then
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+	elseif has_nx then
+		bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, arm_packet_reg)
+	else
+		-- Sync read with just MX does not work for some reason
+		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+	end
+	bus.read_loop_cmd_n = #bus.m_ids
+	bus.read_loop_cmd = 'arm2'
+end
+
+local function parse_read_arm2(pkt, bus)
+	-- Nothing to do if an error
+	--if pkt.error ~= 0 then return end
+	-- Assume just reading position, for now
+	local m_id = pkt.id
+	local read_j_id = m_to_j[m_id]
+	if bus.has_mx_id[m_id] then
+		-- Check if MX
+		if #pkt.parameter==2 then
+			-- Set Current in SHM
+			local read_cur = c_parse_mx(unpack(pkt.parameter))
+			--print(m_id, 'Read cur mx', read_cur, unpack(pkt.parameter))
+			c_ptr[read_j_id - 1] = read_cur
+			c_ptr_t[read_j_id - 1] = t_read
+		end
+		return read_j_id
+	end
+
+	if #pkt.parameter ~= arm_packet_sz then return end
+	-- Set Position in SHM
+	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
+	local read_rad = step_to_radian(read_j_id, read_val)
+	p_ptr[read_j_id - 1] = read_rad
+	p_ptr_t[read_j_id - 1] = t_read
+	-- Set Current in SHM
+	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
+	c_ptr[read_j_id - 1] = read_cur
+	c_ptr_t[read_j_id - 1] = t_read
+	--
+	return read_j_id
+end
+
 -- Position Packet
 local function parse_read_position(pkt, bus)
 	-- TODO: Nothing to do if an error
@@ -387,6 +455,7 @@ local parse = setmetatable({}, {
 parse.position = parse_read_position
 parse.leg = parse_read_leg
 parse.arm = parse_read_arm
+parse.arm2 = parse_read_arm2
 
 -- Read loop packet
 local function form_read_loop_cmd(bus, cmd)

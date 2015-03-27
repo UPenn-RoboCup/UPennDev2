@@ -19,8 +19,6 @@ persistent Fy  % filter for y location (distance)
 
 vis=1;
 visinit = 0;
-
-
           
 if isempty(p1) || (nargin == 3 && reset == 1)
     p1.init = false;     p1.sign = 0;     
@@ -51,7 +49,7 @@ if p1.init == false
         p1.init = true;
         % Let the normal of this plane be the x-axis
         theta_x = atan2(Planes{1}.Normal(2),Planes{1}.Normal(1));  
-        a1 = Planes{1}.Normal(1:2); a1 = a1/norm(a1);
+        a1 = Planes{1}.Normal(1:2); a1 = a1/norm(a1)
         p1.sign = 1;% sign(theta_x); 
         b1 = Planes{1}.Normal'*Planes{1}.Center;
         meas_x = -b1;
@@ -64,7 +62,7 @@ if p1.init == false
         
         if numel(Planes) > 1 % two planes if lucky 
             p2.init = true;
-            p2.sign = sign(Planes{1}.Normal(1).*Planes{2}.Normal(2) - Planes{1}.Normal(2).*Planes{2}.Normal(1)); 
+            p2.sign = sign(Planes{1}.Normal(1).*Planes{2}.Normal(2) - Planes{1}.Normal(2).*Planes{2}.Normal(1)) 
             a2 = Rot2d(p2.sign*pi/2)*a1;  a2 = a2/norm(a2);
             b2 = Planes{2}.Normal'*Planes{2}.Center;
             pose.y = -b2;
@@ -133,7 +131,7 @@ else % p1 initialized
         meas_x = x_meas;
         
         theta_body = atan2(Planes{update_p1}.Normal(2), Planes{update_p1}.Normal(1)) ; 
-        theta_head = pose.theta_body - metad.head_angles(1) ;
+        theta_head = theta_body - metad.head_angles(1) ;
 
     end
     
@@ -159,7 +157,7 @@ else % p1 initialized
             meas_y = y_meas;     
             
             if update_p1 == 0
-                 theta_body = atan2(Planes{update_p2}.Normal(2), Planes{update_p2}.Normal(1)) + pi/2; 
+                 theta_body = atan2(Planes{update_p2}.Normal(2), Planes{update_p2}.Normal(1)) - p2.sign*pi/2; 
                  theta_head = pose.theta_body - metad.head_angles(1) ;
             end
         end       
@@ -168,23 +166,17 @@ end
 
 pose.isValid1 = p1.init;
 pose.isValid2 = p2.init;
-pose.theta_body = theta_body;
-pose.theta_head = theta_head;
+pose.theta_body = -theta_body;
+pose.theta_head = -theta_head;
 
 prev_odo = [metad.odom(1:2) metad.imu_rpy(3)];
 prev_odo = metad.odom;
 
 if vis && pose.isValid1
-%     switch flag
-%         case 0
-%             disp('No plane detected! Updating locolization with odometry.');
-%         case 1
-%             disp('Only seeing one plane.');
-%         case 2
-%             disp('Seeing two planes!');
-%     end
+
     if 1 % visinit == 1
-        figure(13),  hold off; 
+        figure(13), %subplot(1,2,2);  
+        hold off; 
       
 
         if p1.init == true              
@@ -196,7 +188,7 @@ if vis && pose.isValid1
                 px =  (b1 - a1(2)*py)/a1(1) ;
             end        
             plot(py,px,'Color',[0.7 1 0.7], 'LineWidth',4);    hold on;   
-            text(-sign(a1(2))*1, 1.5,'P#1');
+            text(-sign(a1(2))*1, 1.5,'Wall 1');
         end
 
         if p2.init == true
@@ -208,35 +200,44 @@ if vis && pose.isValid1
                 px =  (b2 - a2(2)*py)/a2(1) ;
             end    
             plot(py,px,'Color',[0.7 0.7 1], 'LineWidth',4);
-            text(-sign(a2(2))*1, 1.5,'P#2');
+            text(-sign(a2(2))*1, 1.5,'Wall 2');
             plot(inters(2), inters(1),'ko','MarkerSize',7,'MarkerFaceColor','k');
         end        
         
         plot(0,0,'k+');axis equal;  
         axis([-2 2 -0.5 2]);  
         set(gca,'XDir','reverse');
-        xlabel('y_b_0');
-        ylabel('x_b_0');
+        set(gca,'XTick',[],'YTick',[]);
+        % xlabel('y_b_0');
+        % ylabel('x_b_0');
     end
     
-    figure(13),
-   
-    curpos = Rot2d(theta_x)*[ pose.x;p2.sign*pose.y] + inters;   
-    curmeas = Rot2d(theta_x)*[ meas_x;p2.sign*meas_y] + inters;
-  
-    v_head = Rot2d(-pose.theta_head+theta_x)*[0.5; 0] ;
-    v_body = Rot2d(-pose.theta_body+theta_x)*[0.25; 0] ;
-    plot(curpos(2), curpos(1), 'bo');    
-    plot([curpos(2) curpos(2)+v_head(2)], [curpos(1) curpos(1)+v_head(1)], 'b-');       
-    plot([curpos(2) curpos(2)+v_body(2)], [curpos(1) curpos(1)+v_body(1)], 'k-','LineWidth',2);   
     
     del_odo = metad.odom-orig;
     v_odo = Rot2d(metad.odom(3)-orig(3))*[0.25; 0];
     plot(del_odo(2), del_odo(1), '.','Color',0.5*ones(1,3));
     plot([del_odo(2) del_odo(2)+v_odo(2)], [del_odo(1) del_odo(1)+v_odo(1)], '-','Color',0.5*ones(1,3),'LineWidth',2); 
     
-    plot(curmeas(2), curmeas(1), 'r.');    
+    curpos = Rot2d(theta_x)*[ pose.x;p2.sign*pose.y] + inters;   
+    curmeas = Rot2d(theta_x)*[ meas_x;p2.sign*meas_y] + inters;
+  
+    v_head1 = Rot2d(-theta_head+theta_x+pi/6)*[1; 0] ;
+    v_head2 = Rot2d(-theta_head+theta_x-pi/6)*[1; 0] ;
+    v_body = Rot2d(-theta_body+theta_x)*[0.25; 0] ;
+    plot(curpos(2), curpos(1), 'bo');  
+    plot(curmeas(2), curmeas(1), 'r.');       
+    plot([curpos(2) curpos(2)+v_head1(2)], [curpos(1) curpos(1)+v_head1(1)], 'b:');      
+    plot([curpos(2) curpos(2)+v_head2(2)], [curpos(1) curpos(1)+v_head2(1)], 'b:');    
+    plot([curpos(2) curpos(2)+v_body(2)], [curpos(1) curpos(1)+v_body(1)], 'k-','LineWidth',2);   
     
+    w1_ = b1*a1;           
+    plot([curpos(2) curpos(2)+w1_(2)], [curpos(1) curpos(1)+w1_(1)], '-','Color',[0.7 1 0.7]);  
+    text(curpos(2)+0.5*w1_(2), curpos(1)+0.5*w1_(1),sprintf('%0.2f',pose.x));
+    if p2.init
+        w2_ = b2*a2;   
+        plot([curpos(2) curpos(2)+w2_(2)], [curpos(1) curpos(1)+w2_(1)], '-','Color',[0.7 0.7 1]);  
+        text(curpos(2)+0.5*w2_(2), curpos(1)+0.5*w2_(1),sprintf('%0.2f',pose.y));
+    end
 end
    
 end

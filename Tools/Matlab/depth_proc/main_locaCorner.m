@@ -24,21 +24,29 @@ datestamp = '03.25.2015.16.40.27'; % Testbed: walls (near valve)
 
 [ fileSequence] = getMatFilesFromFolder( strcat(foldername,datestamp));
  
-
-for ilog=10:length(fileSequence)
+figure(13), 
+figPos = get(gcf,'Position');
+set(gcf,'Position', [figPos(1:2) 780 420]);
+for ilog=50:length(fileSequence)
     metad = [];
     load(fileSequence{ilog}); 
-    
+   % sprintf('%0.4f',metad.t)
    
-    if 1
+    %tic,
+    if 0
         D = depthRaw'-20;
         D(D>4000) = 0;
         D(D<400) = 0;
         %load MASK2.mat;
         %D = D.*double(bw);
         [pcx, pcy, pcz, r, g ,b] = depthToCloud(D, rgb_img);
-        figure(12), hold off;
+        figure(13), subplot(1,2,1), hold off;
         showPointCloud([-pcx pcy pcz]*0.001, [r' g' b']/255,'VerticalAxis', 'Y', 'VerticalAxisDir', 'Down'); hold on;
+        set(gca,'XTick',[],'YTick',[],'ZTick',[]);
+        set(gca,'Color',0.95*ones(1,3));
+        set(gca,'XColor',0.95*ones(1,3));
+        set(gca,'YColor',0.95*ones(1,3));
+        set(gca,'ZColor',0.95*ones(1,3));
     end
   
  
@@ -46,13 +54,14 @@ for ilog=10:length(fileSequence)
     % ui.undistortDepth = 1;
      
     ui.taskMode = 11 ;
+    ui.figures(3) = 0;5
     % average 
     [res, meta] = detectPlanes6(depthRaw, metad, ui);   
     pose = localizeCorner_v1(res,metad);
     
-    
+   % toc,
     if 0% numel(res) > 0
-        d1= res{1}.Normal'*res{1}.Center
+        d1 = res{1}.Normal'*res{1}.Center
         if  numel(res) > 1
             d2= res{2}.Normal'*res{2}.Center
         end
@@ -60,7 +69,7 @@ for ilog=10:length(fileSequence)
     
     ilog
 
-    pause(0.01);  
+    pause(0.02);  
    
 end 
 

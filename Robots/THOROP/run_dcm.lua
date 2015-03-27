@@ -355,16 +355,17 @@ local function form_arm_read_cmd2(bus)
 	end
 	-- Set the default reading command for the bus
 	if has_mx and has_nx then
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
 	elseif has_nx then
-		bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, arm_packet_reg)
+		bus.read_loop_cmd_alt_str = lD.get_indirect_data(bus.m_ids, arm_packet_reg)
 	else
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
 	end
-	bus.read_loop_cmd_n = #bus.m_ids
-	bus.read_loop_cmd = 'arm2'
+	bus.read_loop_cmd_alt_n = #bus.m_ids
+	bus.read_loop_cmd_alt = 'arm2'
+	bus.use_alt = true
 end
 
 local function parse_read_arm2(pkt, bus)
@@ -688,11 +689,20 @@ local function output_co(bus)
 		-- Copy the command positions if reading is not enabled,
 		-- otherwise, send a read instruction
 		if bus.enable_read then
-			bus:send_instruction(bus.read_loop_cmd_str)
-			bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_n
-			bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_n
-			bus.reqs_cnt = bus.reqs_cnt + 1
-			coroutine.yield(bus.read_loop_cmd_n, bus.read_loop_cmd)
+			if bus.use_alt~=nil then bus.use_alt = not bus.use_alt end
+			if bus.use_alt then
+				bus:send_instruction(bus.read_loop_cmd_alt_str)
+				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_alt_n
+				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_alt_n
+				bus.reqs_cnt = bus.reqs_cnt + 1
+				coroutine.yield(bus.read_loop_cmd_alt_n, bus.read_loop_cmd_alt)
+			else
+				bus:send_instruction(bus.read_loop_cmd_str)
+				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_n
+				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_n
+				bus.reqs_cnt = bus.reqs_cnt + 1
+				coroutine.yield(bus.read_loop_cmd_n, bus.read_loop_cmd)
+			end
 		else
 			for i, m_id in ipairs(m_ids) do
 				j_id = m_to_j[m_id]

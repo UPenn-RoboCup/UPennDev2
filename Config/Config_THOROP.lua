@@ -1,7 +1,12 @@
 -- Global Config
 Config = {}
 
+
+--Auto-detect using hostname
 IS_STEVE = true
+if HOSTNAME =="thor"
+	IS_STEVE = false
+end
 
 -- General parameters
 Config.PLATFORM_NAME = 'THOROP'

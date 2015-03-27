@@ -81,6 +81,39 @@ Jacobian& Jacobian::calculate7(
   return *this;
 }
 
+Jacobian& Jacobian::calculateVel7(
+  const Transform &A, 
+  const Transform &Adot0,
+  const Transform &Adot1,
+  const Transform &Adot2,
+  const Transform &Adot3,
+  const Transform &Adot4,
+  const Transform &Adot5,
+  const Transform &Adot6) {
+
+  num_of_joints = 7;
+  Adot0.getXYZ(v[0]);
+  Adot1.getXYZ(v[1]);
+  Adot2.getXYZ(v[2]);
+  Adot3.getXYZ(v[3]);
+  Adot4.getXYZ(v[4]);
+  Adot5.getXYZ(v[5]);
+  Adot6.getXYZ(v[6]);
+
+  Transform Ainv = inv(A);
+  getAngularVelocityTensor(Adot0, Ainv, w[0]);
+  getAngularVelocityTensor(Adot1, Ainv, w[1]);
+  getAngularVelocityTensor(Adot2, Ainv, w[2]);
+  getAngularVelocityTensor(Adot3, Ainv, w[3]);
+  getAngularVelocityTensor(Adot4, Ainv, w[4]);
+  getAngularVelocityTensor(Adot5, Ainv, w[5]);
+  getAngularVelocityTensor(Adot6, Ainv, w[6]);
+
+  return *this;
+}
+
+
+
 void Jacobian::accumulate_stall_torque(double* torque, 
   double forcex, double forcey, double forcez){
   for(int i=0;i<num_of_joints;i++){

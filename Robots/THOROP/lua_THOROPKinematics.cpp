@@ -413,16 +413,30 @@ static int calculate_arm_torque_adv(lua_State *L) {
 
 
 
+static int calculate_arm_velocity(lua_State *L) {
 
+	std::vector<double> qVelArm;
+	std::vector<double> qArm = lua_checkvector(L, 1);	
+	std::vector<double> pVelArm = lua_checkvector(L, 2);
 
+	std::vector<double> qWaist = lua_checkvector(L, 3);
+	std::vector<double> rpyangle = lua_checkvector(L, 4);
+	
+	int is_left = luaL_optnumber(L, 5,0);
 
+	//Now we can use custom hand x/y offset (for claws)
+	double handOffsetXNew = luaL_optnumber(L, 6,handOffsetX);
+	double handOffsetYNew = luaL_optnumber(L, 7,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 8,handOffsetZ);
 
+	qVelArm=THOROP_kinematics_calculate_arm_velocity(
+		&qArm[0], &pVelArm[0], &qWaist[0],&rpyangle[0],
+		handOffsetXNew,handOffsetYNew,handOffsetZNew,
+		is_left);
 
-
-
-
-
-
+	lua_pushvector(L, qArm);
+	return 1;
+}
 
 
 
@@ -652,6 +666,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 
   {"calculate_arm_torque", calculate_arm_torque},
   {"calculate_arm_torque_adv", calculate_arm_torque_adv},
+  {"calculate_arm_velocity", calculate_arm_velocity},
 
   {"calculate_leg_torque", calculate_leg_torque},
   {"calculate_support_leg_torque", calculate_support_leg_torque},

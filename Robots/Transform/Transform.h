@@ -86,6 +86,16 @@ public:
     const Transform &Adot6,
     double mass, const double* inertiaMatrix); 
 
+  Jacobian &calculateVel7(
+    const Transform &A, 
+    const Transform &Adot0,
+    const Transform &Adot1,
+    const Transform &Adot2,
+    const Transform &Adot3,
+    const Transform &Adot4,
+    const Transform &Adot5,
+    const Transform &Adot6); 
+
   void clear();
   
 

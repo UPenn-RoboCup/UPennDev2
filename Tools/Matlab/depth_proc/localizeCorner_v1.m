@@ -59,7 +59,8 @@ if p1.init == false
         Fx = Fx.initialize(pose.x, 1);
         % Compute "theta"s here 
         theta_body = theta_x;
-        theta_head = pose.theta_body - metad.head_angles(1);
+        theta_head = theta_body - metad.head_angles(1);
+        inters = -Rot2d(theta_x)*[ pose.x; 0];
         
         if numel(Planes) > 1 % two planes if lucky 
             p2.init = true;
@@ -82,15 +83,17 @@ else % p1 initialized
     cr = [];
     
     % consider yaw
-    u = [metad.odom(1:2) metad.imu_rpy(3)]  - prev_odo;
-    ang = theta_x - u(3);
+    % u = [metad.odom(1:2) metad.imu_rpy(3)]  - prev_odo;
+    u = metad.odom  - prev_odo;
+    dl = norm(u(1:2));
+    ang = theta_head;
            
     % update according to motion
-    ux = [cos(ang) sin(ang)]*u(1:2)';
+    ux = cos(theta_x)*dl;
     [Fx, x, ~] = Fx.propagate(ux); 
     pose.x = x;
     if p2.init == true
-        uy = [-sin(ang) cos(ang)]*u(1:2)';
+        uy = sin(theta_x)*dl;
         [Fy, y, ~] = Fy.propagate(uy);
         pose.y = y;
     end
@@ -130,7 +133,7 @@ else % p1 initialized
         meas_x = x_meas;
         
         theta_body = atan2(Planes{update_p1}.Normal(2), Planes{update_p1}.Normal(1)) ; 
-        theta_head = pose.theta_body + metad.head_angles(1) ;
+        theta_head = pose.theta_body - metad.head_angles(1) ;
 
     end
     
@@ -140,7 +143,8 @@ else % p1 initialized
             p2.init = true;
             p2.sign = sign(cr(update_p2)); 
             a2 = Rot2d(p2.sign*pi/2)*a1;
-            pose.y = -Planes{2}.Normal'*Planes{2}.Center;
+            b2 = Planes{2}.Normal'*Planes{2}.Center;
+            pose.y = -b2;
             Fy = Fy.initialize(pose.y, 1);
              % compute intersect point            
             inters = [a1'; a2']\[b1; b2];
@@ -155,8 +159,8 @@ else % p1 initialized
             meas_y = y_meas;     
             
             if update_p1 == 0
-                 theta_body = atan2(Planes{update_p2}.Normal(2), Planes{update_p2}.Normal(1)) - pi/2; 
-                 theta_head = pose.theta_body + metad.head_angles(1) ;
+                 theta_body = atan2(Planes{update_p2}.Normal(2), Planes{update_p2}.Normal(1)) + pi/2; 
+                 theta_head = pose.theta_body - metad.head_angles(1) ;
             end
         end       
      end    
@@ -168,8 +172,9 @@ pose.theta_body = theta_body;
 pose.theta_head = theta_head;
 
 prev_odo = [metad.odom(1:2) metad.imu_rpy(3)];
+prev_odo = metad.odom;
 
-if vis
+if vis && pose.isValid1
 %     switch flag
 %         case 0
 %             disp('No plane detected! Updating locolization with odometry.');
@@ -191,7 +196,7 @@ if vis
                 px =  (b1 - a1(2)*py)/a1(1) ;
             end        
             plot(py,px,'Color',[0.7 1 0.7], 'LineWidth',4);    hold on;   
-            text(-1, 1.5,'P#1');
+            text(-sign(a1(2))*1, 1.5,'P#1');
         end
 
         if p2.init == true
@@ -203,7 +208,7 @@ if vis
                 px =  (b2 - a2(2)*py)/a2(1) ;
             end    
             plot(py,px,'Color',[0.7 0.7 1], 'LineWidth',4);
-            text(1, 1.5,'P#2');
+            text(-sign(a2(2))*1, 1.5,'P#2');
             plot(inters(2), inters(1),'ko','MarkerSize',7,'MarkerFaceColor','k');
         end        
         
@@ -215,14 +220,21 @@ if vis
     end
     
     figure(13),
-    curpos = Rot2d(theta_x)*[ pose.x;p2.sign*pose.y] + inters;    
+   
+    curpos = Rot2d(theta_x)*[ pose.x;p2.sign*pose.y] + inters;   
     curmeas = Rot2d(theta_x)*[ meas_x;p2.sign*meas_y] + inters;
-    v_head = Rot2d(pose.theta_head-theta_x)*[0.5; 0] ;
-    v_body = Rot2d(pose.theta_body-theta_x)*[0.25; 0] ;
+  
+    v_head = Rot2d(-pose.theta_head+theta_x)*[0.5; 0] ;
+    v_body = Rot2d(-pose.theta_body+theta_x)*[0.25; 0] ;
     plot(curpos(2), curpos(1), 'bo');    
     plot([curpos(2) curpos(2)+v_head(2)], [curpos(1) curpos(1)+v_head(1)], 'b-');       
     plot([curpos(2) curpos(2)+v_body(2)], [curpos(1) curpos(1)+v_body(1)], 'k-','LineWidth',2);   
-    plot(metad.odom(2)-orig(2), metad.odom(1)-orig(1), '.','Color',0.5*ones(1,3));
+    
+    del_odo = metad.odom-orig;
+    v_odo = Rot2d(metad.odom(3)-orig(3))*[0.25; 0];
+    plot(del_odo(2), del_odo(1), '.','Color',0.5*ones(1,3));
+    plot([del_odo(2) del_odo(2)+v_odo(2)], [del_odo(1) del_odo(1)+v_odo(1)], '-','Color',0.5*ones(1,3),'LineWidth',2); 
+    
     plot(curmeas(2), curmeas(1), 'r.');    
     
 end

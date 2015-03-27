@@ -25,7 +25,7 @@ datestamp = '03.25.2015.16.40.27'; % Testbed: walls (near valve)
 [ fileSequence] = getMatFilesFromFolder( strcat(foldername,datestamp));
  
 
-for ilog=5:length(fileSequence)
+for ilog=10:length(fileSequence)
     metad = [];
     load(fileSequence{ilog}); 
     
@@ -60,7 +60,7 @@ for ilog=5:length(fileSequence)
     
     ilog
 
-    pause(0.05);  
+    pause(0.01);  
    
 end 
 

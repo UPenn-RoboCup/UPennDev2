@@ -1,16 +1,15 @@
-#VRML_SIM V6.0 utf8
+#VRML_SIM V7.4.3 utf8
 WorldInfo {
   info [
     "Valve operating test for DRC"
   ]
   title "valvetest"
-  #basicTimeStep 8
   basicTimeStep 30
   FPS 15
 }
 Viewpoint {
-  orientation 0.00507013 0.963325 0.268291 3.15298
-  position -1.34684 3.39797 -2.98244
+  orientation -0.20241 0.848364 0.489191 2.45266
+  position 0.979138 3.09095 -0.384408
 }
 Background {
   skyColor [
@@ -34,13 +33,12 @@ DEF FLOOR Floor {
   ]
 }
 THOROP_UPENN {
-  translation 0 1.15535 0
+  translation 0.246415 1.15535 -0.0764795
   controller "thorop"
   controllerArgs "0 32"
 }
 DEF MY_TABLE Solid {
   translation 0 1 0.5
-  #rotation 1 .5 0 -0.45
   children [
     Transform {
       translation 0 0 0.1
@@ -63,7 +61,7 @@ DEF MY_TABLE Solid {
   }
 }
 DEF MY_DRILL1 Solid {
-  translation 0.2 1.15 0.35
+  translation 0.0819087 1.15 0.37968
   children [
     Shape {
       appearance Appearance {

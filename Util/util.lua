@@ -2,6 +2,7 @@ local util = {}
 local vector = require'vector'
 local sformat = string.format
 local abs = math.abs
+local min, max = math.min, math.max
 
 local PI, TWO_PI = math.pi, 2*math.pi
 function util.mod_angle(a)
@@ -9,7 +10,6 @@ function util.mod_angle(a)
   local b = a % TWO_PI
 	return b >= PI and (b - TWO_PI) or b
 end
-
 
 function util.sign(x)
   -- return sign of the number (-1, 0, 1)
@@ -85,7 +85,7 @@ end
 
 --Piecewise linear function for IMU feedback
 local function procFunc(a,deadband,maxvalue)
-  local b = math.min( math.max(0,math.abs(a)-deadband), maxvalue)
+  local b = min( max(0,abs(a)-deadband), maxvalue)
   if a<=0 then return -b end
   return b
 end
@@ -93,7 +93,7 @@ end
 
 local function p_feedback(org,target, p_gain, max_vel, dt)
   local err = target-org
-  local vel = math.max(-max_vel,math.min( max_vel, err*p_gain ))
+  local vel = max(-max_vel,min( max_vel, err*p_gain ))
   return org + vel*dt
 end
 

@@ -432,7 +432,7 @@ if IS_WEBOTS then
 		1,-1,-1,  -1,  -1,-1,1, --RArm
 		-- TODO: Check the gripper
 		-1,1, -- Waist
-		1,1, -- left gripper
+		1,1,1, -- left gripper
 		-1,-1,-1, -- right gripper
 
 		1, -- Lidar pan
@@ -445,7 +445,7 @@ if IS_WEBOTS then
 		0,0,0,0,0,0,
 		-90,0,0,  0,  0,0,0,
 		0,0,
-		0,0,
+		0,0,0,
 		0,0,0,
 		0,
 	})*DEG_TO_RAD
@@ -457,7 +457,7 @@ if IS_WEBOTS then
 		-175,-175,-175,-175,-175,-175, --RLeg
 		-90,-180,-90,-160,       -180,-87,-180, --RArm
 		-90,-45, -- Waist
-		120,80, --lhand
+		120,80,60, --lhand
 		120,60,60,--rhand
 
 		-60, -- Lidar pan
@@ -470,7 +470,7 @@ if IS_WEBOTS then
 		175,175,175,175,175,175, --RLeg
 		160,0,90,0,     180,87,180, --RArm
 		90,79, -- Waist
-		0,45,  --lhand
+		0,45,45,  --lhand
 		0,45,45,    --rhand
 		60, -- Lidar pan
 	})*DEG_TO_RAD

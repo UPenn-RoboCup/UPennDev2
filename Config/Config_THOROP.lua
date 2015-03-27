@@ -46,7 +46,6 @@ end
 Config.enable_touchdown = false
 Config.raise_body = true
 
-
 ----------------------------------
 -- Application specific Configs --
 ----------------------------------
@@ -65,7 +64,6 @@ if IS_STEVE then
 		Config.kinect_timestep = 50
 		--]]
 	end
-
 else
 	--Config.testfile = 'test_balance'
   Config.testfile = 'test_testbed'

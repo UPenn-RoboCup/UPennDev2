@@ -49,7 +49,7 @@ if p1.init == false
         p1.init = true;
         % Let the normal of this plane be the x-axis
         theta_x = atan2(Planes{1}.Normal(2),Planes{1}.Normal(1));  
-        a1 = Planes{1}.Normal(1:2); a1 = a1/norm(a1)
+        a1 = Planes{1}.Normal(1:2); a1 = a1/norm(a1);
         p1.sign = 1;% sign(theta_x); 
         b1 = Planes{1}.Normal'*Planes{1}.Center;
         meas_x = -b1;
@@ -60,9 +60,10 @@ if p1.init == false
         theta_head = theta_body - metad.head_angles(1);
         inters = -Rot2d(theta_x)*[ pose.x; 0];
         
-        if numel(Planes) > 1 % two planes if lucky 
+        if numel(Planes) > 1  % two planes if lucky 
+            
             p2.init = true;
-            p2.sign = sign(Planes{1}.Normal(1).*Planes{2}.Normal(2) - Planes{1}.Normal(2).*Planes{2}.Normal(1)) 
+            p2.sign = sign(Planes{1}.Normal(1).*Planes{2}.Normal(2) - Planes{1}.Normal(2).*Planes{2}.Normal(1)) ;
             a2 = Rot2d(p2.sign*pi/2)*a1;  a2 = a2/norm(a2);
             b2 = Planes{2}.Normal'*Planes{2}.Center;
             pose.y = -b2;
@@ -76,7 +77,7 @@ if p1.init == false
     
 else % p1 initialized 
     
-    update_p1 = 0;
+    update_p1 = 0;    
     update_p2 = 0;
     cr = [];
     
@@ -84,7 +85,7 @@ else % p1 initialized
     % u = [metad.odom(1:2) metad.imu_rpy(3)]  - prev_odo;
     u = metad.odom  - prev_odo;
     dl = norm(u(1:2));
-    ang = theta_head;
+    ang = theta_body;
            
     % update according to motion
     ux = cos(theta_x)*dl;
@@ -141,7 +142,7 @@ else % p1 initialized
             p2.init = true;
             p2.sign = sign(cr(update_p2)); 
             a2 = Rot2d(p2.sign*pi/2)*a1;
-            b2 = Planes{2}.Normal'*Planes{2}.Center;
+            b2 = Planes{update_p2}.Normal'*Planes{update_p2}.Center;
             pose.y = -b2;
             Fy = Fy.initialize(pose.y, 1);
              % compute intersect point            
@@ -175,7 +176,7 @@ prev_odo = metad.odom;
 if vis && pose.isValid1
 
     if 1 % visinit == 1
-        figure(13), %subplot(1,2,2);  
+        figure(13), subplot(1,2,2);  
         hold off; 
       
 

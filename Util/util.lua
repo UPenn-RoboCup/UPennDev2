@@ -10,6 +10,17 @@ function util.mod_angle(a)
   return b
 end
 
+function util.diff_transform(a,b)
+  local c={}
+  --return transform (a-b) with rpy angle cleaned up to (-pi,pi)
+  for i=1,3 do c[i]=a[i]-b[i] end
+  for i=4,6 do
+    c[i] = (a[i]-b[i]) % (2*math.pi)
+    if c[i] >= math.pi then c[i] = (c[i] - 2*math.pi) end
+  end
+  return c  
+end
+
 
 function util.sign(x)
   -- return sign of the number (-1, 0, 1)

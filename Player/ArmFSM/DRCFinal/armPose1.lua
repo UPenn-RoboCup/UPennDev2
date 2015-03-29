@@ -23,6 +23,10 @@ local r_cmd_pos, r_cmd_vel
 local enable_force_control = false
 
 
+local torch = require'torch'
+torch.Tensor = torch.DoubleTensor
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -74,6 +78,13 @@ function state.entry()
 
   r_cmd_pos = Body.get_rarm_command_position()
   r_cmd_vel=vector.zeros(7)
+
+
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+  local trLArm = Body.get_forward_larm(qLArm)
+  hcm.set_hands_left_tr(trLArm)  
+  hcm.set_hands_left_tr_target(trLArm)
 
 end
 
@@ -364,6 +375,70 @@ end
 
 
 
+function jacobian_control()
+
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+
+  LArm_Jac = Body.Kinematics.calculate_arm_jacobian(
+    qLArm,
+    qWaist,
+    {0,0,0},
+    1,
+    0,0,0);
+
+
+  local trLArm = Body.get_forward_larm(qLArm)
+  local trLArmTarget = hcm.get_hands_left_tr_target()
+  local trLArmNext= util.approachTolTransform(
+    trLArm, trLArmTarget,{0.3,0.3,0.3,0.3,0.3,0.3},dt)
+  local trMovement = util.diff_transform(trLArmNext,trLArm)
+
+  lambda = 0.1;
+
+  --qVel = inv(J'J + lambda^2* I) * J' * trMovement
+
+
+  local J= torch.Tensor(LArm_Jac):resize(6,7)  
+  local JT = torch.Tensor(J):transpose(1,2)
+  local e = torch.Tensor(trMovement)
+
+  local I = torch.Tensor():resize(7,7):zero()
+  local I2 = torch.Tensor():resize(7,6):zero()
+  local qLArmVel = torch.Tensor(7):fill(0)
+
+  I:addmm(JT,J):add(lambda*lambda,torch.eye(7))
+
+  local Iinv=torch.inverse(I)  
+  I2:addmm(Iinv,JT)   
+  qLArmVel:addmv(I2,e)
+
+
+--[[
+  print("----")
+  local count=1
+  for i=1,6 do
+    str=""
+    for j=1,7 do
+      str=str..string.format(" %.3f",LArm_Jac[count])
+      count=count+1
+    end
+    print(str)
+  end
+  print("I matrix")
+  for i=1,7 do
+    str=""
+    for j=1,7 do
+      str=str..string.format(" %.3f",I[i][j])
+    end
+    print(str)
+  end
+--]]
+
+end
+
+
 
 
 function state.update()
@@ -375,6 +450,9 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
   if enable_force_control then forcecontrol(dt) end
+
+
+  jacobian_control(dt)
 end
 
 

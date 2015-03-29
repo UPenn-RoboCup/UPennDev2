@@ -150,6 +150,17 @@ void Jacobian::dump_b_matrix(double* ret){
       ret[i*num_of_joints+j]+=b[i][j];
 }
 
+void Jacobian::dump_jacobian(double* ret){
+  int i,j;
+  for(j=0;j<num_of_joints;j++){
+    for(i=0;i<3;i++)
+      ret[i*num_of_joints+j]=v[j][i];
+    for(i=3;i<6;i++)
+      ret[i*num_of_joints+j]=w[j][i-3];
+  }
+}
+
+
 
 void Jacobian::print(){
   int i,j;

@@ -2,11 +2,9 @@
 Config = {}
 
 
---Auto-detect using hostname
-IS_STEVE = true
-if HOSTNAME =="thor"
-	IS_STEVE = false
-end
+--IS_STEVE = true
+IS_STEVE = false
+
 
 -- General parameters
 Config.PLATFORM_NAME = 'THOROP'

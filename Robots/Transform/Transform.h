@@ -101,6 +101,7 @@ public:
 
   void calculate_b_matrix(const double*inertiaMatrix);
   void dump_b_matrix(double* ret);
+  void dump_jacobian(double* ret);
   void accumulate_stall_torque(double* torque,double forcex, double forcey, double forcez);
   void print();
 

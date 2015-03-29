@@ -379,8 +379,8 @@ void THOROP_kinematics_calculate_arm_torque_adv(
   double* stall_torque,double* acc_torque,double* acc_torque2,const double *rpyangle,
   const double *qArm,const double *qArmVel,const double *qArmAcc,double dq);
 
-std::vector<double> THOROP_kinematics_calculate_arm_velocity(  
-  const double *qArm, const double *pVelArm, const double *qWaist,const double *rpyangle, 
+void THOROP_kinematics_calculate_arm_jacobian(  
+  double* ret, const double *qArm, const double *qWaist,const double *rpyangle, 
   double handx, double handy, double handz, int is_left);
 
 

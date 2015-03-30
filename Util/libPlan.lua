@@ -101,7 +101,8 @@ local function valid_cost(iq, minArm, maxArm)
 	for i, q in ipairs(iq) do if q<minArm[i] or q>maxArm[i] then return INFINITY end end
 	return 0
 end
-local defaultWeights = {1,1,0}
+local IK_POS_ERROR_THRESH = 0.035
+local defaultWeights = {1,2,0}
 local function find_shoulder(self, tr, qArm, weights)
 	weights = weights or defaultWeights
 	-- Form the inverses
@@ -112,6 +113,12 @@ local function find_shoulder(self, tr, qArm, weights)
 	-- Cost for valid configurations
 	local cvalid = {}
 	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, minArm, maxArm) ) end
+	-- FK sanity check
+	local cfk = {}
+	for ic, iq in ipairs(iqArms) do
+		local fk = self.forward(iq)
+		tinsert(cfk, vnorm(T.position(tr) - T.position(fk))<IK_POS_ERROR_THRESH and 0 or INFINITY)
+	end
 	-- Minimum Difference in angles
 	local cdiff = {}
 	for ic, iq in ipairs(iqArms) do tinsert(cdiff, vnorm(qDiff(iq, qArm))) end
@@ -135,7 +142,9 @@ local function find_shoulder(self, tr, qArm, weights)
 	-- TODO: Tune the weights on a per-task basis (some tight, but not door)
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
-		tinsert(cost, valid + weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic])
+		tinsert(cost, valid + cfk[ic]
+			+ weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic]
+		)
 	end
 	-- Find the smallest cost
 	local cmin, imin = umin(cost)
@@ -183,7 +192,7 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 	local fkArm0, null_options0 = forward(qArm0)
 	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
 	local dPos0 = posGoal - posArm0
-	local distance0 = vector.norm(dPos0)
+	local distance0 = vnorm(dPos0)
 
 	-- We return the iterator and the final joint configuarion
 	-- TODO: Add failure detection; if no dist/ang changes in a while
@@ -200,7 +209,7 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 		--
 		local dPos = posGoal - vector.new(posArm)
 		--print('dPos', dPos, posGoal, posArm)
-		local distance = vector.norm(dPos)
+		local distance = vnorm(dPos)
 		if distance < res_pos then
 			if skip_angles or fabs(dAng)<res_ang or is_singular then
 				-- If both within tolerance, then we are done
@@ -219,15 +228,20 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 		elseif skip_angles or fabs(dAng)<res_ang or is_singular then
 			-- Just translation
 			local ddpos = (res_pos / distance) * dPos
+			ddpos = distance < 2*res_pos and ddpos / 2 or ddpos
 			if skip_angles then
 				return inverse_position(ddpos+posArm, cur_qArm, unpack(null_options))
 			end
 			trStep = T.trans(unpack(ddpos)) * cur_trArm
 		else
+			local ddrot = res_ang/dAng
+			ddrot =  dAng < 2*res_ang and ddrot/2 or ddrot
+			local ddpos = (res_pos / distance) * dPos
+			ddpos = distance < 2*res_pos and ddpos / 2 or ddpos
 			-- Both translation and rotation
 			trStep = T.from_quaternion(
-				q.slerp(quatArm,quatGoal,res_ang/dAng),
-				res_pos * dPos/distance + posArm
+				q.slerp(quatArm,quatGoal,ddrot),
+				ddpos + posArm
 			)
 		end
 		-- Abstract idea of how far we are from the goal, as a percentage.
@@ -247,7 +261,7 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 			iqWaypoint = inverse(trStep, cur_qArm, shoulderBlend, null_options0[2])
 		else
 			iqWaypoint = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
-			assert(qGoal, 'No shoulder found for the waypoint!')
+			assert(iqWaypoint, 'No shoulder found for the waypoint!')
 		end
 		-- Sanitize to avoid trouble with wrist yaw
 		if dt then
@@ -267,12 +281,12 @@ local function joint_iter(self, qGoal0, qArm0, SANITIZE)
 	local qGoal = clamp_vector(qGoal0, self.min_q, self.max_q)
 	local dqdt_limit = self.dqdt_limit
 	if SANITIZE then sanitize0(qGoal, qArm0) end
-	local distance0 = vector.norm(qGoal - qArm0)
+	local distance0 = vnorm(qGoal - qArm0)
 	local qPrev
 	return function(cur_qArm, dt)
 		-- Feedback
 		local dqFB = qGoal - cur_qArm
-		local distanceFB = vector.norm(dqFB)
+		local distanceFB = vnorm(dqFB)
 		-- Check if done
 		if distanceFB < res_ang then return nil, qGoal end
 		local qWaypointFB = cur_qArm + clamp_vector(dqFB, dq_min, dq_max)
@@ -284,7 +298,7 @@ local function joint_iter(self, qGoal0, qArm0, SANITIZE)
 		-- Feedforward
 		qPrev = qPrev or cur_qArm
 		local dqFF = qGoal - cur_qArm --qPrev
-		local distanceFF = vector.norm(dqFF)
+		local distanceFF = vnorm(dqFF)
 		local qWaypointFF
 		if distanceFF < res_ang then
 			qWaypointFF = qGoal
@@ -338,7 +352,7 @@ local function line_stack(self, qArm, trGoal, use_safe_inverse)
 	--
 	local nSteps
 	local dPos = posGoal - posArm
-	local distance = vector.norm(dPos)
+	local distance = vnorm(dPos)
 	local nSteps_pos = math.ceil(distance / res_pos)
 	if skip_angles==true then
 		nSteps = nSteps_pos
@@ -387,7 +401,7 @@ local function joint_stack(self, qGoal, qArm)
 	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
 	--
 	local dq = qGoal - qArm
-	local distance = vector.norm(dq)
+	local distance = vnorm(dq)
 	local nSteps = math.ceil(distance / res_ang)
 	local ddq = dq / nSteps
 	-- Form the precomputed stack
@@ -441,7 +455,7 @@ function libPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 		max_q = max_q or 90*DEG_TO_RAD*armOnes,
 		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
 		--
-		res_pos = res_pos or 0.01,
+		res_pos = res_pos or 0.015,
 		res_ang = res_ang or 3*DEG_TO_RAD,
 		--
 		line_stack = line_stack,

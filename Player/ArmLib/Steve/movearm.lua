@@ -62,15 +62,22 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 		else
 			iqLArm = lPlanner:find_shoulder(trL, qcLArm, lweights)
 		end
+		--print('L TR GOTO', vector.new(iqLArm))
+		--print(trL)
+		assert(iqLArm, 'L via q not found!')
 		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, dqLimit, true)
 	end
 	if trR then
+
 		local qcRArm = Body.get_rarm_command_position()
 		if roptions then
 			iqRArm = K.inverse_rarm(trR, qcRArm, unpack(roptions))
 		else
 			iqRArm = rPlanner:find_shoulder(trR, qcRArm, rweights)
 		end
+		--print('R TR GOTO', vector.new(iqRArm))
+		--print(trR)
+		assert(iqLArm, 'R via q not found!')
 		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, dqLimit, true)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist

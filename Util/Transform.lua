@@ -9,6 +9,7 @@ local sin = require'math'.sin
 local atan2 = require'math'.atan2
 local sqrt = require'math'.sqrt
 local vnew, vcopy = vector.new, vector.copy
+local vnorm = vector.norm
 
 function Transform.inv(a)
 	local p = {a[1][4],a[2][4],a[3][4]}

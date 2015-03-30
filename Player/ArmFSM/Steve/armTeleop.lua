@@ -86,7 +86,8 @@ function state.update()
 				roptions = hcm.get_teleop_roptions()
 				-- Form the iterator
 				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
-					movearm.goto_tr_via_q(fkLComp, fkRComp, loptions, roptions)
+					--movearm.goto_tr_via_q(fkLComp, fkRComp, loptions, roptions)
+				movearm.goto_tr_stack(fkLComp, fkRComp, loptions, roptions)
 			else
 				-- Form the iterator
 				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =

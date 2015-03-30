@@ -12,8 +12,8 @@ local K0 = Body.Kinematics
 local dqLimit = DEG_TO_RAD / 3
 local radiansPerSecond, torso0
 do
-	--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-	local degreesPerSecond = vector.ones(7) * 30
+	local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
+	--local degreesPerSecond = vector.ones(7) * 30
 	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 	-- Compensation items
 	local torsoX = Config.walk.torsoX
@@ -42,11 +42,11 @@ function movearm.goto_q(qL, qR, safe)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 	if qL then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(qL, qLArm, dqLimit, safe)
+		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(qL, qLArm, safe)
 	end
 	if qR then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(qR, qRArm, dqLimit, safe)
+		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(qR, qRArm, safe)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end
@@ -65,7 +65,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 		--print('L TR GOTO', vector.new(iqLArm))
 		--print(trL)
 		assert(iqLArm, 'L via q not found!')
-		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, dqLimit, true)
+		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, true)
 	end
 	if trR then
 
@@ -78,7 +78,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 		--print('R TR GOTO', vector.new(iqRArm))
 		--print(trR)
 		assert(iqLArm, 'R via q not found!')
-		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, dqLimit, true)
+		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, true)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end
@@ -87,8 +87,22 @@ end
 function movearm.goto_tr(trL, rwrist, loptions, roptions, lweights, rweights)
 	local lPathIter, rPathIter
 	if trL then
-		local qLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, pLDist = lPlanner:line_iter(trL, qLArm, loptions, lweights)
+		local qcLArm = Body.get_larm_command_position()
+		lPathIter, iqLArm, pLDist = lPlanner:line_iter(trL, qcLArm, loptions, lweights)
+	end
+	if rwrist then
+		local qRArm = Body.get_rarm_command_position()
+		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qRArm, roptions, rweights)
+	end
+	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
+end
+
+-- Take a desired Transformation matrix and move in a line towards it
+function movearm.goto_tr_stack(trL, rwrist, loptions, roptions, lweights, rweights)
+	local lPathIter, rPathIter
+	if trL then
+		local qcLArm = Body.get_larm_command_position()
+		lPathIter, iqLArm, pLDist = lPlanner:line_stack(trL, qLArm, loptions, lweights)
 	end
 	if rwrist then
 		local qRArm = Body.get_rarm_command_position()

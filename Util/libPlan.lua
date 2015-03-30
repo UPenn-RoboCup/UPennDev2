@@ -118,7 +118,7 @@ local function find_shoulder(self, tr, qArm, weights)
 	-- Cost for being tight (Percentage)
 	local ctight = {}
 	-- The margin from zero degrees away from the body
-	local margin, ppi = 5*DEG_TO_RAD, util.sign(qArm[2])*math.pi
+	local margin, ppi = 5*DEG_TO_RAD, math.pi
 	for _, iq in ipairs(iqArms) do tinsert(ctight, fabs((iq[2]-margin))/ppi) end
 	-- Usage cost (Worst Percentage)
 	local cusage, dRelative = {}

@@ -67,7 +67,7 @@ local mt = {
 			local blend_wp = vector.copy(wp)
 			local diff_use = sanitize(blend_wp, q, dt, t.dqdt_limit)
 			t.done_wp = vector.norm(diff_use) < 0.005
-			return dist, t.done_wp and wp or blend_wp
+			return dist, t.done_wp and sanitize0(wp, q) or blend_wp
 		end
 	end
 }
@@ -409,9 +409,8 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 		cur_qArm = inverse(trStep,cur_qArm)
 		cur_trArm = trStep
 		--]]
-
-		sanitize0(cur_qArm, qArm0)
-		--if #qStack>0 then sanitize0(cur_qArm, qStack[#qStack]) end
+		--sanitize0(cur_qArm, qArm0)
+		--sanitize0(cur_qArm, qGoal)
 		--print('cur_qArm', cur_qArm)
 		table.insert(qStack, {vnorm(ddp*i), vector.new(cur_qArm)})
 	end

@@ -3,7 +3,7 @@ state._NAME = ...
 local Body = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
-local t_entry, t_update, t_finish
+local t_entry, t_update, t_finish, t_command
 local timeout = 30.0
 
 local piterators
@@ -40,11 +40,14 @@ function state.update()
 		hcm.set_teleop_roptions({qRGoalFiltered[3], 0})
 	end
 
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+	--local qLArm = Body.get_larm_position()
+	--local qRArm = Body.get_rarm_position()
+
 	-- Find the next arm position
-	local qLArm = Body.get_larm_command_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
-	local qRArm = Body.get_rarm_command_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
+	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
+	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
 	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
 	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
 	--print(moreL, q_lWaypoint, qLGoalFiltered)
@@ -59,6 +62,7 @@ function state.update()
 	mcm.set_stance_uTorsoComp(uTorsoNow)
 	Body.set_larm_command_position(qLNext)
 	Body.set_rarm_command_position(qRNext)
+	t_command = t
 
 	-- Check if done and reset the iterators
 	if not moreL and not moreR then lPathIter, rPathIter = nil, nil end

@@ -17,12 +17,6 @@ local fabs = require'math'.abs
 local min, max = require'math'.min, require'math'.max
 local INFINITY = require'math'.huge
 
-local mt = {
-	__call = function(t, k)
-		return #t>0 and unpack(tremove(t))
-	end
-}
-
 local function qDiff(iq, q0)
 	local diff_use = {}
 	local diff, mod_diff
@@ -47,15 +41,36 @@ end
 
 -- Requires dt
 local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
+	local diff_use = {}
 	local diff0, mod_diff, diff
 	for i, v in ipairs(cur_qArm) do
 		diff0 = iqWaypoint[i] - v
 		mod_diff = mod_angle(diff0)
 		-- Use the smaller diff
 		diff = fabs(diff0) > fabs(mod_diff) and mod_diff or diff0
-		iqWaypoint[i] = v + procFunc(diff, 0, dqdt_limit[i] * dt)
+		diff_use[i] = procFunc(diff, 0, dqdt_limit[i] * dt)
+		iqWaypoint[i] = v + diff_use[i]
 	end
+	return diff_use
 end
+
+local mt = {
+	__call = function(t, q, dt)
+		local next = t[#t]
+		if not next then return end
+		if t.done_wp then
+			t.done_wp = false
+			local dist, wp = unpack(tremove(t))
+			return dist, wp
+		else
+			local dist, wp = unpack(next)
+			local blend_wp = vector.copy(wp)
+			local diff_use = sanitize(blend_wp, q, dt, t.dqdt_limit)
+			t.done_wp = vector.norm(diff_use) < 0.01
+			return dist, blend_wp
+		end
+	end
+}
 
 -- Similar to SJ's method for the margin
 local function find_shoulder_sj(self, tr, qArm)
@@ -89,26 +104,20 @@ local function find_shoulder_sj(self, tr, qArm)
 	return qBest
 end
 
--- Get a table of the inverses
-local function solve_inverses(tr, qArm, invArm, shoulderAngles)
-	-- Form the inverses
-	local iqArms = {}
-	for _, q in ipairs(shoulderAngles) do tinsert(iqArms, invArm(tr, qArm, q)) end
-	-- Sanitize
-	-- NOTE: In practice, this seems to have no effect; qDiff is used, so that may help
-	--for _, iq in ipairs(iqArms) do sanitize0(iq, qArm, flip_roll) end
-	return iqArms
-end
 local function valid_cost(iq, minArm, maxArm)
 	for i, q in ipairs(iq) do if q<minArm[i] or q>maxArm[i] then return INFINITY end end
 	return 0
 end
 local IK_POS_ERROR_THRESH = 0.035
-local defaultWeights = {1,2,0}
+local defaultWeights = {1,1,0}
 local function find_shoulder(self, tr, qArm, weights)
 	weights = weights or defaultWeights
 	-- Form the inverses
-	local iqArms = solve_inverses(tr, qArm, self.inverse, self.shoulderAngles)
+	local iqArms = {}
+	for _, q in ipairs(self.shoulderAngles) do
+		--tinsert(iqArms, sanitize(self.inverse(tr, qArm, q), qArm))
+		tinsert(iqArms, self.inverse(tr, qArm, q))
+	end
 	-- Form the FKs
 	local fks = {}
 	for ic, iq in ipairs(iqArms) do fks[ic] = self.forward(iq) end
@@ -125,7 +134,10 @@ local function find_shoulder(self, tr, qArm, weights)
 	end
 	-- Minimum Difference in angles
 	local cdiff = {}
-	for ic, iq in ipairs(iqArms) do tinsert(cdiff, vnorm(qDiff(iq, qArm))) end
+	for ic, iq in ipairs(iqArms) do
+		--tinsert(cdiff, fabs(iq[3] - qArm[3]))
+		tinsert(cdiff, vnorm(qDiff(iq, qArm)))
+	end
 	-- Cost for being tight (Percentage)
 	local ctight = {}
 	-- The margin from zero degrees away from the body
@@ -397,8 +409,13 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 		cur_qArm = inverse(trStep,cur_qArm)
 		cur_trArm = trStep
 		--]]
-		table.insert(qStack, {vnorm(ddp*i), cur_qArm})
+
+		sanitize0(cur_qArm, qArm0)
+		--if #qStack>0 then sanitize0(cur_qArm, qStack[#qStack]) end
+		--print('cur_qArm', cur_qArm)
+		table.insert(qStack, {vnorm(ddp*i), vector.new(cur_qArm)})
 	end
+	qStack.dqdt_limit = self.dqdt_limit
 	-- We return the stack and the final joint configuarion
 	return setmetatable(qStack, mt), qGoal, distance
 end

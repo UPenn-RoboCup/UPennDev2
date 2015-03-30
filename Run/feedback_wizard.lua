@@ -11,11 +11,9 @@ local feedback_interval = 1
 local ping_rate = 4
 local t_sleep = 1e6 / ping_rate
 require'wcm'
-require'mcm'
 
 local feedback_udp_ch, ping_ch
 local ret, err
-local feedback = {}
 local nBytes, nBytesPing = 0, 0
 local t = 0
 local t_feedback = 0
@@ -30,6 +28,8 @@ local function entry()
 end
 
 local msg
+local e = {}
+local count = 0
 local function update()
   msg = tostring(t)
 	ret, err = ping_ch:send(msg)
@@ -39,17 +39,23 @@ local function update()
 		nBytesPing = nBytesPing + #msg
 	end
 	if t - t_feedback < feedback_interval then return end
-	feedback.t = t
-	feedback.p = Body.get_position()
-	feedback.cp = Body.get_command_position()
-	feedback.i = Body.get_current()
-	feedback.rpy = Body.get_rpy()
-	feedback.gyro = Body.get_gyro()
-	feedback.pose = wcm.get_robot_odometry()--wcm.get_robot_pose()
-	feedback.bh = mcm.get_stance_bodyHeight()
-	feedback.battery = Body.get_battery()
+
+	count = count + 1
+	e.t = t
+	e.n = count
+	e.b = Body.get_battery()
+	e.cp, e.t_cp = Body.get_command_position()
+	e.p, e.t_p = Body.get_position()
+	e.i = Body.get_current()
+	e.ft_l = Body.get_lfoot()
+	e.ft_r = Body.get_rfoot()
+	e.gyro, e.t_imu = Body.get_gyro()
+	e.acc = Body.get_accelerometer()
+	e.rpy = Body.get_rpy()
+	e.odom = wcm.get_robot_odometry()
+
   --
-  msg = mpack(feedback)
+  msg = mpack(e)
 	ret, err = feedback_udp_ch:send(msg)
 	if type(ret)=='string' then
 		io.write('Feedback | UDP error: ', ret, '\n')

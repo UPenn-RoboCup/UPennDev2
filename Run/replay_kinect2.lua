@@ -1,15 +1,19 @@
 #!/usr/bin/env luajit
 dofile'../include.lua'
+
+local root = HOME..'/Data/'
+local episode = 'corner_walk'
+local LOG_DIR = root..episode
+
 local logs = {
-{'01.20.2015.12.04.49', 50, 52},
-{'01.23.2015.14.48.29', 48, 70}
+{'03.25.2015.16.36.47', 1, 20}
 }
 
 local LOG_DATE, EX0, EX1 = unpack(logs[1])
 
 local libLog = require'libLog'
-local replay_depth = libLog.open(HOME..'/Data/', LOG_DATE, 'k2_depth')
-local replay_rgb = libLog.open(HOME..'/Data/', LOG_DATE, 'k2_rgb')
+local replay_depth = libLog.open(LOG_DIR, LOG_DATE, 'k2_depth')
+local replay_rgb = libLog.open(LOG_DIR, LOG_DATE, 'k2_rgb')
 local metadata = replay_depth:unroll_meta()
 local metadata_rgb = replay_rgb:unroll_meta()
 print('Unlogging', #metadata, 'images from', LOG_DATE)

@@ -27,6 +27,7 @@ while running do
 	-- Update the entry
 	e.t = t
 	e.n = count
+	e.b = Body.get_battery()
 	e.cp, e.t_cp = Body.get_command_position()
 	e.p, e.t_p = Body.get_position()
 	e.i = Body.get_current()
@@ -35,8 +36,8 @@ while running do
 	e.gyro, e.t_imu = Body.get_gyro()
 	e.acc = Body.get_accelerometer()
 	e.rpy = Body.get_rpy()
-	e.pose = wcm.get_robot_odometry()
-	e.battery = Body.get_battery()
+	e.odom = wcm.get_robot_odometry()
+
 	-- Write the log
 	logger:record(e)
 	-- Status message
@@ -44,7 +45,7 @@ while running do
 		t_debug = t
 		io.write('Joint Logger: ', count,'\n')
 		logger:stop()
-		logger = libLog.new('joint', true)
+		logger = libLog.new('joint')
 		io.write('Open new log!\n')
 	end
   -- Garbage collection for timing reasons

@@ -107,6 +107,9 @@ local function find_shoulder(self, tr, qArm, weights)
 	weights = weights or defaultWeights
 	-- Form the inverses
 	local iqArms = solve_inverses(tr, qArm, self.inverse, self.shoulderAngles)
+	-- Form the FKs
+	local fks = {}
+	for ic, iq in ipairs(iqArms) do fks[ic] = self.forward(iq) end
 	--
 	local minArm, maxArm = self.min_q, self.max_q
 	local rangeArm, halfway = self.range_q, self.halves
@@ -115,8 +118,7 @@ local function find_shoulder(self, tr, qArm, weights)
 	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, minArm, maxArm) ) end
 	-- FK sanity check
 	local cfk = {}
-	for ic, iq in ipairs(iqArms) do
-		local fk = self.forward(iq)
+	for ic, fk in ipairs(fks) do
 		tinsert(cfk, vnorm(T.position(tr) - T.position(fk))<IK_POS_ERROR_THRESH and 0 or INFINITY)
 	end
 	-- Minimum Difference in angles

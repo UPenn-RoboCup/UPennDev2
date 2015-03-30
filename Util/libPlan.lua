@@ -18,7 +18,9 @@ local min, max = require'math'.min, require'math'.max
 local INFINITY = require'math'.huge
 
 local mt = {
-	__call = function(t,k) return tremove(t) end
+	__call = function(t, k)
+		return #t>0 and unpack(tremove(t))
+	end
 }
 
 local function qDiff(iq, q0)
@@ -382,8 +384,8 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 			local qSlerp = q.slerp( quatArm, quatGoal, i*inv_nSteps )
 			local trStep = T.from_quaternion( qSlerp, cur_posArm )
 			--cur_qArm = inverse( trStep, cur_qArm )
-			iqWaypoint = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
-			assert(iqWaypoint, 'No waypoint found in stack formation')
+			cur_qArm = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
+			assert(cur_qArm, 'No waypoint found in stack formation')
 		end
 		--[[
 		local trWaypoint = dTransBack * cur_trArm
@@ -395,7 +397,7 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 		cur_qArm = inverse(trStep,cur_qArm)
 		cur_trArm = trStep
 		--]]
-		table.insert(qStack,cur_qArm)
+		table.insert(qStack, {vnorm(ddp*i), cur_qArm})
 	end
 	-- We return the stack and the final joint configuarion
 	return setmetatable(qStack, mt), qGoal, distance

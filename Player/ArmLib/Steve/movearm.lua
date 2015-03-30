@@ -58,7 +58,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 	if trL then
 		local qcLArm = Body.get_larm_command_position()
 		if loptions then
-			iqLArm = K.inverse_larm(trL, qcLArm, unpack(loptions))
+			iqLArm = lPlanner.inverse(trL, qcLArm, unpack(loptions))
 		else
 			iqLArm = lPlanner:find_shoulder(trL, qcLArm, lweights)
 		end
@@ -68,10 +68,9 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, true)
 	end
 	if trR then
-
 		local qcRArm = Body.get_rarm_command_position()
 		if roptions then
-			iqRArm = K.inverse_rarm(trR, qcRArm, unpack(roptions))
+			iqRArm = rPlanner.inverse(trR, qcRArm, unpack(roptions))
 		else
 			iqRArm = rPlanner:find_shoulder(trR, qcRArm, rweights)
 		end
@@ -91,8 +90,8 @@ function movearm.goto_tr(trL, rwrist, loptions, roptions, lweights, rweights)
 		lPathIter, iqLArm, pLDist = lPlanner:line_iter(trL, qcLArm, loptions, lweights)
 	end
 	if rwrist then
-		local qRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qRArm, roptions, rweights)
+		local qcRArm = Body.get_rarm_command_position()
+		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qcRArm, roptions, rweights)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
 end
@@ -102,11 +101,11 @@ function movearm.goto_tr_stack(trL, rwrist, loptions, roptions, lweights, rweigh
 	local lPathIter, rPathIter
 	if trL then
 		local qcLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, pLDist = lPlanner:line_stack(trL, qLArm, loptions, lweights)
+		lPathIter, iqLArm, pLDist = lPlanner:line_stack(trL, qcLArm, loptions, lweights)
 	end
 	if rwrist then
-		local qRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qRArm, roptions, rweights)
+		local qcRArm = Body.get_rarm_command_position()
+		rPathIter, iqRArm, pRDist = rPlanner:line_stack(rwrist, qcRArm, roptions, rweights)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
 end

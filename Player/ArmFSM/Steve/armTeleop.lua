@@ -91,7 +91,8 @@ function state.update()
 			else
 				-- Form the iterator
 				lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD =
-					movearm.goto_tr_via_q(fkLComp, fkRComp)
+					--movearm.goto_tr_via_q(fkLComp, fkRComp)
+					movearm.goto_tr_stack(fkLComp, fkRComp)
 				loptions = qLGoalFiltered[3]
 				roptions = qRGoalFiltered[3]
 			end

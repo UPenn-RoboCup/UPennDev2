@@ -35,16 +35,16 @@ local char_to_override = {
   ['m'] = vector.new({0,0, -.04,   0,0,0,0}),
   
   --Yaw
-  ['h'] = vector.new({0,0,0,     0,0,1,0}),
-  [';'] = vector.new({0,0,0,    0,0,-1,0}),
+  ['h'] = vector.new({0,0,0,     0,0,15,0})*math.pi/180,
+  [';'] = vector.new({0,0,0,    0,0,-15,0})*math.pi/180,
 
   --Pitch
-  ['y'] = vector.new({0,0,0,     0,-1,0, 0}),
-  ['n'] = vector.new({0,0,0,     0,1,0,  0}),
+  ['y'] = vector.new({0,0,0,     0,-15,0, 0})*math.pi/180,
+  ['n'] = vector.new({0,0,0,     0,15,0,  0})*math.pi/180,
 
-  --Task
-  ['['] = vector.new({0,0,0,     -1,0,0,-1}),
-  [']'] = vector.new({0,0,0,     1,0,0,1}),
+  --Roll
+  ['['] = vector.new({0,0,0,     -15,0,0,0})*math.pi/180,
+  [']'] = vector.new({0,0,0,     15,0,0,0})*math.pi/180,
 }
 
 local char_to_movetarget = {
@@ -91,6 +91,10 @@ end
 
 local function update(key_code)
   if type(key_code)~='number' or key_code==0 then return end
+
+  if Body.get_time()-t_last<0.35 then return end
+  t_last = Body.get_time()
+
   local key_char = string.char(key_code)
   local key_char_lower = string.lower(key_char)
 

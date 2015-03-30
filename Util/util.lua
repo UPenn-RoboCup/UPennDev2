@@ -202,9 +202,9 @@ end
 
 --SJ: This approaches to the DIRECTION of the target position
 
-function util.approachTolTransform(values, targets, vellimit, dt)
-  local tolerance_dist = 0.001
-  local tolerance_angle = 0.1*math.pi/180
+function util.approachTolTransform(values, targets, vellimit, dt, tol_dist, tol_angle)
+  local tolerance_dist = tol_dist or 0.001
+  local tolerance_angle = tol_angle or 0.1*math.pi/180
 
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true

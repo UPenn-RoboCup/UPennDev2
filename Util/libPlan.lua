@@ -66,8 +66,8 @@ local mt = {
 			local dist, wp = unpack(next)
 			local blend_wp = vector.copy(wp)
 			local diff_use = sanitize(blend_wp, q, dt, t.dqdt_limit)
-			t.done_wp = vector.norm(diff_use) < 0.01
-			return dist, blend_wp
+			t.done_wp = vector.norm(diff_use) < 0.005
+			return dist, t.done_wp and wp or blend_wp
 		end
 	end
 }
@@ -479,7 +479,7 @@ function libPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 		max_q = max_q or 90*DEG_TO_RAD*armOnes,
 		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
 		--
-		res_pos = res_pos or 0.015,
+		res_pos = res_pos or 0.02,
 		res_ang = res_ang or 3*DEG_TO_RAD,
 		--
 		line_stack = line_stack,

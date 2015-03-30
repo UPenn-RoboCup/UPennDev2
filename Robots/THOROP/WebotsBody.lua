@@ -1,6 +1,7 @@
 local WebotsBody = {}
 local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
+require'wcm'
 
 local get_time = webots.wb_robot_get_time
 

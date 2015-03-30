@@ -19,7 +19,7 @@ end
 function vector.copy(t, tt)
   tt = tt or {}
   for i=1,#t do tt[i] = t[i] end
-  return setmetatable(t, mt)
+  return setmetatable(tt, mt)
 end
 
 function vector.ones(n)

@@ -16,34 +16,54 @@ local selected_arm = 0 -- left to start
 
 local DO_IMMEDIATE = true
 local LARM_DIRTY, RARM_DIRTY = false, false
+local qLtmp, qL0
 local function get_larm(refresh)
 	if refresh then qLtmp = hcm.get_teleop_larm() end
 	return qLtmp
 end
-local qLtmp = get_larm(true)
+-- Set initial arms in tmp and 0
+qL0 = vector.copy(get_larm(true))
 local function set_larm(q, do_now)
 	if type(q)=='table' and #q==#qLtmp then
 		vector.copy(q, qLtmp)
 		LARM_DIRTY = true
 	end
 	if q==true or do_now==true then
-		hcm.set_teleop_larm(qLtmp)
 		LARM_DIRTY = false
+		local curTeleop = hcm.get_teleop_larm()
+		if curTeleop~=qL0 then
+			print('L Outdated...')
+			vector.copy(curTeleop, qL0)
+			qLtmp = curTeleop
+			return
+		end
+		hcm.set_teleop_larm(qLtmp)
+		vector.copy(qLtmp, qL0)
 	end
 end
+local qRtmp, qR0
 local function get_rarm(refresh)
 	if refresh then qRtmp = hcm.get_teleop_rarm() end
 	return qRtmp
 end
-local qRtmp = get_rarm(true)
+-- Set initial arms in tmp and 0
+qR0 = vector.copy(get_rarm(true))
 local function set_rarm(q, do_now)
 	if type(q)=='table' and #q==#qRtmp then
 		vector.copy(q, qRtmp)
 		RARM_DIRTY = true
 	end
 	if q==true or do_now==true then
+		LARM_DIRTY = false
+		local curTeleop = hcm.get_teleop_rarm()
+		if curTeleop~=qR0 then
+			print('R Outdated...')
+			vector.copy(curTeleop, qR0)
+			qRtmp = curTeleop
+			return
+		end
 		hcm.set_teleop_rarm(qRtmp)
-		RARM_DIRTY = false
+		vector.copy(qRtmp, qR0)
 	end
 end
 -- Immediately write the changes?

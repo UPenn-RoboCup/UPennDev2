@@ -430,7 +430,6 @@ Body.move_lgrip1 = Body.set_ltrigger_command_torque
 ----------------------
 -- Webots compatibility
 if IS_WEBOTS then
-	require'wcm'
 	local WebotsBody
 --  local webots = require'webots'
 --now a global variable

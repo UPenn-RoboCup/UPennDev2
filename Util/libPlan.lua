@@ -139,8 +139,6 @@ local function find_shoulder(self, tr, qArm, weights)
 	end
 	-- Find the smallest cost
 	local cmin, imin = umin(cost)
-	-- TODO: Never have an assert in the planner
-	assert(imin>0, 'No valid arm angles!')
 	-- Yield the least cost arms
 	return iqArms[imin]
 end
@@ -176,6 +174,7 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 		else
 			qGoal, null_options = find_shoulder(self, trGoal, qArm0, shoulder_weights)
 		end
+		assert(qGoal, 'No shoulder found for the goal!')
 		local fkGoal = forward(qGoal)
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
 		vector.new(posGoal)
@@ -248,6 +247,7 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 			iqWaypoint = inverse(trStep, cur_qArm, shoulderBlend, null_options0[2])
 		else
 			iqWaypoint = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
+			assert(qGoal, 'No shoulder found for the waypoint!')
 		end
 		-- Sanitize to avoid trouble with wrist yaw
 		if dt then

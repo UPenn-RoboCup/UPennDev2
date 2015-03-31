@@ -65,7 +65,7 @@ local left_arm = {
 	-- lidar
 	37,
 	-- gripper
---	64, 66, 68
+	64, 66, 68
 },
 enable_read = true
 }
@@ -252,7 +252,7 @@ servo.direction = vector.new({
 	------
 	-1,-1,1,-1, 1,1,1, --RArm
 	-1, -1, -- Waist
-	1,-1,1, -- left gripper TODO
+	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
 	-1, -- Lidar pan
 })
@@ -265,7 +265,7 @@ servo.rad_offset = vector.new({
 	0,0,0,45,0,0, --RLeg
 	90,-90,90,-45,-90,0,0, --RArm
 	0,0, -- Waist
-	55, -15, 0, -- left gripper/trigger
+	0, 0, 0, -- left gripper/trigger
 	70, -125, 0, -- right gripper/trigger (UCLA verified)
 	0, -- Lidar pan
 })*DEG_TO_RAD

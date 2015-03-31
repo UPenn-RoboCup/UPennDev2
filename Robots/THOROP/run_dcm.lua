@@ -464,7 +464,8 @@ local function form_read_loop_cmd(bus, cmd)
 	if bus.name:find'leg' then
 		return form_leg_read_cmd(bus)
 	elseif bus.name:find'arm' then
-		return form_arm_read_cmd(bus)
+		form_arm_read_cmd(bus)
+		return form_arm_read_cmd2(bus)
 	end
 	local rd_addrs, has_mx, has_nx = {}, false, false
 	for _, m_id in ipairs(bus.m_ids) do

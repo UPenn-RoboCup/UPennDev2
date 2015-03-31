@@ -80,15 +80,17 @@ char_lut[' '] = function()
 end
 
 -- Backspace (Win/Linux) / Delete (OSX)
-local USE_COMPENSATION = hcm.get_teleop_compensation()
+local USE_COMPENSATION
 code_lut[127] = function()
 	-- Disable the compensation
-	--[[
+	USE_COMPENSATION = hcm.get_teleop_compensation()
+	----[[
 	USE_COMPENSATION = USE_COMPENSATION + 1
 	USE_COMPENSATION = USE_COMPENSATION>2 and 0 or USE_COMPENSATION
 	--]]
 	USE_COMPENSATION = USE_COMPENSATION==1 and 2 or 1
 	hcm.set_teleop_compensation(USE_COMPENSATION)
+	arm_ch:send'teleop'
 end
 
 -- Switch to head teleop
@@ -134,6 +136,7 @@ char_lut['r'] = function()
 		local options = hcm.get_teleop_loptions()
 		options[1] = math.max(options[1] - DEG_TO_RAD, 0)
 		hcm.set_teleop_loptions(options)
+		arm_ch:send'teleop'
 		--[[
 		local qLArm = get_larm()
     --print('Pre',qLArm*RAD_TO_DEG)
@@ -147,6 +150,7 @@ char_lut['r'] = function()
 		local options = hcm.get_teleop_roptions()
 		options[1] = math.min(options[1] - DEG_TO_RAD, 0)
 		hcm.set_teleop_roptions(options)
+		arm_ch:send'teleop'
 		--[[
     local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
@@ -163,6 +167,7 @@ char_lut['t'] = function()
 		local options = hcm.get_teleop_loptions()
 		options[1] = math.min(options[1] + DEG_TO_RAD, 90*DEG_TO_RAD)
 		hcm.set_teleop_loptions(options)
+		arm_ch:send'teleop'
 		--[[
     local qLArm = get_larm()
 		local tr = K.forward_larm(qLArm)
@@ -175,6 +180,7 @@ char_lut['t'] = function()
 		local options = hcm.get_teleop_roptions()
 		options[1] = math.max(options[1] + DEG_TO_RAD, -90*DEG_TO_RAD)
 		hcm.set_teleop_roptions(options)
+		arm_ch:send'teleop'
 		--[[
     local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
@@ -396,7 +402,7 @@ function show_status()
     color('== Teleoperation ==', 'magenta'),
 		'1: init, 2: head teleop, 3: armReady, 4: armTeleop, 5: headTrack, 6: poke',
 		color(DO_IMMEDIATE and 'Immediate Send' or 'Delayed Send', DO_IMMEDIATE and 'red' or 'yellow'),
-		'Compensation: '..USE_COMPENSATION,
+		'Compensation: '..tostring(USE_COMPENSATION),
     'BodyFSM: '..color(gcm.get_fsm_Body(), 'green'),
     'ArmFSM: '..color(gcm.get_fsm_Arm(), 'green'),
     'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),

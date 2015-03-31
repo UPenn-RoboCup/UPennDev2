@@ -23,7 +23,7 @@ arm.readyFromInitStages = {
 		'goto_tr_via_q', {1,1,0}, {1,1,0}
 	},
 	{
-		tr6D{0.3, 0.3, 0.2,  0,0,-45*DEG_TO_RAD}, tr6D{0.3, -0.3, 0.2, 0,0,45*DEG_TO_RAD},
+		tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD},
 		'goto_tr_via_q', {1,0,1}, {1,0,1}
 	},
 }

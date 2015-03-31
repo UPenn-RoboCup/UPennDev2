@@ -20,6 +20,7 @@ local loptions, roptions
 local function set_iterators(teleopLArm, teleopRArm, teleopComp)
 	if teleopComp == 0 then
 		-- #nofilter
+		uTorsoComp, uTorso0 = nil
 		return movearm.goto_q(teleopLArm, teleopRArm, true)
 	end
 	-- Grab the torso compensation
@@ -64,10 +65,6 @@ function state.entry()
 
 	lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = set_iterators(teleopLArm, teleopRArm, teleopComp)
 
-	print('teleopLArm', teleopLArm)
-	print('qcLArm0', qcLArm0)
-	print('qLGoal', qLGoal)
-
 	--loptions = {qLGoal[3], 0}
 	--roptions = {qRGoal[3], 0}
 	--hcm.set_teleop_loptions(loptions or {qcLArm[3], 0})
@@ -98,11 +95,11 @@ function state.update()
 	local phaseL = moreL and moreL/qLD or 0
 	local phaseR = moreR and moreR/qRD or 0
 
-	--if USE_COMPENSATION > 0 then
-		local phase = math.max(phaseL, phaseR)
-		local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
-		mcm.set_stance_uTorsoComp(uTorsoNow)
-	--end
+	assert(uTorsoComp)
+	assert(uTorso0)
+	local phase = math.max(phaseL, phaseR)
+	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
+	mcm.set_stance_uTorsoComp(uTorsoNow)
 
 	-- Send to the joints
 	Body.set_larm_command_position(qLNext)

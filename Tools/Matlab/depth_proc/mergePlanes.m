@@ -1,8 +1,12 @@
-function [mergedPlanes, mergedNumPlanes, mergedPoi, mergedP3d] = mergePlanes(Planes,numPlanes,Poi,P3d)
+function [mergedPlanes, mergedNumPlanes, mergedPoi, mergedP3d] = mergePlanes(Planes,numPlanes,Poi,P3d,nlimit)
 
 % limit the number of planes for possible slow-down
 
-if numPlanes < 8
+if nargin < 5
+    nlimit = 8;
+end
+    
+if numPlanes < nlimit
     
     mInd = [1:numPlanes];
     
@@ -50,7 +54,7 @@ else
 
     mergedPlanes = Planes;
     mergedNumPlanes = numPlanes;
-    mergedPot = Poi;
+    mergedPoi = Poi;
     mergedP3d = P3d;
 end
 

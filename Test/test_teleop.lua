@@ -39,6 +39,7 @@ local function set_larm(q, do_now)
 		end
 		hcm.set_teleop_larm(qLtmp)
 		vector.copy(qLtmp, qL0)
+		arm_ch:send'teleop'
 	end
 end
 local qRtmp, qR0
@@ -64,6 +65,7 @@ local function set_rarm(q, do_now)
 		end
 		hcm.set_teleop_rarm(qRtmp)
 		vector.copy(qRtmp, qR0)
+		arm_ch:send'teleop'
 	end
 end
 -- Immediately write the changes?

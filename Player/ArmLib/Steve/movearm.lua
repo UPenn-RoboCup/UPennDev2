@@ -107,7 +107,7 @@ function movearm.goto_tr_stack(trL, rwrist, loptions, roptions, lweights, rweigh
 		local qcRArm = Body.get_rarm_command_position()
 		rPathIter, iqRArm, pRDist = rPlanner:line_stack(rwrist, qcRArm, roptions, rweights)
 	end
-	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
+	return lPathIter, rPathIter, vector.new(iqLArm), vector.new(iqRArm), pLDist, pRDist
 end
 
 --[[

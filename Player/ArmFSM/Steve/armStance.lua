@@ -27,6 +27,11 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
+	-- For teleop if next
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+	hcm.set_teleop_larm(qcLArm)
+  hcm.set_teleop_rarm(qcRArm)
 end
 
 return state

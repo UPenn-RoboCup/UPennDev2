@@ -66,7 +66,7 @@ local mt = {
 			local dist, wp = unpack(next)
 			local blend_wp = vector.copy(wp)
 			local diff_use = sanitize(blend_wp, q, dt, t.dqdt_limit)
-			t.done_wp = vector.norm(diff_use) < 0.005
+			t.done_wp = vector.norm(diff_use) < 0.001
 			return dist, t.done_wp and sanitize0(wp, q) or blend_wp
 		end
 	end
@@ -109,7 +109,8 @@ local function valid_cost(iq, minArm, maxArm)
 	return 0
 end
 local IK_POS_ERROR_THRESH = 0.035
-local defaultWeights = {1,1,0}
+--local defaultWeights = {1,1,0}
+local defaultWeights = {0,1,0}
 local function find_shoulder(self, tr, qArm, weights)
 	weights = weights or defaultWeights
 	-- Form the inverses
@@ -347,7 +348,7 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 	local qGoal, posGoal, quatGoal
 	if skip_angles==true then
 		posGoal = trGoal
-		qGoal = inverse(posGoal,qArm0)
+		qGoal = inverse(posGoal, qArm0)
 	else
 		-- Must also fix the rotation matrix, else the yaw will not be correct!
 		--qGoal = inverse(trGoal, qArm0)
@@ -355,7 +356,8 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 		assert(qGoal, 'No goal found in stack formation')
 	end
 	--
-	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
+	--qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
+	sanitize0(qGoal, qArm0)
 	--
 	local fkGoal = forward(qGoal)
 	local fkArm  = forward(qArm0)

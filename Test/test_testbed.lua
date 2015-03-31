@@ -92,7 +92,7 @@ end
 local function update(key_code)
   if type(key_code)~='number' or key_code==0 then return end
 
-  if Body.get_time()-t_last<0.35 then return end
+  if Body.get_time()-t_last<0.2 then return end
   t_last = Body.get_time()
 
   local key_char = string.char(key_code)

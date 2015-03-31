@@ -390,6 +390,8 @@ end
 jcount=0
 
 function jacobian_control(dt)
+jcount=jcount+1
+t0=unix.time()   
 
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
@@ -433,30 +435,44 @@ function jacobian_control(dt)
 
 
 
-  local trRArm = Body.get_forward_rarm(qRArm)
-  local trRArm0 = util.shallow_copy(trRArm)
-  local trRArmNext= util.approachTolTransform(
-    trRArm, trRArmGoal,{0.3,0.3,0.3,0.3,0.3,0.3},dt,0,0)
-  local trRArmDiff = util.diff_transform(trRArmNext,trRArm0)
+  local trRArm = Body.get_forward_rarm(qRArm)  
+  local trRArmDiff = util.diff_transform(trRArmGoal,trRArm)
 
-  --TODO: these values screws arm up (goes to the flipped position)
+  --Calculate target velocity
+  local linear_dist = math.sqrt(
+    (trRArm[1]-trRArmGoal[1])^2+
+    (trRArm[2]-trRArmGoal[2])^2+
+    (trRArm[3]-trRArmGoal[3])^2)
 
-trRArmDiff[4]=-trRArmDiff[4]
-trRArmDiff[5]=-trRArmDiff[5]
-trRArmDiff[6]=-trRArmDiff[6]
-
---  if util.mod_angle(trRArmGoal[4])>util.mod_angle(trRArm[4]) then trRArmDiff[4]=0.01 end
---  if util.mod_angle(trRArmGoal[4])<util.mod_angle(trRArm[4]) then trRArmDiff[4]=-0.01 end
+  local linear_vel = math.min(0.04, (linear_dist/0.02)*0.02 + 0.02 )
 
 
---    local trRArmDiff = {0.001,0,0, 0,0,0}
+  local trRArmVelTarget={
+    0,0,0,
+    util.procFunc(-trRArmDiff[4],0,30*math.pi/180),
+    util.procFunc(-trRArmDiff[5],0,30*math.pi/180),
+    util.procFunc(-trRArmDiff[6],0,30*math.pi/180),
+  }  
 
---
+  if linear_dist>0 then
+    trRArmVelTarget[1],trRArmVelTarget[2],trRArmVelTarget[3]=
+    trRArmDiff[1]/linear_dist *linear_vel,
+    trRArmDiff[2]/linear_dist *linear_vel,
+    trRArmDiff[3]/linear_dist *linear_vel    
+  end
 
+  local angular_vel = 
+     math.abs(trRArmVelTarget[4])
+    +math.abs(trRArmVelTarget[5])
+    +math.abs(trRArmVelTarget[6])
+ 
+  if linear_dist<0.001 and angular_vel<1*math.pi/180 then
+    return
+  end
+
+--  print("vel target:",util.print_transform(trRArmVelTarget))
   
 --]]
-
-  lambda = 0.1;
 
 --[[
   --qVel = inv(J'J + lambda^2* I) * J' * trMovement
@@ -478,27 +494,49 @@ trRArmDiff[6]=-trRArmDiff[6]
   --qVel = inv(J'J + lambda^2* I) * J' * trMovement
   local J= torch.Tensor(RArm_Jac):resize(6,7)  
   local JT = torch.Tensor(J):transpose(1,2)
-  local e = torch.Tensor(trRArmDiff)
+  local e = torch.Tensor(trRArmVelTarget)
   local I = torch.Tensor():resize(7,7):zero()
   local I2 = torch.Tensor():resize(7,6):zero()
   local qRArmVel = torch.Tensor(7):fill(0)
 
   --todo: variable lambda to prevent self collision
-  I:addmm(JT,J):add(lambda*lambda,torch.eye(7))
+  -- lambda_i = c*((2*q-qmin-qmax)/(qmax-qmin))^p + (1/w_i)
+
+  local lambda=torch.eye(7)
+  local c = 2 
+  local p = 10
+
+  local joint_limits={
+    {-math.pi/2, math.pi},
+    {0,math.pi/2},
+    {-math.pi/2, math.pi/2},
+    {-math.pi, -0.2}, --temp value
+    {-math.pi, math.pi},
+    {-math.pi/2, math.pi/2},
+    {-math.pi, math.pi}
+  }
+
+  for i=1,7 do
+    lambda[i][i]=0.1*0.1 + c*
+      ((2*qLArm[i]-joint_limits[i][1]-joint_limits[i][2])/
+       (joint_limits[i][2]-joint_limits[i][1]))^p
+  end
+
+  I:addmm(JT,J):add(1,lambda)
   local Iinv=torch.inverse(I)  
   I2:addmm(Iinv,JT)   
   qRArmVel:addmv(I2,e)
-  qRArmTarget = vector.new(qRArm)+vector.new(qRArmVel)
+  qRArmTarget = vector.new(qRArm)+vector.new(qRArmVel)*dt
   Body.set_rarm_command_position(qRArmTarget)
+  local trRArmTarget = Body.get_forward_rarm(qRArmTarget)
+  local trRArmDiffActual = util.diff_transform(trRArmTarget,trRArm)
 
+  
+  
+  if jcount%50==0 then
+    print("trVelTarget:",util.norm(trRArmVelTarget,3),"trVelActual:",util.norm(trRArmDiffActual,3)/dt)      
+  end 
 
-jcount=jcount+1
-if jcount%300==0 then
-  print("---")
-  print(util.print_transform(trRArmGoal))
-  print(util.print_transform(trRArm))
-  print(unpack(trRArmDiff))
-end
 
 --[[
   print("----")

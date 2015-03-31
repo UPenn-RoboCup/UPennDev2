@@ -339,6 +339,15 @@ function util.randn(n)
   return t
 end
 
+function util.norm(v,n)
+  local t=0
+  for i=1,n or #v do
+    t=t+v[i]*v[i]
+  end
+  t=math.sqrt(t)
+  return t
+end
+
 function util.factorial(n)
   if n == 0 then
     return 1

@@ -61,6 +61,14 @@ walk.phCompSlope = 0.2
 walk.supportX = 0.07 --With clown feet, good for forward walking
 walk.supportY = 0.06
 
+
+walk.tStep = 0.5
+walk.tZMP = 0.4
+walk.stepHeight = 0.04
+--walk.phSingle = {0.05,0.95}
+walk.supportY = 0.2
+walk.footY = 0.10
+
 ------------------------------------
 -- Compensation parameters
 ------------------------------------

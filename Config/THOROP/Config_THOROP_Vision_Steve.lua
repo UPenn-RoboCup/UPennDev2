@@ -15,21 +15,11 @@ local head = {
   yawMin = -135 * DEG_TO_RAD,
   yawMax = 135 * DEG_TO_RAD,
 	-- Head angle bias
+	pitchBias = 0,
 	yawBias = 0,
-	-- Camera bias
-  cameraPos = {0.045, 0.0, 0.105}, --Post RC14: alvin
-  cameraPos = {0.045, 0.0, 0.107}, --Post RC14: TODO: teddy
-	cameraPitch = 5*DEG_TO_RAD,
-	cameraRoll = 0, --14*DEG_TO_RAD,
-  -- From CoM to neck joint
-  neckZ = .165 + .161,
-  neckX = 0,
-  -- From CoM to neck joint
+  -- From CoM to neck joint: {neckX, neckY, neckZ}
   neckOffset = {0, 0, 0.32}
 }
-if IS_WEBOTS then
-	head.cameraPitch = 0
-end
 
 local colors = {
 		black = 0,
@@ -109,6 +99,12 @@ local grasp_afternoon_param = {
 table.insert(camera,
   {
     name = 'head',
+		mountOffset = {
+			-- cameraRoll, cameraPitch, cameraYaw
+			{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
+			-- Translation offset from the neck
+			{0.04,0,0.04}
+		}
     dev = '/dev/video0',
     --dev = '/dev/video1',
     format = 'yuyv',
@@ -157,8 +153,8 @@ local kinect = {
   detection = 'MultiValve',
 	lut = 'multi_valve',
   mountOffset = {
-    {3*DEG_TO_RAD,-3*DEG_TO_RAD,0}, -- RPY
-    {0.03,0,0.08} -- translaction
+    {3*DEG_TO_RAD,2*DEG_TO_RAD,0}, -- RPY
+    {0.03,0,0.08} -- translation
   }
 }
 if IS_WEBOTS then

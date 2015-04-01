@@ -27,12 +27,15 @@
 #ifndef LIBFREENECT2_HPP_
 #define LIBFREENECT2_HPP_
 
+#include <libfreenect2/config.h>
 #include <libfreenect2/frame_listener.hpp>
 
 namespace libfreenect2
 {
 
-class Freenect2Device
+class PacketPipeline;
+
+class LIBFREENECT2_API Freenect2Device
 {
 public:
   static const unsigned int VendorId = 0x045E;
@@ -42,6 +45,7 @@ public:
   struct ColorCameraParams
   {
     float fx, fy, cx, cy;
+
     float shift_d, shift_m;
 
     float mx_x3y0; // xxx
@@ -91,7 +95,7 @@ public:
 
 class Freenect2Impl;
 
-class Freenect2
+class LIBFREENECT2_API Freenect2
 {
 public:
   Freenect2(void *usb_context = 0);
@@ -103,11 +107,14 @@ public:
   std::string getDefaultDeviceSerialNumber();
 
   Freenect2Device *openDevice(int idx);
+  Freenect2Device *openDevice(int idx, const PacketPipeline *factory);
   Freenect2Device *openDevice(const std::string &serial);
+  Freenect2Device *openDevice(const std::string &serial, const PacketPipeline *factory);
 
   Freenect2Device *openDefaultDevice();
+  Freenect2Device *openDefaultDevice(const PacketPipeline *factory);
 protected:
-  Freenect2Device *openDevice(int idx, bool attempting_reset);
+  Freenect2Device *openDevice(int idx, const PacketPipeline *factory, bool attempting_reset);
 private:
   Freenect2Impl *impl_;
 };

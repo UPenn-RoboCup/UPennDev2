@@ -27,32 +27,37 @@
 #ifndef FRAME_LISTENER_IMPL_H_
 #define FRAME_LISTENER_IMPL_H_
 
-#include <libfreenect2/threading.h>
+#include <map>
+
+#include <libfreenect2/config.h>
 #include <libfreenect2/frame_listener.hpp>
 
 namespace libfreenect2
 {
 
-// TODO: reimplement, this is just some adhoc construct, probably performance can be improved
-class SyncMultiFrameListener : public FrameListener
+typedef std::map<Frame::Type, Frame*> FrameMap;
+
+class SyncMultiFrameListenerImpl;
+
+class LIBFREENECT2_API SyncMultiFrameListener : public FrameListener
 {
 public:
   SyncMultiFrameListener(unsigned int frame_types);
   virtual ~SyncMultiFrameListener();
 
-  // for now the caller is responsible to release the frames when he is done
-  virtual void waitForNewFrame(FrameMap &frame);
+  bool hasNewFrame() const;
 
-  virtual void release(FrameMap &frame);
+#ifdef  LIBFREENECT2_THREADING_STDLIB
+  bool waitForNewFrame(FrameMap &frame, int milliseconds);
+#endif // LIBFREENECT2_THREADING_STDLIB
+  // for now the caller is responsible to release the frames when he is done
+  void waitForNewFrame(FrameMap &frame);
+
+  void release(FrameMap &frame);
 
   virtual bool onNewFrame(Frame::Type type, Frame *frame);
 private:
-  libfreenect2::mutex mutex_;
-  libfreenect2::condition_variable condition_;
-  FrameMap next_frame_;
-
-  const unsigned int subscribed_frame_types_;
-  unsigned int ready_frame_types_;
+  SyncMultiFrameListenerImpl *impl_;
 };
 
 } /* namespace libfreenect2 */

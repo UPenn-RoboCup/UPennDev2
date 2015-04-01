@@ -7,15 +7,17 @@ depth_packet_stream_parser.o \
 double_buffer.o \
 event_loop.o \
 frame_listener_impl.o \
+packet_pipeline.o \
 registration.o \
 resource.o \
 rgb_packet_stream_parser.o \
-tinythread.o \
 transfer_pool.o \
 usb_control.o \
 libfreenect2.o \
 rgb_packet_processor.o \
 cpu_depth_packet_processor.o
+
+#tinythread.o
 
 #EXTRA_OBJ+=turbo_jpeg_rgb_packet_processor.o
 
@@ -34,7 +36,6 @@ CXXFLAGS+=-std=c++11
 
 INCLUDES+=\
 -I. \
--DLIBFREENECT2_THREADING_TINYTHREAD \
 -DRESOURCES_INC \
 -DREG_OPENCL_FILE=\"opencl_depth_packet_processor.cl\"
 

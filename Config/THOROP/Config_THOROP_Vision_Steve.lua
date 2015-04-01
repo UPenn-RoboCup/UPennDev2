@@ -10,10 +10,10 @@ local monitor = {
 
 -- TODO: put this into FSM config, and state-specific
 local head = {
-  pitchMin = -10 * DEG_TO_RAD,
-  pitchMax = 75 * DEG_TO_RAD,
-  yawMin = -135 * DEG_TO_RAD,
-  yawMax = 135 * DEG_TO_RAD,
+	pitchMin = -10 * DEG_TO_RAD,
+	pitchMax = 75 * DEG_TO_RAD,
+	yawMin = -135 * DEG_TO_RAD,
+	yawMax = 135 * DEG_TO_RAD,
 	-- Head angle bias
 	pitchBias = 0,
 	yawBias = 0,
@@ -22,50 +22,50 @@ local head = {
 }
 
 local colors = {
-		black = 0,
-    orange = 1,
-    yellow = 2,
-    blue = 4,
-    field = 8,
-    white = 16,
-		cyan = 32,
-		magenta = 64,
-  }
+	black = 0,
+	orange = 1,
+	yellow = 2,
+	blue = 4,
+	field = 8,
+	white = 16,
+	cyan = 32,
+	magenta = 64,
+}
 
 local vision = {
-  colors = colors,
-  scaleA = 2,
-  scaleB = 2,
+	colors = colors,
+	scaleA = 2,
+	scaleB = 2,
 }
 
 local vision_k2 = {
-  colors = colors,
-  scaleA = 1,
-  scaleB = 2,
+	colors = colors,
+	scaleA = 1,
+	scaleB = 2,
 }
 
 vision.goal = {
-  th_min_bbox_area = 80, --100,
-  th_nPostB = 15,
-  th_min_area = 40,
-  th_min_orientation = 80*DEG_TO_RAD,
-  th_min_fill_rate = 0.4, --0.45,
-  -- TODO: need to test on real robot
-  height_min = 1,
-  height_max = 2,
-  th_aspect_ratio = {13,120},
-  th_edge_margin = 5,
-  th_bottom_boundingbox = 0.9,
-  th_ground_boundingbox = {-15,15,-15,10},
-  th_min_green_ratio = 0.2,
-  th_min_bad_color_ratio = 0.1,
-  th_goal_separation = {0.35,3.0},
-  th_min_area_unknown_post = 80,
-  -- The range we triangulate:
-  far_goal_threshold= 4.0,
-  use_centerpost = 1,
-  min_crossbar_ratio = 0.6,
-  check_for_ground = 1,
+	th_min_bbox_area = 80, --100,
+	th_nPostB = 15,
+	th_min_area = 40,
+	th_min_orientation = 80*DEG_TO_RAD,
+	th_min_fill_rate = 0.4, --0.45,
+	-- TODO: need to test on real robot
+	height_min = 1,
+	height_max = 2,
+	th_aspect_ratio = {13,120},
+	th_edge_margin = 5,
+	th_bottom_boundingbox = 0.9,
+	th_ground_boundingbox = {-15,15,-15,10},
+	th_min_green_ratio = 0.2,
+	th_min_bad_color_ratio = 0.1,
+	th_goal_separation = {0.35,3.0},
+	th_min_area_unknown_post = 80,
+	-- The range we triangulate:
+	far_goal_threshold= 4.0,
+	use_centerpost = 1,
+	min_crossbar_ratio = 0.6,
+	check_for_ground = 1,
 	-- Metric properties
 	goalHeight = 1.8,
 	goalWidth = 3.1, --3.0 for I-I, 3.1 for C-C
@@ -96,121 +96,120 @@ local grasp_afternoon_param = {
 	{'Sharpness', 0},
 }
 
-table.insert(camera,
-  {
-    name = 'head',
-		mountOffset = {
-			-- cameraRoll, cameraPitch, cameraYaw
-			{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
-			-- Translation offset from the neck
-			{0.04,0,0.04}
-		}
-    dev = '/dev/video0',
-    --dev = '/dev/video1',
-    format = 'yuyv',
-    w = 640,
-    h = 360, --480,
-    cx_offset = 0,
-    cy_offset = 0,
-    fps = 30,
-    jpeg_quality = 60,
-    -- Use the standard head properties
-    head = head,
-    -- Use the default vision parameters
-    vision = vision,
-    -- Run the standard RoboCup vision processing
-    --detection = 'libVision',
-    --Logitech C920
-    --lut = 'empty',
-    --lut = 'm308_lightson',
-		lut = 'ucla1',
-		-- f = 640/2/tan(78/180*pi / 2)
-		--fov = 2*arctan(d/2f)
-		-- f = d/2/tan(fov/2)
-		--webots fov: 1.3613
+table.insert(camera,{
+	name = 'head',
+	mountOffset = {
+		-- cameraRoll, cameraPitch, cameraYaw
+		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
+		-- Translation offset from the neck
+		{0.04,0,0.04}
+	}
+	dev = '/dev/video0',
+	--dev = '/dev/video1',
+	format = 'yuyv',
+	w = 640,
+	h = 360, --480,
+	cx_offset = 0,
+	cy_offset = 0,
+	fps = 30,
+	jpeg_quality = 60,
+	-- Use the standard head properties
+	head = head,
+	-- Use the default vision parameters
+	vision = vision,
+	-- Run the standard RoboCup vision processing
+	--detection = 'libVision',
+	--Logitech C920
+	--lut = 'empty',
+	--lut = 'm308_lightson',
+	lut = 'ucla1',
+	-- f = 640/2/tan(78/180*pi / 2)
+	--fov = 2*arctan(d/2f)
+	-- f = d/2/tan(fov/2)
+	--webots fov: 1.3613
 
-    focal_length = 395.17,
-    focal_base = 640,
-    auto_param = {
---      {'Exposure, Auto', 1},
-      {'White Balance Temperature, Auto', 0},
-      {'Power Line Frequency', 0},
-      {'Exposure, Auto Priority', 0},
-			{'Focus, Auto', 0}
-    },
-		param = m308_param,
-    --param = grasp_afternoon_param,
-  })
+	focal_length = 395.17,
+	focal_base = 640,
+	auto_param = {
+	--      {'Exposure, Auto', 1},
+		{'White Balance Temperature, Auto', 0},
+		{'Power Line Frequency', 0},
+		{'Exposure, Auto Priority', 0},
+		{'Focus, Auto', 0}
+	},
+	param = m308_param,
+	--param = grasp_afternoon_param,
+})
 
 local kinect = {
-  name = 'kinect2',
-  w = 512,
-  h = 424,
-  jpeg_quality = 60,
-  -- Use the default vision parameters
-  vision = vision_k2,
-  -- Run the standard RoboCup vision processing
-  detection = 'MultiValve',
-	lut = 'multi_valve',
-  mountOffset = {
+	name = 'kinect2',
+	mountOffset = {
     {3*DEG_TO_RAD,2*DEG_TO_RAD,0}, -- RPY
     {0.03,0,0.08} -- translation
   }
+	w = 512,
+	h = 424,
+	jpeg_quality = 60,
+	-- Use the default vision parameters
+	vision = vision_k2,
+	-- Run the standard RoboCup vision processing
+	detection = 'MultiValve',
+	lut = 'multi_valve',
 }
 if IS_WEBOTS then
 	kinect.mountOffset = {
-    {0,0,0}, -- RPY
-    {0.03,0,0.13} -- translation
-  }
+		{0,0,0}, -- RPY
+		{0.03,0,0.13} -- translation
+	}
 end
 
 --Webots use 1/2 resolution but 2x label resolution
 if IS_WEBOTS then
-  camera[1].w = 320
-  camera[1].h = 180
-  camera[1].cx_offset = 0
-  camera[1].cy_offset = 0
-  camera[1].lut = 'multi_valve'
-  camera[1].focal_length = 395.17
-  camera[1].focal_base = 640
+	camera[1].w = 320
+	camera[1].h = 180
+	camera[1].cx_offset = 0
+	camera[1].cy_offset = 0
+	camera[1].lut = 'multi_valve'
+	camera[1].focal_length = 395.17
+	camera[1].focal_base = 640
 
 	-- Kinect width and height
 	kinect.w, kinect.h = 256, 212
 
-  vision.scaleA = 2
-  vision.scaleB = 2
+	vision.scaleA = 2
+	vision.scaleB = 2
 
 	head.neckX = 0 --From CoM to neck joint
-  head.cameraPitch = 0
-  head.cameraRoll = 0
+	head.cameraPitch = 0
+	head.cameraRoll = 0
 	head.yawBias = 0
 
-  vision.goal = {
-    th_min_bbox_area = 80,
-    th_nPostB = 10,
-    th_min_area = 35,
-    th_min_orientation = 80*DEG_TO_RAD,
-    th_min_fill_rate = 0.28, --0.28,
-    height_min = -0.9,  --TODO
-    th_aspect_ratio = {2.5,110},
-    th_edge_margin = 5,
-    th_bottom_boundingbox = 0.9,
-    th_ground_boundingbox = {-15,15,-15,10},
-    th_min_green_ratio = 0.2,
-    th_min_bad_color_ratio = 0.1,
-    th_goal_separation = {0.35,3.0},
-    th_min_area_unknown_post = 80,
-    -- The range we triangulate:
-    far_goal_threshold= 4.0,
-    use_centerpost = 1,
-    min_crossbar_ratio = 0.6,
-    check_for_ground = 1,
-    height_max = 9,
+	vision.goal = {
+		th_min_bbox_area = 80,
+		th_nPostB = 10,
+		th_min_area = 35,
+		th_min_orientation = 80*DEG_TO_RAD,
+		th_min_fill_rate = 0.28, --0.28,
+		height_min = -0.9,  --TODO
+		th_aspect_ratio = {2.5,110},
+		th_edge_margin = 5,
+		th_bottom_boundingbox = 0.9,
+		th_ground_boundingbox = {-15,15,-15,10},
+		th_min_green_ratio = 0.2,
+		th_min_bad_color_ratio = 0.1,
+		th_goal_separation = {0.35,3.0},
+		th_min_area_unknown_post = 80,
+		-- The range we triangulate:
+		far_goal_threshold= 4.0,
+		use_centerpost = 1,
+		min_crossbar_ratio = 0.6,
+		check_for_ground = 1,
+		height_max = 9,
 		-- Metric properties
 		goalHeight = 1.8,
 		goalWidth = 3.1, --3.0 for I-I, 3.1 for C-C
 		postDiameter = 0.1,
-  }
+	}
 end
 
 -- Associate with the table

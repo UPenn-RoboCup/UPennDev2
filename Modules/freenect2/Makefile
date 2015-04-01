@@ -7,6 +7,7 @@ depth_packet_stream_parser.o \
 double_buffer.o \
 event_loop.o \
 frame_listener_impl.o \
+registration.o \
 resource.o \
 rgb_packet_stream_parser.o \
 tinythread.o \
@@ -61,8 +62,7 @@ endif
 else
 
 # Use: https://github.com/wiedemeyer/libfreenect2
-LIBFREENECT2_DIR=/home/thor/Desktop/libfreenect2-cl
-
+#LIBFREENECT2_DIR=/home/thor/Desktop/libfreenect2-cl
 #INCLUDES+=-I$(LIBFREENECT2_DIR)/depends/libusb/include/libusb-1.0
 #EXTRA_LINK+=-L$(LIBFREENECT2_DIR)/depends/libusb/lib
 INCLUDES+=`pkg-config libusb-1.0 --cflags`

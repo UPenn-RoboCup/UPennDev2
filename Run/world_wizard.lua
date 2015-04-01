@@ -48,10 +48,9 @@ vision_ch.callback = function(skt)
 
 -- Update localization based onodometry and vision
 --Should use the differential of odometry!
-  if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
-  else uOdometry0 = uOdometry end
-  uOdometry = mcm.get_status_odometry()
-  dOdometry = util.pose_relative(uOdometry,uOdometry0)
+  local uOdometry = mcm.get_status_odometry()
+	dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
+	uOdometry0 = vector.copy(uOdometry)
   
   lW.update(dOdometry, detection)
   
@@ -70,10 +69,9 @@ local function update()
   if npoll==0 then
     -- If no frames, then just update by odometry
     --Should use the differential of odometry!
-    if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
-    else uOdometry0 = uOdometry end
-    uOdometry = mcm.get_status_odometry()
-    dOdometry = util.pose_relative(uOdometry,uOdometry0)
+		local uOdometry = mcm.get_status_odometry()
+    dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
+		uOdometry0 = vector.copy(uOdometry)
 
     --Hack for robocup
     if Config.fsm.libraries.World=='RoboCup' then

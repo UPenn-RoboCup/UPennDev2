@@ -17,7 +17,10 @@ if not IS_WEBOTS then
   signal.signal("SIGTERM", shutdown)
 end
 
-local lW
+local util = require'util'
+local vector = require'vector'
+require'mcm'
+local lW, uOdometry0
 if not IS_WEBOTS then
  --world update for robot
   lW=require'libWorld'
@@ -70,9 +73,7 @@ while running do
 
   local events = state_ch:receive(true)
   if events then
-
     for _, e in ipairs(events) do
-      print('here', e)
       if e=='reset' and Body.WebotsBody then
         Body.WebotsBody.reset()
       end
@@ -90,18 +91,18 @@ while running do
     end
   end
 
-  if not IS_WEBOTS then
+  if lW then
+		--[[
     if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
     else uOdometry0 = uOdometry end
     uOdometry = mcm.get_status_odometry()
     dOdometry = util.pose_relative(uOdometry,uOdometry0)
+		--]]
+		local uOdometry = mcm.get_status_odometry()
+    dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
+		uOdometry0 = vector.copy(uOdometry)
     lW.update(dOdometry)
-    wcm.set_robot_pose(lW.get_pose())
-   --world update for robot
   end
-
-
-
 
   -- If not webots, then wait the update cycle rate
   if IS_WEBOTS then
@@ -118,6 +119,8 @@ print'Exiting state wizard...'
 for _,my_fsm in pairs(state_machines) do
   my_fsm:exit()
 end
+
+if lW then lW.exit() end
 
 if IS_WEBOTS then
 	wb_supervisor_simulation_revert()

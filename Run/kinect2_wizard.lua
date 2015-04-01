@@ -17,7 +17,6 @@ if Config.net.use_wireless then
 else
 	operator = Config.net.operator.wired
 end
-print(Config.net.streams['kinect2_depth'].tcp, operator)
 local depth_net_ch, color_net_ch
 local depth_udp_ch, color_udp_ch
 if Config.IS_COMPETING then
@@ -26,11 +25,14 @@ if Config.IS_COMPETING then
 else
 	depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
 	color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
+	print(depth_net_ch.name)
 end
 
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
-print(depth_net_ch.name)
+
+print(Config.net.streams['kinect2_depth'].tcp, operator)
+
 
 local c_rgb
 if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
@@ -76,7 +78,6 @@ local function update(rgb, depth)
 	if Config.IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
 	if t - t_send < 1 then return t end
 	t_send = t
-	if not IS_WEBOTS then io.write('Kinect2 | t_send', t_send,'\n') end
 
 	local rpy = Body.get_rpy()
 	local bh = mcm.get_walk_bodyHeight()
@@ -133,10 +134,10 @@ local function update(rgb, depth)
 	--]]
 
 	-- Send
-	if Config.IS_COMPETING then
-		color_udp_ch:send(m_rgb..j_rgb)
-		depth_udp_ch:send(m_depth..ranges)
-	end
+	if not IS_WEBOTS then io.write('Kinect2 | t_send ', t_send,'\n') end
+	if color_udp_ch then color_udp_ch:send(m_rgb..j_rgb) end
+	if depth_udp_ch then depth_udp_ch:send(m_depth..ranges) end
+
 	color_net_ch:send({m_rgb, j_rgb})
 	depth_net_ch:send({m_depth, ranges})
 	color_ch:send({m_rgb, j_rgb})

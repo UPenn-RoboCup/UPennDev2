@@ -71,7 +71,7 @@ if type(udp)=='table' and not udp.ffi then
 	local function udp_size(self)
 		return self.receiver:size()
 	end
-  function simple_ipc.new_sender(ip, port)
+	function simple_ipc.new_sender(ip, port)
 		local sender = udp.new_sender(ip, port)
 		local obj = {
 			sender = sender,
@@ -83,10 +83,10 @@ if type(udp)=='table' and not udp.ffi then
 		}
 		return obj
 	end
-  function simple_ipc.new_receiver(port)
+	function simple_ipc.new_receiver(port)
 		local receiver = udp.new_receiver(port)
 		local obj = {
-      receiver = receiver,
+			receiver = receiver,
 			port = port,
 			fd = receiver:descriptor(),
 			receive = udp_receive,
@@ -96,8 +96,8 @@ if type(udp)=='table' and not udp.ffi then
 		return obj
 	end
 elseif type(udp)=='table' then
-  simple_ipc.new_sender = udp.new_sender
-  simple_ipc.new_receiver = udp.new_receiver
+	simple_ipc.new_sender = udp.new_sender
+	simple_ipc.new_receiver = udp.new_receiver
 end
 
 -- Set up the sending object
@@ -113,133 +113,133 @@ end
 
 -- Set up receiving object
 local function ch_receive(self, nonblock)
-  return self.socket:recv_all(nonblock and zmq.DONTWAIT)
-  --[[
-  local ret = self.socket:recv_all(nonblock and zmq.DONTWAIT)
-  if type(ret)=='table' and #ret==1 then
-    return ret[1]
-  else
-    return ret
-  end
-  --]]
+	return self.socket:recv_all(nonblock and zmq.DONTWAIT)
+	--[[
+	local ret = self.socket:recv_all(nonblock and zmq.DONTWAIT)
+	if type(ret)=='table' and #ret==1 then
+	return ret[1]
+	else
+	return ret
+	end
+	--]]
 end
 
 -- Set up receiving object
 local function ch_send_and_receive(self, messages)
-  ch_send(self, messages)
-  return ch_receive(self)
+	ch_send(self, messages)
+	return ch_receive(self)
 end
 
 -- Make a new publisher
 function simple_ipc.new_publisher(channel, target)
 	-- Form the prefix
-  local ch_name, inverted = type2prefix[type(channel)](channel, target)
+	local ch_name, inverted = type2prefix[type(channel)](channel, target)
 	assert(ch_name,'PUBLISH | Bad prefix!')
 	-- Grab or create the context
 	CTX = CTX or zmq.init(N_THREAD_POOL)
-  -- Set the socket type
-  local ch_socket = CTX:socket(zmq.PUB)
-  assert(ch_socket, 'PUBLISH | Bad socket!')
-  -- Attach to the channel
+	-- Set the socket type
+	local ch_socket = CTX:socket(zmq.PUB)
+	assert(ch_socket, 'PUBLISH | Bad socket!')
+	-- Attach to the channel
 	local is_bind = false
-  if inverted then
-    ch_socket:connect(ch_name)
-  else
-    ch_socket:bind(ch_name)
+	if inverted then
+		ch_socket:connect(ch_name)
+	else
+		ch_socket:bind(ch_name)
 		is_bind = true
-  end
+	end
 	-- Return the table
-  local obj = {
+	local obj = {
 		socket = ch_socket,
 		send = ch_send,
 		name = ch_name,
 		is_bind = is_bind,
 		kind = 'pub',
 	}
-  if type(ch_socket)=='table' then
-    ch_socket.obj = obj
-  end
-  return obj
+	if type(ch_socket)=='table' then
+		ch_socket.obj = obj
+	end
+	return obj
 end
 
 -- Make a new subscriber
 function simple_ipc.new_subscriber(channel, target)
 	-- Form the prefix
-  local ch_name, inverted = type2prefix[type(channel)](channel, target)
+	local ch_name, inverted = type2prefix[type(channel)](channel, target)
 	assert(ch_name,'SUBSCRIBE | Bad prefix!')
 	-- Grab or create the context
 	CTX = CTX or zmq.init(N_THREAD_POOL)
-  -- Set the socket type
-  local ch_socket = CTX:socket(zmq.SUB)
-  assert(ch_socket, 'SUBSCRIBE | Bad socket!')
+	-- Set the socket type
+	local ch_socket = CTX:socket(zmq.SUB)
+	assert(ch_socket, 'SUBSCRIBE | Bad socket!')
 	-- Set the subscribe flag with no filters
 	ch_socket:set_subscribe''
-  -- Attach to the channel
+	-- Attach to the channel
 	local is_bind = false
-  if inverted then
-    ch_socket:bind(ch_name)
+	if inverted then
+		ch_socket:bind(ch_name)
 		is_bind = true
-  else
-    ch_socket:connect(ch_name)
-  end
+	else
+		ch_socket:connect(ch_name)
+	end
 	-- Return the table
-  local obj = {
+	local obj = {
 		socket = ch_socket,
 		receive = ch_receive,
 		name = ch_name,
 		is_bind = is_bind,
 		kind = 'sub',
 	}
-  if type(ch_socket)=='table' then
-    ch_socket.obj = obj
-  end
-  return obj
+	if type(ch_socket)=='table' then
+		ch_socket.obj = obj
+	end
+	return obj
 end
 
 -- Make a new requester
 function simple_ipc.new_requester(channel, target)
 	-- Form the prefix
-  local ch_name, inverted = type2prefix[type(channel)](channel, target)
+	local ch_name, inverted = type2prefix[type(channel)](channel, target)
 	assert(ch_name, 'REQUEST | Bad prefix!')
 	-- Grab or create the context
 	CTX = CTX or zmq.init(N_THREAD_POOL)
-  -- Set the socket type
-  local ch_socket = CTX:socket(zmq.REQ)
-  assert(ch_socket, 'REQUEST | Bad socket!')
-  -- Attach to the channel
+	-- Set the socket type
+	local ch_socket = CTX:socket(zmq.REQ)
+	assert(ch_socket, 'REQUEST | Bad socket!')
+	-- Attach to the channel
 	local is_bind = false
-  if inverted then
-    ch_socket:bind(ch_name)
+	if inverted then
+		ch_socket:bind(ch_name)
 		is_bind = true
-  else
-    ch_socket:connect(ch_name)
-  end
+	else
+		ch_socket:connect(ch_name)
+	end
 	-- Return the table
-  local obj = {
+	local obj = {
 		socket = ch_socket,
 		send = ch_send,
 		receive = ch_receive,
-    send_recv = ch_send_and_receive,
+		send_recv = ch_send_and_receive,
 		name = ch_name,
 		is_bind = is_bind,
 		kind = 'req',
 	}
-  if type(ch_socket)=='table' then
-    ch_socket.obj = obj
-  end
-  return obj
+	if type(ch_socket)=='table' then
+		ch_socket.obj = obj
+	end
+	return obj
 end
 
 -- Make a new replier
 function simple_ipc.new_replier(channel, target)
 	-- Form the prefix
-  local ch_name, inverted = type2prefix[type(channel)](channel, target)
+	local ch_name, inverted = type2prefix[type(channel)](channel, target)
 	assert(ch_name,'REPLIER | Bad prefix!')
 	-- Grab or create the context
 	CTX = CTX or zmq.init(N_THREAD_POOL)
-  -- Set the socket type
-  local ch_socket = CTX:socket(zmq.REP)
-  assert(ch_socket, 'REPLIER | Bad socket!')
+	-- Set the socket type
+	local ch_socket = CTX:socket(zmq.REP)
+	assert(ch_socket, 'REPLIER | Bad socket!')
 	-- Attach to the channel
 	local is_bind = false
 	if inverted then
@@ -257,32 +257,32 @@ function simple_ipc.new_replier(channel, target)
 		is_bind = is_bind,
 		kind = 'rep',
 	}
-  if type(ch_socket)=='table' then
-    ch_socket.obj = obj
-  end
+	if type(ch_socket)=='table' then
+		ch_socket.obj = obj
+	end
 	return obj
 end
 
 -- Make a new pair
 function simple_ipc.new_pair(channel, is_parent)
 	-- Form the prefix
-  local ch_name, connect = type2prefix[type(channel)](channel)
+	local ch_name, connect = type2prefix[type(channel)](channel)
 	assert(ch_name,'PAIR | Bad prefix!')
 	-- Grab or create the context
 	CTX = CTX or zmq.init( N_THREAD_POOL )
-  -- Set the socket type
-  local ch_socket = CTX:socket(zmq.PAIR)
-  assert(ch_socket, 'PAIR | Bad socket!')
-  -- Attach to the channel
+	-- Set the socket type
+	local ch_socket = CTX:socket(zmq.PAIR)
+	assert(ch_socket, 'PAIR | Bad socket!')
+	-- Attach to the channel
 	local is_bind = false
-  if is_parent then
-    ch_socket:bind( ch_name )
+	if is_parent then
+		ch_socket:bind( ch_name )
 		is_bind = true
-  else
-    ch_socket:connect( ch_name )
-  end
+	else
+		ch_socket:connect( ch_name )
+	end
 	-- Return the table
-  local obj = {
+	local obj = {
 		socket = ch_socket,
 		send = ch_send,
 		receive = ch_receive,
@@ -290,10 +290,10 @@ function simple_ipc.new_pair(channel, is_parent)
 		is_bind = is_bind,
 		kind = 'pair',
 	}
-  if type(ch_socket)=='table' then
-    ch_socket.obj = obj
-  end
-  return obj
+	if type(ch_socket)=='table' then
+		ch_socket.obj = obj
+	end
+	return obj
 end
 
 -- Make a thread with a channel

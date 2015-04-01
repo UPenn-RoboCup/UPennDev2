@@ -17,8 +17,8 @@ local head = {
 	-- Head angle bias
 	pitchBias = 0,
 	yawBias = 0,
-  -- From CoM to neck joint: {neckX, neckY, neckZ}
-  neckOffset = {0, 0, 0.32}
+	-- From CoM to neck joint: {neckX, neckY, neckZ}
+	neckOffset = {0, 0, 0.32}
 }
 
 local colors = {
@@ -103,7 +103,7 @@ table.insert(camera,{
 		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
 		-- Translation offset from the neck
 		{0.04,0,0.04}
-	}
+	},
 	dev = '/dev/video0',
 	--dev = '/dev/video1',
 	format = 'yuyv',
@@ -131,7 +131,7 @@ table.insert(camera,{
 	focal_length = 395.17,
 	focal_base = 640,
 	auto_param = {
-	--      {'Exposure, Auto', 1},
+		--      {'Exposure, Auto', 1},
 		{'White Balance Temperature, Auto', 0},
 		{'Power Line Frequency', 0},
 		{'Exposure, Auto Priority', 0},
@@ -144,9 +144,9 @@ table.insert(camera,{
 local kinect = {
 	name = 'kinect2',
 	mountOffset = {
-    {3*DEG_TO_RAD,2*DEG_TO_RAD,0}, -- RPY
-    {0.03,0,0.08} -- translation
-  }
+		{3*DEG_TO_RAD,2*DEG_TO_RAD,0}, -- RPY
+		{0.03,0,0.08} -- translation
+	},
 	w = 512,
 	h = 424,
 	jpeg_quality = 60,

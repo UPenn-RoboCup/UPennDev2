@@ -4,36 +4,38 @@ local Body   = require'Body'
 local util   = require'util'
 local vector = require'vector'
 
-local t_entry, t_update, t_exit
-local nwaypoints, wp_id
-local waypoints = {}
+local USE_ADJUSTMENT = false
 
+local t_entry, t_update, t_exit
+local wp_thread
+local waypoints = {
+	vector.pose{1, 0, 0*DEG_TO_RAD},
+	vector.pose{1, 1, 90*DEG_TO_RAD},
+	vector.pose{2, 1, 0*DEG_TO_RAD},
+}
 local dist_threshold = 0.05
 local angle_threshold = 5 * DEG_TO_RAD
-local function robocup_approach(target_pose, pose)
-  local maxStep = 0.08
-  local maxTurn = 0.15
+local maxStep = 0.08
+local maxTurn = 0.15
 
+local function robocup_approach(target_pose, pose)
   -- Distance to the waypoint
   local rel_pose = util.pose_relative(target_pose, pose)
   local rel_dist = math.sqrt(math.pow(rel_pose.x,2)+math.pow(rel_pose.y,2))
-	
-	if rel_dist<dist_threshold and math.abs(rel_pose.a)<angle_threshold then
-		return nil, {0,0,0}
-	end
 
   -- calculate walk step velocity based on ball position
   local vStep = vector.new{
-		util.procFunc(rel_pose[1]*0.5, 0, maxStep),
-		util.procFunc(rel_pose[2]*0.5, 0, maxStep),
-		0
+		util.procFunc(rel_pose.x*0.5, 0, maxStep),
+		util.procFunc(rel_pose.y*0.5, 0, maxStep),
+		rel_pose.a * 0.5
 	}
+
   -- Reduce speed based on how far away from the waypoint we are
-  if rel_dist < 0.04 then maxStep = 0.02 end
-  local scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
+	local maxStep1 = rel_dist < 0.04 and 0.02 or maxStep
+  local scale = math.min(maxStep1/math.sqrt(vStep[1]^2+vStep[2]^2), 1)
   vStep = scale * vStep
 
-  return rel_dist, vStep
+  return vStep, rel_dist, math.abs(rel_pose.a)
 end
 
 function state.entry()
@@ -43,6 +45,30 @@ function state.entry()
 
   t_entry = Body.get_time()
   t_update = t_entry
+
+	-- Make our coroutine
+	wp_thread = coroutine.create(function(waypoints)
+			util.ptable(waypoints)
+			local pose, pBias = coroutine.yield()
+			for i, wp in ipairs(waypoints) do
+				print('bodyApproach | Waypoint', wp)
+				local betweenWP = true
+				while betweenWP do
+					local pOffset = util.pose_global(pBias, {0,0,pose[3]})
+					local wp_adjusted = util.pose_relative(pOffset, wp)
+					local vel, dR, dA = robocup_approach(USE_ADJUSTMENT and wp_adjusted or wp, pose)
+					if dR<dist_threshold and dA<angle_threshold then
+						betweenWP = false
+						pose, pBias = coroutine.yield({0,0,0})
+					else
+						pose, pBias = coroutine.yield(vel)
+					end
+				end
+			end
+			return {0,0,0}
+		end)
+	-- set the waypoints
+	coroutine.resume(wp_thread, waypoints)
 
 	-- Start walking
 	motion_ch:send'hybridwalk'
@@ -56,13 +82,14 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-	local pose = wcm.get_robot_pose()
-	local target_pose = vector.pose{1,0,0}
-	local dist, vel = robocup_approach(target_pose, pose)
+	-- Get any human given bias in the walk
+	local pBias = hcm.get_teleop_walkbias()
+	local pose = vector.pose(wcm.get_robot_pose())
+	local status, velocity = coroutine.resume(wp_thread, pose, pBias)
 	
-	mcm.set_walk_vel(vel)
+	if not status then return'done' end
 	
-	if not dist then return'done' end
+	mcm.set_walk_vel(velocity)
 	
 	--[[
 	print('pose', pose)
@@ -75,6 +102,7 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
+	mcm.set_walk_vel({0,0,0})
 end
 
 return state

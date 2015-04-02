@@ -104,31 +104,24 @@ char_lut['1'] = function()
   body_ch:send'init'
 end
 char_lut['2'] = function()
-	head_ch:send'teleop'
-end
-char_lut['3'] = function()
 	arm_ch:send'ready'
 end
-char_lut['4'] = function()
+char_lut['3'] = function()
+	head_ch:send'teleop'
 	arm_ch:send'teleop'
 end
 char_lut['5'] = function()
-  --head_ch:send'trackhand'
   body_ch:send'approach'
 end
 char_lut['6'] = function()
-  arm_ch:send'poke'
+	head_ch:send'trackhand'
+  --arm_ch:send'poke'
 end
 
 char_lut['8'] = function()
-  head_ch:send'teleop'
-  motion_ch:send'stand'
-	if mcm.get_walk_ismoving()>0 then
-		mcm.set_walk_stoprequest(1)
-	end
+	body_ch:send'stop'
 end
 char_lut['9'] = function()
-  head_ch:send'teleop'
   motion_ch:send'hybridwalk'
 end
 

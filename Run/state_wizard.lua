@@ -22,7 +22,6 @@ local vector = require'vector'
 require'mcm'
 local lW, uOdometry0
 if not IS_WEBOTS then
- --world update for robot
   lW=require'libWorld'
   lW.entry()
 end
@@ -92,12 +91,6 @@ while running do
   end
 
   if lW then
-		--[[
-    if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
-    else uOdometry0 = uOdometry end
-    uOdometry = mcm.get_status_odometry()
-    dOdometry = util.pose_relative(uOdometry,uOdometry0)
-		--]]
 		local uOdometry = mcm.get_status_odometry()
     dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
 		uOdometry0 = vector.copy(uOdometry)

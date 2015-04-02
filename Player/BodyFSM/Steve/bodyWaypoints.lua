@@ -8,16 +8,11 @@ local USE_ADJUSTMENT = false
 
 local t_entry, t_update, t_exit
 local wp_thread
-local waypoints = {}
+
 local dist_threshold = 0.05
 local angle_threshold = 5 * DEG_TO_RAD
 local maxStep = 0.08
 local maxTurn = 0.15
-
--- If a demo, then just use those waypoints
-if Config.demo then
-	waypoints = Config.demo.waypoints
-end
 
 local sqrt = math.sqrt
 local pow = math.pow
@@ -71,6 +66,24 @@ function state.entry()
 			end
 			return {0,0,0}
 		end)
+
+	local waypoints = {}
+	-- If a demo, then just use those waypoints
+	if Config.demo then
+		local wps_key = hcm.get_demo_waypoints()
+		if type(wps_key)~='string' then
+			print('BAD WAYPOINTS KEY TYPE')
+		else
+			print('Waypoints Key:', wps_key)
+			local wps_demo = Config.demo.waypoints[wps_key]
+			if type(wps_demo)~='table' then
+				print('BAD WAYPOINTS KEY')
+			else
+				waypoints = wps_demo
+			end
+		end
+	end
+	io.write('Waypoints:\n', table.concat(waypoints, '\n'), '\n')
 	-- Set the waypoints
 	coroutine.resume(wp_thread, waypoints)
 

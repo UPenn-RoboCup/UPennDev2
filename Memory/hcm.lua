@@ -39,6 +39,10 @@ shared_data.teleop = {
 	walkbias = zeros(3)
 }
 
+shared_data.demo = {
+	waypoints = 'deans_reception',
+}
+
 shared_data.assist = {
   -- Cylinder: [x center, y center, z center, radius, height]
   cylinder = zeros(5),
@@ -49,7 +53,7 @@ shared_data.guidance.color = 'CYAN'
 shared_data.guidance.t = zeros(1)
 
 
-shared_data.audio={}
+shared_data.audio = {}
 shared_data.audio.request = vector.zeros(1)
 
 shared_data.drive={}

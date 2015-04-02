@@ -2,9 +2,6 @@ assert(Config, 'Need a pre-existing Config table!')
 
 local fsm = {}
 
-Config.demo = false
---Config.demo = true
-
 Config.torque_legs = true
 
 -- Update rate in Hz
@@ -47,6 +44,9 @@ fsm.Body = {
 	--
 	{'bodyApproach', 'done', 'bodyStop'},
 	{'bodyApproach', 'stop', 'bodyStop'},
+	--
+	{'bodyWaypoints', 'done', 'bodyStop'},
+	{'bodyWaypoints', 'stop', 'bodyStop'},
 }
 
 fsm.Head = {
@@ -230,8 +230,6 @@ elseif fsm.libraries.MotionLib == 'DRCFinal' then
 		{'motionHybridWalkEnd', 'done', 'motionStance'},
 	}
 end
-
-
 
 Config.fsm = fsm
 

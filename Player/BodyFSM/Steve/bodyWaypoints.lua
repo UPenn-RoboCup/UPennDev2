@@ -8,15 +8,16 @@ local USE_ADJUSTMENT = false
 
 local t_entry, t_update, t_exit
 local wp_thread
-local waypoints = {
-	vector.pose{1, 0, 0*DEG_TO_RAD},
-	vector.pose{1, 1, 90*DEG_TO_RAD},
-	vector.pose{2, 1, 0*DEG_TO_RAD},
-}
+local waypoints = {}
 local dist_threshold = 0.05
 local angle_threshold = 5 * DEG_TO_RAD
 local maxStep = 0.08
 local maxTurn = 0.15
+
+-- If a demo, then just use those waypoints
+if Config.demo then
+	waypoints = Config.demo.waypoints
+end
 
 local sqrt = math.sqrt
 local pow = math.pow
@@ -53,10 +54,9 @@ function state.entry()
 
 	-- Make our coroutine
 	wp_thread = coroutine.create(function(waypoints)
-			util.ptable(waypoints)
 			local pose, pBias = coroutine.yield()
 			for i, wp in ipairs(waypoints) do
-				print('bodyApproach | Waypoint', wp)
+				io.write('bodyApproach | Waypoint', wp, '\n')
 				local betweenWP = true
 				while betweenWP do
 					local pOffset = util.pose_global(pBias, {0,0,pose[3]})
@@ -64,20 +64,19 @@ function state.entry()
 					local vel, dR, dA = robocup_approach(USE_ADJUSTMENT and wp_adjusted or wp, pose)
 					if dR<dist_threshold and dA<angle_threshold then
 						betweenWP = false
-						pose, pBias = coroutine.yield({0,0,0})
-					else
-						pose, pBias = coroutine.yield(vel)
+						vel = {0,0,0}
 					end
+					pose, pBias = coroutine.yield(vel)
 				end
 			end
 			return {0,0,0}
 		end)
-	-- set the waypoints
+	-- Set the waypoints
 	coroutine.resume(wp_thread, waypoints)
 
 	-- Start walking
 	motion_ch:send'hybridwalk'
-	
+
 end
 
 function state.update()
@@ -91,11 +90,11 @@ function state.update()
 	local pBias = hcm.get_teleop_walkbias()
 	local pose = vector.pose(wcm.get_robot_pose())
 	local status, velocity = coroutine.resume(wp_thread, pose, pBias)
-	
+
 	if not status then return'done' end
-	
+
 	mcm.set_walk_vel(velocity)
-	
+
 	--[[
 	print('pose', pose)
 	print('target_pose', target_pose)

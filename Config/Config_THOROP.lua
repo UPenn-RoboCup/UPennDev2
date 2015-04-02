@@ -7,7 +7,8 @@ IS_STEVE = true
 Config.PLATFORM_NAME = 'THOROP'
 Config.nJoint = 37
 Config.use_localhost = false
---Config.IS_COMPETING = true
+Config.IS_COMPETING = false
+Config.demo = true
 
 -- Printing of debug messages
 Config.debug = {
@@ -81,6 +82,7 @@ end
 -----------------------------------
 
 -- Custom Config files
+if Config.demo then table.insert(exo, 'Demo') end
 for _,v in ipairs(exo) do
 	local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}
 	local filename = table.concat(fname)  

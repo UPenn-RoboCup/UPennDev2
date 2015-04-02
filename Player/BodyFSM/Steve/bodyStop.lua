@@ -11,6 +11,9 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry    
   t_plan = t_entry
+	
+	-- Stand
+	motion_ch:send'stand'
 end
 
 function state.update()

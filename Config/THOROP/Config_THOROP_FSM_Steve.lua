@@ -225,6 +225,7 @@ elseif fsm.libraries.MotionLib == 'DRCFinal' then
 		{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
 		{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 		{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+		{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
 		{'motionHybridWalkEnd', 'done', 'motionStance'},
 	}
 end

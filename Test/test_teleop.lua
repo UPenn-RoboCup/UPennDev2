@@ -113,7 +113,8 @@ char_lut['4'] = function()
 	arm_ch:send'teleop'
 end
 char_lut['5'] = function()
-  head_ch:send'trackhand'
+  --head_ch:send'trackhand'
+  body_ch:send'approach'
 end
 char_lut['6'] = function()
   arm_ch:send'poke'

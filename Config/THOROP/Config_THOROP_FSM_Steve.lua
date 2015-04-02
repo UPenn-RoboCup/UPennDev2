@@ -43,6 +43,9 @@ fsm.Body = {
 	{'bodyInit', 'done', 'bodyStop'},
 	--
 	{'bodyStop', 'init', 'bodyInit'},
+	{'bodyStop', 'approach', 'bodyApproach'},
+	--
+	{'bodyApproach', 'done', 'bodyStop'},
 }
 
 fsm.Head = {

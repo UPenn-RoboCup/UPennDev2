@@ -8,6 +8,7 @@ local Body = require('Body')
 local lW = require'libWorld'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
+local vector = require'vector'
 local util = require'util'
 -- Cache some functions
 local get_time = Body.get_time

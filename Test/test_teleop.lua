@@ -125,7 +125,7 @@ char_lut['9'] = function()
   motion_ch:send'hybridwalk'
 end
 
-char_lut['r'] = function()
+lower_lut['r'] = function()
   if selected_arm==0 then
 		local options = hcm.get_teleop_loptions()
 		options[1] = math.max(options[1] - DEG_TO_RAD, 0)
@@ -156,7 +156,7 @@ char_lut['r'] = function()
   end
 end
 
-char_lut['t'] = function()
+lower_lut['t'] = function()
   if selected_arm==0 then
 		local options = hcm.get_teleop_loptions()
 		options[1] = math.min(options[1] + DEG_TO_RAD, 90*DEG_TO_RAD)
@@ -332,7 +332,7 @@ local function apply_walk(dWalk)
 end
 
 -- Add the access to the transforms
-setmetatable(char_lut, {
+setmetatable(lower_lut, {
 	__index = function(t, k)
     if (not arm_mode) then
       apply_head(head[k])

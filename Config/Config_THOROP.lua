@@ -35,7 +35,7 @@ if IS_WEBOTS then
     --kinect = 'kinect2_wizard',
 	 world = 'world_wizard',
   }
-  -- Adjust the tiemsteps if desired
+  -- Adjust the timesteps if desired
   -- Config.camera_timestep = 33
   -- Config.lidar_timestep = 200 --slower
   -- Config.kinect_timestep = 30
@@ -59,6 +59,7 @@ if IS_STEVE then
 	}
 
 	if IS_WEBOTS then
+		Config.sensors.chest_lidar = 'mesh_wizard'
 		--Config.sensors.world = nil
 		--[[
 		Config.sensors.kinect = 'kinect2_wizard'

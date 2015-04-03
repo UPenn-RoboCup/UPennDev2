@@ -25,12 +25,15 @@ local function set_iterators(teleopLArm, teleopRArm, teleopComp)
 	end
 	-- Grab the torso compensation
 	local uTorsoAdapt, uTorso = movearm.get_compensation()
-	print(uTorsoAdapt, uTorso)
 	local uTorsoCompNow = mcm.get_stance_uTorsoComp()
-	print(uTorsoCompNow)
+	--print(uTorsoAdapt, uTorso)
+	--print(uTorsoCompNow)
 	local fkLComp, fkRComp
 	fkLComp, fkRComp, uTorsoComp, uTorso0 =
 		movearm.apply_q_compensation(teleopLArm, teleopRArm, uTorsoAdapt, uTorso)
+
+	uTorso0 = uTorsoCompNow
+	uTorso0[3] = 0
 
 	-- Do we have desired null space options?
 	if teleopComp == 2 then
@@ -99,9 +102,15 @@ function state.update()
 	assert(uTorso0)
 	local phase = math.max(phaseL, phaseR)
 	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
-	mcm.set_stance_uTorsoComp(uTorsoNow)
+
+	--[[
+	print(state._NAME..' | uTorso0', uTorso0)
+	print(state._NAME..' | uTorsoComp', uTorsoComp)
+	print(state._NAME..' | uTorsoNow', uTorsoNow)
+	--]]
 
 	-- Send to the joints
+	mcm.set_stance_uTorsoComp(uTorsoNow)
 	Body.set_larm_command_position(qLNext)
 	Body.set_rarm_command_position(qRNext)
   

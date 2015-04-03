@@ -20,7 +20,6 @@ function state.entry()
 
 	-- TODO: Autodetect which stges to use, based on our initial position
 	piterators = movearm.path_iterators(Config.arm.readyFromInitStages)
-
 end
 
 function state.update()
@@ -33,6 +32,8 @@ function state.update()
 	if not lPathIter or not rPathIter then
 		local it
 		it, uTorsoComp, uTorso0 = piterators()
+		uTorso0 = mcm.get_stance_uTorsoComp()
+		uTorso0[3] = 0
 		-- We are done if the coroutine emits nothing
 		if not it then return'done' end
 		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD = unpack(it)
@@ -56,7 +57,14 @@ function state.update()
 	local phaseL = moreL and moreL/qLD or 0
 	local phaseR = moreR and moreR/qRD or 0
 	local phase = math.max(phaseL, phaseR)
+
 	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
+
+	--[[
+	print(state._NAME..' | uTorso0', uTorso0)
+	print(state._NAME..' | uTorsoComp', uTorsoComp)
+	print(state._NAME..' | uTorsoNow', uTorsoNow)
+	--]]
 
 	-- Set the arm and torso commands
 	mcm.set_stance_uTorsoComp(uTorsoNow)

@@ -41,6 +41,7 @@ fsm.Body = {
 	--
 	{'bodyStop', 'init', 'bodyInit'},
 	{'bodyStop', 'approach', 'bodyApproach'},
+	{'bodyStop', 'stop', 'bodyStop'},
 	--
 	{'bodyApproach', 'done', 'bodyStop'},
 	{'bodyApproach', 'stop', 'bodyStop'},
@@ -98,10 +99,11 @@ fsm.Arm = {
 	{'armReady', 'done', 'armTeleop'},
 	{'armReady', 'teleop', 'armTeleop'},
 	{'armReady', 'grab', 'armGrab'},
+	{'armReady', 'init', 'armInit'},
 	-- Teleop
 	{'armTeleop', 'timeout', 'armTeleop'},
 	{'armTeleop', 'teleop', 'armTeleop'},
-	{'armTeleop', 'param', 'armTeleop'}, -- params updated
+	{'armTeleop', 'params', 'armTeleop'}, -- params updated
 	{'armTeleop', 'done', 'armStance'},
 	{'armTeleop', 'init', 'armInit'},
 	{'armTeleop', 'ready', 'armReady'},

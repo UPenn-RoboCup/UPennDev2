@@ -52,7 +52,8 @@ local metadata = {
 	t = 0,
 }
 
-local scan_angles, scan_x, scan_y, scan_a, scan_p, scan_angles
+local scan_angles, scan_p, scan_angles
+--local scan_x, scan_y, scan_a
 -- Setup tensors for a lidar mesh
 local mesh, mesh_byte, mesh_adj, offset_idx
 local n_scanlines
@@ -102,9 +103,11 @@ local function setup_mesh(meta)
 	metadata.rfov = ranges_fov
 	metadata.sfov = {-mag_sweep / 2, mag_sweep / 2}
 	metadata.a = scan_angles
+	--[[
 	metadata.px = scan_x
 	metadata.py = scan_y
 	metadata.pa = scan_a
+	--]]
 	-- Add Orientation for pitch and roll
 	metadata.pitch = scan_pitch
 	metadata.roll = scan_roll
@@ -255,6 +258,7 @@ local function update(meta, ranges)
 			-- Save the orientation
 			scan_pitch[line] = pitch
 			scan_roll[line] = roll
+			-- Save the body CoM
 		end
 	end
 	-- Check for sending out on the wire

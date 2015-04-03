@@ -90,6 +90,7 @@ local function setup_mesh(meta)
 		scan_pitch = scan_angles:clone()
 		scan_roll = scan_angles:clone()
 		scan_pose = torch.DoubleTensor(n_scanlines,3):zero()
+		scan_uComp = torch.DoubleTensor(n_scanlines,3):zero()
 	else
 		scan_angles = vector.zeros(n_scanlines)
 		scan_x = vector.zeros(n_scanlines)
@@ -98,6 +99,7 @@ local function setup_mesh(meta)
 		scan_pitch = vector.zeros(n_scanlines)
 		scan_roll = vector.zeros(n_scanlines)
 		scan_pose = {}
+		scan_uComp = {}
 	end
 	-- Metadata for the mesh
 	metadata.rfov = ranges_fov
@@ -113,6 +115,8 @@ local function setup_mesh(meta)
 	metadata.roll = scan_roll
 	-- Odometry
 	metadata.pose = scan_pose
+	-- Compensation
+	metadata.uComp = scan_uComp
 	-- Add the dimensions (useful for raw)
 	metadata.dims = {n_scanlines, n_returns}
 end
@@ -240,6 +244,9 @@ local function update(meta, ranges)
 	local roll, pitch, yaw = unpack(meta.rpy)
 	-- Body pose
 	local pose = meta.pose
+	-- Torso compensation
+	local uTorsoComp = mcm.get_stance_uTorsoComp()
+	uTorsoComp[3] = mcm.get_stance_bodyHeight()
 
 	-- Find the scanline indices
 	local rad_angle = meta.angle
@@ -258,7 +265,8 @@ local function update(meta, ranges)
 			-- Save the orientation
 			scan_pitch[line] = pitch
 			scan_roll[line] = roll
-			-- Save the body CoM
+			-- Save the torso compensation
+			scan_uComp[line] = uTorsoComp
 		end
 	end
 	-- Check for sending out on the wire

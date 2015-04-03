@@ -15,6 +15,7 @@ local vector = require'vector'
 local Body = require'Body'
 
 require'vcm'
+require'mcm'
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
 -- mag_sweep: How much will we sweep over

@@ -463,177 +463,6 @@ local function get_next_movement(self, init_cond, trLArm1,trRArm1, dt_step, wais
 end
 
 
-
-
-
-
-
-
-
-local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_step)  
-  if not qArm or not trArmTarget then return end
-  local handOffsetY=Config.arm.handoffset.gripper3[2]  --positive Y value is inside
-  local trArm
-  
-  if isLeft ==1 then 
-    handOffsetY=-handOffsetY 
-    trArm= Body.get_forward_larm(qArm)
-  else
-    trArm= Body.get_forward_rarm(qArm)
-  end
-  local JacArm=K.calculate_arm_jacobian(
-    qArm,qWaist,
-    {0,0,0}, --rpy angle
-    isLeft,
-    Config.arm.handoffset.gripper3[1],
-    handOffsetY,
-    Config.arm.handoffset.gripper3[3]
-    );  --tool xyz
-  local trArmDiff = util.diff_transform(trArmTarget,trArm)  
-
---Calculate target velocity
-  local trArmVelTarget={
-    0,0,0,
-    util.procFunc(-trArmDiff[4],0,30*math.pi/180),
-    util.procFunc(-trArmDiff[5],0,30*math.pi/180),
-    util.procFunc(-trArmDiff[6],0,30*math.pi/180),
-  }  
-  local linear_dist = math.sqrt(
-    (trArm[1]-trArmTarget[1])^2+
-    (trArm[2]-trArmTarget[2])^2+
-    (trArm[3]-trArmTarget[3])^2)
-  local linear_vel = math.min(0.04, (linear_dist/0.02)*0.02 + 0.02 )
-  
-  if linear_dist>0 then
-    trArmVelTarget[1],trArmVelTarget[2],trArmVelTarget[3]=
-    trArmDiff[1]/linear_dist *linear_vel,
-    trArmDiff[2]/linear_dist *linear_vel,
-    trArmDiff[3]/linear_dist *linear_vel    
-  end
-  
-  local angular_vel = 
-     math.abs(trArmVelTarget[4])+math.abs(trArmVelTarget[5])+math.abs(trArmVelTarget[6])
-  if linear_dist<0.001 and angular_vel<1*math.pi/180 then return qArm,true end --reached
-
-  local J= torch.Tensor(JacArm):resize(6,7)  
-  local JT = torch.Tensor(J):transpose(1,2)
-  local e = torch.Tensor(trArmVelTarget)
-  local I = torch.Tensor():resize(7,7):zero()
-  local I2 = torch.Tensor():resize(7,6):zero()
-  local qArmVel = torch.Tensor(7):fill(0)
-  
-  -- lambda_i = c*((2*q-qmin-qmax)/(qmax-qmin))^p + (1/w_i)
-  -- todo: hard limit joint angles
-
-  local lambda=torch.eye(7)
-  local c, p = 2,10  
-
-  local joint_limits={
-    {-math.pi/2, math.pi},
-    {0,math.pi/2},
-    {-math.pi/2, math.pi/2},
-    {-math.pi, -0.2}, --temp value
-    {-math.pi, math.pi},
-    {-math.pi/2, math.pi/2},
-    {-math.pi, math.pi}
-  }
-  if isLeft==0 then
-    joint_limits[2]={-math.pi/2,0}
-  end
-
-  for i=1,7 do
-    lambda[i][i]=0.1*0.1 + c*
-      ((2*qArm[i]-joint_limits[i][1]-joint_limits[i][2])/
-       (joint_limits[i][2]-joint_limits[i][1]))^p
-  end
-
-  I:addmm(JT,J):add(1,lambda)
-  local Iinv=torch.inverse(I)  
-  I2:addmm(Iinv,JT)   
-  qArmVel:addmv(I2,e)
-  local qArmTarget = vector.new(qArm)+vector.new(qArmVel)*dt_step
-
-  if isLeft==0 then
-    local trArmTarget = Body.get_forward_rarm(qArmTarget)
-    local trArmDiffActual = util.diff_transform(trArmTarget,trArm)
-  end
-
-  return qArmTarget,false
-end
-
-
-local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch)
-
-  local default_hand_mass = Config.arm.default_hand_mass or 0
-  local dqVelLeft = mcm.get_arm_dqVelLeft()
-  local dqVelRight = mcm.get_arm_dqVelRight()
-  local velTorsoComp = Config.arm.torso_comp_limit
-  local velYaw = Config.arm.shoulder_yaw_limit
-  local massL, massR = self.mLeftHand + default_hand_mass, self.mRightHand + default_hand_mass
-  local qLArm,qRArm, qLArmComp , qRArmComp, uTorsoComp = unpack(init_cond)
-  local yawMag = dt_step * velYaw
-  local qLArmNext, qRArmNext = qLArm, qRArm
-  local qWaist = {waistYaw, waistPitch}
-
-
-  qLArmNext,doneL = self:get_armangle_jacobian(qLArm,trLArm1, 1, qWaist,dt_step)
-  qRArmNext,doneR = self:get_armangle_jacobian(qRArm,trRArm1, 0, qWaist,dt_step)
-
-  if not qLArmNext or not qRArmNext then return end
---  Kinematics.collision_check(qLArmNext,qRArmNext)
-
-  local trLArmNext = Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist)
-  local trRArmNext = Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
-  local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
-  local trLArmNextComp = vector.new(trLArmNext) + vec_comp
-  local trRArmNextComp = vector.new(trRArmNext) + vec_comp
-
-  local endpoint_compensation = mcm.get_arm_endpoint_compensation()
-  local qLArmNextComp, qRArmNextComp = qLArmNext, qRArmNext
-
-  --Actual arm angle considering the torso compensation
-  if endpoint_compensation[1]>0 then
-    qLArmNextComp = self:get_armangle_jacobian(qLArmComp,trLArmNextComp, 1, qWaist,dt_step)
-  end
-  if endpoint_compensation[2]>0 then
-    qRArmNextComp = self:get_armangle_jacobian(qRArmComp,trRArmNextComp, 0, qWaist,dt_step)
-  end
-
-  if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
-    print("ERROR")
-    return 
-  else
-    local dt_step_current = dt_step
-    local uTorsoCompNextTarget = get_torso_compensation(qLArmNext,qRArmNext,qWaist, massL,massR)
-    local uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
-    local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw, waistPitch}
-    return new_cond, dt_step_current, torsoCompDone and doneL and doneR
-  end
-
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local dpVelLeft = mcm.get_arm_dpVelLeft()
   local dpVelRight = mcm.get_arm_dpVelRight()
@@ -675,7 +504,46 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
     vel_param = {dpVelLeft,dpVelRight,Config.arm.vel_waist_limit[1],Config.arm.vel_waist_limit[2]}
   elseif plantype=="wrist" then
+--[[    
+  elseif plantype=="door" then
+    target_param[4] = target_param[4] or current_cond[6]
 
+    local dpDoorMax = vector.slice(dpVelRight,1,3)
+    local dqDoorRollMax = Config.armfsm.dooropen.velDoorRoll
+    local dqDoorYawMax = Config.armfsm.dooropen.velDoorYaw
+    local dqWaistYawMax = Config.armfsm.dooropen.velWaistYaw
+    vel_param={dpDoorMax, dqDoorRollMax, dqDoorYawMax, dqWaistYawMax}
+
+  elseif plantype=="dooredge" then
+    target_param[4] = target_param[4] or current_cond[6]
+    local dpDoorMax = vector.slice(dpVelRight,1,3)
+    local dqDoorYawMax = Config.armfsm.dooropen.velDoorYaw
+    local dqWaistYawMax = Config.armfsm.dooropen.velWaistYaw
+    vel_param={dpDoorMax, dqDoorYawMax, dqWaistYawMax}
+
+  elseif plantype=="doorleft" then
+    target_param[4] = target_param[4] or current_cond[6]
+    local dpDoorMax = vector.slice(dpVelLeft,1,3)
+    local dqDoorRollMax = Config.armfsm.dooropen.velDoorRoll
+    local dqDoorYawMax = Config.armfsm.dooropen.velDoorYaw
+    vel_param={dpDoorMax, dqDoorRollMax, dqDoorYawMax}
+
+  elseif plantype=="valvetwoarm" then
+    vel_param={
+      Config.armfsm.valvetwoarm.velTurnAngle,
+      Config.armfsm.valvetwoarm.velTurnAngle,
+      Config.armfsm.valvetwoarm.velInsert,
+      Config.armfsm.valvetwoarm.velInsert}
+  elseif plantype=="valveonearm" then
+    vel_param={
+      Config.armfsm.valveonearm.velTurnAngle,
+      Config.armfsm.valveonearm.velInsert}
+  elseif plantype=="barvalve" then        
+    vel_param={
+      Config.armfsm.valvebar.velTurnAngle,
+      Config.armfsm.valvebar.velTurnAngle,
+      Config.armfsm.valvebar.velInsert}
+--]]      
   end
   
   local done, torsoCompDone = false, false
@@ -822,20 +690,9 @@ print("trRArmT:".. util.print_transform(target_param[2]) )
       waistNext = {current_cond[6], current_cond[7]}
     end
 
-    local t10 = unix.time() 
-    local new_cond, dt_step_current, torsoCompDone    
-    if Config.use_jacobian_arm_planning then
-      new_cond, dt_step_current, torsoCompDone=    
-        self:get_next_movement_jacobian(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2])
-    else
-      new_cond, dt_step_current, torsoCompDone=    
-        self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2])
-    end
-
-     
-      
-
-
+    local t10 = unix.time()  
+    local new_cond, dt_step_current, torsoCompDone=    
+      self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2])
     local t11 = unix.time()
     if t11-t10>0.001 then  
       print("time elapsed at nextmovement:",(t11-t10)*1000,"ms")
@@ -1218,8 +1075,6 @@ libArmPlan.new_planner = function (params)
 
   s.range_test=range_test
 
-  s.get_armangle_jacobian=get_armangle_jacobian
-  s.get_next_movement_jacobian=get_next_movement_jacobian
   return s
 end
 

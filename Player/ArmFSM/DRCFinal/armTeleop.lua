@@ -62,7 +62,7 @@ end
 local function confirm_override() hcm.set_state_override({0,0,0,0,0,0,0}) end
 
 local function get_tool_tr()
-  local handrpy = Config.armfsm.teleop.rhand_rpy0
+  local handrpy = rhand_rpy0
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3)  
   local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], handrpy[1],handrpy[2],handrpy[3]}

@@ -274,6 +274,13 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
   local trRArmNext = Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
 
   local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
+
+
+--hack - no compensation
+vec_comp=vector.zeros(6)
+
+
+
   local trLArmNextComp = vector.new(trLArmNext) + vec_comp
   local trRArmNextComp = vector.new(trRArmNext) + vec_comp
 

@@ -66,6 +66,9 @@ arm.plan.dt_step_min = 0.1 --no speedup
 arm.plan.dt_step_min = 0.05 --2x speedup
 arm.plan.dt_step_min = 0.025 --4x speedup
 --]]
+
+--arm.plan.dt_step_min = 0.1 
+
 --for jacobian stuff------------------------------
 
 --arm.plan.dt_step0 = 0.05

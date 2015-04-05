@@ -24,14 +24,19 @@ end
 
 local function movfunc(cdist,dist)
   if dist==0 then return 0 end  
-  local acc_factor = 1 /0.02 --accellerate 2X over 2cm
-  local dcc_factor = 1 /0.03 --accellerate 2X over 3cm
-  local max_vel_factor = 2 --max 3X speed
+
+  
+  local min_vel = 0.02 --min speed: 2 cm/s
+  local max_vel = 0.04 --max speed: 8 cm/s
+  local ramp1 = 0.04 --accellerate over 4cm
+  local ramp2 = 0.04 --desccellerate over 4cm
+
   local vel = math.min(
-    cdist*acc_factor,
-    (dist-cdist)*dcc_factor,
-    max_vel_factor
-    )+1
+    max_vel,
+    min_vel + (max_vel-min_vel) * (cdist/ramp1), 
+    min_vel + (max_vel-min_vel) * ((dist-cdist)/ramp2) 
+    )
+  vel = math.max(min_vel,vel)
   return vel
 end
 
@@ -143,7 +148,7 @@ local function reset_torso_comp(self,qLArm,qRArm)
   self:save_boundary_condition({qLArm,qRArm,qLArm,qRArm,{0.0}})
 end
 
-local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_step)  
+local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_step, linear_vel, debug)  
   if not qArm or not trArmTarget then return end
   local handOffsetY=Config.arm.handoffset.gripper3[2]  --positive Y value is inside
   local trArm
@@ -174,14 +179,6 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   local linear_dist = util.norm(trArmDiff,3)
   local total_angular_vel = 
      math.abs(trArmVelTarget[4])+math.abs(trArmVelTarget[5])+math.abs(trArmVelTarget[6])
-
---[[
-  math.sqrt(
-    (trArm[1]-trArmTarget[1])^2+
-    (trArm[2]-trArmTarget[2])^2+
-    (trArm[3]-trArmTarget[3])^2)
---]] 
-  local linear_vel = math.min(0.04, (linear_dist/0.02)*0.02 + 0.02 )
   
   if linear_dist>0 then
     trArmVelTarget[1],trArmVelTarget[2],trArmVelTarget[3]=
@@ -190,7 +187,10 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
     trArmDiff[3]/linear_dist *linear_vel    
   end
     
-  if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then return qArm,true end --reached
+  if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then 
+--    print("reached")
+    return qArm,true 
+    end --reached
 
   local J= torch.Tensor(JacArm):resize(6,7)  
   local JT = torch.Tensor(J):transpose(1,2)
@@ -230,18 +230,23 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   qArmVel:addmv(I2,e)
   local qArmTarget = vector.new(qArm)+vector.new(qArmVel)*dt_step
 
-  if isLeft==0 then
-    local trArmTarget = Body.get_forward_rarm(qArmTarget)
-    local trArmDiffActual = util.diff_transform(trArmTarget,trArm)
+  if debug and isLeft==0 then
+    local trArmNext = Body.get_forward_rarm(qArmTarget)
+    local trArmDiffActual = util.diff_transform(trArmNext,trArm)
     local linear_dist = util.norm(trArmDiffActual,3)
-    print(sformat("dist:%.3f veltarget:%.3f vel:%.3f",
-      linear_dist,linear_vel,linear_dist/dt_step))
+
+    print("---")
+    print("Target:"..util.print_transform(trArmTarget))
+    print("Current"..util.print_transform(trArmNext))
+    print(sformat(" dist:%.3f vel:T%.3f A:%.3f",
+        linear_dist,linear_vel,linear_dist/dt_step)
+      )
   end
   return qArmTarget,false
 end
 
 
-local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch)
+local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch, velL, velR)
 
   local default_hand_mass = Config.arm.default_hand_mass or 0
   local dqVelLeft = mcm.get_arm_dqVelLeft()
@@ -250,23 +255,24 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
   local velYaw = Config.arm.shoulder_yaw_limit
   local massL, massR = self.mLeftHand + default_hand_mass, self.mRightHand + default_hand_mass
   local qLArm,qRArm, qLArmComp , qRArmComp, uTorsoComp = unpack(init_cond)
-  local yawMag = dt_step * velYaw
+  
   local qLArmNext, qRArmNext = qLArm, qRArm
+  local doneL,doneR = true,true
   local qWaist = {waistYaw, waistPitch}
   local endpoint_compensation = mcm.get_arm_endpoint_compensation()
 
-
   if endpoint_compensation[1]>0 then
-    qLArmNext,doneL = self:get_armangle_jacobian(qLArm,trLArm1, 1, qWaist,dt_step)
+    qLArmNext,doneL = self:get_armangle_jacobian(qLArm,trLArm1, 1, qWaist,dt_step, velL,true)
   end
 
   if endpoint_compensation[2]>0 then
-    qRArmNext,doneR = self:get_armangle_jacobian(qRArm,trRArm1, 0, qWaist,dt_step)
+    qRArmNext,doneR = self:get_armangle_jacobian(qRArm,trRArm1, 0, qWaist,dt_step, velR,true)
   end
 
   if not qLArmNext or not qRArmNext then return end
   local trLArmNext = Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist)
   local trRArmNext = Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
+
   local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
   local trLArmNextComp = vector.new(trLArmNext) + vec_comp
   local trRArmNextComp = vector.new(trRArmNext) + vec_comp
@@ -276,10 +282,10 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
 
   --Actual arm angle considering the torso compensation
   if endpoint_compensation[1]>0 then
-    qLArmNextComp = self:get_armangle_jacobian(qLArmComp,trLArmNextComp, 1, qWaist,dt_step)
+    qLArmNextComp = self:get_armangle_jacobian(qLArmComp,trLArmNextComp, 1, qWaist,dt_step,velL)
   end
   if endpoint_compensation[2]>0 then
-    qRArmNextComp = self:get_armangle_jacobian(qRArmComp,trRArmNextComp, 0, qWaist,dt_step)
+    qRArmNextComp = self:get_armangle_jacobian(qRArmComp,trRArmNextComp, 0, qWaist,dt_step,velR)
   end
 
   if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
@@ -290,7 +296,9 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
     local uTorsoCompNextTarget = get_torso_compensation(qLArmNext,qRArmNext,qWaist, massL,massR)
     local uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
     local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw, waistPitch}
-    return new_cond, dt_step_current, torsoCompDone and doneL and doneR
+    return new_cond, dt_step_current, 
+          torsoCompDone and doneL and doneR,
+          trLArmNext, trRArmNext
   end
 end
 
@@ -356,55 +364,44 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       return
     end
     local new_cond, dt_step_current, torsoCompDone, t10, t11
+    local distL = tr_dist(init_param[1],target_param[1])
+    local distR = tr_dist(init_param[2],target_param[2])
     if plantype=="move" then
-      local distL = tr_dist(init_param[1],target_param[1])
-      local distR = tr_dist(init_param[2],target_param[2])
       local cdistL = tr_dist(init_param[1],trLArm)
       local cdistR = tr_dist(init_param[2],trRArm)
-      
-      local velL = movfunc(cdistL,distL)
-      local velR = movfunc(cdistR,distR)
-
-      trLArmNext,doneL = util.approachTolTransform(trLArm, target_param[1], dpVelLeft*velL, dt_step )
-      trRArmNext,doneR = util.approachTolTransform(trRArm, target_param[2], dpVelRight*velR, dt_step )
+      local velL,velR = movfunc(cdistL,distL),movfunc(cdistR,distR)
 
       --Waist yaw and pitch
       new_param[3],done3 = util.approachTol(current_param[3],target_param[3],vel_param[3],dt_step )
       new_param[4],done4 = util.approachTol(current_param[4],target_param[4],vel_param[4],dt_step )
-
       waistNext = {new_param[3], new_param[4]}
-      done = doneL and doneR and done3 and done4
-
+  
       t10 = unix.time() 
-      new_cond, dt_step_current, torsoCompDone=    
-      self:get_next_movement_jacobian(current_cond, target_param[1],target_param[2], dt_step, waistNext[1], waistNext[2])
+      new_cond, dt_step_current, torsoCompDone, trLArmNext, trRArmNext=    
+        self:get_next_movement_jacobian(
+          current_cond, target_param[1],target_param[2], dt_step, waistNext[1], waistNext[2], velL, velR)
       t11 = unix.time() 
+      done = done3 and done4
 
     elseif plantype=="wrist" then
-      local t0 = unix.time()  
       trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpVelLeft, dt_step )      
       trRArmNext,doneR = util.approachTolWristTransform(trRArm, target_param[2], dpVelRight, dt_step )
       done = doneL and doneR
-
+      local cdistL = tr_dist(init_param[1],trLArmNext)
+      local cdistR = tr_dist(init_param[2],trRArmNext)
+      local velL,velR = 0.02, 0.02 --for some reason, accelleration does not work very well with this
       local qLArmTemp = Body.get_inverse_arm_given_wrist( qLArm0, trLArmNext)
       local qRArmTemp = Body.get_inverse_arm_given_wrist( qRArm0, trRArmNext)
       trLArmNext = Body.get_forward_larm(qLArmTemp)
       trRArmNext = Body.get_forward_rarm(qRArmTemp)  
       waistNext = {current_cond[6], current_cond[7]}
 
-      local t1 = unix.time()  
-      print("time elapsed transform:",(t1-t0)*1000,"ms")
       t10 = unix.time() 
       new_cond, dt_step_current, torsoCompDone=    
-        self:get_next_movement_jacobian(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2])
+        self:get_next_movement_jacobian(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2],velL,velR)
       t11 = unix.time()
     end
 
---[[        
-    if t11-t10>0.00001 then  
-      print("time elapsed at nextmovement:",(t11-t10)*1000,"ms")
-    end
---]]
 
     done = done and torsoCompDone
     if not new_cond then       

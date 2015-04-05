@@ -4,7 +4,13 @@ require'hcm'
 local vector = require'vector'
 local util   = require'util'
 local movearm = require'movearm'
-local libArmPlan = require 'libArmPlan'
+local libArmPlan
+if Config.use_jacobian_arm_planning then
+  libArmPlan = require 'libArmPlanJacobian'
+  print("Jacobian arm planning loaded")
+else
+  libArmPlan = require 'libArmPlan'
+end
 local arm_planner = libArmPlan.new_planner()
 
 local handle_clearance = vector.new({0,0,-0.05})

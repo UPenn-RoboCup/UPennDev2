@@ -58,8 +58,15 @@ arm.plan.dt_step = 0.2
 arm.plan.dt_step_min = 0.02
 arm.plan.dt_step_min = 0.2 --no speedup
 
---arm.plan.dt_step_min = 0.1 --2x speedup
 
+--for jacobian stuff------------------------------
+--[[
+arm.plan.dt_step = 0.1 --for jacobian planning
+arm.plan.dt_step_min = 0.1 --no speedup
+arm.plan.dt_step_min = 0.05 --2x speedup
+arm.plan.dt_step_min = 0.025 --4x speedup
+--]]
+--for jacobian stuff------------------------------
 
 --arm.plan.dt_step0 = 0.05
 --arm.plan.dt_step = 0.1
@@ -198,7 +205,7 @@ armfsm.teleop.arminit={
   {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 armfsm.teleop.armuninit={
-  {'move',nil,{0.40,-0.05, 0.0,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move',nil,{0.40,-0.05, 0.10  ,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
 }
 

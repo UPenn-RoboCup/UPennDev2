@@ -81,7 +81,7 @@ else
 	end
 end
 
---Config.use_jacobian_arm_planning = true
+Config.use_jacobian_arm_planning = true
 Config.use_jacobian_arm_planning = false
 
 

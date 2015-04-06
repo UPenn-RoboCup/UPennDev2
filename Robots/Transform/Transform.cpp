@@ -318,11 +318,9 @@ void getAngularVelocityTensor(const Transform &adot, const Transform &ainv, doub
 */
 
 //pointer error here
-/*
   av[0]=w(1,2);
   av[1]=w(2,0);
   av[2]=w(0,1);
-*/  
 }
 
 

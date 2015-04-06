@@ -1134,3 +1134,95 @@ void THOROP_kinematics_calculate_support_leg_torque(
 */ 
 }
 
+
+
+void THOROP_kinematics_calculate_arm_jacobian(  
+  double* ret,  const double *qArm, 
+  const double *qWaist, const double *rpyangle, 
+  double handx, double handy, double handz, int is_left){
+
+  Transform 
+    COM,Jac0,Jac1,Jac2,Jac3,Jac4,Jac5,Jac6;
+
+
+  Transform torso;
+  torso.rotateX(rpyangle[0]).rotateY(rpyangle[1])
+      .rotateZ(qWaist[0]).rotateY(qWaist[1]);
+
+    
+
+  COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armLink[6])
+        .rotateX(qArm[6]).translate(handx,handy,handz);
+
+  Jac0= trcopy(torso).rotateDotY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armLink[6])
+        .rotateX(qArm[6]).translate(handx,handy,handz);
+
+  Jac1= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateDotZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armLink[6])
+        .rotateX(qArm[6]).translate(handx,handy,handz);
+
+  Jac2= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateDotX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armLink[6])
+        .rotateX(qArm[6]).translate(handx,handy,handz);
+
+  Jac3= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateDotY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armLink[6])
+        .rotateX(qArm[6]).translate(handx,handy,handz);
+
+
+  Jac4= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateDotX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armLink[6])
+        .rotateX(qArm[6]).translate(handx,handy,handz);
+
+  Jac5= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateDotZ(qArm[5]).translate(armLink[6])
+        .rotateX(qArm[6]).translate(handx,handy,handz);
+
+  Jac6= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
+        .rotateZ(qArm[1]).translate(armLink[2])
+        .rotateX(qArm[2]).translate(armLink[3])
+        .rotateY(qArm[3]).translate(armLink[4])
+        .rotateX(qArm[4]).translate(armLink[5])
+        .rotateZ(qArm[5]).translate(armLink[6])
+        .rotateDotX(qArm[6]).translate(handx,handy,handz);
+
+  Jacobian J;
+  J.calculateVel7(COM,Jac0,Jac1,Jac2,Jac3,Jac4,Jac5,Jac6);    
+  //now we have 6x7 jacobian matrix for the end effector
+
+  
+  J.dump_jacobian(&ret[0]);
+}
+
+
+

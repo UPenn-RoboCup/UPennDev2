@@ -479,16 +479,6 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
 --[[
 print("Robot config loading")
 print(#jointNames,

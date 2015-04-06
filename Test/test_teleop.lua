@@ -360,6 +360,11 @@ function show_status()
 	local qrarm = Body.get_rarm_position()
 	local fkL = K.forward_larm(qlarm)
 	local fkR = K.forward_rarm(qrarm)
+
+	local rTr6 = T.position6D(fkR)
+	local uComp = mcm.get_stance_uTorsoComp()
+	local fkR2 = {rTr6[1]+uComp[1], rTr6[2]+uComp[2], rTr6[3], rTr6[4]*RAD_TO_DEG, rTr6[5]*RAD_TO_DEG, rTr6[6]*RAD_TO_DEG}
+
   local l_indicator = vector.zeros(#qlarm)
   l_indicator[selected_joint] = selected_arm==0 and 1 or 0
   local r_indicator = vector.zeros(#qlarm)
@@ -373,16 +378,13 @@ function show_status()
 		'tr: '..tostring(vector.new(T.position6D(fkL))),
 		'teleop: '..tostring(qLtmp*RAD_TO_DEG)
   )
-local rTr6 = T.position6D(fkR)
-local uComp = mcm.get_stance_uTorsoComp()
-local fkR = {rTr6[1]+uComp[1], rTr6[2]+uComp[2], rTr6[3], rTr6[4]*RAD_TO_DEG, rTr6[5]*RAD_TO_DEG, rTr6[6]*RAD_TO_DEG}
 
   local rarm_info = string.format('\n%s %s %s\n%s\n%s\n%s',
     util.color('Right Arm', 'yellow'),
     arm_mode and selected_arm==1 and '*' or '',
 		r_indicator,
     'q: '..tostring(qrarm*RAD_TO_DEG),
-    string.format('tr: %.2f, %.2f, %.2f | %.2f, %.2f, %.2f', unpack(fkR)),
+    string.format('tr: %.2f, %.2f, %.2f | %.2f, %.2f, %.2f', unpack(fkR2)),
     'teleop: '..tostring(qRtmp*RAD_TO_DEG)
   )
   local head_info = string.format('\n%s %s\n%s',

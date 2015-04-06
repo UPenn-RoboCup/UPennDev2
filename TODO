@@ -1,1 +1,18 @@
 TODO file
+
+4/6/2015
+
+
+
+
+
+SJ
+
+-Jacobian based arm lib is working (mostly)
+ -issue around arm limit (retracting takes LONG time sometimes)
+ 
+
+-Jacobian based force control: kinda working in webots only
+ requires correct current reading from servos 
+
+

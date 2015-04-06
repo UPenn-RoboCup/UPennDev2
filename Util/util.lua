@@ -428,9 +428,11 @@ function util.ptable(t)
   for k,v in pairs(t) do print(k,v) end
 end
 
-function util.print_transform(tr)
-  if not tr then return end
-  local str= sformat("%.2f %.2f %.2f (%.1f %.1f %.1f)",
+function util.print_transform(tr,digit)
+  if not tr then return end  
+  local fdigit=sformat("%d",digit or 2)
+  local format_str="%."..fdigit.."f %."..fdigit.."f %."..fdigit.."f (%.1f %.1f %.1f)"
+  local str= sformat(format_str,
     tr[1],tr[2],tr[3],tr[4]*180/math.pi,tr[5]*180/math.pi,tr[6]*180/math.pi)
   return str
 end

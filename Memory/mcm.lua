@@ -66,7 +66,11 @@ shared.arm = {}
 shared.arm.qlarm = vector.zeros(7)
 shared.arm.qrarm = vector.zeros(7)
 
---Torso-Compensated arm position
+--Target transform (with fixed center frame)
+shared.arm.trlarm = vector.zeros(7)
+shared.arm.trrarm = vector.zeros(7)
+
+--Torso-Compensated arm position (from moving torso frame)
 shared.arm.qlarmcomp = vector.zeros(7)
 shared.arm.qrarmcomp = vector.zeros(7)
 

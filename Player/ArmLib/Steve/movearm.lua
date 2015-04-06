@@ -3,7 +3,7 @@ local Body = require'Body'
 local util = require'util'
 local vector = require'vector'
 local T = require'Transform'
-local P = require'libPlan'
+local P = require'libArmPlan'
 -- Use Steve's kinematics for arm kinematics
 local K = require'K_ffi'
 -- Use SJ's kinematics for the mass properties

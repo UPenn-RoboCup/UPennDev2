@@ -12,7 +12,6 @@ fsm.enabled = {
 
 -- Timeouts are generally not needed, but in planning places, it is
 -- Less clutter if not transitions here. But always program them in the state
--- For instance, lineIter from libPlan should *always* have a timeout
 fsm.Arm = {
   --{'armIdle', 'timeout', 'armIdle'},
   {'armIdle', 'init', 'armInit'},

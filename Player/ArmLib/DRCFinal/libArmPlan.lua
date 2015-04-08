@@ -948,7 +948,13 @@ end
 
 local function save_boundary_condition(self,arm_end)
   mcm.set_arm_qlarm(arm_end[1])
-  mcm.set_arm_qrarm(arm_end[2])        
+  mcm.set_arm_qrarm(arm_end[2])
+
+  trLArm= Body.get_forward_larm(arm_end[1])
+  trRArm= Body.get_forward_larm(arm_end[2])
+  mcm.set_arm_trlarm(trLArm)
+  mcm.set_arm_trrarm(trRArm)
+
   mcm.set_arm_qlarmcomp(arm_end[3])
   mcm.set_arm_qrarmcomp(arm_end[4])
 end
@@ -961,6 +967,15 @@ local function load_boundary_condition(self)
   local uTorsoComp = mcm.get_stance_uTorsoComp()
   local init_cond = {qLArm,qRArm,qLArmComp,qRArmComp,uTorsoComp}
   return init_cond
+end
+
+local function load_current_condition(self)
+  local trLArm = mcm.get_arm_trlarm()
+  local trRArm = mcm.get_arm_trrarm()
+  local qLArmComp=mcm.get_arm_qlarmcomp()
+  local qRArmComp=mcm.get_arm_qrarmcomp()
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
+  return trLArm, trRArm, qLArmComp, qRArmComp, uTorsoComp
 end
 
 local function save_doorparam(self,doorparam)
@@ -1032,6 +1047,7 @@ libArmPlan.new_planner = function (params)
 
   s.save_boundary_condition=save_boundary_condition
   s.load_boundary_condition=load_boundary_condition
+  s.load_current_condition=load_current_condition
 
   s.save_doorparam = save_doorparam  
   s.save_valveparam = save_valveparam

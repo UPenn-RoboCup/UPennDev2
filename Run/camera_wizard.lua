@@ -51,11 +51,8 @@ local h = metadata.h
 local name = metadata.name
 -- Who to send to
 local operator
-if Config.net.use_wireless then
-	operator = Config.net.operator.wireless
-else
-	operator = Config.net.operator.wired
-end
+operator = Config.net.operator.wireless
+--operator = Config.net.operator.wired
 -- Network Channels/Streams
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
@@ -101,36 +98,31 @@ local function update(img, sz, cnt, t)
 	c_meta.t = t
 	c_meta.n = cnt
 
+	local do_send = t-t_send > (1 / hcm.get_monitor_fps())
+	t_send = do_send and t or t_send
+
 	-- Check if we are sending to the operator
-	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
-	if ENABLE_NET and t-t_send > SEND_INTERVAL then
+	if ENABLE_NET and do_send then		
 		local c_img = c_yuyv:compress(img, w, h)
 		c_meta.sz = #c_img
-		if IS_WEBOTS and camera_ch then
+		if camera_ch then
 			camera_ch:send({mp.pack(c_meta), c_img})
-		elseif udp_ch then
+		end
+		if udp_ch then
 			udp_data = mp.pack(c_meta)..c_img
 			udp_ret, udp_err = udp_ch:send(udp_data)
---[[
-print(udp_ret, udp_err, #udp_data)
-if type(udp_ret)=='table' then print(unpack(udp_ret)) end
-os.exit()
---]]
 		end
 	end
 
 	-- Do the logging if we wish
 	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
-		metadata.rsz = sz
--- metadata.head = Body.get_head_command_position()
--- metadata.pose = wcm.get_robot_pose()
-    metadata.head = Body.get_head_position()
-    metadata.rpy = Body.get_rpy() 
-    --TODO: log joint angles
-		for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
-		logger:record(metadata, img, sz)
 		t_log = t
 		nlog = nlog + 1
+		metadata.rsz = sz
+		metadata.head = Body.get_head_position()
+		metadata.rpy = Body.get_rpy() 
+		for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
+		logger:record(metadata, img, sz)
 		if nlog % 10 == 0 then
 			print("# camera logs: "..nlog)
 			if nlog % 100 == 0 then
@@ -144,11 +136,11 @@ os.exit()
 	-- Update the vision routines
 	if has_detection then
 		detection.update(img)
-		if ENABLE_NET and detection.send and t-t_send>SEND_INTERVAL then
-			if IS_WEBOTS and camera_ch then
+		if ENABLE_NET and detection.send and do_send then
+			if camera_ch then
 				for _,v in ipairs(detection.send()) do camera_ch:send({mp.pack(v[1]), v[2]}) end
-				t_send = t
-			elseif udp_ch then
+			end
+			if udp_ch then
 				for _,v in ipairs(detection.send()) do
 					if v[2] then
 						udp_data = mp.pack(v[1])..v[2]
@@ -157,7 +149,6 @@ os.exit()
 					end
 					udp_ret, udp_err = udp_ch:send(udp_data)
 				end
-				t_send = t
 			end
 		end
 	end

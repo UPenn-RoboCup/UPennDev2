@@ -6,7 +6,6 @@ IS_STEVE = true
 -- General parameters
 Config.PLATFORM_NAME = 'THOROP'
 Config.nJoint = 37
-Config.use_localhost = false
 Config.IS_COMPETING = false
 Config.demo = true
 

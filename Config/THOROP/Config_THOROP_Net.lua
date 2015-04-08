@@ -4,67 +4,50 @@ assert(Config, 'Need a pre-existing Config table!')
 local IP = {
   STEVE = 23,
   SJ = 200,
-  KAREN = 30,
   BHORAM = 54,
   JQ = 150,
-  ALVIN = 24,
-  ALVIN_Z = 222,
-  ALVIN_B = 232,
-  TEDDY = 24,
-  FIELD = 201,
+--
+  ALVIN = 232,
+  FIELD = 242,
 }
 
 -- Who do we use?
 local WHO = IP.STEVE
---local WHO = IP.JQ
-local ROBOT_IP = IP.ALVIN_B
+local ROBOT_IP = IP.ALVIN
 local TEAM_NUMBER = 8
 
-local subnets = {
-	OPERATOR = '192.168.123.',
-	FIELD = '192.168.123.',
-	ROBOT = '192.168.123.',
-}
-if Config.IS_COMPETING then
-	subnets = {
-		OPERATOR = '10.'..TEAM_NUMBER..'.2.',
-		FIELD = '10.'..TEAM_NUMBER..'.3.',
-		ROBOT = '10.'..TEAM_NUMBER..'.3.'
-	}
-end
+local wired_subnet = '192.168.123.'
+local wireless_subnet = '192.168.1.'
 
 local net = {
-	use_wireless = false,
-	field_computer = subnets.FIELD..IP.FIELD,
+	field_computer = wired_subnet..IP.FIELD,
+	robot = {
+		wired = wired_subnet..ROBOT_IP,
+		wireless = wireless_subnet..ROBOT_IP,
+	},
+	operator = {
+		wired              = wired_subnet..WHO,
+		wireless           = wireless_subnet..WHO,
+	},
+	broadcast = {
+		wired = wired_subnet..'255',
+		wireless = wireless_subnet..'255'
+	}
 }
 
--- IP Addresses
--- TODO: Find IP of this computer
-if Config.use_localhost then
-  net.robot = {
-		wired   = 'localhost',
-		wireless = 'localhost',
-	}
-	net.operator = {
-		wired              = 'localhost',
-		['wired_broadcast']    = 'localhost',
-		--
-		wireless           = 'localhost',
-		['wireless_broadcast'] = 'localhost',
-	}
-else
-	net.robot = {
-		wired    = subnets.ROBOT..ROBOT_IP,
-		wireless = '192.168.1.'..ROBOT_IP,
-	}
-	net.operator = {
-		wired              = subnets.OPERATOR..WHO,
-		['wired_broadcast']    = subnets.OPERATOR..'255',
-		--
-		wireless           = '192.168.1.'..WHO,
-		['wireless_broadcast'] = '192.168.1.255'
-	}
+if Config.IS_COMPETING then
+	net.field_computer = '10.'..TEAM_NUMBER..'.3.'..IP.FIELD
+	--
+	net.robot.wired = '10.'..TEAM_NUMBER..'.3.'..ROBOT_IP
+	net.robot.wireless = net.robot.wired
+	--
+	net.operator.wired = '10.'..TEAM_NUMBER..'.2.'..ROBOT_IP
+	net.operator.wireless = net.operator.wired
+	-- Broadcast from the robot to the operator(s)
+	net.broadcast.wired = '10.'..TEAM_NUMBER..'.2.'..ROBOT_IP
+	net.broadcast.wireless = net.broadcast.wired
 end
+
 
 -- Check lossy link
 net.test = {

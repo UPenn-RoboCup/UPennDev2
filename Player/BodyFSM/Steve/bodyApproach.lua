@@ -15,8 +15,8 @@ local waypoints = {
 }
 local dist_threshold = 0.05
 local angle_threshold = 5 * DEG_TO_RAD
-local maxStep = 0.08
-local maxTurn = 0.15
+local maxStep = 0.06
+local maxTurn = 0.10
 
 local sqrt = math.sqrt
 local pow = math.pow

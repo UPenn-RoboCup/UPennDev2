@@ -12,8 +12,9 @@ function state.entry()
   t_update = t_entry    
   t_plan = t_entry
 	
-	-- Stand
-	motion_ch:send'stand'
+  -- Stand
+  --motion_ch:send'stand'
+  mcm.set_walk_stoprequest(1)
 end
 
 function state.update()

@@ -190,7 +190,7 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
     
   if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then 
 --    print("reached")
-    return qArm,true 
+    return qArm,true,1
     end --reached
 
   local J= torch.Tensor(JacArm):resize(6,7)  
@@ -252,7 +252,7 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
 
 
 
-  return qArmTarget,false
+  return qArmTarget,false, linearVelActual/linear_vel
 end
 
 
@@ -268,7 +268,7 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
   local qWaist = {waistYaw, waistPitch}
 
   local endpoint_compensation = mcm.get_arm_endpoint_compensation()
-  local doneL,doneR = true,true
+  local doneL,doneR,scaleL,scaleR = true,true,1,1
 
   local uTorsoCompNext = get_torso_compensation(qLArmComp,qRArmComp,qWaist, massL,massR)
   local vec_comp = vector.new({uTorsoCompNext[1],uTorsoCompNext[2],0,0,0,0})
@@ -283,10 +283,10 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
   local trRArm1Comp = vector.new(trRArm1) - vec_comp
 
   if endpoint_compensation[1]>0 then
-    qLArmNextComp,doneL = self:get_armangle_jacobian(qLArmComp,trLArm1Comp, 1, qWaist,dt_step, velL,true)
+    qLArmNextComp,doneL,scaleL = self:get_armangle_jacobian(qLArmComp,trLArm1Comp, 1, qWaist,dt_step, velL,true)
   end
   if endpoint_compensation[2]>0 then
-    qRArmNextComp,doneR = self:get_armangle_jacobian(qRArmComp,trRArm1Comp, 0, qWaist,dt_step, velR,true)
+    qRArmNextComp,doneR,scaleR = self:get_armangle_jacobian(qRArmComp,trRArm1Comp, 0, qWaist,dt_step, velR,true)
   end
 
   if not qLArmNextComp or not qRArmNextComp then
@@ -299,7 +299,11 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
   local trRArmNext = Body.get_forward_rarm(qRArmNextComp,mcm.get_stance_bodyTilt(),qWaist) + vec_comp
   
   local new_cond = {trLArmNext, trRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw, waistPitch}
-  return new_cond, dt_step, doneL and doneR
+
+  local scale=math.max(0.1, math.min(scaleL,scaleR,2))
+print("scale:",scale)
+
+  return new_cond, dt_step*scale, doneL and doneR
 end
 
 

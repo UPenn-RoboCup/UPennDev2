@@ -10,7 +10,7 @@ require'mcm'
 local qLArm, qRArm
 
 function state.entry()
-  print(state._NAME..' Entry' )
+  --print(state._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
@@ -48,7 +48,7 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+  --print(state._NAME..' Exit' )
 --  Body.set_larm_torque_enable(1)
 --  Body.set_rarm_torque_enable(1)
 end

@@ -68,14 +68,16 @@ local function init_stance(self)
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
-  return uLeft,uRight,uTorso,uLeft,uRight,uTorso
+  local zLeg =  mcm.get_status_zLeg()
+  return uLeft,uRight,uTorso,uLeft,uRight,uTorso,zLeg[1],zLeg[2]
 end
 
-local function save_stance(self,uLeft,uRight,uTorso)
+local function save_stance(self,uLeft,uRight,uTorso,zLeft,zRight)
   supportFoot = supportFoot or 0;
   mcm.set_status_uLeft(uLeft)
   mcm.set_status_uRight(uRight)
   mcm.set_status_uTorso(uTorso)
+  if zLeft then mcm.set_status_zLeg({zLeft,zRight}) end
 end
 
 local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep,lastStep)  
@@ -83,14 +85,11 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
   local uSupport
 
---OMG why do we still have these?
-initialStep = false
-velocityBias = vector.new({0,0,0})
+  --OMG why do we still have these?
+  initialStep = false
+  velocityBias = vector.new({0,0,0})
 
   local velWalk = self.velCurrent + velocityBias
-
-
-
 
   if initialStep then
     if supportLeg == 0 then    -- Left support      
@@ -151,7 +150,8 @@ local function step_enque(self,uFoot,supportLeg,tStep, zmpMod, stepParams)
   table.insert(self.stepqueue,step)
 end
 
-local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, stepParams, is_last)
+--local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, stepParams, is_last)
+local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, stepParams, zmpMod2)
 
 --[[
   local step_ds = {}
@@ -182,6 +182,7 @@ local function step_enque_trapezoid(self,uFoot,supportLeg, t0,t1,t2, zmpMod, ste
   step.zmpMod = zmpMod or vector.new({0,0,0})
   step.stepParams = stepParams  
   step.is_last = is_last --transition signal
+  step.zmpMod2 = zmpMod2 or vector.new({0,0,0})
   table.insert(self.stepqueue,step)
 
 end
@@ -201,13 +202,21 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
     uRight_next = util.pose_global(current_step.uFoot,uRight_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+
+    uSupport_next = util.pose_global(current_step.zmpMod2,uTorso_next)
   elseif supportLeg==1 then    
     uSupport = util.pose_global(current_step.zmpMod,uRSupport)
     uLeft_next =  util.pose_global(current_step.uFoot,uLeft_now)
     local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
     uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+
+    uSupport_next = util.pose_global(current_step.zmpMod2,uTorso_next)
   else --Double support    
     uSupport = util.se2_interpolate(0.5, uLSupport, uRSupport)
+    --ADDED for DS too!
+    uSupport = util.pose_global(current_step.zmpMod,uSupport)
+
+    uSupport_next = util.pose_global(current_step.zmpMod2,uTorso_next)
   end
   local trapezoidparams={}
   if current_step.is_trapezoid then
@@ -218,7 +227,8 @@ local function get_next_step_queue(self,uLeft_now, uRight_now, uTorso_now, initi
 
   return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next,
          uSupport, supportLeg, current_step.tStep, current_step.stepParams, current_step.is_last,
-         trapezoidparams
+         trapezoidparams,
+         uSupport_next --added
 end
 
 

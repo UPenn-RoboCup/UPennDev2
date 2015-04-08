@@ -8,9 +8,15 @@ local vector = require'vector'
 local demo = {}
 demo.waypoints = {
 	['deans_reception'] = {
-		vector.pose{1, 0, 0*DEG_TO_RAD},
-		vector.pose{1, 1, 90*DEG_TO_RAD},
-		vector.pose{2, 1, 0*DEG_TO_RAD},
+       vector.pose{1, 0, 0*DEG_TO_RAD},
+        vector.pose{2, 0, 0*DEG_TO_RAD},
+        vector.pose{3, 0, 0*DEG_TO_RAD},
+        vector.pose{4, 0, 0*DEG_TO_RAD},
+        vector.pose{5, 0, 0*DEG_TO_RAD},
+--		vector.pose{1, 0, 0*DEG_TO_RAD},
+--		vector.pose{1, 1, 90*DEG_TO_RAD},
+--		vector.pose{2, 1, 0*DEG_TO_RAD},
+--		vector.pose{10, 0, 0*DEG_TO_RAD},
 	},
 }
 demo.arms = {

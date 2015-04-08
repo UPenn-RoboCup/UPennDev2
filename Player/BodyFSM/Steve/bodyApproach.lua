@@ -10,8 +10,10 @@ local t_entry, t_update, t_exit
 local wp_thread
 local waypoints = {
 	vector.pose{1, 0, 0*DEG_TO_RAD},
-	vector.pose{1, 1, 90*DEG_TO_RAD},
-	vector.pose{2, 1, 0*DEG_TO_RAD},
+	vector.pose{2, 0, 0*DEG_TO_RAD},
+	vector.pose{3, 0, 0*DEG_TO_RAD},
+	vector.pose{4, 0, 0*DEG_TO_RAD},
+	vector.pose{5, 0, 0*DEG_TO_RAD},
 }
 local dist_threshold = 0.05
 local angle_threshold = 5 * DEG_TO_RAD

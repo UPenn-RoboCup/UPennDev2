@@ -13,7 +13,7 @@ fsm.enabled = {
 	Body = true,
 	Head = true,
 	Motion = true,
-	Lidar = true,
+	Lidar = false,
 	Gripper = false
 }
 
@@ -89,7 +89,7 @@ fsm.Arm = {
 	{'armInit', 'timeout', 'armInit'},
 	{'armInit', 'done', 'armStance'},
 	-- Stance pose (for walking)
-	{'armStance', 'timeout', 'armStance'},
+	--{'armStance', 'timeout', 'armStance'},
 	{'armStance', 'ready', 'armReady'},
 	{'armStance', 'teleop', 'armTeleop'},
 	{'armStance', 'null', 'armNull'},

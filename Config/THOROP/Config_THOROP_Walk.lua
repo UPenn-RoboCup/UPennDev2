@@ -61,12 +61,13 @@ walk.phCompSlope = 0.2
 walk.supportX = 0.07 --With clown feet, good for forward walking
 walk.supportY = 0.06
 
-
+--[[
 walk.tStep = 0.5
 walk.tZMP = 0.4
 walk.stepHeight = 0.04
 --walk.phSingle = {0.05,0.95}
 walk.footY = 0.10
+--]]
 
 ------------------------------------
 -- Compensation parameters
@@ -323,8 +324,8 @@ end
 --  walk.ankleImuParamY={1, 2.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
 
 
-
-walk.tStep = 0.75
+----[[
+walk.tStep = .75
 walk.tZMP = 0.33
 walk.stepHeight = 0.04
 walk.phSingle = {0.2,0.8}
@@ -333,7 +334,7 @@ walk.phComp = {0.1,0.9}
 walk.phCompSlope = 0.2
 walk.supportX = 0.025
 walk.supportY = 0.00
-
+--]]
 
 ------------------------------------
 -- Associate with the table

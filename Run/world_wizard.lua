@@ -23,7 +23,7 @@ else
 end
 
 local ENABLE_SEND = false
-local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
+--local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
 -- SHM
 require'wcm'
 require'mcm'
@@ -92,7 +92,9 @@ local function update()
 		metadata.id = 'world'
 		metadata.world = lW.send()
 		-- Send!
+if udp_ch then
 		local ret, err = udp_ch:send(mp.pack(metadata))
+end
 		if err and Config.debug.world then print(ret, err) end
 		t_send = t
 	end

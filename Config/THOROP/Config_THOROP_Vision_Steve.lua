@@ -97,7 +97,7 @@ local grasp_afternoon_param = {
 local camera = {}
 camera[1] = {
 	name = 'head',
-		dev = '/dev/video0',
+	dev = '/dev/video0',
 	format = 'yuyv',
 	w = 640,
 	h = 360, --480,
@@ -136,8 +136,8 @@ camera[1] = {
 }
 
 camera[2] = {
-	name = 'head',
-		dev = '/dev/video1',
+	name = 'waist',
+	dev = '/dev/video1',
 	format = 'yuyv',
 	w = 640,
 	h = 360,

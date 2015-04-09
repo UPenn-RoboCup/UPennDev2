@@ -53,22 +53,21 @@ local right_arm = {
 	--head
 	29, 30,
 	-- gripper
---	63, 65, 67
+	63, 65, 67
 },
 enable_read = true,
 }
 local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
---ALVIN SPECIFIC - this hould be hostname-specific afterwards
 	m_ids = {
-2,4,6,8,10,12,14,
+	2,4,6,8,10,12,14,
 	-- lidar
 	37,
 	-- gripper
---	64, 66, 68
-},
-enable_read = true
+	64, 66, 68
+	},
+	enable_read = true
 }
 local right_leg = {
 	name = 'rleg',

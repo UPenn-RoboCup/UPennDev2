@@ -2,13 +2,13 @@ assert(Config, 'Need a pre-existing Config table!')
 
 -- IP addresses
 local IP = {
-  STEVE = 23,
-  SJ = 200,
-  BHORAM = 54,
-  JQ = 150,
---
-  ALVIN = 232,
-  FIELD = 242,
+	STEVE = 23,
+	SJ = 200,
+	BHORAM = 54,
+	JQ = 150,
+	--
+	ALVIN = 232,
+	FIELD = 242,
 }
 
 -- Who do we use?
@@ -64,7 +64,7 @@ net.rpc = {
 	uds = 'rpc',
 }
 streams.feedback = {
-  ws = 9013,
+	ws = 9013,
 	udp = 2002,
 	sub = 'feedback'
 }
@@ -73,40 +73,40 @@ streams.mesh = {
 	ws = 9001,
 	udp = 17001,
 	tcp = 43344,
-  sub = 'mesh0'
+	sub = 'mesh0'
 }
 streams.camera0 = {
-  ws = 9003,
-  udp = 17003,
+	ws = 9003,
+	udp = 17003,
 	sub = 'camera0',
 }
 streams.camera1 = {
-  ws = 9004,
-  udp= 17004,
+	ws = 9004,
+	udp= 17004,
 	sub = 'camera1',
 }
 streams.kinect2_depth = {
-  ws = 9010,
+	ws = 9010,
 	udp = 17010,
-  tcp = 43346,
+	tcp = 43346,
 	sub = 'kinect2_depth'
 }
 streams.kinect2_color = {
-  ws = 9011,
+	ws = 9011,
 	udp = 17011,
-  tcp = 43347,
+	tcp = 43347,
 	sub = 'kinect2_color'
 }
 --[[
 streams.audio = {
-  ws = 9014,
-	tcp= 55557,
+ws = 9014,
+tcp= 55557,
 }
 --]]
 --[[
 streams.lidar0 = {
-  ws = 9015,
-	sub = 'lidar0',
+ws = 9015,
+sub = 'lidar0',
 }
 --]]
 

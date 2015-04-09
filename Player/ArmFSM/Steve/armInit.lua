@@ -110,7 +110,7 @@ function state.update()
 		print('setShoulderYaw', setShoulderYaw)
 		if setShoulderYaw then return 'done' end
 			-- ignore sanitization for the init position, which is absolutely known
-      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, 1*DEG_TO_RAD, true)
+      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, true)
       setShoulderYaw = true
 	end
 

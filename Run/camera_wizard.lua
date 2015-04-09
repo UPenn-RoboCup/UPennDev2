@@ -5,7 +5,6 @@ local ENABLE_LOG = false
 -- Camera manager
 -- (c) Stephen McGill, 2014
 -----------------------------------
--- Something there is non-reentrant
 dofile'../include.lua'
 if type(arg)~='table' then IS_WEBOTS=true end
 local si = require'simple_ipc'
@@ -153,10 +152,9 @@ local function update(img, sz, cnt, t)
 end
 
 -- If required from Webots, return the table
-if ... and type(...)=='string' then
+if ... and type(...)=='string' and not tonumber(...) then
 	return {entry=nil, update=update, exit=nil}
 end
-
 
 -- Open the camera
 local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)

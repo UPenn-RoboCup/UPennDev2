@@ -49,8 +49,8 @@ function state.update()
 	local tqR = get_torque_requirement(qRGrip, qRGrip0)
 
 	-- Set the torques
-	Body.set_lgrip_command_torque({-5,-5,tqL[3]})
-	Body.set_rgrip_command_torque({5,tqR[2],-5})
+	Body.set_lgrip_command_torque({5,5,tqL[3]})
+	Body.set_rgrip_command_torque({-5,tqR[2],5})
 
 end
 

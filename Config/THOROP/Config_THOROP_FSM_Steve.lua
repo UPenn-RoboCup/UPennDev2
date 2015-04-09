@@ -66,10 +66,11 @@ fsm.Head = {
 fsm.Gripper = {
 	{'gripperIdle', 'init', 'gripperCenter'},
 	{'gripperIdle', 'teleop', 'gripperTeleop'},
+	{'gripperIdle', 'dean', 'gripperDeanOpen'},
 	--
 	{'gripperCenter', 'idle', 'gripperIdle'},
 	{'gripperCenter', 'teleop', 'gripperTeleop'},
-	{'gripperCenter', 'dean', 'gripperDean'},
+	{'gripperCenter', 'dean', 'gripperDeanOpen'},
 	--
 	{'gripperTeleop', 'idle', 'gripperIdle'},
 	{'gripperTeleop', 'init', 'gripperCenter'},

@@ -23,10 +23,10 @@ demo.arms = {
 	['dean'] = {
 		--trLArm =
 		--trRArm =
-		qLArm = vector.new{101, 35, 0, -114, -208, 40, 175}*DEG_TO_RAD,
+		qLArm = vector.new{101, 35.0032, 0.00215139, -113.999, -202.973, 39.9964, 174.995}*DEG_TO_RAD,
 		qRArm = vector.new{70, -53, -36, -90, 60, 70, -11}*DEG_TO_RAD,
 		qLGrip = vector.new{-6, -50, 13}*DEG_TO_RAD,
-		qRGrip = vector.new{-76, -27.5, -39}*DEG_TO_RAD
+		qRGrip = vector.new{5, -66, -64}*DEG_TO_RAD
 	},
 }
 

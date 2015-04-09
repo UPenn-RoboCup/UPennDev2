@@ -6,6 +6,7 @@ local state = {}
 state._NAME = ...
 
 local USE_TR = false
+local NO_YAW_FIRST = true
 
 local Body   = require'Body'
 local vector = require'vector'

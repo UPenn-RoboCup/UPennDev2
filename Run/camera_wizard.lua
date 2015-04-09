@@ -13,8 +13,13 @@ local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
 local Body = require'Body'
 require'hcm'
---require'wcm'
 local get_time = Body.get_time
+-- JPEG Compressor
+local c_grey = jpeg.compressor('gray')
+local c_yuyv = jpeg.compressor('yuyv')
+-- TODO: Control the downsampling mode
+--c_yuyv:downsampling(2)
+--c_yuyv:downsampling(1)
 
 -- Grab the metadata for this camera
 local metadata, camera_id
@@ -74,13 +79,6 @@ local c_meta = {
 local has_detection, detection = pcall(require, metadata.detection)
 -- Send which camera we are using
 if has_detection then detection.entry(metadata) end
-
--- JPEG Compressor
-local c_grey = jpeg.compressor('gray')
-local c_yuyv = jpeg.compressor('yuyv')
--- TODO: Control the downsampling mode
---c_yuyv:downsampling(2)
---c_yuyv:downsampling(1)
 
 -- LOGGING
 if ENABLE_LOG then

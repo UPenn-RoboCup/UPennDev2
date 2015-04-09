@@ -72,9 +72,6 @@ vision.goal = {
 	postDiameter = 0.1,
 }
 
--- Cameras
-local camera = {}
-
 local m308_param = {
 	{'White Balance Temperature', 2300},
 	{'Exposure (Absolute)', 112},
@@ -96,38 +93,36 @@ local grasp_afternoon_param = {
 	{'Sharpness', 0},
 }
 
-table.insert(camera,{
+-- Cameras
+local camera = {}
+camera[1] = {
 	name = 'head',
+		dev = '/dev/video0',
+	format = 'yuyv',
+	w = 640,
+	h = 360, --480,
+	fps = 30,
+	jpeg_quality = 60,
 	mountOffset = {
 		-- cameraRoll, cameraPitch, cameraYaw
 		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
 		-- Translation offset from the neck
 		{0.04,0,0.04}
 	},
-	dev = '/dev/video0',
-	--dev = '/dev/video1',
-	format = 'yuyv',
-	w = 640,
-	h = 360, --480,
 	cx_offset = 0,
 	cy_offset = 0,
-	fps = 30,
-	jpeg_quality = 60,
 	-- Use the standard head properties
 	head = head,
 	-- Use the default vision parameters
 	vision = vision,
 	-- Run the standard RoboCup vision processing
 	--detection = 'libVision',
+	--lut = 'ucla1',
 	--Logitech C920
-	--lut = 'empty',
-	--lut = 'm308_lightson',
-	lut = 'ucla1',
 	-- f = 640/2/tan(78/180*pi / 2)
 	--fov = 2*arctan(d/2f)
 	-- f = d/2/tan(fov/2)
 	--webots fov: 1.3613
-
 	focal_length = 395.17,
 	focal_base = 640,
 	auto_param = {
@@ -138,8 +133,25 @@ table.insert(camera,{
 		{'Focus, Auto', 0}
 	},
 	param = m308_param,
-	--param = grasp_afternoon_param,
-})
+}
+
+camera[2] = {
+	name = 'head',
+		dev = '/dev/video1',
+	format = 'yuyv',
+	w = 640,
+	h = 360,
+	fps = 30,
+	jpeg_quality = 60,
+	auto_param = {
+		-- {'Exposure, Auto', 1},
+		{'White Balance Temperature, Auto', 0},
+		{'Power Line Frequency', 0},
+		{'Exposure, Auto Priority', 0},
+		{'Focus, Auto', 0}
+	},
+	param = m308_param,
+}
 
 local kinect = {
 	name = 'kinect2',

@@ -26,7 +26,7 @@ demo.arms = {
 		qLArm = vector.new{106.287, 56.4949, -0.0387251, -113.479, -47.9627, -30.4474, 0.854519}*DEG_TO_RAD,
 		qRArm = vector.new{76.7008, -42.5073, -32.2451, -89.8207, 48.285, 69.9745, -11.2936}*DEG_TO_RAD,
 		qLGrip = vector.new{-12.3047, -49.1309, 6.76758}*DEG_TO_RAD,
-		qRGrip = vector.new{-25.9668, -123.154, -60.9961}*DEG_TO_RAD
+		qRGrip = vector.new{-25.9668, -123.154, -60.9961}*DEG_TO_RAD,
 	},
 }
 
@@ -40,8 +40,11 @@ demo.arms = {
 [1] {-12.3047, -49.1309, 6.76758}
 >  return Body.get_rgrip_position()*RAD_TO_DEG
 [1] {-25.9668, -123.154, -60.9961}
-
 --]]
+
+-- Left grip: 3rd is spport
+-- Right grip: 2nd is support
+
 Config.demo = demo
 
 return Config

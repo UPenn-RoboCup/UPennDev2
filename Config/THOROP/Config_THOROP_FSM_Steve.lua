@@ -74,9 +74,15 @@ fsm.Gripper = {
 	{'gripperTeleop', 'idle', 'gripperIdle'},
 	{'gripperTeleop', 'init', 'gripperCenter'},
 	--
-	{'gripperDean', 'init', 'gripperCenter'},
-	{'gripperDean', 'idle', 'gripperIdle'},
-	{'gripperDean', 'teleop', 'gripperTeleop'},
+	{'gripperDeanOpen', 'init', 'gripperCenter'},
+	{'gripperDeanOpen', 'idle', 'gripperIdle'},
+	{'gripperDeanOpen', 'teleop', 'gripperTeleop'},
+	{'gripperDeanOpen', 'close', 'gripperDeanClose'},
+	--
+	{'gripperDeanClose', 'init', 'gripperCenter'},
+	{'gripperDeanClose', 'idle', 'gripperIdle'},
+	{'gripperDeanClose', 'teleop', 'gripperTeleop'},
+	{'gripperDeanClose', 'open', 'gripperDeanOpen'},
 }
 
 fsm.Lidar = {

@@ -26,7 +26,7 @@ demo.arms = {
 		qLArm = vector.new{101, 35.0032, 0.00215139, -113.999, -21.8187, -33.9864, -6.35141}*DEG_TO_RAD,
 		qRArm = vector.new{70, -53, -36, -90, 60, 70, -11}*DEG_TO_RAD,
 		qLGrip = vector.new{-6, -50, 13}*DEG_TO_RAD,
-		qRGrip = vector.new{5, -66, -64}*DEG_TO_RAD
+		qRGrip = vector.new{5, -100, -64}*DEG_TO_RAD
 	},
 }
 

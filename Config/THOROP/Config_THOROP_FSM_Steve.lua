@@ -13,8 +13,8 @@ fsm.enabled = {
 	Body = true,
 	Head = true,
 	Motion = true,
+	Gripper = true,
 	Lidar = false,
-	Gripper = false
 }
 
 --SJ: now we can have multiple FSM options
@@ -69,9 +69,14 @@ fsm.Gripper = {
 	--
 	{'gripperCenter', 'idle', 'gripperIdle'},
 	{'gripperCenter', 'teleop', 'gripperTeleop'},
+	{'gripperCenter', 'dean', 'gripperDean'},
 	--
 	{'gripperTeleop', 'idle', 'gripperIdle'},
 	{'gripperTeleop', 'init', 'gripperCenter'},
+	--
+	{'gripperDean', 'init', 'gripperCenter'},
+	{'gripperDean', 'idle', 'gripperIdle'},
+	{'gripperDean', 'teleop', 'gripperTeleop'},
 }
 
 fsm.Lidar = {
@@ -89,7 +94,7 @@ fsm.Arm = {
 	{'armInit', 'timeout', 'armInit'},
 	{'armInit', 'done', 'armStance'},
 	-- Stance pose (for walking)
-	--{'armStance', 'timeout', 'armStance'},
+	{'armStance', 'dean', 'armDean'},
 	{'armStance', 'ready', 'armReady'},
 	{'armStance', 'teleop', 'armTeleop'},
 	{'armStance', 'null', 'armNull'},

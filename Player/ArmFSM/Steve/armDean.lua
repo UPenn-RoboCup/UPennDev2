@@ -21,8 +21,8 @@ local trRGoal = T.transform6D(Config.arm.trRArm0)
 --]]
 -- From the IK solution above, in webots
 ----[[
-local qLGoal = Config.demo.arms.deans_read.qLArm
-local qRGoal = Config.demo.arms.deans_read.qRArm
+local qLGoal = Config.demo.arms.dean.qLArm
+local qRGoal = Config.demo.arms.dean.qRArm
 --]]
 
 local shoulderLGoal, shoulderRGoal = 5*DEG_TO_RAD, -5*DEG_TO_RAD

@@ -20,14 +20,28 @@ demo.waypoints = {
 	},
 }
 demo.arms = {
-	['deans_ready'] = {
+	['dean'] = {
 		--trLArm =
 		--trRArm =
 		qLArm = vector.new{101, 35, 0, -114, -208, 40, 175}*DEG_TO_RAD,
 		qRArm = vector.new{70, -53, -36, -90, 60, 70, -11}*DEG_TO_RAD,
+		qLGrip = vector.new{-6, -50, 13}*DEG_TO_RAD,
+		qRGrip = vector.new{-76, -27.5, -39}*DEG_TO_RAD
 	},
 }
 
+--[[
+
+>  return Body.get_larm_position()*RAD_TO_DEG
+[1] {100.157, 23.0945, -14.154, -71.2635, -37.0116, -70.9179, 38.688}
+>  return Body.get_rarm_position()*RAD_TO_DEG
+[1] {85.4061, -26.2384, -20.0216, -60.7991, 207.627, -76.7064, -37.1212}
+>  return Body.get_lgrip_position()*RAD_TO_DEG
+[1] {-5.97656, -50.4492, 13.2715}
+>  return Body.get_rgrip_position()*RAD_TO_DEG
+[1] {-76.2402, -27.5293, -39.2871}
+
+--]]
 Config.demo = demo
 
 return Config

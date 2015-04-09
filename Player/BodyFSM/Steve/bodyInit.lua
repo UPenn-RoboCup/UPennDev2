@@ -13,6 +13,7 @@ function state.entry()
   t_update = t_entry
 	-- The channels are globally available
 	arm_ch:send'init'
+	gripper_ch:send'init'
   motion_ch:send'stand'
 	head_ch:send'init'
 	lidar_ch:send'pan'

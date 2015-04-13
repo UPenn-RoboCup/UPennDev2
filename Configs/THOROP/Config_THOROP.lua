@@ -57,7 +57,7 @@ if IS_STEVE then
 		'FSM_Steve', 'Arm_Steve', 'Vision_Steve', 'World_Steve'
 	}
 	if IS_WEBOTS then
-		--Config.sensors.chest_lidar = 'mesh_wizard'
+		Config.sensors.chest_lidar = 'mesh_wizard'
 		--[[
 		Config.sensors.kinect = 'kinect2_wizard'
 		Config.kinect_timestep = 50
@@ -81,9 +81,9 @@ end
 -- Custom Config files
 if Config.demo then table.insert(exo, 'Demo') end
 for _,v in ipairs(exo) do
-	local fname = {Config.PLATFORM_NAME,'/Config_', Config.PLATFORM_NAME, '_', v}
+	local fname = {'Config_', Config.PLATFORM_NAME, '_', v}
 	local filename = table.concat(fname)
-  require(filename)  
+  assert(pcall(require, filename))
 end
 
 -- Custom motion libraries

@@ -73,9 +73,8 @@ local function filter_arm_plan(plan)
     qRArmMov[i] =  vector.new(plan.RAP[i+1][1]) - vector.new(plan.RAP[i][1])
     local dt_min_left  = get_admissible_dt_vel(qLArmMov[i], velLimit0)
     local dt_min_right = get_admissible_dt_vel(qRArmMov[i], velLimit0)
---    dt[i] = math.max(dt_min_left, dt_min_right,0.01)
-    dt[i] = math.max(dt_min_left, dt_min_right, 
-      Config.arm.plan.dt_step_min_jacobian)
+    dt[i] = math.max(dt_min_left, dt_min_right,Config.arm.plan.dt_step_min_jacobian)
+--    dt[i] = math.max(dt_min_left, dt_min_right)
     qLArmVel[i] = qLArmMov[i]/dt[i]    
     qRArmVel[i] = qLArmMov[i]/dt[i]
   end
@@ -189,9 +188,8 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   end
     
   if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then 
---    print("reached")
     return qArm,true,1
-    end --reached
+  end --reached
 
   local J= torch.Tensor(JacArm):resize(6,7)  
   local JT = torch.Tensor(J):transpose(1,2)
@@ -207,16 +205,18 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   local c, p = 2,10  
 
   local joint_limits={
-    {-math.pi/2, math.pi},
+    {-math.pi/2*100/180, math.pi*200/180},
     {0,math.pi/2},
     {-math.pi/2, math.pi/2},
     {-math.pi, -0.2}, --temp value
-    {-math.pi, math.pi},
+    {-math.pi*1.5, math.pi*1.5},
     {-math.pi/2, math.pi/2},
     {-math.pi, math.pi}
   }
   if isLeft==0 then
     joint_limits[2]={-math.pi/2,0}
+--    joint_limits[2]={-math.pi/180*135,0}
+    joint_limits[5]={-math.pi*1.5, math.pi*1.5}
   end
 
   for i=1,7 do
@@ -236,7 +236,6 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   local linearDistActual = util.norm(trArmDiffActual,3)
   local linearVelActual = linearDistActual/dt_step
 
-
   if linearDistActual<0.0001 then
     print("ARM STUCK!!!!")
     return 
@@ -249,8 +248,6 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
         linearVelActual, linearVelActual/linear_vel*100 )
       )
   end
-
-
 
   return qArmTarget,false, linearVelActual/linear_vel
 end
@@ -272,11 +269,6 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
 
   local uTorsoCompNext = get_torso_compensation(qLArmComp,qRArmComp,qWaist, massL,massR)
   local vec_comp = vector.new({uTorsoCompNext[1],uTorsoCompNext[2],0,0,0,0})
-
---  print("ORG TRR:",util.print_transform(trRArm1,3))
---  print("uTorsoComp:",uTorsoCompNext[1])
-
-
 
   --arm transform from torso frame (which moves around for compensation)
   local trLArm1Comp = vector.new(trLArm1) - vec_comp
@@ -300,8 +292,8 @@ local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_s
   
   local new_cond = {trLArmNext, trRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw, waistPitch}
 
-  local scale=math.max(0.1, math.min(scaleL,scaleR,2))
-print("scale:",scale)
+  local scale=math.max(Config.arm.plan.scale_limit[1], math.min(scaleL,scaleR,Config.arm.plan.scale_limit[2]))
+--print("scale:",scale)
 
   return new_cond, dt_step*scale, doneL and doneR
 end
@@ -328,8 +320,8 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]},qWaist[1],qWaist[2]}
   
   --Insert initial arm joint angle to the queue
-  local dt_step0 = Config.arm.plan.dt_step0
-  local dt_step = Config.arm.plan.dt_step
+  local dt_step0 = Config.arm.plan.dt_step0_jacobian
+  local dt_step = Config.arm.plan.dt_step_jacobian
 
   local qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue = 
     {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}},  {init_cond[5]}, {{current_cond[6],current_cond[7]}}
@@ -405,14 +397,13 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       trLArmNext = Body.get_forward_larm(qLArmTemp)
       trRArmNext = Body.get_forward_rarm(qRArmTemp)  
 --]]      
-      
+     
 
       t10 = unix.time() 
       new_cond, dt_step_current, torsoCompDone=    
         self:get_next_movement_jacobian(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2],velL,velR)
       t11 = unix.time()
     end
-
 
     done = done and torsoCompDone
     if not new_cond then       

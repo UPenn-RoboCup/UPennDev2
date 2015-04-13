@@ -576,7 +576,7 @@ print("trRArmT:".. util.print_transform(target_param[2]) )
       waistNext = {current_cond[6], current_cond[7]}
 
       local t1 = unix.time()  
-      print("time elapsed transform:",(t1-t0)*1000,"ms")
+--      print("time elapsed transform:",(t1-t0)*1000,"ms")
 
 --      print("waistNext:",unpack(waistNext))      
 
@@ -658,10 +658,11 @@ print("trRArmT:".. util.print_transform(target_param[2]) )
       self:get_next_movement(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2])
 
     local t11 = unix.time()
+--[[    
     if t11-t10>0.001 then  
       print("time elapsed at nextmovement:",(t11-t10)*1000,"ms")
     end
-
+--]]
 
     done = done and torsoCompDone
     if not new_cond then 

@@ -140,12 +140,15 @@ function state.update()
   local qRArm = Body.get_rarm_command_position()
 
   local Lwrist1 = qLArm[5]-math.pi/2
-  local Rwrist1 = qRArm[5]+math.pi/2
   local Lwrist2 = qLArm[7]+math.pi/2
+
+  local Rwrist1 = qRArm[5]+math.pi/2
   local Rwrist2 = qRArm[7]-math.pi/2
 
-  if math.abs(Rwrist1)>math.pi 
-    or math.abs(Rwrist1)>math.pi then
+--print("Wrist:",Rwrist1*180/math.pi,Rwrist2*180/math.pi)
+
+  if math.abs(Rwrist1)>math.pi*1.5 
+    or math.abs(Rwrist1)>math.pi*1.5 then
     print("wrist1 out of range!!!")
   end
 

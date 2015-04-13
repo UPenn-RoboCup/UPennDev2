@@ -55,8 +55,8 @@ local h = metadata.h
 local name = metadata.name
 -- Who to send to
 local operator
-operator = Config.net.operator.wireless
---operator = Config.net.operator.wired
+--operator = Config.net.operator.wireless
+operator = Config.net.operator.wired
 -- Network Channels/Streams
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]

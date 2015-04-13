@@ -75,7 +75,7 @@ vision.goal = {
 local m308_param = {
 	{'White Balance Temperature', 2300},
 	{'Exposure (Absolute)', 112},
-	{'Focus (absolute)', 0},
+--	{'Focus (absolute)', 0},
 	{'Brightness', 128},
 	{'Contrast', 128},
 	{'Saturation', 220},
@@ -130,7 +130,7 @@ camera[1] = {
 		{'White Balance Temperature, Auto', 0},
 		{'Power Line Frequency', 0},
 		{'Exposure, Auto Priority', 0},
-		{'Focus, Auto', 0}
+--		{'Focus, Auto', 0}
 	},
 	param = m308_param,
 }

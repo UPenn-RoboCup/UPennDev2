@@ -84,13 +84,9 @@ local function setup_mesh(meta)
 	-- Data for each scanline
 	if TORCH_SCANLINE_INFO then
 		scan_angles = torch.DoubleTensor(n_scanlines):zero()
-		scan_a = scan_angles:clone()
-		scan_pose = torch.DoubleTensor(n_scanlines,3):zero()
 		scan_torso = torch.DoubleTensor(n_scanlines,6):zero()
 	else
 		scan_angles = vector.zeros(n_scanlines)
-		scan_a = vector.zeros(n_scanlines)
-		scan_pose = vector.zeros(n_scanlines)
 		scan_torso = vector.zeros(n_scanlines)
 	end
 	-- Metadata for the mesh
@@ -98,7 +94,6 @@ local function setup_mesh(meta)
 	metadata.sfov = {-mag_sweep / 2, mag_sweep / 2}
 	metadata.a = scan_angles
 	metadata.torso = scan_torso
-	metadata.pose = scan_pose
 	-- Add the dimensions (useful for raw)
 	metadata.dims = {n_scanlines, n_returns}
 end
@@ -239,8 +234,6 @@ local function update(meta, ranges)
 			ffi.copy(dest:data(), float_ranges + offset_idx, byte_sz)
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
-			-- TODO: Save the pose
-			scan_pose[line] = pose
 			-- Save the torso compensation
 			--scan_torso[line] = torso
 			scan_torso[line] = global

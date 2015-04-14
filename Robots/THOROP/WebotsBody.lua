@@ -544,17 +544,6 @@ function WebotsBody.update(Body)
 
 		-- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()
-    if key_code>0 then print(key_code) end
-
-		--[[
-			WebotsBody.update()
-			local key_char_lower = string.char(key_code):lower()
-			local key_toggle = key_action[key_char_lower]
-			if key_toggle and t-t_last_keypress>1 then
-				key_toggle()
-				t_last_keypress = t
-			end
-		--]]
 
 		if ww then ww.update() end
   	if fw then fw.update() end

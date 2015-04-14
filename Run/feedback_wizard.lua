@@ -13,6 +13,7 @@ local t_sleep = 1e6 / ping_rate
 require'wcm'
 
 local feedback_udp_ch, ping_ch
+local feedback_ch
 local ret, err
 local nBytes, nBytesPing = 0, 0
 local t = 0
@@ -25,6 +26,7 @@ local function entry()
 	)
 	-- Lossy channel test
 	ping_ch = si.new_sender(Config.net.operator.wired, Config.net.test.udp)
+	feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
 end
 
 local msg
@@ -38,7 +40,7 @@ local function update()
 	else
 		nBytesPing = nBytesPing + #msg
 	end
-	if t - t_feedback < feedback_interval then return end
+	if not IS_WEBOTS and t - t_feedback < feedback_interval then return end
 
 	count = count + 1
 	e.t = t
@@ -52,11 +54,12 @@ local function update()
 	e.gyro, e.t_imu = Body.get_gyro()
 	e.acc = Body.get_accelerometer()
 	e.rpy = Body.get_rpy()
-	e.odom = wcm.get_robot_odometry()
+	e.pose = wcm.get_robot_pose()
 
   --
   msg = mpack(e)
 	ret, err = feedback_udp_ch:send(msg)
+	feedback_ch:send(msg)
 	if type(ret)=='string' then
 		io.write('Feedback | UDP error: ', ret, '\n')
 	else

@@ -26,13 +26,10 @@ if Config.IS_COMPETING then
 else
 	depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
 	color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
-	print(depth_net_ch.name)
 end
 
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
-
-print(Config.net.streams['kinect2_depth'].tcp, operator)
 
 
 local c_rgb
@@ -49,7 +46,6 @@ local flatten = T.flatten
 -- CoM to the Neck (32cm in z)
 local tNeck = trans(unpack(Config.head.neckOffset))
 -- Mounting of Kinect from the neck axes
---local tKinect = trans(unpack(cfg.mountOffset))
 local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
 
 -- Next rotation

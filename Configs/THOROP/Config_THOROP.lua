@@ -27,7 +27,7 @@ if IS_WEBOTS then
   -- Default Webots sensors
   Config.sensors = {
 		ft = true,
-		--feedback = 'feedback_wizard',
+		feedback = 'feedback_wizard',
     --head_camera = 'camera_wizard',
     --chest_lidar = 'mesh_wizard',
     --head_lidar = 'slam_wizard',

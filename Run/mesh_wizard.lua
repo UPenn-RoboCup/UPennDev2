@@ -71,7 +71,7 @@ local function setup_mesh(meta)
 	offset_idx = math.floor(fov_offset + 0.5)
 	-- Round to get the number of returns for each scanline
 	n_returns = math.floor((max_view - min_view) / res + 0.5)
-	print("n_returns", n_returns, max_view, min_view, res)
+	--print("n_returns", n_returns, max_view, min_view, res)
 	-- Check the number of scanlines in each mesh
 	-- Indexed by the actuator angle
 	-- Depends on the speed we use

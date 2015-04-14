@@ -32,7 +32,7 @@ local function set_larm(q, do_now)
 		LARM_DIRTY = false
 		local curTeleop = hcm.get_teleop_larm()
 		if curTeleop~=qL0 then
-			print('L Outdated...')
+			print('TEST_TELEOP | L Outdated...')
 			vector.copy(curTeleop, qL0)
 			qLtmp = curTeleop
 			return
@@ -58,7 +58,7 @@ local function set_rarm(q, do_now)
 		LARM_DIRTY = false
 		local curTeleop = hcm.get_teleop_rarm()
 		if curTeleop~=qR0 then
-			print('R Outdated...')
+			print('TEST_TELEOP | R Outdated...')
 			vector.copy(curTeleop, qR0)
 			qRtmp = curTeleop
 			return
@@ -338,21 +338,18 @@ end
 setmetatable(lower_lut, {
 	__index = function(t, k)
     if (not arm_mode) then
-      apply_head(head[k])
-      if k=='k' then
-        mcm.set_walk_vel({0,0,0})
+      if head[k] then
+				return function() apply_head(head[k]) end
+      elseif k=='k' then
+        return function() mcm.set_walk_vel({0,0,0}) end
       else
-        apply_walk(walk[k])
+        return function() apply_walk(walk[k]) end
       end
-			return
     elseif pre_arm[k] then
-			apply_pre(pre_arm[k])
-			return
+			return function() apply_pre(pre_arm[k]) end
 		elseif post_arm[k] then
-			apply_post(post_arm[k])
-			return
+			return function() apply_post(post_arm[k]) end
 		end
-		print('Unknown char')
 	end
 })
 

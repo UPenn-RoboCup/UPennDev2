@@ -124,7 +124,7 @@ function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
   if wcm.get_robot_reset_pose()==1 then
-    print("POSE RESET!!!!!")
+    print("libWorld | POSE RESET!")
     libWorld.pose_reset()    
   end
 

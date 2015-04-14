@@ -38,11 +38,13 @@ print(Config.net.streams['kinect2_depth'].tcp, operator)
 local c_rgb
 if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
 local T = require'Transform'
+local transform6D = require'Transform'.transform6D
 local rotY = T.rotY
 local rotZ = T.rotZ
 local trans = T.trans
 local from_rpy_trans = T.from_rpy_trans
 local flatten = T.flatten
+
 
 -- CoM to the Neck (32cm in z)
 local tNeck = trans(unpack(Config.head.neckOffset))
@@ -54,6 +56,11 @@ local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
 local function get_transform(head_angles, imu_rpy, body_height)
 	-- {yaw, pitch}
 	return from_rpy_trans({imu_rpy[1], imu_rpy[2], 0}, {0, 0, body_height}) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
+end
+
+local function get_transform2(head_angles, torso)
+	-- {yaw, pitch}
+	return transform6D(torso) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
 end
 
 --local has_detection, detection = pcall(require, cfg.detection)
@@ -90,9 +97,12 @@ local function update(rgb, depth)
 
 	local bh = mcm.get_walk_bodyHeight()
 	local qHead = Body.get_head_position()
-	local tr = flatten(get_transform(qHead, rpy, bh))
 	local torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
 	local global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+	--local tr = flatten(get_transform(qHead, rpy, bh))
+	local tr = flatten(get_transform2(qHead, global))
+
+	--print('global',vector.new(global))
 
 	-- Form color
 	rgb.t = t

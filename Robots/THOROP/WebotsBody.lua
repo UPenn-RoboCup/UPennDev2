@@ -405,7 +405,6 @@ function WebotsBody.update(Body)
       local angle   = math.atan2( compass[1], -compass[3] )
       local pose    = vector.pose{-gps[1], gps[3], angle}
 
-      --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
 
@@ -454,7 +453,6 @@ function WebotsBody.update(Body)
     if ENABLE_KINECT and t >= NEXT_KINECT then
       local w = webots.wb_camera_get_width(tags.kinect)
       local h = webots.wb_camera_get_height(tags.kinect)
-      -- TODO: fov? res?
 			local rgb = {
 				data = webots.to_rgb(tags.kinect),
 				width = w,

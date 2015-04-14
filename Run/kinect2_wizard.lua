@@ -8,6 +8,7 @@ dofile'../include.lua'
 local cfg = Config.kinect
 local Body = require'Body'
 require'mcm'
+require'wcm'
 local ptable = require'util'.ptable
 local mpack = require'msgpack.MessagePack'.pack
 
@@ -80,11 +81,19 @@ local function update(rgb, depth)
 	t_send = t
 
 	local rpy = Body.get_rpy()
+	local uComp = mcm.get_stance_uTorsoComp()
+	uComp[3] = 0
+
+	local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
+	local pose = wcm.get_robot_pose()
+	local torsoG = util.pose_global(torso0, pose)
+
 	local bh = mcm.get_walk_bodyHeight()
 	local qHead = Body.get_head_position()
 	local tr = flatten(get_transform(qHead, rpy, bh))
-	local odom = mcm.get_status_odometry()
-	local vel = mcm.get_walk_vel()
+	local torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
+	local global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+
 	-- Form color
 	rgb.t = t
 	rgb.c = 'jpeg'
@@ -93,8 +102,9 @@ local function update(rgb, depth)
 	rgb.body_height = bh
 	rgb.imu_rpy = rpy
 	rgb.tr = tr
-	rgb.odom = odom
-	rgb.vel = vel
+	rgb.pose = pose
+	rgb.torso = torso
+	rgb.global = global
 	local j_rgb
 	if IS_WEBOTS then
 		j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
@@ -114,8 +124,9 @@ local function update(rgb, depth)
 	depth.body_height = bh
 	depth.imu_rpy = rpy
 	depth.tr = tr
-	depth.odom = odom
-	depth.vel = vel
+	depth.pose = pose
+	depth.torso = torso
+	depth.global = global
 	local ranges = depth.data
 	depth.data = nil
 	depth.sz = #ranges

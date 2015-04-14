@@ -481,12 +481,17 @@ function WebotsBody.update(Body)
 			local rpy = Body.get_rpy()
 			local uComp = mcm.get_stance_uTorsoComp()
 			uComp[3] = 0
+
 			local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
+			local pose = wcm.get_robot_pose()
+			local torsoG = util.pose_global(torso0, pose)
+			local bh = mcm.get_stance_bodyHeight()
 
 			local metadata = {
         n=n,res=res,t=t,angle=Body.get_lidar_position(),
-				torso = {torso0.x, torso0.y, mcm.get_stance_bodyHeight(), rpy[1], rpy[2], torso0.a},
-        pose = wcm.get_robot_pose()
+				torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
+        pose = pose,
+				global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
       }
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)

@@ -40,13 +40,18 @@ local metadata = {}
 local cb = function(self, data)
 	metadata.t = get_time()
 	metadata.angle = Body.get_lidar_position()
+
 	local rpy = Body.get_rpy()
 	local uComp = mcm.get_stance_uTorsoComp()
 	uComp[3] = 0
-	local torso0 = pose_global(uComp, mcm.get_status_bodyOffset())
+	local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
+	local pose = wcm.get_robot_pose()
+	local torsoG = util.pose_global(torso0, pose)
+	local bh = mcm.get_stance_bodyHeight()
 
-	metadata.torso = {torso0.x, torso0.y, mcm.get_stance_bodyHeight(), rpy[1], rpy[2], torso0.a}
-	metadata.pose = wcm.get_robot_pose()
+	metadata.torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
+	metadata.global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
+	metadata.pose = pose
 	metadata.n = self.n
 	metadata.res = self.res
 	metadata.rsz = #data

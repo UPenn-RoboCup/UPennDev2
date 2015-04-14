@@ -224,6 +224,7 @@ local function update(meta, ranges)
 	-- Metadata
 	local pose = vector.pose(meta.pose)
 	local torso = vector.new(meta.torso)
+	local global = vector.new(meta.global)
 	--print('torso', torso)
 
 	-- Find the scanline indices
@@ -241,7 +242,8 @@ local function update(meta, ranges)
 			-- TODO: Save the pose
 			scan_pose[line] = pose
 			-- Save the torso compensation
-			scan_torso[line] = torso
+			--scan_torso[line] = torso
+			scan_torso[line] = global
 		end
 	end
 	-- Check for sending out on the wire

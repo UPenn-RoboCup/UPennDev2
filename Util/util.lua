@@ -1,8 +1,10 @@
 local util = {}
 local vector = require'vector'
+local vpose = require'vector'.pose
 local sformat = string.format
 local abs = math.abs
 local min, max = math.min, math.max
+local sin, cos = math.sin, math.cos
 
 local PI, TWO_PI = math.pi, 2*math.pi
 function util.mod_angle(a)
@@ -285,9 +287,9 @@ function util.approachTolRad( values, targets, speedlimits, dt, tolerance )
 end
 
 function util.pose_global(pRelative, pose)
-  local ca = math.cos(pose[3])
-  local sa = math.sin(pose[3])
-  return vector.pose{pose[1] + ca*pRelative[1] - sa*pRelative[2],
+  local ca = cos(pose[3])
+  local sa = sin(pose[3])
+  return vpose{pose[1] + ca*pRelative[1] - sa*pRelative[2],
                     pose[2] + sa*pRelative[1] + ca*pRelative[2],
 --                    util.mod_angle(pose[3] + pRelative[3])}
                     pose[3] + pRelative[3]}
@@ -297,12 +299,12 @@ function util.pose_global(pRelative, pose)
 end
 
 function util.pose_relative(pGlobal, pose)
-  local ca = math.cos(pose[3])
-  local sa = math.sin(pose[3])
+  local ca = cos(pose[3])
+  local sa = sin(pose[3])
   local px = pGlobal[1]-pose[1]
   local py = pGlobal[2]-pose[2]
   local pa = pGlobal[3]-pose[3]
-  return vector.pose{ca*px + sa*py, -sa*px + ca*py, util.mod_angle(pa)}
+  return vpose{ca*px + sa*py, -sa*px + ca*py, util.mod_angle(pa)}
 end
 
 ---table of uniform distributed random numbers

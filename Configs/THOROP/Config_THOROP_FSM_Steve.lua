@@ -14,7 +14,7 @@ fsm.enabled = {
 	Head = true,
 	Motion = true,
 	Gripper = true,
-	Lidar = false,
+	Lidar = true,
 }
 
 --SJ: now we can have multiple FSM options

@@ -15,7 +15,7 @@ local vector = require'vector'
 local Body = require'Body'
 
 require'vcm'
-require'mcm'
+
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
 -- mag_sweep: How much will we sweep over
@@ -53,8 +53,7 @@ local metadata = {
 	t = 0,
 }
 
-local scan_angles, scan_p, scan_angles
---local scan_x, scan_y, scan_a
+local scan_pose, scan_angles, scan_torso
 -- Setup tensors for a lidar mesh
 local mesh, mesh_byte, mesh_adj, offset_idx
 local n_scanlines
@@ -85,39 +84,21 @@ local function setup_mesh(meta)
 	-- Data for each scanline
 	if TORCH_SCANLINE_INFO then
 		scan_angles = torch.DoubleTensor(n_scanlines):zero()
-		scan_x = scan_angles:clone()
-		scan_y = scan_angles:clone()
 		scan_a = scan_angles:clone()
-		scan_pitch = scan_angles:clone()
-		scan_roll = scan_angles:clone()
 		scan_pose = torch.DoubleTensor(n_scanlines,3):zero()
-		scan_uComp = torch.DoubleTensor(n_scanlines,3):zero()
+		scan_torso = torch.DoubleTensor(n_scanlines,6):zero()
 	else
 		scan_angles = vector.zeros(n_scanlines)
-		scan_x = vector.zeros(n_scanlines)
-		scan_y = vector.zeros(n_scanlines)
 		scan_a = vector.zeros(n_scanlines)
-		scan_pitch = vector.zeros(n_scanlines)
-		scan_roll = vector.zeros(n_scanlines)
-		scan_pose = {}
-		scan_uComp = {}
+		scan_pose = vector.zeros(n_scanlines)
+		scan_torso = vector.zeros(n_scanlines)
 	end
 	-- Metadata for the mesh
 	metadata.rfov = ranges_fov
 	metadata.sfov = {-mag_sweep / 2, mag_sweep / 2}
 	metadata.a = scan_angles
-	--[[
-	metadata.px = scan_x
-	metadata.py = scan_y
-	metadata.pa = scan_a
-	--]]
-	-- Add Orientation for pitch and roll
-	metadata.pitch = scan_pitch
-	metadata.roll = scan_roll
-	-- Odometry
+	metadata.torso = scan_torso
 	metadata.pose = scan_pose
-	-- Compensation
-	metadata.uComp = scan_uComp
 	-- Add the dimensions (useful for raw)
 	metadata.dims = {n_scanlines, n_returns}
 end
@@ -241,13 +222,9 @@ local function update(meta, ranges)
 		print('Mesh | Updated containers')
 	end
 	-- Metadata
-	-- NOTE: Orientation should include the joint positions as well!
-	local roll, pitch, yaw = unpack(meta.rpy)
-	-- Body pose
-	local pose = meta.pose
-	-- Torso compensation
-	local uTorsoComp = mcm.get_stance_uTorsoComp()
-	uTorsoComp[3] = mcm.get_stance_bodyHeight()
+	local pose = vector.pose(meta.pose)
+	local torso = vector.new(meta.torso)
+	--print('torso', torso)
 
 	-- Find the scanline indices
 	local rad_angle = meta.angle
@@ -262,12 +239,9 @@ local function update(meta, ranges)
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
 			-- TODO: Save the pose
-			scan_pose[line] = vector.new(pose)
-			-- Save the orientation
-			scan_pitch[line] = pitch
-			scan_roll[line] = roll
+			scan_pose[line] = pose
 			-- Save the torso compensation
-			scan_uComp[line] = uTorsoComp
+			scan_torso[line] = torso
 		end
 	end
 	-- Check for sending out on the wire

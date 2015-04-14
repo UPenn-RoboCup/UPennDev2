@@ -128,7 +128,7 @@ function libWorld.update(uOdom, detection)
     libWorld.pose_reset()    
   end
 
-  if IS_WEBOTS and Config.use_gps_pose then
+  if IS_WEBOTS and Config.world.use_gps_pose then
     local gpspose1 = wcm.get_robot_pose_gps()
     local gpspose0 = wcm.get_robot_pose_gps0()
     local gpspose = util.pose_relative(gpspose1,gpspose0)

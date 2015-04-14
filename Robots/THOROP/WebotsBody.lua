@@ -2,6 +2,7 @@ local WebotsBody = {}
 local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
 require'wcm'
+local util = require'util'
 
 local get_time = webots.wb_robot_get_time
 
@@ -476,10 +477,16 @@ function WebotsBody.update(Body)
 			local fov = webots.wb_camera_get_fov(tags.chest_lidar)
 			local res = fov / n
       local ranges = webots.wb_camera_get_range_image(tags.chest_lidar)
+
+			local rpy = Body.get_rpy()
+			local uComp = mcm.get_stance_uTorsoComp()
+			uComp[3] = 0
+			local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
+
 			local metadata = {
-        n=n,res=res,t=t,angle=Body.get_lidar_position(),rpy=Body.get_rpy(),
-        pose = wcm.get_robot_odometry()
-        -- pose=mcm.get_status_odometry()
+        n=n,res=res,t=t,angle=Body.get_lidar_position(),
+				torso = {torso0.x, torso0.y, mcm.get_stance_bodyHeight(), rpy[1], rpy[2], torso0.a},
+        pose = wcm.get_robot_pose()
       }
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)

@@ -4,7 +4,7 @@ WorldInfo {
     "IROS 2015 World"
   ]
   title "THOR-OP In an obstacle course"
-  basicTimeStep 8
+  basicTimeStep 20
   FPS 15
   contactProperties [
     ContactProperties {
@@ -40,13 +40,13 @@ DirectionalLight {
   intensity 0.5
 }
 
-#DEF ALVIN THOROP_UPENN {
-DEF ALVIN THOROP_mk2_Fullmass {
+DEF ALVIN THOROP_UPENN {
+#DEF ALVIN THOROP_mk2_Fullmass {
   translation 0 1.17 -0.02
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
-  #lidarRays 360
+  lidarRays 360
   max_torque_400w 180
   max_torque_200w 90
   max_torque_100w 45
@@ -61,7 +61,7 @@ DEF ALVIN THOROP_mk2_Fullmass {
 # Jianqiao's measurements
 DEF CARFLOOR Floor {
   translation 0 0 4
-  contactMaterial "floor"
+  #contactMaterial "floor"
   size 6 9
   texture [
     "textures/marble.png"

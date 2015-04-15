@@ -100,7 +100,27 @@ simple_wall{
 	translation -5.5 1 8
 	size 6 2 .01
 }
-
+# Jagged Walls
+simple_wall{
+	rotation 0 1 0 0.7853981634
+	translation -4 1 8.34
+	size 1 2 .01
+}
+simple_wall{
+	rotation 0 1 0 -0.7853981634
+	translation -4.7 1 8.34
+	size 1 2 .01
+}
+simple_wall{
+	rotation 0 1 0 0.7853981634
+	translation -5.4 1 8.34
+	size 1 2 .01
+}
+simple_wall{
+	rotation 0 1 0 -0.7853981634
+	translation -6.1 1 8.34
+	size 1 2 .01
+}
 
 # Entry Door
 PushDoor {
@@ -118,7 +138,20 @@ simple_wall{
 
 # Valve
 DEF VALVE CircleValve {
-  translation -4 1 8.1
+	rotation 0 1 0 0.7853981634
+  translation -4 1 8.4
   scale 0.15 0.15 0.15
   color 1 0 0
+}
+
+# Drill
+simple_wall{
+	rotation 0 1 0 0.7853981634
+	#translation -5.4 1.04 8.34
+	translation -5.33 1.04 8.45
+	size 0.44 0.1 0.26
+}
+SimpleDrill{
+	translation -5.25 1.23 8.55
+	rotation 0 1 0 -2.3561944902
 }

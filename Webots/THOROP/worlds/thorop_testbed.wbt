@@ -90,7 +90,7 @@ DEF BARRIER0 simple_wall{
 DEF TASKFLOOR Floor {
   translation -3 0 10
   contactMaterial "floor"
-  size 9 4
+  size 12 4
   texture [
     "textures/marble.png"
   ]
@@ -114,4 +114,11 @@ simple_wall{
 simple_wall{
 	translation -2.5 1 11.25
 	size 0.05 2 1.7
+}
+
+# Valve
+DEF VALVE CircleValve {
+  translation -4 1 8.1
+  scale 0.15 0.15 0.15
+  color 1 0 0
 }

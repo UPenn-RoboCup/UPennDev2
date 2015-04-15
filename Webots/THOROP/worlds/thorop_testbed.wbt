@@ -72,12 +72,12 @@ DEF CARFLOOR Floor {
 # Not much rotation
 DEF BARRIER0 simple_wall{
 	rotation 0 1 0 0.1
-	translation 1.75 0.54 2
+	translation 1.5 0.54 2
 	size 2.67 1.08 .5
 }
 DEF BARRIER0 simple_wall{
 	rotation 0 -1 0 0.1
-	translation -1.75 0.54 6
+	translation -1.5 0.54 6
 	size 2.67 1.08 .5
 }
 
@@ -154,4 +154,31 @@ simple_wall{
 SimpleDrill{
 	translation -5.25 1.23 8.55
 	rotation 0 1 0 -2.3561944902
+}
+
+#Plug
+DEF PLUG Solid {
+	translation -6.15 1.25 8.375
+	rotation 1 0 1 1.57
+	children [
+		Shape {
+			geometry DEF PG Cylinder {
+				height 0.1
+				radius 0.025
+				subdivision 9
+			}
+		}
+	]
+	boundingObject USE PG
+	physics Physics {
+    density -1
+    mass 0.5
+  }
+}
+
+Receptacle{
+	translation -6.14 1.25 8.36
+}
+Receptacle{
+	translation -6 1.25 8.5
 }

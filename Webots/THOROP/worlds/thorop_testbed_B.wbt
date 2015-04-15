@@ -4,7 +4,7 @@ WorldInfo {
     "IROS 2015 World"
   ]
   title "THOR-OP In an obstacle course"
-  basicTimeStep 20
+  basicTimeStep 15
   FPS 15
   contactProperties [
     ContactProperties {
@@ -21,8 +21,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.00367622 0.95482 0.297163 3.09539
-  position -0.492349 8.7441 -10.6021
+  orientation -0.615099 0.684578 0.39116 1.22021
+  position 0.737097 7.13378 13.3415
 }
 Background {
   skyColor [
@@ -40,10 +40,10 @@ DirectionalLight {
   intensity 0.5
 }
 
-DEF ALVIN THOROP_UPENN {
-#DEF ALVIN THOROP_mk2_Fullmass {
-  translation 0 1.17 0
-  rotation 1 0 0 0
+#DEF ALVIN THOROP_UPENN {
+DEF ALVIN THOROP_mk2_Fullmass {
+  translation -1 1.17 10
+  rotation 0 1 0 -1.57
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
@@ -53,42 +53,11 @@ DEF ALVIN THOROP_UPENN {
   #footContactMaterial "feet"
 }
 
-
-
-# Floor for the initial (car) walk
-# Jianqiao's measurements
-DEF CARFLOOR Floor {
-  translation 0 0 4
-  #contactMaterial "floor"
-  size 6 9
-  texture [
-    "textures/marble.png"
-  ]
-}
-# Barriers for the (car) walk
-# Measurements from Jianqiao
-# Not much rotation
-DEF BARRIER0 simple_wall{
-	rotation 0 1 0 0.1
-	translation 1.5 0.54 2
-	size 2.67 1.08 .5
-}
-DEF BARRIER0 simple_wall{
-	rotation 0 -1 0 0.1
-	translation -1.5 0.54 6
-	size 2.67 1.08 .5
-}
-
-
-
-
-
-
 # Floor for doing the tasks
 DEF TASKFLOOR Floor {
-  translation -3 0 10
+  translation -5 0 10
   #contactMaterial "floor"
-  size 12 4
+  size 10 4
   texture [
     "textures/marble.png"
   ]

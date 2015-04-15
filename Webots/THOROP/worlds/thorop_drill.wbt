@@ -5,6 +5,7 @@ WorldInfo {
   ]
   title "valvetest"
   basicTimeStep 30
+#  basicTimeStep 20
   FPS 15
 }
 Viewpoint {
@@ -33,6 +34,7 @@ DEF FLOOR Floor {
   ]
 }
 THOROP_UPENN {
+#THOROP_mk2_Fullmass {
   translation 0.246415 1.15535 -0.0764795
   controller "thorop"
   controllerArgs "0 32"

@@ -104,6 +104,7 @@ function state.entry()
   mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand (left arm fixed)
   arm_planner:set_shoulder_yaw_target(nil,nil)
   
+  arm_planner:reset_torso_comp(qLArm0,qRArm0)
   
 --[[  
   hcm.set_hands_left_tr(trLArm1)
@@ -131,20 +132,23 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  local cur_cond = arm_planner:load_boundary_condition()
-  local trLArm = Body.get_forward_larm(cur_cond[1])
-  local trRArm = Body.get_forward_rarm(cur_cond[2])  
+  local trLArm,trRArm=arm_planner:load_current_condition()
+
+
 
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
   local Lwrist1 = qLArm[5]-math.pi/2
-  local Rwrist1 = qRArm[5]+math.pi/2
   local Lwrist2 = qLArm[7]+math.pi/2
+
+  local Rwrist1 = qRArm[5]+math.pi/2
   local Rwrist2 = qRArm[7]-math.pi/2
 
-  if math.abs(Rwrist1)>math.pi 
-    or math.abs(Rwrist1)>math.pi then
+--print("Wrist:",Rwrist1*180/math.pi,Rwrist2*180/math.pi)
+
+  if math.abs(Rwrist1)>math.pi*1.5 
+    or math.abs(Rwrist1)>math.pi*1.5 then
     print("wrist1 out of range!!!")
   end
 
@@ -189,7 +193,7 @@ function state.update()
 
   elseif stage=="teleopmove" then 
     if arm_planner:play_arm_sequence(t) then 
-      print("Current rarm:",util.print_transform(trRArm))
+      print("Current rarm:",util.print_transform(trRArm,3))
       stage="teleopwait" 
     end
   elseif stage=="armposreset" then 

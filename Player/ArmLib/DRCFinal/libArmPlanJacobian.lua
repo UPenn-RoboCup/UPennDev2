@@ -73,8 +73,8 @@ local function filter_arm_plan(plan)
     qRArmMov[i] =  vector.new(plan.RAP[i+1][1]) - vector.new(plan.RAP[i][1])
     local dt_min_left  = get_admissible_dt_vel(qLArmMov[i], velLimit0)
     local dt_min_right = get_admissible_dt_vel(qRArmMov[i], velLimit0)
---    dt[i] = math.max(dt_min_left, dt_min_right,0.01)
-    dt[i] = math.max(dt_min_left, dt_min_right, Config.arm.plan.dt_step_min)
+    dt[i] = math.max(dt_min_left, dt_min_right,Config.arm.plan.dt_step_min_jacobian)
+--    dt[i] = math.max(dt_min_left, dt_min_right)
     qLArmVel[i] = qLArmMov[i]/dt[i]    
     qRArmVel[i] = qLArmMov[i]/dt[i]
   end
@@ -188,9 +188,8 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   end
     
   if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then 
---    print("reached")
-    return qArm,true 
-    end --reached
+    return qArm,true,1
+  end --reached
 
   local J= torch.Tensor(JacArm):resize(6,7)  
   local JT = torch.Tensor(J):transpose(1,2)
@@ -206,16 +205,18 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   local c, p = 2,10  
 
   local joint_limits={
-    {-math.pi/2, math.pi},
+    {-math.pi/2*100/180, math.pi*200/180},
     {0,math.pi/2},
     {-math.pi/2, math.pi/2},
     {-math.pi, -0.2}, --temp value
-    {-math.pi, math.pi},
+    {-math.pi*1.5, math.pi*1.5},
     {-math.pi/2, math.pi/2},
     {-math.pi, math.pi}
   }
   if isLeft==0 then
     joint_limits[2]={-math.pi/2,0}
+--    joint_limits[2]={-math.pi/180*135,0}
+    joint_limits[5]={-math.pi*1.5, math.pi*1.5}
   end
 
   for i=1,7 do
@@ -230,129 +231,113 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   qArmVel:addmv(I2,e)
   local qArmTarget = vector.new(qArm)+vector.new(qArmVel)*dt_step
 
-  if debug and isLeft==0 then
-    local trArmNext = Body.get_forward_rarm(qArmTarget)
-    local trArmDiffActual = util.diff_transform(trArmNext,trArm)
-    local linear_dist = util.norm(trArmDiffActual,3)
+  local trArmNext = Body.get_forward_rarm(qArmTarget)
+  local trArmDiffActual = util.diff_transform(trArmNext,trArm)
+  local linearDistActual = util.norm(trArmDiffActual,3)
+  local linearVelActual = linearDistActual/dt_step
 
-    print("---")
-    print("Target:"..util.print_transform(trArmTarget))
-    print("Current"..util.print_transform(trArmNext))
-    print(sformat(" dist:%.3f vel:T%.3f A:%.3f",
-        linear_dist,linear_vel,linear_dist/dt_step)
+  if linearDistActual<0.0001 then
+    print("ARM STUCK!!!!")
+    return 
+  end
+
+  if debug and isLeft==0 then
+    print(util.print_transform(trArmNext,3).." => "..util.print_transform(trArmTarget,3))
+    print(sformat("T dist:%.3f Movement: %.3f vel:T%.3f A:%.3f ( %.1f percent)",
+        linear_dist,linearDistActual, linear_vel,
+        linearVelActual, linearVelActual/linear_vel*100 )
       )
   end
-  return qArmTarget,false
+
+  return qArmTarget,false, linearVelActual/linear_vel
 end
 
 
 local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch, velL, velR)
 
   local default_hand_mass = Config.arm.default_hand_mass or 0
-  local dqVelLeft = mcm.get_arm_dqVelLeft()
-  local dqVelRight = mcm.get_arm_dqVelRight()
-  local velTorsoComp = Config.arm.torso_comp_limit
-  local velYaw = Config.arm.shoulder_yaw_limit
+  local dqVelLeft,dqVelRight = mcm.get_arm_dqVelLeft(),mcm.get_arm_dqVelRight()    
   local massL, massR = self.mLeftHand + default_hand_mass, self.mRightHand + default_hand_mass
-  local qLArm,qRArm, qLArmComp , qRArmComp, uTorsoComp = unpack(init_cond)
-  
-  local qLArmNext, qRArmNext = qLArm, qRArm
-  local doneL,doneR = true,true
+
+  local trLArm, trRArm, qLArmComp, qRArmComp, uTorsoComp = unpack(init_cond)
+
+  local qLArmNextComp, qRArmNextComp = qLArmComp, qRArmComp
   local qWaist = {waistYaw, waistPitch}
+
   local endpoint_compensation = mcm.get_arm_endpoint_compensation()
+  local doneL,doneR,scaleL,scaleR = true,true,1,1
+
+  local uTorsoCompNext = get_torso_compensation(qLArmComp,qRArmComp,qWaist, massL,massR)
+  local vec_comp = vector.new({uTorsoCompNext[1],uTorsoCompNext[2],0,0,0,0})
+
+  --arm transform from torso frame (which moves around for compensation)
+  local trLArm1Comp = vector.new(trLArm1) - vec_comp
+  local trRArm1Comp = vector.new(trRArm1) - vec_comp
 
   if endpoint_compensation[1]>0 then
-    qLArmNext,doneL = self:get_armangle_jacobian(qLArm,trLArm1, 1, qWaist,dt_step, velL,true)
-  end
-
-  if endpoint_compensation[2]>0 then
-    qRArmNext,doneR = self:get_armangle_jacobian(qRArm,trRArm1, 0, qWaist,dt_step, velR,true)
-  end
-
-  if not qLArmNext or not qRArmNext then return end
-  local trLArmNext = Body.get_forward_larm(qLArmNext,mcm.get_stance_bodyTilt(),qWaist)
-  local trRArmNext = Body.get_forward_rarm(qRArmNext,mcm.get_stance_bodyTilt(),qWaist)
-
-  local vec_comp = vector.new({-uTorsoComp[1],-uTorsoComp[2],0,0,0,0})
-
-
---hack - no compensation
-vec_comp=vector.zeros(6)
-
-
-
-  local trLArmNextComp = vector.new(trLArmNext) + vec_comp
-  local trRArmNextComp = vector.new(trRArmNext) + vec_comp
-
-
-  local qLArmNextComp, qRArmNextComp = qLArmNext, qRArmNext
-
-  --Actual arm angle considering the torso compensation
-  if endpoint_compensation[1]>0 then
-    qLArmNextComp = self:get_armangle_jacobian(qLArmComp,trLArmNextComp, 1, qWaist,dt_step,velL)
+    qLArmNextComp,doneL,scaleL = self:get_armangle_jacobian(qLArmComp,trLArm1Comp, 1, qWaist,dt_step, velL,true)
   end
   if endpoint_compensation[2]>0 then
-    qRArmNextComp = self:get_armangle_jacobian(qRArmComp,trRArmNextComp, 0, qWaist,dt_step,velR)
+    qRArmNextComp,doneR,scaleR = self:get_armangle_jacobian(qRArmComp,trRArm1Comp, 0, qWaist,dt_step, velR,true)
   end
 
-  if not qLArmNextComp or not qRArmNextComp or not qLArmNext or not qRArmNext then 
-    print("ERROR")
+  if not qLArmNextComp or not qRArmNextComp then
+    print("ERROR: Arm STUCK")
     return 
-  else
-    local dt_step_current = dt_step
-    local uTorsoCompNextTarget = get_torso_compensation(qLArmNext,qRArmNext,qWaist, massL,massR)
-    local uTorsoCompNext, torsoCompDone = util.approachTol(uTorsoComp, uTorsoCompNextTarget, velTorsoComp, dt_step_current )
-    local new_cond = {qLArmNext, qRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw, waistPitch}
-    return new_cond, dt_step_current, 
-          torsoCompDone and doneL and doneR,
-          trLArmNext, trRArmNext
   end
+
+  --arm transform in fixed frame
+  local trLArmNext = Body.get_forward_larm(qLArmNextComp,mcm.get_stance_bodyTilt(),qWaist) + vec_comp  
+  local trRArmNext = Body.get_forward_rarm(qRArmNextComp,mcm.get_stance_bodyTilt(),qWaist) + vec_comp
+  
+  local new_cond = {trLArmNext, trRArmNext, qLArmNextComp, qRArmNextComp, uTorsoCompNext, waistYaw, waistPitch}
+
+  local scale=math.max(Config.arm.plan.scale_limit[1], math.min(scaleL,scaleR,Config.arm.plan.scale_limit[2]))
+--print("scale:",scale)
+
+  return new_cond, dt_step*scale, doneL and doneR
 end
 
 
 local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local dpVelLeft = mcm.get_arm_dpVelLeft()
   local dpVelRight = mcm.get_arm_dpVelRight()
-
   local t00 = unix.time()
+  if not init_cond then return end
 
+  --local init_cond = {trLArm, trRArm, qLArmComp, qRArmComp, uTorsoComp}
 
   --param: {trLArm,trRArm} for move
   --param: {trLArm,trRArm} for wrist
 
-  if not init_cond then return end
+
   local done, failed = false, false, false
+
+  local trLArm,trRArm = init_cond[1],init_cond[2]
+  local qLArmComp0, qRArmComp0 = init_cond[3],init_cond[4]
 
   local qWaist = {init_cond[6] or Body.get_waist_command_position()[1],init_cond[7] or Body.get_waist_command_position()[2]}
   local current_cond = {init_cond[1],init_cond[2],init_cond[3],init_cond[4],{init_cond[5][1],init_cond[5][2]},qWaist[1],qWaist[2]}
-  local trLArm = Body.get_forward_larm(init_cond[1],mcm.get_stance_bodyTilt(),qWaist) 
-  local trRArm =Body.get_forward_rarm(init_cond[2],mcm.get_stance_bodyTilt(),qWaist) 
-
-
-  local qLArm0, qRArm0 = init_cond[1],init_cond[2]
-
+  
   --Insert initial arm joint angle to the queue
-  local dt_step0 = Config.arm.plan.dt_step0
-  local dt_step = Config.arm.plan.dt_step
-  local qLArmQueue,qRArmQueue, uTorsoCompQueue = {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}}, {init_cond[5]}
+  local dt_step0 = Config.arm.plan.dt_step0_jacobian
+  local dt_step = Config.arm.plan.dt_step_jacobian
 
---now pitch too
-  local qWaistQueue={{current_cond[6],current_cond[7]}}
+  local qLArmQueue,qRArmQueue, uTorsoCompQueue, qWaistQueue = 
+    {{init_cond[3],dt_step0}}, {{init_cond[4],dt_step0}},  {init_cond[5]}, {{current_cond[6],current_cond[7]}}
 
   local current_param={unpack(init_param)}
   local qArmCount = 2
   local vel_param  
 
   if plantype=="move" then
-    current_param[3] = current_cond[6]
-    current_param[4] = current_cond[7]
-    target_param[3] = target_param[3] or current_cond[6]
-    target_param[4] = target_param[4] or current_cond[7]
-
+    --waist movement
+    current_param[3],current_param[4] = current_cond[6],current_cond[7]
+    target_param[3],target_param[4] = target_param[3] or current_cond[6],target_param[4] or current_cond[7]
     vel_param = {dpVelLeft,dpVelRight,Config.arm.vel_waist_limit[1],Config.arm.vel_waist_limit[2]}
   elseif plantype=="wrist" then
-
   end
+
   
   local done, torsoCompDone = false, false
   local trLArmNext, trRArmNext, waistNext
@@ -363,17 +348,18 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
   local done2 = false
 
   while not done and not failed  do --we were skipping the last frame
-
-    local t01 = unix.time()
-    local time_passed=t01-t00    
-    if time_passed>1 then
-      print("SOMETHING VERY WRONG!!!!!!")
+    local t01 = unix.time()    
+    if t01-t00>1 then
+      print("PLANNING TOOK TOO LONG!!!!!")
       return
     end
     local new_cond, dt_step_current, torsoCompDone, t10, t11
+
     local distL = tr_dist(init_param[1],target_param[1])
     local distR = tr_dist(init_param[2],target_param[2])
     if plantype=="move" then
+      trLArmNext,trRArmNext = target_param[1],target_param[2]
+
       local cdistL = tr_dist(init_param[1],trLArm)
       local cdistR = tr_dist(init_param[2],trRArm)
       local velL,velR = movfunc(cdistL,distL),movfunc(cdistR,distR)
@@ -384,31 +370,40 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       waistNext = {new_param[3], new_param[4]}
   
       t10 = unix.time() 
-      new_cond, dt_step_current, torsoCompDone, trLArmNext, trRArmNext=    
-        self:get_next_movement_jacobian(
-          current_cond, target_param[1],target_param[2], dt_step, waistNext[1], waistNext[2], velL, velR)
+      new_cond, dt_step_current, done  = self:get_next_movement_jacobian(
+          current_cond, trLArmNext,trRArmNext, dt_step, waistNext[1], waistNext[2], velL, velR)
+      if new_cond then trLArmNext, trRArmNext, torsoCompDone = new_cond[1], new_cond[2],new_cond[5] end
+
       t11 = unix.time() 
-      done = done3 and done4
 
     elseif plantype=="wrist" then
+
       trLArmNext,doneL = util.approachTolWristTransform(trLArm, target_param[1], dpVelLeft, dt_step )      
       trRArmNext,doneR = util.approachTolWristTransform(trRArm, target_param[2], dpVelRight, dt_step )
       done = doneL and doneR
+      local velL,velR = 0.02, 0.02 --for some reason, accelleration does not work very well with this
+
       local cdistL = tr_dist(init_param[1],trLArmNext)
       local cdistR = tr_dist(init_param[2],trRArmNext)
-      local velL,velR = 0.02, 0.02 --for some reason, accelleration does not work very well with this
-      local qLArmTemp = Body.get_inverse_arm_given_wrist( qLArm0, trLArmNext)
-      local qRArmTemp = Body.get_inverse_arm_given_wrist( qRArm0, trRArmNext)
+
+--hack
+      trLArmNext,trRArmNext = target_param[1],target_param[2]
+      waistNext = {current_cond[6], current_cond[7]}
+
+
+--[[
+      local qLArmTemp = Body.get_inverse_arm_given_wrist( current_cond[3], trLArmNext)
+      local qRArmTemp = Body.get_inverse_arm_given_wrist( current_cond[4], trRArmNext)
       trLArmNext = Body.get_forward_larm(qLArmTemp)
       trRArmNext = Body.get_forward_rarm(qRArmTemp)  
-      waistNext = {current_cond[6], current_cond[7]}
+--]]      
+     
 
       t10 = unix.time() 
       new_cond, dt_step_current, torsoCompDone=    
         self:get_next_movement_jacobian(current_cond, trLArmNext, trRArmNext, dt_step, waistNext[1], waistNext[2],velL,velR)
       t11 = unix.time()
     end
-
 
     done = done and torsoCompDone
     if not new_cond then       
@@ -452,21 +447,20 @@ local function plan_arm_sequence(self,arm_seq, current_stage_name,next_stage_nam
 --    {'valve', }      
 --  }
   local t0 =unix.time()
-
-
   local init_cond = self:load_boundary_condition()
+  print("init cond:")
+  print(util.print_transform(init_cond[1]))
+
   local LAPs, RAPs, uTPs, WPs = {},{},{},{}
   local counter = 1
 
   for i=1,#arm_seq do
-    local trLArm = Body.get_forward_larm(init_cond[1])
-    local trRArm = Body.get_forward_rarm(init_cond[2])
+    local trLArm, trRArm = init_cond[1],init_cond[2]
     local LAP, RAP, uTP,end_cond
     local WP, end_doorparam --for door
     if arm_seq[i][1] =='move' then
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('move',
-        init_cond,   {trLArm,trRArm},
-        {arm_seq[i][2] or trLArm, arm_seq[i][3] or trRArm, arm_seq[i][4], arm_seq[i][5],} )
+        init_cond, {trLArm,trRArm}, {arm_seq[i][2] or trLArm, arm_seq[i][3] or trRArm, arm_seq[i][4], arm_seq[i][5]} )
 
     elseif arm_seq[i][1] =='move0' then
       local trLArmTarget,trRArmTarget = trLArm,trRArm
@@ -474,13 +468,11 @@ local function plan_arm_sequence(self,arm_seq, current_stage_name,next_stage_nam
       if arm_seq[i][2] then trLArmTarget = libTransform.trans6D(arm_seq[i][2],lOffset) end 
       if arm_seq[i][3] then trRArmTarget = libTransform.trans6D(arm_seq[i][3],rOffset) end
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('move',
-        init_cond,   {trLArm,trRArm},
-        {trLArmTarget,trRArmTarget, arm_seq[i][4], arm_seq[i][5]} )
+        init_cond,   {trLArm,trRArm}, {trLArmTarget,trRArmTarget, arm_seq[i][4], arm_seq[i][5]} )
 
     elseif arm_seq[i][1] =='wrist' then
       LAP, RAP, uTP, WP, end_cond  = self:plan_unified('wrist',
-        init_cond, {trLArm,trRArm},
-        {arm_seq[i][2] or trLArm,  arm_seq[i][3] or trRArm} )
+        init_cond, {trLArm,trRArm}, {arm_seq[i][2] or trLArm,  arm_seq[i][3] or trRArm} )
     end
     if not LAP then 
       hcm.set_state_success(-1) --Report plan failure
@@ -488,27 +480,18 @@ local function plan_arm_sequence(self,arm_seq, current_stage_name,next_stage_nam
       return nil,current_stage_name
     end
     init_cond = end_cond    
-    if end_doorparam then self.init_doorparam = end_doorparam end
-    if end_valveparam then self.init_valveparam = end_valveparam end
-    
     for j=1,#LAP do
       LAPs[counter],RAPs[counter],uTPs[counter],WPs[counter]= LAP[j],RAP[j],uTP[j],WP[j]
       counter = counter+1
     end
   end
-
   self:save_boundary_condition(init_cond)
   local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
-
   filter_arm_plan(arm_plan)
   print_arm_plan(arm_plan)
-
   self:init_arm_sequence(arm_plan,Body.get_time())
-
   local t1 =unix.time()
   print(sformat("Total planning time: %.2f ms",(t1-t0)*1000))  
-
-
   return true, next_stage_name
 end
 
@@ -633,22 +616,49 @@ local function play_arm_sequence(self,t)
   return false
 end
 
+local function reset_torso_comp(self,qLArmComp,qRArmComp)
+  local qWaist = Body.get_waist_command_position()
+  local uTorsoComp = get_torso_compensation(qLArmComp,qRArmComp,qWaist, 0,0)
+  self.torsoCompBias = uTorsoComp
+  mcm.set_stance_uTorsoCompBias(self.torsoCompBias)  
+
+  local vec_comp = vector.new({uTorsoComp[1],uTorsoComp[2],0,0,0,0})
+  local trLArmComp = Body.get_forward_larm(qLArmComp)
+  local trRArmComp = Body.get_forward_rarm(qRArmComp)
+  local trLArm = vector.new(trLArmComp) + vec_comp
+  local trRArm = vector.new(trRArmComp) + vec_comp 
+
+  self:save_boundary_condition({trLArm, trRArm, qLArmComp, qRArmComp, uTorsoComp})
+end
+
 local function save_boundary_condition(self,arm_end)
-  mcm.set_arm_qlarm(arm_end[1])
-  mcm.set_arm_qrarm(arm_end[2])        
+  mcm.set_arm_trlarm(arm_end[1])
+  mcm.set_arm_trrarm(arm_end[2])
   mcm.set_arm_qlarmcomp(arm_end[3])
   mcm.set_arm_qrarmcomp(arm_end[4])
+  mcm.set_stance_uTorsoComp(arm_end[5])
 end
 
 local function load_boundary_condition(self)
-  local qLArm=mcm.get_arm_qlarm()
-  local qRArm=mcm.get_arm_qrarm()        
+  local trLArm = mcm.get_arm_trlarm()
+  local trRArm = mcm.get_arm_trrarm()
   local qLArmComp=mcm.get_arm_qlarmcomp()
   local qRArmComp=mcm.get_arm_qrarmcomp()
   local uTorsoComp = mcm.get_stance_uTorsoComp()
-  local init_cond = {qLArm,qRArm,qLArmComp,qRArmComp,uTorsoComp}
+  local init_cond = {trLArm, trRArm, qLArmComp, qRArmComp, uTorsoComp}
   return init_cond
 end
+
+local function load_current_condition(self)
+  local trLArm = mcm.get_arm_trlarm()
+  local trRArm = mcm.get_arm_trrarm()
+  local qLArmComp=mcm.get_arm_qlarmcomp()
+  local qRArmComp=mcm.get_arm_qrarmcomp()
+  local uTorsoComp = mcm.get_stance_uTorsoComp()
+  return trLArm, trRArm, qLArmComp, qRArmComp, uTorsoComp
+end
+
+
 
 local function save_doorparam(self,doorparam)
   self.init_doorparam=doorparam
@@ -719,6 +729,7 @@ libArmPlan.new_planner = function (params)
 
   s.save_boundary_condition=save_boundary_condition
   s.load_boundary_condition=load_boundary_condition
+  s.load_current_condition=load_current_condition
 
   s.save_doorparam = save_doorparam  
   s.save_valveparam = save_valveparam

@@ -6,6 +6,7 @@ local mpack = require'msgpack.MessagePack'.pack
 local Body = require'Body'
 local get_time = Body.get_time
 local usleep = require'unix'.usleep
+local pose_global = require'util'.pose_global
 local debug_interval = 2
 local feedback_interval = 1
 local ping_rate = 4
@@ -18,6 +19,22 @@ local ret, err
 local nBytes, nBytesPing = 0, 0
 local t = 0
 local t_feedback = 0
+
+local function get_torso()
+	local rpy = Body.get_rpy()
+	local uComp = mcm.get_stance_uTorsoComp()
+	uComp[3] = 0
+
+	local torso0 = pose_global(uComp, mcm.get_status_bodyOffset())
+	local pose = wcm.get_robot_pose()
+	local torsoG = pose_global(torso0, pose)
+
+	local bh = mcm.get_walk_bodyHeight()
+	local qHead = Body.get_head_position()
+	--local torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
+	local global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+	return global
+end
 
 local function entry()
 	feedback_udp_ch = si.new_sender(
@@ -51,12 +68,14 @@ local function update()
 	e.i = Body.get_current()
 	e.ft_l = Body.get_lfoot()
 	e.ft_r = Body.get_rfoot()
+	--[[
 	e.gyro, e.t_imu = Body.get_gyro()
 	e.acc = Body.get_accelerometer()
 	e.rpy = Body.get_rpy()
 	e.pose = wcm.get_robot_pose()
+  --]]
+	e.torso = get_torso()
 
-  --
   msg = mpack(e)
 	ret, err = feedback_udp_ch:send(msg)
 	feedback_ch:send(msg)

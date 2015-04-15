@@ -54,8 +54,8 @@ if IS_STEVE then
 		'FSM_Steve', 'Arm_Steve', 'Vision_Steve', 'World_Steve'
 	}
 	if IS_WEBOTS then
-		--Config.sensors.chest_lidar = 'mesh_wizard'
-		----[[
+		Config.sensors.chest_lidar = 'mesh_wizard'
+		--[[
 		Config.sensors.kinect = 'kinect2_wizard'
 		Config.kinect_timestep = 50
 		--]]

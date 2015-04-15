@@ -45,6 +45,7 @@ fsm.Body = {
 	--
 	{'bodyApproach', 'done', 'bodyStop'},
 	{'bodyApproach', 'stop', 'bodyStop'},
+	{'bodyApproach', 'init', 'bodyInit'},
 	--
 	{'bodyWaypoints', 'done', 'bodyStop'},
 	{'bodyWaypoints', 'stop', 'bodyStop'},

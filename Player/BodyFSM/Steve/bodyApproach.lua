@@ -76,7 +76,8 @@ function state.entry()
 		end)
 	-- set the waypoints
 	coroutine.resume(wp_thread, waypoints)
-	
+	-- Sensor should see far here
+	vcm.set_mesh_dynrange{0.1, 10}
 end
 
 function state.update()

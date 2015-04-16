@@ -625,7 +625,7 @@ Robot {
 			} # End of the Head HingeJointParameters
 			endPoint Solid {
         translation 0 0.12 0
-        boundingObject Transform {    
+        boundingObject Transform {
     			translation 0 -0.020 0
     			children [Box {size 0.05 0.05 0.05}]
   			}    
@@ -654,14 +654,29 @@ Robot {
               anchor 0 0.04 0
 						} # End of the Head HingeJointParameters
 						##############################################################		
-						endPoint kinect2 {      			  
-              translation 0 0.12 0.03
-      			  rotation 0 1 0 3.14159265
-      			  mass 0.1
-              #TODO: add a pitch angle
-      			  maxRange 6
-      			 
-      			}
+						endPoint Solid {
+							#translation 0 -0.1 0
+							physics Physics {}
+							boundingObject Box {size 0.05 0.05 0.05}
+							children [
+								Camera {
+									name "HeadCamera"
+									width 320
+									height 240
+									translation 0 -0.05 0.03
+									rotation 0 1 0 3.14159265
+									pixelSize 0
+								}
+								kinect2 {      			  
+									translation 0 0.12 0.03
+									rotation 0 1 0 3.14159265
+									mass 0.1
+									#TODO: add a pitch angle
+									maxRange 6
+									pixelSize 0
+								}
+							]
+						}
       			##############################################################		
 					} # End of the Head HingeJoint
 				] # End of the Head Children

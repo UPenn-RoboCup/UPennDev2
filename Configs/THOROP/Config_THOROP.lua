@@ -28,11 +28,11 @@ if IS_WEBOTS then
   Config.sensors = {
 		ft = true,
 		feedback = 'feedback_wizard',
-    --head_camera = 'camera_wizard',
+    head_camera = 'camera_wizard',
     --chest_lidar = 'mesh_wizard',
     --head_lidar = 'slam_wizard',
     --kinect = 'kinect2_wizard',
-	 world = 'world_wizard',
+	 	world = 'world_wizard',
   }
   -- Adjust the timesteps if desired
   -- Config.camera_timestep = 33

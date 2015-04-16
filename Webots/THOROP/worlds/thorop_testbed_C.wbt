@@ -42,7 +42,7 @@ DirectionalLight {
 
 DEF ALVIN THOROP_UPENN {
 #DEF ALVIN THOROP_mk2_Fullmass {
-  translation -1 1.17 10
+  translation -3 1.17 10
   rotation 0 1 0 -1.57
   controller "thorop"
   controllerArgs "0 32"
@@ -89,11 +89,7 @@ simple_wall{
 	size 1 2 .01
 }
 
-# Entry Door
-PushDoor {
-  translation -2.5 0 10
-  rotation 0 1 0 -1.57
-}
+
 simple_wall{
 	translation -2.5 1 8.75
 	size 0.05 2 1.7

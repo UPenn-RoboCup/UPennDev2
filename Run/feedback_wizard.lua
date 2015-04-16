@@ -8,17 +8,17 @@ local get_time = Body.get_time
 local usleep = require'unix'.usleep
 local pose_global = require'util'.pose_global
 local debug_interval = 2
-local feedback_interval = 1
-local ping_rate = 4
-local t_sleep = 1e6 / ping_rate
+local feedback_interval = 1 / 10
+local t_sleep = 1 / 20
 require'wcm'
+require'mcm'
 
-local feedback_udp_ch, ping_ch
+local feedback_udp_ch
 local feedback_ch
 local ret, err
 local nBytes, nBytesPing = 0, 0
-local t = 0
 local t_feedback = 0
+local t_open = -math.huge
 
 local function get_torso()
 	local rpy = Body.get_rpy()
@@ -37,54 +37,62 @@ local function get_torso()
 end
 
 local function entry()
+	feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
 	feedback_udp_ch = si.new_sender(
 		Config.net.operator.wired,
 		Config.net.streams.feedback.udp
 	)
-	-- Lossy channel test
-	ping_ch = si.new_sender(Config.net.operator.wired, Config.net.test.udp)
-	feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
+	ping_ch = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
+	go_ch = si.new_sender(
+		Config.net.operator.wired,
+		Config.net.ping.udp
+	)
 end
 
 local msg
 local e = {}
 local count = 0
 local function update()
-  msg = tostring(t)
-	ret, err = ping_ch:send(msg)
-	if type(ret)=='string' then
-		io.write('Feedback | Ping error: ', ret, '\n')
-	else
-		nBytesPing = nBytesPing + #msg
+	local t_update = get_time()
+	go_ch:send(mpack(t_update))
+	local data = ping_ch:receive(true)
+	if data then
+		hcm.set_network_open(1)
+		hcm.set_network_topen(t_update)
+		t_open = t_update
+	elseif t_update - t_open > 1 then
+		hcm.set_network_open(0)
 	end
-	if not IS_WEBOTS and t - t_feedback < feedback_interval then return end
+	if not IS_WEBOTS and t_update - t_feedback < feedback_interval then return end
 
 	count = count + 1
+	e.id = 'fb'
 	e.t = t
 	e.n = count
 	e.b = Body.get_battery()
-	e.cp, e.t_cp = Body.get_command_position()
-	e.p, e.t_p = Body.get_position()
-	e.i = Body.get_current()
+	e.torso = get_torso()
+	e.p = Body.get_position()
 	e.ft_l = Body.get_lfoot()
 	e.ft_r = Body.get_rfoot()
 	--[[
+	e.i = Body.get_current()
+	e.cp, e.t_cp = Body.get_command_position()
+	e.p, e.t_p = Body.get_position()
 	e.gyro, e.t_imu = Body.get_gyro()
 	e.acc = Body.get_accelerometer()
 	e.rpy = Body.get_rpy()
 	e.pose = wcm.get_robot_pose()
   --]]
-	e.torso = get_torso()
 
   msg = mpack(e)
-	ret, err = feedback_udp_ch:send(msg)
-	feedback_ch:send(msg)
+	if feedback_ch then feedback_ch:send(msg) end
+	if feedback_udp_ch then ret, err = feedback_udp_ch:send(msg) end
 	if type(ret)=='string' then
 		io.write('Feedback | UDP error: ', ret, '\n')
 	else
 		nBytes = nBytes + #msg
 	end
-  t_feedback = t
+  t_feedback = t_update
 end
 
 -- If required from Webots, return the table
@@ -103,13 +111,13 @@ local t_debug = 0
 entry()
 while running do
 	update()
-  t = get_time()
+	local t = get_time()
 	-- If time for debug
   if t-t_debug>debug_interval then
     t_debug = t
     local kb = collectgarbage('count')
     io.write(string.format(
-			'Feedback | Uptime: %d sec, Mem: %d kB, Sent: %d bytes\nPing %d bytes\n',
+			'Feedback | Uptime: %d sec, Mem: %d kB, Sent: %d bytes\n',
 			t-t0, kb, nBytes, nBytesPing)
 		)
   end

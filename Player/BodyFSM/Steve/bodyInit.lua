@@ -17,6 +17,8 @@ function state.entry()
   motion_ch:send'stand'
 	head_ch:send'init'
 	lidar_ch:send'pan'
+	-- Look around to start
+	vcm.set_mesh_dynrange{0.1, 8}
 end
 
 function state.update()

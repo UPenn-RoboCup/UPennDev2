@@ -27,12 +27,12 @@ if IS_WEBOTS then
   -- Default Webots sensors
   Config.sensors = {
 		ft = true,
-		--feedback = 'feedback_wizard',
-    --head_camera = 'camera_wizard',
+		feedback = 'feedback_wizard',
+    head_camera = 'camera_wizard',
     --chest_lidar = 'mesh_wizard',
     --head_lidar = 'slam_wizard',
     --kinect = 'kinect2_wizard',
-	 world = 'world_wizard',
+	 	world = 'world_wizard',
   }
   -- Adjust the timesteps if desired
   -- Config.camera_timestep = 33
@@ -54,8 +54,8 @@ if IS_STEVE then
 		'FSM_Steve', 'Arm_Steve', 'Vision_Steve', 'World_Steve'
 	}
 	if IS_WEBOTS then
-		--Config.sensors.chest_lidar = 'mesh_wizard'
-		----[[
+		Config.sensors.chest_lidar = 'mesh_wizard'
+		--[[
 		Config.sensors.kinect = 'kinect2_wizard'
 		Config.kinect_timestep = 50
 		--]]

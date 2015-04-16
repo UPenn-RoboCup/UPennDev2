@@ -58,8 +58,29 @@ arm.plan.dt_step = 0.2
 arm.plan.dt_step_min = 0.02
 arm.plan.dt_step_min = 0.2 --no speedup
 
---arm.plan.dt_step_min = 0.1 --2x speedup
 
+--for jacobian stuff------------------------------
+--
+--arm.plan.dt_step = 0.1 --for jacobian planning
+
+
+arm.plan.dt_step0_jacobian = 0.1
+arm.plan.dt_step_jacobian = 0.2
+arm.plan.dt_step_min_jacobian = 0.05 
+
+
+arm.plan.dt_step0_jacobian = 0.05
+arm.plan.dt_step_jacobian = 0.1
+arm.plan.dt_step_min_jacobian = 0.01
+arm.plan.dt_step_min_jacobian = 0.02
+
+arm.plan.scale_limit={0.05,2}
+
+--]]
+
+--arm.plan.dt_step_min = 0.1 
+
+--for jacobian stuff------------------------------
 
 --arm.plan.dt_step0 = 0.05
 --arm.plan.dt_step = 0.1
@@ -198,9 +219,38 @@ armfsm.teleop.arminit={
   {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 armfsm.teleop.armuninit={
-  {'move',nil,{0.40,-0.05, 0.0,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move',nil,{0.40,-0.05, 0.10  ,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
 }
+
+
+
+--sideway up, close to body
+armfsm.teleop.arminit={  
+--  {'move0',nil,{0.10,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+--  {'move0',nil,{0.10,-0.35, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+
+  {'move0',nil,{0.10,-0.30,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+  {'move0',nil,{0.10,-0.30, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+--
+
+--  {'move0',nil,{0.10,-0.38, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+--  {'move0',nil,{0.10,-0.35, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+--  {'move',nil,{0.34,-0.25, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+--  {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+}
+
+--sideway grip!
+
+armfsm.teleop.arminit={  
+  {'move0',nil,{0.10,-0.30,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+  {'move0',nil,{0.10,-0.30, 0.06,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+--  {'move0',nil,{0.10,-0.30, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+}
+
+
+
+
 
 
 --Hose insert

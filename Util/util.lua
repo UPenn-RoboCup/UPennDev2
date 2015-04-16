@@ -192,9 +192,9 @@ end
 
 --SJ: This approaches to the DIRECTION of the target position
 
-function util.approachTolTransform(values, targets, vellimit, dt)
-  local tolerance_dist = 0.001
-  local tolerance_angle = 0.1*math.pi/180
+function util.approachTolTransform(values, targets, vellimit, dt, tol_dist, tol_angle)
+  local tolerance_dist = tol_dist or 0.001
+  local tolerance_angle = tol_angle or 0.1*math.pi/180
 
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
@@ -409,9 +409,11 @@ function util.ptable(t)
   for k,v in pairs(t) do print(k,v) end
 end
 
-function util.print_transform(tr)
-  if not tr then return end
-  local str= sformat("%.2f %.2f %.2f (%.1f %.1f %.1f)",
+function util.print_transform(tr,digit)
+  if not tr then return end  
+  local fdigit=sformat("%d",digit or 2)
+  local format_str="%."..fdigit.."f %."..fdigit.."f %."..fdigit.."f (%.1f %.1f %.1f)"
+  local str= sformat(format_str,
     tr[1],tr[2],tr[3],tr[4]*180/math.pi,tr[5]*180/math.pi,tr[6]*180/math.pi)
   return str
 end

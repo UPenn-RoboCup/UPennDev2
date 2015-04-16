@@ -20,6 +20,9 @@ function state.entry()
 
 	-- TODO: Autodetect which stges to use, based on our initial position
 	piterators = movearm.path_iterators(Config.arm.readyFromInitStages)
+
+	-- Close range mesh
+	vcm.set_mesh_dynrange({.1,1})
 end
 
 function state.update()

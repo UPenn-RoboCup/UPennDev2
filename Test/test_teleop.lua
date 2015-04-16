@@ -106,7 +106,9 @@ end
 char_lut['2'] = function()
 	arm_ch:send'ready'
 end
-
+char_lut['3'] = function()
+	head_ch:send'teleop'
+end
 char_lut['4'] = function()
 	head_ch:send'teleop'
 	arm_ch:send'teleop'
@@ -292,9 +294,11 @@ local pre_arm = {
 -- Rotate (locally) the end effector
 local post_arm = {
   e = T.rotY(dr),
-  ['c'] = T.rotY(-dr),
+  c = T.rotY(-dr),
   a = T.rotZ(dr),
-  ['d'] = T.rotZ(-dr),
+  d = T.rotZ(-dr),
+	b = T.rotX(dr),
+  v = T.rotX(-dr),
   ["q"] = T.trans(0,0,ds),
   ['z'] = T.trans(0,0,-ds),
   ["w"] = T.trans(ds,0,0),

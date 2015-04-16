@@ -48,11 +48,11 @@ if Config.IS_COMPETING then
 	net.broadcast.wireless = net.broadcast.wired
 end
 
-
--- Check lossy link
-net.test = {
-	udp = 16999, -- unreliable
-	tcp = 1999 -- reliable
+net.ping = {
+	udp = 17002,
+	tcp = 2003,
+	pub = 'ping',
+	sub = 'go',
 }
 
 local streams = {}
@@ -82,7 +82,7 @@ streams.camera0 = {
 }
 streams.camera1 = {
 	ws = 9004,
-	udp= 17004,
+	udp = 17004,
 	sub = 'camera1',
 }
 streams.kinect2_depth = {

@@ -15,6 +15,7 @@ local vector = require'vector'
 local Body = require'Body'
 
 require'vcm'
+require'hcm'
 
 -- Shared with LidarFSM
 -- t_sweep: Time (seconds) to fulfill scan angles in one sweep
@@ -173,14 +174,21 @@ local function send_mesh(compression, dynrange)
 		print('Mesh | Sent UDP', err or 'successfully')
 	end
 end
-
+local t_send_mesh = -math.huge
 local function check_send_mesh()
 	local net = vcm.get_mesh_net()
 	local request, comp = unpack(net)
-
+	local t_check = Body.get_time()
+	if hcm.get_network_open()==1 then
+		local t_open = hcm.get_network_topen()
+		if t_open - t_send_mesh > 0.5 then request = 1 end
+	end
+	
 	if request==0 then return end
 	local dynrange = vcm.get_mesh_dynrange()
 	send_mesh(compression[comp], dynrange)
+	t_send_mesh = t_check
+	
 	-- Reset the request
 	net[1] = 0
 	vcm.set_mesh_net(net)

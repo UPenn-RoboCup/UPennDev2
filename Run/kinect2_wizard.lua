@@ -7,6 +7,7 @@ local ENABLE_LOG = false
 dofile'../include.lua'
 local cfg = Config.kinect
 local Body = require'Body'
+local util = require'util'
 require'mcm'
 require'wcm'
 local ptable = require'util'.ptable

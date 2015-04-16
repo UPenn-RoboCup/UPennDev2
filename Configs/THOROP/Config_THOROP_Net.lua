@@ -50,7 +50,9 @@ end
 
 net.ping = {
 	udp = 17002,
-	tcp = 2003
+	tcp = 2003,
+	pub = 'ping',
+	sub = 'go',
 }
 
 local streams = {}

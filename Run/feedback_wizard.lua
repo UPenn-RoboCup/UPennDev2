@@ -37,16 +37,21 @@ local function get_torso()
 end
 
 local function entry()
-	feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
-	feedback_udp_ch = si.new_sender(
-		Config.net.operator.wired,
-		Config.net.streams.feedback.udp
-	)
-	ping_ch = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
-	go_ch = si.new_sender(
-		Config.net.operator.wired,
-		Config.net.ping.udp
-	)
+	if IS_WEBOTS then
+		feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
+		ping_ch = si.new_subscriber(Config.net.ping.sub)
+		go_ch = si.new_publisher(Config.net.ping.pub)
+	else
+		feedback_ch = si.new_sender(
+			Config.net.operator.wired,
+			Config.net.streams.feedback.udp
+		)
+		ping_ch = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
+		go_ch = si.new_sender(
+			Config.net.operator.wired,
+			Config.net.ping.udp
+		)
+	end
 end
 
 local msg

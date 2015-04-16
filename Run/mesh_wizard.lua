@@ -179,11 +179,12 @@ local function check_send_mesh()
 	local net = vcm.get_mesh_net()
 	local request, comp = unpack(net)
 	local t_check = Body.get_time()
-	if hcm.get_network_open()==1 then
-		local t_open = hcm.get_network_topen()
+	local n_open = hcm.get_network_open()
+	local t_open
+	if n_open==1 then
+		t_open = hcm.get_network_topen()
 		if t_open - t_send_mesh > 0.5 then request = 1 end
 	end
-	
 	if request==0 then return end
 	local dynrange = vcm.get_mesh_dynrange()
 	send_mesh(compression[comp], dynrange)

@@ -1,0 +1,27 @@
+#VRML_SIM V6.0 utf8
+#  THOR-OP proto: extended wrist yaw
+#  heqin@seas.upenn.edu
+#
+
+
+PROTO RIGHT_ELBOW_298 [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+	  Shape {
+	     appearance DEF POS_APP Appearance {
+	       material Material {
+	         diffuseColor 1 1 0.5
+	         specularColor 0 0 0
+	       }
+	     }
+	     geometry Box { size 0.05 0.298 0.05 }
+	  }					
+  ]
+}
+}

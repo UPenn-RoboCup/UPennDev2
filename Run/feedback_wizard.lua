@@ -69,10 +69,10 @@ local is_open = hcm.get_network_open()==1
 		hcm.set_network_open(1)
 		hcm.set_network_topen(t_update)
 		t_open = t_update
-print('net open', t_open-t_entry)
+		print('net open', t_open-t_entry)
 
 	elseif is_open and t_update - t_open > 1 then
-print('net closed', t_update-t_entry)
+		print('net closed', t_update-t_entry)
 		hcm.set_network_open(0)
 	end
 	if not IS_WEBOTS and t_update - t_feedback < feedback_interval then return end
@@ -80,13 +80,13 @@ print('net closed', t_update-t_entry)
 	count = count + 1
 	e.id = 'fb'
 	e.t = t
+	e.u = get_torso()
+	e.p = Body.get_position()
+	e.fL = Body.get_lfoot()
+	e.fR = Body.get_rfoot()
+	--[[
 	e.n = count
 	e.b = Body.get_battery()
-	e.torso = get_torso()
-	e.p = Body.get_position()
-	e.ft_l = Body.get_lfoot()
-	e.ft_r = Body.get_rfoot()
-	--[[
 	e.i = Body.get_current()
 	e.cp, e.t_cp = Body.get_command_position()
 	e.p, e.t_p = Body.get_position()

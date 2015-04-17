@@ -1,6 +1,6 @@
 #!/usr/bin/env luajit
 -- (c) 2014 Stephen McGill
-pcall(dofile,'fiddle.lua')
+pcall(dofile, 'fiddle.lua')
 pcall(dofile, '../fiddle.lua')
 
 local T = require'Transform'
@@ -11,8 +11,8 @@ local vector = require'vector'
 -- Look up tables for the test.lua script (NOTE: global)
 code_lut, char_lut, lower_lut = {}, {}, {}
 
+local narm = 7
 local narm = #Body.get_larm_position()
-print('narm', narm)
 local selected_arm = 0 -- left to start
 
 local DO_IMMEDIATE = true
@@ -78,6 +78,28 @@ end
 char_lut[' '] = function()
 	if LARM_DIRTY then set_larm(true) end
 	if RARM_DIRTY then set_rarm(true) end
+end
+
+-- Enter syncs the data
+local qlarm
+local qrarm
+local uComp
+local body_state
+local head_state
+local arm_state
+local motion_state
+local gripper_state
+local walk_velocity
+local function sync()
+	qlarm = Body.get_larm_position()
+	qrarm = Body.get_rarm_position()
+	uComp = mcm.get_stance_uTorsoComp()
+	body_state = gcm.get_fsm_Body()
+	head_state = gcm.get_fsm_Head()
+	arm_state = gcm.get_fsm_Arm()
+	motion_state = gcm.get_fsm_Motion()
+	gripper_state = gcm.get_fsm_Gripper()
+	walk_velocity = mcm.get_walk_vel()
 end
 
 -- Backspace (Win/Linux) / Delete (OSX)
@@ -361,13 +383,11 @@ setmetatable(lower_lut, {
 -- Global status to show (NOTE: global)
 local color = require'util'.color
 function show_status()
-	local qlarm = Body.get_larm_position()
-	local qrarm = Body.get_rarm_position()
+	
+	
 	local fkL = K.forward_larm(qlarm)
 	local fkR = K.forward_rarm(qrarm)
-
 	local rTr6 = T.position6D(fkR)
-	local uComp = mcm.get_stance_uTorsoComp()
 	local fkR2 = {rTr6[1]+uComp[1], rTr6[2]+uComp[2], rTr6[3], rTr6[4]*RAD_TO_DEG, rTr6[5]*RAD_TO_DEG, rTr6[6]*RAD_TO_DEG}
 
   local l_indicator = vector.zeros(#qlarm)
@@ -397,21 +417,20 @@ function show_status()
     (not arm_mode) and '*' or '',
     'q: '..tostring(Body.get_head_position()*RAD_TO_DEG)
   )
-  local walk_info = string.format('\n%s %s\n%s\n%s',
+  local walk_info = string.format('\n%s %s\n%s',
     util.color('Walk', 'yellow'),
     (not arm_mode) and '*' or '',
-    'Velocity: '..tostring(mcm.get_walk_vel()),
-    'Odometry:'..tostring(mcm.get_status_odometry())
+    'Velocity: '..tostring(walk_velocity)
   )
   local info = {
     color('== Teleoperation ==', 'magenta'),
 		'1: init, 2: head teleop, 3: armReady, 4: armTeleop, 5: headTrack, 6: poke',
 		color(DO_IMMEDIATE and 'Immediate Send' or 'Delayed Send', DO_IMMEDIATE and 'red' or 'yellow'),
 		'Compensation: '..tostring(USE_COMPENSATION),
-    'BodyFSM: '..color(gcm.get_fsm_Body(), 'green'),
-    'ArmFSM: '..color(gcm.get_fsm_Arm(), 'green'),
-    'HeadFSM: '..color(gcm.get_fsm_Head(), 'green'),
-    'MotionFSM: '..color(gcm.get_fsm_Motion(), 'green'),
+    'BodyFSM: '..color(body_state, 'green'),
+    'ArmFSM: '..color(arm_state, 'green'),
+    'HeadFSM: '..color(head_state, 'green'),
+    'MotionFSM: '..color(motion_state, 'green'),
     larm_info,
     rarm_info,
     head_info,
@@ -420,6 +439,9 @@ function show_status()
   }
   if not IS_WEBOTS then io.write(table.concat(info,'\n')) end
 end
+
+-- Initial sync
+sync()
 
 -- Run the generic keypress library
 return dofile(HOME..'/Test/test.lua')

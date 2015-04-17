@@ -487,9 +487,8 @@ function WebotsBody.update(Body)
 
 			local metadata = {
         n=n,res=res,t=t,angle=Body.get_lidar_position(),
-				torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
-        pose = pose,
-				global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
+				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
+				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
       }
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)

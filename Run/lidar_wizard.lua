@@ -51,7 +51,6 @@ local cb = function(self, data)
 
 	metadata.tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
 	metadata.tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
-	metadata.pose = pose
 	metadata.n = self.n
 	metadata.res = self.res
 	metadata.rsz = #data

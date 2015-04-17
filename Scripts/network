@@ -10,3 +10,29 @@ iface eth0:1 inet static
   netmask 255.255.255.0
   network 192.168.123.0
   broadcast 192.168.123.255
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+#auto p3p1
+#iface p3p1 inet dhcp
+# This is an autoconfigured IPv6 interface
+#iface p3p1 inet6 auto
+
+# The primary network interface
+auto p3p1
+iface p3p1 inet static
+	address 192.168.123.242
+	netmask 255.255.255.0
+	#gateway 192.168.123.1
+
+#auto wlan0
+#iface wlan0 iface dhcp
+#	wireless_essid AirPennNet-Guest
+#	wireless_mode Managed

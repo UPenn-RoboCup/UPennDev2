@@ -3,105 +3,111 @@ local Body = require'Body'
 local util = require'util'
 local vector = require'vector'
 local T = require'Transform'
-local P = require'libPlan'
+local P = require'libArmPlan'
 -- Use Steve's kinematics for arm kinematics
 local K = require'K_ffi'
 -- Use SJ's kinematics for the mass properties
 local K0 = Body.Kinematics
 
-local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-local radiansPerSecond = degreesPerSecond * DEG_TO_RAD
--- TODO: Add dt into the joint iterator
 local dqLimit = DEG_TO_RAD / 3
+local radiansPerSecond, torso0
+do
+	local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
+	--local degreesPerSecond = vector.ones(7) * 30
+	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
+	-- Compensation items
+	local torsoX = Config.walk.torsoX
+	torso0 = vector.new({-torsoX,0,0})
+end
 
--- Compensation items
-local torsoX = Config.walk.torsoX
-local torso0 = vector.new({-torsoX,0,0})
-
-local minLArm = vector.slice(
-	Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]
-)
-local maxLArm = vector.slice(
-	Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm]
-)
-
-local lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond)
-	:set_chain(K.forward_larm, K.inverse_larm)
-
-local rPlanner = P.new_planner(
-	vector.slice(Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
-	vector.slice(Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm]),
-	radiansPerSecond
-):set_chain(K.forward_rarm, K.inverse_rarm)
+local lPlanner, rPlanner
+do
+	local minLArm = vector.slice(
+		Config.servo.min_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm])
+	local maxLArm = vector.slice(
+		Config.servo.max_rad, Config.parts.LArm[1], Config.parts.LArm[#Config.parts.LArm])
+	local minRArm = vector.slice(
+		Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm])
+	local maxRArm = vector.slice(
+		Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm])
+	--
+	lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond):set_chain(
+		K.forward_larm, K.inverse_larm, 'larm')
+	rPlanner = P.new_planner(minRArm, maxRArm, radiansPerSecond):set_chain(
+		K.forward_rarm, K.inverse_rarm, 'rarm')
+end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto_q(qL, qR, safe)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 	if qL then
 		local qLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(qL, qLArm, dqLimit, safe)
+		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(qL, qLArm, safe)
 	end
 	if qR then
 		local qRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(qR, qRArm, dqLimit, safe)
+		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(qR, qRArm, safe)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end
 
 -- Take a desired Transformation matrix and move joint-wise to it
-function movearm.goto_tr_via_q(trL, trR, loptions, roptions)
+function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 	local flipL, flipR
 	if trL then
 		local qcLArm = Body.get_larm_command_position()
 		if loptions then
-			iqLArm = K.inverse_larm(trL, qcLArm, unpack(loptions))
+			iqLArm = lPlanner.inverse(trL, qcLArm, unpack(loptions))
 		else
-			iqLArm, flipL = lPlanner:find_shoulder(trL, qcLArm)
+			iqLArm = lPlanner:find_shoulder(trL, qcLArm, lweights)
 		end
-		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, dqLimit, true)
+		--print('L TR GOTO', vector.new(iqLArm))
+		--print(trL)
+		assert(iqLArm, 'L via q not found!')
+		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, true)
 	end
 	if trR then
 		local qcRArm = Body.get_rarm_command_position()
 		if roptions then
-			iqRArm = K.inverse_rarm(trR, qcRArm, unpack(roptions))
+			iqRArm = rPlanner.inverse(trR, qcRArm, unpack(roptions))
 		else
-			iqRArm, flipR = rPlanner:find_shoulder(trR, qcRArm)
+			iqRArm = rPlanner:find_shoulder(trR, qcRArm, rweights)
 		end
-		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, dqLimit, true)
+		--print('R TR GOTO', vector.new(iqRArm))
+		--print(trR)
+		assert(iqLArm, 'R via q not found!')
+		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, true)
 	end
-	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist, flipL, flipR
+	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
 end
 
 -- Take a desired Transformation matrix and move in a line towards it
-function movearm.goto_tr(trL, rwrist, loptions, roptions)
+function movearm.goto_tr(trL, rwrist, loptions, roptions, lweights, rweights)
 	local lPathIter, rPathIter
 	if trL then
-		local qLArm = Body.get_larm_command_position()
-		lPathIter = lPlanner:line_iter(trL, qLArm, loptions)
+		local qcLArm = Body.get_larm_command_position()
+		lPathIter, iqLArm, pLDist = lPlanner:line_iter(trL, qcLArm, loptions, lweights)
 	end
 	if rwrist then
-		local qRArm = Body.get_rarm_command_position()
-		rPathIter = rPlanner:line_iter(rwrist, qRArm, roptions)
+		local qcRArm = Body.get_rarm_command_position()
+		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qcRArm, roptions, rweights)
 	end
-	return lPathIter, rPathIter
+	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
 end
 
-function movearm.goto_wrists(lwrist, rwrist)
+-- Take a desired Transformation matrix and move in a line towards it
+function movearm.goto_tr_stack(trL, rwrist, loptions, roptions, lweights, rweights)
 	local lPathIter, rPathIter
-	if lwrist then
-	  local qLArm = Body.get_larm_position()
-	  local qLWrist = Body.get_inverse_lwrist(qLArm, unpack(lwrist, 1, 2))
-	  local qLGoal = Body.get_inverse_arm_given_wrist(qLWrist, lwrist[3])
-		lPathIter = lPlanner:joint_iter(qLGoal, qLArm, dqLimit)
+	if trL then
+		local qcLArm = Body.get_larm_command_position()
+		lPathIter, iqLArm, pLDist = lPlanner:line_stack(trL, qcLArm, loptions, lweights)
 	end
 	if rwrist then
-		local qRArm = Body.get_rarm_position()
-	  local qRWrist = Body.get_inverse_rwrist(qRArm, unpack(rwrist, 1, 2))
-	  local qRGoal = Body.get_inverse_arm_given_wrist(qRWrist, rwrist[3])
-		rPathIter = rPlanner:joint_iter(qRGoal, qRArm, dqLimit)
+		local qcRArm = Body.get_rarm_command_position()
+		rPathIter, iqRArm, pRDist = rPlanner:line_stack(rwrist, qcRArm, roptions, rweights)
 	end
-	return lPathIter, rPathIter
+	return lPathIter, rPathIter, vector.new(iqLArm), vector.new(iqRArm), pLDist, pRDist
 end
 
 --[[
@@ -151,13 +157,45 @@ function movearm.get_compensation()
 	return uTorsoAdapt, uTorso
 end
 
-function movearm.apply_compensation(qLGoal, qRGoal, uTorsoComp)
+function movearm.apply_q_compensation(qLGoal, qRGoal, uTorsoAdapt, uTorso0)
 	local fkL = K.forward_larm(qLGoal)
 	local fkR = K.forward_rarm(qRGoal)
+	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
 	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
 	local fkLComp = trComp * fkL
 	local fkRComp = trComp * fkR
-	return fkLComp, fkRComp
+	return fkLComp, fkRComp, uTorsoComp, uTorso0
+end
+
+-- uTorsoAdapt, uTorso0: global frame torso positions
+function movearm.apply_tr_compensation(fkL, fkR, uTorsoAdapt, uTorso0)
+	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
+	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
+	local fkLComp = trComp * fkL
+	local fkRComp = trComp * fkR
+	return fkLComp, fkRComp, uTorsoComp, uTorso0
+end
+
+-- list entry format: {tr, tr, }
+-- Uses the quasi-static compensation
+function movearm.path_iterators(list)
+	-- return a coroutine
+	return coroutine.wrap(function()
+		for i, entry in ipairs(list) do
+			local lGoal, rGoal, via, lw, rw = unpack(entry)
+			local go = movearm[via]
+			-- FK goals for use with copmensation
+			local fkLComp, fkRComp
+			if via:find'tr' then
+				fkLComp, fkRComp, uTorsoComp, uTorso0 =
+					movearm.apply_tr_compensation(lGoal, rGoal, movearm.get_compensation())
+			else
+				fkLComp, fkRComp, uTorsoComp, uTorso0 =
+					movearm.apply_q_compensation(lGoal, rGoal, movearm.get_compensation())
+			end
+			coroutine.yield({go(fkLComp, fkRComp,nil,nil,lw,rw)}, uTorsoComp, uTorso0)
+		end
+	end)
 end
 
 return movearm

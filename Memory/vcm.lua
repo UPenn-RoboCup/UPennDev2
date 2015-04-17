@@ -42,10 +42,10 @@ shared.us.distance  = vector.zeros(2)
 -- Mesh formation
 shared.mesh = {}
 -- Sweep: Field of View (radians), time to complete sweep (seconds)
-shared.mesh.sweep = {60 * DEG_TO_RAD, 3}
+shared.mesh.sweep = {70 * DEG_TO_RAD, 3}
 -- fov: In a single scan, which ranges to use (field of view)
 -- Like pitch: positive is down, negative is up. 90 deg is straight down
-shared.mesh.fov = {0, math.pi/2}
+shared.mesh.fov = {-30*DEG_TO_RAD, 90*DEG_TO_RAD}
 -- Net: {request, destination, compression}
 -- request: 1 means mesh needs to be sent to destination
 -- compression: 0 is JPEG, 1 is PNG, 2 is RAW

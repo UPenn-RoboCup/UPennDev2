@@ -8,6 +8,7 @@ local Body = require('Body')
 local lW = require'libWorld'
 local si = require'simple_ipc'
 local mp = require'msgpack.MessagePack'
+local vector = require'vector'
 local util = require'util'
 -- Cache some functions
 local get_time = Body.get_time
@@ -22,7 +23,7 @@ else
 end
 
 local ENABLE_SEND = false
-local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
+--local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
 -- SHM
 require'wcm'
 require'mcm'
@@ -33,7 +34,7 @@ local running, signal = true, nil
 
 local signal = require'signal'
 local function shutdown()
-  running = false
+	running = false
 end
 signal.signal("SIGINT", shutdown)
 signal.signal("SIGTERM", shutdown)
@@ -42,19 +43,18 @@ local uOdometry0, uOdometry
 local t_send, send_interval = 0
 
 vision_ch.callback = function(skt)
-  local detections = skt:recv_all()
-  -- Only use the last vision detection
+	local detections = skt:recv_all()
+	-- Only use the last vision detection
 	local detection = mp.unpack(detections[#detections])
 
--- Update localization based onodometry and vision
---Should use the differential of odometry!
-  if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
-  else uOdometry0 = uOdometry end
-  uOdometry = mcm.get_status_odometry()
-  dOdometry = util.pose_relative(uOdometry,uOdometry0)
-  
-  lW.update(dOdometry, detection)
-  
+	-- Update localization based onodometry and vision
+	--Should use the differential of odometry!
+	local uOdometry = mcm.get_status_odometry()
+	dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
+	uOdometry0 = vector.copy(uOdometry)
+
+	lW.update(dOdometry, detection)
+
 end
 
 -- Timeout in milliseconds
@@ -66,47 +66,48 @@ local debug_interval, t_debug = 1, t0
 
 local function update()
 	send_interval = 1 / hcm.get_monitor_fps()
-  npoll = poller:poll(TIMEOUT)
-  if npoll==0 then
-    -- If no frames, then just update by odometry
-    --Should use the differential of odometry!
-    if not uOdometry0 then uOdometry0 = mcm.get_status_odometry()
-    else uOdometry0 = uOdometry end
-    uOdometry = mcm.get_status_odometry()
-    dOdometry = util.pose_relative(uOdometry,uOdometry0)
+	npoll = poller:poll(TIMEOUT)
+	if npoll==0 then
+		-- If no frames, then just update by odometry
+		--Should use the differential of odometry!
+		local uOdometry = mcm.get_status_odometry()
+		dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
+		uOdometry0 = vector.copy(uOdometry)
 
-    --Hack for robocup
-    if Config.fsm.libraries.World=='RoboCup' then
-      lW.update_odometry(dOdometry)
-      wcm.set_robot_pose(lW.get_pose())
-    else
-    -- general world
-    --  SJ: now pose update is done in libworld, not here  
-      lW.update(dOdometry)
-    end
+		--Hack for robocup
+		if Config.fsm.libraries.World=='RoboCup' then
+			lW.update_odometry(dOdometry)
+			wcm.set_robot_pose(lW.get_pose())
+		else
+			-- general world
+			--  SJ: now pose update is done in libworld, not here  
+			lW.update(dOdometry)
+		end
 
-  end
-  t = get_time()
+	end
+	t = get_time()
 	if ENABLE_SEND and t-t_send > send_interval then
 		-- Send localization info to monitor
 		local metadata = {}
 		metadata.id = 'world'
 		metadata.world = lW.send()
 		-- Send!
+if udp_ch then
 		local ret, err = udp_ch:send(mp.pack(metadata))
+end
 		if err and Config.debug.world then print(ret, err) end
 		t_send = t
 	end
-  
-  
-  --Print the local position of step
-  if t-t_debug>debug_interval and Config.debug.wolrld then
-    t_debug = t
-    local step_pose = util.pose_relative(wcm.get_step_pose(), wcm.get_robot_pose())
-    print(string.format('HURDLE: %.2f %.2f %.1f', 
-      step_pose[1], step_pose[2], step_pose[3]*RAD_TO_DEG))
-  end  
-   
+
+
+	--Print the local position of step
+	if t-t_debug>debug_interval and Config.debug.wolrld then
+		t_debug = t
+		local step_pose = util.pose_relative(wcm.get_step_pose(), wcm.get_robot_pose())
+		print(string.format('HURDLE: %.2f %.2f %.1f', 
+		step_pose[1], step_pose[2], step_pose[3]*RAD_TO_DEG))
+	end  
+
 end
 
 if ... and type(...)=='string' then
@@ -118,8 +119,9 @@ lW.entry()
 while running do
 	update()
 	if t - t_debug > debug_interval then
-    t_debug = t
-    print(string.format('World | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
-  end
+		t_debug = t
+		print(string.format('World | Uptime: %.2f sec, Mem: %d kB', t-t0, collectgarbage('count')))
+		print('Pose:', vector.pose(wcm.get_robot_pose()))
+	end
 end
 lW.exit()

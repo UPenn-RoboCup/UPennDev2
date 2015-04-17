@@ -39,7 +39,7 @@ local function update_odometry(uOdometry)
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
 
-  if Config.use_imu_yaw then    
+  if Config.world.use_imu_yaw then
 
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
@@ -55,9 +55,6 @@ local function update_odometry(uOdometry)
   --Update pose using odometry info for now
   local pose = wcm.get_robot_pose()
   wcm.set_robot_pose(util.pose_global(uOdometry,pose))
-
-
-
 
   -- Update the filters based on the new odometry
 --TODO: need posefilter for slam + odometry
@@ -127,11 +124,11 @@ function libWorld.update(uOdom, detection)
   local t = unix.time()
   -- Run the updates
   if wcm.get_robot_reset_pose()==1 then
-    print("POSE RESET!!!!!")
+    print("libWorld | POSE RESET!")
     libWorld.pose_reset()    
   end
 
-  if IS_WEBOTS and Config.use_gps_pose then
+  if IS_WEBOTS and Config.world.use_gps_pose then
     local gpspose1 = wcm.get_robot_pose_gps()
     local gpspose0 = wcm.get_robot_pose_gps0()
     local gpspose = util.pose_relative(gpspose1,gpspose0)

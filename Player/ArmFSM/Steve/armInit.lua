@@ -43,7 +43,7 @@ function state.entry()
   -- To get to the IK solution
 	if USE_TR then
   	lPathIter, rPathIter, qLGoal, qRGoal =
-			movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
+		movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
 	else
 		-- Given the IK solution
 		lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
@@ -65,8 +65,8 @@ function state.entry()
 
 	-- Set Hardware limits in case
   for i=1,5 do
-		Body.set_larm_torque_enable(1)
-		Body.set_rarm_torque_enable(1)
+    Body.set_larm_torque_enable(1)
+    Body.set_rarm_torque_enable(1)
     Body.set_larm_command_velocity(500)
     Body.set_rarm_command_velocity(500)
     Body.set_larm_command_acceleration(50)
@@ -82,7 +82,7 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
 
 	-- Timing necessary
 	--[[
@@ -107,22 +107,20 @@ function state.update()
 	Body.set_rarm_command_position(q_rWaypoint)
 	-- Check if done
 	if not moreL and not moreR then
-    print('setShoulderYaw', setShoulderYaw)
-    if setShoulderYaw then
-  		return 'done'
-    else
+		print('setShoulderYaw', setShoulderYaw)
+		if setShoulderYaw then return 'done' end
 			-- ignore sanitization for the init position, which is absolutely known
-      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, 1*DEG_TO_RAD, true)
+      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, true)
       setShoulderYaw = true
-    end
 	end
 
 end
 
 function state.exit()
+	io.write(state._NAME, ' Exit\n')
 
 	-- Undo the hardware limits
-  for i=1,5 do
+  for i=1,3 do
     Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
@@ -132,7 +130,11 @@ function state.exit()
     if not IS_WEBOTS then unix.usleep(1e5) end
   end
 
-  print(state._NAME..' Exit' )
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+	hcm.set_teleop_larm(qcLArm)
+  hcm.set_teleop_rarm(qcRArm)
+	hcm.set_teleop_compensation(0)
 end
 
 return state

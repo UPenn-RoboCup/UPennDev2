@@ -189,16 +189,6 @@ iq4 = K2.inverse_l_arm(tr4, q)
 itr4 = K2.forward_l_arm(iq4)
 Body.set_larm_command_position(iq4)
 
-P = require'libPlan'
-K = require'K_ffi'
-T = require'libTransform'
-q = Body.get_larm_position()
-tr = K.forward_l_arm(q)
-tr1 = tr*T.trans(0.05,0,0)
-pl=P.new_planner(K)
-it = pl:line_iter(tr1, q)
-=it(q)
-=q
 --]]
 
 --[[

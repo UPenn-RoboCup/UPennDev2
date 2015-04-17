@@ -13,6 +13,7 @@ PROTO kinect2 [
   field SFString name "kinect"
   field SFVec2f windowPosition 0 0
   field SFFloat mass 0.5
+	field SFFloat pixelSize 0.5
 ]
 {
 Solid {
@@ -29,6 +30,7 @@ Solid {
       colorNoise IS colorNoise
       rangeNoise IS rangeNoise
       windowPosition IS windowPosition
+			pixelSize IS pixelSize
     }
     Shape {
       appearance Appearance {

@@ -1,6 +1,8 @@
 local WebotsBody = {}
 local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
+require'wcm'
+local util = require'util'
 
 local get_time = webots.wb_robot_get_time
 
@@ -403,7 +405,6 @@ function WebotsBody.update(Body)
       local angle   = math.atan2( compass[1], -compass[3] )
       local pose    = vector.pose{-gps[1], gps[3], angle}
 
-      --wcm.set_robot_pose( pose )
       wcm.set_robot_pose_gps( pose )
       local rpy = webots.wb_inertial_unit_get_roll_pitch_yaw(tags.inertialunit)
 
@@ -452,7 +453,6 @@ function WebotsBody.update(Body)
     if ENABLE_KINECT and t >= NEXT_KINECT then
       local w = webots.wb_camera_get_width(tags.kinect)
       local h = webots.wb_camera_get_height(tags.kinect)
-      -- TODO: fov? res?
 			local rgb = {
 				data = webots.to_rgb(tags.kinect),
 				width = w,
@@ -475,10 +475,21 @@ function WebotsBody.update(Body)
 			local fov = webots.wb_camera_get_fov(tags.chest_lidar)
 			local res = fov / n
       local ranges = webots.wb_camera_get_range_image(tags.chest_lidar)
+
+			local rpy = Body.get_rpy()
+			local uComp = mcm.get_stance_uTorsoComp()
+			uComp[3] = 0
+
+			local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
+			local pose = wcm.get_robot_pose()
+			local torsoG = util.pose_global(torso0, pose)
+			local bh = mcm.get_stance_bodyHeight()
+
 			local metadata = {
-        n=n,res=res,t=t,angle=Body.get_lidar_position(),rpy=Body.get_rpy(),
-        pose = wcm.get_robot_odometry()
-        -- pose=mcm.get_status_odometry()
+        n=n,res=res,t=t,angle=Body.get_lidar_position(),
+				torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
+        pose = pose,
+				global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
       }
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)
@@ -533,17 +544,6 @@ function WebotsBody.update(Body)
 
 		-- Grab keyboard input, for modifying items
     local key_code = webots.wb_robot_keyboard_get_key()
-    if key_code>0 then print(key_code) end
-
-		--[[
-			WebotsBody.update()
-			local key_char_lower = string.char(key_code):lower()
-			local key_toggle = key_action[key_char_lower]
-			if key_toggle and t-t_last_keypress>1 then
-				key_toggle()
-				t_last_keypress = t
-			end
-		--]]
 
 		if ww then ww.update() end
   	if fw then fw.update() end

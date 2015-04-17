@@ -16,6 +16,11 @@ local ones = require'vector'.ones
 local shared_data = {}
 local shared_data_sz = {}
 
+shared_data.network = {
+	open = zeros(1),
+	topen = zeros(1)
+}
+
 shared_data.teleop = {
 	-- Head angles
   head = zeros(2),
@@ -35,7 +40,12 @@ shared_data.teleop = {
 	rgrip_torque = zeros(3),
 	lgrip_position = zeros(3),
 	rgrip_position = zeros(3),
+	-- Walk bias
+	walkbias = zeros(3)
+}
 
+shared_data.demo = {
+	waypoints = 'deans_reception',
 }
 
 shared_data.assist = {
@@ -48,7 +58,7 @@ shared_data.guidance.color = 'CYAN'
 shared_data.guidance.t = zeros(1)
 
 
-shared_data.audio={}
+shared_data.audio = {}
 shared_data.audio.request = vector.zeros(1)
 
 shared_data.drive={}

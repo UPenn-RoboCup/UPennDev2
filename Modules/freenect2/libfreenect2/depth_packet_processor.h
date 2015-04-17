@@ -30,22 +30,28 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <libfreenect2/config.h>
 #include <libfreenect2/frame_listener.hpp>
+#include <libfreenect2/packet_processor.h>
 
 namespace libfreenect2
 {
 
-struct DepthPacket
+struct LIBFREENECT2_API DepthPacket
 {
   uint32_t sequence;
   unsigned char *buffer;
   size_t buffer_length;
 };
 
-class DepthPacketProcessor
+// explicit instantiation and export to make vsc++ happy
+template class LIBFREENECT2_API PacketProcessor<DepthPacket>; 
+typedef PacketProcessor<DepthPacket> BaseDepthPacketProcessor;
+
+class LIBFREENECT2_API DepthPacketProcessor : public BaseDepthPacketProcessor
 {
 public:
-  struct Config
+  struct LIBFREENECT2_API Config
   {
     float MinDepth;
     float MaxDepth;
@@ -56,7 +62,7 @@ public:
     Config();
   };
 
-  struct Parameters
+  struct LIBFREENECT2_API Parameters
   {
     float ab_multiplier;
     float ab_multiplier_per_frq[3];
@@ -97,21 +103,20 @@ public:
 
   virtual void setFrameListener(libfreenect2::FrameListener *listener);
   virtual void setConfiguration(const libfreenect2::DepthPacketProcessor::Config &config);
-  virtual void process(const DepthPacket &packet) = 0;
 
   virtual void loadP0TablesFromCommandResponse(unsigned char* buffer, size_t buffer_length) = 0;
-
 protected:
   libfreenect2::DepthPacketProcessor::Config config_;
   libfreenect2::FrameListener *listener_;
 };
 
+#ifdef LIBFREENECT2_WITH_OPENGL_SUPPORT
 class OpenGLDepthPacketProcessorImpl;
 
-class OpenGLDepthPacketProcessor : public DepthPacketProcessor
+class LIBFREENECT2_API OpenGLDepthPacketProcessor : public DepthPacketProcessor
 {
 public:
-  OpenGLDepthPacketProcessor(void *parent_opengl_context_ptr);
+  OpenGLDepthPacketProcessor(void *parent_opengl_context_ptr, bool debug);
   virtual ~OpenGLDepthPacketProcessor();
   virtual void setConfiguration(const libfreenect2::DepthPacketProcessor::Config &config);
 
@@ -133,12 +138,13 @@ public:
 private:
   OpenGLDepthPacketProcessorImpl *impl_;
 };
+#endif // LIBFREENECT2_WITH_OPENGL_SUPPORT
 
 // TODO: push this to some internal namespace
 // use pimpl to hide opencv dependency
 class CpuDepthPacketProcessorImpl;
 
-class CpuDepthPacketProcessor : public DepthPacketProcessor
+class LIBFREENECT2_API CpuDepthPacketProcessor : public DepthPacketProcessor
 {
 public:
   CpuDepthPacketProcessor();
@@ -164,12 +170,13 @@ private:
   CpuDepthPacketProcessorImpl *impl_;
 };
 
+#ifdef LIBFREENECT2_WITH_OPENCL_SUPPORT
 class OpenCLDepthPacketProcessorImpl;
 
-class OpenCLDepthPacketProcessor : public DepthPacketProcessor
+class LIBFREENECT2_API OpenCLDepthPacketProcessor : public DepthPacketProcessor
 {
 public:
-  OpenCLDepthPacketProcessor();
+  OpenCLDepthPacketProcessor(const int deviceId = -1);
   virtual ~OpenCLDepthPacketProcessor();
   virtual void setConfiguration(const libfreenect2::DepthPacketProcessor::Config &config);
 
@@ -189,6 +196,6 @@ public:
 private:
   OpenCLDepthPacketProcessorImpl *impl_;
 };
-
+#endif // LIBFREENECT2_WITH_OPENCL_SUPPORT
 } /* namespace libfreenect2 */
 #endif /* DEPTH_PACKET_PROCESSOR_H_ */

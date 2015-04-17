@@ -30,12 +30,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <libfreenect2/config.h>
 #include <libfreenect2/frame_listener.hpp>
+#include <libfreenect2/packet_processor.h>
 
 namespace libfreenect2
 {
 
-struct RgbPacket
+struct LIBFREENECT2_API RgbPacket
 {
   uint32_t sequence;
 
@@ -43,22 +45,24 @@ struct RgbPacket
   size_t jpeg_buffer_length;
 };
 
-class RgbPacketProcessor
+// explicit instantiation and export to make vsc++ happy
+template class LIBFREENECT2_API PacketProcessor<RgbPacket>;
+typedef PacketProcessor<RgbPacket> BaseRgbPacketProcessor;
+
+class LIBFREENECT2_API RgbPacketProcessor : public BaseRgbPacketProcessor
 {
 public:
   RgbPacketProcessor();
   virtual ~RgbPacketProcessor();
 
   virtual void setFrameListener(libfreenect2::FrameListener *listener);
-  virtual void process(const libfreenect2::RgbPacket &packet) = 0;
-
 protected:
   libfreenect2::FrameListener *listener_;
 };
 
 class DumpRgbPacketProcessorImpl;
 
-class DumpRgbPacketProcessor : public RgbPacketProcessor
+class LIBFREENECT2_API DumpRgbPacketProcessor : public RgbPacketProcessor
 {
 public:
   DumpRgbPacketProcessor();
@@ -69,10 +73,9 @@ private:
   DumpRgbPacketProcessorImpl *impl_;
 };
 
-#ifdef USE_JPEG
 class TurboJpegRgbPacketProcessorImpl;
 
-class TurboJpegRgbPacketProcessor : public RgbPacketProcessor
+class LIBFREENECT2_API TurboJpegRgbPacketProcessor : public RgbPacketProcessor
 {
 public:
   TurboJpegRgbPacketProcessor();
@@ -82,7 +85,6 @@ protected:
 private:
   TurboJpegRgbPacketProcessorImpl *impl_;
 };
-#endif
 
 } /* namespace libfreenect2 */
 #endif /* RGB_PACKET_PROCESSOR_H_ */

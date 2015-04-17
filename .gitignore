@@ -30,7 +30,7 @@ Data/*
 *.raw
 
 # Config link file
-Config.lua
+Config
 
 # auto-generated webots controller wrapper
 *.wbproj

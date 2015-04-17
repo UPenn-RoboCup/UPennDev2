@@ -6,11 +6,17 @@ local util = require'util'
 local vector = require'vector'
 local t_entry, t_update
 
-local function get_torque_requirement(qGrip, tqDesired, qDesired)
-	if not qDesired then return tqDesired end
-	local tq = 0 * qGrip
+local procFunc = require'util'.procFunc
+local deadPosition = 5*DEG_TO_RAD
+local maxPosition = 45*DEG_TO_RAD
+local maxTorque = 20
+local tqGain = maxTorque / maxPosition
+local minTorque = deadPosition * tqGain
+local function get_torque_requirement(qGrip, qDesired)
+	local tq = {}
 	for i, q in ipairs(qGrip) do
-		tq[i] = util.sign(q - qDesired[i]) * -tqDesired[i]
+		local dq = q - qDesired[i]
+		table.insert(tq, procFunc(-tqGain * dq, minTorque, maxTorque))
 	end
 	return tq
 end
@@ -52,15 +58,22 @@ function state.update()
 	local qLGrip = Body.get_lgrip_position()
 	local qRGrip = Body.get_rgrip_position()
 
-	-- Find the torque
-	local tqL = get_torque_requirement(
-		qLGrip,
-		tqL,
-		hcm.get_teleop_lgrip_mode()==1 and hcm.get_teleop_lgrip_position()
-	)
+	-- Teleop torque
+	local tqL = hcm.get_teleop_lgrip_torque()
+	if hcm.get_teleop_lgrip_mode()==1 then
+		-- Override to use position control
+		tqL = get_torque_requirement(qLGrip, hcm.get_teleop_lgrip_position())
+	end
+
+	local tqR = hcm.get_teleop_rgrip_torque()
+	if hcm.get_teleop_rgrip_mode()==1 then
+		-- Override to use position control
+		tqR = get_torque_requirement(qRGrip, hcm.get_teleop_rgrip_position())
+	end
 
 	-- Set the torques
 	Body.set_lgrip_command_torque(tqL)
+	Body.set_rgrip_command_torque(tqR)
   
 end
 

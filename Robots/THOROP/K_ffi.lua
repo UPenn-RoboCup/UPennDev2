@@ -172,15 +172,16 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
     qArm[6] = wristRoll_b
     qArm[7] = wristYaw2_b
   end
-  return vnew(qArm)
+	return qArm
+  --return vnew(qArm)
 end
 
 -- Mounting Transform offsets
 -- Left: Assume UCLA gripper
-local preLArm, postLArm = Ttrans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, -handOffsetY, handOffsetZ)
+local preLArm, postLArm = Ttrans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ)
 -- * Ttrans(0.045,0,0) * TrotZ(-45*DEG_TO_RAD) -- Add translation to the center of the palm, or what?
 -- Right: UCLA Gripper
-local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ)
+local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, -handOffsetY, handOffsetZ)
 --* Ttrans(0.08,0,0) * TrotZ(45*DEG_TO_RAD)
 -- Forward with respect to the torso
 function K.forward_larm(qLArm)

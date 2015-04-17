@@ -26,7 +26,7 @@ local qWaist_tol = vector.ones(2) * DEG_TO_RAD
 local dqWaistSz = vector.ones(2) * 2 * DEG_TO_RAD
 
 function state.entry()
-  print(state._NAME..' Entry' )
+  io.write(state._NAME, ' Entry' )
 
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
@@ -38,7 +38,7 @@ function state.entry()
   Body.enable_read'rleg'
   
   -- Set speed limits for initial moving
-  for i=1,5 do
+  for i=1,3 do
     Body.set_head_command_velocity({500,500})
     Body.set_waist_command_velocity({500,500})
     Body.set_lleg_command_velocity({500,500,500,500,500,500})
@@ -78,7 +78,7 @@ function state.update()
 end
 
 function state.exit()
-  print(string.format('%s Exit | %.3f seconds elapsed', state._NAME, Body.get_time()-t_entry))
+  io.write(string.format('%s Exit | %.3f seconds elapsed', state._NAME, Body.get_time()-t_entry))
   
   -- Update current pose
   -- Generate current 2D pose for feet and torso
@@ -107,7 +107,7 @@ function state.exit()
   local p_head = {pg,pg}
   -- Update the limits
   -- Setting the command accel and command velocity to zero means no limit for vel and accel
-  for i=1,5 do
+  for i=1,3 do
     -- {2000,2000}
     Body.set_head_command_velocity({6000,6000})
     Body.set_waist_command_velocity({0,0})

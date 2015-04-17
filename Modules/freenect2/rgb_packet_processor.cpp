@@ -25,6 +25,7 @@
  */
 
 #include <libfreenect2/rgb_packet_processor.h>
+#include <libfreenect2/async_packet_processor.h>
 
 #include <sys/time.h>
 #include <iostream>
@@ -48,8 +49,6 @@ void RgbPacketProcessor::setFrameListener(libfreenect2::FrameListener *listener)
 }
 
 
-
-
 class DumpRgbPacketProcessorImpl
 {
 public:
@@ -71,7 +70,7 @@ public:
 
   ~DumpRgbPacketProcessorImpl()
   {
-    
+
   }
 
   void newFrame(size_t n)
@@ -102,7 +101,7 @@ public:
       timing_acc_n = 0.0;
     }
   }
-  
+
 };
 
 

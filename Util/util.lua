@@ -1,14 +1,18 @@
 local util = {}
 local vector = require'vector'
+local vpose = require'vector'.pose
 local sformat = string.format
 local abs = math.abs
+local min, max = math.min, math.max
+local sin, cos = math.sin, math.cos
 
+local PI, TWO_PI = math.pi, 2*math.pi
 function util.mod_angle(a)
   -- Reduce angle to [-pi, pi)
-  local b = a % (2*math.pi)
-  if b >= math.pi then return (b - 2*math.pi) end
-  return b
+  local b = a % TWO_PI
+	return b >= PI and (b - TWO_PI) or b
 end
+
 
 function util.diff_transform(a,b)
   local c={}
@@ -35,8 +39,7 @@ function util.min(t)
   -- returns the min value and its index
   local imin = 0
   local tmin = math.huge
-  for i=1,#t do
-    local v = t[i]
+  for i,v in ipairs(t)  do
     if v < tmin then
       tmin = v
       imin = i
@@ -48,11 +51,11 @@ end
 function util.max(t)
   -- find the maximum element in the array table
   -- returns the min value and its index
-  local imax = 1 --0
-  local tmax = -1*math.huge
-  for i=1,#t do
-    if t[i] > tmax then
-      tmax = t[i]
+  local imax = 0
+  local tmax = -math.huge
+	for i,v in ipairs(t)  do
+    if v > tmax then
+      tmax = v
       imax = i
     end
   end
@@ -97,7 +100,7 @@ end
 
 --Piecewise linear function for IMU feedback
 local function procFunc(a,deadband,maxvalue)
-  local b = math.min( math.max(0,math.abs(a)-deadband), maxvalue)
+  local b = min( max(0,abs(a)-deadband), maxvalue)
   if a<=0 then return -b end
   return b
 end
@@ -105,7 +108,7 @@ end
 
 local function p_feedback(org,target, p_gain, max_vel, dt)
   local err = target-org
-  local vel = math.max(-max_vel,math.min( max_vel, err*p_gain ))
+  local vel = max(-max_vel,min( max_vel, err*p_gain ))
   return org + vel*dt
 end
 
@@ -297,9 +300,9 @@ function util.approachTolRad( values, targets, speedlimits, dt, tolerance )
 end
 
 function util.pose_global(pRelative, pose)
-  local ca = math.cos(pose[3])
-  local sa = math.sin(pose[3])
-  return vector.pose{pose[1] + ca*pRelative[1] - sa*pRelative[2],
+  local ca = cos(pose[3])
+  local sa = sin(pose[3])
+  return vpose{pose[1] + ca*pRelative[1] - sa*pRelative[2],
                     pose[2] + sa*pRelative[1] + ca*pRelative[2],
 --                    util.mod_angle(pose[3] + pRelative[3])}
                     pose[3] + pRelative[3]}
@@ -309,12 +312,12 @@ function util.pose_global(pRelative, pose)
 end
 
 function util.pose_relative(pGlobal, pose)
-  local ca = math.cos(pose[3])
-  local sa = math.sin(pose[3])
+  local ca = cos(pose[3])
+  local sa = sin(pose[3])
   local px = pGlobal[1]-pose[1]
   local py = pGlobal[2]-pose[2]
   local pa = pGlobal[3]-pose[3]
-  return vector.pose{ca*px + sa*py, -sa*px + ca*py, util.mod_angle(pa)}
+  return vpose{ca*px + sa*py, -sa*px + ca*py, util.mod_angle(pa)}
 end
 
 ---table of uniform distributed random numbers

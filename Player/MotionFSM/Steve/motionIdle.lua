@@ -23,7 +23,7 @@ function state.entry()
 
   if Config.walk.legBias then
     mcm.set_leg_bias(Config.walk.legBias)
-    print("BIAS SET:",unpack(Config.walk.legBias))
+    --print("BIAS SET:",unpack(Config.walk.legBias))
   end
 
   --Set up initial walk parameters

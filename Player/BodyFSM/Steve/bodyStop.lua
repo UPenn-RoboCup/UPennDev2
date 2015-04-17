@@ -11,6 +11,12 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry    
   t_plan = t_entry
+	
+  -- Stand
+  --motion_ch:send'stand'
+  mcm.set_walk_stoprequest(1)
+	-- Scan close by
+	vcm.set_mesh_dynrange{0.1, 2.5}
 end
 
 function state.update()

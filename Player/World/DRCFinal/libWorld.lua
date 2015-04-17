@@ -39,7 +39,7 @@ local function update_odometry(uOdometry)
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
 
-  if Config.use_imu_yaw then    
+  if Config.world.use_imu_yaw then
 
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()

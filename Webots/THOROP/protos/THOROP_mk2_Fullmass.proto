@@ -10,12 +10,15 @@
 #  Fixed wrong arm lengths
 # unlimited arm torque and velocity (for arm motion testing)
 # Added inertia matrices for upper body
+<<<<<<< HEAD
 #
 #
 #
 #
 # Modification for MK2
 # Fixed kinematic params (arm and leg joint pos)
+=======
+>>>>>>> master
 #############################################
 
 PROTO THOROP_mk2_Fullmass [
@@ -184,6 +187,7 @@ Robot {
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
+
 										#anchor -0.072 -0.232 0
 										anchor -0.105 -0.232 0
 										dampingConstant IS damping_constant                              
@@ -191,6 +195,7 @@ Robot {
 									endPoint Solid {
 										#translation -0.072 -0.232 0
 										translation -0.105 -0.232 0
+
 										boundingObject Transform {    
 			    						translation 0 0.07 0
     									children [Box {size 0.05 0.05 0.05}]
@@ -263,6 +268,7 @@ Robot {
 																	R_THIGH_mk2{
 																		translation 0.012 0 0.0
 																		rotation 0 1 0 3.14159
+
 																	}
 																	DEF Right_knee_pitch HingeJoint {
 																		device RotationalMotor {
@@ -274,6 +280,7 @@ Robot {
 																		}
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
+
 																			anchor 0 -0.3 0
 																			dampingConstant IS damping_constant             
 																		}
@@ -282,6 +289,7 @@ Robot {
 																			boundingObject Transform {
 																				#translation -0.025 -0.162 0.043
 																				translation 0.012 -0.162 0 #mk2
+
 																				children [Box {size 0.144 0.29 0.085}]
 																			}
                                       physics Physics {
@@ -292,11 +300,13 @@ Robot {
 																			#################################################################
                                       }
 																			children[
+
 																				R_LEG_mk2{
 																					#translation 0 0 0.0
 																					translation 0.012 0 0.0
 																					rotation 0 1 0 3.14159
 #																					scale 0.001 0.001 0.001
+
 																				}
 																				DEF Right_ankle_pitch HingeJoint {
 																					device RotationalMotor {
@@ -308,11 +318,13 @@ Robot {
 																					} # End of the LegLowerR RotationalMotor
 																					jointParameters HingeJointParameters {
 																						axis 1 0 0
+
 																						anchor 0 -0.3 0.0
 																						dampingConstant IS damping_constant             
 																					}
 																					endPoint Solid {
 																						translation 0 -0.3 0.0
+
                                             contactMaterial IS footContactMaterial
                                             #########################################################
                                             boundingObject Transform {    
@@ -409,6 +421,7 @@ Robot {
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
+
 										#anchor 0.072 -0.232 0
 										anchor 0.105 -0.232 0										
 										dampingConstant IS damping_constant
@@ -416,6 +429,7 @@ Robot {
 									endPoint Solid {
 										#translation 0.072 -0.232 0
 										translation 0.105 -0.232 0 #MK2 
+
 										boundingObject Transform {    
 			    						translation 0 0.07 0
     									children [Box {size 0.05 0.05 0.05}]
@@ -505,11 +519,11 @@ Robot {
 																		}
 																		endPoint Solid {
 																			translation 0 -0.3 -0.0
+
 																			boundingObject Transform {
 																			#higher shin bounding box
 																				#translation 0.025 -0.192 0.043
 																				#children [Box {size 0.144 0.35 0.085}]
-
 																				#translation 0.025 -0.162 0.043
 																				translation -0.012 -0.162 0 #mk2
 																				children [Box {size 0.144 0.29 0.085}]
@@ -627,7 +641,6 @@ Robot {
 									}
 								}
 								# End Left Leg
-
 
 						]
 						}

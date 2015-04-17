@@ -625,7 +625,7 @@ Robot {
 			} # End of the Head HingeJointParameters
 			endPoint Solid {
         translation 0 0.12 0
-        boundingObject Transform {    
+        boundingObject Transform {
     			translation 0 -0.020 0
     			children [Box {size 0.05 0.05 0.05}]
   			}    
@@ -654,14 +654,29 @@ Robot {
               anchor 0 0.04 0
 						} # End of the Head HingeJointParameters
 						##############################################################		
-						endPoint kinect2 {      			  
-              translation 0 0.12 0.03
-      			  rotation 0 1 0 3.14159265
-      			  mass 0.1
-              #TODO: add a pitch angle
-      			  maxRange 4
-      			 
-      			}
+						endPoint Solid {
+							translation 0 0.12 0
+							physics Physics {}
+							boundingObject Box {size 0.05 0.05 0.05}
+							children [
+								Camera {
+									name "HeadCamera"
+									width 320
+									height 240
+									translation 0 -0.03 0.03
+									rotation 0 1 0 3.14159265
+									pixelSize 0
+								}
+								kinect2 {      			  
+									translation 0 0 0.03
+									rotation 0 1 0 3.14159265
+									mass 0.1
+									#TODO: add a pitch angle
+									maxRange 6
+									pixelSize 0
+								}
+							]
+						}
       			##############################################################		
 					} # End of the Head HingeJoint
 				] # End of the Head Children
@@ -669,7 +684,7 @@ Robot {
 		} # End of the Head HingeJoint
     # End of the Head
 
-    ## Begin the Chest lidar chain
+## Begin the Chest lidar chain
 		DEF Chest_Pan HingeJoint {
 			device RotationalMotor {
 				name "ChestLidarPan"
@@ -682,14 +697,14 @@ Robot {
 			} # End of the ChestLidarPan RotationalMotor
 			jointParameters HingeJointParameters {
 				axis 0 1 0
-				anchor 0 0 0.1
+				anchor 0 0 0.05
 			} # End of the ChestLidarPan HingeJointParameters
 			##############################################################		
 			endPoint hokuyo {
 				name "ChestLidar"
 				width IS lidarRays
 				fieldOfView IS lidarFov
-				translation 0 0 0.1 				# Is if offset a bit from the axis, though?
+				translation 0 -0.09 0.07
 				rotation 0.707107 -0.707107 0 3.14159
 			}
 			##############################################################		
@@ -895,12 +910,12 @@ Robot {
 #					                            #boundingObject Box { size 0.05 0.08 0.05 }
 #					                           	physics Physics{density -1 mass 0.05}
 #					                    			}
-																				endPoint GRIPPER_3finger2 {
+																				endPoint GRIPPER_3finger {
 																					trigger_name "r_trigger"
 																					grip_name "r_grip"
 																					extra_name "r_extra"
-																					#28cm from joint
-																					translation 0 -0.28 0
+																					# UCLA has shorter gripper length
+																					translation 0 -0.10 0
 																				}
 
                                         } # End of the Wrist Yaw2 HingeJoint
@@ -1118,7 +1133,7 @@ Robot {
 																						dampingConstant 0.1                                            
                                           }
 																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
-																					#endPoint CHOPSTICKS {translation 0 -0.05 0}
+#																					endPoint CHOPSTICKS {translation 0 -0.05 0}
 #                                          endPoint GRIPPER {
 #                                            #translation 0 -0.05 0
 #                                            translation 0 -0.095 0
@@ -1127,15 +1142,15 @@ Robot {
 #																						grip_name "l_grip"
 #																					}
 
-													endPoint Solid {
-                            translation 0 -0.095 0
-                            boundingObject Box { size 0.05 0.05 0.05 }
-                           	physics Physics{
-                           		density -1
-                           		#mass 0.1
-                           		mass 0.05
-                              }
-                    			}
+																					endPoint Solid {
+																						translation 0 -0.095 0
+																						boundingObject Box { size 0.05 0.05 0.05 }
+																						physics Physics{
+																							density -1
+																							mass 0.05
+																						}
+																						children[CHOPSTICKS {translation 0 -0.015 0}]
+																					}
 
 
 

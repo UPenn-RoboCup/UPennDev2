@@ -8,9 +8,13 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#ifndef ntohll
 #define ntohll(x) ( ( (uint64_t)(ntohl( (uint32_t)((x << 32) >> 32) )) << 32) | ntohl( ((uint32_t)(x >> 32)) ) )
+#endif
 
+#ifndef htonll
 #define htonll(x) ntohll(x)
+#endif
 
 #define MP_ENABLE_DEBUGPRINT 0
 

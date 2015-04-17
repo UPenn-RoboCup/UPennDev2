@@ -171,7 +171,7 @@ local kinect = {
 if IS_WEBOTS then
 	kinect.mountOffset = {
 		{0,0,0}, -- RPY
-		{0.03,0,0.13} -- translation
+		{0.03,0,0.12} -- translation
 	}
 end
 

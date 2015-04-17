@@ -49,15 +49,27 @@ local tNeck = trans(unpack(Config.head.neckOffset))
 -- Mounting of Kinect from the neck axes
 local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
 
--- Next rotation
-local function get_transform(head_angles, imu_rpy, body_height)
-	-- {yaw, pitch}
-	return from_rpy_trans({imu_rpy[1], imu_rpy[2], 0}, {0, 0, body_height}) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
-end
+local function get_tf()
+	local rpy = Body.get_rpy()
+	local pose = wcm.get_robot_pose()
+	local bh = mcm.get_walk_bodyHeight()
+	local bo = mcm.get_status_bodyOffset()
+	local qHead = Body.get_head_position()
+	local uComp = mcm.get_stance_uTorsoComp()
+	uComp[3] = 0
+	
+	-- Poses with the compensation
+	local torsoL = util.pose_global(uComp, bo)
+	local torsoG = util.pose_global(torsoL, pose)
 
-local function get_transform2(head_angles, torso)
-	-- {yaw, pitch}
-	return transform6D(torso) * tNeck * rotZ(head_angles[1]) * rotY(head_angles[2]) * tKinect
+	-- Transform relative to the local body frame (on the ground, between the feet)
+	local tfTorsoLocal = transform6D{torsoL.x, torsoL.y, bh, rpy[1], rpy[2], torsoL.a}
+	-- Transform relative to the global body frame (on the ground)
+	local tfTorsoGlobal = transform6D{torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+	-- Transform relative to the center of mass
+	local tfCom = tNeck * rotZ(qHead[1]) * rotY(qHead[2]) * tKinect
+	
+	return tfTorsoLocal * tfCom, tfTorsoGlobal * tfCom
 end
 
 --local has_detection, detection = pcall(require, cfg.detection)
@@ -84,56 +96,31 @@ local function update(rgb, depth)
 	if t - t_send < 1 then return t end
 	t_send = t
 
-	local rpy = Body.get_rpy()
-	local uComp = mcm.get_stance_uTorsoComp()
-	uComp[3] = 0
-
-	local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
-	local pose = wcm.get_robot_pose()
-	local torsoG = util.pose_global(torso0, pose)
-
-	local bh = mcm.get_walk_bodyHeight()
-	local qHead = Body.get_head_position()
-	local torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
-	local global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
-	--local tr = flatten(get_transform(qHead, rpy, bh))
-	local tr = flatten(get_transform2(qHead, global))
-
-	--print('global',vector.new(global))
-
+	local tfL, tfG = get_tf()
+	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
+	
 	-- Form color
 	rgb.t = t
-	rgb.c = 'jpeg'
 	rgb.id = 'k2_rgb'
-	rgb.head_angles = qHead
-	rgb.body_height = bh
-	rgb.imu_rpy = rpy
-	rgb.tr = tr
-	rgb.pose = pose
-	rgb.torso = torso
-	rgb.global = global
-	local j_rgb
-	if IS_WEBOTS then
-		j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
-	else
-		j_rgb = rgb.data
-	end
+	rgb.c = 'jpeg'
+	rgb.tfL = tfL_flat
+	rgb.tfG = tfG_flat
+	
+	local j_rgb = rgb.data
+	if IS_WEBOTS then j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height) end
 	rgb.data = nil
 	rgb.sz = #j_rgb
 	rgb.rsz = #j_rgb
 	local m_rgb = mpack(rgb)
+	
 
 	-- Form depth (TODO: zlib)
 	depth.t = t
-	depth.c = 'raw'
 	depth.id = 'k2_depth'
-	depth.head_angles = qHead
-	depth.body_height = bh
-	depth.imu_rpy = rpy
-	depth.tr = tr
-	depth.pose = pose
-	depth.torso = torso
-	depth.global = global
+	depth.c = 'raw'
+	depth.tfL = tfL_flat
+	depth.tfG = tfG_flat
+	
 	local ranges = depth.data
 	depth.data = nil
 	depth.sz = #ranges

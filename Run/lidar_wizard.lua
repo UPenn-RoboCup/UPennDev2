@@ -49,8 +49,8 @@ local cb = function(self, data)
 	local torsoG = pose_global(torso0, pose)
 	local bh = mcm.get_stance_bodyHeight()
 
-	metadata.torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
-	metadata.global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+	metadata.tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
+	metadata.tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
 	metadata.pose = pose
 	metadata.n = self.n
 	metadata.res = self.res

@@ -54,7 +54,7 @@ local metadata = {
 	t = 0,
 }
 
-local scan_pose, scan_angles, scan_torso
+local scan_pose, scan_angles, scan_local, scan_global
 -- Setup tensors for a lidar mesh
 local mesh, mesh_byte, mesh_adj, offset_idx
 local n_scanlines
@@ -85,16 +85,19 @@ local function setup_mesh(meta)
 	-- Data for each scanline
 	if TORCH_SCANLINE_INFO then
 		scan_angles = torch.DoubleTensor(n_scanlines):zero()
-		scan_torso = torch.DoubleTensor(n_scanlines,6):zero()
+		scan_local = torch.DoubleTensor(n_scanlines,6):zero()
+		scan_global = torch.DoubleTensor(n_scanlines,6):zero()
 	else
 		scan_angles = vector.zeros(n_scanlines)
-		scan_torso = vector.zeros(n_scanlines)
+		scan_local = vector.zeros(n_scanlines)
+		scan_global = vector.zeros(n_scanlines)
 	end
 	-- Metadata for the mesh
 	metadata.rfov = ranges_fov
 	metadata.sfov = {-mag_sweep / 2, mag_sweep / 2}
 	metadata.a = scan_angles
-	metadata.torso = scan_torso
+	metadata.tfL6 = scan_local
+	metadata.tfG6 = scan_global
 	-- Add the dimensions (useful for raw)
 	metadata.dims = {n_scanlines, n_returns}
 end
@@ -227,8 +230,8 @@ local function update(meta, ranges)
 	end
 	-- Metadata
 	local pose = vector.pose(meta.pose)
-	local torso = vector.new(meta.torso)
-	local global = vector.new(meta.global)
+	local tfL6 = vector.new(meta.tfL6)
+	local tfG6 = vector.new(meta.tfG6)
 	--print('torso', torso)
 
 	-- Find the scanline indices
@@ -244,8 +247,8 @@ local function update(meta, ranges)
 			-- Save the pan angle
 			scan_angles[line] = rad_angle
 			-- Save the torso compensation
-			--scan_torso[line] = torso
-			scan_torso[line] = global
+			scan_local[line] = tfL6
+			scan_global[line] = tfG6
 		end
 	end
 	-- Check for sending out on the wire

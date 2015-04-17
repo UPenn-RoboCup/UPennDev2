@@ -13,6 +13,19 @@ function util.mod_angle(a)
 	return b >= PI and (b - TWO_PI) or b
 end
 
+
+function util.diff_transform(a,b)
+  local c={}
+  --return transform (a-b) with rpy angle cleaned up to (-pi,pi)
+  for i=1,3 do c[i]=a[i]-b[i] end
+  for i=4,6 do
+    c[i] = (a[i]-b[i]) % (2*math.pi)
+    if c[i] >= math.pi then c[i] = (c[i] - 2*math.pi) end
+  end
+  return c  
+end
+
+
 function util.sign(x)
   -- return sign of the number (-1, 0, 1)
   if x > 0 then return 1
@@ -326,6 +339,15 @@ function util.randn(n)
     t[i] = math.sqrt(-2.0*math.log(1.0-math.random())) *
                       math.cos(math.pi*math.random())
   end
+  return t
+end
+
+function util.norm(v,n)
+  local t=0
+  for i=1,n or #v do
+    t=t+v[i]*v[i]
+  end
+  t=math.sqrt(t)
   return t
 end
 

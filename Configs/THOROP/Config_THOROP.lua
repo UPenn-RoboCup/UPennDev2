@@ -1,7 +1,10 @@
 -- Global Config
 Config = {}
 
-IS_STEVE = true
+
+--IS_STEVE = true
+IS_STEVE = false
+
 
 -- General parameters
 Config.PLATFORM_NAME = 'THOROP'
@@ -71,6 +74,10 @@ else
 --		Config.kinect_timestep = 50
 	end
 end
+
+Config.use_jacobian_arm_planning = true
+--Config.use_jacobian_arm_planning = false
+
 
 -----------------------------------
 -- Load Paths and Configurations --

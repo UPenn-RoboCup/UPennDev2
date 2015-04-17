@@ -15,8 +15,7 @@ local util = require'util'
 -- TODO: Should be Config_Slam
 local Sensors = require 'Config_Sensors'
 
-require 'torch'
-torch.Tensor = torch.DoubleTensor
+local torch = require 'torch'
 
 local libSlam = {}
 

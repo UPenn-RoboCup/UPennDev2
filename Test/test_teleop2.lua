@@ -74,7 +74,7 @@ local char_to_lfinger = {
 
 local char_to_rfinger = {
 --  ['t'] = vector.new({-10,-10,10}),--close
-  ['t'] = vector.new({-10,-10,10}),--close
+  ['t'] = vector.new({-10,-10,10}),--fclose
 --  ['r'] = vector.new({-10,-50,10}),--close
   ['r'] = vector.new({-10,-100,10}),--close
   ['g'] = vector.new({0,0,0}),
@@ -96,6 +96,9 @@ end
 
 local function update(key_code)
   if type(key_code)~='number' or key_code==0 then return end
+  if Body.get_time()-t_last<0.5 then return end
+  t_last=Body.get_time()
+
   local key_char = string.char(key_code)
   local key_char_lower = string.lower(key_char)
 

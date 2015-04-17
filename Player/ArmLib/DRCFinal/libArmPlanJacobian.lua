@@ -27,7 +27,10 @@ local function movfunc(cdist,dist)
 
   
   local min_vel = 0.02 --min speed: 2 cm/s
-  local max_vel = 0.04 --max speed: 8 cm/s
+--  local max_vel = 0.04 --max speed: 8 cm/s
+  local max_vel = 0.02 --max speed: 8 cm/s
+
+
   local ramp1 = 0.04 --accellerate over 4cm
   local ramp2 = 0.04 --desccellerate over 4cm
 

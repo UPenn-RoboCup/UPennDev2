@@ -1,0 +1,28 @@
+PROTO R_LEG_mk2 [
+  field SFVec3f scale 1 1 1
+  field SFRotation rotation 1 0 0 0
+  field SFVec3f translation 0 0 0
+]
+{
+  Transform {    
+    rotation IS rotation
+    translation IS translation
+#    scale IS scale    
+    children [
+      Transform{
+        translation 0 -0.15 0
+        children[
+          Shape {
+            appearance DEF POS_APP Appearance {
+              material Material {
+                diffuseColor 1 1 0.5
+                specularColor 0 0 0
+              }
+            }
+            geometry Box { size 0.144 0.30 0.085 }
+          }
+        ]
+      }      
+    ]
+  }
+}

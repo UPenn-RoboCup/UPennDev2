@@ -224,12 +224,12 @@ armfsm.teleop.armuninit={
 }
 
 
-
+--[[
 --sideway up, close to body
 armfsm.teleop.arminit={  
---  {'move0',nil,{0.10,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
---  {'move0',nil,{0.10,-0.35, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-
+  {'move0',nil,{0.10,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+  {'move0',nil,{0.10,-0.35, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+}
   {'move0',nil,{0.10,-0.30,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
   {'move0',nil,{0.10,-0.30, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 --
@@ -239,15 +239,17 @@ armfsm.teleop.arminit={
 --  {'move',nil,{0.34,-0.25, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
 --  {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
+--]]
 
---sideway grip!
 
+--sideway grip (only working with jacobian)
+--[[
 armfsm.teleop.arminit={  
   {'move0',nil,{0.10,-0.30,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
   {'move0',nil,{0.10,-0.30, 0.06,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
 --  {'move0',nil,{0.10,-0.30, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
-
+--]]
 
 
 

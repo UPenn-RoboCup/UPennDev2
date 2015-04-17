@@ -1,6 +1,9 @@
 #!/usr/local/bin/luajit -i
 local ok = pcall(dofile, 'include.lua')
 if not ok then pcall(dofile, '../include.lua') end
+
+print('Robot', Config.net.robot.wired)
+
 -- Important libraries in the global space
 mp = require'msgpack.MessagePack'
 si = require'simple_ipc'
@@ -21,15 +24,9 @@ for _,lib in ipairs(libs) do
     print("Failed to load", lib)
   end
 end
-print('Robot', Config.net.robot.wired)
--- Requester
+
 local rpc_req = si.new_requester(Config.net.rpc.tcp_reply, Config.net.robot.wired)
---print('REQ')
---print(util.ptable(rpc_req))
--- UDP
---print('UDP')
 local rpc_udp = si.new_sender(Config.net.robot.wired, Config.net.rpc.udp)
---print(util.ptable(rpc_udp))
 
 -- FSM communicationg
 fsm_chs = {}

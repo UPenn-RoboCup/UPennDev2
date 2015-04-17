@@ -1,18 +1,28 @@
 #!/usr/bin/env luajit
--- (c) 2014 Stephen McGill
-pcall(dofile, 'fiddle.lua')
-pcall(dofile, '../fiddle.lua')
+-- (c) 2014, 2015 Stephen McGill
+local IS_REMOTE = false
+if type(arg)=='table' then
+	for i, a in ipairs(arg) do
+		if a:find'r' then IS_REMOTE = true end
+	end
+end
 
+local helper = (IS_REMOTE and 'riddle' or 'fiddle')..'.lua'
+local ok, err = pcall(dofile, helper)
+if not ok then
+	local ok, err2 = pcall(dofile, '../'..helper)
+	assert(ok, err..'\n'..err2)
+end
+
+local vector = require'vector'
 local T = require'Transform'
 local K = require'K_ffi'
 local sanitize = K.sanitize
-local vector = require'vector'
 
 -- Look up tables for the test.lua script (NOTE: global)
 code_lut, char_lut, lower_lut = {}, {}, {}
 
-local narm = 7
-local narm = #Body.get_larm_position()
+local narm = 7 -- TODO: Use the config to check...
 local selected_arm = 0 -- left to start
 
 local DO_IMMEDIATE = true
@@ -22,8 +32,7 @@ local function get_larm(refresh)
 	if refresh then qLtmp = hcm.get_teleop_larm() end
 	return qLtmp
 end
--- Set initial arms in tmp and 0
-qL0 = vector.copy(get_larm(true))
+
 local function set_larm(q, do_now)
 	if type(q)=='table' and #q==#qLtmp then
 		vector.copy(q, qLtmp)
@@ -33,7 +42,7 @@ local function set_larm(q, do_now)
 		LARM_DIRTY = false
 		local curTeleop = hcm.get_teleop_larm()
 		if curTeleop~=qL0 then
-			print('TEST_TELEOP | L Outdated...')
+			--print('TEST_TELEOP | L Outdated...')
 			vector.copy(curTeleop, qL0)
 			qLtmp = curTeleop
 			return
@@ -48,8 +57,7 @@ local function get_rarm(refresh)
 	if refresh then qRtmp = hcm.get_teleop_rarm() end
 	return qRtmp
 end
--- Set initial arms in tmp and 0
-qR0 = vector.copy(get_rarm(true))
+
 local function set_rarm(q, do_now)
 	if type(q)=='table' and #q==#qRtmp then
 		vector.copy(q, qRtmp)
@@ -59,7 +67,7 @@ local function set_rarm(q, do_now)
 		LARM_DIRTY = false
 		local curTeleop = hcm.get_teleop_rarm()
 		if curTeleop~=qR0 then
-			print('TEST_TELEOP | R Outdated...')
+			--print('TEST_TELEOP | R Outdated...')
 			vector.copy(curTeleop, qR0)
 			qRtmp = curTeleop
 			return
@@ -442,6 +450,9 @@ end
 
 -- Initial sync
 sync()
+-- Set initial arms in tmp and 0
+qL0 = vector.copy(get_larm(true))
+qR0 = vector.copy(get_rarm(true))
 
 -- Run the generic keypress library
 return dofile(HOME..'/Test/test.lua')

@@ -1,7 +1,7 @@
 #!/usr/bin/env luajit
 -- (c) 2014 Stephen McGill
-pcall(dofile,'fiddle.lua')
-pcall(dofile, '../fiddle.lua')
+pcall(dofile,'riddle.lua')
+pcall(dofile, '../riddle.lua')
 
 local T = require'Transform'
 local K = require'K_ffi'
@@ -11,8 +11,8 @@ local vector = require'vector'
 -- Look up tables for the test.lua script (NOTE: global)
 code_lut, char_lut, lower_lut = {}, {}, {}
 
+local narm = 7
 local narm = #Body.get_larm_position()
-print('narm', narm)
 local selected_arm = 0 -- left to start
 
 local DO_IMMEDIATE = true
@@ -361,13 +361,13 @@ setmetatable(lower_lut, {
 -- Global status to show (NOTE: global)
 local color = require'util'.color
 function show_status()
+	local uComp = mcm.get_stance_uTorsoComp()
+print('uComp', uComp)
 	local qlarm = Body.get_larm_position()
 	local qrarm = Body.get_rarm_position()
 	local fkL = K.forward_larm(qlarm)
 	local fkR = K.forward_rarm(qrarm)
-
 	local rTr6 = T.position6D(fkR)
-	local uComp = mcm.get_stance_uTorsoComp()
 	local fkR2 = {rTr6[1]+uComp[1], rTr6[2]+uComp[2], rTr6[3], rTr6[4]*RAD_TO_DEG, rTr6[5]*RAD_TO_DEG, rTr6[6]*RAD_TO_DEG}
 
   local l_indicator = vector.zeros(#qlarm)

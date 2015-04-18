@@ -41,21 +41,13 @@ if ENABLE_LOG then
 end
 
 local function send_mesh(compression, dynrange)
-	local near, far = unpack(dynrange)
-	if near>far then
-		print('Near greater than far...')
-		return
-	end
-	print('sending...')
+	--print('sending...')
 
 	local metadata = mesh.metadata
-	mesh:dynamic_range()
+	mesh:dynamic_range(dynrange)
 	local c_mesh = mesh:get_png_string2()
 	metadata.c = 'png'
 	mesh:save('/tmp/raw.log', '/tmp/byte.log')
-	print('dim', unpack(mesh.metadata.dim))
-
-	--if true then return end
 
 	-- Send away
 	mesh_ch:send{mpack(metadata), c_mesh}
@@ -121,7 +113,7 @@ local function update(meta, ranges)
 				lidar_resolution = meta.res,
 				rfov = ranges_fov0,
 				sfov = {-mag_sweep / 2, mag_sweep / 2},
-				n_scanlines = math.floor(t_sweep / t_scan + 0.5)
+				n_scanlines = math.floor(t_sweep / t_scan + 0.5),
 			})
 		print('Mesh | Updated containers')
 	end

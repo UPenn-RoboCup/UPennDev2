@@ -8,10 +8,13 @@ local max = require'math'.max
 local floor = require'math'.floor
 
 -- Range compression method to bring float into byte
-local function dynamic_range(self)
+local function dynamic_range(self, dynrange)
+	self.metadata.dr = dynrange or self.metadata.dr
 	local near, far = unpack(self.metadata.dr)
+	--print('near, far', near, far)
+	local factor = 255 / (far-near)
 	for i=0, self.n_el-1 do
-		self.byte[i] = min(max((self.raw[i] - near)/(far-near), 0), 255)
+		self.byte[i] = max(0, min(factor*(self.raw[i] - near), 255))
 	end
 end
 
@@ -25,15 +28,16 @@ local function get_jpeg_string(self)
 	return ffi.string(self.byte, ffi.sizeof(self.byte))
 end
 local function get_png_string(self)
-	local w, h = unpack(self.metadata.dim)
+	local h, w = unpack(self.metadata.dim)
 	return p_compress(tonumber(ffi.cast('intptr_t', self.byte)), w, h, 1)
 end
 local function get_png_string2(self)
-	local w, h = unpack(self.metadata.dim)
+	local h, w = unpack(self.metadata.dim)
 	return p_compress(ffi.string(self.byte, ffi.sizeof(self.byte)), w, h, 1)
 end
 
 local function save(self, fname_raw, fname_byte)
+	--print('dim', unpack(self.metadata.dim))
 	local f = io.open(fname_raw, 'w')
 	f:write(self:get_raw_string())
 	f:close()

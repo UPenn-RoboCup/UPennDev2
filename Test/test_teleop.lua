@@ -11,7 +11,7 @@ local helper = (IS_REMOTE and 'riddle' or 'fiddle')..'.lua'
 local ok, err = pcall(dofile, helper)
 if not ok then
 	local ok, err2 = pcall(dofile, '../'..helper)
-	assert(ok, err..'\n'..err2)
+	assert(ok, tostring(err)..'\n'..tostring(err2))
 end
 
 local vector = require'vector'

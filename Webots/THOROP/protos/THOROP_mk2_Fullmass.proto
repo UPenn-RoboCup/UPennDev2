@@ -10,15 +10,8 @@
 #  Fixed wrong arm lengths
 # unlimited arm torque and velocity (for arm motion testing)
 # Added inertia matrices for upper body
-<<<<<<< HEAD
-#
-#
-#
-#
 # Modification for MK2
 # Fixed kinematic params (arm and leg joint pos)
-=======
->>>>>>> master
 #############################################
 
 PROTO THOROP_mk2_Fullmass [

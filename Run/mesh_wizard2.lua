@@ -4,17 +4,17 @@ local ENABLE_LOG = false
 -- Accumulate lidar readings into an image for mesh viewing
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
 dofile'../include.lua'
-local ffi = require'ffi'
+local libMesh = require'libMesh'
 local torch = require'torch'
 local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
-
 local vector = require'vector'
 local Body = require'Body'
-
 require'vcm'
 require'hcm'
+
+local mesh
 
 -- Open up channels to send/receive data
 local operator
@@ -40,20 +40,22 @@ if ENABLE_LOG then
 	nlog = 0
 end
 
-
-
-local compression = {
-	[0] = 'jpeg',
-	[1] = 'png',
-	[2] = 'raw'
-}
-
 local function send_mesh(compression, dynrange)
 	local near, far = unpack(dynrange)
 	if near>far then
 		print('Near greater than far...')
 		return
 	end
+	print('sending...')
+
+	local metadata = mesh.metadata
+	mesh:dynamic_range()
+	local c_mesh = mesh:get_png_string2()
+	metadata.c = 'png'
+	mesh:save('/tmp/raw.log', '/tmp/byte.log')
+	print('dim', unpack(mesh.metadata.dim))
+
+	--if true then return end
 
 	-- Send away
 	mesh_ch:send{mpack(metadata), c_mesh}
@@ -63,6 +65,7 @@ local function send_mesh(compression, dynrange)
 		print('Mesh | Sent UDP', err or 'successfully')
 	end
 end
+
 local t_send_mesh = -math.huge
 local function check_send_mesh()
 	local net = vcm.get_mesh_net()
@@ -76,7 +79,7 @@ local function check_send_mesh()
 	end
 	if request==0 then return end
 	local dynrange = vcm.get_mesh_dynrange()
-	send_mesh(compression[comp], dynrange)
+	send_mesh('png', dynrange)
 	t_send_mesh = t_check
 
 	-- Reset the request
@@ -108,34 +111,23 @@ local function update(meta, ranges)
 	t_sweep0 = math.min(math.max(t_sweep0, 1), 20)
 	-- Check if updated parameters
 	if not mesh or mag_sweep~=mag_sweep0 or t_sweep~=t_sweep0 or ranges_fov~=ranges_fov0 then
+		-- lidar is 40Hz
+		local t_scan = 1 / 40
 		mag_sweep = mag_sweep0
 		t_sweep = t_sweep0
 		ranges_fov = ranges_fov0
-		setup_mesh(meta)
+		mesh = libMesh.new('mesh0', {
+				n_lidar_returns = meta.n,
+				lidar_resolution = meta.res,
+				rfov = ranges_fov0,
+				sfov = {-mag_sweep / 2, mag_sweep / 2},
+				n_scanlines = math.floor(t_sweep / t_scan + 0.5)
+			})
 		print('Mesh | Updated containers')
 	end
-	-- Metadata
-	local pose = vector.pose(meta.pose)
-	local tfL6 = vector.new(meta.tfL6)
-	local tfG6 = vector.new(meta.tfG6)
 
-	-- Find the scanline indices
-	local rad_angle = meta.angle
-	local scanlines = angle_to_scanlines(rad_angle)
-	local byte_sz = mesh:size(2) * ffi.sizeof'float'
-	local float_ranges = ffi.cast('float*', ranges)
-	local dest
-	for _,line in ipairs(scanlines) do
-		if line >= 1 and line<=n_scanlines then
-			dest = mesh:select(1, line) -- NOTE: must be contiguous
-			ffi.copy(dest:data(), float_ranges + offset_idx, byte_sz)
-			-- Save the pan angle
-			scan_angles[line] = rad_angle
-			-- Save the torso compensation
-			scan_local[line] = tfL6
-			scan_global[line] = tfG6
-		end
-	end
+	mesh:add_scan(meta, ranges)
+
 	-- Check for sending out on the wire
 	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
 	check_send_mesh()
@@ -159,7 +151,7 @@ local poller = si.wait_on_channels({lidar_ch})
 local signal = require'signal'.signal
 local running = true
 local function shutdown()
-	print('Shutdown!')
+	io.write('Shutdown!\n')
 	poller:stop()
 end
 signal("SIGINT", shutdown)

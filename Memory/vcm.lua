@@ -30,32 +30,20 @@ shared.goal.v1 = vector.zeros(4)
 shared.goal.v2 = vector.zeros(4)
 shared.goal.t = vector.zeros(1)
 
--- Ultrasound Sensor
-shared.us = {}
-shared.us.left      = vector.zeros(10)
-shared.us.right     = vector.zeros(10)
-shared.us.obstacles = vector.zeros(2)
-shared.us.free      = vector.zeros(2)
-shared.us.dSum      = vector.zeros(2)
-shared.us.distance  = vector.zeros(2)
-
 -- Mesh formation
-shared.mesh = {}
 -- Sweep: Field of View (radians), time to complete sweep (seconds)
-shared.mesh.sweep = {70 * DEG_TO_RAD, 3}
--- fov: In a single scan, which ranges to use (field of view)
--- Like pitch: positive is down, negative is up. 90 deg is straight down
-shared.mesh.fov = {-30*DEG_TO_RAD, 90*DEG_TO_RAD}
--- Net: {request, destination, compression}
--- request: 1 means mesh needs to be sent to destination
--- compression: 0 is JPEG, 1 is PNG, 2 is RAW
--- is_streaming: 1 is LidarFSM setting mesh_net on each sweep
-shared.mesh.net = {0, 1, 1}
--- Net: {direction}
--- direction (set by LidarFSM): -1 left, 0 unknown, 1 right
-shared.mesh.state = {0}
--- Dynamic range
-shared.mesh.dynrange = {0.1, 2}
+-- fov: In a single scan, which lidar ranges to use (field of view)
+-- Dynamic range: min and max ranges to send
+shared.mesh0 = {}
+	sweep = {70 * DEG_TO_RAD, 3},
+	fov = {-30*DEG_TO_RAD, 90*DEG_TO_RAD},
+	dynrange = {0.1, 2}
+}
+shared.mesh1 = {}
+	sweep = {45 * DEG_TO_RAD, 2},
+	fov = {-45*DEG_TO_RAD, 45*DEG_TO_RAD},
+	dynrange = {0.15, 1.5}
+}
 
 -- Initialize the segment
 memory.init_shm_segment(..., shared, shsize)

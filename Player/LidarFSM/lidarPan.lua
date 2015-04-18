@@ -71,15 +71,6 @@ function state.update()
 	if forward ~= is_forward then
 		forward = is_forward
 		ph = ph > 0.5 and 1 or 0
-		-- If streaming, then send on the switches only
-		local dir = vcm.get_mesh_state()
-		vcm.set_mesh_state({forward and 1 or -1})
-		local net = vcm.get_mesh_net()
-		-- If streaming, then LidarFSM should request a mesh be sent
-		if net[3]==1 then
-			net[1] = 1
-			vcm.set_mesh_net(net)
-		end
 		return'switch'
 	end
 	

@@ -47,7 +47,7 @@ local function record(self, meta, raw, n_raw)
 			local n_written = C.fwrite(raw, 1, n_raw, self.f_raw)
 			r_ok = n_written==n_raw
 		else
-			r_ok = self.f_raw:write(tostring(carray.byte(raw ,n_raw)))
+			r_ok = self.f_raw:write(tostring(carray.byte(raw, n_raw)))
 		end
 	elseif rtype=='string' then
 		r_ok = self.f_raw:write(raw)

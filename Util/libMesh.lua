@@ -11,7 +11,6 @@ local floor = require'math'.floor
 local function dynamic_range(self, dynrange)
 	self.metadata.dr = dynrange or self.metadata.dr
 	local near, far = unpack(self.metadata.dr)
-	--print('near, far', near, far)
 	local factor = 255 / (far-near)
 	for i=0, self.n_el-1 do
 		self.byte[i] = max(0, min(factor*(self.raw[i] - near), 255))

@@ -256,11 +256,13 @@ function WebotsBody.entry(Body)
 
 	cw = Config.sensors.head_camera and require(Config.sensors.head_camera)
   kw = Config.sensors.kinect and require(Config.sensors.kinect)
-	mw = Config.sensors.chest_lidar and require(Config.sensors.chest_lidar)
 	--
 	fw = Config.sensors.feedback and require(Config.sensors.feedback)
   ww = Config.sensors.world and require(Config.sensors.world)
 	kb = Config.testfile and require(Config.testfile)
+	--
+	mw = Config.sensors.mesh and require(Config.sensors.mesh)
+	sw = Config.sensors.slam and require(Config.sensors.slam)
 
 	-- Marcell
 	--rw = Config.wizards.remote and require(Config.wizards.remote)
@@ -271,6 +273,7 @@ function WebotsBody.entry(Body)
   if fw then fw.entry() end
   if rw then rw.entry() end
 	if mw then mw.entry() end
+	if sw then sw.entry() end
   if kw and kw.entry then kw.entry() end
 end
 

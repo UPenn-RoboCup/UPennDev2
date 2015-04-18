@@ -34,11 +34,11 @@ local function check_send_mesh()
 	if t-t_send_mesh>t_sweep0 then request = true end
 	if not request then return end
 
+	--if not mesh0 then return end
 	local metadata = mesh0.metadata
 	mesh0:dynamic_range(vcm.get_mesh0_dynrange())
 	local c_mesh = mesh0:get_png_string2()
 	metadata.c = 'png'
-	--mesh:save('/tmp/raw.log', '/tmp/byte.log')
 
 	-- Send away
 	local meta = mpack(metadata)
@@ -61,6 +61,10 @@ local function check_send_mesh()
 			print('Open new log!')
 		end
 	end
+
+	if not mesh1 then return end
+	mesh1:dynamic_range(vcm.get_mesh1_dynrange())
+	mesh1:save('/tmp/raw.log', '/tmp/byte.log')
 
 end
 
@@ -99,7 +103,7 @@ local function update(meta, ranges)
 			})
 			print('Mesh0 | Updated containers')
 		end
-		mesh0:add_scan(meta, ranges)
+		mesh0:add_scan(meta.angle, ranges, meta)
 	elseif meta.id=='lidar1' then
 		local mag_sweep, t_sweep = unpack(vcm.get_mesh1_sweep())
 		mag_sweep = math.min(math.max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
@@ -121,7 +125,7 @@ local function update(meta, ranges)
 			})
 			print('Mesh1 | Updated containers')
 		end
-		mesh1:add_scan(meta, ranges)
+		mesh1:add_scan(meta.angle[2], ranges, meta)
 	end
 
 	-- Check for sending out on the wire

@@ -36,7 +36,7 @@ local function get_png_string2(self)
 end
 
 local function save(self, fname_raw, fname_byte)
-	--print('dim', unpack(self.metadata.dim))
+	print('dim', unpack(self.metadata.dim))
 	local f = io.open(fname_raw, 'w')
 	f:write(self:get_raw_string())
 	f:close()
@@ -50,24 +50,24 @@ end
 local function get_scanline(self, rad)
 	-- Find the scanline
 	local ratio = (rad - self.metadata.sfov[1]) / (self.metadata.sfov[2] - self.metadata.sfov[1])
+	local scanline = floor(ratio * self.metadata.dim[1])
 	-- Keep within range
-	ratio = max(0, min(ratio, 1))
-	local scanline = ratio * self.metadata.dim[1]
+	scanline = max(0, min(scanline, self.metadata.dim[1]-1))
 	-- Floor for zero-based indexing
-	return floor(scanline)
+	return scanline
 end
 
 -- Add a scan to the mesh
-local function add_scan(self, lidar, scan)
+local function add_scan(self, angle, scan, lidar)
 	-- Get the scanline
-	local scanline = get_scanline(self, lidar.angle)
+	local scanline = get_scanline(self, angle)
 	local scanline_offset_fl = scanline * self.metadata.dim[2]
 	local scan_sz_bytes = ffi.sizeof'float' * self.metadata.dim[2]
 	-- Copy the scan
 	ffi.copy(self.raw + scanline_offset_fl, ffi.cast('float*', scan) + self.scan_offset, scan_sz_bytes)
 
 	-- Save the metadata
-	self.metadata.a[scanline + 1] = lidar.angle
+	self.metadata.a[scanline + 1] = angle
 	self.metadata.tfL6[scanline + 1] = lidar.tfL6
 	self.metadata.tfG6[scanline + 1] = lidar.tfG6
 end

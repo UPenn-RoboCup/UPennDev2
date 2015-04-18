@@ -119,8 +119,8 @@ local function update(meta, ranges)
 			mesh1 = libMesh.new('mesh1', {
 				n_lidar_returns = meta.n,
 				lidar_resolution = meta.res,
-				rfov = ranges_fov0,
-				sfov = {-mag_sweep / 2, mag_sweep / 2},
+				rfov = ranges_fov1,
+				sfov = {0, mag_sweep},
 				n_scanlines = math.floor(t_sweep / t_scan + 0.5),
 			})
 			print('Mesh1 | Updated containers')

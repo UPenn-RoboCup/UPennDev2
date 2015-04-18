@@ -35,13 +35,15 @@ shared.goal.t = vector.zeros(1)
 -- fov: In a single scan, which lidar ranges to use (field of view)
 -- Dynamic range: min and max ranges to send
 shared.mesh0 = {
+	-- Chest
 	sweep = {70 * DEG_TO_RAD, 3},
 	fov = {-30*DEG_TO_RAD, 90*DEG_TO_RAD},
 	dynrange = {0.1, 2}
 }
 shared.mesh1 = {
+	-- Head
 	sweep = {45 * DEG_TO_RAD, 2},
-	fov = {-45*DEG_TO_RAD, 45*DEG_TO_RAD},
+	fov = {-90*DEG_TO_RAD, 90*DEG_TO_RAD},
 	dynrange = {0.15, 1.5}
 }
 

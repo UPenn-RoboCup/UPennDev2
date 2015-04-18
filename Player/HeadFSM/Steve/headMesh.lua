@@ -6,7 +6,7 @@ local state = {}
 state._NAME = ...
 
 -- TODO: need to compensate the torso pose
-local headSpeed = {10 * DEG_TO_RAD, 10 * DEG_TO_RAD}
+local headSpeed = {5 * DEG_TO_RAD, 5 * DEG_TO_RAD}
 local lowAngle = {0, 45*DEG_TO_RAD}
 
 function state.entry()

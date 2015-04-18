@@ -82,6 +82,111 @@ Robot {
     CHEST{ scale 0.001 0.001 0.001 }
     ## End of chest this is root child
 
+    ## The Head is a root child
+		DEF Neck HingeJoint {
+			device RotationalMotor {
+				name "Neck"
+				maxVelocity 3.1206487025 maxTorque 6.3				
+				minPosition -2.92343 maxPosition 2.92343
+			} # End of the Head RotationalMotor
+			jointParameters HingeJointParameters {
+				# Straight up in the y-axis for webots
+				axis 0 1 0
+			} # End of the Head HingeJointParameters
+			endPoint Solid {
+        translation 0 0.12 0
+        boundingObject Transform {
+    			translation 0 -0.020 0
+    			children [Box {size 0.05 0.05 0.05}]
+  			}    
+				physics Physics {
+				##############################################################		
+					density -1 mass 0.1
+					#centerOfMass 0 0.06 0
+					centerOfMass 0 0.03 0
+				##############################################################		
+				}
+				children [
+					NECK {
+						#translation 0 0.05 0
+            translation 0 -0.07 0
+						scale 0.001 0.001 0.001
+					}
+					DEF Head HingeJoint {
+						device RotationalMotor {
+							name "Head"
+							maxVelocity 3.1206487025 maxTorque 6.3
+							minPosition -2.92343 maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 1 0 0
+							#anchor 0 0.161 0
+              anchor 0 0.04 0
+						} # End of the Head HingeJointParameters
+						##############################################################		
+						endPoint Camera {
+							name "HeadCamera"
+							width 320
+							height 240
+							translation 0 0.1 0.03
+							rotation 0 1 0 3.14159265
+							pixelSize 0
+							children [
+								kinect2 {      			  
+									translation 0 0.02 0
+									#rotation 0 1 0 3.14159265
+									mass 0.1
+									#TODO: add a pitch angle
+									maxRange 6
+									pixelSize 0
+								}
+								hokuyo {
+									name "HeadLidar"
+									width IS lidarRays
+									fieldOfView IS lidarFov
+									translation 0 0.1 0.03
+									#rotation 0.707107 -0.707107 0 3.14159
+								}
+							]
+							physics Physics {
+								density -1
+								mass 0.01
+							}
+							boundingObject Box {size 0.01 0.01 0.01}
+						}
+      			##############################################################		
+					} # End of the Head HingeJoint
+				] # End of the Head Children
+			} # End of the Head endpoint
+		} # End of the Head HingeJoint
+    # End of the Head
+
+## Begin the Chest lidar chain
+		DEF Chest_Pan HingeJoint {
+			device RotationalMotor {
+				name "ChestLidarPan"
+				minPosition -2.92343
+				maxPosition 2.92343
+				# Verified MX-28 specs with DARwIn-OP model in Webots
+				maxVelocity 12.26
+				maxTorque 2.5
+				acceleration 55
+			} # End of the ChestLidarPan RotationalMotor
+			jointParameters HingeJointParameters {
+				axis 0 1 0
+				anchor 0 0 0.05
+			} # End of the ChestLidarPan HingeJointParameters
+			##############################################################		
+			endPoint hokuyo {
+				name "ChestLidar"
+				width IS lidarRays
+				fieldOfView IS lidarFov
+				translation 0 -0.09 0.07
+				rotation 0.707107 -0.707107 0 3.14159
+			}
+			##############################################################		
+		} # End of the ChestLidarPan HingeJoint
+## End the Chest lidar chain
 
     ## Begin the Legs
     DEF Torso_pitch HingeJoint {
@@ -609,108 +714,6 @@ Robot {
 			}
 		}
 		## End the Legs
-
-
-
-    ## The Head is a root child
-		DEF Neck HingeJoint {
-			device RotationalMotor {
-				name "Neck"
-				maxVelocity 3.1206487025 maxTorque 6.3				
-				minPosition -2.92343 maxPosition 2.92343
-			} # End of the Head RotationalMotor
-			jointParameters HingeJointParameters {
-				# Straight up in the y-axis for webots
-				axis 0 1 0
-			} # End of the Head HingeJointParameters
-			endPoint Solid {
-        translation 0 0.12 0
-        boundingObject Transform {
-    			translation 0 -0.020 0
-    			children [Box {size 0.05 0.05 0.05}]
-  			}    
-				physics Physics {
-				##############################################################		
-					density -1 mass 0.1
-					#centerOfMass 0 0.06 0
-					centerOfMass 0 0.03 0
-				##############################################################		
-				}
-				children [
-					NECK {
-						#translation 0 0.05 0
-            translation 0 -0.07 0
-						scale 0.001 0.001 0.001
-					}
-					DEF Head HingeJoint {
-						device RotationalMotor {
-							name "Head"
-							maxVelocity 3.1206487025 maxTorque 6.3
-							minPosition -2.92343 maxPosition 2.92343
-						}
-						jointParameters HingeJointParameters {
-							axis 1 0 0
-							#anchor 0 0.161 0
-              anchor 0 0.04 0
-						} # End of the Head HingeJointParameters
-						##############################################################		
-						endPoint Solid {
-							translation 0 0.12 0
-							physics Physics {}
-							boundingObject Box {size 0.05 0.05 0.05}
-							children [
-								Camera {
-									name "HeadCamera"
-									width 320
-									height 240
-									translation 0 -0.03 0.03
-									rotation 0 1 0 3.14159265
-									pixelSize 0
-								}
-								kinect2 {      			  
-									translation 0 0 0.03
-									rotation 0 1 0 3.14159265
-									mass 0.1
-									#TODO: add a pitch angle
-									maxRange 6
-									pixelSize 0
-								}
-							]
-						}
-      			##############################################################		
-					} # End of the Head HingeJoint
-				] # End of the Head Children
-			} # End of the Head endpoint
-		} # End of the Head HingeJoint
-    # End of the Head
-
-## Begin the Chest lidar chain
-		DEF Chest_Pan HingeJoint {
-			device RotationalMotor {
-				name "ChestLidarPan"
-				minPosition -2.92343
-				maxPosition 2.92343
-				# Verified MX-28 specs with DARwIn-OP model in Webots
-				maxVelocity 12.26
-				maxTorque 2.5
-				acceleration 55
-			} # End of the ChestLidarPan RotationalMotor
-			jointParameters HingeJointParameters {
-				axis 0 1 0
-				anchor 0 0 0.05
-			} # End of the ChestLidarPan HingeJointParameters
-			##############################################################		
-			endPoint hokuyo {
-				name "ChestLidar"
-				width IS lidarRays
-				fieldOfView IS lidarFov
-				translation 0 -0.09 0.07
-				rotation 0.707107 -0.707107 0 3.14159
-			}
-			##############################################################		
-		} # End of the ChestLidarPan HingeJoint
-## End the Chest lidar chain
-
 
 
 

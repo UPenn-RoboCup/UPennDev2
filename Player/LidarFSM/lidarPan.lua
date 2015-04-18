@@ -10,7 +10,7 @@ local min, max = math.min, math.max
 -- Sync mesh parameters
 local function update_pan_params()
 	-- Necessary variables
-	mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
+	mag_sweep, t_sweep = unpack(vcm.get_mesh0_sweep())
 	-- Some simple safety checks
 	mag_sweep = min(max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
 	t_sweep = min(max(t_sweep, 1), 20)

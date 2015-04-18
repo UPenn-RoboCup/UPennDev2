@@ -22,20 +22,20 @@ local mag_sweep0, t_sweep0, ranges_fov0
 local mag_sweep1, t_sweep1, ranges_fov1
 
 local function check_send_mesh()
+	local request = false
 	local t = Body.get_time()
 	local n_open = hcm.get_network_open()
 	local t_open
 	if n_open==1 then
 		t_open = hcm.get_network_topen()
-		if t_open - t_send_mesh > 0.5 then request = 1 end
+		if t_open - t_send_mesh > 0.5 then request = true end
 	end
 
-	if t-t_send_mesh>t_sweep then requrest=1 end
-
-	if request==0 then return end
+	if t-t_send_mesh>t_sweep0 then request = true end
+	if not request then return end
 
 	local metadata = mesh0.metadata
-	mesh0:dynamic_range(vcm.get_mesh_dynrange())
+	mesh0:dynamic_range(vcm.get_mesh0_dynrange())
 	local c_mesh = mesh0:get_png_string2()
 	metadata.c = 'png'
 	--mesh:save('/tmp/raw.log', '/tmp/byte.log')
@@ -45,7 +45,7 @@ local function check_send_mesh()
 	if mesh_ch then mesh_ch:send{meta, c_mesh} end
 	if mesh_udp_ch then
 		local ret, err = mesh_udp_ch:send(meta..c_mesh)
-		print('Mesh | Sent UDP', err or 'successfully')
+		--print('Mesh | Sent UDP', err or 'successfully')
 	end
 
 	t_send_mesh = t

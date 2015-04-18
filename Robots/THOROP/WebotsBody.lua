@@ -270,6 +270,7 @@ function WebotsBody.entry(Body)
 	if ww then ww.entry() end
   if fw then fw.entry() end
   if rw then rw.entry() end
+	if mw then mw.entry() end
   if kw and kw.entry then kw.entry() end
 end
 
@@ -491,7 +492,7 @@ function WebotsBody.update(Body)
 			local bh = mcm.get_stance_bodyHeight()
 
 			local metadata = {
-        n=n,res=res,t=t,angle=Body.get_lidar_position(),
+        id='lidar0', n=n,res=res,t=t,angle=Body.get_lidar_position(),
 				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
 				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
       }
@@ -515,7 +516,7 @@ function WebotsBody.update(Body)
 			local bh = mcm.get_stance_bodyHeight()
 
 			local metadata = {
-        n=n,res=res,t=t,angle=Body.get_head_position(),
+        id='lidar1', n=n,res=res,t=t,angle=Body.get_head_position(),
 				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
 				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
       }

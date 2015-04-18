@@ -22,7 +22,7 @@ function state.entry()
 	piterators = movearm.path_iterators(Config.arm.readyFromInitStages)
 
 	-- Close range mesh
-	vcm.set_mesh_dynrange({.1,1})
+	vcm.set_mesh0_dynrange({.1,1})
 end
 
 function state.update()

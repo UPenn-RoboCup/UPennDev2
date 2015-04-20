@@ -33,22 +33,37 @@ local function check_send_mesh()
 
 	if t-t_send_mesh>t_sweep0 then request = true end
 	if not request then return end
+	t_send_mesh = t
 
-	--if not mesh0 then return end
-	local metadata = mesh0.metadata
-	mesh0:dynamic_range(vcm.get_mesh0_dynrange())
-	local c_mesh = mesh0:get_png_string2()
-	metadata.c = 'png'
+	if false and mesh0 then
+		mesh0:dynamic_range(vcm.get_mesh0_dynrange())
+		local c_mesh = mesh0:get_png_string2()
+		local metadata = mesh0.metadata
+		metadata.c = 'png'
 
-	-- Send away
-	local meta = mpack(metadata)
-	if mesh_ch then mesh_ch:send{meta, c_mesh} end
-	if mesh_udp_ch then
-		local ret, err = mesh_udp_ch:send(meta..c_mesh)
-		--print('Mesh | Sent UDP', err or 'successfully')
+		-- Send away
+		local meta = mpack(metadata)
+		if mesh0_ch then mesh0_ch:send{meta, c_mesh} end
+		if mesh0_udp_ch then
+			local ret, err = mesh0_udp_ch:send(meta..c_mesh)
+			--print('Mesh0 | Sent UDP', unpack(ret))
+		end
 	end
 
-	t_send_mesh = t
+	if mesh1 then
+		mesh1:dynamic_range(vcm.get_mesh1_dynrange())
+		local c_mesh = mesh1:get_png_string2()
+		local metadata = mesh1.metadata
+		metadata.c = 'png'
+		-- Send away
+		local meta = mpack(metadata)
+		if mesh1_ch then mesh1_ch:send{meta, c_mesh} end
+		if mesh1_udp_ch then
+			local ret, err = mesh1_udp_ch:send(meta..c_mesh)
+			--print('Mesh1 | Sent UDP', unpack(ret))
+		end
+		print('Mesh1 | Sent', #meta, #c_mesh)
+	end
 
 	-- Log
 	if ENABLE_LOG then
@@ -62,17 +77,16 @@ local function check_send_mesh()
 		end
 	end
 
-	if not mesh1 then return end
-	mesh1:dynamic_range(vcm.get_mesh1_dynrange())
-	mesh1:save('/tmp/raw.log', '/tmp/byte.log')
-
 end
 
 local function entry()
-	local stream = Config.net.streams.mesh
+	local stream0 = Config.net.streams.mesh0
+	local stream1 = Config.net.streams.mesh1
 	local operator = Config.net.use_wireless and Config.net.operator.wireless or Config.net.operator.wired
-	mesh_udp_ch = stream.udp and si.new_sender(operator, stream.udp)
-	mesh_ch = stream.sub and si.new_publisher(stream.sub)
+	mesh0_udp_ch = stream0.udp and si.new_sender(operator, stream0.udp)
+	mesh0_ch = stream0.sub and si.new_publisher(stream0.sub)
+	mesh1_udp_ch = stream1.udp and si.new_sender(operator, stream1.udp)
+	mesh1_ch = stream1.sub and si.new_publisher(stream1.sub)
 	if ENABLE_LOG then
 		libLog = require'libLog'
 		logger = libLog.new('mesh', true)

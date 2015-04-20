@@ -34,7 +34,7 @@ if IS_WEBOTS then
 		slam = false,
     --head_camera = 'camera_wizard',
     --chest_lidar = true,
-    head_lidar = true,--'slam_wizard',
+    --head_lidar = true,--'slam_wizard',
     --kinect = 'kinect2_wizard',
 	 	world = 'world_wizard',
   }

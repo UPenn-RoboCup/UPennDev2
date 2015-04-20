@@ -49,8 +49,8 @@ if Config.IS_COMPETING then
 end
 
 net.ping = {
-	udp = 17002,
-	tcp = 2003,
+	udp = 17000,
+	tcp = 2000,
 	pub = 'ping',
 	sub = 'go',
 }
@@ -69,11 +69,16 @@ streams.feedback = {
 	sub = 'feedback'
 }
 -- Lossy Link
-streams.mesh = {
+streams.mesh0 = {
 	ws = 9001,
 	udp = 17001,
-	tcp = 43344,
 	sub = 'mesh0'
+}
+-- Lossy Link
+streams.mesh1 = {
+	ws = 9002,
+	udp = 17002,
+	sub = 'mesh1'
 }
 streams.camera0 = {
 	ws = 9003,

@@ -1,4 +1,4 @@
-function [A, S] = computeNormal_lidar(X0, Y0, Z0, mask, wnd,stepsz)
+function [A, S] = computeNormal_lidarB(X0, Y0, Z0, mask, wnd,stepsz)
 
 w = size(mask,2);
 h = size(mask,1);

@@ -1,5 +1,5 @@
 function  [Planes, metadata] = detectPlanes6(data, meta, ui)
- 
+% v6: corner of walls 
 
 if ~isempty(meta) && isfield(meta,'tr')    
     [Rot, tr] = TransKinectToBody(meta);

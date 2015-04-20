@@ -9,9 +9,9 @@ RGB_H = 1080;
 % Set the path and names
 % The unpacked data will be saved under <foldername>/Unpacked/<datestamp> 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-foldername = '~/Data/LOGS_Lab_0324_3';
+foldername = '~/Data/LOGS_Lab_0324_2';
 datestamp_kinect =[]; '03.25.2015.16.42.08';
-datestamp_lidar = [];'03.25.2015.12.48.31';%[];% '02.24.2015.17.24.03'; 
+datestamp_lidar = '03.25.2015.16.36.42'; %'03.25.2015.12.48.31';%[];% '02.24.2015.17.24.03'; 
 showkinectimage = true;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 OFFSET = 0;
@@ -87,8 +87,8 @@ if  ~isempty(flag_depth) && ~isempty(flag_rgb),
         %    figure(2), imshow(rgb_img);     
         end
     
-        %save(strcat(foldername,'/Unpacked/',datestamp_kinect,'/',sprintf('%04d.mat',ilog+OFFSET)),'depthRaw', 'rgb_img', 'metad', 'metar');
-         save(strcat(foldername,'/Unpacked/03.25.2015.16.40.27/',sprintf('%04d.mat',ilog+OFFSET)),'depthRaw', 'rgb_img', 'metad', 'metar');
+        save(strcat(foldername,'/Unpacked/',datestamp_kinect,'/',sprintf('%04d.mat',ilog+OFFSET)),'depthRaw', 'rgb_img', 'metad', 'metar');
+        % save(strcat(foldername,'/Unpacked/03.25.2015.16.40.27/',sprintf('%04d.mat',ilog+OFFSET)),'depthRaw', 'rgb_img', 'metad', 'metar');
     
         pause(0.05);
         

@@ -9,7 +9,7 @@ RGB_H = 1080;
 % Set the path 
 % The unpacked data will be saved under <foldername>/Unpacked/ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-foldername = '~/Data/LOGS_Lab_0327_1';
+foldername = '~/Data/LOGS_Lab_0327_3';
 type = 'kinect'; % 'kinect' or 'lidar'
 showimage = true;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,7 +19,7 @@ showimage = true;
 ind_raw = 0;
 for ifile=1:length(fileSequence)
     ifile
-    datestamp_kinect =  fileSequence{ifile}(35:end-4);
+    datestamp_kinect =  fileSequence{ifile}((end-22):end-4);
         
     filename_depth = sprintf('k2_depth_r_%s.log',datestamp_kinect);
     filename_rgb = sprintf('k2_rgb_r_%s.log', datestamp_kinect);
@@ -72,7 +72,7 @@ for ifile=1:length(fileSequence)
     fclose(f_depth);
     fclose(f_rgb);
     
-    disp(strcat('kinect : Unpacked ',int2str(ifile),'/',int2str(length(fileSequence))));
+    disp(strcat('kinect : Unpacked ( ',int2str(ifile),'/',int2str(length(fileSequence)),')'));
     
 end
 

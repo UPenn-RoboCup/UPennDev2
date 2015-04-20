@@ -9,20 +9,20 @@
 clear all;
 close all;
 
-foldername = '/home/leebhoram/Data/LOGS_SC_11-13/Unpacked/';
-datestamp = '03.11.2015.13.46.52'; % Testbed: walls (near valve)
+foldername = '/home/leebhoram/Data/LOGS_SC2/Unpacked/';
+datestamp = '03.12.2015.13.19.00'; % Testbed: walls (near valve)
 
-% 03.11.2015.09.32.28
-% foldername = '/home/leebhoram/Data/LOGS_Lab_0325_3/Unpacked/';
-% datestamp = '03.25.2015.16.40.27'; % Testbed: walls (near valve)
+foldername = '/home/leebhoram/Data/LOGS_Lab_0325_3/Unpacked/';
+datestamp = '03.25.2015.16.40.27'; % Testbed: walls (near valve)
 % datestamp = '03.12.2015.13.23.19'; % Testbed: walls (near valve)
 
-% foldername = '~/Data/LOGS_Lab_0327_2/Unpacked/';
-% datestamp = [];
-% foldername = '/home/leebhoram/Data/LOGS_Lab_0325_2/Unpacked/';
-% datestamp = '03.25.2015.16.36.47';
-% foldername = '/home/leebhoram/Data/corner/Unpacked/';
-% datestamp = '03.19.2015.17.53.03'; % Testbed: walls (near valve)
+ foldername = '~/Data/LOGS_Lab_0327_2/Unpacked/';
+ datestamp = [];
+%   foldername = '/home/leebhoram/Data/LOGS_Lab_0325_2/Unpacked/';
+%   datestamp = '03.25.2015.16.36.47';
+%foldername = '/home/leebhoram/Data/corner/Unpacked/';
+%datestamp = '03.19.2015.17.53.03'; % Testbed: walls (near valve)
+
 
 % vidObj = VideoWriter('localCorner_0326.avi');
 % set(vidObj,'FrameRate',10);
@@ -33,14 +33,12 @@ datestamp = '03.11.2015.13.46.52'; % Testbed: walls (near valve)
 figure(13), 
 figPos = get(gcf,'Position');
 set(gcf,'Position', [figPos(1:2) 1024 420]);
-for ilog = 1:length(fileSequence)
+for ilog=80:length(fileSequence)
     ilog
     metad = [];
     load(fileSequence{ilog}); 
    % sprintf('%0.4f',metad.t)
    
-   % depthRaw =  depthRaw'; % for windows log
-    
     %tic,
     if 1
         D = depthRaw'-20;
@@ -56,35 +54,34 @@ for ilog = 1:length(fileSequence)
         set(gca,'XColor',0.95*ones(1,3));
         set(gca,'YColor',0.95*ones(1,3));
         set(gca,'ZColor',0.95*ones(1,3));
-        axis([-1 1 -1 1 0 4]);
+        axis([-1 1 -1 1 0 2]);
         view(0,-85);
     end
-   
+  
+ 
     uisetting; % See uisetting.m       size(D)
     % ui.undistortDepth = 1;
      
-    ui.taskMode = 4 ;
-    ui.figures(3) = 3;
+    ui.taskMode = 11 ;
+    ui.figures(3) = 1;
     % average 
-    % tic,
-    [res, meta] = detectPlanes7(depthRaw, metad, ui);   
-    % toc
-    if numel(res) == 1 && res{1}.Size > 1000
-       %  pose = localizeCorner_v2(res,metad);
-    end
+    [res, meta] = detectPlanes6(depthRaw, metad, ui);   
+    pose = localizeCorner_v2(res,metad);
     
    % toc,
     if 0% numel(res) > 0
-        d1 = res{1}.Normal'*res{1}.Center;
+        d1 = res{1}.Normal'*res{1}.Center
         if  numel(res) > 1
-            d2 = res{2}.Normal'*res{2}.Center;
+            d2= res{2}.Normal'*res{2}.Center
         end
     end
     
+
     pause(0.01);  
     
 %     M = getframe(gcf);   
-%     writeVideo(vidObj,M);  
+%     writeVideo(vidObj,M);
+%    
 end 
 
 % close(vidObj);

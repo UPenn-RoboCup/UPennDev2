@@ -1,4 +1,4 @@
-function [x,y,head_theta,body_theta,flag]=locolization(depthRaw,metad,rgb_img)
+function [x,y,head_theta,body_theta,flag]=localization(depthRaw,metad,rgb_img)
 persistent x_old
 persistent y_old
 persistent head_theta_old
@@ -18,9 +18,9 @@ end
 if isempty(body_theta_old)
     body_theta_old=0;
 end
-meta=[];
+
 uisetting;
-[plane_data, ~] = detectPlanes6(depthRaw, meta, ui);
+[plane_data, ~] = detectPlanes6(depthRaw, metad, ui);
 if(length(plane_data)<1)
     
     flag=0;

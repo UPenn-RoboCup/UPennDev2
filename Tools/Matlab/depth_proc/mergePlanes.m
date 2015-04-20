@@ -40,7 +40,7 @@ if numPlanes < nlimit
             mergedPlanes{j} = Planes{mInd(j)};
         end
         
-        if nargin==4
+        if nargin>4
             for j = 1:mergedNumPlanes  
                 mergedP3d{j} = P3d{mInd(j)};
             end

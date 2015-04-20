@@ -9,12 +9,13 @@
 clear all;
 close all;
 
-% foldername = '/home/leebhoram/Data/mesh_logs/Unpacked/';
+ foldername = '/home/leebhoram/Data/mesh_logs/Unpacked/';
 % datestamp = '03.11.2015.15.30.41l'; % Testbed: walls (near valve)
-% datestamp = '03.11.2015.15.45.07l';
+ datestamp = '03.11.2015.15.45.07l';
 
-foldername = '/home/leebhoram/Data/LOGS_Lab_0324_2/Unpacked/';
-datestamp = '03.25.2015.16.36.42l'; 
+% foldername = '/home/leebhoram/Data/LOGS_Lab_0325_3/Unpacked/';
+% datestamp = '03.25.2015.16.36.42l'; 
+% datestamp = '03.25.2015.16.40.20l';
 
 [ fileSequence] = getMatFilesFromFolder( strcat(foldername,datestamp));
  
@@ -27,16 +28,17 @@ for ilog=1:length(fileSequence)
        
     if 1   
   
-    metal.flag = 1;
-    [ Planes ] = detectPlaneInstances_lidar_v1( meshRaw', 3, metal);
-    % [res, meta] = detectPlanes5(depthRaw, metad, ui);
-    
-    ilog
-     
+        metal.flag = 1;
+        [ Planes ] = detectPlaneInstances_lidar_v2( meshRaw', 3, metal);
+        % [res, meta] = detectPlanes5(depthRaw, metad, ui);
+
+        ilog     
 
     end
    % prevts = metad.t;   
   %  F(iLog) = getframe(gcf);    
+  
+  pause(0.01);
 end 
 
 

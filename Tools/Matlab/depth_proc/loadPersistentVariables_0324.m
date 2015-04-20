@@ -34,10 +34,10 @@ MASK = double(bw);
 clear bw;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % parameters 
-param_normalComputation = [11 3]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  
+param_normalComputation = [9 3]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  
 thre_sValue = 0.05; % The smaller it is, the flatter the plane fit is 
-thre_clusterSize = 400; % number of clusters
-thre_memberSize = 100; % number of connected members (in the image domain)
+thre_clusterSize = 500; % number of clusters
+thre_memberSize = 300; % number of connected members (in the image domain)
 param_meanShiftResol = 0.55;% 0.6;         % mean shift resolution
 param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
 

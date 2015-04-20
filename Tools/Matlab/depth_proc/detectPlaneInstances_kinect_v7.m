@@ -269,9 +269,9 @@ elseif ui.taskMode == 2
         Planes{candidates(idx)}.Type = 'wall';
         PlaneOfInterest = candidates(idx);
     end
-elseif ui.taskMode == 11 %|| ui.taskMode == 4
+elseif ui.taskMode == 11 % || ui.taskMode == 4
      
-    [Planes,PlaneID,PlaneOfInterest,Points3D] = mergePlanes(Planes,PlaneID,PlaneOfInterest,Points3D,20);
+    [Planes,PlaneID,PlaneOfInterest,Points3D] = mergePlanes(Planes,PlaneID,PlaneOfInterest,Points3D,30);
   
     if~isempty(Planes)
         idx = find(cellfun(@(x) x.Size, Planes(:)) > 100);    

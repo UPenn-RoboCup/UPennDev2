@@ -55,7 +55,7 @@ bool CFitPlane::Init(double *u, double *v, double *d,bool* mask, int ih, int iw,
                 vec3D(0,i) = 0;
                 vec3D(1,i) = 0;
                 vec3D(2,i) = 0;
-                matMask(i) == 0;
+                matMask(i) = 0;
             }
             else {
                 vec3D(0,i) = *(u+i);

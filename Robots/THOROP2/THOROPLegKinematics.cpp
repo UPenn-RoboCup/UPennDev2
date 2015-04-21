@@ -1,5 +1,5 @@
 #include "THOROPKinematics.h"
-/* 7 DOF */
+//For THOR mk2
 
 
 

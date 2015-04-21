@@ -1,7 +1,13 @@
 #include "THOROPKinematics.h"
+//For THOR mk2
 
 void THOROP_kinematics_calculate_arm_com(const double* rpyangle,  
    const double *qArm, int index,double *comxyz, double*comrpy){  
+
+
+//TODOTODOTODOTODO
+//Fix waist transform for mk2
+
 
   Transform torso, COM;
   torso.rotateX(rpyangle[0]).rotateY(rpyangle[1]);

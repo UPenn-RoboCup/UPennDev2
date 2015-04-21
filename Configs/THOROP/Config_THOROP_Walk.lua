@@ -186,13 +186,13 @@ if IS_WEBOTS then
 
   walk.supportY = 0.09  
   --Higher COM walking test!
-  --walk.bodyHeight = 0.93
+  
   --walk.tZMP = 0.33
 
   walk.hipRollCompensation = 0*DEG_TO_RAD
   walk.ankleRollCompensation = 0*DEG_TO_RAD
 
-  --  walk.bodyHeight = 0.98
+
   walk.bodyHeight = 0.93 --lower bodyheight again for rough terrain walk
   walk.tZMP = 0.345
 

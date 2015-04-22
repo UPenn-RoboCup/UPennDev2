@@ -81,7 +81,7 @@ local function add_scan(self, angle, scan, lidar)
 		local scanline_fl = self.raw + (s * n_ranges)
 		ffi.copy(scanline_fl, scan_fl, scan_sz)
 		-- Save the metadata
-		self.metadata.a[s + 1] = angle
+		self.metadata.a[s + 1] = lidar.angle
 		self.metadata.tfL6[s + 1] = lidar.tfL6
 		self.metadata.tfG6[s + 1] = lidar.tfG6
 		self.metadata.tfL16[s + 1] = lidar.tfL16

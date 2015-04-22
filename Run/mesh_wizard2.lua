@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = false
+local ENABLE_LOG = true
 -- Mesh Wizard for Team THOR
 -- Accumulate lidar readings into an image for mesh viewing
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
@@ -66,14 +66,26 @@ local function check_send_mesh()
 	end
 
 	-- Log
-	if ENABLE_LOG and mesh0 then
+	if logger0 and mesh0 then
 		local raw_str = mesh0:get_raw_string()
 		mesh0.metadata.rsz = #raw_str
-		logger:record(mesh0.metadata, raw_str)
-		if logger.n % 10 == 0 then
-			logger:stop()
-			logger = libLog.new('mesh0', true)
-			print('Open new log!')
+		logger0:record(mesh0.metadata, raw_str)
+		if logger0.n % 10 == 0 then
+			logger0:stop()
+			logger0 = libLog.new('mesh0', true)
+			print('Mesh0 | Open new log!')
+		end
+	end
+
+		-- Log
+	if logger1 and mesh1 then
+		local raw_str = mesh1:get_raw_string()
+		mesh1.metadata.rsz = #raw_str
+		logger1:record(mesh1.metadata, raw_str)
+		if logger1.n % 10 == 0 then
+			logger1:stop()
+			logger1 = libLog.new('mesh1', true)
+			print('Mesh1 | Open new log!')
 		end
 	end
 
@@ -89,7 +101,8 @@ local function entry()
 	mesh1_ch = stream1.sub and si.new_publisher(stream1.sub)
 	if ENABLE_LOG then
 		libLog = require'libLog'
-		logger = libLog.new('mesh0', true)
+		logger0 = libLog.new('mesh0', true)
+		logger1 = libLog.new('mesh1', true)
 	end
 end
 
@@ -181,5 +194,6 @@ signal("SIGTERM", shutdown)
 poller:start()
 
 if ENABLE_LOG then
-	logger:stop()
+	logger0:stop()
+	logger1:stop()
 end

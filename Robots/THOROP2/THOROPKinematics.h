@@ -1,5 +1,5 @@
-#ifndef THOR2_KINEMATICS_H_
-#define THOR2_KINEMATICS_H_
+#ifndef THOROP7_KINEMATICS_H_
+#define THOROP7_KINEMATICS_H_
 
 #include "Transform.h"
 #include <stdio.h>
@@ -17,16 +17,28 @@ const double SQRT2 = sqrt(2);
 const double neckOffsetZ = .117;
 const double neckOffsetX = 0;
 
+
+//ORIGIN is at the mk1 waist position
+//which is 111mm higher than mk2 waist position
+//then the shoulder offset Z is the same (165mm)
+
+const double originOffsetZ = 0.111
 const double shoulderOffsetX = 0;    
 const double shoulderOffsetY = 0.234; //the same
-//const double shoulderOffsetZ = 0.165; //mk1 value
-const double shoulderOffsetZ = 0.276; //mk2 value
-
-//const double upperArmLength = .246; //mk1 value
-//const double lowerArmLength = .250; //mk1 longarm
-const double upperArmLength = .261; //mk2 value
+const double shoulderOffsetZ = 0.165; //mk1 value, used for calculation
+const double shoulderOffsetZ2 = 0.276; //mk2 value, for reference
 const double elbowOffsetX =   .030; 
+
+/*
+const double upperArmLength = .246; //mk1 value
+const double lowerArmLength = .250; //mk1 longarm
+*/
+/*
+const double upperArmLength = .261; //mk2 value
 const double lowerArmLength = .252;
+*/
+const double upperArmLength = .281; //Elongated mk1 value
+const double lowerArmLength = .298; //Elongated mk1 value
 
 const double handOffsetX = 0.310; //mk2 value
 const double handOffsetY = 0;
@@ -34,14 +46,18 @@ const double handOffsetZ = 0;
 
 //Total reach: mk1: 246+250+230 = 72.6cm
 //						 mk2: 261+252+310 = 82.3cm
-//With UCLA hand (~15cm long), we can use arm length of 33cm/33cm
-
+//	 elongated mk1: 281+298+150 = 72.9cm
 
 //const double hipOffsetY = 0.072;	//mk1 value
 //const double hipOffsetZ = 0.282; 	//mk1 value
+
+
 const double hipOffsetX = 0;
 const double hipOffsetY = 0.105;
-const double hipOffsetZ = 0.180; 
+const double hipOffsetZ = 0.291;  //virtual hipoffset (pelvis to origin)
+const double hipOffsetZ2 = 0.180;  //mk2 real hipoffset(pelvis joint to waist joint)
+
+
 //Total torso height (waist to shoulder)
 //mk1: 165+282 = 447
 //mk2: 276+180 = 456

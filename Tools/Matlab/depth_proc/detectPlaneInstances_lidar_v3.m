@@ -51,8 +51,9 @@ PlaneID = 0;
 % %%
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
 meshRaw(meshRaw>5) = 0;             % clamp on ranges
-meshRaw(meshRaw<0.8) = 0;
+meshRaw(meshRaw<0.5) = 0;
 [mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
+mesh_ = medfilt2(mesh_,[3 3]);
 NUMS_ = size(mesh_,1);
 NUMV_ = size(mesh_,2);
 Xind = repmat([1:NUMS_]',1,NUMV_); 
@@ -155,6 +156,7 @@ for tt = 1: size(finalMean,2)
                                 n_ = -n_;
                             end
  
+                            if n_(3) > 0.9 
                             
                             PlaneID = PlaneID + 1;
                             Planes{PlaneID} = struct('Center', Center,...
@@ -163,7 +165,8 @@ for tt = 1: size(finalMean,2)
                                                      'Size',numel(ins));      
                                                  
                             
-                            Points3D{PlaneID} = [ X0(index(whichcell)); Y0(index(whichcell)); Z0(index(whichcell)) ];    
+                            Points3D{PlaneID} = [ X0(index(whichcell)); Y0(index(whichcell)); Z0(index(whichcell)) ];
+                            end
                         end
                     end
                 end
@@ -191,6 +194,7 @@ if 1 %~isempty(params)
             nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.15];
             figure(visflag),
             plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', [0 0 0], 'LineWidth',2);
+            plot3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),'.', 'Color', [0 0 0]);
         end
     end
 end

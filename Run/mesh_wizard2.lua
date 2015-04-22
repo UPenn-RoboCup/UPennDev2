@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 -- Mesh Wizard for Team THOR
 -- Accumulate lidar readings into an image for mesh viewing
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
@@ -31,7 +31,9 @@ local function check_send_mesh()
 		if t_open - t_send_mesh > 0.5 then request = true end
 	end
 
-	if t-t_send_mesh>t_sweep0 then request = true end
+	if mesh0 and t-t_send_mesh>t_sweep0 then request = true end
+	if mesh1 and t-t_send_mesh>t_sweep1 then request = true end
+	
 	if not request then return end
 	t_send_mesh = t
 

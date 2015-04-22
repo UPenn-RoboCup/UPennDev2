@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 -- Mesh Wizard for Team THOR
 -- Accumulate lidar readings into an image for mesh viewing
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014

@@ -3,6 +3,7 @@ local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
 require'wcm'
 local util = require'util'
+local T = require'Transform'
 
 local get_time = webots.wb_robot_get_time
 
@@ -523,6 +524,8 @@ function WebotsBody.update(Body)
 				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
 				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
       }
+			metadata.tfL9 = T.flatten(T.transform6D(metadata.tfL6))
+			metadata.tfG9 = T.flatten(T.transform6D(metadata.tfG6))
       WebotsBody.update_head_lidar(metadata, ranges)
       NEXT_HEAD_LIDAR = t + lidar_timeStep / 1000
     end

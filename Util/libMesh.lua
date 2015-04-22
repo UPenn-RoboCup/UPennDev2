@@ -59,17 +59,35 @@ end
 
 -- Add a scan to the mesh
 local function add_scan(self, angle, scan, lidar)
-	-- Get the scanline
-	local scanline = get_scanline(self, angle)
-	local scanline_offset_fl = scanline * self.metadata.dim[2]
-	local scan_sz_bytes = ffi.sizeof'float' * self.metadata.dim[2]
-	-- Copy the scan
-	ffi.copy(self.raw + scanline_offset_fl, ffi.cast('float*', scan) + self.scan_offset, scan_sz_bytes)
+	local n_scanlines, n_ranges = unpack(self.metadata.dim)
+	local scan_sz = ffi.sizeof'float' * n_ranges
+	local scan_fl = ffi.cast('float*', scan) + self.scan_offset
+	local idx = get_scanline(self, angle)
+	self.idx = self.idx or idx
+	-- Find the indices
+	local idxs = {}
+	local didx = idx - self.idx
+	if (didx==0 or didx==1 or didx==-1) then
+		idxs[1] = idx
+	else
+		for i=idx,self.idx do table.insert(idxs, i) end
+		for i=self.idx,idx do table.insert(idxs, i) end
+	end
+	-- NOTE: We don't care about the edges
+	self.idx = idx
 
-	-- Save the metadata
-	self.metadata.a[scanline + 1] = angle
-	self.metadata.tfL6[scanline + 1] = lidar.tfL6
-	self.metadata.tfG6[scanline + 1] = lidar.tfG6
+	for _, s in ipairs(idxs) do
+		-- Copy the scan
+		local scanline_fl = self.raw + (s * n_ranges)
+		ffi.copy(scanline_fl, scan_fl, scan_sz)
+		-- Save the metadata
+		self.metadata.a[s + 1] = angle
+		self.metadata.tfL6[s + 1] = lidar.tfL6
+		self.metadata.tfG6[s + 1] = lidar.tfG6
+		self.metadata.tfL16[s + 1] = lidar.tfL16
+		self.metadata.tfG16[s + 1] = lidar.tfG16
+	end
+
 end
 
 -- id: ID of the mesh
@@ -108,14 +126,24 @@ function libMesh.new(id, meta)
 		dim = {n_scanlines, n_returns},
 		tfL6 = {},
 		tfG6 = {},
+		tfL16 = {},
+		tfG16 = {},
 		a = {}
 	}
 	-- Initial population for the metadata
-	local zero_tf = {0,0,0, 0,0,0}
+	local zero_tf6 = {0,0,0, 0,0,0}
+	local zero_tf16 = {
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		0,0,0,1,
+	}
 	for i=1,n_scanlines do
 		o.metadata.a[i] = 0
-		o.metadata.tfL6[i] = zero_tf
-		o.metadata.tfG6[i] = zero_tf
+		o.metadata.tfL6[i] = zero_tf6
+		o.metadata.tfG6[i] = zero_tf6
+		o.metadata.tfL16[i] = zero_tf16
+		o.metadata.tfG16[i] = zero_tf16
 	end
 	-- Internal Data
 	local n_el = n_scanlines * n_returns
@@ -123,6 +151,7 @@ function libMesh.new(id, meta)
 	o.raw = ffi.new("float[?]", n_el)
 	o.byte = ffi.new("uint8_t[?]", n_el)
 	o.scan_offset = offset_idx
+	o.idx = nil
 	-- Functions
 	o.add_scan = add_scan
 	o.dynamic_range = dynamic_range

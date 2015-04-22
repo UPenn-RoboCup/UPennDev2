@@ -38,15 +38,21 @@ local function check_send_mesh()
 	t_send_mesh = t
 
 	if mesh0 then
+		local metadata = mesh0.metadata
+
 		mesh0:dynamic_range(vcm.get_mesh0_dynrange())
 		local c_mesh = mesh0:get_png_string2()
-		local metadata = mesh0.metadata
-		metadata.c = 'png'
 
 		-- Send away
-		local meta = mpack(metadata)
-		if mesh0_ch then mesh0_ch:send{meta, c_mesh} end
+		if mesh0_ch then
+			metadata.c = 'raw'
+			local meta = mpack(metadata)
+			mesh0_ch:send{meta, mesh0:get_raw_string()}
+			--mesh0_ch:send{meta, c_mesh}
+		end
 		if mesh0_udp_ch then
+			metadata.c = 'png'
+			local meta = mpack(metadata)
 			local ret, err = mesh0_udp_ch:send(meta..c_mesh)
 			--print('Mesh0 | Sent UDP', unpack(ret))
 		end

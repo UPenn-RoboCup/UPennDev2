@@ -15,7 +15,7 @@ persistent thre_memberSize
 persistent param_meanShiftResol 
 persistent param_meanShiftWeights 
 
-if resetParam.flag 
+if isempty(ONESCAN_) || resetParam.flag 
     loadPersistentVariablesL_0421;
 end
 
@@ -39,21 +39,15 @@ end
 Planes = [];
 Points3D = [];
 PlaneID = 0;
-    
-% % parameters 
-% normalComp_param = [3 1]; %  (w^2 + 1) half-window size
-% thre_svalue = 0.1; % The smaller it is, the flatter the plane fit is 
-% thre_clusterSize = 500; % number of clusters
-% thre_memberSize = 100; % number of connected members (in the image domain)
-% param_meanShiftResol = 0.5;% 0.6;         % mean shift resolution
-% param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
-% 
+
 % %%
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
-meshRaw(meshRaw>5) = 0;             % clamp on ranges
+meshRaw(meshRaw>3) = 0;             % clamp on ranges
 meshRaw(meshRaw<0.5) = 0;
 [mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
+
 mesh_ = medfilt2(mesh_,[3 3]);
+
 NUMS_ = size(mesh_,1);
 NUMV_ = size(mesh_,2);
 Xind = repmat([1:NUMS_]',1,NUMV_); 
@@ -185,8 +179,8 @@ if 1 %~isempty(params)
         Planes{t}.Points = Ccb*Planes{t}.Points + repmat(Tcb,1,size(Planes{t}.Points,2)) ;
         Planes{t}.Normal = Ccb*Planes{t}.Normal;
         
-        ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
         if visflag
+            ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
             randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
             figure(visflag), 
             showPointCloud(ALL(1,:), ALL(2,:),ALL(3,:),...

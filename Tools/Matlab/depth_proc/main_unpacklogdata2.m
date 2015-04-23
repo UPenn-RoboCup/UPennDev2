@@ -9,10 +9,10 @@ RGB_H = 1080;
 % Set the path and names
 % The unpacked data will be saved under <foldername>/Unpacked/<datestamp> 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- foldername = '/home/leebhoram/Data/LOGS_SC2/';
+% foldername = '/home/leebhoram/Data/LOGS_SC2/';
 % foldername = '/home/leebhoram/Data/LOGS_SC2/';
 % datestamp = '03.11.2015.10.18.09';
-datestamp_kinect = '03.12.2015.13.15.22';
+% datestamp_kinect = '03.12.2015.13.15.22';
  % << 09-11 >> 
  % datestamp_kinect = '03.11.2015.08.33.08';
  % datestamp_kinect = '03.11.2015.08.34.22';
@@ -24,10 +24,10 @@ datestamp_kinect = '03.12.2015.13.15.22';
 % datestamp_kinect = '03.11.2015.12.03.08';
 % datestamp_kinect = '03.11.2015.13.52.56';
 % datestamp_kinect = '03.11.2015.13.46.52';
-% datestamp_kinect = [];% '03.11.2015.14.56.17';
+ datestamp_kinect = [];% '03.11.2015.14.56.17';
 
-
-datestamp_lidar = [];%  '02.24.2015.17.24.03';
+ foldername = '/home/leebhoram/Data/Webots_log/';
+datestamp_lidar = '04.22.2015.15.59.32';%  '02.24.2015.17.24.03';
 
 %foldername = '/home/leebhoram/Data/mesh_logs';
 %datestamp_kinect = '01.20.2015.12.04.49';
@@ -45,7 +45,7 @@ flag_depth = find(cellfun(@(x) strcmp(x,filename_depth),{logFiles(:).name}));
 flag_rgb = find(cellfun(@(x) strcmp(x,filename_rgb),{logFiles(:).name}));
 flag_lidar = [];
 if ~isempty(datestamp_lidar)
-    filename_lidar = sprintf('mesh_r_%s.log',datestamp_lidar);
+    filename_lidar = sprintf('mesh0_r_%s.log',datestamp_lidar);
     flag_lidar = find(cellfun(@(x) strcmp(x,filename_lidar),{logFiles(:).name}));
 end
 
@@ -73,7 +73,7 @@ end
 % lidar
 if ~isempty(flag_lidar), 
     f_lidar = fopen(sprintf('%s/%s', foldername,filename_lidar));     
-    fid = fopen(sprintf('%s/mesh_m_%s.log',foldername, datestamp_lidar));
+    fid = fopen(sprintf('%s/mesh0_m_%s.log',foldername, datestamp_lidar));
     meshMeta = fread(fid, Inf, '*uchar'); 
     fclose(fid);  
     meshMeta = msgpack('unpacker', meshMeta);
@@ -127,14 +127,14 @@ if ~isempty(flag_lidar),
     Nlog = length(meshMeta);
     while ~feof(f_lidar) && ilog < Nlog
         ilog = ilog + 1;    
-        metal = obj{i};
-        n_scanlines = metal.dims(1);
-        n_returns = metal.dims(2);           
+        metal = meshMeta{ilog};
+        n_scanlines = metal.dim(1);
+        n_returns = metal.dim(2);           
         meshRaw = fread(f_lidar, [n_returns n_scanlines], '*single')';    
         meshRaw(meshRaw>4)=0;
        % s = reshape(s, flip(o.dims));
         
-        figure(1), imagesc(meshRaw);
+        figure(1), imagesc(meshRaw');
         
         save(strcat(foldername,'/Unpacked/',datestamp_lidar,'l/',sprintf('%lidar04d.mat',ilog)),'meshRaw', 'metal');
     
@@ -142,6 +142,7 @@ if ~isempty(flag_lidar),
         
         disp(strcat('lidar :',int2str(ilog) ,'/', int2str(Nlog)));
     end
+    
     datestamp_lidar
     fclose(f_lidar);
     disp('lidar : Unpacked all!');

@@ -16,7 +16,7 @@ persistent param_meanShiftResol
 persistent param_meanShiftWeights 
 
 if resetParam.flag 
-    loadPersistentVariablesL_0324;
+    loadPersistentVariablesL_0421;
 end
 
 if isempty(ONESCAN_),

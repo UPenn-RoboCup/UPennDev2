@@ -22,7 +22,8 @@ h_rgb = image(rgb_img);
 % 1 second timeout
 s_depth = zmq('subscribe', 'tcp', '192.168.123.232', 43346);
 s_color = zmq('subscribe', 'tcp', '192.168.123.232', 43347);
-s_mesh = zmq('subscribe', 'tcp', '192.168.123.232', 43344);
+%s_mesh = zmq('subscribe', 'tcp', '192.168.123.232', 43344);
+s_mesh = zmq( 'subscribe', 'ipc', 'mesh0' );
 
 log = 1;
 fig_id = 0;
@@ -56,10 +57,17 @@ while 1
             % rgb_img = djpeg(raw);
             % set(h_rgb, 'CData', rgb_img);            
          
-        elseif strcmp(char(metadata.id), 'lidar')
-            metal.flag = 1;
-           [ Planes ] = detectPlaneInstances_lidar_v3( meshRaw', 3, metal);         
+        elseif strcmp(char(metadata.id), 'mesh0')
+            metadata.dims = metadata.dim;
+            metadata.flag = 1;
+            raw = reshape(typecast(raw, 'single'), [metadata.dim(2), metadata.dim(1)]);
+            
+            figure(3), imagesc(raw);
+            disp(metadata)
+            size(raw)
+            
+           [ Planes ] = detectPlaneInstances_lidar_v3( raw', 3, metadata);         
         end
     end
     drawnow;
-    end5
+end

@@ -1,4 +1,4 @@
-function [ Planes ] = detectPlaneInstances_lidar_v5( meshRaw, visflag, resetParam )
+function [ Planes ] = detectPlaneInstances_lidar_v5b( meshRaw, visflag, resetParam )
 
 persistent ONESCAN_         % single scan resolution 
 persistent NUMSCAN_      % number of scans (in horizontal direction)

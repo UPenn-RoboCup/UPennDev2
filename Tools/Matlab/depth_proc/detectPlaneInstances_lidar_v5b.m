@@ -84,7 +84,8 @@ data = [  Xind(validNormal) ; Yind(validNormal)];
 % generate initial mean information HERE for better starting 
 [finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,N(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights);
 
-tags = zeros(size(mesh_));
+tags = zeros(size(mesh_),'uint8');
+devs = zeros(size(mesh_));
 % for each cluster
 blankConnImg = zeros(floor(NUMS_/normalComp_param(2)),NUMV_);
 for tt = 1: size(finalMean,2)      
@@ -134,16 +135,26 @@ for tt = 1: size(finalMean,2)
                                 del = abs(n_'*[X0(ttt)'; Y0(ttt)'; Z0(ttt)'] + a0*ones(1,length(ttt)));
 
                                 indices{t} = [indices{t}; ttt((del<0.002))];  
-                                L_(indices{t}) = t;
+                               L_(indices{t}) = t;
                                 connImg(ttt((del<0.002))) = t;
                             end
                         end
+                        
                                             
                      %% refinement 
                         % (could test using svd and find the principal axes?) 
                         [c, ins] = estimatePlaneL_useall( X0(indices{t})', Y0(indices{t})', Z0(indices{t})');
                         
                         indices{t} = indices{t}(ins);
+                        
+%                         occ = find(tags(indices{t}));
+%                         if ~isempty(occ) % keep track of ambiguous cells
+%                             Occ = indices{t};
+%                         end
+%                         devs(indices{t}) = 
+%                         tags(indices{t}) = true;
+%                         
+                        
                         L_= zeros(size(L));
                         L_(indices{t}) = t;
                          %% Find center, bbox, boundary
@@ -194,7 +205,9 @@ for tt = 1: size(finalMean,2)
                             %if visflag > 0
                             Points3D{PlaneID} = [ X0(indices{t})'; Y0(indices{t})'; Z0(indices{t})' ];
                             %end
-                            tags(index(whichcell)) = PlaneID;
+                            
+                          
+                            
                             
                             ALL = Ccb*Points3D{PlaneID} + repmat(Tcb,1,length(Points3D{PlaneID}));
                             if visflag
@@ -207,6 +220,7 @@ for tt = 1: size(finalMean,2)
                                 plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', [0 0 0], 'LineWidth',2);
                                 plot3(Planes{PlaneID}.Points(1,:), Planes{PlaneID}.Points(2,:), Planes{PlaneID}.Points(3,:),'.', 'Color', [0 0 0],'MarkerSize',5);
                             end
+                            
                             end
                         end
                     end

@@ -39,6 +39,7 @@ local function check_send_mesh()
 
 	if mesh0 then
 		local metadata = mesh0.metadata
+		metadata.t = t
 
 		mesh0:dynamic_range(vcm.get_mesh0_dynrange())
 		local c_mesh = mesh0:get_png_string2()
@@ -59,6 +60,7 @@ local function check_send_mesh()
 	end
 
 	if mesh1 then
+		metadata.t = t
 		mesh1:dynamic_range(vcm.get_mesh1_dynrange())
 		local c_mesh = mesh1:get_png_string2()
 		local metadata = mesh1.metadata
@@ -85,7 +87,7 @@ local function check_send_mesh()
 		end
 	end
 
-		-- Log
+	-- Log
 	if logger1 and mesh1 then
 		local raw_str = mesh1:get_raw_string()
 		mesh1.metadata.rsz = #raw_str

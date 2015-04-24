@@ -1,9 +1,13 @@
-function [mergedPlanes, mergedNumPlanes, mergedPoi, mergedP3d] = mergePlanes(Planes,numPlanes,Poi,P3d,nlimit)
+function [mergedPlanes, mergedNumPlanes, mergedPoi, mergedP3d] = mergePlanes(Planes,numPlanes,Poi,P3d,nlimit,params)
 
 % limit the number of planes for possible slow-down
 
 if nargin < 5
     nlimit = 8;
+end
+
+if nargin < 6
+    params = [0.95 0.05];
 end
     
 if numPlanes < nlimit
@@ -16,7 +20,7 @@ if numPlanes < nlimit
             j2 = mInd(j2_);
             if ~isequal(j1,j2) && ~isempty(Planes{j1}) && ~isempty(Planes{j2})
                 % test normal 
-                if (abs(Planes{j1}.Normal'*Planes{j2}.Normal) > 0.95) &&  ( abs(Planes{j1}.Normal'*(Planes{j1}.Center - Planes{j2}.Center)) < 0.05 )
+                if (abs(Planes{j1}.Normal'*Planes{j2}.Normal) > params(1)) &&  ( abs(Planes{j1}.Normal'*(Planes{j1}.Center - Planes{j2}.Center)) < params(2) )
                         % merge 
 
                         Planes{j1}.Normal = (Planes{j1}.Size*Planes{j1}.Normal+Planes{j2}.Size*Planes{j2}.Normal)/(Planes{j1}.Size+Planes{j2}.Size);

@@ -1,4 +1,4 @@
-function [ Planes ] = detectPlaneInstances_lidar_v3( meshRaw, visflag, resetParam )
+function [ Planes ] = detectPlaneInstances_lidar_v1( meshRaw, visflag, resetParam )
 
 persistent ONESCAN_         % single scan resolution 
 persistent NUMSCAN_      % number of scans (in horizontal direction)
@@ -15,8 +15,8 @@ persistent thre_memberSize
 persistent param_meanShiftResol 
 persistent param_meanShiftWeights 
 
-if isempty(ONESCAN_) || resetParam.flag 
-    loadPersistentVariablesL_0421;
+if resetParam.flag 
+    loadPersistentVariablesL_0324;
 end
 
 if isempty(ONESCAN_),
@@ -39,15 +39,20 @@ end
 Planes = [];
 Points3D = [];
 PlaneID = 0;
+    
+% parameters 
+normalComp_param = [3 1]; %  (w^2 + 1) half-window size
+thre_svalue = 0.1; % The smaller it is, the flatter the plane fit is 
+thre_clusterSize = 500; % number of clusters
+thre_memberSize = 100; % number of connected members (in the image domain)
+param_meanShiftResol = 0.5;% 0.6;         % mean shift resolution
+param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
 
-% %%
+%%
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
-meshRaw(meshRaw>3) = 0;             % clamp on ranges
-meshRaw(meshRaw<0.5) = 0;
-[mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
-
-mesh_ = medfilt2(mesh_,[3 3]);
-
+meshRaw(meshRaw>5) = 0;             % clamp on ranges
+meshRaw(meshRaw<0.8) = 0;
+[mesh_, s_, v_] = scan2DepthImg_spherical( meshRaw, s_angles, v_angles); % remove repeated measure   
 NUMS_ = size(mesh_,1);
 NUMV_ = size(mesh_,2);
 Xind = repmat([1:NUMS_]',1,NUMV_); 
@@ -93,38 +98,33 @@ for tt = 1: size(finalMean,2)
         index_ysub = index_y;
         index_ = sub2ind(size(blankConnImg),index_xsub, index_ysub);
         connImg(index_) = 1;
-        
-       % Connectivity Check   
-        L = bwlabel(connImg,4);
-        NL = max(L(:));
-        for t=1:NL
-            indices{t} = find(L==t);
-            count_(t) = length(indices{t});
-        end
+       %% Connectivity Check         
+        [conn, ids, count_, indices ] = test4Connectivity(connImg); % Connected-component analysis        
+       %%%%%%%%%%%%%%%%%%%%%%%% 
        
-
-       if NL >0
+        if ~isempty(ids)
+            % offsets = []; % for merging?          
+            % c0 = [];
             for t = 1: length(count_)                 
-                if count_(t) > thre_memberSize % if the connected bloc is big enough 
-                    [dummy,whichcell] = intersect(index_ , indices{t});    
-       
+                if count_(t) > (thre_memberSize / normalComp_param(2)) % if the connected bloc is big enough 
+                    [dummy,whichcell] = intersect(index_ , indices{ids(t)});    
                     if ~isempty(whichcell)   
                      %% Find center, bbox, boundary
-                        [yind_s, xind_s] = ind2sub(size(connImg),indices{t}');
+                        [yind_s, xind_s] = ind2sub(size(conn),indices{ids(t)});
                         center_s = round(mean([xind_s;yind_s],2));
                        
                         Pts = [];
                         bbox = getBoundingBox(yind_s,xind_s);
                         Bbox = zeros(3,size(bbox,1));
-                        [dummy,whichcell__] = intersect(index_ , sub2ind(size(connImg), bbox(:,1), bbox(:,2)));   
+                        [dummy,whichcell__] = intersect(index_ , sub2ind(size(conn), bbox(:,1), bbox(:,2)));   
                         Bbox(1,:) = X0(index(whichcell__));
                         Bbox(2,:) = Y0(index(whichcell__));
                         Bbox(3,:) = Z0(index(whichcell__));
                         
                         % 8-directional extreme points 
-                        pts = find8ExtremePoints(connImg, center_s, t);
+                        pts = find8ExtremePoints(conn, center_s, ids(t));
                         if ~isempty(pts)                               
-                            [dummy,whichcell_] = intersect(index_ , sub2ind(size(connImg), pts(:,1), pts(:,2)));  
+                            [dummy,whichcell_] = intersect(index_ , sub2ind(size(conn), pts(:,1), pts(:,2)));  
                           
                             Pts(1,:) = X0(index(whichcell_));
                             Pts(2,:) = Y0(index(whichcell_));
@@ -136,7 +136,7 @@ for tt = 1: size(finalMean,2)
                         [c, ins] = estimatePlaneL_useall( X0(index(whichcell)), Y0(index(whichcell)), Z0(index(whichcell)));
                      
                         %% save output 
-                        if ~isempty(c) && numel(ins) > thre_memberSize
+                        if ~isempty(c) && numel(ins) > 5
                             n_ = c(1:3);
                             n_ = -n_/norm(n_);
                            
@@ -150,8 +150,6 @@ for tt = 1: size(finalMean,2)
                                 n_ = -n_;
                             end
  
-                            if n_(3) > 0.9 
-                            
                             PlaneID = PlaneID + 1;
                             Planes{PlaneID} = struct('Center', Center,...
                                                      'Normal', n_ ,...
@@ -159,8 +157,7 @@ for tt = 1: size(finalMean,2)
                                                      'Size',numel(ins));      
                                                  
                             
-                            Points3D{PlaneID} = [ X0(index(whichcell)); Y0(index(whichcell)); Z0(index(whichcell)) ];
-                            end
+                            Points3D{PlaneID} = [ X0(index(whichcell)); Y0(index(whichcell)); Z0(index(whichcell)) ];    
                         end
                     end
                 end
@@ -179,8 +176,8 @@ if 1 %~isempty(params)
         Planes{t}.Points = Ccb*Planes{t}.Points + repmat(Tcb,1,size(Planes{t}.Points,2)) ;
         Planes{t}.Normal = Ccb*Planes{t}.Normal;
         
+        ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
         if visflag
-            ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
             randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
             figure(visflag), 
             showPointCloud(ALL(1,:), ALL(2,:),ALL(3,:),...
@@ -188,7 +185,6 @@ if 1 %~isempty(params)
             nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.15];
             figure(visflag),
             plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', [0 0 0], 'LineWidth',2);
-            plot3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),'.', 'Color', [0 0 0]);
         end
     end
 end

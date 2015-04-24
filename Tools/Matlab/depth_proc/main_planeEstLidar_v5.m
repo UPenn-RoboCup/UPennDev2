@@ -10,8 +10,8 @@ clear all;
 close all;
 
 foldername = '/home/leebhoram/Data/Webots_log/Unpacked/';
-datestamp = '04.21.2015.15.07.32l'
-%datestamp = '04.22.2015.15.59.32l';
+%datestamp = '04.21.2015.15.07.32l'
+ datestamp = '04.22.2015.15.59.32l';
 
 % foldername = '/home/leebhoram/Data/mesh_logs/Unpacked/';
 % datestamp = '03.11.2015.15.30.41l'; % Testbed: walls (near valve)
@@ -34,7 +34,7 @@ for ilog=4:length(fileSequence)
     if 1   
   
         metal.flag = 1;
-        [ Planes ] = detectPlaneInstances_lidar_v3( meshRaw', 3, metal);
+        [ Planes ] = detectPlaneInstances_lidar_v5c( meshRaw', 3, metal);
      
     end 
   

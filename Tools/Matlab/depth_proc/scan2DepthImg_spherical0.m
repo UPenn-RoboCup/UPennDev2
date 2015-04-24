@@ -1,11 +1,15 @@
-function [ Scans_, X_, Y_ ] = scan2DepthImg_spherical0( Scans, azi, scanAng )
+function [ Scans_, X_, Y_, nz ] = scan2DepthImg_spherical0( Scans, azi, scanAng )
   
+    
     nzElem0 = find(sum(Scans,1) > 0);
     azi_ = azi(nzElem0);
     
     nzElem = find(azi_(2:end)-azi_(1:end-1));
     if nzElem < 10
         Scans_ = [];
+        nz = [];
+        X_ = [];
+        Y_ = [];
         return;
     end
     azi_ = azi_(nzElem); 
@@ -16,6 +20,6 @@ function [ Scans_, X_, Y_ ] = scan2DepthImg_spherical0( Scans, azi, scanAng )
     
     Scans_ = Scans(:,nzElem0(nzElem));     
     %Scans_ = Scans_(4:4:end,:);  
-     
+    nz = nzElem0(nzElem);
 end
 

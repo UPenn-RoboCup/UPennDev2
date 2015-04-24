@@ -9,31 +9,19 @@
 clear all;
 close all;
 
-foldername = '/home/leebhoram/Data/LOGS_SC_11-13/Unpacked/';
-datestamp = '03.11.2015.13.46.52'; % Testbed: walls (near valve)
+% %%%%%%%%
+foldername = '/home/leebhoram/Data/LOGS_SC_13-14/Unpacked/';
+datestamp = '03.11.2015.13.46.52'; % Testbed: example frame #78
 
-% 03.11.2015.09.32.28
-% foldername = '/home/leebhoram/Data/LOGS_Lab_0325_3/Unpacked/';
-% datestamp = '03.25.2015.16.40.27'; % Testbed: walls (near valve)
-% datestamp = '03.12.2015.13.23.19'; % Testbed: walls (near valve)
-
-% foldername = '~/Data/LOGS_Lab_0327_2/Unpacked/';
-% datestamp = [];
-% foldername = '/home/leebhoram/Data/LOGS_Lab_0325_2/Unpacked/';
-% datestamp = '03.25.2015.16.36.47';
-% foldername = '/home/leebhoram/Data/corner/Unpacked/';
-% datestamp = '03.19.2015.17.53.03'; % Testbed: walls (near valve)
-
-% vidObj = VideoWriter('localCorner_0326.avi');
-% set(vidObj,'FrameRate',10);
-% open(vidObj);
+% foldername = '/home/leebhoram/Data/Webots_log/Unpacked/';
+% datestamp = '04.21.2015.10.27.27l';
 
 [ fileSequence] = getMatFilesFromFolder( strcat(foldername,datestamp));
  
 figure(13), 
 figPos = get(gcf,'Position');
 set(gcf,'Position', [figPos(1:2) 1024 420]);
-for ilog = 1:length(fileSequence)
+for ilog = 3:length(fileSequence)
     ilog
     metad = [];
     load(fileSequence{ilog}); 
@@ -42,8 +30,8 @@ for ilog = 1:length(fileSequence)
    % depthRaw =  depthRaw'; % for windows log
     
     %tic,
-    if 1
-        D = depthRaw'-20;
+    if 0
+        D = depthRaw-20';
         D(D>4000) = 0;
         D(D<400) = 0;
         %load MASK2.mat;

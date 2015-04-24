@@ -34,7 +34,7 @@ for ilog=4:length(fileSequence)
     if 1   
   
         metal.flag = 1;
-        [ Planes ] = detectPlaneInstances_lidar_v5b( meshRaw', 3, metal);
+        [ Planes ] = detectPlaneInstances_lidar_v5c( meshRaw', 3, metal);
      
     end 
   

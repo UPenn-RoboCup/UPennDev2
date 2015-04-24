@@ -1,4 +1,4 @@
-function [ Planes ] = detectPlaneInstances_lidar_v5b( meshRaw, visflag, resetParam )
+function [ Planes ] = detectPlaneInstances_lidar_v5c( meshRaw, visflag, resetParam )
 
 persistent ONESCAN_         % single scan resolution 
 persistent NUMSCAN_      % number of scans (in horizontal direction)
@@ -32,7 +32,6 @@ if isempty(Ccb_prev)
     Tcb_prev = Tcb;
 end
 
-
 %Tcb = Tcb + Ccb*tr_kinect2head;
 
 % if params == 0
@@ -45,7 +44,16 @@ se = strel('disk',7,4);
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
 meshRaw(meshRaw>3) = 0;             % clamp on ranges
 meshRaw(meshRaw<0.7) = 0;
-[mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
+[mesh_, s_, v_, nzcols] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
+
+if isempty(nzcols) 
+    return;
+end
+
+
+T = reshape(resetParam.tfL16{nzcols(1)},4,4)';
+Ccb = T(1:3,1:3);
+Tcb = T(1:3,4) + [0; 0; 0.07];
 
 mesh_ = medfilt2(mesh_,[5 5]);
 
@@ -67,15 +75,14 @@ Y0 = ss_.*cv_.*mesh_;
 Z0  = -sv_.*mesh_ ;
 
 if visflag > 0
-   figure(visflag), hold off;
-    showPointCloud(X0(:),Y0(:),Z0(:),[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
+    P = Ccb*[ X0(:)'; Y0(:)'; Z0(:)' ] + repmat(Tcb,1,numel(X0));
+    figure(visflag), hold off;
+    showPointCloud(P(1,:),P(2,:),P(3,:),[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
     hold on;  
 end
 %% Normal Computation
 [N, S] = computeNormal_lidarB(X0, Y0, Z0, mask, normalComp_param, 1);
 validNormal = (find( sum(S,1) > 0)); 
-
-
 validNormal = validNormal(find(S(4,validNormal)./(Z0(validNormal).^2)<thre_svalue));
 
 
@@ -84,11 +91,11 @@ data = [  Xind(validNormal) ; Yind(validNormal)];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % generate initial mean information HERE for better starting 
 stPoint = zeros(5,5);
-stPoint(3:5,1) = [0; 0; 1];   
-stPoint(3:5,2) = eulr2dcm([ 15;  0; 0]*pi/180)*[0; 0; 1];   
-stPoint(3:5,3) = eulr2dcm([-15;  0; 0]*pi/180)*[0; 0; 1];    
-stPoint(3:5,4) = eulr2dcm([ 0;  15; 0]*pi/180)*[0; 0; 1];  
-stPoint(3:5,5) = eulr2dcm([ 0; -15; 0]*pi/180)*[0; 0; 1];  
+stPoint(3:5,1) = Ccb*[0; 0; 1];   
+stPoint(3:5,2) = Ccb*eulr2dcm([ 15;  0; 0]*pi/180)*[0; 0; 1];   
+stPoint(3:5,3) = Ccb*eulr2dcm([-15;  0; 0]*pi/180)*[0; 0; 1];    
+stPoint(3:5,4) = Ccb*eulr2dcm([ 0;  15; 0]*pi/180)*[0; 0; 1];  
+stPoint(3:5,5) = Ccb*eulr2dcm([ 0; -15; 0]*pi/180)*[0; 0; 1];  
 [finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,N(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 
 tags = zeros(NUMS_,NUMV_,'uint8');
@@ -142,7 +149,7 @@ for tt = 1: size(finalMean,2)
                             in = find(withinPlane & closeToCenter);
                             
                             PlaneID = PlaneID + 1;
-                            Indices{PlaneID} = ttt(in);
+                            % Indices{PlaneID} = ttt(in);
                             tags(ttt(in)) = PlaneID;
                             devs(ttt(in)) = sqdis(in);
                         end                     
@@ -156,7 +163,9 @@ end
 NumPlane = PlaneID;
 PlaneID = 0;
 if NumPlane > 0 
-    for t = 1:NumPlane                                            
+     
+    for t = 1:NumPlane  
+        Indices{t} = find(tags==t);                                          
         % refinement 
         % (could test using svd and find the principal axes?) 
         [ Center, n_, ins ] = estimatePlaneL( X0(Indices{t})', Y0(Indices{t})', Z0(Indices{t})',thre_memberSize);
@@ -190,6 +199,12 @@ if NumPlane > 0
             Bbox(1,:) = X0(whichcell__);
             Bbox(2,:) = Y0(whichcell__);
             Bbox(3,:) = Z0(whichcell__);   
+            
+            % Coordinate Transformation
+            Center = Ccb*Center + Tcb;
+            Pts = Ccb*Pts + repmat(Tcb,1,size(Pts,2)) ;
+            Bbox = Ccb*Bbox + repmat(Tcb,1,size(Bbox,2)) ;
+            n_ = Ccb*n_;
 
             if n_(3) > 0.9                             
                 PlaneID = PlaneID + 1;

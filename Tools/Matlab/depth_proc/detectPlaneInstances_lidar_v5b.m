@@ -82,7 +82,14 @@ validNormal = validNormal(find(S(4,validNormal)./(Z0(validNormal).^2)<thre_svalu
 data = [  Xind(validNormal) ; Yind(validNormal)];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % generate initial mean information HERE for better starting 
-[finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,N(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights);
+stPoint = [];
+stPoint = zeros(5,5);
+stPoint(3:5,1) = [0; 0; 1];   
+stPoint(3:5,2) = eulr2dcm([ 15;  0; 0]*pi/180)*[0; 0; 1];   
+stPoint(3:5,3) = eulr2dcm([-15;  0; 0]*pi/180)*[0; 0; 1];    
+stPoint(3:5,4) = eulr2dcm([ 0;  15; 0]*pi/180)*[0; 0; 1];  
+stPoint(3:5,5) = eulr2dcm([ 0; -15; 0]*pi/180)*[0; 0; 1];  
+[finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,N(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 
 tags = zeros(size(mesh_),'uint8');
 devs = zeros(size(mesh_));
@@ -104,7 +111,7 @@ for tt = 1: size(finalMean,2)
         connImg(index_) = 1;
         
        % Connectivity Check   
-        L = bwlabel(connImg,4);
+        L = bwlabel(connImg,8);
         NL = max(L(:));
         for t=1:NL
             indices{t} = find(L==t);
@@ -113,7 +120,7 @@ for tt = 1: size(finalMean,2)
        
         
        if NL >0
-       se = strel('disk',7,4);
+       se = strel('disk',5,4);
             for t = 1: length(count_)                 
                 if count_(t) > thre_memberSize % if the connected bloc is big enough 
                      
@@ -135,13 +142,13 @@ for tt = 1: size(finalMean,2)
                                 del = abs(n_'*[X0(ttt)'; Y0(ttt)'; Z0(ttt)'] + a0*ones(1,length(ttt)));
 
                                 indices{t} = [indices{t}; ttt((del<0.002))];  
-                               L_(indices{t}) = t;
+                                L_(indices{t}) = t;
                                 connImg(ttt((del<0.002))) = t;
                             end
                         end
                         
                                             
-                     %% refinement 
+                        %% refinement 
                         % (could test using svd and find the principal axes?) 
                         [c, ins] = estimatePlaneL_useall( X0(indices{t})', Y0(indices{t})', Z0(indices{t})');
                         

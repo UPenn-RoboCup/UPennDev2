@@ -11,11 +11,11 @@ end
 
 s_angles = resetParam.a;
 
-normalComp_param = [7 1]; %  (w^2 + 1) half-window size
-thre_svalue = 0.1; % The smaller it is, the flatter the plane fit is 
-thre_clusterSize = 200; % number of clusters
+normalComp_param = [5 1]; %  (w^2 + 1) half-window size
+thre_svalue = 0.05; % The smaller it is, the flatter the plane fit is 
+thre_clusterSize = 100; % number of clusters
 thre_memberSize = 100; % number of connected members (in the image domain)
-param_meanShiftResol = 0.2;% 0.1;% 0.6;         % mean shift resolution
+param_meanShiftResol = 0.3;% 0.1;% 0.6;         % mean shift resolution
 param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
 
 

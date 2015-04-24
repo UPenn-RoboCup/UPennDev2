@@ -50,7 +50,7 @@ if isempty(nzcols)
     return;
 end
 
-
+% Let's check "motion"
 T = reshape(resetParam.tfL16{nzcols(1)},4,4)';
 Ccb = T(1:3,1:3);
 Tcb = T(1:3,4) + [0; 0; 0.07];
@@ -223,7 +223,7 @@ if NumPlane > 0
                     nvec = [Planes{PlaneID}.Center  Planes{PlaneID}.Center+Planes{PlaneID}.Normal*0.15];
                     figure(visflag),
                     plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', [0 0 0], 'LineWidth',2);
-                    plot3(Planes{PlaneID}.Points(1,:), Planes{PlaneID}.Points(2,:), Planes{PlaneID}.Points(3,:),'.', 'Color', [0 0 0],'MarkerSize',5);
+                    plot3(Planes{PlaneID}.Points(1,:), Planes{PlaneID}.Points(2,:), Planes{PlaneID}.Points(3,:),'.', 'Color', [0 0 0],'MarkerSize',7);
                 end
             end      
 
@@ -234,7 +234,7 @@ end
 PlaneOfInterest = [];
 
 % if~isempty(Planes)
-%     idx = find(cellfun(@(x) x.Size, Planes(:)) > 100);    
+%     idx = find(cellfun(@(x) x.Size, Planes(:)) > 100);    7
 %     if ~isempty(idx)
 %         for i=1:length(idx)
 %             Planes{idx(i)}.Type = 'large';

@@ -46,9 +46,9 @@ local function check_send_mesh()
 		-- Send away
 		if mesh0_ch then
 			metadata.c = 'raw'
-			local meta = mpack(metadata)
-			mesh0_ch:send{meta, mesh0:get_raw_string()}
-			--mesh0_ch:send{meta, c_mesh}
+			mesh0_ch:send{mpack(metadata), mesh0:get_raw_string()}
+			--metadata.c = 'png'
+			--mesh0_ch:send{mpack(metadata), c_mesh}
 		end
 		if mesh0_udp_ch then
 			metadata.c = 'png'

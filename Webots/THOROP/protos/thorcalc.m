@@ -61,9 +61,17 @@ function thorcalc()
 
 
 
+	conv_robotis('head1',0.373,[1.8 572.0 0],cshoulder+cshoulder_to_neck);
+	conv_robotis('head2',0.515,[-0.5 652.8 0],cshoulder+cshoulder_to_neck);
+
+
+	conv_robotis('lshoulderpitch',0.940,[233.3 456.0 0.8], cshoulder+cshoulder_to_lshoulder);
+	conv_robotis('lshoulderroll',0.752,[262.2 510.9 0.1], cshoulder+cshoulder_to_lshoulder);
+	conv_robotis('luarm',1.806,[414.8 443.1 -0.2], cshoulder+cshoulder_to_lshoulder);
+	conv_robotis('llarm',1.124,[618.9 456.1 0.3], cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow);
+	conv_robotis('lwristpitch',0.441,[740 456 -1.5], cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
 %{
-	conv_robotis('head1',0.373,[1.8 572.0 0]);
-	conv_robotis('head2',0.515,[-0.5 652.8 0]);
+	
 
 
 
@@ -73,12 +81,11 @@ function thorcalc()
 
 
 
-	conv_robotis('lshoulderpitch',0.940,[233.3 456.0 0.8]);
-	conv_robotis('lshoulderroll',0.752,[262.2 510.9 0.1]);
-	conv_robotis('luarm',1.806,[414.8 443.1 -0.2]);
-	conv_robotis('llarm',1.124,[618.9 456.1 0.3]);
+	
 
-	conv_robotis('lwristpitch',0.441,[740 456 -1.5]);
+
+
+	
 	conv_robotis('lwristroll',0.077,[776 456 3.5]);
 	conv_robotis('lwristyaw',0.474,[842.3 460 -1.5]);
 

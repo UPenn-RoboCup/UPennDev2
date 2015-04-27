@@ -1,35 +1,7 @@
-dofile'include.lua'
-
--- Important libraries in the global space
-local libs = {
-  'Config',
-  'Body',
-  'unix',
-  'util',
-  'vector',
-	'fun',
-}
-
--- Load the libraries
-for _,lib in ipairs(libs) do _G[lib] = require(lib) end
-if torch then torch.Tensor = torch.DoubleTensor end
-local getch=require'getch'
--- ffi
-local ok, ffi = pcall(require,'ffi')
-local si = require'simple_ipc'
-
--- FSM communicationg
-local fsm_chs = {}
-
-for _,sm in ipairs(Config.fsm.enabled) do
-  local fsm_name = sm..'FSM'
-  table.insert(fsm_chs, fsm_name)
-  _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
-end
-
-require'gcm'
-require'wcm'
-require'hcm'
+#!/usr/bin/env luajit
+local ok = pcall(dofile,'../fiddle.lua')
+if not ok then dofile'fiddle.lua' end
+local getch = require'getch'
 
 -- Head angle limits
 local pitchMin = Config.head.pitchMin

@@ -16,11 +16,36 @@ local ones = require'vector'.ones
 local shared_data = {}
 local shared_data_sz = {}
 
+shared_data.network = {
+	open = zeros(1),
+	topen = zeros(1)
+}
+
 shared_data.teleop = {
+	-- Head angles
   head = zeros(2),
   -- Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),
+	-- Null space options (Shoulder angle, flip_roll)
+  loptions = zeros(2),
+  roptions = zeros(2),
+	-- Use compensation when moving the arm?
+	compensation = ones(1),
+	-- Gripper has some modes it can use: 0 is torque, 1 is position
+	lgrip_mode = zeros(1),
+	rgrip_mode = zeros(1),
+	-- We have three fingers
+	lgrip_torque = zeros(3),
+	rgrip_torque = zeros(3),
+	lgrip_position = zeros(3),
+	rgrip_position = zeros(3),
+	-- Walk bias
+	walkbias = zeros(3)
+}
+
+shared_data.demo = {
+	waypoints = 'deans_reception',
 }
 
 shared_data.assist = {
@@ -33,7 +58,7 @@ shared_data.guidance.color = 'CYAN'
 shared_data.guidance.t = zeros(1)
 
 
-shared_data.audio={}
+shared_data.audio = {}
 shared_data.audio.request = vector.zeros(1)
 
 shared_data.drive={}
@@ -80,6 +105,11 @@ shared_data.hands.right_tr = vector.zeros(6)
 --This variable should contain TARGET hand transforms
 shared_data.hands.left_tr_target = vector.zeros(6)
 shared_data.hands.right_tr_target = vector.zeros(6)
+
+--They store previous hand target transforms (in case movement is not possible)
+shared_data.hands.left_tr_target_old = vector.zeros(6)
+shared_data.hands.right_tr_target_old = vector.zeros(6)
+
 -- for the left and right hands
 shared_data.hands.read = vector.zeros(2)
 
@@ -271,10 +301,19 @@ shared_data.legdebug.torso_angle=vector.zeros(2) --pitch roll
 
 
 
+shared_data.move={}
+shared_data.move.target=vector.zeros(3) --relative pos, x y a
+
+
+
 shared_data.step={}
 shared_data.step.supportLeg=vector.zeros(1)
 shared_data.step.relpos = vector.zeros(3)      --x y a
 shared_data.step.zpr = vector.zeros(2)         --z p r
+shared_data.step.nosolution = vector.zeros(1)         --z p r
+
+shared_data.step.dir = vector.zeros(1)         --temporary
+shared_data.step.auto = vector.zeros(1)         --temporary
 
 
 --These variables are only used for offline testing of arm states

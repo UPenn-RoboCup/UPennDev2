@@ -10,8 +10,8 @@ local meta = {
 
 -- Log data with libLog
 for i=1,120 do
-	rgb, depth, ir = freenect2.update()
 	print(i)
+	rgb, depth, ir = freenect2.update()
 end
 
 print('Shutting down')

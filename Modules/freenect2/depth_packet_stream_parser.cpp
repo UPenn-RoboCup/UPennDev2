@@ -27,12 +27,13 @@
 #include <libfreenect2/depth_packet_stream_parser.h>
 #include <iostream>
 #include <memory.h>
+#include <algorithm>
 
 namespace libfreenect2
 {
 
-DepthPacketStreamParser::DepthPacketStreamParser(libfreenect2::DepthPacketProcessor *processor) :
-    processor_(processor),
+DepthPacketStreamParser::DepthPacketStreamParser() :
+    processor_(noopProcessor<DepthPacket>()),
     current_sequence_(0),
     current_subsequence_(0)
 {
@@ -51,11 +52,13 @@ DepthPacketStreamParser::~DepthPacketStreamParser()
 {
 }
 
+void DepthPacketStreamParser::setPacketProcessor(libfreenect2::BaseDepthPacketProcessor *processor)
+{
+  processor_ = (processor != 0) ? processor : noopProcessor<DepthPacket>();
+}
+
 void DepthPacketStreamParser::onDataReceived(unsigned char* buffer, size_t in_length)
 {
-
-	//std::cerr << "Got depth Data" << std::endl;
-
   // TODO: simplify this crap (so code, such unreadable, wow ;)
   Buffer &wb = work_buffer_;
 
@@ -67,7 +70,7 @@ void DepthPacketStreamParser::onDataReceived(unsigned char* buffer, size_t in_le
     DepthSubPacketFooter *footer = 0;
     bool footer_found = false;
 
-    size_t max_length = std::min(wb.capacity - wb.length, in_length - 8);
+    size_t max_length = std::min<size_t>(wb.capacity - wb.length, in_length - 8);
 
     for(; in_offset < max_length; ++in_offset)
     {
@@ -102,9 +105,8 @@ void DepthPacketStreamParser::onDataReceived(unsigned char* buffer, size_t in_le
         {
           if(current_subsequence_ == 0x3ff)
           {
-            if(processor_.ready())
+            if(processor_->ready())
             {
-              //std::cerr << "[DepthPacketStreamParser::handleNewData] processing depth packet!" << std::endl;
               buffer_.swap();
 
               DepthPacket packet;
@@ -112,11 +114,10 @@ void DepthPacketStreamParser::onDataReceived(unsigned char* buffer, size_t in_le
               packet.buffer = buffer_.back().data;
               packet.buffer_length = buffer_.back().length;
 
-              processor_.process(packet);
+              processor_->process(packet);
             }
             else
             {
-              // Not ready yet...
               //std::cerr << "[DepthPacketStreamParser::handleNewData] skipping depth packet!" << std::endl;
             }
           }

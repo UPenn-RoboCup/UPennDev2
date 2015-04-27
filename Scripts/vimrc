@@ -1,0 +1,32 @@
+" Highlighting and indenting
+syntax on
+filetype plugin indent on
+set fileformats+=mac
+
+" 'incsearch': Start searching before pressing enter.
+set incsearch
+
+" Always show numbers
+set number
+set ruler
+set showcmd
+
+" Tab width
+set tabstop=2
+set shiftwidth=2
+set smarttab
+set autoindent
+
+" http://www.bestofvim.com/
+
+" http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns
+highlight OverLength ctermbg=darkred ctermfg=white guibg=#FFD9D9
+match OverLength /\%81v.\+/
+" Or just show a bar
+set colorcolumn=80
+"http://vim.wikia.com/wiki/Automatic_word_wrapping
+set textwidth=79
+set formatoptions+=t
+
+" https://stackoverflow.com/questions/10964681/enabling-markdown-highlighting-in-vim
+au BufRead,BufNewFile *.md set filetype=markdown

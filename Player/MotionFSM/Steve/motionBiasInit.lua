@@ -61,21 +61,14 @@ function state.entry()
   stage = 1
   if not IS_WEBOTS then
     print('INIT setting params')
-    for i=1,10 do
-
+    for i=1,4 do
       Body.set_head_command_velocity({500,500})
-      unix.usleep(1e6*0.01);
-
       Body.set_waist_command_velocity({500,500})
-      unix.usleep(1e6*0.01);
       Body.set_lleg_command_velocity({500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
       Body.set_rleg_command_velocity({500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
       Body.set_rleg_command_acceleration({50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
       Body.set_lleg_command_acceleration({50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
+      unix.usleep(1e5)
     end
   end
 
@@ -93,10 +86,7 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  if IS_WEBOTS then
-    print('hi')
-    return'done'
-  end
+  if IS_WEBOTS then return'done' end
 
   -- Zero the waist
 
@@ -144,12 +134,11 @@ function state.update()
   local err_th = 1*DEG_TO_RAD
 
 --  if (err<err_th or IS_WEBOTS) and t-t_finish>t_settle and doneL and doneR then return'done' end
-  if (err<err_th or IS_WEBOTS) then return'done' end
+  if err < err_th then return'done' end
 end
 
 function state.exit()
-  print(state._NAME..' Exit.  Time elapsed:',t_finish-t_entry )
-
+	io.write(string.format('%s Exit | %.3f seconds elapsed', state._NAME, t_finish-t_entry))
   -- now on feet
   mcm.set_walk_bipedal(1)
 
@@ -181,33 +170,17 @@ function state.exit()
   local ag = Config.walk.ankle_p_gain or 64
 
   if not IS_WEBOTS then
-    for i=1,10 do
+    for i=1,4 do
       Body.set_head_command_velocity({6000,6000})
-      unix.usleep(1e6*0.01);
-
       Body.set_waist_command_velocity({0,0})
-      unix.usleep(1e6*0.01);
-
       Body.set_lleg_command_velocity({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
-
       Body.set_rleg_command_velocity({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
-
       Body.set_rleg_command_acceleration({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
-
       Body.set_lleg_command_acceleration({0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
-
       Body.set_head_position_p({pg,pg})
-      unix.usleep(1e6*0.01);
-
       Body.set_rleg_position_p({pg,pg,pg,pg,pg,ag})
-      unix.usleep(1e6*0.01);
-
       Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
-      unix.usleep(1e6*0.01);
+      unix.usleep(1e5)
     end
   end
   mcm.set_walk_ismoving(0) --We are stopped

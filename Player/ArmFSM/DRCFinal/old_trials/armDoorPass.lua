@@ -82,8 +82,8 @@ function state.update()
    if stage=="wristturn" then 
     if arm_planner:play_arm_sequence(t) then       
       if hcm.get_state_proceed()==1 then 
-        print("trLArm:",arm_planner.print_transform(trLArm))
-        print("trRArm:",arm_planner.print_transform(trRArm))
+        print("trLArm:",util.print_transform(trLArm))
+        print("trRArm:",util.print_transform(trRArm))
         local arm_seq = {
           {'move',Config.armfsm.doorpass.larminit[1],Config.armfsm.doorpass.rarminit[1]},
           {'wrist',Config.armfsm.doorpass.larminit[2],Config.armfsm.doorpass.rarminit[2]},

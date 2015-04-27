@@ -4,11 +4,12 @@ local mt = {}
 local vector = require'vector'
 local quaternion = require'quaternion'
 
-local cos = math.cos
-local sin = math.sin
-local atan2 = math.atan2
-local sqrt = math.sqrt
+local cos = require'math'.cos
+local sin = require'math'.sin
+local atan2 = require'math'.atan2
+local sqrt = require'math'.sqrt
 local vnew, vcopy = vector.new, vector.copy
+local vnorm = vector.norm
 
 function Transform.inv(a)
 	local p = {a[1][4],a[2][4],a[3][4]}
@@ -31,7 +32,7 @@ local function eye()
 		{0, 1, 0, 0},
 		{0, 0, 1, 0},
 		{0, 0, 0, 1}
-	}, mt)	
+	}, mt)
 end
 Transform.eye = eye
 
@@ -54,7 +55,7 @@ function Transform.rotY(a)
 	  {0, 1, 0, 0},
 	  {-sa, 0, ca, 0},
 	  {0, 0, 0, 1}
-	}, mt)	
+	}, mt)
 end
 
 function Transform.rotX(a)
@@ -143,18 +144,18 @@ function Transform.to_quaternion( t )
     local S = sqrt(1.0 + t[1][1] - t[2][2] - t[3][3]) * 2
     q[1] = (t[3][2] - t[2][3]) / S
     q[2] = 0.25 * S
-    q[3] = (t[1][2] + t[2][1]) / S 
+    q[3] = (t[1][2] + t[2][1]) / S
     q[4] = (t[1][3] + t[3][1]) / S
   elseif t[2][2] > t[3][3] then
     local S = sqrt(1.0 + t[2][2] - t[1][1] - t[3][3]) * 2
     q[1] = (t[1][3] - t[3][1]) / S
-    q[2] = (t[1][2] + t[2][1]) / S 
+    q[2] = (t[1][2] + t[2][1]) / S
     q[3] = 0.25 * S
     q[4] = (t[2][3] + t[3][2]) / S
   else
     local S = sqrt(1.0 + t[3][3] - t[1][1] - t[2][2]) * 2
     q[1] = (t[2][1] - t[1][2]) / S
-    q[2] = (t[1][3] + t[3][1]) / S 
+    q[2] = (t[1][3] + t[3][1]) / S
     q[3] = (t[2][3] + t[3][2]) / S
     q[4] = 0.25 * S
   end
@@ -205,6 +206,7 @@ local function mul(t1, t2)
     return vnew(t)
   elseif type(t2[1]) == "table" then
     -- Matrix * Matrix
+		----[[
     for i = 1,4 do
       t[i] = {}
       for j = 1,4 do
@@ -214,6 +216,33 @@ local function mul(t1, t2)
         + t1[i][4] * t2[4][j]
       end
     end
+		--]]
+		--[[
+		t[1] = {
+			t1[1][1] * t2[1][1] + t1[1][2] * t2[2][1] + t1[1][3] * t2[3][1] + t1[1][4] * t2[4][1],
+			t1[1][1] * t2[1][2] + t1[1][2] * t2[2][2] + t1[1][3] * t2[3][2] + t1[1][4] * t2[4][2],
+			t1[1][1] * t2[1][3] + t1[1][2] * t2[2][3] + t1[1][3] * t2[3][3] + t1[1][4] * t2[4][3],
+			t1[1][1] * t2[1][4] + t1[1][2] * t2[2][4] + t1[1][3] * t2[3][4] + t1[1][4] * t2[4][4]
+		}
+		t[2] = {
+			t1[2][1] * t2[1][1] + t1[2][2] * t2[2][1] + t1[2][3] * t2[3][1] + t1[2][4] * t2[4][1],
+			t1[2][1] * t2[1][2] + t1[2][2] * t2[2][2] + t1[2][3] * t2[3][2] + t1[2][4] * t2[4][2],
+			t1[2][1] * t2[1][3] + t1[2][2] * t2[2][3] + t1[2][3] * t2[3][3] + t1[2][4] * t2[4][3],
+			t1[2][1] * t2[1][4] + t1[2][2] * t2[2][4] + t1[2][3] * t2[3][4] + t1[2][4] * t2[4][4]
+		}
+		t[3] = {
+			t1[3][1] * t2[1][1] + t1[3][2] * t2[2][1] + t1[3][3] * t2[3][1] + t1[3][4] * t2[4][1],
+			t1[3][1] * t2[1][2] + t1[3][2] * t2[2][2] + t1[3][3] * t2[3][2] + t1[3][4] * t2[4][2],
+			t1[3][1] * t2[1][3] + t1[3][2] * t2[2][3] + t1[3][3] * t2[3][3] + t1[3][4] * t2[4][3],
+			t1[3][1] * t2[1][4] + t1[3][2] * t2[2][4] + t1[3][3] * t2[3][4] + t1[3][4] * t2[4][4]
+		}
+		t[4] = {
+			t1[4][1] * t2[1][1] + t1[4][2] * t2[2][1] + t1[4][3] * t2[3][1] + t1[4][4] * t2[4][1],
+			t1[4][1] * t2[1][2] + t1[4][2] * t2[2][2] + t1[4][3] * t2[3][2] + t1[4][4] * t2[4][2],
+			t1[4][1] * t2[1][3] + t1[4][2] * t2[2][3] + t1[4][3] * t2[3][3] + t1[4][4] * t2[4][3],
+			t1[4][1] * t2[1][4] + t1[4][2] * t2[2][4] + t1[4][3] * t2[3][4] + t1[4][4] * t2[4][4]
+		}
+		--]]
     return setmetatable(t, mt)
   end
 end

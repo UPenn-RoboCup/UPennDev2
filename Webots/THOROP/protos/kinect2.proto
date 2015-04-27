@@ -12,6 +12,8 @@ PROTO kinect2 [
   field SFFloat rangeNoise 0.0
   field SFString name "kinect"
   field SFVec2f windowPosition 0 0
+  field SFFloat mass 0.5
+	field SFFloat pixelSize 0.5
 ]
 {
 Solid {
@@ -28,17 +30,14 @@ Solid {
       colorNoise IS colorNoise
       rangeNoise IS rangeNoise
       windowPosition IS windowPosition
+			pixelSize IS pixelSize
     }
     Shape {
       appearance Appearance {
         material Material {
           specularColor 1.0 1.0 1.0
         }
-        texture ImageTexture {
-          url [
-            "textures/kinect.png"
-          ]
-        }
+#        texture ImageTexture {url ["textures/kinect.png"]}
       }
       geometry IndexedFaceSet {
         coord Coordinate {
@@ -255,12 +254,7 @@ Solid {
       }
     }
   ]
-  boundingObject Box {
-    size 0.28 0.038 0.064
-  }
-  physics Physics {
-    density -1
-    mass 0.5
-  }
+  boundingObject Box {size 0.28 0.038 0.064}
+  physics Physics {density -1 mass IS mass}
 }
 }

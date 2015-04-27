@@ -32,10 +32,13 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-	-- bodyHeight
-	-- TODO: Should be in the torso reference, so ground stuff actually requires the correct transform
-	local trChopsticks = T.trans(0,0,1) * K.forward_larm(Body.get_larm_position())
-	local headAngles = vector.new{HT.ikineCam(unpack(T.position(trChopsticks)))}
+	local bH = mcm.get_stance_bodyHeight()
+	local uTorso = mcm.get_stance_uTorsoComp()
+	local pitch = Body.get_rpy()[2]
+
+	local trGrip = T.trans(uTorso[1], uTorso[2], bH) * T.rotY(pitch)
+		* K.forward_larm(Body.get_larm_position())
+	local headAngles = vector.new{HT.ikineCam(unpack(T.position(trGrip)))}
 	local headNow = Body.get_head_command_position()
   local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
 	

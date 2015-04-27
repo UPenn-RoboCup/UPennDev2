@@ -27,9 +27,9 @@ end
 
 -- FSM communicationg
 fsm_chs = {}
-for _,sm in ipairs(Config.fsm.enabled) do
+for sm, en in pairs(Config.fsm.enabled) do
 	local fsm_name = sm..'FSM'
-	local ch = si.new_publisher(fsm_name.."!")
+	local ch = en and si.new_publisher(fsm_name.."!") or si.new_dummy()
 	_G[sm:lower()..'_ch'] = ch
 	fsm_chs[fsm_name] = ch
 end
@@ -48,6 +48,8 @@ end
 
 -- Local RPC for testing
 rpc_ch = si.new_requester'rpc'
+dcm_ch = si.new_publisher'dcm!'
+state_ch = si.new_publisher'state!'
 
 --print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
 --print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))

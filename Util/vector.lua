@@ -16,10 +16,10 @@ function vector.new(t)
   end
   return setmetatable(t, mt)
 end
-function vector.copy(t)
-  local tt = {}
+function vector.copy(t, tt)
+  tt = tt or {}
   for i=1,#t do tt[i] = t[i] end
-  return setmetatable(t, mt)
+  return setmetatable(tt, mt)
 end
 
 function vector.ones(n)
@@ -61,6 +61,13 @@ function vector.sum(v1)
   local s = 0
   for i = 1, #v1 do s = s + v1[i] end
   return s
+end
+
+function vector.contains(v1, num)
+  for i, v in ipairs(v1) do
+    if v==num then return true end
+  end
+  return false
 end
 
 local function add(v1, v2)
@@ -113,6 +120,11 @@ end
 local function div(v1, v2)
   if type(v2) == "number" then
     return divnum(v1, v2)
+	else
+		-- pointwise
+		local v = {}
+		for i,val in ipairs(v1) do v[i] = val / v2[i] end
+		return setmetatable(v, mt)
   end
 end
 

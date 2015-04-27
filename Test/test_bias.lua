@@ -1,60 +1,7 @@
 #!/usr/bin/env luajit
--- (c) 2014 Team THORwIn
 local ok = pcall(dofile,'../fiddle.lua')
 if not ok then dofile'fiddle.lua' end
---dofile'include.lua'
-
--- Important libraries in the global space
-local libs = {
-  'Config',
-  'Body',
-  'unix',
-  'util',
-  'vector',
-	'fun',
-}
-
-local RAD_TO_DEG = 180/math.pi
-
--- Load the libraries
-for _,lib in ipairs(libs) do _G[lib] = require(lib) end
-if torch then torch.Tensor = torch.DoubleTensor end
--- mp
-mp = require'msgpack'
-getch=require'getch'
--- ffi
-ok, ffi = pcall(require,'ffi')
-ok = nil
-
-local si = require'simple_ipc'
-
--- FSM communicationg
-local fsm_chs = {}
-
-for _,sm in ipairs(Config.fsm.enabled) do
-  local fsm_name = sm..'FSM'
-  table.insert(fsm_chs, fsm_name)
-  _G[sm:lower()..'_ch'] = si.new_publisher(fsm_name.."!")
-end
-
--- Shared memory
-local listing = unix.readdir(HOME..'/Memory')
-local shm_vars = {}
-for _,mem in ipairs(listing) do
-  local found, found_end = mem:find'cm'
-  if found then
-    local name = mem:sub(1,found_end)
-    table.insert(shm_vars,name)
-    require(name)
-  end
-end
-
--- RPC engine
---rpc_ch = si.new_requester(Config.net.reliable_rpc)
-
-print( util.color('FSM Channel','yellow'), table.concat(fsm_chs,' ') )
-print( util.color('SHM access','blue'), table.concat(shm_vars,' ') )
-
+local getch = require'getch'
 
 targetvel={0,0,0}
 targetvel_new={0,0,0}
@@ -173,6 +120,6 @@ mcm.set_leg_bias(Config.walk.legBias)
 local t_last = Body.get_time()
 local tDelay = 0.005*1E6
 
- while 1 do
+ while true do
   process_keyinput(); --why nonblocking reading does not work?
 end

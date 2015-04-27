@@ -57,6 +57,7 @@ function state.update()
 end
 
 function state.exit()
+
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
 end

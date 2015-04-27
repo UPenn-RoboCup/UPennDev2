@@ -31,6 +31,8 @@
 #include <sstream>
 #include <iomanip>
 #include <stdint.h>
+#include <algorithm>
+#include <libfreenect2/config.h>
 
 namespace libfreenect2
 {
@@ -101,10 +103,10 @@ public:
     FWSubsystemVersion max;
     for(int i = 0; i < versions_.size(); ++i)
     {
-      max.major = std::max(max.major, versions_[i].major);
-      max.minor = std::max(max.minor, versions_[i].minor);
-      max.build = std::max(max.build, versions_[i].build);
-      max.revision = std::max(max.revision, versions_[i].revision);
+      max.major = std::max<uint16_t>(max.major, versions_[i].major);
+      max.minor = std::max<uint16_t>(max.minor, versions_[i].minor);
+      max.build = std::max<uint16_t>(max.build, versions_[i].build);
+      max.revision = std::max<uint16_t>(max.revision, versions_[i].revision);
     }
     std::stringstream version_string;
     version_string << max.major << "." << max.minor << "." << max.build << "." << max.revision << "." << versions_.size();
@@ -137,7 +139,7 @@ public:
       dump << "   ";
       for (int j = 0; (j < 16) && (j < length); j++)
       {
-        char c = data[i*16+j];
+        unsigned char c = data[i*16+j];
         dump << (((c<32)||(c>128))?'.':c);
       }
       dump << std::endl;
@@ -154,24 +156,51 @@ public:
 };
 
 // probably some combination of color camera intrinsics + depth coefficient tables
-struct __attribute__ ((__packed__)) RgbCameraParamsResponse
+LIBFREENECT2_PACK(struct RgbCameraParamsResponse
 {
   // unknown, always seen as 1 so far
   uint8_t table_id;
 
-  // this block contains at least some color camera intrinsic params
-  float intrinsics[25];
+  // color -> depth mapping parameters
+  float color_f;
+  float color_cx;
+  float color_cy;
+
+  float shift_d;
+  float shift_m;
+
+  float mx_x3y0; // xxx
+  float mx_x0y3; // yyy
+  float mx_x2y1; // xxy
+  float mx_x1y2; // yyx
+  float mx_x2y0; // xx
+  float mx_x0y2; // yy
+  float mx_x1y1; // xy
+  float mx_x1y0; // x
+  float mx_x0y1; // y
+  float mx_x0y0; // 1
+
+  float my_x3y0; // xxx
+  float my_x0y3; // yyy
+  float my_x2y1; // xxy
+  float my_x1y2; // yyx
+  float my_x2y0; // xx
+  float my_x0y2; // yy
+  float my_x1y1; // xy
+  float my_x1y0; // x
+  float my_x0y1; // y
+  float my_x0y0; // 1
 
   // perhaps related to xtable/ztable in the deconvolution code.
   // data seems to be arranged into two tables of 28*23, which
   // matches the depth image aspect ratio of 512*424 very closely
   float table1[28 * 23 * 4];
   float table2[28 * 23];
-};
+});
 
 
 // depth camera intrinsic & distortion parameters
-struct __attribute__ ((__packed__)) DepthCameraParamsResponse
+LIBFREENECT2_PACK(struct DepthCameraParamsResponse
 {
   // intrinsics (this is pretty certain)
   float fx;
@@ -188,10 +217,10 @@ struct __attribute__ ((__packed__)) DepthCameraParamsResponse
   float k3;
 
   float unknown1[13]; // assumed to be always zero
-};
+});
 
 // "P0" coefficient tables, input to the deconvolution code
-struct __attribute__ ((__packed__)) P0TablesResponse
+LIBFREENECT2_PACK(struct P0TablesResponse
 {
   uint32_t headersize;
   uint32_t unknown1;
@@ -215,7 +244,7 @@ struct __attribute__ ((__packed__)) P0TablesResponse
   uint16_t unknownC;
 
   uint8_t  unknownD[];
-};
+});
 
 } /* namespace protocol */
 } /* namespace libfreenect2 */

@@ -1,11 +1,10 @@
 #!/usr/bin/env luajit
-local ENABLE_NET = false
+local ENABLE_NET = true
 local ENABLE_LOG = false
 -----------------------------------
 -- Camera manager
 -- (c) Stephen McGill, 2014
 -----------------------------------
--- Something there is non-reentrant
 dofile'../include.lua'
 if type(arg)~='table' then IS_WEBOTS=true end
 local si = require'simple_ipc'
@@ -13,8 +12,13 @@ local mp = require'msgpack.MessagePack'
 local jpeg = require'jpeg'
 local Body = require'Body'
 require'hcm'
---require'wcm'
 local get_time = Body.get_time
+-- JPEG Compressor
+local c_grey = jpeg.compressor('gray')
+local c_yuyv = jpeg.compressor('yuyv')
+-- TODO: Control the downsampling mode
+--c_yuyv:downsampling(2)
+--c_yuyv:downsampling(1)
 
 -- Grab the metadata for this camera
 local metadata, camera_id
@@ -51,17 +55,14 @@ local h = metadata.h
 local name = metadata.name
 -- Who to send to
 local operator
-if Config.net.use_wireless then
-	operator = Config.net.operator.wireless
-else
-	operator = Config.net.operator.wired_broadcast
-end
+--operator = Config.net.operator.wireless
+operator = Config.net.operator.wired
 -- Network Channels/Streams
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
-print('Camera | ', operator, camera_identifier)
+print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
 -- Metadata for the operator for compressed image data
 local c_meta = {
@@ -77,13 +78,6 @@ local c_meta = {
 local has_detection, detection = pcall(require, metadata.detection)
 -- Send which camera we are using
 if has_detection then detection.entry(metadata) end
-
--- JPEG Compressor
-local c_grey = jpeg.compressor('gray')
-local c_yuyv = jpeg.compressor('yuyv')
--- TODO: Control the downsampling mode
---c_yuyv:downsampling(2)
---c_yuyv:downsampling(1)
 
 -- LOGGING
 if ENABLE_LOG then
@@ -101,31 +95,31 @@ local function update(img, sz, cnt, t)
 	c_meta.t = t
 	c_meta.n = cnt
 
+	local do_send = t-t_send > (1 / hcm.get_monitor_fps())
+	t_send = do_send and t or t_send
+
 	-- Check if we are sending to the operator
-	SEND_INTERVAL = 1 / hcm.get_monitor_fps()
-	if ENABLE_NET and t-t_send > SEND_INTERVAL then
+	if ENABLE_NET and do_send then		
 		local c_img = c_yuyv:compress(img, w, h)
 		c_meta.sz = #c_img
-		if IS_WEBOTS and camera_ch then
+		if camera_ch then
 			camera_ch:send({mp.pack(c_meta), c_img})
-		elseif udp_ch then
+		end
+		if udp_ch then
 			udp_data = mp.pack(c_meta)..c_img
 			udp_ret, udp_err = udp_ch:send(udp_data)
 		end
 	end
 
 	-- Do the logging if we wish
-	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
-		metadata.rsz = sz
--- metadata.head = Body.get_head_command_position()
--- metadata.pose = wcm.get_robot_pose()
-    metadata.head = Body.get_head_position()
-    metadata.rpy = Body.get_rpy() 
-    --TODO: log joint angles
-		for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
-		logger:record(metadata, img, sz)
+	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then
 		t_log = t
 		nlog = nlog + 1
+		metadata.rsz = sz
+		metadata.head = Body.get_head_position()
+		metadata.rpy = Body.get_rpy() 
+		for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
+		logger:record(metadata, img, sz)
 		if nlog % 10 == 0 then
 			print("# camera logs: "..nlog)
 			if nlog % 100 == 0 then
@@ -139,11 +133,11 @@ local function update(img, sz, cnt, t)
 	-- Update the vision routines
 	if has_detection then
 		detection.update(img)
-		if ENABLE_NET and detection.send and t-t_send>SEND_INTERVAL then
-			if IS_WEBOTS and camera_ch then
+		if ENABLE_NET and detection.send and do_send then
+			if camera_ch then
 				for _,v in ipairs(detection.send()) do camera_ch:send({mp.pack(v[1]), v[2]}) end
-				t_send = t
-			elseif udp_ch then
+			end
+			if udp_ch then
 				for _,v in ipairs(detection.send()) do
 					if v[2] then
 						udp_data = mp.pack(v[1])..v[2]
@@ -152,17 +146,15 @@ local function update(img, sz, cnt, t)
 					end
 					udp_ret, udp_err = udp_ch:send(udp_data)
 				end
-				t_send = t
 			end
 		end
 	end
 end
 
 -- If required from Webots, return the table
-if ... and type(...)=='string' then
+if ... and type(...)=='string' and not tonumber(...) then
 	return {entry=nil, update=update, exit=nil}
 end
-
 
 -- Open the camera
 local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
@@ -212,8 +204,7 @@ while running do
 		t_debug = t
 		local kb = collectgarbage('count')
 		local debug_str = {
-			string.format("Camera | %s Uptime: %.2f Mem: %d kB", name, t-t0, kb),
-			"# logs: "..nlog
+			string.format("Cam %s | %ds, %d kB", name, t-t0, kb),
 		}
 		print(table.concat(debug_str,'\n'))
 	end

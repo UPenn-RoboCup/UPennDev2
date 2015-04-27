@@ -27,7 +27,7 @@ dh_params = [
 #rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='standard')
 rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='modified')
 
-rbtdef.dynparms()
+dp = rbtdef.dynparms()
 
 rbt = sympybotics.RobotDynCode(rbtdef, verbose=True)
 
@@ -48,23 +48,29 @@ try:
     f.write(str(rbt.kin.J[-1]))
 finally:
     f.close()
-    
+
 f = open("jacobian_com.txt", "w")
 try:
     f.write(str(rbt.kin.Jc[-1]))
 finally:
     f.close()
-    
+
 f = open("fk.txt", "w")
 try:
     f.write(str(rbt.geo.T[-1]))
 finally:
     f.close()
-    
+
 f = open("DH Parameters used.txt", "w")
 try:
     f.write('(alpha, a, d, theta)\n')
     f.write(str(dh_params))
+finally:
+    f.close()
+
+f = open("Synamic Barycentric Parameters.txt", "w")
+try:
+    f.write(str(dp))
 finally:
     f.close()
 

@@ -32,6 +32,7 @@ Lua Wrapper for some libfreenect2 functionality
 #include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/frame_listener_impl.h>
 #include <libfreenect2/threading.h>
+#include <libfreenect2/registration.h>
 
 #define USE_DEPTH
 #define USE_COLOR
@@ -45,6 +46,9 @@ Freenect2* freenect2 = NULL;
 Freenect2Device* dev = NULL;
 SyncMultiFrameListener* listener = NULL;
 FrameMap frames;
+
+Freenect2Device::IrCameraParams depth_p;
+Freenect2Device::ColorCameraParams color_p;
 
 static int lua_freenect_init(lua_State *L) {
 
@@ -61,20 +65,20 @@ static int lua_freenect_init(lua_State *L) {
   fflush(stdout);
 #endif
 
-	freenect2 = new Freenect2();
+  freenect2 = new Freenect2();
 
 #ifdef DEBUG
   fprintf(stdout,"Open Device...\n");
   fflush(stdout);
 #endif
-  
+
   dev = freenect2->openDefaultDevice();
 
 #ifdef DEBUG
   fprintf(stdout,"Checking Device status...\n");
   fflush(stdout);
 #endif
-  
+
   if(dev == 0) {
     return luaL_error(L, "No device!");
   }
@@ -87,7 +91,7 @@ static int lua_freenect_init(lua_State *L) {
   listener = new SyncMultiFrameListener(
     Frame::Color | Frame::Ir | Frame::Depth
   );
-  
+
 #ifdef USE_COLOR
 #ifdef DEBUG
   fprintf(stdout,"Color listener...\n");
@@ -95,7 +99,7 @@ static int lua_freenect_init(lua_State *L) {
 #endif
   dev->setColorFrameListener(listener);
 #endif
-  
+
 #ifdef USE_DEPTH
 #ifdef DEBUG
   fprintf(stdout,"IR/Depth listener...\n");
@@ -103,23 +107,26 @@ static int lua_freenect_init(lua_State *L) {
 #endif
   dev->setIrAndDepthFrameListener(listener);
 #endif
-  
+
 #ifdef DEBUG
   fprintf(stdout, "Start device...\n");
   fflush(stdout);
 #endif
   dev->start();
-  
+
   // Initialized!
   init = 1;
 
 #ifdef DEBUG
   fprintf(stdout, "Get information...\n");
   fflush(stdout);
-#endif  
+#endif
   lua_pushstring(L, dev->getSerialNumber().c_str());
   lua_pushstring(L, dev->getFirmwareVersion().c_str());
-  
+
+  color_p = dev->getColorCameraParams();
+  depth_p = dev->getIrCameraParams();
+
   return 2;
 }
 
@@ -128,7 +135,7 @@ static int lua_freenect_update(lua_State *L) {
 #ifdef DEBUG
   fprintf(stdout, "Release frames...\n");
   fflush(stdout);
-#endif  
+#endif
 	listener->release(frames);
 
 #ifdef DEBUG
@@ -227,30 +234,38 @@ static int lua_freenect_update(lua_State *L) {
 }
 
 static int lua_freenect_shutdown(lua_State *L) {
-	
-  if(init==0)
+
+  if(init==0){
     return luaL_error(L, "Cannot shutdown an uninitialized object!\n" );
+  }
 
 #ifdef DEBUG
   printf("Stopping device\n");
   fflush(stdout);
 #endif
   dev->stop();
-  
+
 #ifdef DEBUG
   printf("Closing device\n");
   fflush(stdout);
 #endif
   dev->close();
-  
+
   // Not initialized!
   init = 0;
-  
+
+  return 0;
+}
+
+static int lua_freenect_registration(lua_State *L) {
+//  Registration::Registration(depth_p, color_p);
+
   return 0;
 }
 
 static const struct luaL_Reg freenect2_lib [] = {
   {"init", lua_freenect_init},
+  {"registration", lua_freenect_registration},
   {"update", lua_freenect_update},
   {"shutdown", lua_freenect_shutdown},
   {NULL, NULL}

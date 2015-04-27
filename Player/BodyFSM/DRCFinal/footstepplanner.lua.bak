@@ -1,0 +1,233 @@
+local footstepplanner={}
+local Body   = require'Body'
+local K      = Body.Kinematics
+local T      = require'Transform'
+local util   = require'util'
+local vector = require'vector'
+require'wcm'
+require'hcm'
+
+local sformat = string.format
+local footY = Config.walk.footY
+
+--Temporary 1D surfaces
+local surfaces1D={
+  {-100,0.40,0.0,0},  -- x0 x1 z pitch
+  {0.40,0.80,0.15,0},  -- x0 x1 z pitch
+  {0.80,1.20,0.30,0},  -- x0 x1 z pitch
+  {1.20,1.60,0.45,0},  -- x0 x1 z pitch
+  {1.60,2.00,0.60,0},  -- x0 x1 z pitch
+  {2.00,2.40,0.45,0},  -- x0 x1 z pitch
+  {2.40,2.80,0.30,0},  -- x0 x1 z pitch
+  {2.80,3.20,0.15,0},  -- x0 x1 z pitch
+  {3.20,100,0,0},  -- x0 x1 z pitch
+}
+
+
+--2D surfaces
+--x1 x2 y1 y2  z_center pitch
+local surfaces2D={ 
+  {0,0.40,     -0.2,0.2,          0.0,0}, 
+  {0.40,0.80,  -0.2,0.2,  0.15,0},  
+  {0.80,1.20,  -0.2,0.2,0.30,0},  
+  {1.20,1.60,  -0.2,0.2,  0.45,0}, 
+  {1.60,2.00,  -0.2,0.2,  0.60,0}, 
+  {2.00,2.40,  -0.2,0.2,  0.45,0},  
+  {2.40,2.80,  -0.2,0.2,  0.30,0},  
+  {2.80,3.20,  -0.2,0.2,  0.15,0},  
+  {3.20,3.60,  -0.2,0.2,  0.0,0},  
+}
+
+
+--local toeX = 0.13
+--local heelX = 0.11
+
+--2cm margin
+local toeX = 0.15
+local heelX = 0.13
+local heelLandX = 0.15 
+local feetY = 0.08 -- is it correct?
+
+
+local max_stride_x = 0.28
+local stepheight_max = 0.16
+local max_stride_land_x = 0.31
+
+
+
+local function check_side(v1,v2,v)
+  local vector1={v[1]-v1[1],v[2]-v1[2]}
+  local vector2={v2[1]-v1[1],v2[2]-v1[2]}
+  --cross product of two vectors
+  return (vector1[1]*vector2[2]-vector1[2]*vector2[1])
+end
+
+local function check_inside(v1,v2,v3,v4, v)
+  if check_side(v1,v2,v)>0 and
+    check_side(v2,v3,v)>0 and
+    check_side(v3,v4,v)>0 and
+    check_side(v4,v1,v)>0 then    return true
+  else return false
+  end
+end
+
+local function check_inside_surface2D(s, v)
+  return check_inside({s[1],s[4]},{s[2],s[4]},{s[2],s[3]},{s[1],s[3]},v)
+end
+
+local function check_inside_surface2D_margin(s,uFoot,heel_margin)
+  local tL = util.pose_global({toeX,feetY,0},uFoot)
+  local tR = util.pose_global({toeX,-feetY,0},uFoot)
+  local hL = util.pose_global({-heel_margin,feetY,0},uFoot)
+  local hR = util.pose_global({-heel_margin,-feetY,0},uFoot)  
+  local check = (check_inside_surface2D(s,tL) and
+          check_inside_surface2D(s,tR) and
+          check_inside_surface2D(s,hL) and
+          check_inside_surface2D(s,hR) )
+  return check
+end
+
+
+local function check_inside_1D(surface1D,uFoot)
+  return (surface1D[1]<uFoot[1] and surface1D[2]>uFoot[1])
+end
+
+
+local function check_inside_margin_1D(surface1D,uFoot,heel_margin)
+  return (surface1D[1]+heel_margin<uFoot[1] and surface1D[2]-toeX>uFoot[1])
+end
+
+
+local function find_current_surface_height(uFoot)
+--[[  
+  for i=1,#surfaces1D do
+    if check_inside_1D(surfaces1D[i],uFoot) then return surfaces1D[i][3] end
+  end
+--]]
+  for i=1,#surfaces2D do
+    if check_inside_surface2D(surfaces2D[i],uFoot) then return surfaces2D[i][5] end
+  end
+  return 0
+end
+
+local function is_reachable(uFoot,foot_z)
+--[[  
+  for i=1,#surfaces1D do
+    local stepheight = surfaces1D[i][3]-foot_z
+    if math.abs(stepheight)<stepheight_max then
+      if stepheight>=0 and check_inside_margin_1D(surfaces1D[i],uFoot,heelX) then return stepheight end
+      if stepheight<0 and check_inside_margin_1D(surfaces1D[i],uFoot,heelLandX) then return stepheight end
+    end
+  end
+--]] 
+  for i=1,#surfaces2D do
+    local stepheight = surfaces2D[i][5]-foot_z
+    if math.abs(stepheight)<stepheight_max then
+      if stepheight>=0 and check_inside_surface2D_margin(surfaces2D[i],uFoot,heelX) then return stepheight end
+      if stepheight<0 and check_inside_surface2D_margin(surfaces2D[i],uFoot,heelLandX) then return stepheight end
+    end
+  end 
+  return nil
+end
+
+local function sample_landing_positions(uFoot, foot_z)
+  local possible_foot_positions={}
+  local dir = hcm.get_step_dir()
+  local s,e=0,0.32
+  if dir<0 then s,e = -0.28,0 end
+
+  for i=s,e,0.02 do
+    local uFoot2 = util.pose_global({i,0,0},uFoot)
+    local stepheight = is_reachable(uFoot2,foot_z)
+    if stepheight then table.insert(possible_foot_positions,{uFoot2, {stepheight,0,0}} )end
+  end
+  return possible_foot_positions
+end
+
+local function select_best_landing_position(uFoot,candidate)
+  local best_foot, best_zpr = {0,0,0}, {0,0,0}
+
+  local dir = hcm.get_step_dir()
+
+  for i=1,#candidate do
+    print(sformat("Step candidate: %.2f / %.2f",candidate[i][1][1], candidate[i][2][1]))
+
+    if dir>=0 then
+      if candidate[i][1][1]>best_foot[1] or no_solution then
+        no_solution = false
+        best_foot = candidate[i][1]
+        forward_zpr = candidate[i][2]
+      end
+    else
+      if candidate[i][1][1]<best_foot[1] or no_solution then
+        no_solution = false
+        best_foot = candidate[i][1]
+        forward_zpr = candidate[i][2]
+      end
+    end
+  end
+  if no_solution then
+    print("No landing possition possible!")
+    print("No landing possition possible!")
+    print("No landing possition possible!")
+    print("No landing possition possible!")
+    print("No landing possition possible!")
+    print("No landing possition possible!")
+
+    hcm.set_step_nosolution(1)
+    return    
+  end
+  print(sformat("Landing position selected: %.2f / %.2f", best_foot[1], best_zpr[1] ))
+  hcm.set_step_relpos(util.pose_relative(best_foot,uFoot))
+  hcm.set_step_zpr(forward_zpr)
+end
+
+
+function footstepplanner.getnextfoot(uFootSwing, uFootSupport)
+  local possible_foot_positions,uFootSwing0={},nil
+  local current_swingfoot_z = find_current_surface_height(uFootSwing)
+  local uFootSwingSupport = util.pose_relative(uFootSwing, uFootSupport)
+  if uFootSwingSupport[2]>0 then uFootSwing0 = util.pose_global({0,2*footY,0},uFootSupport)--right support
+  else uFootSwing0 = util.pose_global({0,-2*footY,0},uFootSupport) end
+
+  local possible_foot_positions = sample_landing_positions(uFootSwing0,current_swingfoot_z)
+  select_best_landing_position(uFootSwing,possible_foot_positions)
+end
+
+
+function footstepplanner.getnextstep()
+
+--[[
+  print("side:",check_side({0,0},{1,0},{0.5,1}))
+  print("side:",check_side({0,0},{1,0},{0.5,0}))
+  print("side:",check_side({0,0},{1,0},{0.5,-1}))
+
+  print("inside:",check_inside({0,0},{1,0},{1,-1},{0,-1}, {0.5,-0.5}))
+  print("inside:",check_inside({0,0},{1,0},{1,-1},{0,-1}, {0.5,0.5}))
+
+--]]
+
+  local pose = wcm.get_robot_pose()
+  local uTorso = mcm.get_status_uTorso(uTorso)
+  local uLeft = mcm.get_status_uLeft(uLeft)
+  local uRight = mcm.get_status_uRight(uRight)
+
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+
+  local uLeftGlobal = util.pose_global(uLeftTorso,pose)
+  local uRightGlobal = util.pose_global(uRightTorso,pose)
+    
+
+print(sformat("Current Torso:%.2f Left:%.2f Right:%.2f",uTorso[1],uLeft[1],uRight[1]))
+print(sformat("Current pose:%.2f Left:%.2f Right:%.2f ",pose[1],uLeftGlobal[1],uRightGlobal[1]))
+
+
+  if uLeftTorso[1]>uRightTorso[1] then --left foot is leading foot
+    footstepplanner.getnextfoot(uRightGlobal,uLeftGlobal)
+  else
+    footstepplanner.getnextfoot(uLeftGlobal,uRightGlobal)
+  end
+end
+
+return footstepplanner

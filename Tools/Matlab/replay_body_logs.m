@@ -14,13 +14,14 @@ jointNames = { ...
 	'ChestLidarPan',...
 };
 
+
 %% Aquire the body joint angles
-timestamp = '12.02.2014.18.28.47';
+timestamp = '03.07.2015.16.13.38';
 
 % TODO: Check if already available
 %load(strcat('Data/joint_m_',timestamp,'.mat'));
 
-fid = fopen(strcat('Data/joint_m_',timestamp,'.log'));
+fid = fopen(strcat('joint_m_',timestamp,'.log'));
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
 clear fid;
@@ -54,4 +55,4 @@ for i=1:numel(jobjs)
 end
 clear jobj
 %% Save
-clear jobjs;save(strcat('Data/joint_m_',timestamp,'.mat'));
+clear jobjs;save(strcat('joint_m_',timestamp,'.mat'));

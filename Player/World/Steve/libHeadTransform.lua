@@ -6,8 +6,6 @@ local acos = require'math'.acos
 local sqrt = require'math'.sqrt
 local atan2 = require'math'.atan2
 
--- TODO: Change the reference frame to the torso, as the kinematics does this
-
 -- Configuration
 --[[
 local dtrCamera = T.trans(unpack(Config.head.cameraPos or {0,0,0}))
@@ -17,13 +15,24 @@ local trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
 	* T.rotY(Config.vision.bodyTilt)
 	* T.trans(Config.head.neckX, 0, Config.head.neckZ)
 --]]
--- Grab all the Config values
-local cam_z = Config.head.cameraPos[3]
-local cameraPitch = Config.head.cameraPitch
-local trNeckOffset = T.trans(Config.head.neckX, 0, Config.head.neckZ)
-local trCameraOffset = T.trans(unpack(Config.head.cameraPos))
--- TODO: Should not use the body transform in the HeadTransform, since should be with the torso as reference
-local trBody = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
+
+-- Choose the camera to use
+local USE_KINECT = true
+local cam_z
+local cameraPitch
+local trCameraOffset
+if USE_KINECT then
+	cam_z = Config.kinect.mountOffset[2][3]
+	cameraPitch = Config.kinect.mountOffset[1][2]
+	trCameraOffset = T.trans(unpack(Config.kinect.mountOffset[2]))
+else
+	cam_z = Config.head.cameraPos[3]
+	cameraPitch = Config.head.cameraPitch
+	trCameraOffset = T.trans(unpack(Config.head.cameraPos))
+end
+
+-- Neck offset is always the same
+local trNeckOffset = T.trans(unpack(Config.head.neckOffset))
 
 -- TODO: No head bias yet
 --[[
@@ -33,6 +42,11 @@ hcm.set_camera_bias(Config.walk.headBias or {0,0,0})
 
 -- Update the Head transform
 local function get_head_transform(head, rpy)  
+
+	local bH = mcm.get_stance_bodyHeight()
+	local uTorso = mcm.get_stance_uTorsoComp()
+	local trBody = T.trans(-uTorso[1]-Config.walk.footX, -uTorso[2], bH)
+	--local trBody = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
 
   local trNeck0 = trBody * T.rotY(rpy[2]) * trNeckOffset
 	

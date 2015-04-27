@@ -85,8 +85,8 @@ function state.update()
     if arm_planner:play_arm_sequence(t) then 
       if hcm.get_state_proceed()==1 then 
         local trLArmTarget, trRArmTarget = movearm.getLargeValvePosition(0,0,-0.08,-0.08)
-        print("TrL:",arm_planner.print_transform(trLArmTarget))
-        print("TrR:",arm_planner.print_transform(trRArmTarget))
+        print("TrL:",util.print_transform(trLArmTarget))
+        print("TrR:",util.print_transform(trRArmTarget))
         local arm_seq = {{'move',trLArmTarget, trRArmTarget}}
         if arm_planner:plan_arm_sequence(arm_seq) then stage="pregrip" end
       elseif hcm.get_state_proceed()==-1 then         

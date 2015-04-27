@@ -10,8 +10,8 @@ all none: modules robots
 	@printf "  %s %s\n" Making $@;
 	@cd Robots/$@ && make && cd $(CWD)
 	@printf "  %s %s\n" Configuring $@;
-	@rm -f $(CWD)/Config/Config.lua
-	@ln -s $(CWD)/Config/Config_$@.lua $(CWD)/Config/Config.lua
+	@rm -f $(CWD)/Config
+	@ln -s $(CWD)/Configs/$@ $(CWD)/Config
 
 #naoqi:
 #	@echo "Compiling Custom Naoqi Modules...\n"

@@ -72,6 +72,10 @@ local update_odometry = function(uTorso_in)
 end
 
 
+
+local aShiftY0={0,0}
+local aShiftX0={0,0}
+
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -177,6 +181,8 @@ function walk.update()
       supportLeg, ph, ended, walkParam = zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
 
     --TODO: get step duration information!!! 
+
+
     if ended and zmp_solver:can_stop() then return "done"  end
       --Get the current COM position
     com_pos,zmp_pos = zmp_solver:update_state()
@@ -199,18 +205,103 @@ function walk.update()
 --    print('f:',l_ft[3],r_ft[3])
 
 
+    local raiseVelMax = math.sin(phSingle*math.pi)*0.05
+    local raiseVelDS = 0.05
+
+    local raiseVelMax = math.sin(phSingle*math.pi)*0.10
+    local raiseVelDS = 0.10
+
+    local lowerVelMax = 0.40
+    local lowerVelDS = 0.40
+
+
+
+
+
+    local leg_raise = 0
+    if Config.raise_body then
+      if zLeft>0 and zRight>0 then
+        --we are climbing, and left support foot is already on the block
+
+        leg_raise = math.min(zLeft,zRight)
+        if supportLeg == 2 or phSingle==1 then
+          leg_raise = math.min(leg_raise,raiseVelDS*t_diff)
+        else
+          leg_raise = math.min(leg_raise,raiseVelMax*t_diff)
+        end
+      elseif zLeft<0 or zRight<0 then
+         leg_raise = math.min(zLeft,zRight)
+         if supportLeg == 2 or phSingle==1 then
+           leg_raise = math.max(leg_raise,-lowerVelDS*t_diff)
+         else
+           leg_raise = math.max(leg_raise,-lowerVelMax*t_diff)
+         end
+      end
+    end
+
+    if IS_WEBOTS then 
+      if ended and math.abs(leg_raise)<0.001 then return "done" end        
+    end
+
+
     if supportLeg == 2 or phSingle==1 then --Double support
+      zLeg[1] = zLeg[1] - leg_raise
+      zLeg[2] = zLeg[2] - leg_raise        
       zLeft = zLeg[1]
       zRight = zLeg[2]
       mcm.set_status_zLeg0({zLeft,zRight})
+      aShiftY0=mcm.get_walk_aShiftY()
+      aShiftX0=mcm.get_walk_aShiftX()
     elseif supportLeg == 0 then  -- Left support    
-      uRight,zRight,aRight,touched = foot_traj_func(
-        phSingle,uRight_now,uRight_next,stepHeight,walkParam, zLeg[2],r_ft[3],touched)
-      zRight = zRight +zLeg0[2]      
+      local zpr_target = hcm.get_step_zpr()
+      local wparam={walkParam[1],walkParam[2],walkParam[3]}
+
+      local stride=util.pose_relative(uRight_next,uRight_now)
+      if math.sqrt(stride[1]*stride[1]+stride[2]*stride[2])>0.50 then
+        if zpr_target[1]<0.05 then wparam[2] = wparam[2]+0.15 end
+      elseif aShiftY0[2]<0 and zpr_target[2]>0 then
+        wparam[2] = wparam[2]+0.05
+      end
+
+
+
+
+      uRight,zRight,liftp, landp = foot_traj_func(
+        phSingle,uRight_now,uRight_next,stepHeight,wparam, zLeg[2],r_ft[3],touched)
+
+      zLeg0[1] = zLeg0[1] - leg_raise
+      zLeg0[2] = zLeg0[2] - leg_raise
+      mcm.set_status_zLeg0(zLeg0)
+      zLeft = zLeg0[1]      
+      zRight = zRight +zLeg0[2]
+      local aShiftY = {aShiftY0[1],liftp*aShiftY0[2] + (landp)*zpr_target[2]}
+      mcm.set_walk_aShiftY(aShiftY)
+
+
+
     elseif supportLeg==1 then    -- Right support    
-      uLeft,zLeft,aLeft,touched = foot_traj_func(
-        phSingle,uLeft_now,uLeft_next,stepHeight,walkParam, zLeg[1], l_ft[3],touched)    
+      local zpr_target = hcm.get_step_zpr()
+      local wparam={walkParam[1],walkParam[2],walkParam[3]}
+
+      local stride=util.pose_relative(uLeft_next,uLeft_now)
+      if math.sqrt(stride[1]*stride[1]+stride[2]*stride[2])>0.50 then
+        if zpr_target[1]<0.05 then wparam[2] = wparam[2]+0.15 end
+      elseif aShiftY0[2]<0 and zpr_target[2]>0 then
+        wparam[2] = wparam[2]+0.05
+      end
+
+
+
+      uLeft,zLeft,liftp, landp = foot_traj_func(
+        phSingle,uLeft_now,uLeft_next,stepHeight,wparam, zLeg[1], l_ft[3],touched)    
+          
+      zLeg0[1] = zLeg0[1] - leg_raise
+      zLeg0[2] = zLeg0[2] - leg_raise
+      mcm.set_status_zLeg0(zLeg0)
+      zRight = zLeg0[2]    
       zLeft = zLeft +zLeg0[1]
+      local aShiftY = {liftp*aShiftY0[1] + landp*zpr_target[2],aShiftY0[2]}
+      mcm.set_walk_aShiftY(aShiftY)
     end
 
     
@@ -258,6 +349,8 @@ function walk.update()
       touched = false
     end
 
+--[[
+
     --Auto lower the leg
     if phSingle==1 and not leg_lowered then
       if supportLeg==0 then 
@@ -270,6 +363,7 @@ function walk.update()
         leg_lowered = true        
       end
     end
+--]]
 
     local rpy = Body.get_rpy()
     local roll = rpy[1] * RAD_TO_DEG

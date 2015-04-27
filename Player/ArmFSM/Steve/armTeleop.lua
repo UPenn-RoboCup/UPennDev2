@@ -3,10 +3,55 @@ state._NAME = ...
 local Body = require'Body'
 local movearm = require'movearm'
 
+-- Compensation
+-- 1: Use the compensation, but search for the shoulder
+-- 2: Use the compenstation, and use the teleop shoulder options
+local USE_COMPENSATION = 1
+
 local t_entry, t_update, t_finish
 local timeout = 10.0
 local lPathIter, rPathIter
 local qLGoal, qRGoal
+local qLD, qRD
+local uTorso0, uTorsoComp
+local loptions, roptions
+
+-- Sets uTorsoComp, uTorso0 externall
+local function set_iterators(teleopLArm, teleopRArm, teleopComp)
+	if teleopComp == 0 then
+		-- #nofilter
+		uTorsoComp, uTorso0 = nil
+		return movearm.goto_q(teleopLArm, teleopRArm, true)
+	end
+	-- Grab the torso compensation
+	local uTorsoAdapt, uTorso = movearm.get_compensation()
+	local uTorsoCompNow = mcm.get_stance_uTorsoComp()
+	--print(uTorsoAdapt, uTorso)
+	--print(uTorsoCompNow)
+	local fkLComp, fkRComp
+	fkLComp, fkRComp, uTorsoComp, uTorso0 =
+		movearm.apply_q_compensation(teleopLArm, teleopRArm, uTorsoAdapt, uTorso)
+
+	uTorso0 = uTorsoCompNow
+	uTorso0[3] = 0
+
+	-- Do we have desired null space options?
+	if teleopComp == 2 then
+		assert('NOT TESTED YET')
+		local loptions = hcm.get_teleop_loptions()
+		local roptions = hcm.get_teleop_roptions()
+		-- Form the iterator
+		--return movearm.goto_tr_via_q(fkLComp, fkRComp, loptions, roptions)
+		return movearm.goto_tr_stack(fkLComp, fkRComp, loptions, roptions)
+		--return movearm.goto_tr(fkLComp, fkRComp, loptions, roptions)
+	else
+		-- Form the iterator
+		--return movearm.goto_tr_via_q(fkLComp, fkRComp)
+		return movearm.goto_tr_stack(fkLComp, fkRComp)
+		--return movearm.goto_tr(fkLComp, fkRComp)
+	end
+end
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -15,11 +60,22 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   -- Reset the human position
-  hcm.set_teleop_larm(Body.get_larm_position())
-  hcm.set_teleop_rarm(Body.get_rarm_position())
-  qLGoal = hcm.get_teleop_larm()
-  qRGoal = hcm.get_teleop_rarm()
-  lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
+	local qcLArm0 = Body.get_larm_command_position()
+	local qcRArm0 = Body.get_rarm_command_position()
+	local teleopLArm = hcm.get_teleop_larm()
+	local teleopRArm = hcm.get_teleop_rarm()
+	local teleopComp = hcm.get_teleop_compensation()
+
+	lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = set_iterators(teleopLArm, teleopRArm, teleopComp)
+
+	--loptions = {qLGoal[3], 0}
+	--roptions = {qRGoal[3], 0}
+	--hcm.set_teleop_loptions(loptions or {qcLArm[3], 0})
+	--hcm.set_teleop_roptions(roptions or {qcRArm[3], 0})
+
+	-- Close range mesh
+	vcm.set_mesh0_dynrange({.1,1})
+
 end
 
 function state.update()
@@ -29,38 +85,37 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
-  
-  -- See if commanded a new position
-  if qLGoal~=hcm.get_teleop_larm() or qRGoal~=hcm.get_teleop_rarm() then
-    -- Get the goal from hcm
-    qLGoal = hcm.get_teleop_larm()
-    qRGoal = hcm.get_teleop_rarm()
-    -- Make the iterators
-    lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
-  end
-  
+  --if t-t_entry > timeout then return'timeout' end
+
+	-- Update our measurements availabl in the state
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+
 	-- Timing necessary
-	----[[
-	local qLArm = Body.get_larm_command_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
-	--]]
-	-- No time needed
+	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
+	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
+
+	local qLNext = moreL and q_lWaypoint or qLGoal
+	local qRNext = moreR and q_rWaypoint or qRGoal
+
+	local phaseL = moreL and moreL/qLD or 0
+	local phaseR = moreR and moreR/qRD or 0
+
+	assert(uTorsoComp)
+	assert(uTorso0)
+	local phase = math.max(phaseL, phaseR)
+	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
+
 	--[[
-	local qLArm = Body.get_larm_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm)
+	print(state._NAME..' | uTorso0', uTorso0)
+	print(state._NAME..' | uTorsoComp', uTorsoComp)
+	print(state._NAME..' | uTorsoNow', uTorsoNow)
 	--]]
-	Body.set_larm_command_position(moreL and q_lWaypoint or qLGoal)
-	
-	----[[
-	local qRArm = Body.get_rarm_command_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
-	--]]
-	--[[
-	local qRArm = Body.get_rarm_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm)
-	--]]
-	Body.set_rarm_command_position(moreR and q_rWaypoint or qRGoal)
+
+	-- Send to the joints
+	mcm.set_stance_uTorsoComp(uTorsoNow)
+	Body.set_larm_command_position(qLNext)
+	Body.set_rarm_command_position(qRNext)
   
 end
 

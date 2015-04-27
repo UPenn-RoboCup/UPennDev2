@@ -1,6 +1,0 @@
-floorplan (
- name "at_work"
- bitmap "at_work.ppm"
- size [14.05 9.05 0.5]
- pose [ 3.46177 1.41575 0 0 ]
-)

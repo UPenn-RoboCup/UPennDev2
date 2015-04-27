@@ -63,10 +63,10 @@ while 1
             raw = reshape(typecast(raw, 'single'), [metadata.dim(2), metadata.dim(1)]);
             
             figure(3), imagesc(raw);
-            disp(metadata)
-            size(raw)
+%             disp(metadata)
+%             size(raw)
             
-           [ Planes ] = detectPlaneInstances_lidar_v5( raw', 3, metadata);         
+           [ Planes ] = detectPlaneInstances_lidar_v5( raw', 4, metadata);         
         end
     end
     drawnow;

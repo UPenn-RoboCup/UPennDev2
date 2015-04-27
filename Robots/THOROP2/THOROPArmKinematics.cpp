@@ -1,5 +1,4 @@
 #include "THOROPKinematics.h"
-//For THOR mk2
 
 
 Transform THOROP_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const double *qWaist, 
@@ -8,11 +7,14 @@ Transform THOROP_kinematics_forward_l_arm_7(const double *q, double bodyPitch, c
   Transform t;
   t = t
     .rotateY(bodyPitch)
-    .translateZ(-originOffsetZ)
-    .rotateY(qWaist[1]).rotateZ(qWaist[0]) //Pitch and then yaw for mk2
-    .translateY(shoulderOffsetY)
-    .translateZ(shoulderOffsetZ2)
+    //.rotateZ(qWaist[0]).rotateY(qWaist[1])
 
+    .translateZ(-originOffsetZ)
+    .rotateY(qWaist[1]).rotateZ(qWaist[0])
+    .translateZ(originOffsetZ)
+
+    .translateY(shoulderOffsetY)
+    .translateZ(shoulderOffsetZ)
     .mDH(-PI/2, 0, q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
     .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
@@ -36,11 +38,15 @@ THOROP_kinematics_forward_r_arm_7(const double *q, double bodyPitch, const doubl
   Transform t;
   t = t
     .rotateY(bodyPitch)
-    .translateZ(-originOffsetZ)
-    .rotateY(qWaist[1]).rotateZ(qWaist[0]) //Pitch and then yaw for mk2
-    .translateY(shoulderOffsetY)
-    .translateZ(shoulderOffsetZ2)
 
+    //.rotateZ(qWaist[0]).rotateY(qWaist[1])
+
+    .translateZ(-originOffsetZ)
+    .rotateY(qWaist[1]).rotateZ(qWaist[0])
+    .translateZ(originOffsetZ)
+
+    .translateY(-shoulderOffsetY)
+    .translateZ(shoulderOffsetZ)
     .mDH(-PI/2, 0, q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
     .mDH(PI/2, 0, PI/2+q[2], upperArmLength)
@@ -55,6 +61,8 @@ THOROP_kinematics_forward_r_arm_7(const double *q, double bodyPitch, const doubl
   return t;
 }
 
+
+
 Transform THOROP_kinematics_forward_l_wrist(const double *q, double bodyPitch, const double *qWaist){
 //FK for 7-dof arm (pitch-roll-yaw-pitch-yaw-roll-yaw)
   Transform t;
@@ -63,7 +71,7 @@ Transform THOROP_kinematics_forward_l_wrist(const double *q, double bodyPitch, c
     .translateZ(-originOffsetZ)
     .rotateY(qWaist[1]).rotateZ(qWaist[0]) //Pitch and then yaw for mk2
     .translateY(shoulderOffsetY)
-    .translateZ(shoulderOffsetZ2)
+    .translateZ(shoulderOffsetZ+originOffsetZ)
 
     .mDH(-PI/2, 0, q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
@@ -82,7 +90,7 @@ Transform THOROP_kinematics_forward_r_wrist(const double *q, double bodyPitch, c
     .translateZ(-originOffsetZ)
     .rotateY(qWaist[1]).rotateZ(qWaist[0]) //Pitch and then yaw for mk2
     .translateY(shoulderOffsetY)
-    .translateZ(shoulderOffsetZ2)
+    .translateZ(shoulderOffsetZ+originOffsetZ)
 
     .mDH(-PI/2, 0, q[0], 0)
     .mDH(PI/2, 0, PI/2+q[1], 0)
@@ -91,6 +99,7 @@ Transform THOROP_kinematics_forward_r_wrist(const double *q, double bodyPitch, c
     .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLength);    
   return t;
 }
+
 
 
 std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist){

@@ -22,7 +22,7 @@ const double neckOffsetX = 0;
 //which is 111mm higher than mk2 waist position
 //then the shoulder offset Z is the same (165mm)
 
-const double originOffsetZ = 0.111
+const double originOffsetZ = 0.111;
 const double shoulderOffsetX = 0;    
 const double shoulderOffsetY = 0.234; //the same
 const double shoulderOffsetZ = 0.165; //mk1 value, used for calculation
@@ -32,17 +32,24 @@ const double elbowOffsetX =   .030;
 /*
 const double upperArmLength = .246; //mk1 value
 const double lowerArmLength = .250; //mk1 longarm
-*/
-/*
-const double upperArmLength = .261; //mk2 value
-const double lowerArmLength = .252;
-*/
+
 const double upperArmLength = .281; //Elongated mk1 value
 const double lowerArmLength = .298; //Elongated mk1 value
 
+*/
+
+//const double upperArmLength = .261; //mk2 stock value
+//const double lowerArmLength = .252;
+
+const double upperArmLength = .281; //Elongated mk1 value
+const double lowerArmLength = .298; //Elongated mk1 value
+
+
+
+
 const double handOffsetX = 0.310; //mk2 value
 const double handOffsetY = 0;
-const double handOffsetZ = 0;
+const double handOffsetZ = 0; 
 
 //Total reach: mk1: 246+250+230 = 72.6cm
 //						 mk2: 261+252+310 = 82.3cm

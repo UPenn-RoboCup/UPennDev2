@@ -70,6 +70,9 @@ function thorcalc()
 	conv_robotis('luarm',1.806,[414.8 443.1 -0.2], cshoulder+cshoulder_to_lshoulder);
 	conv_robotis('llarm',1.124,[618.9 456.1 0.3], cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow);
 	conv_robotis('lwristpitch',0.441,[740 456 -1.5], cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+
+	conv_robotis('lwristroll',0.077,[776 456 3.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+	conv_robotis('lwristyaw',0.474,[842.3 460 -1.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
 %{
 	
 
@@ -86,8 +89,8 @@ function thorcalc()
 
 
 	
-	conv_robotis('lwristroll',0.077,[776 456 3.5]);
-	conv_robotis('lwristyaw',0.474,[842.3 460 -1.5]);
+	
+	
 
 	conv_robotis('lhand',1.484,[985.5 456 0.2]);
 %}

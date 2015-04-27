@@ -754,12 +754,12 @@ Robot {
                   device RotationalMotor {
                     name "RightShoulderYaw"
                     maxVelocity 2.9216811678
-										maxTorque 44.2                    
+																				maxTorque 44.2                    
                     minPosition -2.92343 maxPosition 2.92343
                   }
                   jointParameters HingeJointParameters {
                     axis 0 1 0
-                     dampingConstant IS damping_constant                    
+                    dampingConstant IS damping_constant                    
                   }
                   endPoint Solid {
               ########################################################
@@ -774,30 +774,31 @@ Robot {
                 		}
 				#############################################################
                     children [
-  										RIGHT_ARM{
-  											translation 0 -0.027 0
-  											rotation 0 1 0 3.14159
-  											scale 0.001 0.001 0.001
-  										}
+									  										RIGHT_ARM{
+									  											#translation 0 -0.027 0
+									  											translation 0 -0.042 0 #mk2 
+									  											rotation 0 1 0 3.14159
+									  											scale 0.001 0.001 0.001
+									  										}
                       DEF Right_elbow_pitch HingeJoint {
                         device RotationalMotor {
-                          name "ArmLowerR"
-                          maxVelocity 3.1520646292
-													maxTorque 24.8                          
-                          minPosition -2.92343 maxPosition 2.92343
+                         name "ArmLowerR"
+                         maxVelocity 3.1520646292
+																									maxTorque 24.8                          
+                         minPosition -2.92343 maxPosition 2.92343
                         }
                         jointParameters HingeJointParameters {
                           axis -1 0 0
-                          anchor 0 -0.246 0.030
+                          anchor 0 -0.261 0.030 #default mk2 length
                           dampingConstant IS damping_constant                                                    
                         }
                         endPoint Solid {
-                          translation 0 -0.246 0.030
+                          translation 0 -0.261 0.030
                           ##############################################################		                    
                           boundingObject Transform {
-        							      rotation 1 0 0 0.7854
-                            children [Box {size 0.13 0.065 0.065}]
-        									}
+        							      						rotation 1 0 0 0.7854
+                           children [Box {size 0.13 0.065 0.065}]
+        																		}
                           physics Physics {
                             density -1 
                             mass 0.81
@@ -806,25 +807,21 @@ Robot {
                           }
                           ##############################################################		
                           
-                          children [
-														#RIGHT_ELBOW_LONG {translation 0 -0.125 -0.03}
-														RIGHT_ELBOW_298 {translation 0 -0.149 -0.03}
-                            DEF Right_wrist_yaw HingeJoint {
-                              device RotationalMotor {
-                                name "RightWristYaw"
-                                maxVelocity 3.1206487025
-                                maxTorque 6.3
-                              } # End of the RightWristYaw RotationalMotor
-                              jointParameters HingeJointParameters {                              
-                                axis 0 1 0
-																#anchor 0 -0.216 -0.03
-																#anchor 0 -0.25 -0.03
-																anchor 0 -0.298 -0.03
-                                dampingConstant IS damping_constant																			
-                              } # End of the RightWristYaw HingeJointParameters
+                          children [																																									
+																											RIGHT_ELBOW_mk2 {translation 0 -0.115 -0.03}
+                           DEF Right_wrist_yaw HingeJoint {
+                             device RotationalMotor {
+                               name "RightWristYaw"
+                               maxVelocity 3.1206487025
+                               maxTorque 6.3
+                             } # End of the RightWristYaw RotationalMotor
+                             jointParameters HingeJointParameters {                              
+                               axis 0 1 0
+																															anchor 0 -0.252 -0.03 #default mk2 
+                               dampingConstant IS damping_constant																			
+                             } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
-                                #translation 0 -0.250 -0.03
-                                translation 0 -0.298 -0.03
+                                translation 0 -0.252 -0.03
                                 #############################################################	                                                   
 																boundingObject Transform {
 	          											translation 0 0.065 0
@@ -1054,9 +1051,7 @@ Robot {
                        }
                        ##############################################################		
                        children [
-																								RIGHT_ELBOW_LONG {
-																									translation 0 -0.125 -0.03												
-																								}
+																								RIGHT_ELBOW_mk2 {translation 0 -0.115 -0.03}
                         DEF Left_wrist_yaw HingeJoint {
                           device RotationalMotor {
                             name "LeftWristYaw"
@@ -1098,38 +1093,36 @@ Robot {
                                 } # End of the LeftWristRoll HingeJointParameters
                                 endPoint Solid {                                    	
                                   translation 0 0 0 
-                                  ##############################################################		    
+                                  ###############################################
                                   boundingObject Box { size 0.05 0.05 0.1 }
 																																		  physics Physics {
-                                    	density -1
-                                    	mass 0.1
-                                    	centerOfMass 0 0.0 0
+                                    	density -1 mass 0.077
+                                    	#centerOfMass [0.0290 0 0.0035] #mk2, spread out posture
+                  																			centerOfMass [0 -0.0290 -0.0035] #mk2, arm low and elbow front
                                     }                                      
                                     ##############################################################
-                                      children [
-                                      	WRIST {
-                                      		translation 0 0 0
-                                      		scale 0.001 0.001 0.001}
-        																WRIST {
-        																	translation 0 -0.0650 0
-        																	scale 0.001 0.001 0.001
-                                          rotation 1 0 0 1.5708
-        																}
-                                        DEF Left_wrist_yaw2 HingeJoint {
-                                          device RotationalMotor {
-                                            name "LeftWristYaw2"
-                                            maxVelocity 3.1206487025
-																						maxTorque 6.3
-                                          }
-                                          jointParameters HingeJointParameters {
-                                            axis 0 -1 0
-																						dampingConstant IS damping_constant                                            
-                                          }
-																					#endPoint GRIPPER_PLATE {translation 0 -0.05 0}
-																					#endPoint CHOPSTICKS {translation 0 -0.05 0}
-#                                          endPoint GRIPPER {
-#                                            #translation 0 -0.05 0
-#                                            translation 0 -0.095 0
+                                    children [
+                                    	WRIST {
+                                    		translation 0 0 0
+                                    		scale 0.001 0.001 0.001}
+												        																WRIST {
+												        																	translation 0 -0.0650 0
+												        																	scale 0.001 0.001 0.001
+	                                    rotation 1 0 0 1.5708
+												        																}
+	                                   DEF Left_wrist_yaw2 HingeJoint {
+	                                		  device RotationalMotor {
+	                                  	  name "LeftWristYaw2"
+	                                     maxVelocity 3.1206487025
+																																						maxTorque 6.3
+                                     }
+                                     jointParameters HingeJointParameters {
+                                      axis 0 -1 0
+																																						dampingConstant IS damping_constant                                            
+                                     }
+#                     endPoint GRIPPER {
+#                      #translation 0 -0.05 0
+# 	                    translation 0 -0.095 0
 #																						rotation 0 0 -1 0.707
 #																						trigger_name "l_trigger"
 #																						grip_name "l_grip"

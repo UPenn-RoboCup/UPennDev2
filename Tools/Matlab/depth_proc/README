@@ -1,16 +1,43 @@
 This folder contains code for the field computer to find the planes in each RGBD frame or each Mesh frame.
 by Bhoram Lee 
 
-Last Update: 2015. Apr. 21
+Last Update: 2015. Apr. 27
 
-Lidar plane detection 
+Lidar-based plane detection 
 
-1) Using log data 
+1) Using streaming data 
+   ******************************
+   run main_stream_all.m (This is matlab code)
+ 
+   ******************************
+   * If you don't want plots, 
+   set the second input argument of detectPlaneInstances_lidar function to 0. 
+   (in the 69th line). 
+   example >> detectPlaneInstances_lidar_v5( ~ , 0, ~); 
+
+   ****************************************
+   * Output of detectPlaneInstances_lidar
+    is a cell containing N number of planes detected. 
+    Each element is a struct with fields Center, Normal, Points, and Size.
+    'Points' is a set of border points, which is currently sampled as the bounding box by 8-directional search.
+    'Size' is the number of points that belong to the plane. 
+
+    For example, you will see somthing like this: 
+    >> Planes
+    Planes = 
+    [1x1 struct]    [1x1 struct]    [1x1 struct]    [1x1 struct]
+    >> Planes{1}
+    ans = 
+    Center: [3x1 single]
+    Normal: [3x1 single]
+    Points: [3x12 double]
+      Size: 936
+    
+    
+2) Using log data 
    open main_planeEstLinar_v3.m 
    set foldername and datestamp 
    and run it. 
-
-3) Using streaming data
     
 
 

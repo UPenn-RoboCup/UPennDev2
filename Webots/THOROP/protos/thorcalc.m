@@ -11,6 +11,7 @@ function thorcalc()
 	cshoulder_to_lshoulder=[0,234,0];
 	lshoulder_to_lelbow=[0,261,-30];
 	lelbow_to_lwrist=[0,252,30];
+	lwrist_to_lwrist2=[0,141,0];
 	waist_to_cshoulder=[0,0,276];
 	chip_to_waist=[0,0,180];
 	chip_to_lhip = [0,105,0];
@@ -73,6 +74,8 @@ function thorcalc()
 
 	conv_robotis('lwristroll',0.077,[776 456 3.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
 	conv_robotis('lwristyaw',0.474,[842.3 460 -1.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+
+	conv_robotis('lhand',1.484,[985.5 456 0.2],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist+lwrist_to_lwrist2);
 %{
 	
 
@@ -92,6 +95,6 @@ function thorcalc()
 	
 	
 
-	conv_robotis('lhand',1.484,[985.5 456 0.2]);
+	
 %}
 end

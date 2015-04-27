@@ -704,10 +704,8 @@ Robot {
           children [Box {size 0.05 0.05 0.05}]
         }        		
         physics Physics {
-        	density -1 
-        	mass 0.1
-          centerOfMass 0 0.0 0
-      	  inertiaMatrix[0.0000625, 0.0000625, 0.0000625, 0,0,0]
+        	density -1 mass 0.940
+	     			centerOfMass [0.0007 0.0000 0.0008] #mk2
       	}
         ##############################################################		
         children [
@@ -720,7 +718,7 @@ Robot {
             device RotationalMotor {
               name "ArmUpperR"
               maxVelocity 2.9216811678
-							maxTorque 44.2              
+														maxTorque 44.2              
               minPosition -2.92343 maxPosition 2.92343
             } # End of the ArmUpperR RotationalMotor
             jointParameters HingeJointParameters {
@@ -734,9 +732,9 @@ Robot {
           			children [Box {size 0.085 0.066 0.15}]
         			}         		
               physics Physics {
-              	density -1 mass 2.89
-                centerOfMass 0 -0.1027 -0.008
-                inertiaMatrix[0.00180625, 0.00180625, 0.00180625, 0,0,0]
+	             	density -1 mass 0.752
+	         					#centerOfMass [0.0282 -0.0549 0.0001] #mk2, spread out posture
+															centerOfMass [-0.0549 -0.0282 0.0001] #mk2, arm low posture
               }
  				 ##############################################################
               ## Begin Shoulder Yaw
@@ -759,15 +757,15 @@ Robot {
                   }
                   endPoint Solid {
               ########################################################
-										boundingObject Transform {
-	          					translation 0 -0.07 0
-          						children [Box {size 0.05 0.05 0.05}]
-        						}
-                    physics Physics {
-                 			density -1 mass 0.13
-                			centerOfMass 0 -0.246 0.030
-                			inertiaMatrix[0.00008125, 0.00008125, 0.00008125, 0,0,0]
-                		}
+																	boundingObject Transform {
+	          							translation 0 -0.07 0
+          								children [Box {size 0.05 0.05 0.05}]
+        								}
+                physics Physics {
+	             			density -1 mass 1.806 
+                	#centerOfMass [0.1808 0.0129 -0.0002] #mk2, spread out posture
+                	centerOfMass [0.0002 -0.1808 -0.0129] #mk2, arm low and elbow front
+		            		}
 				#############################################################
                     children [
 									  										RIGHT_ARM{
@@ -796,10 +794,9 @@ Robot {
                            children [Box {size 0.13 0.065 0.065}]
         																		}
                           physics Physics {
-                            density -1 
-                            mass 0.81
-                            centerOfMass 0 -0.0464 0
-                            inertiaMatrix[0.00050625,0.00050625, 0.00050625, 0,0,0]
+                            density -1 mass 1.124
+                     						#centerOfMass [0.1239 0.0301 -0.0003] #mk2, spread out posture
+                  									centerOfMass [0.0003 -0.1239 -0.031] #mk2, arm low and elbow front
                           }
                           ##############################################################		
                           
@@ -824,10 +821,10 @@ Robot {
 											          												children [Box {size 0.05 0.05 0.05}]
 											        													}
                                 physics Physics {
-                                	density -1 
-                                	mass 0.97
-                                	centerOfMass 0 0.040 0
-                                	inertiaMatrix[0.00060625,0.00060625, 0.00060625, 0,0,0]     	
+                                	 density -1 
+                             					mass 0.441                                	
+																																		#centerOfMass [-0.0070 0 0.0015] #mk2, spread out posture
+                  																centerOfMass [-0.0015 0.0070 0] #mk2, arm low and elbow front
                                 }
                                 #############################################################	                                                   
                                 children [
@@ -849,21 +846,20 @@ Robot {
                                 	 ##############################################################	
                                       boundingObject Box { size 0.05 0.05 0.1 }
 																		  																		physics Physics {
-                                      	density -1
-                                      	mass 0.1
-                                      	centerOfMass 0 0 0
-                                      	inertiaMatrix[0.0000625,0.0000625,0.0000625, 0,0,0]     
+                                      		density -1 mass 0.077
+                                    				#centerOfMass [0.0290 0 -0.0035] #mk2, spread out posture
+                  																						centerOfMass [0 -0.0290 0.0035] #mk2, arm low and elbow front
                                       }           
- 				##############################################################	                                      
+ 																																########################################                                      
                                       children [
 																																							WRIST {
                                       		translation 0 0 0
                                       		scale 0.001 0.001 0.001}
-        																															WRIST {
-        																																translation 0 -0.0650 0
-        																																scale 0.001 0.001 0.001
-                                        rotation 1 0 0 1.5708
-															        																}
+#        																															WRIST {        																																
+#        																																translation 0 -0.0750 0
+#        																																scale 0.001 0.001 0.001
+#                                        rotation 1 0 0 1.5708
+#															        																}
                                        DEF Right_wrist_yaw2 HingeJoint {
                                         device RotationalMotor {
                	                         name "RightWristYaw2"
@@ -875,22 +871,20 @@ Robot {
                                          axis 0 -1 0
                                          dampingConstant IS damping_constant     
                                         }
-			                                    endPoint Solid {
-												                            translation 0 -0.116 0 #mk2 joint : 141-25 = 116
-					                            							boundingObject Box { size 0.05 0.05 0.05 }
-					                           								physics Physics{
-					                           									density -1
-					                           									mass 0.1
-					                           									centerOfMass 0 0.0 0
-										                              }
-															                    			}
-#                          endPoint CHOPSTICKS {translation 0 -0.05 0}
-#																			endPoint GRIPPER {
-#																					translation 0 -0.075 0
-#		  																			rotation 0 0 -1 0.707																		#
-#																					trigger_name "r_trigger
-#																					grip_name "r_grip"
-#																				}
+#				                                    endPoint Solid {
+#													                            translation 0 -0.116 0 #mk2 joint : 141-25 = 116
+#						                            							boundingObject Box { size 0.05 0.05 0.05 }
+#						                           								physics Physics{density -1 mass 0.1 centerOfMass 0 0.0 0}
+#																                    			}
+
+	#                   endPoint CHOPSTICKS {translation 0 -0.05 0}
+																					endPoint GRIPPER_3finger {
+																						translation 0 0 0
+	  																			rotation 0 0 -1 0
+																						trigger_name "r_trigger"
+																						grip_name "r_grip"
+																						extra_name "r_extra"
+																					}
 
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
@@ -1009,7 +1003,8 @@ Robot {
                   ##############################################################
                   children [
 							  										LEFT_ARM {
-							  											translation 0 -0.027 0
+							  											#translation 0 -0.027 0
+							  											translation 0 -0.042 0 #mk2 
 							  											#rotation 0 1 0 3.14159
 							  											scale 0.001 0.001 0.001
 							  										}									    
@@ -1037,8 +1032,7 @@ Robot {
                         children [Box {size 0.13 0.065 0.065}]
         															}
                        physics Physics {
-                         density -1 
-                         mass 1.124
+                         density -1 mass 1.124
                      			#centerOfMass [0.1239 0.0301 0.0003] #mk2, spread out posture
                   						centerOfMass [-0.0003 -0.1239 -0.031] #mk2, arm low and elbow front
                        }
@@ -1099,8 +1093,8 @@ Robot {
                                     		translation 0 0 0
                                     		scale 0.001 0.001 0.001}
 												        																WRIST {
-												        																	translation 0 -0.0650 0
-												        																	scale 0.001 0.001 0.001
+												        																	translation 0 -0.0750 0
+        																													scale 0.001 0.001 0.0015												        																	
 	                                    rotation 1 0 0 1.5708
 												        																}
 	                                   DEF Left_wrist_yaw2 HingeJoint {
@@ -1113,30 +1107,22 @@ Robot {
                                       axis 0 -1 0
 																																						dampingConstant IS damping_constant                                            
                                      }
-#                     endPoint GRIPPER {
-#                      #translation 0 -0.05 0
-# 	                    translation 0 -0.095 0
-#																						rotation 0 0 -1 0.707
-#																						trigger_name "l_trigger"
-#																						grip_name "l_grip"
-#																					}
-
-													endPoint Solid {
-                            translation 0 -0.095 0
-                            ##############################################################		    
-                            boundingObject Box { size 0.05 0.05 0.05 }
-                           	physics Physics{
-                           		density -1
-                           		mass 0.1
-                           		centerOfMass 0 0 0
-               		          	inertiaMatrix[0.0000625,0.0000625,0.0000625, 0,0,0]     	
-                              }
-                            ##############################################################		    
-                    			}
+ 																                    endPoint GRIPPER_pincer {
+																 	                    translation 0 -0.141 0
+																																						rotation 0 0 -1 0
+																	                					trigger_name "l_trigger"
+																																					grip_name "l_grip"
+																																				}
 
 
-
-
+															                            ##############################################################
+#	                  																								endPoint Solid {
+#																															            	translation 0 -0.116 0 #mk2 joint : 141-25 = 116
+#																                            boundingObject Box { size 0.05 0.05 0.05 }
+#																                           	physics Physics{density -1 mass 0.1 centerOfMass 0 0 0}
+#																																										}
+															                            ##############################################################		    
+																		                    			
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
                                       ## End Wrist Yaw2
@@ -1158,7 +1144,7 @@ Robot {
               ## End Shoulder Yaw
             } # End of the Shoulder Roll endpoint
           } # End of the Shoulder Roll HingeJoint
-        ] # End the solid children
+        ] # End the solid children 
         ## End Shoulder Roll
       } # End of the Shoulder Pitch endpoint
     } # End of the Shoulder Pitch HingeJoint

@@ -3,6 +3,7 @@ local ww, cw, mw, kw, sw, fw, rw, kb
 local ffi = require'ffi'
 require'wcm'
 local util = require'util'
+local T = require'Transform'
 
 local get_time = webots.wb_robot_get_time
 
@@ -256,11 +257,13 @@ function WebotsBody.entry(Body)
 
 	cw = Config.sensors.head_camera and require(Config.sensors.head_camera)
   kw = Config.sensors.kinect and require(Config.sensors.kinect)
-	mw = Config.sensors.chest_lidar and require(Config.sensors.chest_lidar)
 	--
 	fw = Config.sensors.feedback and require(Config.sensors.feedback)
   ww = Config.sensors.world and require(Config.sensors.world)
 	kb = Config.testfile and require(Config.testfile)
+	--
+	mw = Config.sensors.mesh and require(Config.sensors.mesh)
+	sw = Config.sensors.slam and require(Config.sensors.slam)
 
 	-- Marcell
 	--rw = Config.wizards.remote and require(Config.wizards.remote)
@@ -270,6 +273,8 @@ function WebotsBody.entry(Body)
 	if ww then ww.entry() end
   if fw then fw.entry() end
   if rw then rw.entry() end
+	if mw then mw.entry() end
+	if sw then sw.entry() end
   if kw and kw.entry then kw.entry() end
 end
 
@@ -292,8 +297,13 @@ function WebotsBody.update_chest_kinect(rgb, depth)
 end
 
 function WebotsBody.update_head_camera(img, sz, cnt, t) if cw then cw.update(img, sz, cnt, t) end end
-function WebotsBody.update_head_lidar(metadata, ranges) if sw then sw.update(metadata, ranges) end end
-function WebotsBody.update_chest_lidar(metadata, ranges) if mw then mw.update(metadata, ranges) end end
+function WebotsBody.update_head_lidar(metadata, ranges)
+	if sw then sw.update(metadata, ranges) end
+	if mw then mw.update(metadata, ranges) end
+end
+function WebotsBody.update_chest_lidar(metadata, ranges)
+	if mw then mw.update(metadata, ranges) end
+end
 
 
 function WebotsBody.update(Body)
@@ -486,11 +496,12 @@ function WebotsBody.update(Body)
 			local bh = mcm.get_stance_bodyHeight()
 
 			local metadata = {
-        n=n,res=res,t=t,angle=Body.get_lidar_position(),
-				torso = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
-        pose = pose,
-				global = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
+        id='lidar0', n=n,res=res,t=t,angle=Body.get_lidar_position(),
+				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
+				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
       }
+					metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
+			metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)
 			NEXT_CHEST_LIDAR = t + lidar_timeStep / 1000
@@ -501,8 +512,23 @@ function WebotsBody.update(Body)
       local fov = webots.wb_camera_get_fov(tags.head_lidar)
       local res = fov / n
       local ranges = webots.wb_camera_get_range_image(tags.head_lidar)
-      local metadata = {n=n,res=res,t=t,angle=Body.get_lidar_position()}
-      WebotsBody.update_head_lidar(metadata,ranges)
+			local rpy = Body.get_rpy()
+			local uComp = mcm.get_stance_uTorsoComp()
+			uComp[3] = 0
+
+			local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
+			local pose = wcm.get_robot_pose()
+			local torsoG = util.pose_global(torso0, pose)
+			local bh = mcm.get_stance_bodyHeight()
+
+			local metadata = {
+        id='lidar1', n=n,res=res,t=t,angle=Body.get_head_position(),
+				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
+				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
+      }
+			metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
+			metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))
+      WebotsBody.update_head_lidar(metadata, ranges)
       NEXT_HEAD_LIDAR = t + lidar_timeStep / 1000
     end
 

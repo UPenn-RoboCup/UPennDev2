@@ -74,7 +74,7 @@ function state.entry()
 	--hcm.set_teleop_roptions(roptions or {qcRArm[3], 0})
 
 	-- Close range mesh
-	vcm.set_mesh_dynrange({.1,1})
+	vcm.set_mesh0_dynrange({.1,1})
 
 end
 

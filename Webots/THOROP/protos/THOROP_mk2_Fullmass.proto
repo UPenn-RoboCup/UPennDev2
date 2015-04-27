@@ -10,10 +10,6 @@
 #  Fixed wrong arm lengths
 # unlimited arm torque and velocity (for arm motion testing)
 # Added inertia matrices for upper body
-#
-#
-#
-#
 # Modification for MK2
 # Fixed kinematic params (arm and leg joint pos)
 #############################################

@@ -232,7 +232,6 @@ local function update(meta, ranges)
 	local pose = vector.pose(meta.pose)
 	local tfL6 = vector.new(meta.tfL6)
 	local tfG6 = vector.new(meta.tfG6)
-	--print('torso', torso)
 
 	-- Find the scanline indices
 	local rad_angle = meta.angle

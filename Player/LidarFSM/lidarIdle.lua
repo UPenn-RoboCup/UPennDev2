@@ -12,10 +12,6 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-
-  mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
-  min_pan = -mag_sweep/2
-  max_pan = mag_sweep/2
 end
 
 function state.update()

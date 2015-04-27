@@ -55,7 +55,7 @@ bool CFitPlane::Init(double *u, double *v, double *d,bool* mask, int ih, int iw,
                 vec3D(0,i) = 0;
                 vec3D(1,i) = 0;
                 vec3D(2,i) = 0;
-                matMask(i) == 0;
+                matMask(i) = 0;
             }
             else {
                 vec3D(0,i) = *(u+i);
@@ -108,6 +108,12 @@ void CFitPlane::fitPlane()
                  double norm = 1.0;
                  // compute normals and singular values
                  Eigen::JacobiSVD<Eigen::MatrixXd> svd(P, Eigen::ComputeThinU );
+                 
+                // if (test == 0){
+               //  std::cout << P << std::endl; 
+               //  test = 1;
+              //   }
+                         
                  Eigen::MatrixXd U =  svd.matrixU();
                  vecSValues.col(cind) = svd.singularValues();              
                  vecCoeffs.col(cind) = U.col(3);   

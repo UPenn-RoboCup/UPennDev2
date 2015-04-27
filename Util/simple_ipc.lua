@@ -76,7 +76,8 @@ if type(udp)=='table' and not udp.ffi then
 		return self.receiver:size()
 	end
 	function simple_ipc.new_sender(ip, port)
-		local sender = udp.new_sender(ip, port)
+		local ok, sender = pcall(udp.new_sender, ip, port)
+		if not ok then return end
 		local obj = {
 			sender = sender,
 			ip = ip,

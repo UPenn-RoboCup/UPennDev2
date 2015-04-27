@@ -1,14 +1,17 @@
 This folder contains code for the field computer to find the planes in each RGBD frame or each Mesh frame.
 by Bhoram Lee 
 
-Last Update: 2015. Mar. 04
-= (mostly working on using kinect depth)
-= setting user defined mode (uisetting.m) 
-= use models for different types of plane  
+Last Update: 2015. Apr. 21
 
-Update: 2015. Feb. 19 
-= added unpack code (main_unpacklogdata.m)
-= use bwlabeln instead of my code to compute connectivity (only for Matlab use)
-= set starting points from the previous cluster means (Mean Shift)
+Lidar plane detection 
+
+1) Using log data 
+   open main_planeEstLinar_v3.m 
+   set foldername and datestamp 
+   and run it. 
+
+3) Using streaming data
+    
+
 
 

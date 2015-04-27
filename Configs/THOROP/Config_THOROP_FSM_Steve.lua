@@ -54,14 +54,18 @@ fsm.Body = {
 fsm.Head = {
 	{'headIdle', 'init', 'headCenter'},
 	--
-	{'headCenter', 'trackhand', 'headTrackHand'},
 	{'headCenter', 'teleop', 'headTeleop'},
+	{'headCenter', 'trackhand', 'headTrackHand'},
+	{'headCenter', 'mesh', 'headMesh'},
+	--
+	{'headTeleop', 'init', 'headCenter'},
+	{'headTeleop', 'trackhand', 'headTrackHand'},
 	--
 	{'headTrackHand', 'init', 'headCenter'},
 	{'headTrackHand', 'teleop', 'headTeleop'},
 	--
-	{'headTeleop', 'init', 'headCenter'},
-	{'headTeleop', 'trackhand', 'headTrackHand'},
+	{'headMesh', 'init', 'headCenter'},
+	{'headMesh', 'done', 'headCenter'},
 }
 
 fsm.Gripper = {

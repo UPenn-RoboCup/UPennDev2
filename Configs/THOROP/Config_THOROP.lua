@@ -2,8 +2,8 @@
 Config = {}
 
 
---IS_STEVE = true
-IS_STEVE = false
+IS_STEVE = true
+--IS_STEVE = false
 
 
 -- General parameters
@@ -31,9 +31,10 @@ if IS_WEBOTS then
   Config.sensors = {
 		ft = true,
 		feedback = 'feedback_wizard',
-    head_camera = 'camera_wizard',
-    --chest_lidar = 'mesh_wizard',
-    --head_lidar = 'slam_wizard',
+		--slam = true,
+    --head_camera = 'camera_wizard',
+    --chest_lidar = true,
+    --head_lidar = true,
     --kinect = 'kinect2_wizard',
 	 	world = 'world_wizard',
   }
@@ -57,8 +58,10 @@ if IS_STEVE then
 		'FSM_Steve', 'Arm_Steve', 'Vision_Steve', 'World_Steve'
 	}
 	if IS_WEBOTS then
-		--Config.sensors.chest_lidar = 'mesh_wizard'
-		----[[
+		Config.sensors.mesh = 'mesh_wizard2'
+		Config.sensors.chest_lidar = true
+		--Config.sensors.head_lidar = true
+		--[[
 		Config.sensors.kinect = 'kinect2_wizard'
 		Config.kinect_timestep = 50
 		--]]

@@ -6,7 +6,7 @@ local util = require'util'
 
 if HOSTNAME=='alvin' or HOSTNAME=='teddy' then
 	
-	local s = si.new_subscriber(Config.net.test.tcp, Config.net.operator.wired)
+	local s = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
 	s.callback = function(skt)
 		local data = skt:recv_all()
 		for _, tping in ipairs(data) do vcm.set_network_tgood(tping) end
@@ -72,6 +72,7 @@ for key,stream in pairs(Config.net.streams) do
 end
 
 -- Forward the ping test packets back to the robot
+--[[
 do
 	local r = si.new_receiver(Config.net.test.udp)
 	r.callback = cb
@@ -80,6 +81,7 @@ do
 	table.insert(out_channels, s)
 	table.insert(ch_processing, procRaw)
 end
+--]]
 
 local function shutdown()
   poller:stop()

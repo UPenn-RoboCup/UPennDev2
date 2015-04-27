@@ -24,7 +24,7 @@ PROTO THOROP_UPENN_Fullmass [
 	field SFFloat    max_torque_400w 44
 	field SFFloat    max_torque_200w 44
   field SFFloat    max_torque_100w 24
-	field SFFloat    damping_constantant 0.1  
+	field SFFloat    damping_constant 0.1  
   # We may want wider FOV for head lidar	
   field SFString   name "THOR-OP"
   field SFString   footContactMaterial "default"

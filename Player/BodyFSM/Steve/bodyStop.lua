@@ -16,7 +16,7 @@ function state.entry()
   --motion_ch:send'stand'
   mcm.set_walk_stoprequest(1)
 	-- Scan close by
-	vcm.set_mesh_dynrange{0.1, 2.5}
+	vcm.set_mesh0_dynrange{0.1, 2.5}
 end
 
 function state.update()

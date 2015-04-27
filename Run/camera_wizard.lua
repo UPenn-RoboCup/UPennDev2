@@ -112,7 +112,7 @@ local function update(img, sz, cnt, t)
 	end
 
 	-- Do the logging if we wish
-	if ENABLE_LOG and t - t_log > LOG_INTERVAL then
+	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then
 		t_log = t
 		nlog = nlog + 1
 		metadata.rsz = sz
@@ -204,8 +204,7 @@ while running do
 		t_debug = t
 		local kb = collectgarbage('count')
 		local debug_str = {
-			string.format("Camera | %s Uptime: %.2f Mem: %d kB", name, t-t0, kb),
-			"# logs: "..nlog
+			string.format("Cam %s | %ds, %d kB", name, t-t0, kb),
 		}
 		print(table.concat(debug_str,'\n'))
 	end

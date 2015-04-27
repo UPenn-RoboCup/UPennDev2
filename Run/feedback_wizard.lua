@@ -7,11 +7,13 @@ local Body = require'Body'
 local get_time = Body.get_time
 local usleep = require'unix'.usleep
 local pose_global = require'util'.pose_global
-local debug_interval = 2
+local debug_interval = 5
 local feedback_interval = 1 / 2
 local t_sleep = 1 / 20
+local t_entry = get_time()
 require'wcm'
 require'mcm'
+require'hcm'
 
 local feedback_udp_ch
 local feedback_ch
@@ -37,6 +39,7 @@ local function get_torso()
 end
 
 local function entry()
+t_entry = get_time()
 	if IS_WEBOTS then
 		feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
 		ping_ch = si.new_subscriber(Config.net.ping.sub)
@@ -61,11 +64,15 @@ local function update()
 	local t_update = get_time()
 	go_ch:send(mpack(t_update))
 	local data = ping_ch:receive(true)
-	if data then
+local is_open = hcm.get_network_open()==1
+	if (not is_open) and data then
 		hcm.set_network_open(1)
 		hcm.set_network_topen(t_update)
 		t_open = t_update
-	elseif t_update - t_open > 1 then
+		print('net open', t_open-t_entry)
+
+	elseif is_open and t_update - t_open > 1 then
+		print('net closed', t_update-t_entry)
 		hcm.set_network_open(0)
 	end
 	if not IS_WEBOTS and t_update - t_feedback < feedback_interval then return end
@@ -73,13 +80,13 @@ local function update()
 	count = count + 1
 	e.id = 'fb'
 	e.t = t
+	e.u = get_torso()
+	e.p = Body.get_position()
+	e.fL = Body.get_lfoot()
+	e.fR = Body.get_rfoot()
+	--[[
 	e.n = count
 	e.b = Body.get_battery()
-	e.torso = get_torso()
-	e.p = Body.get_position()
-	e.ft_l = Body.get_lfoot()
-	e.ft_r = Body.get_rfoot()
-	--[[
 	e.i = Body.get_current()
 	e.cp, e.t_cp = Body.get_command_position()
 	e.p, e.t_p = Body.get_position()
@@ -122,11 +129,11 @@ while running do
     t_debug = t
     local kb = collectgarbage('count')
     io.write(string.format(
-			'Feedback | Uptime: %d sec, Mem: %d kB, Sent: %d bytes\n',
+			'FB | %d sec, %d kB, %d bytes\n',
 			t-t0, kb, nBytes, nBytesPing)
 		)
   end
-	-- Sleep a bit
+  -- Sleep a bit
   collectgarbage('step')
-	usleep(t_sleep)
+  usleep(t_sleep)
 end

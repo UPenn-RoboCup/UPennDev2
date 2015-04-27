@@ -7,7 +7,7 @@ local function update(key_code)
   local code_f, char_f, lower_f = code_lut[key_code], char_lut[key_char], lower_lut[key_char_lower]
   --print('Keycodes', key_code,key_char,key_char_lower)
   --print('Functions',code_f, char_f, lower_f)
-	--io.write('\nkey_code:', key_code, 'key_char:', key_char)
+	--io.write('\nkey_code:', key_code, 'key_char:', key_char,'\n')
   -- Precedence
   if type(code_f)=='function' then
     code_f()

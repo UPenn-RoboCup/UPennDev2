@@ -1,6 +1,9 @@
 #!/usr/local/bin/luajit -i
 local ok = pcall(dofile, 'include.lua')
 if not ok then pcall(dofile, '../include.lua') end
+
+print('Robot', Config.net.robot.wired)
+
 -- Important libraries in the global space
 mp = require'msgpack.MessagePack'
 si = require'simple_ipc'
@@ -22,24 +25,21 @@ for _,lib in ipairs(libs) do
   end
 end
 
--- Requester
 local rpc_req = si.new_requester(Config.net.rpc.tcp_reply, Config.net.robot.wired)
-print('REQ')
-print(util.ptable(rpc_req))
--- UDP
-print('UDP')
 local rpc_udp = si.new_sender(Config.net.robot.wired, Config.net.rpc.udp)
-print(util.ptable(rpc_udp))
 
 -- FSM communicationg
 fsm_chs = {}
 local fsm_send = function(t, evt)
   rpc_req:send(mp.pack({fsm=t.fsm,evt=evt}))
+  local data = unpack(rpc_req:receive())
+  local result = mp.unpack(data)
+  return result
 end
 for sm, en in pairs(Config.fsm.enabled) do
   local fsm_name = sm..'FSM'
   table.insert(fsm_chs, fsm_name)
-  _G[sm:lower()..'_ch'] = en and {fsm=fsm_name, send=fsm_send} or si.new_dummy()
+  _G[sm:lower()..'_ch'] = en and {fsm=sm, send=fsm_send} or si.new_dummy()
 end
 
 -- Shared memory

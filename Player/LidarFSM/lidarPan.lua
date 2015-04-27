@@ -10,10 +10,10 @@ local min, max = math.min, math.max
 -- Sync mesh parameters
 local function update_pan_params()
 	-- Necessary variables
-	mag_sweep, t_sweep = unpack(vcm.get_mesh_sweep())
+	mag_sweep, t_sweep = unpack(vcm.get_mesh0_sweep())
 	-- Some simple safety checks
 	mag_sweep = min(max(mag_sweep, 10 * DEG_TO_RAD), math.pi)
-	t_sweep = min(max(t_sweep, 1), 20)
+	t_sweep = min(max(t_sweep, 0.5), 10)
 	-- Convenience variables
 	min_pan = -mag_sweep/2
   max_pan = mag_sweep/2
@@ -33,11 +33,11 @@ function state.entry()
   
   -- Ascertain the phase, from the current position of the lidar
 	if type(forward)~='boolean' or type(ph)~='number' then
-  	local rad = Body.get_lidar_position()
+  	local rad = Body.get_lidar_command_position()
 		-- Take a given radian and back convert to find the current phase
 		-- Direction is the side of the mid point, as a boolean (forward is true)
 		-- Dir: forward is true, backward is false
-		rad = math.max(math.min(rad, max_pan), min_pan)
+		rad = max(min(rad, max_pan), min_pan)
   	ph, forward = (rad - min_pan) / mag_sweep, rad>mid_pan
 		-- Check if we are *way* out of phase
 		if ph>1.1 or ph<.1 then print('LIDAR WAY OUT OF PHASE') end
@@ -58,28 +58,15 @@ function state.update()
   -- Update the phase of the pan
 	local is_forward = (forward and ph<1) or ph<=0
 	ph = ph + (is_forward and 1 or -1) * (dt/t_sweep * mag_sweep)
-	ph = math.max(math.min(ph, 1), 0)
+	ph = max(min(ph, 1), 0)
 
   -- Set the desired angle of the lidar tilt
-  if Config.use_single_scan then
-	  Body.set_lidar_command_position(0)
-  else
-	  Body.set_lidar_command_position(min_pan + ph * mag_sweep)
-	end
+	Body.set_lidar_command_position(min_pan + ph * mag_sweep)
 	
 	-- We are switching directions, so emit an event
 	if forward ~= is_forward then
 		forward = is_forward
 		ph = ph > 0.5 and 1 or 0
-		-- If streaming, then send on the switches only
-		local dir = vcm.get_mesh_state()
-		vcm.set_mesh_state({forward and 1 or -1})
-		local net = vcm.get_mesh_net()
-		-- If streaming, then LidarFSM should request a mesh be sent
-		if net[3]==1 then
-			net[1] = 1
-			vcm.set_mesh_net(net)
-		end
 		return'switch'
 	end
 	

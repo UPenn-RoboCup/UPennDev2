@@ -66,7 +66,7 @@ while 1
             disp(metadata)
             size(raw)
             
-           [ Planes ] = detectPlaneInstances_lidar_v3( raw', 3, metadata);         
+           [ Planes ] = detectPlaneInstances_lidar_v5( raw', 3, metadata);         
         end
     end
     drawnow;

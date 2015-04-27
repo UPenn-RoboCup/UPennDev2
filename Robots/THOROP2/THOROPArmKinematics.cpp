@@ -114,6 +114,9 @@ std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, 
 
   Transform t;
   //Getting rid of hand, shoulder offsets
+
+/*
+  //mk1
   if (arm==ARM_LEFT){
     t=t
       .translateZ(-shoulderOffsetZ).translateY(-shoulderOffsetY).translateX(-shoulderOffsetX)
@@ -122,6 +125,18 @@ std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, 
     t=t
       .translateZ(-shoulderOffsetZ).translateY(shoulderOffsetY).translateX(shoulderOffsetX)
       .rotateY(-qWaist[1]).rotateZ(-qWaist[0]).rotateY(-bodyPitch)*trWrist;
+  }
+*/
+
+  //MK2
+  if (arm==ARM_LEFT){
+    t=t
+      .translateZ(-shoulderOffsetZ-originOffsetZ).translateY(-shoulderOffsetY).translateX(-shoulderOffsetX)
+      .rotateZ(-qWaist[0]).rotateY(-qWaist[1]).translateZ(originOffsetZ).rotateY(-bodyPitch)*trWrist;
+  }else{
+    t=t
+      .translateZ(-shoulderOffsetZ-originOffsetZ).translateY(shoulderOffsetY).translateX(shoulderOffsetX)
+      .rotateZ(-qWaist[0]).rotateY(-qWaist[1]).translateZ(originOffsetZ).rotateY(-bodyPitch)*trWrist;
   }
 
 //---------------------------------------------------------------------------
@@ -230,12 +245,7 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
   // (pitch-roll-yaw-pitch-yaw-roll-yaw)
   // Shoulder yaw angle is given
 
-
-//TODOTODOTODOTODO
-//Fix waist transform for mk2
-
-
-//Forward kinematics:
+//Forward kinematics: (mk1)
 /*
     .rotateY(bodyPitch)
     .rotateZ(qWaist[0]).rotateY(qWaist[1])
@@ -254,10 +264,12 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
     .translateZ(handOffsetZ);
 */
 
-
   Transform t;
 
   //Getting rid of hand, shoulder offsets
+  
+  //mk1
+  /*
   if (arm==ARM_LEFT){
     t=t
     .translateZ(-shoulderOffsetZ)
@@ -283,6 +295,32 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
     .translateY(-handOffsetYNew)
   	.translateX(-handOffsetXNew);
   }
+*/
+
+
+
+  
+  //MK2
+  if (arm==ARM_LEFT){
+    t=t
+    .translate(-shoulderOffsetX,-shoulderOffsetY,-shoulderOffsetZ-originOffsetZ)
+    .rotateZ(-qWaist[0])
+    .rotateY(-qWaist[1])
+    .translateZ(originOffsetZ)
+    .rotateY(-bodyPitch)
+  *trArm    
+    .translate(-handOffsetXNew,handOffsetYNew,-handOffsetZNew);
+  }else{
+    t=t
+    .translate(-shoulderOffsetX,shoulderOffsetY,-shoulderOffsetZ-originOffsetZ)
+    .rotateZ(-qWaist[0])
+    .rotateY(-qWaist[1])
+    .translateZ(originOffsetZ)
+    .rotateY(-bodyPitch)
+  *trArm
+    .translate(-handOffsetXNew,-handOffsetYNew,-handOffsetZNew);
+  }
+  
 
   Transform trArmRot; //Only the rotation part of trArm
 
@@ -476,6 +514,9 @@ THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, d
 
   Transform trArmRot; //Only the rotation part of trArm
 
+//mk1
+/*
+
   trArmRot = trArmRot
       .rotateY(-qWaist[1])
       .rotateZ(-qWaist[0])
@@ -484,6 +525,15 @@ THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, d
      .translateZ(-trArm(2,3))
      .translateY(-trArm(1,3))
      .translateX(-trArm(0,3));     
+*/
+
+//mk2
+  trArmRot = trArmRot
+      .rotateY(-qWaist[1])
+      .rotateZ(-qWaist[0])
+      .rotateY(-bodyPitch)
+      *trArm
+      .translate(-trArm(0,3),-trArm(1,3),-trArm(2,3));
 
   //Pelvis to wrist transform  
   Transform tInvRot;

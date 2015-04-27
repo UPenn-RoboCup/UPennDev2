@@ -823,10 +823,10 @@ Robot {
                               endPoint Solid {
                                 translation 0 -0.252 -0.03
                                 #############################################################	                                                   
-																boundingObject Transform {
-	          											translation 0 0.065 0
-          												children [Box {size 0.05 0.05 0.05}]
-        												}
+																																boundingObject Transform {
+												          											translation 0 0.065 0
+											          												children [Box {size 0.05 0.05 0.05}]
+											        													}
                                 physics Physics {
                                 	density -1 
                                 	mass 0.97
@@ -835,13 +835,13 @@ Robot {
                                 }
                                 #############################################################	                                                   
                                 children [
-                                  DEF Right_wrist_roll HingeJoint {
-                                    device RotationalMotor {
-                                      name "RightWristRoll"
-                                      maxVelocity 3.1206487025
-																			maxTorque 6.3
-                                      minPosition -2.92343 maxPosition 2.92343
-                                    } # End of the RightWristRoll RotationalMotor
+	                                DEF Right_wrist_roll HingeJoint {
+                                  device RotationalMotor {
+                                    name "RightWristRoll"
+                                    maxVelocity 3.1206487025
+																																				maxTorque 6.3
+                                    minPosition -2.92343 maxPosition 2.92343
+                                  	} # End of the RightWristRoll RotationalMotor
                                     jointParameters HingeJointParameters {
                                       # Straight out the z axis
                                       #fixed
@@ -852,7 +852,7 @@ Robot {
                                     	translation 0 0 0 
                                 	 ##############################################################	
                                       boundingObject Box { size 0.05 0.05 0.1 }
-																		  physics Physics {
+																		  																		physics Physics {
                                       	density -1
                                       	mass 0.1
                                       	centerOfMass 0 0 0
@@ -860,38 +860,35 @@ Robot {
                                       }           
  				##############################################################	                                      
                                       children [
-																				WRIST {
+																																							WRIST {
                                       		translation 0 0 0
                                       		scale 0.001 0.001 0.001}
-        																WRIST {
-        																	translation 0 -0.0650 0
-        																	scale 0.001 0.001 0.001
-                                          rotation 1 0 0 1.5708
-        																}
-                                        DEF Right_wrist_yaw2 HingeJoint {
-                                          device RotationalMotor {
-                                            name "RightWristYaw2"
-                                            maxVelocity 3.1206487025
-																						maxTorque 6.3
-                                          }
-                                          jointParameters HingeJointParameters {
-                                          	#fixed
-                                            axis 0 -1 0
-                                            dampingConstant IS damping_constant     
-                                          }
-#                                          endPoint CHOPSTICKS {translation 0 -0.05 0}
-
-                                    endPoint Solid {
-					                            translation 0 -0.095 0
-					                            boundingObject Box { size 0.05 0.05 0.05 }
-					                           	physics Physics{
-					                           		density -1
-					                           		mass 0.1
-					                           		centerOfMass 0 0.0 0
-					                           		inertiaMatrix[0.0000625,0.0000625,0.0000625, 0,0,0]     	
-					                              }
-					                    			}
-
+        																															WRIST {
+        																																translation 0 -0.0650 0
+        																																scale 0.001 0.001 0.001
+                                        rotation 1 0 0 1.5708
+															        																}
+                                       DEF Right_wrist_yaw2 HingeJoint {
+                                        device RotationalMotor {
+               	                         name "RightWristYaw2"
+                                         maxVelocity 3.1206487025
+																																									maxTorque 6.3
+                                        }
+                                        jointParameters HingeJointParameters {
+                                        	#fixed
+                                         axis 0 -1 0
+                                         dampingConstant IS damping_constant     
+                                        }
+			                                    endPoint Solid {
+												                            translation 0 -0.116 0 #mk2 joint : 141-25 = 116
+					                            							boundingObject Box { size 0.05 0.05 0.05 }
+					                           								physics Physics{
+					                           									density -1
+					                           									mass 0.1
+					                           									centerOfMass 0 0.0 0
+										                              }
+															                    			}
+#                          endPoint CHOPSTICKS {translation 0 -0.05 0}
 #																			endPoint GRIPPER {
 #																					translation 0 -0.075 0
 #		  																			rotation 0 0 -1 0.707																		#

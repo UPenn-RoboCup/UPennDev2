@@ -10,7 +10,7 @@ CFLAGS=-O3 -fpic -pedantic -Wall
 # Linker Definitions
 LD=g++ -shared
 #LD=ld -shared -lstdc++
-LDFLAGS=
+LDFLAGS=-L/usr/local/lib
 LIBRT=-lrt
 SHLIBEXT=so
 STRIP=strip

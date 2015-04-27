@@ -44,7 +44,7 @@ PlaneID = 0;
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
 meshRaw(meshRaw>3) = 0;             % clamp on ranges
 meshRaw(meshRaw<0.5) = 0;
-[mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
+[mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw', s_angles, v_angles); % remove repeated measure   
 
 mesh_ = medfilt2(mesh_,[3 3]);
 
@@ -66,7 +66,7 @@ Y0 = ss_.*cv_.*mesh_;
 Z0  = -sv_.*mesh_ ;
 
 figure(visflag), hold off;
-showPointCloud(X0(:),Y0(:),Z0(:),[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
+showPointCloud([X0(:)'; Y0(:)'; Z0(:)']','VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
 hold on;
 %% Normal Computation
 [N, S] = computeNormal_lidarB(X0, Y0, Z0, mask, normalComp_param(1), normalComp_param(2));

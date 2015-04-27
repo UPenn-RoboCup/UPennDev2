@@ -44,7 +44,7 @@ PlaneID = 0;
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
 meshRaw(meshRaw>2) = 0;             % clamp on ranges
 meshRaw(meshRaw<0.7) = 0;
-[mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
+[mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw', s_angles, v_angles); % remove repeated measure   
 
 mesh_ = medfilt2(mesh_,[5 5]);
 
@@ -67,7 +67,7 @@ Z0  = -sv_.*mesh_ ;
 
 if visflag > 0
    figure(visflag), hold off;
-    showPointCloud(X0(:),Y0(:),Z0(:),[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
+    showPointCloud([X0(:)'; Y0(:)'; Z0(:)']',[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
     hold on;  
 end
 %% Normal Computation
@@ -200,7 +200,7 @@ for tt = 1: size(finalMean,2)
                             if visflag
                                 randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
                                 figure(visflag), 
-                                showPointCloud(ALL(1,:), ALL(2,:),ALL(3,:),...
+                                showPointCloud([ALL(1,:)' ALL(2,:)' ALL(3,:)'],...
                                       randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',5);
                                 nvec = [Planes{PlaneID}.Center  Planes{PlaneID}.Center+Planes{PlaneID}.Normal*0.15];
                                 figure(visflag),

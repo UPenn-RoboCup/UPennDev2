@@ -2,8 +2,8 @@
 Config = {}
 
 
-IS_STEVE = true
---IS_STEVE = false
+--IS_STEVE = true
+IS_STEVE = false
 
 
 -- General parameters
@@ -33,7 +33,7 @@ if IS_WEBOTS then
 		feedback = 'feedback_wizard',
 		--slam = true,
     --head_camera = 'camera_wizard',
-    --chest_lidar = true,
+    chest_lidar = true,
     --head_lidar = true,
     --kinect = 'kinect2_wizard',
 	 	world = 'world_wizard',

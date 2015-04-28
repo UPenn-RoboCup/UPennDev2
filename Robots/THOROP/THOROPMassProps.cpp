@@ -197,14 +197,12 @@ THOROP_kinematics_calculate_com_positions(
 
   /////////////////////////////////
 
-  tPelvisCOM = tPelvis
-    .translateX(comPelvisX)
-    .translateZ(comPelvisZ);
-
   tTorsoCOM = tTorso
-    .translateX(comTorsoX)
-    .translateZ(comTorsoZ);
+    .translate(bodyCom[0][0],bodyCom[0][1],bodyCom[0][2]);
 
+  tPelvisCOM = tPelvis
+    .translate(bodyCom[1][0],bodyCom[1][1],bodyCom[1][2]);
+  
 //make a single compound COM position (from pelvis frame)
   std::vector<double> r(4);
 

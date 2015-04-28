@@ -1,0 +1,135 @@
+#VRML_SIM V6.0 utf8
+PROTO GRIPPER_pincer [
+	#Robotis pincer hand that comes with mk2
+	#Origin: stump position
+	#Pincer position: 16.9cm front (from stump)
+	#picer position from wrist: 141+169 = 310 mm	
+  field SFVec3f translation 0 0 0  
+	field SFRotation rotation  1 0 0 0
+	field SFString trigger_name "trigger"
+	field SFString grip_name "grip"
+  field SFString extra_name "extra"
+]
+{
+	Solid {
+		translation IS translation
+		rotation IS rotation
+		boundingObject Transform {    
+    	translation 0 -0.04 0
+	    children [Box {size 0.08 0.08 0.04 }]
+	  }
+		physics Physics {
+			density -1 mass 1.484
+			#COM from wrist stump: [0.0975 0.000 0.0002]   #with spread out pose
+ 	  	centerOfMass [-0.0002 -0.0975 0] #with lowered pose			
+		}
+		children [
+			Transform{
+				translation 0 -0.04 0
+				children[
+					Shape { geometry Box { size 0.08 0.08 0.04 } }
+				]
+			}
+
+			# Begin Extra
+				DEF EXTRA HingeJoint {
+						device RotationalMotor {
+							name IS extra_name							
+							maxTorque 8							
+							minPosition -2.92343
+							maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 0 0 -1
+							anchor 0 -0.10 0
+						}
+						endPoint Solid {
+							translation -0.01 -0.14 0
+							boundingObject Box { size 0.02 0.05 0.04 }
+							physics Physics {
+								density -1
+								mass 0.01
+							}
+							children[
+								Shape {
+									geometry Box { size 0.02 0.05 0.04 }
+									appearance DEF ROBOT_GREEN Appearance {
+										material Material {
+											diffuseColor 0.4 1 0.4
+											emissiveColor 0.1 0.04 0.08
+											shininess 0.5
+											specularColor 0.2 0.08 0.16
+										}
+									}
+								}
+								Transform{
+									translation -0.01 0.05 0
+									rotation 0 0 1 -0.2
+									children[
+										Shape {
+											geometry Box { size 0.02 0.05 0.02 }
+											appearance USE ROBOT_GREEN
+										}
+									]
+								}
+
+							]
+						}
+					}
+
+# Begin Grip
+	DEF Grip HingeJoint {
+				device RotationalMotor {
+					name IS grip_name
+					#maxVelocity 5.65486677646
+					maxTorque 8
+					# Not sure of these...
+					minPosition -2.92343
+					maxPosition 2.92343
+				}
+				jointParameters HingeJointParameters {
+					axis 0 0 1
+					anchor 0 -0.10 0
+				}
+				endPoint Solid {
+					translation 0.01 -0.14 0
+					boundingObject Box { size 0.02 0.05 0.04 }
+					physics Physics {
+						density -1
+						mass 0.01
+					}
+					children[
+						Shape {
+							geometry Box { size 0.02 0.05 0.04 }
+							appearance DEF ROBOT_BLUE Appearance {
+							material Material {
+								diffuseColor 0 0.75 1
+								emissiveColor 0 0.075 0.1
+								shininess 0.5
+								specularColor 0 0.15 0.2
+								}
+							}
+
+						}
+						Transform{
+							translation 0.01 0.05 0
+							rotation 0 0 1 0.2
+							children[
+								Shape {
+									geometry Box { size 0.02 0.05 0.02 }
+									appearance USE ROBOT_BLUE
+								}
+							]
+						}
+					]
+				}
+			}
+# End Grip
+
+		]
+	}
+
+
+
+	
+}

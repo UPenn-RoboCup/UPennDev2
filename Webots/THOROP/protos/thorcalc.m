@@ -21,18 +21,18 @@ function thorcalc()
 
 
 	function ret=conv_robotis(name,mass,com, origin) 
-		
-
-	
 		acom_code=([com(3) com(1) com(2)]-origin)/1000;
 		acom = [acom_code(2) acom_code(3) acom_code(1)];
-
-
 		str=sprintf('%s: mass %.3f webots com[%.4f %.4f %.4f]', name, mass,acom(1),acom(2),acom(3));
 		disp(str);
-
 	end
 
+
+	function ret=conv_xyz(name,mass,com, origin) 
+		acom=([com(3) com(1) com(2)]-origin)/1000;		
+		str=sprintf('%s: mass %.3f com[%.4f %.4f %.4f]', name, mass,acom(1),acom(2),acom(3));
+		disp(str);
+	end
 
 
 
@@ -40,7 +40,7 @@ function thorcalc()
 
 	cshoulder = chip_to_waist+waist_to_cshoulder;
 
-
+%%{
 	conv_robotis('torso',9.802,[-0.7 417.8 -4.2], cshoulder );
 	conv_robotis('waist', 0.490,  [0 237.9 0], chip_to_waist);	
 	conv_robotis('pelvis', 4.540, [0.2 183.2 -21.2], chip_to_waist );
@@ -76,25 +76,80 @@ function thorcalc()
 	conv_robotis('lwristyaw',0.474,[842.3 460 -1.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
 
 	conv_robotis('lhand',1.484,[985.5 456 0.2],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist+lwrist_to_lwrist2);
-%{
 	
 
-
-
-	
-	
-
-
+%}
 
 
 	
 
+	conv_xyz('torso',9.802,[-0.7 417.8 -4.2], chip_to_waist );
+	conv_xyz('waist', 0.490,  [0 237.9 0], chip_to_waist);	
+	conv_xyz('pelvis', 4.540, [0.2 183.2 -21.2], chip_to_waist );
+
+	conv_xyz('lshoulderpitch',0.940,[233.3 456.0 0.8], cshoulder+cshoulder_to_lshoulder);
+	conv_xyz('lshoulderroll',0.752,[262.2 510.9 0.1], cshoulder+cshoulder_to_lshoulder);
+	conv_xyz('luarm',1.806,[414.8 443.1 -0.2], cshoulder+cshoulder_to_lshoulder);
+	conv_xyz('llarm',1.124,[618.9 456.1 0.3], cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow);
+	conv_xyz('lwristpitch',0.441,[740 456 -1.5], cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+
+	conv_xyz('lwristroll',0.077,[776 456 3.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+	conv_xyz('lwristyaw',0.474,[842.3 460 -1.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+	conv_xyz('lhand',1.484,[985.5 456 0.2],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist+lwrist_to_lwrist2);
 
 
-	
-	
-	
+	conv_xyz('lhipyaw',0.935,[105.3 50.4 -28.0],chip_to_lhip);
+	conv_xyz('lhiproll',0.911,[93.9 0 -0.2],chip_to_lhip);	
+	conv_xyz('luleg',3.322,[92.8 -150 11.9],chip_to_lhip);
+	conv_xyz('llleg',4.165,[89.3 -400.1 6.6],chip_to_lhip-knee_to_hip);
+	conv_xyz('lankle',0.911,[105.2 -600 -11.1],chip_to_lhip-knee_to_hip-ankle_to_knee);
+	conv_xyz('lfoot',1.616,[106.8 -682.8 11.3],chip_to_lhip-knee_to_hip-ankle_to_knee);
 
+
+		%{
+
+
+	conv_robotis('rhipyaw',0.935,[-105.3 50.4 -28.0],chip_to_rhip);
+	conv_robotis('rhiproll',0.911,[-93.9 0 -0.2],chip_to_rhip);	
+	conv_robotis('ruleg',3.322,[-92.8 -150 11.9],chip_to_rhip);
+	conv_robotis('rlleg',4.165,[-89.3 -400.1 6.6],chip_to_rhip-knee_to_hip);
+	conv_robotis('rankle',0.911,[-105.2 -600 -11.1],chip_to_rhip-knee_to_hip-ankle_to_knee);
+	conv_robotis('rfoot',1.616,[-106.8 -682.8 11.3],chip_to_rhip-knee_to_hip-ankle_to_knee);
+
+
+
+	conv_robotis('head1',0.373,[1.8 572.0 0],cshoulder+cshoulder_to_neck);
+	conv_robotis('head2',0.515,[-0.5 652.8 0],cshoulder+cshoulder_to_neck);
+
+
+	conv_robotis('lshoulderpitch',0.940,[233.3 456.0 0.8], cshoulder+cshoulder_to_lshoulder);
+	conv_robotis('lshoulderroll',0.752,[262.2 510.9 0.1], cshoulder+cshoulder_to_lshoulder);
+	conv_robotis('luarm',1.806,[414.8 443.1 -0.2], cshoulder+cshoulder_to_lshoulder);
+	conv_robotis('llarm',1.124,[618.9 456.1 0.3], cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow);
+	conv_robotis('lwristpitch',0.441,[740 456 -1.5], cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+
+	conv_robotis('lwristroll',0.077,[776 456 3.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+	conv_robotis('lwristyaw',0.474,[842.3 460 -1.5],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist);
+
+	conv_robotis('lhand',1.484,[985.5 456 0.2],cshoulder+cshoulder_to_lshoulder+lshoulder_to_lelbow+lelbow_to_lwrist+lwrist_to_lwrist2);
 	
 %}
+
+
+	
+	
+
+
+
+
+	
+
+
+
+	
+	
+	
+
+	
+
 end

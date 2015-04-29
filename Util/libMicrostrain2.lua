@@ -287,18 +287,18 @@ local function get_packet(buf)
 	if not len then return false, buf end
 
 	if desc==0x80 then
-		print('ahrs')
+		--print('ahrs')
 	elseif desc==0x82 then
-		print('estimation')
+		--print('estimation')
 	else
-		print('unknown')
-		cmd2string({u,e,desc,len}, true)
+		error('unknown\n'..cmd2string({u,e,desc,len}))
 	end
+
 	local true_len = len+6
 	local stop = idx+true_len-1
 	print(idx, 'stop', stop, #buf, 'len', len)
 	if stop>#buf then
-		print('not enough bytes')
+		--print('not enough bytes')
 		return false, buf
 	end
 	return {buf:byte(idx, stop)}, buf:sub(stop+1)
@@ -308,7 +308,7 @@ local function process_data(self)
 	local remaining = ''
 	local pkt
 	while true do
-		print('Remaining', #remaining)
+		--print('Remaining', #remaining)
 		local buf = coroutine.yield(pkt) or ''
 		pkt, remaining = get_packet(remaining..buf)
 	end
@@ -322,11 +322,11 @@ local function read_ahrs(self)
 
 	--print('Data', #buf)
 	--cmd2string({buf:byte(1,-1)}, true)
-	print('\n\n')
+	--print('\n\n')
 
 	local status, pkt = coroutine.resume(self.copacket, buf)
 	while pkt do
-		print('digest')
+		--print('digest')
 		status, pkt = coroutine.resume(self.copacket)
 		print('status, pkt', status, pkt)
 		cmd2string(pkt, true)

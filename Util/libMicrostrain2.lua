@@ -325,7 +325,7 @@ extract[0x82] = function(pkt)
 	local rpy = {}
 	for i=1,3 do rpy[i] = euler_tmp[i-1] end
 
-	print('rpy', rpy[0]*180/math.pi, rpy[1]*180/math.pi, rpy[2]*180/math.pi)
+	print('rpy', rpy[1]*180/math.pi, rpy[2]*180/math.pi, rpy[3]*180/math.pi)
 
 end
 

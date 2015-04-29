@@ -282,10 +282,13 @@ local cpy_sz = 3 * ffi.sizeof('float')
 local preamble = string.char(0x75, 0x65)
 local function get_packet(buf)
 	local idx = buf:find(preamble)
-	if not idx then return nil, buf end
+	if not idx then return false, buf end
 	local u,e,desc,len = buf:byte(idx, idx+3)
-	--return buf:sub(idx, idx+len+6-1), buf:sub(idx+len+6-1)
-	return {buf:byte(idx, idx+len+6-1)}, buf:sub(idx+len+6-1)
+	local true_len = len+6
+	local stop = idx+true_len-1
+	print(idx, 'stop', stop, #buf)
+	if stop>#buf then return false, buf end
+	return {buf:byte(idx, stop)}, buf:sub(stop+1)
 end
 
 local function process_data(self)
@@ -305,7 +308,7 @@ local function read_ahrs(self)
   if not buf then return end
 
 	print('Data', #buf)
-	cmd2string({buf:byte(1,-1)}, true)
+	--cmd2string({buf:byte(1,-1)}, true)
 
 	local status, pkt = coroutine.resume(self.copacket, buf)
 	while pkt do

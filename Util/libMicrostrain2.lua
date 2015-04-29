@@ -279,12 +279,13 @@ local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp=
 local nav_stat = ffi.new"uint16_t[3]"
 local cpy_sz = 3 * ffi.sizeof('float')
 
-local function extract_imu(pkt)
+local extract = {}
+extract[0x80] = function(pkt)
 	print('ahrs')
 	cmd2string(pkt, true)
 end
 
-local function extract_estimation(pkt)
+extract[0x82] = function(pkt)
 	print('estimation')
 	cmd2string(pkt, true)
 end
@@ -292,31 +293,22 @@ end
 local preamble = string.char(0x75, 0x65)
 local function get_packet(buf)
 	local idx = buf:find(preamble)
-	if not idx then return false, buf end
+	if not idx then return buf end
 	local u,e,desc,len = buf:byte(idx, idx+3)
-	if not len then return false, buf end
-	local proc
-	if desc==0x80 then
-		proc = extract_imu
-	elseif desc==0x82 then
-		proc = extract_estimation
-	else
-		error('unknown\n'..cmd2string({u,e,desc,len}))
-	end
-
-	local true_len = len+6
+	if not len then return buf end
+	local true_len = len + 6
 	local stop = idx+true_len-1
-	--print(idx, 'stop', stop, #buf, 'len', len)
-	if stop>#buf then return false, buf end
-	return {buf:byte(idx, stop)}, buf:sub(stop+1), proc
+	if stop>#buf then return buf end
+	return buf:sub(stop+1), buf:sub(idx, stop), desc
 end
 
 local function process_data(self)
 	local remaining = ''
-	local pkt, processor
+	local pkt, descriptor
 	while true do
-		local buf = coroutine.yield(pkt, processor) or ''
-		pkt, remaining, processor = get_packet(remaining..buf)
+		local buf = coroutine.yield(pkt) or ''
+		remaining, pkt, descriptor = get_packet(remaining..buf)
+		extract[descriptor](pkt)
 	end
 end
 
@@ -326,11 +318,8 @@ local function read_ahrs(self)
   local buf = unix.read(fd)
   if not buf then return end
 
-	local status, pkt, proc = coroutine.resume(self.copacket, buf)
-	while pkt do
-		proc(pkt)
-		status, pkt = coroutine.resume(self.copacket)
-	end
+	local status, pkt = coroutine.resume(self.copacket, buf)
+	while pkt do status, pkt = coroutine.resume(self.copacket) end
 
 	-- Try to select some stuff
 	--[[

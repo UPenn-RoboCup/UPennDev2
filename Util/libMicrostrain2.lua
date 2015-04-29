@@ -10,6 +10,7 @@ local bit = require'bit'
 
 --for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
 local function cmd2string(cmd, do_print)
+	if not cmd then return end
   local instruction_bytes = {}
   local instruction_decs = {}
   for i, v in ipairs(cmd) do
@@ -281,7 +282,7 @@ local cpy_sz = 3 * ffi.sizeof('float')
 local preamble = string.char(0x75, 0x65)
 local function get_packet(buf)
 	local idx = buf:find(preamble)
-	if not idx then return buf end
+	if not idx then return nil, buf end
 	local u,e,desc,len = buf:byte(idx, idx+3)
 	--return buf:sub(idx, idx+len+6-1), buf:sub(idx+len+6-1)
 	return {buf:byte(idx, idx+len+6-1)}, buf:sub(idx+len+6-1)
@@ -306,8 +307,12 @@ local function read_ahrs(self)
 	print('Data', #buf)
 	cmd2string({buf:byte(1,-1)}, true)
 
-	local status, pkt = coroutine.resume(self.copacket, buf)
-	print('status, pkt', status, pkt)
+	local status, pkt
+	repeat
+		status, pkt = coroutine.resume(self.copacket, buf)
+		print('status, pkt', status, pkt)
+		cmd2string(pkt, true)
+	until not packet
 
 	-- Try to select some stuff
 	--[[

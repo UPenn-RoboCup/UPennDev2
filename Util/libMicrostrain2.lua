@@ -282,12 +282,12 @@ local cpy_sz = 3 * ffi.sizeof('float')
 local extract = {}
 extract[0x80] = function(pkt)
 	print('ahrs')
-	cmd2string(pkt, true)
+	cmd2string({pkt:byte(1,-1)}, true)
 end
 
 extract[0x82] = function(pkt)
 	print('estimation')
-	cmd2string(pkt, true)
+	cmd2string({pkt:byte(1,-1)}, true)
 end
 
 local preamble = string.char(0x75, 0x65)

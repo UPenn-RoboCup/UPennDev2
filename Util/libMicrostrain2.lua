@@ -285,7 +285,8 @@ local function get_packet(buf)
 	if not idx then return false, buf end
 	local u,e,desc,len = buf:byte(idx, idx+3)
 	if not len then return false, buf end
-	if desc==0x80 then print('ahrs') else print('unknown') end
+
+	if desc==0x80 then print('ahrs') else print('unknown'); cmd2string({u,e,desc,len}, true) end
 	local true_len = len+6
 	local stop = idx+true_len-1
 	print(idx, 'stop', stop, #buf, 'len', len)

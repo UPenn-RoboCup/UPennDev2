@@ -308,7 +308,6 @@ local function process_data(self)
 	while true do
 		local buf = coroutine.yield(descriptor)
 		remaining, pkt, descriptor = get_packet(remaining..buf)
-		print(remaining, pkt, descriptor)
 		extract[descriptor](pkt)
 	end
 end
@@ -322,7 +321,7 @@ local function read_ahrs(self)
 	local status, descriptor = coroutine.resume(self.copacket, buf)
 	while status and descriptor do
 		status, descriptor = coroutine.resume(self.copacket, '')
-		print(status, descriptor)
+		print(status, type(descriptor))
 	end
 
 	-- Try to select some stuff

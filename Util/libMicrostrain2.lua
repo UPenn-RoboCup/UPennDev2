@@ -291,9 +291,9 @@ extract[0x80] = function(pkt)
 	-- Gyro
 	ffi.copy(gyr_tmp, pkt:sub(21, 32):reverse(), cpy_sz)
 	-- Delta
-	ffi.copy(del_gyr_tmp, buf:sub(35, 46):reverse(), cpy_sz)
+	ffi.copy(del_gyr_tmp, pkt:sub(35, 46):reverse(), cpy_sz)
 	-- Mag
-	ffi.copy(mag_tmp, buf:sub(49, 60):reverse(), cpy_sz)
+	ffi.copy(mag_tmp, pkt:sub(49, 60):reverse(), cpy_sz)
 
 	--[[
 	local gyr = {}

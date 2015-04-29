@@ -145,10 +145,12 @@ local function configure(self, do_permanent)
 	
 	-- Set the device to idle
   local response = idle(self)
+	print('idle')
+	cmd2string(response, true)
   unix.usleep(1e5)
 
-  -- New AHRS format
-  local ahrs_fmt = { 0x75, 0x65, 0x0C,
+  -- New IMU format
+  local imu_fmt = { 0x75, 0x65, 0x0C,
     0x10, -- Command length
     0x10, 0x08, -- Field Length, and Field Desctiption (AHRS)
     0x01, 0x04, -- Set 5 messages
@@ -157,9 +159,9 @@ local function configure(self, do_permanent)
     0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
     0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
   }
-	print('ahrs_fmt')
-	cmd2string(ahrs_fmt, true)
-  local response = write_command(self.fd, ahrs_fmt)
+	print('imu_fmt')
+	cmd2string(imu_fmt, true)
+  local response = write_command(self.fd, imu_fmt)
 	cmd2string(response, true)
   unix.usleep(1e5)
 	
@@ -275,6 +277,10 @@ local function read_ahrs(self)
   unix.select({fd})
   local buf = unix.read(fd)
   if not buf then return end
+
+	print('Data', #buf)
+	cmd2string(buf, true)
+
 	-- Try to select some stuff
 	-- Accel
 	ffi.copy(acc_tmp, buf:sub(7, 18):reverse(), cpy_sz)

@@ -274,7 +274,7 @@ local function ahrs_and_nav_on(self)
 end
 
 -- TODO: Make this like input_co of libDynamixel
-local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp=
+local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp =
 	ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]', ffi.new'float[3]'
 local nav_stat = ffi.new"uint16_t[3]"
 local cpy_sz = 3 * ffi.sizeof('float')
@@ -283,6 +283,20 @@ local extract = {}
 extract[0x80] = function(pkt)
 	print('ahrs')
 	cmd2string({pkt:byte(1,-1)}, true)
+
+	-- Accel
+	ffi.copy(acc_tmp, pkt:sub(7, 18):reverse(), cpy_sz)
+	-- Gyro
+	ffi.copy(gyr_tmp, pkt:sub(21, 32):reverse(), cpy_sz)
+
+	local gyr = {}
+	for i=1,3 do gyr[i] = gyr_tmp[i-1] end
+	local acc = {}
+	for i=1,3 do acc[i] = acc_tmp[i-1] end
+
+	print('gyr', unpack(gyr))
+	print('acc', unpack(acc))
+
 end
 
 extract[0x82] = function(pkt)

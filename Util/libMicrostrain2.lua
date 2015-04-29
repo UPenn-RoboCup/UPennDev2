@@ -260,9 +260,10 @@ local function configure(self, do_permanent)
     0x0F, -- Command length
     0x0F, 0x11, -- Packet length
 		0x01, -- apply
-		0x00, 0x00, 0x00, 0x00, --roll
-		64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
-		--0x00, 0x00, 0x00, 0x00, --pitch
+		64, 73, 15, 219, --roll (reverse bytes from osx) -- 180 deg
+		--0x00, 0x00, 0x00, 0x00, --roll
+		--64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
+		0x00, 0x00, 0x00, 0x00, --pitch
 		--63, 201, 15, 219, --yaw (reverse bytes from osx) -- 90deg
 		0x00, 0x00, 0x00, 0x00, --yaw
   }

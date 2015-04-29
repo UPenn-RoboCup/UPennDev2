@@ -350,7 +350,7 @@ extract[0x80] = function(pkt)
 	-- Mag
 	ffi.copy(mag_tmp, pkt:sub(49, 60):reverse(), cpy_sz)
 
-	----[[
+	--[[
 	local gyr = {}
 	for i=1,3 do gyr[i] = gyr_tmp[i-1] end
 	local acc = {}
@@ -377,10 +377,11 @@ extract[0x82] = function(pkt)
 	-- Euler
 	ffi.copy(euler_tmp, pkt:sub(15, 26):reverse(), cpy_sz)
 
+	--[[
 	local rpy = {}
 	for i=1,3 do rpy[i] = euler_tmp[i-1] end
-
 	print('rpy', rpy[1]*180/math.pi, rpy[2]*180/math.pi, rpy[3]*180/math.pi)
+	--]]
 
 end
 

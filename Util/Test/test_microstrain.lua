@@ -31,15 +31,24 @@ print(table.concat(imu.information,'\n'))
 --os.exit()
 
 -- Turn on the stream
+
+local t_debug = unix.get_time()
+local t0 = unix.get_time()
+
 print('ahrs_on')
 imu:ahrs_on()
 local cnt = 0
 local running = true
 while running do
   cnt = cnt + 1
-	print('read_ahrs')
-	imu:read_ahrs()
-  if cnt>5 then running = false end
+	--print('read_ahrs')
+	local acc, gyr, del_gyr, rpy, mag = imu:read_ahrs()
+	local t = unix.get_time()
+	if t - t_debug > 1 then
+		print('rpy', rpy[0]*180/math.pi, rpy[1]*180/math.pi, rpy[2]*180/math.pi)
+		t_debug = t
+	end
+  if t-t0>30 then running = false end
 end
 print('ahrs_off!')
 imu:ahrs_off()

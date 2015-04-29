@@ -1,7 +1,5 @@
 assert(Config, 'Need a pre-existing Config table!')
 
-print("FSM CONFIG LOADING")
-
 local fsm = {}
 
 -- Do we disable FSMs?

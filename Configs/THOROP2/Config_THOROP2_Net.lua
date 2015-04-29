@@ -1,6 +1,5 @@
 assert(Config, 'Need a pre-existing Config table!')
 
-print("NET CFG LOADING")
 -- IP addresses
 local IP = {
 	STEVE = 23,

@@ -281,14 +281,21 @@ local cpy_sz = 3 * ffi.sizeof('float')
 
 local extract = {}
 extract[0x80] = function(pkt)
+	--[[
 	print('ahrs')
 	cmd2string({pkt:byte(1,-1)}, true)
+	--]]
 
 	-- Accel
 	ffi.copy(acc_tmp, pkt:sub(7, 18):reverse(), cpy_sz)
 	-- Gyro
 	ffi.copy(gyr_tmp, pkt:sub(21, 32):reverse(), cpy_sz)
+	-- Delta
+	ffi.copy(del_gyr_tmp, buf:sub(35, 46):reverse(), cpy_sz)
+	-- Mag
+	ffi.copy(mag_tmp, buf:sub(49, 60):reverse(), cpy_sz)
 
+	--[[
 	local gyr = {}
 	for i=1,3 do gyr[i] = gyr_tmp[i-1] end
 	local acc = {}
@@ -296,12 +303,23 @@ extract[0x80] = function(pkt)
 
 	print('gyr', unpack(gyr))
 	print('acc', unpack(acc))
+	--]]
 
 end
 
 extract[0x82] = function(pkt)
+
 	print('estimation')
 	cmd2string({pkt:byte(1,-1)}, true)
+
+	-- Euler
+	ffi.copy(euler_tmp, pkt:sub(15, 26):reverse(), cpy_sz)
+
+	local rpy = {}
+	for i=1,3 do rpy[i] = euler_tmp[i-1] end
+
+	print('rpy', unpack(rpy))
+
 end
 
 local preamble = string.char(0x75, 0x65)

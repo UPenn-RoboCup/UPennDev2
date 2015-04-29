@@ -1,3 +1,4 @@
+#!/usr/local/bin/luajit
 dofile'../../include.lua'
 local Body       = require'Body'
 local signal     = require'signal'

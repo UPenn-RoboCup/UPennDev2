@@ -279,7 +279,7 @@ local function read_ahrs(self)
   if not buf then return end
 
 	print('Data', #buf)
-	cmd2string(buf, true)
+	cmd2string({buf:byte(1,-1)}, true)
 
 	-- Try to select some stuff
 	-- Accel

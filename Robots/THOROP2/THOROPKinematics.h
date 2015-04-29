@@ -73,9 +73,18 @@ const double kneeOffsetX = 0.0;    //mk2 lacks kneeoffset
 //const double footHeight = 0.118; //mk1 feet height
 const double footHeight = 0.10;    //mk2 feet height
 
-//SJ: Measured from NEW (smaller) feet
-const double footToeX = 0.130; //from ankle to toe
-const double footHeelX = 0.110; //from ankle to heel
+//const double footToeX = 0.130; //from ankle to toe
+//const double footHeelX = 0.110; //from ankle to heel
+const double footToeX = 0.130; //from ankle to toe, mk2 stock feet
+const double footHeelX = 0.130; //from ankle to heel, mk2 stock feet
+
+
+//mkw lidar positions
+const double chestLidarHingeX = 0.05 
+const double chestLidarX = 0 //after lidar servo
+const double chestLidarZ = -0.028 //based on shoulder height
+
+const double headLidarX = 0.10 //based on neck servo
 
 
 //=================================================================
@@ -304,17 +313,6 @@ const double InertiaLeg[12][6]={
 	{0.00059125,0.00059125,0.00059125,0,0,0},
 	{0.000708125,0.000708125,0.000708125,0,0,0}
 };
-
-
-
-
-
-
-
-
-
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////

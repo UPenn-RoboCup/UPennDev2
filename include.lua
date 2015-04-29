@@ -71,6 +71,9 @@ unix = require'unix.ffi'
 
 -- Save the hostname
 HOSTNAME = unix.gethostname()
+
+print("HOSTNAME:",HOSTNAME)
+
 OPERATING_SYSTEM = unix.uname():lower()
 
 -- Some other directories

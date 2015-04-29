@@ -340,6 +340,9 @@ walk.supportY = 0.00
 Config.walk    = walk
 Config.kick  = kick
 Config.stance  = stance
-Config.zmpstep = zmpstep
+
+--Now we keep a lookup table file rather than specifying here
+local zparam = require'zmpparam'
+Config.zmpparam = zparam.zmpparam
 
 return Config

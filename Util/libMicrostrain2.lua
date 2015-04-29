@@ -286,7 +286,7 @@ local function get_packet(buf)
 	local u,e,desc,len = buf:byte(idx, idx+3)
 	local true_len = len+6
 	local stop = idx+true_len-1
-	print(idx, 'stop', stop, #buf)
+	print(idx, 'stop', stop, #buf, 'len', len)
 	if stop>#buf then return false, buf end
 	return {buf:byte(idx, stop)}, buf:sub(stop+1)
 end
@@ -308,10 +308,12 @@ local function read_ahrs(self)
   if not buf then return end
 
 	print('Data', #buf)
-	--cmd2string({buf:byte(1,-1)}, true)
+	cmd2string({buf:byte(1,-1)}, true)
+	print('\n\n')
 
 	local status, pkt = coroutine.resume(self.copacket, buf)
 	while pkt do
+		print('digest')
 		status, pkt = coroutine.resume(self.copacket)
 		print('status, pkt', status, pkt)
 		cmd2string(pkt, true)

@@ -306,7 +306,7 @@ local function read_ahrs(self)
 	print('Data', #buf)
 	cmd2string({buf:byte(1,-1)}, true)
 
-	local status, pkt = coroutine.resume(process_data)
+	local status, pkt = coroutine.resume(self.copacket, buf)
 
 	-- Try to select some stuff
 	-- Accel

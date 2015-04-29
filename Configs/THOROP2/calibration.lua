@@ -7,13 +7,8 @@ cal["asus"] = {}
 cal["alvin"]={}
 cal["teddy"]={}
 
-
-
--- Updated date: Sat Jun 21 20:14:27 2014
-cal["asus"].legBias=vector.new({
-   2.024974,0.000000,0.000000,0.000000,0.000000,0.000000,
-   0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,
-   })*math.pi/180
+cal["alvin"].legBias=vector.new({
+   0,0,0,0,0,0, 0,0,0,0,0,0})
 
 -- Updated date: Sat Sep 20 17:40:14 2014
 cal["alvin"].legBias=vector.new({

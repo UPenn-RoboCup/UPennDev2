@@ -1,8 +1,5 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
-
-print('HOSTNAME', hostname)
-
 ---------
 -- IMU --
 ---------
@@ -78,24 +75,24 @@ Config.left_foot_ft = FT14216
 Config.right_wrist_ft = FT16465
 Config.left_wrist_ft = FT16464
 
-Config.left_ft.m_ids = {24, 26}
-Config.right_ft.m_ids = {25, 23}
+Config.left_foot_ft.m_ids = {24, 26}
+Config.right_foot_ft.m_ids = {25, 23}
 
 -- DCM Chains
-Config.chain = {
-	enabled = true
-}
+Config.chain = {enabled = true}
+
 local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {1,3,5,7,9,11,13,
 	--head
-	29, 30,
-	-- gripper
-	63, 65, 67
-},
-enable_read = true,
+		29, 30,
+		-- gripper
+		63, 65, 67
+	},
+	enable_read = true,
 }
+
 local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
@@ -108,6 +105,7 @@ local left_arm = {
 	},
 	enable_read = true
 }
+
 local right_leg = {
 	name = 'rleg',
 	ttyname = '/dev/ttyUSB2',
@@ -115,6 +113,7 @@ local right_leg = {
 	m_ids = {15,17,19, 21, 23,25, 28},
 	enable_read = true,
 }
+
 local left_leg = {
 	name = 'lleg',
 	ttyname = '/dev/ttyUSB3',
@@ -122,6 +121,7 @@ local left_leg = {
 	m_ids = {16,18,20, 22, 24,26, 27},
 	enable_read = true,
 }
+
 -- For RoboCup, use an MX only chain for the arms
 local head_rc = {
 	name = 'head',
@@ -129,6 +129,7 @@ local head_rc = {
 	m_ids = {29, 30, 37, 11, 12, 13, 14},
 	enable_read = true,
 }
+
 -- For RoboCup, use an MX only chain for the arms
 local arms_rc = {
 	name = 'arms',
@@ -136,21 +137,6 @@ local arms_rc = {
 	m_ids = {11, 12, 13, 14},
 	enable_read = true,
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if OPERATING_SYSTEM=='darwin' then
 	right_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0A'
@@ -462,6 +448,7 @@ for i, offset in ipairs(servo.rad_offset) do
 end
 
 if IS_WEBOTS then
+
 	-- Webots overrides tested in Webots 7.2.3, with ShortNewHand
 	servo.direction = vector.new({
 		1,1, -- Head

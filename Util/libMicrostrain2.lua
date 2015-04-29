@@ -319,7 +319,10 @@ local function read_ahrs(self)
   if not buf then return end
 
 	local status, pkt = coroutine.resume(self.copacket, buf)
-	while pkt do status, pkt = coroutine.resume(self.copacket) end
+	while pkt do
+		print('pkt', type(pkt))
+		status, pkt = coroutine.resume(self.copacket)
+	end
 
 	-- Try to select some stuff
 	--[[

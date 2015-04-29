@@ -621,30 +621,37 @@ Robot {
        anchor 0 0 0
 						} # End of the Head HingeJointParameters
 						##############################################################		
-							endPoint Solid {
-							translation 0 0.268 0 #mk2 value (camera position)
-							physics Physics {}
-							boundingObject Box {size 0.05 0.05 0.05}
+						endPoint Camera {
+							name "HeadCamera"
+							width 320
+							height 240
+							translation 0 0.1 0.03
+							rotation 0 1 0 3.14159265
+							pixelSize 0
 							children [
-								Camera {
-									name "HeadCamera"
-									width 320
-									height 240
-									translation 0 0 0
-									rotation 0 1 0 3.14159265
-									pixelSize 0
-								}
 								kinect2 {      			  
-									translation 0 0 0
-									rotation 0 1 0 3.14159265
-									mass 0.515
-									#TODO: COM for head									
+									translation 0 0.02 0
+									#rotation 0 1 0 3.14159265
+									mass 0.1
+									#TODO: add a pitch angle
 									maxRange 6
 									pixelSize 0
 								}
+								hokuyo {
+									name "HeadLidar"
+									width IS lidarRays
+									fieldOfView IS lidarFov
+									translation 0 0.1 0.03
+									#rotation 0.707107 -0.707107 0 3.14159
+								}
 							]
+							physics Physics {
+								density -1
+								mass 0.01
+							}
+							boundingObject Box {size 0.01 0.01 0.01}
 						}
-      			##############################################################		
+      			##############################################################	
 					} # End of the Head HingeJoint
 				] # End of the Head Children
 			} # End of the Head endpoint

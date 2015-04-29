@@ -2,7 +2,6 @@ dofile'../../include.lua'
 local Body       = require'Body'
 local signal     = require'signal'
 local carray     = require'carray'
-local mp         = require'msgpack'
 local util       = require'util'
 local simple_ipc = require'simple_ipc'
 local libMicrostrain  = require'libMicrostrain'
@@ -19,10 +18,11 @@ if not imu then
   os.exit()
 end
 
---util.ptable(imu)
+util.ptable(imu)
 
 -- Print info
 print('Opened Microstrain')
+imu:get_info()
 print(table.concat(imu.information,'\n'))
 
 -- Set up the defaults:
@@ -38,7 +38,7 @@ imu:ahrs_on()
 local cnt = 0
 while true do
   local ret_fd = unix.select( {imu.fd} )
-  print('READING')
+  io.write('READING\n')
   res = unix.read(imu.fd)
   assert(res)
   local response = {string.byte(res,1,-1)}
@@ -48,9 +48,10 @@ while true do
   print( string.format('GYRO: %g %g %g',unpack(gyro:table())))
 
   local rpy_str = res:sub(21,32)
+  print('rpy_str', #rpy_str)
   local rpy = carray.float( rpy_str:reverse() )
   rpy = vector.new( rpy:table() )
-  print( 'RPY:', rpy*RAD_TO_DEG )
+  print( 'RPY:', unpack(rpy) )
 --[[
   local acc_str = res:sub(7,18)
   for i,b in ipairs{acc_str:byte(1,-1)} do
@@ -79,47 +80,3 @@ print('timeout!',ret_fd)
 
 imu:close()
 os.exit()
-
--- Ensure that we shutdown the devices properly
-function shutdown()
-  print'Shutting down the Hokuyos...'
-  for i,h in ipairs(hokuyos) do
-    h:stream_off()
-    h:close()
-    print('Closed Hokuyo',i)
-  end
-  os.exit()
-end
-signal.signal("SIGINT", shutdown)
-signal.signal("SIGTERM", shutdown)
-
--- Begin to service
-os.execute('clear')
-assert(#hokuyos>0,"No hokuyos detected!")
-print( util.color('Servicing '..#hokuyos..' Hokuyos','green') )
-
-local main = function()
-  local main_cnt = 0
-  local t0 = Body.get_time()
-  while true do
-    main_cnt = main_cnt + 1
-    local t_now = Body.get_time()
-    local t_diff = t_now - t0
-    if t_diff>1 then
-      local debug_str = string.format('\nMain loop: %7.2f Hz',main_cnt/t_diff)
-      debug_str = util.color(debug_str,'yellow')
-      for i,h in ipairs(hokuyos) do
-        debug_str = debug_str..string.format(
-        '\n\t%s Hokuyo was seen %5.3f seconds ago: %g m',
-        h.name,t_now - h.t_last,h.mid)
-      end
-      os.execute('clear')
-      print(debug_str)
-      t0 = t_now
-      main_cnt = 0
-    end
-    coroutine.yield()
-  end
-end
-libHokuyo.service( hokuyos, main )
-

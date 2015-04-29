@@ -70,7 +70,8 @@ local function get_info(self)
   local firmware_version = 256 * response[pkt2_idx+2]+response[pkt2_idx+3]
   local information = string.char(unpack(response,pkt2_idx+4,pkt2_idx+pk2_sz-1))
   local info = {firmware_version}
-  for k in information:gmatch('[^%s]+') do table.insert(info,k) end
+  for k in information:gmatch('[^%s]+') do table.insert(info, k) end
+	self.information = info
   return info
 end
 
@@ -324,7 +325,7 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
   unix.usleep(1e5)
   
   -- Configure params
-  enable_magnetometer_compensation(dev)
+  --enable_magnetometer_compensation(dev)
   
 	-- Configure the device
 	configure(dev)
@@ -332,5 +333,6 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
   return dev
 
 end
+libMicrostrain.configure = configure
 
 return libMicrostrain

@@ -295,22 +295,29 @@ extract[0x80] = function(pkt)
 	-- Mag
 	ffi.copy(mag_tmp, pkt:sub(49, 60):reverse(), cpy_sz)
 
-	--[[
+	----[[
 	local gyr = {}
 	for i=1,3 do gyr[i] = gyr_tmp[i-1] end
 	local acc = {}
 	for i=1,3 do acc[i] = acc_tmp[i-1] end
+	local del = {}
+	for i=1,3 do del[i] = del_gyr_tmp[i-1] end
+	local mag = {}
+	for i=1,3 do mag[i] = mag_tmp[i-1] end
 
 	print('gyr', unpack(gyr))
 	print('acc', unpack(acc))
+	print('del', unpack(del))
+	print('mag', unpack(mag))
 	--]]
 
 end
 
 extract[0x82] = function(pkt)
-
+	--[[
 	print('estimation')
 	cmd2string({pkt:byte(1,-1)}, true)
+	--]]
 
 	-- Euler
 	ffi.copy(euler_tmp, pkt:sub(15, 26):reverse(), cpy_sz)
@@ -318,7 +325,7 @@ extract[0x82] = function(pkt)
 	local rpy = {}
 	for i=1,3 do rpy[i] = euler_tmp[i-1] end
 
-	print('rpy', unpack(rpy))
+	print('rpy', rpy[0]*180/math.pi, rpy[1]*180/math.pi, rpy[2]*180/math.pi)
 
 end
 

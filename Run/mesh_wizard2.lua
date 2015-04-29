@@ -5,11 +5,9 @@ local ENABLE_LOG = false
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
 dofile'../include.lua'
 local libMesh = require'libMesh'
-local torch = require'torch'
 local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
-local vector = require'vector'
 local Body = require'Body'
 require'vcm'
 require'hcm'
@@ -28,16 +26,13 @@ local function check_send_mesh()
 	local t_open
 	if n_open==1 then
 		t_open = hcm.get_network_topen()
-		if t_open - t_send_mesh > 0.5 then request = true end
+		if t_open - t_send_mesh > 0.5 then
+			request = true
+			t_send_mesh = t
+		end
 	end
 
-	if mesh0 and t-t_send_mesh>t_sweep0 then request = true end
-	if mesh1 and t-t_send_mesh>t_sweep1 then request = true end
-	
-	if not request then return end
-	t_send_mesh = t
-
-	if mesh0 then
+	if mesh0 and (t-t_send_mesh>t_sweep0 or request) then
 		local metadata = mesh0.metadata
 		metadata.t = t
 
@@ -59,20 +54,25 @@ local function check_send_mesh()
 		end
 	end
 
-	if mesh1 then
+	if mesh1 and (t-t_send_mesh>t_sweep1 or request) then
 		local metadata = mesh1.metadata
 		metadata.t = t
 		mesh1:dynamic_range(vcm.get_mesh1_dynrange())
 		local c_mesh = mesh1:get_png_string2()
-		metadata.c = 'png'
+		
 		-- Send away
-		local meta = mpack(metadata)
-		if mesh1_ch then mesh1_ch:send{meta, c_mesh} end
+		if mesh1_ch then
+			metadata.c = 'raw'
+			mesh1_ch:send{mpack(metadata), mesh1:get_raw_string()}
+			--metadata.c = 'png'
+			--mesh1_ch:send{mpack(metadata), c_mesh}
+		end
 		if mesh1_udp_ch then
+			metadata.c = 'png'
+			local meta = mpack(metadata)
 			local ret, err = mesh1_udp_ch:send(meta..c_mesh)
 			--print('Mesh1 | Sent UDP', unpack(ret))
 		end
-		print('Mesh1 | Sent', #meta, #c_mesh)
 	end
 
 	-- Log

@@ -268,19 +268,24 @@ local function configure(self, do_permanent)
   idle(self)
   unix.usleep(1e5)
 
-	local disable_mag = { 0x75, 0x65, 0x0D,
-    0x05, -- Command length
-    0x05, 0x41, -- Packet length
-		0x01, 0x00, 0x01
+	----[[
+	local sensor_frame = { 0x75, 0x65, 0x0D,
+    0x0F, -- Command length
+    0x0F, 0x11, -- Packet length
+		0x01, -- apply
+		0x00, 0x00, 0x00, 0x00, --roll
+		0x00, 0x00, 0x00, 0x00, --pitch
+		219, 15, 73, 64, --yaw (or reverse?)
   }
-	print('disable_mag')
-	cmd2string(disable_mag, true)
-  local response = write_command(self.fd, disable_mag)
+	print('sensor_frame')
+	cmd2string(sensor_frame, true)
+  local response = write_command(self.fd, sensor_frame)
 	cmd2string(response, true)
 
 	-- Set the device to idle
   idle(self)
   unix.usleep(1e5)
+--]]
 
   if do_permanent then
     -- Device startup settings

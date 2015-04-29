@@ -133,6 +133,30 @@ local right_ft = {
 	calibration_gain = Config.right_ft.gain,
 	shm = dcm.sensorPtr.rfoot,
 }
+local left_wrist_ft = {
+	id = Config.left_wrist_ft.id,
+	m_ids = Config.left_wrist_ft.m_ids,
+	raw = ffi.new'uint8_t[8]',
+	raw16 = ffi.new'uint16_t[4]',
+	readings = ffi.new'double[6]',
+	component = ffi.new'double[6]',
+	unloaded = ffi.new('double[6]', Config.left_wrist_ft.unloaded),
+	calibration_mat = ffi.new('double[6][6]', Config.left_wrist_ft.matrix),
+	calibration_gain = Config.left_wrist_ft.gain,
+	shm = dcm.sensorPtr.lwrist,
+}
+local right_wrist_ft = {
+	id = Config.right_wrist_ft.id,
+	m_ids = Config.right_wrist_ft.m_ids,
+	raw = ffi.new'uint8_t[8]',
+	raw16 = ffi.new'uint16_t[4]',
+	readings = ffi.new'double[6]',
+	component = ffi.new'double[6]',
+	unloaded = ffi.new('double[6]', Config.right_wrist_ft.unloaded),
+	calibration_mat = ffi.new('double[6][6]', Config.right_wrist_ft.matrix),
+	calibration_gain = Config.right_wrist_ft.gain,
+	shm = dcm.sensorPtr.rwrist,
+}
 local function parse_ft(ft, raw_str, m_id)
 
 	if m_id==ft.m_ids[1] then
@@ -248,7 +272,7 @@ local function parse_read_leg(pkt, bus)
 end
 
 -- Custom Arm Packet
-local arm_packet_reg = {'position', 'current'}
+local arm_packet_reg = {'position', 'current', 'data'}
 local arm_packet_sz = 0
 local arm_packet_offsets = {}
 for i,v in ipairs(arm_packet_reg) do
@@ -328,6 +352,13 @@ local function parse_read_arm(pkt, bus)
 	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
 	c_ptr[read_j_id - 1] = read_cur
 	c_ptr_t[read_j_id - 1] = t_read
+	-- Update the F/T Sensor
+	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
+	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
+	--print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
+
+	parse_ft(left_ft, raw_str, m_id)
+	parse_ft(right_ft, raw_str, m_id)
 	--
 	return read_j_id
 end

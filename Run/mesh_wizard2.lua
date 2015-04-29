@@ -60,10 +60,10 @@ local function check_send_mesh()
 	end
 
 	if mesh1 then
+		local metadata = mesh1.metadata
 		metadata.t = t
 		mesh1:dynamic_range(vcm.get_mesh1_dynrange())
 		local c_mesh = mesh1:get_png_string2()
-		local metadata = mesh1.metadata
 		metadata.c = 'png'
 		-- Send away
 		local meta = mpack(metadata)

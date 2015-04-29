@@ -279,10 +279,22 @@ local function get_packet(buf)
 	local idx = buf:find(preamble)
 	if not idx then return end
 	local u,e,desc,len = buf:byte(idx, idx+3)
-	local pkt = buf:sub(idx, idx+len+6-1)
-	print('Packet', #pkt, 'of', #buf)
-	cmd2string({pkt:byte(1,-1)}, true)
-	return pkt
+	return buf:sub(idx, idx+len+6-1), buf:sub(idx+len+6-1)
+end
+
+local function process_data(self)
+	local remaining = ''
+	local pkt
+	while true do
+		local buf = coroutine.yield(pkt)
+		local fullbuf = remaining..buf
+		pkt, fullbuf = get_packet()
+		print('Received', #buf)
+		print('Packet', #pkt, 'of', #fullbuf)
+		cmd2string({pkt:byte(1,-1)}, true)
+		print('Remaining', #remaining, 'of', #fullbuf)
+		cmd2string({remaining:byte(1,-1)}, true)
+	end
 end
 
 local function read_ahrs(self)
@@ -294,7 +306,7 @@ local function read_ahrs(self)
 	print('Data', #buf)
 	cmd2string({buf:byte(1,-1)}, true)
 
-	get_packet(buf)
+	local status, pkt = coroutine.resume(process_data)
 
 	-- Try to select some stuff
 	-- Accel
@@ -367,6 +379,9 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
     get_info = get_info,
     read_ahrs = read_ahrs,
   }
+	local copacket = coroutine.create(process_data)
+	coroutine.resume(copacket, dev)
+	dev.copacket = dev
   
   -- Configure params
   --enable_magnetometer_compensation(dev)

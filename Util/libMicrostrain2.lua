@@ -279,36 +279,40 @@ local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp=
 local nav_stat = ffi.new"uint16_t[3]"
 local cpy_sz = 3 * ffi.sizeof('float')
 
+local function extract_imu()
+	print('ahrs')
+end
+
+local function extract_estimation()
+	print('estimation')
+end
+
 local preamble = string.char(0x75, 0x65)
 local function get_packet(buf)
 	local idx = buf:find(preamble)
 	if not idx then return false, buf end
 	local u,e,desc,len = buf:byte(idx, idx+3)
 	if not len then return false, buf end
-
+	local proc
 	if desc==0x80 then
-		--print('ahrs')
+		proc = extract_imu
 	elseif desc==0x82 then
-		--print('estimation')
+		proc = extract_estimation
 	else
 		error('unknown\n'..cmd2string({u,e,desc,len}))
 	end
 
 	local true_len = len+6
 	local stop = idx+true_len-1
-	print(idx, 'stop', stop, #buf, 'len', len)
-	if stop>#buf then
-		--print('not enough bytes')
-		return false, buf
-	end
-	return {buf:byte(idx, stop)}, buf:sub(stop+1)
+	--print(idx, 'stop', stop, #buf, 'len', len)
+	if stop>#buf then return false, buf end
+	return {buf:byte(idx, stop)}, buf:sub(stop+1), proc
 end
 
 local function process_data(self)
 	local remaining = ''
 	local pkt
 	while true do
-		--print('Remaining', #remaining)
 		local buf = coroutine.yield(pkt) or ''
 		pkt, remaining = get_packet(remaining..buf)
 	end
@@ -320,16 +324,10 @@ local function read_ahrs(self)
   local buf = unix.read(fd)
   if not buf then return end
 
-	--print('Data', #buf)
-	--cmd2string({buf:byte(1,-1)}, true)
-	--print('\n\n')
-
-	local status, pkt = coroutine.resume(self.copacket, buf)
+	local status, pkt, proc = coroutine.resume(self.copacket, buf)
 	while pkt do
-		--print('digest')
+		proc(pkt)
 		status, pkt = coroutine.resume(self.copacket)
-		print('status, pkt', status, pkt)
-		cmd2string(pkt, true)
 	end
 
 	-- Try to select some stuff

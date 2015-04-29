@@ -241,6 +241,20 @@ local function configure(self, do_permanent)
   local response = write_command(self.fd, init_att)
 	--]]
 
+	local disable_mag = { 0x75, 0x65, 0x0D,
+    0x05, -- Command length
+    0x05, 0x41, -- Packet length
+		0x01, 0x00, 0x01
+  }
+	print('disable_mag')
+	cmd2string(disable_mag, true)
+  local response = write_command(self.fd, disable_mag)
+	cmd2string(response, true)
+
+	-- Set the device to idle
+  idle(self)
+  unix.usleep(1e5)
+
 	local reset_filter = { 0x75, 0x65, 0x0D,
     0x02, -- Command length
     0x02, 0x01, -- Packet length
@@ -261,7 +275,7 @@ local function configure(self, do_permanent)
   }
 	print('disable_mag')
 	cmd2string(disable_mag, true)
-  local response = write_command(self.fd, reset_filter)
+  local response = write_command(self.fd, disable_mag)
 	cmd2string(response, true)
 
 	-- Set the device to idle

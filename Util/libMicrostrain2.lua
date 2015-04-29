@@ -246,6 +246,8 @@ end
 
 local function ahrs_on(self)
 	stty.flush(self.fd)
+	local buf = unix.read(self.fd)
+	while buf do buf = unix.read(self.fd) end
   -- Turn on the ahrs stream
   local response = write_command(self.fd, {
     0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x01
@@ -257,6 +259,8 @@ local function ahrs_off(self)
     0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x00
   })
 	stty.flush(self.fd)
+	local buf = unix.read(self.fd)
+	while buf do buf = unix.read(self.fd) end
 end
 
 local function ahrs_and_nav_on(self)
@@ -381,13 +385,19 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
   }
 	local copacket = coroutine.create(process_data)
 	coroutine.resume(copacket, dev)
-	dev.copacket = dev
+	dev.copacket = copacket
   
   -- Configure params
   --enable_magnetometer_compensation(dev)
-  
+
+	local buf = unix.read(fd)
+	while buf do buf = unix.read(fd) end
+
 	-- Configure the device
 	configure(dev)
+
+	local buf = unix.read(fd)
+	while buf do buf = unix.read(fd) end
 
   return dev
 

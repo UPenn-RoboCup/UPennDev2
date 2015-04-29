@@ -274,6 +274,17 @@ local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp=
 local nav_stat = ffi.new"uint16_t[3]"
 local cpy_sz = 3 * ffi.sizeof('float')
 
+local preamble = string.char(0x75, 0x65)
+local function get_packet(buf)
+	local idx = buf:find(preamble)
+	if not idx then return end
+	local u,e,desc,len = buf:byte(idx, idx+3)
+	local pkt = buf:sub(idx, idx+len-1)
+	print('Packet', pkt)
+	cmd2string({pkt:byte(1,-1)}, true)
+	return pkt
+end
+
 local function read_ahrs(self)
   local fd = self.fd
   unix.select({fd})
@@ -282,6 +293,8 @@ local function read_ahrs(self)
 
 	print('Data', #buf)
 	cmd2string({buf:byte(1,-1)}, true)
+
+	get_packet(buf)
 
 	-- Try to select some stuff
 	-- Accel

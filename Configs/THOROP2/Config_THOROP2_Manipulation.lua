@@ -35,7 +35,7 @@ arm.handoffset.outerhook = {0.339,0,0.060} --Single hook (for door)
 arm.handoffset.chopstick = {0.440,0,0} --Two rod (for valve)
 
 --New 3 finger gripper
-arm.handoffset.gripper3 = {0.28,-0.05,0} 
+arm.handoffset.gripper3 = {0.28,-0.05,0}
 
 
 
@@ -66,7 +66,7 @@ arm.plan.dt_step_min = 0.2 --no speedup
 
 arm.plan.dt_step0_jacobian = 0.1
 arm.plan.dt_step_jacobian = 0.2
-arm.plan.dt_step_min_jacobian = 0.05 
+arm.plan.dt_step_min_jacobian = 0.05
 
 
 arm.plan.dt_step0_jacobian = 0.05
@@ -78,7 +78,7 @@ arm.plan.scale_limit={0.05,2}
 
 --]]
 
---arm.plan.dt_step_min = 0.1 
+--arm.plan.dt_step_min = 0.1
 
 --for jacobian stuff------------------------------
 
@@ -102,13 +102,13 @@ arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 30*DEG_TO_RAD,30*DEG_TO_RAD,3
 arm.vel_waist_limit = vector.new({3,3})*DEG_TO_RAD
 arm.shoulder_yaw_limit = 20*DEG_TO_RAD
 
---if IS_WEBOTS then 
-if false then    
+--if IS_WEBOTS then
+if false then
   speedup_factor = 3
   arm.shoulder_yaw_limit = arm.shoulder_yaw_limit*speedup_factor
   arm.vel_linear_limit = arm.vel_linear_limit*speedup_factor
   arm.vel_angular_limit = arm.vel_angular_limit*speedup_factor
-  arm.vel_angular_limit_init = arm.vel_angular_limit_init*3 
+  arm.vel_angular_limit_init = arm.vel_angular_limit_init*3
 end
 
 
@@ -132,7 +132,7 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 
 
 
---Pose 1 left and right arm poses 
+--Pose 1 left and right arm poses
 --SJ: now arm ready poses are hand-invariant (to handle asymmetric hands and stuff)
 arm.trLArm0 = {0.0, 0.25,-0.25,0,0,0}
 arm.trRArm0 = {0.0, -0.25,-0.25,0,0,0}
@@ -202,7 +202,7 @@ armfsm.teleop.arminit={
   {'move0',nil,{0.10,-0.20,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 armfsm.teleop.armuninit={
-  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 --]]
 
@@ -214,38 +214,38 @@ armfsm.teleop.armuninit={
 
 
 --Drill?
-armfsm.teleop.arminit={  
+armfsm.teleop.arminit={
   {'move0',nil,{0.20,-0.25,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 armfsm.teleop.armuninit={
   {'move',nil,{0.40,-0.05, 0.10  ,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 
 
 
 --[[
 --sideway up, close to body
-armfsm.teleop.arminit={  
-  {'move0',nil,{0.10,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+armfsm.teleop.arminit={
+  {'move0',nil,{0.10,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move0',nil,{0.10,-0.35, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 
 
 --sideway up, close to body
-armfsm.teleop.arminit={  
---  {'move0',nil,{0.10,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+armfsm.teleop.arminit={
+--  {'move0',nil,{0.10,-0.35,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 --  {'move0',nil,{0.10,-0.35, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 
 
-  {'move0',nil,{0.10,-0.30,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+  {'move0',nil,{0.10,-0.30,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
   {'move0',nil,{0.10,-0.30, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 --
 
 --  {'move0',nil,{0.10,-0.38, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 --  {'move0',nil,{0.10,-0.35, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
---  {'move',nil,{0.34,-0.25, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+--  {'move',nil,{0.34,-0.25, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 --  {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 
@@ -259,9 +259,9 @@ armfsm.teleop.arminit={
 --sideway grip!
 
 
-armfsm.teleop.arminit={  
-  {'move0',nil,{0.10,-0.30,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
-  {'move0',nil,{0.10,-0.30, 0.06,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},  
+armfsm.teleop.arminit={
+  {'move0',nil,{0.10,-0.30,-0.25,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
+  {'move0',nil,{0.10,-0.30, 0.06,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 --  {'move0',nil,{0.10,-0.30, 0.22,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
 }
 
@@ -277,29 +277,29 @@ armfsm.teleop.arminit={
 --Hose insert
 --Init tr: 0.24 -0.13 0.14 (90.0 -45.0 95.1)
 --0.40 0.15 0.30 (90.0 -45.0 95.1)
---0.40 -0.17 0.30 
+--0.40 -0.17 0.30
 --[[
 --Tested, somehow works
 
-armfsm.teleop.arminit={  
+armfsm.teleop.arminit={
   {'move0',nil,{0.25,-0.30,-0.05,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
   {'wrist',nil,{0.25,-0.30,-0.05,-90*DEG_TO_RAD,-45*DEG_TO_RAD, 95*DEG_TO_RAD}},
 }
-armfsm.teleop.armuninit={  
+armfsm.teleop.armuninit={
   {'wrist',nil,{0.25,-0.30,-0.05,-90*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD}},
   {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
-  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
 }
 --]]
 
 --[[
-armfsm.teleop.arminit={  
+armfsm.teleop.arminit={
   {'move0',nil,{0.20,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
   {'move',nil,{0.40,-0.05, 0.22,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
 }
 armfsm.teleop.armuninit={
   {'move',nil,{0.40,-0.05, 0.0,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
-  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
 }
 --]]
 
@@ -308,13 +308,13 @@ armfsm.teleop.armuninit={
 
 --Straight hand front (door?)
 armfsm.teleop.rhand_rpy0={-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}
-armfsm.teleop.arminit={  
+armfsm.teleop.arminit={
   {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
   {'move0',nil,{0.0,-0.25,-0.15,-90*DEG_TO_RAD,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
 }
-armfsm.teleop.armuninit={  
+armfsm.teleop.armuninit={
   {'move0',nil,{0.0,-0.25,-0.15,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
-  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},  
+  {'move0',nil,{0.0,-0.25,-0.25,0,0*DEG_TO_RAD, 0*DEG_TO_RAD}},
 }
 --]]
 
@@ -346,9 +346,9 @@ armfsm.teleop.armuninit={
 
 --[[
 --Load arm IK lookup table
-local fname = {Config.PLATFORM_NAME,'/iklookup'}  
+local fname = {Config.PLATFORM_NAME,'/iklookup'}
 local c = require(table.concat(fname))
-if c.iklookup then 
+if c.iklookup then
   arm.iklookup={}
   arm.iklookup.x = c.iklookup.x
   arm.iklookup.y = c.iklookup.y

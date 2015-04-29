@@ -85,7 +85,7 @@ walk.dShift = DEG_TO_RAD*vector.new{30,30,30,30}
 walk.hipRollCompensation = 2*DEG_TO_RAD
 
 -----------------------------------
-walk.velLimitX = {-.10,.15} 
+walk.velLimitX = {-.10,.15}
 walk.velLimitY = {-.06,.06}
 walk.velLimitA = {-.2,.2}
 walk.velDelta  = {0.025,0.02,0.1}
@@ -97,14 +97,14 @@ if IS_WEBOTS or (HOSTNAME ~="alvin" and HOSTNAME ~= "teddy") then
   --Actual COM height = 0.93-0.203 = 0.727
   --tZMP: 0.272
   walk.foot_traj = 2 --square step
---  walk.tZMP = 0.40 
+--  walk.tZMP = 0.40
 --  walk.tZMP = 0.272
   walk.tZMP = 0.33 --the same value as actual robot
 
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1*DEG_TO_RAD
   walk.ankleRollCompensation = 1.2*DEG_TO_RAD
-  walk.velLimitX = {-.10,.10} 
+  walk.velLimitX = {-.10,.10}
   walk.velLimitY = {-.06,.06}
   walk.velLimitA = {-.2,.2}
   walk.velDelta  = {0.025,0.02,0.1}
@@ -184,9 +184,9 @@ if IS_WEBOTS then
   Config.supportY_preview = -0.02
   Config.supportY_preview2 = -0.01
 
-  walk.supportY = 0.09  
+  walk.supportY = 0.09
   --Higher COM walking test!
-  
+
   --walk.tZMP = 0.33
 
   walk.hipRollCompensation = 0*DEG_TO_RAD
@@ -196,7 +196,7 @@ if IS_WEBOTS then
   walk.bodyHeight = 0.93 --lower bodyheight again for rough terrain walk
   walk.tZMP = 0.345
 
-  walk.velLimitX = {-.10,.30} 
+  walk.velLimitX = {-.10,.30}
   walk.stepHeight = 0.050
 
 
@@ -240,14 +240,14 @@ if IS_WEBOTS then
 end
 
 if not IS_WEBOTS then
-  walk.tZMP = 0.40 
+  walk.tZMP = 0.40
   walk.tStep = 0.80
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1.5*DEG_TO_RAD
   walk.velLimitY = {-.06,.06}
 
   --quick fix with 7dof arm (lil slower)
-  walk.velLimitX = {-.10,.10} 
+  walk.velLimitX = {-.10,.10}
   walk.torsoX = 0.0     -- com-to-body-center offset
   walk.supportX = 0.07 --better
   Config.supportY_preview = -0.03
@@ -287,17 +287,17 @@ else
 --  walk.delay_threshold_angle = 2.5*math.pi/180
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.delay_factor = {0.8,1.7}
-  walk.velLimitX = {-.10,.20} 
+  walk.velLimitX = {-.10,.20}
 
 end
 
 
 --COM compensation testing
-  walk.supportX = 0.03 
+  walk.supportX = 0.03
   walk.supportY = 0.02
 
 
-  walk.supportX = 0.01 
+  walk.supportX = 0.01
   walk.supportY = 0.04
 
   walk.force_torque = true
@@ -307,7 +307,7 @@ end
     walk.supportY = 0.04
     walk.kneePitchCompensation = 0.5*DEG_TO_RAD
     walk.force_torque = false
-    walk.velLimitX = {-.10,.15} 
+    walk.velLimitX = {-.10,.15}
   end
 
   if HOSTNAME == "alvin" then
@@ -315,7 +315,7 @@ end
     walk.force_torque = false
 --    walk.supportY = 0.03
     walk.supportY = 0.02
-    walk.velLimitX = {-.06,.10} 
+    walk.velLimitX = {-.06,.10}
 
   end
 

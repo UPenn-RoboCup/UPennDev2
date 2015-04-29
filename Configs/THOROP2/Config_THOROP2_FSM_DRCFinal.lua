@@ -59,7 +59,7 @@ fsm.Body = {
   {'bodyUnInit', 'done', 'bodyIdle'},
 
   {'bodyStop', 'approach', 'bodyApproach'},
-  {'bodyApproach', 'done', 'bodyStop'},  
+  {'bodyApproach', 'done', 'bodyStop'},
 
 --[[
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
@@ -83,7 +83,7 @@ fsm.Arm = {
 --  {'armPose1', 'toolgrab', 'armToolGrip'},
 --  {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
 --  {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
-  
+
   {'armToolGrip', 'done', 'armPose1'},
 --  {'armToolGrip', 'hold', 'armToolHold'},
   {'armTeleop', 'done', 'armPose1'},

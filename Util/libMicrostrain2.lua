@@ -283,7 +283,8 @@ local function get_packet(buf)
 	local idx = buf:find(preamble)
 	if not idx then return end
 	local u,e,desc,len = buf:byte(idx, idx+3)
-	return buf:sub(idx, idx+len+6-1), buf:sub(idx+len+6-1)
+	--return buf:sub(idx, idx+len+6-1), buf:sub(idx+len+6-1)
+	return {buf:byte(idx, idx+len+6-1)}, buf:sub(idx+len+6-1)
 end
 
 local function process_data(self)
@@ -291,13 +292,9 @@ local function process_data(self)
 	local pkt
 	while true do
 		local buf = coroutine.yield(pkt)
+		print('Received', #buf)
 		local fullbuf = remaining..buf
 		pkt, fullbuf = get_packet()
-		print('Received', #buf)
-		print('Packet', #pkt, 'of', #fullbuf)
-		cmd2string({pkt:byte(1,-1)}, true)
-		print('Remaining', #remaining, 'of', #fullbuf)
-		cmd2string({remaining:byte(1,-1)}, true)
 	end
 end
 
@@ -311,8 +308,10 @@ local function read_ahrs(self)
 	cmd2string({buf:byte(1,-1)}, true)
 
 	local status, pkt = coroutine.resume(self.copacket, buf)
+	print('status, pkt', status, pkt)
 
 	-- Try to select some stuff
+	--[[
 	-- Accel
 	ffi.copy(acc_tmp, buf:sub(7, 18):reverse(), cpy_sz)
 	-- Gyro
@@ -323,6 +322,7 @@ local function read_ahrs(self)
 	ffi.copy(euler_tmp, buf:sub(49, 60):reverse(), cpy_sz)
 	-- Mag
 	ffi.copy(mag_tmp, buf:sub(63, 74):reverse(), cpy_sz)
+	--]]
 
   -- NAV stuff
 --[[

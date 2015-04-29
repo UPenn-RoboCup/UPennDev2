@@ -279,7 +279,7 @@ local function get_packet(buf)
 	local idx = buf:find(preamble)
 	if not idx then return end
 	local u,e,desc,len = buf:byte(idx, idx+3)
-	local pkt = buf:sub(idx, idx+len-1)
+	local pkt = buf:sub(idx, idx+len+6-1)
 	print('Packet', #pkt, 'of', #buf)
 	cmd2string({pkt:byte(1,-1)}, true)
 	return pkt

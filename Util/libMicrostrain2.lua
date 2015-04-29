@@ -279,12 +279,14 @@ local acc_tmp, gyr_tmp, mag_tmp, euler_tmp, del_gyr_tmp=
 local nav_stat = ffi.new"uint16_t[3]"
 local cpy_sz = 3 * ffi.sizeof('float')
 
-local function extract_imu()
+local function extract_imu(pkt)
 	print('ahrs')
+	cmd2string(pkt, true)
 end
 
-local function extract_estimation()
+local function extract_estimation(pkt)
 	print('estimation')
+	cmd2string(pkt, true)
 end
 
 local preamble = string.char(0x75, 0x65)

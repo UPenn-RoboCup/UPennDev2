@@ -245,6 +245,7 @@ local function close(self)
 end
 
 local function ahrs_on(self)
+	stty.flush(self.fd)
   -- Turn on the ahrs stream
   local response = write_command(self.fd, {
     0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x01
@@ -255,6 +256,7 @@ local function ahrs_off(self)
   local response = write_command(self.fd, {
     0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x00
   })
+	stty.flush(self.fd)
 end
 
 local function ahrs_and_nav_on(self)

@@ -2,7 +2,6 @@ dofile'../../include.lua'
 local Body       = require'Body'
 local signal     = require'signal'
 local carray     = require'carray'
-local mp         = require'msgpack'
 local util       = require'util'
 local simple_ipc = require'simple_ipc'
 local libMicrostrain  = require'libMicrostrain'
@@ -19,10 +18,11 @@ if not imu then
   os.exit()
 end
 
---util.ptable(imu)
+util.ptable(imu)
 
 -- Print info
 print('Opened Microstrain')
+imu:get_info()
 print(table.concat(imu.information,'\n'))
 
 -- Set up the defaults:
@@ -48,9 +48,10 @@ while true do
   print( string.format('GYRO: %g %g %g',unpack(gyro:table())))
 
   local rpy_str = res:sub(21,32)
+  print('rpy_str', #rpy_str)
   local rpy = carray.float( rpy_str:reverse() )
   rpy = vector.new( rpy:table() )
-  print( 'RPY:', rpy*RAD_TO_DEG )
+  print( 'RPY:', unpack(rpy) )
 --[[
   local acc_str = res:sub(7,18)
   for i,b in ipairs{acc_str:byte(1,-1)} do

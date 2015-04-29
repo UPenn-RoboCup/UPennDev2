@@ -311,10 +311,10 @@ end
 
 local function process_data(self)
 	local remaining = ''
-	local pkt
+	local pkt, processor
 	while true do
-		local buf = coroutine.yield(pkt) or ''
-		pkt, remaining = get_packet(remaining..buf)
+		local buf = coroutine.yield(pkt, processor) or ''
+		pkt, remaining, processor = get_packet(remaining..buf)
 	end
 end
 

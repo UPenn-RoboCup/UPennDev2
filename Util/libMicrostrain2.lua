@@ -292,7 +292,7 @@ local function process_data(self)
 	local remaining = ''
 	local pkt
 	while true do
-		local buf = coroutine.yield(pkt)
+		local buf = coroutine.yield(pkt) or ''
 		print('Received', #buf)
 		pkt, fullbuf = get_packet(remaining..buf)
 	end
@@ -307,12 +307,12 @@ local function read_ahrs(self)
 	print('Data', #buf)
 	cmd2string({buf:byte(1,-1)}, true)
 
-	local status, pkt
-	repeat
-		status, pkt = coroutine.resume(self.copacket, buf)
+	local status, pkt = coroutine.resume(self.copacket, buf)
+	while pkt do
+		status, pkt = coroutine.resume(self.copacket)
 		print('status, pkt', status, pkt)
 		cmd2string(pkt, true)
-	until not packet
+	end
 
 	-- Try to select some stuff
 	--[[

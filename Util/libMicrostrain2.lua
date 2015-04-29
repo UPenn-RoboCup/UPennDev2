@@ -308,7 +308,7 @@ local function process_data(self)
 	while true do
 		local buf = coroutine.yield(descriptor)
 		remaining, pkt, descriptor = get_packet(remaining..buf)
-		extract[descriptor](pkt)
+		if descriptor then extract[descriptor](pkt) end
 	end
 end
 

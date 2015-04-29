@@ -281,7 +281,7 @@ local cpy_sz = 3 * ffi.sizeof('float')
 local preamble = string.char(0x75, 0x65)
 local function get_packet(buf)
 	local idx = buf:find(preamble)
-	if not idx then return end
+	if not idx then return buf end
 	local u,e,desc,len = buf:byte(idx, idx+3)
 	--return buf:sub(idx, idx+len+6-1), buf:sub(idx+len+6-1)
 	return {buf:byte(idx, idx+len+6-1)}, buf:sub(idx+len+6-1)
@@ -293,8 +293,7 @@ local function process_data(self)
 	while true do
 		local buf = coroutine.yield(pkt)
 		print('Received', #buf)
-		local fullbuf = remaining..buf
-		pkt, fullbuf = get_packet()
+		pkt, fullbuf = get_packet(remaining..buf)
 	end
 end
 

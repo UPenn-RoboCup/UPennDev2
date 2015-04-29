@@ -123,6 +123,13 @@ outfile:write(string.format("zmpparam.preview_interval = %f\n",preview_interval)
 outfile:write(string.format("zmpparam.preview_tStep = %f\n",preview_tStep))  
 outfile:write(string.format("zmpparam.param_r_q = %f\n\n\n",r_q))  
 
+precompute(0.30,outfile)
+precompute(0.31,outfile)
+precompute(0.32,outfile)
 precompute(0.33,outfile)
+precompute(0.34,outfile)
 precompute(0.345,outfile)
+precompute(0.35,outfile)
+precompute(0.36,outfile)
+precompute(0.37,outfile)
 outfile:close();

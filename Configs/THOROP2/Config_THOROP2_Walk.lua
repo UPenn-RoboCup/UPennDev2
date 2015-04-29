@@ -9,7 +9,6 @@ local vector = require'vector'
 -- Walk Parameters
 
 local walk = {}
-
 walk.legBias = vector.new({0,0,0,0,0,0,0,0,0,0,0,0,})*DEG_TO_RAD
 walk.velocityBias = {0.0,0,0} --To get rid of drifting
 
@@ -24,10 +23,6 @@ walk.maxTurnSpeed = 0.1
 walk.aTurnSpeed = 0.25
 walk.maxStepCount = 30
 
-----------------------------------------------------------------------
--- Param for robot
-----------------------------------------------------------------------
-
 ------------------------------------
 -- Stance and velocity limit values
 ------------------------------------
@@ -37,27 +32,29 @@ walk.stanceLimitA = {-10*DEG_TO_RAD,30*DEG_TO_RAD}
 
 walk.bodyHeight = 0.93
 walk.footY = 0.095
-
---FOR torque testing only!!!
---if IS_WEBOTS then walk.footY = 0.072 end
-
-
 walk.footX = 0
 walk.bodyTilt = 0
-walk.torsoX = 0.02     -- com-to-body-center offset
+walk.torsoX = 0.02     -- com-to-body-center offset (which is not being used)
 
 ------------------------------------
 -- Gait parameters
 ------------------------------------
 walk.tStep = 0.80
 walk.tZMP = 0.33
-walk.stepHeight = 0.03
+walk.stepHeight = 0.04
 walk.phSingle = {0.15,0.85}
 walk.phZmp = {0.15,0.85}
 walk.phComp = {0.1,0.9}
 walk.phCompSlope = 0.2
-walk.supportX = 0.07 --With clown feet, good for forward walking
-walk.supportY = 0.06
+walk.supportX = 0.0 
+walk.supportY = 0.0
+
+
+-- support position for the first step
+Config.supportY_preview = 0.01
+
+-- support position for preview-based steps
+Config.supportY_preview2 = 0.0
 
 ------------------------------------
 -- Compensation parameters
@@ -98,89 +95,55 @@ stance.sitHeight = 0.75
 stance.dHeight = 0.04 --4cm per sec
 
 
+if IS_WEBOTS then
+  Config.supportY_preview = 0.01
+  Config.supportY_preview2 = 0.0
+  walk.velLimitX = {-.10,.30}  
+  walk.hipRollCompensation = 0.5*DEG_TO_RAD
+  walk.ankleRollCompensation = 0*DEG_TO_RAD  
+  walk.kneePitchCompensation = 0*DEG_TO_RAD
+  walk.footSagCompensation = {0.0,0.0}
+  walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  walk.delay_factor = {0.8,1.7}
+  walk.velLimitX = {-.10,.20}
+
+  walk.tZMP = 0.30 --has much lower com?
+  walk.tStep = .75
+  walk.phSingle = {0.2,0.8}
+  walk.phZmp = {0.25,0.75}
+
+else
+  walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
+  walk.hipRollCompensation = 1.5*DEG_TO_RAD
+
+  walk.velLimitX = {-.10,.10}
+  walk.velLimitY = {-.06,.06}
+  walk.torsoX = 0.0     -- com-to-body-center offset
+--  walk.delay_threshold_angle = 2.5*math.pi/180
+  walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  walk.delay_factor = {0.8,1.7}
+
+  walk.tZMP = 0.30 --has much lower com?
+  walk.supportX = 0.0
+  walk.supportY = 0.0
+  walk.tStep = .75
+  walk.phSingle = {0.2,0.8}
+  walk.phZmp = {0.25,0.75}
+  walk.supportY = 0.00
+end
+
+------------------------------------
+-- Associate with the table
+Config.walk    = walk
+Config.stance  = stance
 
 --Load robot specific configs
 local c = require'calibration'
 if c.cal[HOSTNAME].legBias then walk.legBias = c.cal[HOSTNAME].legBias end
 if c.cal[HOSTNAME].headBias then walk.headBias = c.cal[HOSTNAME].headBias end
 
-if IS_WEBOTS then
-  Config.supportY_preview = -0.02
-  Config.supportY_preview2 = -0.01
-
-  walk.supportY = 0.09
-  --Higher COM walking test!
-  walk.hipRollCompensation = 0*DEG_TO_RAD
-  walk.ankleRollCompensation = 0*DEG_TO_RAD
-  walk.bodyHeight = 0.93 --lower bodyheight again for rough terrain walk
-  walk.tZMP = 0.345
-  walk.velLimitX = {-.10,.30}
-  walk.stepHeight = 0.050
-end
-
-if IS_WEBOTS then
-  --WEBOTS
-
-  walk.torsoX = -0.03     -- com-to-body-center offset
-  walk.supportX = 0.03 --better
-  walk.supportY = 0.05
-
-  walk.kneePitchCompensation = 0*DEG_TO_RAD
-  walk.footSagCompensation = {0.0,0.0}
-
-
---  walk.delay_threshold_angle = 2.5*math.pi/180
-  walk.delay_threshold_angle = 999*math.pi/180 --disabled
-  walk.delay_factor = {0.8,1.7}
-  walk.velLimitX = {-.10,.20}
-
-
-else
-  walk.tZMP = 0.40
-  walk.tStep = 0.80
-  walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
-  walk.hipRollCompensation = 1.5*DEG_TO_RAD
-  walk.velLimitY = {-.06,.06}
-
-  --quick fix with 7dof arm (lil slower)
-  walk.velLimitX = {-.10,.10}
-  walk.torsoX = 0.0     -- com-to-body-center offset
-  walk.supportX = 0.07 --better
-  Config.supportY_preview = -0.03
-  Config.supportY_preview2 = -0.02
-  walk.supportX = 0.05 --better
-  walk.supportY = 0.05
-
-
-
---  walk.delay_threshold_angle = 2.5*math.pi/180
-  walk.delay_threshold_angle = 999*math.pi/180 --disabled
-  walk.delay_factor = {0.8,1.7}
-
-end
-
-walk.supportX = 0.01
-walk.supportY = 0.04
-walk.tStep = .75
-walk.tZMP = 0.33
-walk.stepHeight = 0.04
-walk.phSingle = {0.2,0.8}
-walk.phZmp = {0.25,0.75}
-walk.phComp = {0.1,0.9}
-walk.phCompSlope = 0.2
-walk.supportX = 0.025
-walk.supportY = 0.00
-
-------------------------------------
--- Associate with the table
-Config.walk    = walk
-Config.kick  = kick
-Config.stance  = stance
-
 --Now we keep a lookup table file rather than specifying here
 local zparam = require'zmpparam'
 Config.zmpparam = zparam.zmpparam
-
-
 
 return Config

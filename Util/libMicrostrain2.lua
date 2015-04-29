@@ -261,8 +261,9 @@ local function configure(self, do_permanent)
     0x0F, 0x11, -- Packet length
 		0x01, -- apply
 		0x00, 0x00, 0x00, 0x00, --roll
-		219, 15, 73, 64, --pitch (or reverse?)
-		0x00, 0x00, 0x00, 0x00, --yaw
+		0x00, 0x00, 0x00, 0x00, --pitch
+		--219, 15, 201, 63, --yaw (or reverse?)
+		63, 201, 15, 219, --yaw (or reverse?)
   }
 	print('sensor_frame')
 	cmd2string(sensor_frame, true)

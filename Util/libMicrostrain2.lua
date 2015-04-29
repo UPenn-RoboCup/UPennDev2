@@ -217,30 +217,6 @@ local function configure(self, do_permanent)
   idle(self)
   unix.usleep(1e5)
 
-  -- Set the initial heading to zero
-	--[[
-  local init_heading = { 0x75, 0x65, 0x0D,
-    0x06, -- Command length
-    0x06, 0x03, -- Packet length
-    0x00, 0x00,
-    0x00, 0x00,
-  }
-  local response = write_command(self.fd, init_heading)
-
-	-- Set the device to idle
-  idle(self)
-  unix.usleep(1e5)
-
-  -- Set the initial attitude
-  local init_att = { 0x75, 0x65, 0x0D,
-    0x06, -- Command length
-    0x06, 0x04, -- Packet length
-    0x00, 0x00,
-    0x00, 0x00,
-  }
-  local response = write_command(self.fd, init_att)
-	--]]
-
 	local disable_mag = { 0x75, 0x65, 0x0D,
     0x05, -- Command length
     0x05, 0x41, -- Packet length
@@ -289,6 +265,33 @@ local function configure(self, do_permanent)
 	-- Set the device to idle
   idle(self)
   unix.usleep(1e5)
+
+	  -- Set the initial heading to zero
+	----[[
+
+	  -- Set the initial attitude
+  local init_att = { 0x75, 0x65, 0x0D,
+    0x0E, -- Command length
+    0x0E, 0x02, -- Packet length
+    0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+  }
+  local response = write_command(self.fd, init_att)
+
+  local init_heading = { 0x75, 0x65, 0x0D,
+    0x06, -- Command length
+    0x06, 0x03, -- Packet length
+    0x00, 0x00, 0x00, 0x00,
+  }
+  local response = write_command(self.fd, init_heading)
+
+	-- Set the device to idle
+  idle(self)
+  unix.usleep(1e5)
+
+
+	--]]
 
   if do_permanent then
     -- Device startup settings

@@ -57,7 +57,7 @@ local function write_command(fd, cmd)
 end
 
 local function idle(dev)
-  write_command(dev.fd, { 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 })
+  return write_command(dev.fd, { 0x75, 0x65, 0x01, 0x02, 0x02, 0x02 })
 end
 
 -- Model number, etc.
@@ -144,11 +144,11 @@ local function configure(self, do_permanent)
   -- 1000Hz of gyro & rpy
 	
 	-- Set the device to idle
-  idle(self)
+  local response = idle(self)
   unix.usleep(1e5)
 
   -- New AHRS format
-  local stream_fmt = { 0x75, 0x65, 0x0C,
+  local ahrs_fmt = { 0x75, 0x65, 0x0C,
     0x10, -- Command length
     0x10, 0x08, -- Field Length, and Field Desctiption (AHRS)
     0x01, 0x04, -- Set 5 messages
@@ -157,26 +157,32 @@ local function configure(self, do_permanent)
     0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
     0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
   }
-  local response = write_command(self.fd, stream_fmt)
+	print('ahrs_fmt')
+	cmd2string(ahrs_fmt, true)
+  local response = write_command(self.fd, ahrs_fmt)
+	cmd2string(response, true)
   unix.usleep(1e5)
 	
 	-- Set the device to idle
-  idle(self)
+  local response = idle(self)
   unix.usleep(1e5)
 
   -- New NAV format
 	-- 500Hz
-  stream_fmt = { 0x75, 0x65, 0x0C,
+  local nav_fmt = { 0x75, 0x65, 0x0C,
     0x0A, -- Command length
     0x0A, 0x0A, -- Field Length, and Field Desctiption (NAV)
     0x01, 0x02, -- Set 3 messages
     0x10, 0x00, 0x01, -- Filter status
     0x05, 0x00, 0x01, -- Estimated Orientation, Euler Angles @ 500Hz
   }
-  local response = write_command(self.fd, stream_fmt)
+	print('nav_fmt')
+	cmd2string(nav_fmt, true)
+  local response = write_command(self.fd, nav_fmt)
+	cmd2string(response, true)
 	
 	-- Set the device to idle
-  idle(self)
+  local response = idle(self)
   unix.usleep(1e5)
   
 	-- Message Format
@@ -199,7 +205,10 @@ local function configure(self, do_permanent)
     0x03, 0x00 -- 3 to perform the save
   }
 	--]]
+	print('save_fmt')
+	cmd2string(save_fmt, true)
   local response = write_command(self.fd,save_fmt)
+	cmd2string(response, true)
 	
 	-- Set the device to idle
   idle(self)

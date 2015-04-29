@@ -144,7 +144,7 @@ local function configure(self, do_permanent)
   -- 1000Hz of gyro & rpy
 	
 	-- Set the device to idle
-  idle(dev)
+  idle(self)
   unix.usleep(1e5)
 
   -- New AHRS format
@@ -161,7 +161,7 @@ local function configure(self, do_permanent)
   unix.usleep(1e5)
 	
 	-- Set the device to idle
-  idle(dev)
+  idle(self)
   unix.usleep(1e5)
 
   -- New NAV format
@@ -176,7 +176,7 @@ local function configure(self, do_permanent)
   local response = write_command(self.fd, stream_fmt)
 	
 	-- Set the device to idle
-  idle(dev)
+  idle(self)
   unix.usleep(1e5)
   
 	-- Message Format
@@ -202,7 +202,7 @@ local function configure(self, do_permanent)
   local response = write_command(self.fd,save_fmt)
 	
 	-- Set the device to idle
-  idle(dev)
+  idle(self)
   unix.usleep(1e5)
 
   -- Set the initial heading to zero

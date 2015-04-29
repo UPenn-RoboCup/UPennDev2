@@ -34,49 +34,18 @@ print(table.concat(imu.information,'\n'))
 --os.exit()
 
 -- Turn on the stream
+print('ahrs_on')
 imu:ahrs_on()
 local cnt = 0
-while true do
-  local ret_fd = unix.select( {imu.fd} )
-  io.write('READING\n')
-  res = unix.read(imu.fd)
-  assert(res)
-  local response = {string.byte(res,1,-1)}
-  for i,b in ipairs(response) do print( string.format('%d: %02X %d',i,b,b) ) end
-  local gyr_str = res:sub(7,18)
-  local gyro = carray.float( gyr_str:reverse() )
-  print( string.format('GYRO: %g %g %g',unpack(gyro:table())))
-
-  local rpy_str = res:sub(21,32)
-  print('rpy_str', #rpy_str)
-  local rpy = carray.float( rpy_str:reverse() )
-  rpy = vector.new( rpy:table() )
-  print( 'RPY:', unpack(rpy) )
---[[
-  local acc_str = res:sub(7,18)
-  for i,b in ipairs{acc_str:byte(1,-1)} do
-    print( string.format('acc %d: %02X %d',i,b,b) )
-  end
-  local acc = carray.float( acc_str )
-  for i=1,#acc do
-    print('acc',acc[i])
-  end
-  local acc_rev = carray.float( acc_str:reverse() )
-  for i=1,#acc_rev do
-    print('acc_rev',acc_rev[i])
-  end
---]]
-  cnt = cnt+1
-  if false and cnt>5 then
-    imu:ahrs_off()
-    break
-  end
+local running = true
+while running do
+  cnt = cnt + 1
+	print('read_ahrs')
+	imu:read_ahrs()
+  if cnt>5 then running = false end
 end
-print('done!')
-
--- test 1 sec timeout
-local ret_fd = unix.select( {imu.fd}, 1 )
-print('timeout!',ret_fd)
+print('ahrs_off!')
+imu:ahrs_off()
 
 imu:close()
 os.exit()

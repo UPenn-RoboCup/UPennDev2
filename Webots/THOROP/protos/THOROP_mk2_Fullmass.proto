@@ -1110,7 +1110,7 @@ Robot {
  																                    endPoint GRIPPER_pincer {
 																 	                    translation 0 -0.141 0
 																																						rotation 0 0 -1 0
-																	                					trigger_name "l_trigger"
+																	                					#trigger_name "l_trigger"
 																																					grip_name "l_grip"
 																																				}
 

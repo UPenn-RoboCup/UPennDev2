@@ -1,9 +1,9 @@
 PROTO PELVIS_mk2 [
+#mk2 waist pitch to pelvis: 0.180 
 #  field SFVec3f scale 1 1 1
   field SFRotation rotation 1 0 0 0
   field SFVec3f translation 0 0 0
 ]
-#mk2 waist pitch to pelvis: 0.180 
 {
   Transform {    
     rotation IS rotation

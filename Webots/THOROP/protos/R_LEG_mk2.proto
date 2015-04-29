@@ -7,7 +7,7 @@ PROTO R_LEG_mk2 [
   Transform {    
     rotation IS rotation
     translation IS translation
-#    scale IS scale    
+    scale IS scale
     children [
       Transform{
         translation 0 -0.15 0

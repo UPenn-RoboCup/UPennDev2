@@ -6,7 +6,7 @@ PROTO GRIPPER_pincer [
 	#picer position from wrist: 141+169 = 310 mm	
   field SFVec3f translation 0 0 0  
 	field SFRotation rotation  1 0 0 0
-	field SFString trigger_name "trigger"
+	#field SFString trigger_name "trigger"
 	field SFString grip_name "grip"
   field SFString extra_name "extra"
 ]

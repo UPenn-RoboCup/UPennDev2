@@ -1,9 +1,9 @@
 PROTO CHEST_mk2 [
+#mk2 waist pitch to shoulder: 0.276
 #  field SFVec3f scale 1 1 1
   field SFRotation rotation 1 0 0 0
   field SFVec3f translation 0 0 0
 ]
-#mk2 waist pitch to shoulder: 0.276
 {
   Transform {    
     rotation IS rotation

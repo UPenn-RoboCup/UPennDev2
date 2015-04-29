@@ -255,19 +255,6 @@ local function configure(self, do_permanent)
   idle(self)
   unix.usleep(1e5)
 
-	local reset_filter = { 0x75, 0x65, 0x0D,
-    0x02, -- Command length
-    0x02, 0x01, -- Packet length
-  }
-	print('reset_filter')
-	cmd2string(reset_filter, true)
-  local response = write_command(self.fd, reset_filter)
-	cmd2string(response, true)
-
-	-- Set the device to idle
-  idle(self)
-  unix.usleep(1e5)
-
 	----[[
 	local sensor_frame = { 0x75, 0x65, 0x0D,
     0x0F, -- Command length
@@ -286,6 +273,19 @@ local function configure(self, do_permanent)
   idle(self)
   unix.usleep(1e5)
 --]]
+
+	local reset_filter = { 0x75, 0x65, 0x0D,
+    0x02, -- Command length
+    0x02, 0x01, -- Packet length
+  }
+	print('reset_filter')
+	cmd2string(reset_filter, true)
+  local response = write_command(self.fd, reset_filter)
+	cmd2string(response, true)
+
+	-- Set the device to idle
+  idle(self)
+  unix.usleep(1e5)
 
   if do_permanent then
     -- Device startup settings

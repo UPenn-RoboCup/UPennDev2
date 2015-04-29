@@ -1,23 +1,19 @@
 #!/usr/local/bin/luajit
 dofile'../../include.lua'
-local Body       = require'Body'
-local signal     = require'signal'
-local carray     = require'carray'
 local util       = require'util'
 local simple_ipc = require'simple_ipc'
-local libMicrostrain  = require'libMicrostrain'
+local lM  = require'libMicrostrain'
+local lM2  = require'libMicrostrain2'
 local vector = require'vector'
 
-local RAD_TO_DEG = Body.RAD_TO_DEG
+local TEST_M2 = true
+local libMicrostrain
+if TEST_M2 then libMicrostrain = lM2 end
 
-local imu = libMicrostrain.new_microstrain(
+
+local imu = assert(libMicrostrain.new_microstrain(
 --  '/dev/cu.usbmodem1421', 921600 )
-  '/dev/ttyACM0')
-
-if not imu then
-  print('No imu present!')
-  os.exit()
-end
+  '/dev/ttyACM0'), 'No imu present!')
 
 util.ptable(imu)
 

@@ -320,9 +320,9 @@ local function read_ahrs(self)
   if not buf then return end
 
 	local status, descriptor = coroutine.resume(self.copacket, buf)
-	while descriptor do
-		print('pkt', type(descriptor))
-		status, pkt = coroutine.resume(self.copacket, '')
+	while status and descriptor do
+		status, descriptor = coroutine.resume(self.copacket, '')
+		print(status, descriptor)
 	end
 
 	-- Try to select some stuff

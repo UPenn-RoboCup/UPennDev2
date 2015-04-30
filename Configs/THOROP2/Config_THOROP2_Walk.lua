@@ -32,6 +32,9 @@ walk.stanceLimitA = {-10*DEG_TO_RAD,30*DEG_TO_RAD}
 
 walk.bodyHeight = 0.93
 walk.footY = 0.095
+walk.footY = 0.105 --mk2, wider
+
+
 walk.footX = 0
 walk.bodyTilt = 0
 walk.torsoX = 0.02     -- com-to-body-center offset (which is not being used)
@@ -41,7 +44,8 @@ walk.torsoX = 0.02     -- com-to-body-center offset (which is not being used)
 ------------------------------------
 walk.tStep = 0.80
 walk.tZMP = 0.33
-walk.stepHeight = 0.04
+--walk.stepHeight = 0.04
+walk.stepHeight = 0.03 --mk2. lower 
 walk.phSingle = {0.15,0.85}
 walk.phZmp = {0.15,0.85}
 walk.phComp = {0.1,0.9}
@@ -116,6 +120,9 @@ else
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1.5*DEG_TO_RAD
   walk.ankleRollCompensation = 0*DEG_TO_RAD  
+
+  walk.hipRollCompensation = 2*DEG_TO_RAD
+
   walk.footSagCompensation = {0.0,0.0}
 
   walk.velLimitX = {-.10,.10}
@@ -134,6 +141,8 @@ else
   walk.supportY = 0.00
 end
 
+Config.supportY_preview = -0.01
+
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk
@@ -149,3 +158,4 @@ local zparam = require'zmpparam'
 Config.zmpparam = zparam.zmpparam
 
 return Config
+

@@ -53,9 +53,9 @@ if not larm_ok then
   lD.set_indirect_address(larm.m_ids, arm_regs, left_arm)
 end
 --]]
-----[[
 local rarm = Config.chain.rarm
 local rarm_ok = lD.check_indirect_address(rarm.m_ids, arm_regs, right_arm)
+print('ids', unpack(rarm.m_ids))
 print('RArm Check', rarm_ok)
 if not rarm_ok then
   lD.set_indirect_address(rarm.m_ids, arm_regs, right_arm)

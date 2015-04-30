@@ -1,5 +1,6 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
+
 ---------
 -- IMU --
 ---------
@@ -9,7 +10,7 @@ Config.imu = {
 	-- TODO: Add some mapping, etc.
 }
 
-local FT13288 = {   --
+Config.right_ft = {   --
 id = 'FT13288 TWE',
 -- Robotis: 1.372045898 1.824023438 1.604882813 2.045581055 1.819995117 1.914257813
 unloaded= {1.385, 1.860, 1.636, 2.085, 1.855, 1.940},
@@ -24,7 +25,7 @@ matrix = {
 gain = 1,
 }
 
-local FT14216 = {
+Config.left_ft = {
 	id = 'FT14216 TWE',
 	--Robotis: 1.752319336	1.839331055	1.696728516	1.773266602	1.718481445	1.874780273
 	unloaded = {1.765, 1.843, 1.705, 1.792, 1.744, 1.880},
@@ -38,99 +39,29 @@ local FT14216 = {
 	},
 	gain = 1,
 }
-
-local FT16464 = {
-	id = 'FT16464 TWE',
-	--Robotis: 1.876391602	1.590380859	1.536401367	1.54284668	1.399438477	1.550097656
-	unloaded = {1.876391602, 1.590380859, 1.536401367, 1.54284668, 1.399438477, 1.550097656},
-	matrix = {
-		{-5.929833893, 0.8325384264, 5.46689167, -212.1689223, -6.476323927, 214.0013344, },
-		{-8.690056049, 245.2349123, 2.607437873, -121.945352, 6.568826403, -123.8082159, },
-		{332.57748, 14.81662867, 331.0787239, 21.31009399, 328.0365411, 17.59399945, },
-		{-0.1150545763, 1.689229156, -5.258416984, -1.218932387, 5.37573244, -0.5302761172, },
-		{6.224272472, 0.2887898915, -3.153530427, 1.246742901, -2.997598677, -1.654413777, },
-		{0.1098161854, -3.139490306, 0.03337703537, -3.12974112, 0.2336113953, -3.161907375, },
-	},
-	gain = 1,
-}
-
-local FT16465 = {
-	id = 'FT16465 TWE',
-	--Robotis: 1.634692383	1.774072266	2.123730469	1.978710938	1.681420898	1.795019531
-	unloaded = {1.634692383, 1.774072266, 2.123730469, 1.978710938, 1.681420898, 1.795019531},
-	matrix = {
-		{3.918484874, 1.607657431, 10.12798524, -221.1586464, -24.15288317, 225.1144886,},
-		{-14.5668872, 259.7992641, 6.51641097, -127.5443307, 9.111272978, -130.5197947,},
-		{330.4094409, 21.65213152, 327.5531325, 18.19960965, 331.4757537, 20.76524139,},
-		{-0.1191281486, 1.815650512, -5.208627943, -1.223158945, 5.392642987, -0.5363023538,},
-		{6.106923853, 0.4093856657, -3.157167318, 1.336322243, -2.876780379, -1.758075016,},
-		{0.2809996275, -3.333765233, 0.1823969378, -3.259335136, 0.2372790236, -3.360978917,},
-	},
-	gain = 1,
-}
-
-local FT16389 = {
-	id = 'FT16389 TWE',
-	--Robotis: 1.953735352	2.201074219	2.052026367	2.441967773	1.695117188	2.275195313
-	unloaded = {1.953735352, 2.201074219, 2.052026367, 2.441967773, 1.695117188, 2.275195313},
-	matrix = {
-		{22.49073348, 0.3025440001, 36.26925449, -547.3221321, -21.50321143, 541.75967},
-		{-27.91065023, 638.4107838, 19.65818873, -313.8963823, -9.077283315, -316.5070849},
-		{907.4192168, -0.4230087475, 905.9567343, -6.396575699, 883.8117013, -17.31417173},
-		{-0.7172646123, 8.992764085, -19.26613378, -4.307392273, 19.64181521, -4.703897346},
-		{22.14885554, -0.04851174637, -11.72558508, 7.769243185, -10.84145254, -7.499068369},
-		{0.8030554316, -9.406177096, 0.6551973419, -9.171127658, -0.3493049293, -9.085148473},
-	},
-	gain = 1,
-}
-
-local FT16390 = {
-	id = 'FT16390 TWE',
-	--Robotis: 1.634692383	2.378320313	1.600854492	1.700756836	1.520288086	1.979516602
-	unloaded = {1.634692383, 2.378320313, 1.600854492, 1.700756836, 1.520288086, 1.979516602},
-	matrix = {
-{2.794322236, -0.9222704694, 9.966766489, -551.0586614, 10.42278336, 540.9036387},
-{-0.4292623116, 633.7833909, -2.281245747, -317.6652813, -7.196761641, -313.5569844},
-{892.9603907, -51.7800059, 899.4666346, -36.15147671, 890.2589678, -6.153909368},
-{-1.397285, 9.01001264, -18.60247505, -3.732307941, 19.96151081, -4.608539693},
-{22.31925586, -1.259330382, -12.49663622, 8.357565453, -10.32328044, -7.486074628},
-{0.1269012243, -9.334903262, 0.1334557736, -9.390952799, -0.3282695074, -9.150568141},
-	},
-	gain = 1,
-}
-
-Config.right_foot_ft = FT16389
-Config.left_foot_ft = FT16390
-
-Config.right_wrist_ft = FT16465
-Config.left_wrist_ft = FT16464
-
-Config.left_foot_ft.m_ids = {24, 26}
-Config.right_foot_ft.m_ids = {25, 23}
+Config.left_ft.m_ids = {24,26}--{26, 24}
+Config.right_ft.m_ids = {25, 23}
 
 -- DCM Chains
-Config.chain = {enabled = true}
-
+Config.chain = {
+	enabled = true
+}
 local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
-	m_ids = {
-		1,3,5,7,9,11,13,
-		-- waist
-	28,
+	m_ids = {1,3,5,7,9,11,13,
 	--head
-		29, 30,
-		-- gripper
---		63, 65, 67
-	},
-	enable_read = true,
+	29, 30,
+	-- gripper
+	63, 65, 67
+},
+enable_read = true,
 }
-
 local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
---	2,4,6,8,10,12,14,
+	2,4,6,8,10,12,14,
 	-- lidar
 	37,
 	-- gripper
@@ -138,22 +69,49 @@ local left_arm = {
 	},
 	enable_read = true
 }
-
 local right_leg = {
 	name = 'rleg',
 	ttyname = '/dev/ttyUSB2',
 	-- waist pitch
-	m_ids = {15,17,19, 21, 23,25, 27},
+	m_ids = {15,17,19, 21, 23,25, 28},
 	enable_read = true,
 }
-
 local left_leg = {
 	name = 'lleg',
 	ttyname = '/dev/ttyUSB3',
 	-- waist yaw
-	m_ids = {16,18,20, 22, 24,26},
+	m_ids = {16,18,20, 22, 24,26, 27},
 	enable_read = true,
 }
+-- For RoboCup, use an MX only chain for the arms
+local head_rc = {
+	name = 'head',
+	ttyname = '/dev/ttyUSB0',
+	m_ids = {29, 30, 37, 11, 12, 13, 14},
+	enable_read = true,
+}
+-- For RoboCup, use an MX only chain for the arms
+local arms_rc = {
+	name = 'arms',
+	ttyname = '/dev/ttyUSB1',
+	m_ids = {11, 12, 13, 14},
+	enable_read = true,
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if OPERATING_SYSTEM=='darwin' then
 	right_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0A'
@@ -184,12 +142,17 @@ else
 	Config.chain[left_leg.name] = left_leg
 	table.insert(Config.chain, right_leg)
 	table.insert(Config.chain, left_leg)
-----[[
+	-- Dummy arms are the two MX-106R motors per arm
+	if Config.USE_DUMMY_ARMS then
+		-- Not set up yet...
+		--table.insert(Config.chain, arms_rc)
+		table.insert(Config.chain, head_rc)
+	else
 		table.insert(Config.chain, right_arm)
 		table.insert(Config.chain, left_arm)
 		Config.chain[right_arm.name] = right_arm
 		Config.chain[left_arm.name] = left_arm
---]]
+	end
 	one_chain = nil
 end
 
@@ -282,13 +245,15 @@ servo.steps = 2 * vector.new({
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,-1, -- Head
-	1,1,1, 1, -1,-1,1, --LArm
+	1,-1,1,1,1,1,1, --LArm
 	------
-	-1, 1,1,   1,  1,1, --LLeg
-	-1, 1,-1, -1,  -1,1, --RLeg
+	-1, -1,1,   1,  -1,1, --LLeg
+	-1, -1,-1, -1,  1,1, --RLeg
 	------
---	-1,1,1, -1, -1,-1,1, --RArm
-	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted
+--RARM is from mk1 configuration (inverted roll)
+--	-1,-1,1,-1, 1,1,1, --RArm
+	-1,1,1,-1, 1,1,1, --RArm
+
 	-1, -1, -- Waist
 	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
@@ -298,10 +263,10 @@ servo.direction = vector.new({
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
 	0,0, -- Head
-	-90,  -90,  -90,45,  90,0,0, --LArm
-	0,0,0,  0  ,0,0, --LLeg
-	0,0,0,  0  ,0,0, --RLeg
-	90,  90,  90,-45,  -90,0,0, --RArm
+	-90,90,-90,45,90,0,0, --LArm
+	0,0,0,-45,0,0, --LLeg
+	0,0,0,45,0,0, --RLeg
+	90,-90,90,-45,-90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
 	70, -125, 0, -- right gripper/trigger (UCLA verified)
@@ -461,7 +426,6 @@ for i, offset in ipairs(servo.rad_offset) do
 end
 
 if IS_WEBOTS then
-
 	-- Webots overrides tested in Webots 7.2.3, with ShortNewHand
 	servo.direction = vector.new({
 		1,1, -- Head

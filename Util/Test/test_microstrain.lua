@@ -19,8 +19,8 @@ util.ptable(imu)
 
 -- Print info
 print('Opened Microstrain')
-imu:get_info()
-print(table.concat(imu.information,'\n'))
+--imu:get_info()
+--print(table.concat(imu.information,'\n'))
 
 -- Set up the defaults:
 --libMicrostrain.configure(imu,true)
@@ -32,8 +32,8 @@ print(table.concat(imu.information,'\n'))
 
 -- Turn on the stream
 
-local t_debug = unix.get_time()
-local t0 = unix.get_time()
+local t_debug = -math.huge
+local t0 = unix.time()
 
 print('ahrs_on')
 imu:ahrs_on()
@@ -43,9 +43,12 @@ while running do
   cnt = cnt + 1
 	--print('read_ahrs')
 	local acc, gyr, del_gyr, rpy, mag = imu:read_ahrs()
-	local t = unix.get_time()
+	local t = unix.time()
 	if t - t_debug > 1 then
+		print()
 		print('rpy', rpy[0]*180/math.pi, rpy[1]*180/math.pi, rpy[2]*180/math.pi)
+		print('gyr', gyr[0]*180/math.pi, gyr[1]*180/math.pi, gyr[2]*180/math.pi)
+		print('acc', acc[0], acc[1], acc[2])
 		t_debug = t
 	end
   if t-t0>30 then running = false end

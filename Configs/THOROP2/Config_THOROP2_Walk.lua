@@ -115,6 +115,8 @@ if IS_WEBOTS then
 else
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1.5*DEG_TO_RAD
+  walk.ankleRollCompensation = 0*DEG_TO_RAD  
+  walk.footSagCompensation = {0.0,0.0}
 
   walk.velLimitX = {-.10,.10}
   walk.velLimitY = {-.06,.06}

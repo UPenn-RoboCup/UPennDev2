@@ -6,23 +6,11 @@ cal[HOSTNAME] = {}
 cal["asus"] = {}
 cal["alvin"]={}
 cal["teddy"]={}
+cal["chipette"]={}
+
 
 cal["alvin"].legBias=vector.new({
    0,0,0,0,0,0, 0,0,0,0,0,0})
-
--- Updated date: Sat Sep 20 17:40:14 2014
-cal["alvin"].legBias=vector.new({
-   1.417500,0.405000,-0.337500,-1.552500,-0.202500,0.810000,
-   0.472500,-2.025000,0.405000,-0.810000,-0.202500,-0.202500,
-   })*math.pi/180
-
-
--- Updated date: Sat Sep 20 17:40:14 2014
-cal["teddy"].legBias=vector.new({
-   1,0.72,0.02,-0.365,0.32,0.72,
-   0.47,-0.69,1.19,-0.88,-0.66,0.03,
-   })*math.pi/180
-
 
 -- Updated date: Tue Sep 23 00:00:50 2014
 cal["teddy"].legBias=vector.new({
@@ -226,4 +214,9 @@ cal["alvin"].legBias=vector.new({
 cal["alvin"].legBias=vector.new({
    2.092500,2.290000,-0.337500,-2.360000,-0.540000,-0.477500,
    1.140000,-2.227500,-0.335000,-0.607500,-0.350000,0.675000,
+   })*math.pi/180
+
+cal["chipette"].legBias=vector.new({
+   0, 0.47, 0,0,0,0, 
+   0,0, 1.75, 0,0,0,
    })*math.pi/180

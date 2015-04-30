@@ -272,8 +272,8 @@ local function configure(self)
 		0x01, -- apply
 		0x00, 0x00, 0x00, 0x00, --roll
 		--64, 73, 15, 219, --roll (reverse bytes from osx) -- 180 deg
-		0x00, 0x00, 0x00, 0x00, --pitch
-		--64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
+		--0x00, 0x00, 0x00, 0x00, --pitch
+		64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
 		0x00, 0x00, 0x00, 0x00, --yaw
 		--63, 201, 15, 219, --yaw (reverse bytes from osx) -- 90deg
 		--219, 15, 201, 63, --yaw (reverse bytes from osx) -- 90deg
@@ -392,7 +392,7 @@ extract[0x80] = function(pkt)
 end
 
 extract[0x82] = function(pkt)
-	----[[
+	--[[
 	print('estimation')
 	cmd2string({pkt:byte(1,-1)}, true)
 	--]]

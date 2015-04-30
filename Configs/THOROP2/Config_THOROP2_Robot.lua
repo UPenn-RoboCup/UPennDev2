@@ -115,10 +115,12 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {1,3,5,7,9,11,13,
+-- waist
+28,
 	--head
 		29, 30,
 		-- gripper
-		63, 65, 67
+--		63, 65, 67
 	},
 	enable_read = true,
 }
@@ -129,7 +131,7 @@ local left_arm = {
 	m_ids = {
 	2,4,6,8,10,12,14,
 	-- lidar
-	37,
+--	37,
 	-- gripper
 --	64, 66, 68
 	},
@@ -140,7 +142,7 @@ local right_leg = {
 	name = 'rleg',
 	ttyname = '/dev/ttyUSB2',
 	-- waist pitch
-	m_ids = {15,17,19, 21, 23,25, 28},
+	m_ids = {15,17,19, 21, 23,25, 27},
 	enable_read = true,
 }
 
@@ -148,23 +150,7 @@ local left_leg = {
 	name = 'lleg',
 	ttyname = '/dev/ttyUSB3',
 	-- waist yaw
-	m_ids = {16,18,20, 22, 24,26, 27},
-	enable_read = true,
-}
-
--- For RoboCup, use an MX only chain for the arms
-local head_rc = {
-	name = 'head',
-	ttyname = '/dev/ttyUSB0',
-	m_ids = {29, 30, 37, 11, 12, 13, 14},
-	enable_read = true,
-}
-
--- For RoboCup, use an MX only chain for the arms
-local arms_rc = {
-	name = 'arms',
-	ttyname = '/dev/ttyUSB1',
-	m_ids = {11, 12, 13, 14},
+	m_ids = {16,18,20, 22, 24,26},
 	enable_read = true,
 }
 
@@ -300,12 +286,12 @@ servo.steps = 2 * vector.new({
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,-1, -- Head
-	1,-1,1,1,1,1,1, --LArm
+	1,1,1,1,1,1,1, --LArm
 	------
-	-1, -1,1,   1,  -1,1, --LLeg
-	-1, -1,-1, -1,  1,1, --RLeg
+	-1, 1,1,   1,  1,1, --LLeg
+	-1, 1,-1, -1,  -1,1, --RLeg
 	------
-	-1,-1,1,-1, 1,1,1, --RArm
+	-1,1,1,-1, 1,1,1, --RArm
 	-1, -1, -- Waist
 	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
@@ -315,10 +301,10 @@ servo.direction = vector.new({
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
 	0,0, -- Head
-	-90,90,-90,45,90,0,0, --LArm
-	0,0,0,-45,0,0, --LLeg
-	0,0,0,45,0,0, --RLeg
-	90,-90,90,-45,-90,0,0, --RArm
+	-90,  -90,  -90,45,90,0,0, --LArm
+	0,0,0,  0  ,0,0, --LLeg
+	0,0,0,  0  ,0,0, --RLeg
+	90,  90,  90,-45,-90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
 	70, -125, 0, -- right gripper/trigger (UCLA verified)

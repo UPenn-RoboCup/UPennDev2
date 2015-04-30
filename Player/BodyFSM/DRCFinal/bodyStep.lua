@@ -93,12 +93,20 @@ function state.entry()
 
   local leg_move_factor = math.abs(uLeftTorso[1]-uRightTorso[1])/0.25
 
-
-
   is_possible = true
-
   hcm.set_step_nosolution(0)
-  supportLeg = footstepplanner.getnextstep()
+  supportLeg=hcm.get_step_supportLeg()
+
+
+-- Determine next step leg, position, height, angle  
+-- supportLeg = footstepplanner.getnextstep()
+  
+
+
+
+
+
+
 
   if hcm.get_step_nosolution()>0 then
     --don't start step if there's no foot positions available!
@@ -265,9 +273,13 @@ function state.update()
       ready_for_input = false
     end    
     if stage==#step_queues then 
-      hcm.set_step_dir(1)
+      print("STEPEND")      
       motion_ch:send'stop'  
-      return 'nextstep'
+      --return 'nextstep'
+      hcm.set_step_dir(0)
+      return 'done'
+
+
     elseif hcm.get_state_proceed()==1 then     
       --Clear the zmp compensation value here between transition---------------------
       local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
@@ -277,7 +289,9 @@ function state.update()
       mcm.set_status_uTorso(uTorso)
 
 
---      hcm.set_state_proceed(0)
+      hcm.set_state_proceed(0) --stop at each step
+
+
       stage = stage+1
       calculate_footsteps(stage)
       motion_ch:send'stair'  

@@ -40,6 +40,7 @@ function state.entry()
   --lidar_ch:send'pansingle'
   lidar_ch:send'pan'
 
+  hcm.set_step_dir(0)
 end
 
 function state.update()

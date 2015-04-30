@@ -109,7 +109,8 @@ local function enable_magnetometer_compensation(microstrain)
 	--local data_conditioning_flags = 0x0400
 	local hex_flags = bit.tohex(data_conditioning_flags, 4):gmatch('%d%d')
 	local flag_bytes = {}
-	local disable_north_compensation_cmd = { 0x75, 0x65, 0x0C,
+	local disable_north_compensation_cmd = {
+		0x75, 0x65, 0x0C,
 	0x10,
 	0x10, 0x35,
 	0x01, -- Apply new settings
@@ -234,6 +235,25 @@ local function configure(self)
 	idle(self)
 	unix.usleep(1e5)
 
+	local disable_north = {
+		0x75, 0x65, 0x0C,
+		0x0D,
+		0x0D, 0x51,
+		0x01, -- Apply new settings
+		0x01 -- Up compensation
+		0x00 -- North compensation
+		0x00, 0x00, 0x00, 0x00, -- timeconstant
+		0x00, 0x00, 0x00, 0x00 -- timeconstant
+	}
+	print('disable_north')
+	cmd2string(disable_north, true)
+	local response = write_command(self.fd, disable_north)
+	cmd2string(response, true)
+
+	-- Set the device to idle
+	idle(self)
+	unix.usleep(1e5)
+
 	local disable_heading = {
 		0x75, 0x65, 0x0D,
 		0x04, -- Command length
@@ -270,10 +290,10 @@ local function configure(self)
 		0x0F, -- Command length
 		0x0F, 0x11, -- Packet length
 		0x01, -- apply
-		0x00, 0x00, 0x00, 0x00, --roll
-		--64, 73, 15, 219, --roll (reverse bytes from osx) -- 180 deg
-		--0x00, 0x00, 0x00, 0x00, --pitch
-		64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
+		--0x00, 0x00, 0x00, 0x00, --roll
+		64, 73, 15, 219, --roll (reverse bytes from osx) -- 180 deg
+		0x00, 0x00, 0x00, 0x00, --pitch
+		--64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
 		0x00, 0x00, 0x00, 0x00, --yaw
 		--63, 201, 15, 219, --yaw (reverse bytes from osx) -- 90deg
 		--219, 15, 201, 63, --yaw (reverse bytes from osx) -- 90deg

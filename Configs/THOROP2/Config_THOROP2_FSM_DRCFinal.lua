@@ -61,7 +61,7 @@ fsm.Body = {
   {'bodyStop', 'approach', 'bodyApproach'},
   {'bodyApproach', 'done', 'bodyStop'},
 
---[[
+--
   {'bodyStop', 'stepinplace', 'bodyStepPlace'},
   {'bodyStepPlace',   'done', 'bodyStop'},
 

@@ -190,18 +190,7 @@ local function configure(self)
 	local response = idle(self)
 	unix.usleep(1e5)
 
-	-- Message Format
-	-- Just AHRS
-	--[[
-	local save_fmt = { 0x75, 0x65, 0x0C,
-	0x04, -- Command length
-	0x04, 0x08, -- Packet length
-	0x03, 0x00 -- 3 to perform the save
-	}
-	--]]
-
 	-- AHRS and NAV
-	----[[
 	local save_fmt = {
 		0x75, 0x65, 0x0C,
 		0x08, -- Command length
@@ -210,7 +199,6 @@ local function configure(self)
 		0x04, 0x0A, -- Packet length
 		0x03, 0x00 -- 3 to perform the save
 	}
-	--]]
 	print('save_fmt')
 	cmd2string(save_fmt, true)
 	local response = write_command(self.fd,save_fmt)
@@ -278,6 +266,7 @@ local function configure(self)
 		--64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
 		0x00, 0x00, 0x00, 0x00, --yaw
 		--63, 201, 15, 219, --yaw (reverse bytes from osx) -- 90deg
+		--219, 15, 201, 63, --yaw (reverse bytes from osx) -- 90deg
 	}
 	print('sensor_frame')
 	cmd2string(sensor_frame, true)
@@ -408,6 +397,9 @@ extract[0x82] = function(pkt)
 
 	-- Euler
 	ffi.copy(euler_tmp, pkt:sub(15, 26):reverse(), cpy_sz)
+	local valid = ffi.new('uint8_t[2]', pkt:sub(27, 28))
+print('Valid', valid[0], valid[1])
+	
 
 	--[[
 	local rpy = {}

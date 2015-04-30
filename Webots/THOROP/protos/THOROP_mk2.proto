@@ -865,6 +865,13 @@ Robot {
 																									########################################                                      
                          children [
 																										WRIST {translation 0 0 0 scale 0.001 0.001 0.001}
+																										WRIST {        																																
+																										translation 0 -0.0750 0
+																										scale 0.001 0.001 0.001
+                          rotation 1 0 0 1.5708}
+															        															
+
+
 	                          DEF Right_wrist_yaw2 HingeJoint {
 	                           device RotationalMotor {
 	  	                         name "RightWristYaw2"
@@ -875,9 +882,10 @@ Robot {
 	                            axis 0 -1 0
 	                            dampingConstant IS damping_constant     
 	                           }
-																												endPoint GRIPPER_3finger {
+																												endPoint GRIPPER_UCLA_v2 {
 																													translation 0 0 0
-																													rotation 0 0 -1 0
+																													#rotation 0 0 -1 0
+																													rotation 0 1 0 3.1415
 																													trigger_name "r_trigger"
 																													grip_name "r_grip"
 																													extra_name "r_extra"

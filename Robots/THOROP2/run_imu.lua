@@ -37,7 +37,7 @@ local CALIBRATION_THRESHOLD = 0.01
 
 -- Modules
 require'dcm'
-local lM = require'libMicrostrain'
+local lM = require'libMicrostrain2'
 local vector = require'vector'
 
 -- Cache the typical commands quickly
@@ -70,7 +70,7 @@ local function do_read()
 	-- Quickly set in shared memory
 	acc_ptr[0], acc_ptr[1], acc_ptr[2] = a[1], a[2], -a[0]
 	gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] =
-    g[1] - gyro_yaw_bias[1], g[2] - gyro_yaw_bias[2], -g[0] - gyro_yaw_bias[3]
+    -g[1] - gyro_yaw_bias[1], -g[2] - gyro_yaw_bias[2], -g[0] - gyro_yaw_bias[3]
   if USE_MAG then
 	  mag_ptr[0], mag_ptr[1], mag_ptr[2] = m[1], m[2], -m[0]
   end

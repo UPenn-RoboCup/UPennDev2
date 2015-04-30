@@ -114,11 +114,12 @@ Config.chain = {enabled = true}
 local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
-	m_ids = {1,3,5,7,9,11,13,
+	m_ids = {
+--1,3,5,7,9,11,13,
 -- waist
 28,
 	--head
-		29, 30,
+--		29, 30,
 		-- gripper
 --		63, 65, 67
 	},
@@ -129,7 +130,7 @@ local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
-	2,4,6,8,10,12,14,
+--	2,4,6,8,10,12,14,
 	-- lidar
 --	37,
 	-- gripper
@@ -183,17 +184,12 @@ else
 	Config.chain[left_leg.name] = left_leg
 	table.insert(Config.chain, right_leg)
 	table.insert(Config.chain, left_leg)
-	-- Dummy arms are the two MX-106R motors per arm
-	if Config.USE_DUMMY_ARMS then
-		-- Not set up yet...
-		--table.insert(Config.chain, arms_rc)
-		table.insert(Config.chain, head_rc)
-	else
+----[[
 		table.insert(Config.chain, right_arm)
 		table.insert(Config.chain, left_arm)
 		Config.chain[right_arm.name] = right_arm
 		Config.chain[left_arm.name] = left_arm
-	end
+--]]
 	one_chain = nil
 end
 

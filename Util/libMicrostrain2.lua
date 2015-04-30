@@ -153,9 +153,9 @@ local function configure(self)
 	-- New IMU format
 	local imu_fmt = {
 		0x75, 0x65, 0x0C,
-		0x10, -- Command length
-		0x10, 0x08, -- Field Length, and Field Desctiption (AHRS)
-		0x01, 0x04, -- Set 5 messages
+		0x13, -- Command length
+		0x13, 0x08, -- Field Length, and Field Desctiption (AHRS)
+		0x01, 0x05, -- Set 5 messages
 		0x04, 0x00, 0x01, -- Accel Scaled Message @ 1000Hz
 		0x05, 0x00, 0x01, -- Gyro Scaled Message @ 1000Hz
 		0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz

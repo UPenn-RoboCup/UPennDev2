@@ -214,7 +214,7 @@ end
 ---------------------------
 -- Service multiple hokuyos over ethernet
 local new_hokuyo_net = function(host_id)
-  local host = string.format('192.168.0.%d',host_id)
+  local host = string.format('192.168.123.%d',host_id)
   local fd = tcp.open(host, 10940, 1)
 	-- Begin the Hokuyo object
 	local obj = {

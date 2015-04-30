@@ -13,7 +13,8 @@ require'vcm'
 require'hcm'
 
 local mesh_ch, mesh_udp_ch
-local t_send_mesh = -math.huge
+local t_send_mesh0 = -math.huge
+local t_send_mesh1 = -math.huge
 local libLog, logger
 local mesh0, mesh1
 local mag_sweep0, t_sweep0, ranges_fov0
@@ -28,11 +29,11 @@ local function check_send_mesh()
 		t_open = hcm.get_network_topen()
 		if t_open - t_send_mesh > 0.5 then
 			request = true
-			t_send_mesh = t
 		end
 	end
 
-	if mesh0 and (t-t_send_mesh>t_sweep0 or request) then
+	if mesh0 and (t-t_send_mesh0>t_sweep0 or request) then
+		t_send_mesh0 = t
 		local metadata = mesh0.metadata
 		metadata.t = t
 
@@ -52,9 +53,11 @@ local function check_send_mesh()
 			local ret, err = mesh0_udp_ch:send(meta..c_mesh)
 			--print('Mesh0 | Sent UDP', unpack(ret))
 		end
+		print('Mesh0')
 	end
 
-	if mesh1 and (t-t_send_mesh>t_sweep1 or request) then
+	if mesh1 and (t-t_send_mesh1>t_sweep1 or request) then
+		t_send_mesh1 = t
 		local metadata = mesh1.metadata
 		metadata.t = t
 		mesh1:dynamic_range(vcm.get_mesh1_dynrange())
@@ -73,6 +76,7 @@ local function check_send_mesh()
 			local ret, err = mesh1_udp_ch:send(meta..c_mesh)
 			--print('Mesh1 | Sent UDP', unpack(ret))
 		end
+		print('Mesh1')
 	end
 
 	-- Log

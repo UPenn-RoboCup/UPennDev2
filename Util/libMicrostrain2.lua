@@ -160,6 +160,7 @@ local function configure(self)
 		0x05, 0x00, 0x01, -- Gyro Scaled Message @ 1000Hz
 		0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
 		0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
+		0x0C, 0x00, 0x01 -- Euler
 	}
 	print('imu_fmt')
 	cmd2string(imu_fmt, true)
@@ -190,7 +191,16 @@ local function configure(self)
 	local response = idle(self)
 	unix.usleep(1e5)
 
+	-- Just AHRS
+  local save_fmt = {
+		0x75, 0x65, 0x0C,
+    0x04, -- Command length
+    0x04, 0x08, -- Packet length
+    0x03, 0x00 -- 3 to perform the save
+  }
+
 	-- AHRS and NAV
+	--[[
 	local save_fmt = {
 		0x75, 0x65, 0x0C,
 		0x08, -- Command length
@@ -199,6 +209,7 @@ local function configure(self)
 		0x04, 0x0A, -- Packet length
 		0x03, 0x00 -- 3 to perform the save
 	}
+	--]]
 	print('save_fmt')
 	cmd2string(save_fmt, true)
 	local response = write_command(self.fd,save_fmt)
@@ -237,7 +248,6 @@ local function configure(self)
 	-- Set the device to idle
 	idle(self)
 	unix.usleep(1e5)
-
 
 	local disable_autoinit = {
 		0x75, 0x65, 0x0D,
@@ -370,6 +380,8 @@ extract[0x80] = function(pkt)
 	ffi.copy(del_gyr_tmp, pkt:sub(35, 46):reverse(), cpy_sz)
 	-- Mag
 	ffi.copy(mag_tmp, pkt:sub(49, 60):reverse(), cpy_sz)
+	-- Euler
+	ffi.copy(euler_tmp, pkt:sub(63, 74):reverse(), cpy_sz)
 
 	--[[
 	local gyr = {}
@@ -398,7 +410,7 @@ extract[0x82] = function(pkt)
 	-- Euler
 	ffi.copy(euler_tmp, pkt:sub(15, 26):reverse(), cpy_sz)
 	local valid = ffi.new('uint8_t[2]', pkt:sub(27, 28))
-print('Valid', valid[0], valid[1])
+	--print('Valid', valid[0], valid[1])
 	
 
 	--[[

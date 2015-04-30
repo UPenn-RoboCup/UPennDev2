@@ -78,67 +78,31 @@ end
 
 -- Go to high speed baud
 local function change_baud(microstrain)
-	local baud = 921600 -- 921600 only for now...
-	local baud_cmd = { 0x75, 0x65, 0x0C,
-	0x07, -- Command length
-	0x07, 0x40, -- Length and command description
-	0x01, -- USE this setting (not saved at boot, tho...)
-	0x00, 0x0E, 0x10, 0x00
-}
-
--- Set the device to idle
-idle(microstrain)
-
--- Write the command
---local response = write_command(microstrain.fd,baud_cmd)
---for k,v in ipairs(response) do print(string.format('%d: %02X',k,v)) end
---microstrain:close()
---unix.usleep(1e6)
--- Open with new baud
---libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
-
--- Ping the microstrain
-write_command(microstrain.fd, { 0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
-end
-
-local function enable_magnetometer_compensation(microstrain)
-	local DISABLE_MAG = true
-	-- Disables magnetometer and north
-	local data_conditioning_flags = bit.bor( 0x0100, 0x0400)
-	-- Disables only north
-	--local data_conditioning_flags = 0x0400
-	local hex_flags = bit.tohex(data_conditioning_flags, 4):gmatch('%d%d')
-	local flag_bytes = {}
-	local disable_north_compensation_cmd = {
+	local baud = 230400
+	local baud_change = {
 		0x75, 0x65, 0x0C,
-	0x10,
-	0x10, 0x35,
-	0x01, -- Apply new settings
-	0x00, 0x0A, -- default decimation
-}
-if DISABLE_MAG then
-	for hex in hex_flags do
-		table.insert(disable_north_compensation_cmd, tonumber(hex, 16) )
-	end
-else
-	table.insert(disable_north_compensation_cmd, 0x04)
-	table.insert(disable_north_compensation_cmd, 0x00)
-end
-for _, v in ipairs(
-	{
-		0x0E, -- New Accel/Gyro Filter Width
-		0x11, -- New Mag Filter Width
-		0x00, 0x0A, -- New Up Compensation
-		0x00, 0x0A, -- New North Compensation
-		0x01, -- New Mag Bandwidth/Power
-		0x00, 0x00, -- Reserved
-	})
-	do
-		table.insert(disable_north_compensation_cmd, v)
-	end
-	--cmd2string(disable_north_compensation_cmd, true)
-	-- Send to the device
-	write_command(microstrain.fd, disable_north_compensation_cmd)
+		0x07, -- Command length
+		0x07, 0x40, -- Length and command description
+		0x01, -- USE this setting (not saved at boot, tho...)
+		0x03, 0x84, 0x00
+	}
+
+	-- Set the device to idle
+	idle(microstrain)
+
+	-- Write the command
+	print('baud_change')
+	cmd2string(baud_change, true)
+	local response = write_command(microstrain.fd,baud_change)
+	cmd2string(response, true)
+
+	microstrain:close()
+	--unix.usleep(1e6)
+	-- Open with new baud
+	--libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
+
+	-- Ping the microstrain
+	write_command(microstrain.fd, {0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
 end
 
 local function configure(self)
@@ -240,7 +204,7 @@ local function configure(self)
 		0x0D,
 		0x0D, 0x51,
 		0x01, -- Apply new settings
-		0x01, -- Up compensation
+		0x00, -- Up compensation
 		0x00, -- North compensation
 		0x00, 0x00, 0x00, 0x00, -- timeconstant
 		0x00, 0x00, 0x00, 0x00 -- timeconstant
@@ -468,36 +432,6 @@ local function read_ahrs(self)
 		status, descriptor = coroutine.resume(self.copacket, '')
 		assert(status, descriptor)
 	end
-
-	-- Try to select some stuff
-	--[[
-	-- Accel
-	ffi.copy(acc_tmp, buf:sub(7, 18):reverse(), cpy_sz)
-	-- Gyro
-	ffi.copy(gyr_tmp, buf:sub(21, 32):reverse(), cpy_sz)
-	-- Delta
-	ffi.copy(del_gyr_tmp, buf:sub(35, 46):reverse(), cpy_sz)
-	-- Euler
-	ffi.copy(euler_tmp, buf:sub(49, 60):reverse(), cpy_sz)
-	-- Mag
-	ffi.copy(mag_tmp, buf:sub(63, 74):reverse(), cpy_sz)
-	--]]
-
-	-- NAV stuff
-	--[[
-	if #buf>76 then
-	-- Debugging
-	--    cmd2string({buf:byte(77, -1)}, true)
-	ffi.copy(nav_stat, buf:sub(83, 88):reverse(), 3 * ffi.sizeof('uint16_t'))
-	end
-	--]]
-
-	--[[
-	-- Using the non-FFI API
-	local _gyro = carray.float(buf:sub( 7,18):reverse())
-	local _rpy  = carray.float(buf:sub(21,32):reverse())
-	--]]
-
 	return acc_tmp, gyr_tmp, del_gyr_tmp, euler_tmp, mag_tmp
 end
 

@@ -286,12 +286,12 @@ servo.steps = 2 * vector.new({
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,-1, -- Head
-	1,1,1,1,1,1,1, --LArm
+	1,1,1, 1, -1,-1,1, --LArm
 	------
 	-1, 1,1,   1,  1,1, --LLeg
 	-1, 1,-1, -1,  -1,1, --RLeg
 	------
-	-1,1,1,-1, 1,1,1, --RArm
+	-1,1,1, -1, -1,-1,1, --RArm
 	-1, -1, -- Waist
 	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
@@ -301,10 +301,10 @@ servo.direction = vector.new({
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
 	0,0, -- Head
-	-90,  -90,  -90,45,90,0,0, --LArm
+	-90,  -90,  -90,45,  90,0,0, --LArm
 	0,0,0,  0  ,0,0, --LLeg
 	0,0,0,  0  ,0,0, --RLeg
-	90,  90,  90,-45,-90,0,0, --RArm
+	90,  90,  90,-45,  -90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
 	70, -125, 0, -- right gripper/trigger (UCLA verified)

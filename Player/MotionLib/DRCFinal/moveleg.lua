@@ -264,7 +264,7 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   local swing_leg_sag_compensation_right = Config.walk.footSagCompensation[2]
 
 	local kneeComp={0,0}	
-	local knee_compensation = Config.walk.kneePitchCompensation
+	local knee_compensation = Config.walk.kneePitchCompensation or 0
 
 	local zLegComp = mcm.get_status_zLegComp()
 

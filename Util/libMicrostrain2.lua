@@ -332,30 +332,20 @@ local function close(self)
 end
 
 local function ahrs_on(self)
-	stty.flush(self.fd)
-	local buf = unix.read(self.fd)
-	while buf do buf = unix.read(self.fd) end
-	-- Turn on the ahrs stream
-	local response = write_command(self.fd, {
-		0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x01
-	})
-end
-local function ahrs_off(self)
-	-- Turn off the ahrs stream
-	local response = write_command(self.fd, {
-		0x75, 0x65, 0x0C, 0x05, 0x05, 0x11, 0x01, 0x01, 0x00
-	})
-	stty.flush(self.fd)
-	local buf = unix.read(self.fd)
-	while buf do buf = unix.read(self.fd) end
-end
-
-local function ahrs_and_nav_on(self)
 	-- Turn on the ahrs stream
 	local response = write_command(self.fd, {
 		0x75, 0x65, 0x0C, 0x0A,
 		0x05, 0x11, 0x01, 0x01, 0x01, -- ahrs
-		0x05, 0x11, 0x01, 0x03, 0x01, -- nav
+		0x05, 0x11, 0x01, 0x03, 0x00, -- nav
+	})
+end
+
+local function ahrs_off(self)
+	-- Turn on the ahrs stream
+	local response = write_command(self.fd, {
+		0x75, 0x65, 0x0C, 0x0A,
+		0x05, 0x11, 0x01, 0x01, 0x00, -- ahrs
+		0x05, 0x11, 0x01, 0x03, 0x00, -- nav
 	})
 end
 
@@ -402,7 +392,7 @@ extract[0x80] = function(pkt)
 end
 
 extract[0x82] = function(pkt)
-	--[[
+	----[[
 	print('estimation')
 	cmd2string({pkt:byte(1,-1)}, true)
 	--]]

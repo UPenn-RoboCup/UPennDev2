@@ -30,7 +30,6 @@ if not IS_THREAD then
   signal.signal("SIGTERM", shutdown)
 end
 
-local USE_MAG = false
 local OVERRIDE_YAW = true
 local CALIBRATE_GYRO_BIAS = true
 local CALIBRATION_THRESHOLD = 0.01
@@ -45,8 +44,7 @@ local get_time = unix.time
 local acc_ptr  = dcm.sensorPtr.accelerometer
 local gyro_ptr = dcm.sensorPtr.gyro
 local rpy_ptr  = dcm.sensorPtr.rpy
-local mag_ptr  = dcm.sensorPtr.magnetometer
-local acc, gyro, mag, rpy = vector.zeros(3), vector.zeros(3), vector.zeros(3), vector.zeros(3)
+local acc, gyro, rpy = vector.zeros(3), vector.zeros(3), vector.zeros(3)
 local read_count, last_read_count = 0,0 --to get hz
 local sformat = string.format
 
@@ -72,7 +70,7 @@ local function do_read()
 	gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] =
     -g[1] - gyro_yaw_bias[1], -g[2] - gyro_yaw_bias[2], -g[0] - gyro_yaw_bias[3]
 
-yaw = yaw + gyro_ptr[2] / 166
+yaw = yaw + 6 * gyro_ptr[2] / 1e3
   
   -- Overwrite the RPY value
   if OVERRIDE_YAW then

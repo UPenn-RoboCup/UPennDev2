@@ -200,7 +200,7 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 		else
 			qGoal, null_options = find_shoulder(self, trGoal, qArm0, shoulder_weights)
 		end
-		assert(qGoal, 'No shoulder found for the goal!')
+		assert(qGoal, 'line_iter | No valid qGoal!')
 		local fkGoal = forward(qGoal)
 		quatGoal, posGoal = T.to_quaternion(fkGoal)
 		vector.new(posGoal)
@@ -278,7 +278,7 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 			iqWaypoint = inverse(trStep, cur_qArm, shoulderBlend, null_options0[2])
 		else
 			iqWaypoint = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
-			assert(iqWaypoint, 'No shoulder found for the waypoint!')
+			assert(iqWaypoint, 'line_iter | No valid iqWaypoint!')
 		end
 		-- Sanitize to avoid trouble with wrist yaw
 		if dt then

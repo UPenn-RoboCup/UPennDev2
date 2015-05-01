@@ -104,45 +104,23 @@ fsm.Arm = {
 	{'armIdle', 'init', 'armInit'},
 	-- Init
 	{'armInit', 'timeout', 'armInit'},
-	{'armInit', 'done', 'armStance'},
-	-- Stance pose (for walking)
-	{'armStance', 'dean', 'armDean'},
-	{'armStance', 'ready', 'armReady'},
-	{'armStance', 'teleop', 'armTeleop'},
-	{'armStance', 'null', 'armNull'},
-	--
-	{'armDean', 'teleop', 'armTeleop'},
-	{'armDean', 'init', 'armInit'},
+	{'armInit', 'done', 'armInit'},
+	{'armInit', 'ready', 'armReady'},
+	{'armInit', 'teleopraw', 'armTeleopRaw'},
 	-- Ready pose (for manipulating)
 	{'armReady', 'timeout', 'armReady'},
-	--{'armReady', 'done', 'armStance'},
 	{'armReady', 'done', 'armTeleop'},
-	{'armReady', 'teleop', 'armTeleop'},
-	{'armReady', 'grab', 'armGrab'},
 	{'armReady', 'init', 'armInit'},
 	-- Teleop
-	{'armTeleop', 'timeout', 'armTeleop'},
-	{'armTeleop', 'teleop', 'armTeleop'},
-	{'armTeleop', 'params', 'armTeleop'}, -- params updated
-	{'armTeleop', 'done', 'armStance'},
 	{'armTeleop', 'init', 'armInit'},
+	{'armTeleop', 'teleop', 'armTeleop'},
 	{'armTeleop', 'ready', 'armReady'},
-	{'armTeleop', 'poke', 'armPoke'},
-	{'armTeleop', 'grab', 'armGrab'},
-	-- Poke
-	{'armPoke', 'timeout', 'armPoke'},
-	{'armPoke', 'done', 'armTeleop'},
-	{'armPoke', 'touch', 'armTeleop'},
-	-- Grab
-	{'armGrab', 'timeout', 'armGrab'},
-	{'armGrab', 'done', 'armTeleop'},
-	{'armGrab', 'teleop', 'armTeleop'},
-	{'armGrab', 'ready', 'armReady'},
-	{'armGrab', 'init', 'armInit'},
-	-- Push around the arm in the null space of our IK
-	{'armNull', 'null', 'armNull'},
-	{'armNull', 'teleop', 'armTeleop'},
-	{'armNull', 'done', 'armStance'},
+	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
+	-- Teleop Raw
+	{'armTeleopRaw', 'init', 'armInit'},
+	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
+	{'armTeleopRaw', 'ready', 'armReady'},
+	{'armTeleopRaw', 'teleop', 'armTeleop'},
 }
 
 fsm.Motion = {

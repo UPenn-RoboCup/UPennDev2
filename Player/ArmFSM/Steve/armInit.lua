@@ -85,30 +85,34 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
 
 	-- Timing necessary
-	--[[
+	----[[
 	local qLArm = Body.get_larm_command_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
 	--]]
 	-- No time needed
-	----[[
+	--[[
 	local qLArm = Body.get_larm_position()
 	local moreL, q_lWaypoint = lPathIter(qLArm)
 	--]]
 	Body.set_larm_command_position(q_lWaypoint)
 
-	--[[
+	----[[
 	local qRArm = Body.get_rarm_command_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
 	--]]
-	----[[
+	--[[
 	local qRArm = Body.get_rarm_position()
 	local moreR, q_rWaypoint = rPathIter(qRArm)
 	--]]
 	Body.set_rarm_command_position(q_rWaypoint)
 	-- Check if done
 	if not moreL and not moreR then
-		print('setShoulderYaw', setShoulderYaw)
-		if setShoulderYaw then return 'done' end
+		--print('setShoulderYaw', setShoulderYaw)
+		if setShoulderYaw then
+			-- done
+			--return 'done'
+			return
+		end
 			-- ignore sanitization for the init position, which is absolutely known
       lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, true)
       setShoulderYaw = true
@@ -134,7 +138,6 @@ function state.exit()
 	local qcRArm = Body.get_rarm_command_position()
 	hcm.set_teleop_larm(qcLArm)
   hcm.set_teleop_rarm(qcRArm)
-	hcm.set_teleop_compensation(0)
 end
 
 return state

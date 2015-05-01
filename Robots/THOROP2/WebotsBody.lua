@@ -325,6 +325,7 @@ function WebotsBody.update(Body)
 					webots.wb_motor_set_available_torque(jtag, 8)
 				end
         -- Update the PID
+			--[[
         if not OLD_API then
           local new_P, old_P = Body.get_position_p()[idx], PID_P[idx]
           if new_P ~= old_P then
@@ -332,6 +333,7 @@ function WebotsBody.update(Body)
             webots.wb_motor_set_control_pid(jtag, new_P, 0, 0)
           end
         end
+			--]]
         local rad = servo.direction[idx] * (cmd + servo.rad_offset[idx])
 
         --SJ: if torque enable is set to 2, it's torque control mode

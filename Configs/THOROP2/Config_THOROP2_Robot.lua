@@ -99,8 +99,8 @@ local FT16390 = {
 	gain = 1,
 }
 
-Config.right_foot_ft = FT16389
-Config.left_foot_ft = FT16390
+Config.right_foot_ft = FT16390
+Config.left_foot_ft = FT16389
 
 Config.right_wrist_ft = FT16465
 Config.left_wrist_ft = FT16464
@@ -131,8 +131,9 @@ local left_arm = {
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
 --	2,4,6,8,10,12,14,
+	2,4,6,8,10,12,14,
 	-- lidar
-	37,
+	--37,
 	-- gripper
 --	64, 66, 68
 	},
@@ -269,7 +270,8 @@ servo.joint_to_motor={
 -- TODO: some pros are different
 servo.steps = 2 * vector.new({
 	151875,151875, -- Head
-	251000,251000,251000,251000,151875,151875,151875, --LArm
+	251000,251000,251000,251000,151875,151875,151875, --LArm (mk1 arm)
+--	251000,251000,251000,251000,251000,151875,151875, --LArm (mk2 arm)
 	251000,251000,251000,251000,251000,251000, --LLeg
 	251000,251000,251000,251000,251000,251000, --RLeg
 	251000,251000,251000,251000,151875,151875,151875, --RArm
@@ -282,13 +284,14 @@ servo.steps = 2 * vector.new({
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,-1, -- Head
-	1,1,1, 1, -1,-1,1, --LArm
+--	1,1,1, 1, 1,1,1, --LArm, mk2, tested
+	1,-1,1, 1, 1,1,1, --LArm, mk1 retrofitted, tested
 	------
 	-1, 1,1,   1,  1,1, --LLeg
 	-1, 1,-1, -1,  -1,1, --RLeg
 	------
 --	-1,1,1, -1, -1,-1,1, --RArm
-	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted
+	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
 	-1, -1, -- Waist
 	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)

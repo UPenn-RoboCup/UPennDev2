@@ -272,7 +272,8 @@ local function parse_read_leg(pkt, bus)
 end
 
 -- Custom Arm Packet
-local arm_packet_reg = {'position', 'current', 'data'}
+local arm_packet_reg = {'position', 'current'}
+--table.insert(arm_packet_reg,'data')
 local arm_packet_sz = 0
 local arm_packet_offsets = {}
 for i,v in ipairs(arm_packet_reg) do
@@ -353,12 +354,11 @@ local function parse_read_arm(pkt, bus)
 	c_ptr[read_j_id - 1] = read_cur
 	c_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
-	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
+--	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
 	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
-
-	parse_ft(left_ft, raw_str, m_id)
-	parse_ft(right_ft, raw_str, m_id)
+--	parse_ft(left_ft, raw_str, m_id)
+--	parse_ft(right_ft, raw_str, m_id)
 	--
 	return read_j_id
 end
@@ -694,7 +694,9 @@ local function output_co(bus)
 	local has_nx, has_mx, is_mx
 	bus.cmds_cnt = 0
 	coroutine.yield()
+	local cnt = 0
 	while true do
+		cnt = cnt +1
 		-- Send the position commands
 		local send_ids, commands, cmd_addrs = form_write_command(bus)
 		-- Perform the sync write
@@ -742,6 +744,7 @@ local function output_co(bus)
 				p_ptr_t[j_id-1] = t_read
 			end
 		end
+		if not bus.enable_read and #commands<=0 then print('bad zone') end
 	end
 end
 
@@ -915,6 +918,7 @@ while is_running do
 	do_collect = true
 	sel_wait = WRITE_TIMEOUT
 	while sel_wait > 0 do
+		--print('sel_wait', sel_wait)
 		status, ready = sel(_fds, sel_wait)
 		if status==0 then break end
 		-- Read in packets if we received data from the bus

@@ -20,7 +20,7 @@ local loptions, roptions
 local function set_iterators(teleopLArm, teleopRArm, teleopComp)
 	if teleopComp == 0 then
 		-- #nofilter
-		uTorsoComp, uTorso0 = nil
+		uTorsoComp, uTorso0 = {0,0,0}, {0,0,0}
 		return movearm.goto_q(teleopLArm, teleopRArm, true)
 	end
 	-- Grab the torso compensation
@@ -72,9 +72,6 @@ function state.entry()
 	--roptions = {qRGoal[3], 0}
 	--hcm.set_teleop_loptions(loptions or {qcLArm[3], 0})
 	--hcm.set_teleop_roptions(roptions or {qcRArm[3], 0})
-
-	-- Close range mesh
-	vcm.set_mesh0_dynrange({.1,1})
 
 end
 

@@ -221,7 +221,7 @@ local function configure(self)
 		0x0D,
 		0x0D, 0x51,
 		0x01, -- Apply new settings
-		0x00, -- Up compensation
+		0x01, -- Up compensation
 		0x00, -- North compensation
 		63, 128, 0x00, 0x00, -- timeconstant
 		63, 128, 0x00, 0x00 -- timeconstant
@@ -312,7 +312,7 @@ local function configure(self)
 	local response = write_command(self.fd, init_att)
 
 	-- Set the initial heading to zero
---[[
+----[[
 	local init_heading = { 0x75, 0x65, 0x0D,
 	0x06, -- Command length
 	0x06, 0x03, -- Packet length

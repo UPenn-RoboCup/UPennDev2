@@ -61,7 +61,7 @@ collectgarbage()
 
 local function do_read()
 	-- Get the accelerometer, gyro, magnetometer, and euler angles
-	local a, g, dg, e, m = microstrain:read_ahrs()
+	local a, g, e = microstrain:read_ahrs()
 	t_read = get_time()
 	if not a then return end
 

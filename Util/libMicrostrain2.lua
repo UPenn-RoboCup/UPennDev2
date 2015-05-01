@@ -148,9 +148,9 @@ local function configure(self)
 		0x75, 0x65, 0x0C,
 		0x0A, -- Command length
 		0x0A, 0x0A, -- Field Length, and Field Desctiption (NAV)
-		0x01, 0x02, -- Set 3 messages
-		0x10, 0x00, 0x01, -- Filter status
-		0x05, 0x00, 0x01, -- Estimated Orientation, Euler Angles @ 500Hz
+		0x01, 0x02, -- Set 2 messages
+		0x10, 0x00, 0x04, -- Filter status
+		0x05, 0x00, 0x04, -- Estimated Orientation, Euler Angles @ 500Hz
 	}
 	print('nav_fmt')
 	cmd2string(nav_fmt, true)
@@ -162,24 +162,36 @@ local function configure(self)
 	unix.usleep(1e5)
 
 	-- Just AHRS
+--[[
   local save_fmt = {
-		0x75, 0x65, 0x0C,
+    0x75, 0x65, 0x0C,
     0x04, -- Command length
     0x04, 0x08, -- Packet length
     0x03, 0x00 -- 3 to perform the save
   }
+--]]
 
 	-- AHRS and NAV
-	--[[
 	local save_fmt = {
 		0x75, 0x65, 0x0C,
 		0x08, -- Command length
-		0x04, 0x08, -- Packet length
+		0x04, 0x08,
 		0x03, 0x00, -- 3 to perform the save
-		0x04, 0x0A, -- Packet length
+		0x04, 0x0A,
 		0x03, 0x00 -- 3 to perform the save
 	}
-	--]]
+
+-- Just NAV
+--[[
+  local save_fmt = {
+    0x75, 0x65, 0x0C,
+    0x04, -- Command length
+    0x04, 0x0A, -- Packet length
+    0x03, 0x00 -- 3 to perform the save
+  }
+--]]
+
+
 	print('save_fmt')
 	cmd2string(save_fmt, true)
 	local response = write_command(self.fd,save_fmt)
@@ -209,7 +221,7 @@ local function configure(self)
 		0x0D,
 		0x0D, 0x51,
 		0x01, -- Apply new settings
-		0x01, -- Up compensation
+		0x00, -- Up compensation
 		0x00, -- North compensation
 		63, 128, 0x00, 0x00, -- timeconstant
 		63, 128, 0x00, 0x00 -- timeconstant
@@ -253,7 +265,6 @@ local function configure(self)
 	idle(self)
 	unix.usleep(1e5)
 
-
 	local sensor_frame = {
 		0x75, 0x65, 0x0D,
 		0x0F, -- Command length
@@ -264,7 +275,7 @@ local function configure(self)
 		0x00, 0x00, 0x00, 0x00, --pitch
 		--64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
 		0x00, 0x00, 0x00, 0x00, --yaw
-		--63, 201, 15, 219, --yaw (reverse bytes from osx) -- 90deg
+		--64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
 		--219, 15, 201, 63, --yaw (reverse bytes from osx) -- 90deg
 	}
 	print('sensor_frame')
@@ -289,7 +300,6 @@ local function configure(self)
 	-- Set the device to idle
 	idle(self)
 	unix.usleep(1e5)
-
 	-- Set the initial attitude
 	local init_att = {
 		0x75, 0x65, 0x0D,
@@ -302,12 +312,14 @@ local function configure(self)
 	local response = write_command(self.fd, init_att)
 
 	-- Set the initial heading to zero
+--[[
 	local init_heading = { 0x75, 0x65, 0x0D,
 	0x06, -- Command length
 	0x06, 0x03, -- Packet length
 	0x00, 0x00, 0x00, 0x00,
-}
+	}
 local response = write_command(self.fd, init_heading)
+--]]
 
 -- Set the device to idle
 idle(self)
@@ -396,7 +408,7 @@ extract[0x82] = function(pkt)
 	--print('Valid', valid[0], valid[1])
 	
 
-	--[[
+	----[[
 	local rpy = {}
 	for i=1,3 do rpy[i] = euler_tmp[i-1] end
 	print('rpy', rpy[1]*180/math.pi, rpy[2]*180/math.pi, rpy[3]*180/math.pi)
@@ -441,7 +453,7 @@ local function read_ahrs(self)
 		status, descriptor = coroutine.resume(self.copacket, '')
 		assert(status, descriptor)
 	end
-	return acc_tmp, gyr_tmp, del_gyr_tmp, euler_tmp, mag_tmp
+	return acc_tmp, gyr_tmp, euler_tmp
 end
 
 ---------------------------

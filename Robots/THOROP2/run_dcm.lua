@@ -420,6 +420,10 @@ local function parse_read_arm2(pkt, bus)
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
+	if not read_val then
+print('bad val', read_j_id)
+return read_j_id
+end
 	local read_rad = step_to_radian(read_j_id, read_val)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read

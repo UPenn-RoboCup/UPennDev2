@@ -131,9 +131,9 @@ local left_arm = {
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
 --	2,4,6,8,10,12,14,
-	2,4,6,8,10,12,14,
+	2,4,6,
 	-- lidar
-	--37,
+	37,
 	-- gripper
 --	64, 66, 68
 	},

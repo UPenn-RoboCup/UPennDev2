@@ -48,7 +48,7 @@ end
 local function write_command(fd, cmd)
 	local str = generate_packet(cmd)
 	local ret = unix.write(fd, str)
-	assert(ret==#str, 'Bad write of command!')
+	assert(ret==#str, string.format('Bad write of command! %d, %d', tonumber(ret), #str))
 	local status, ready = unix.select( {fd}, 0.1 )
 	assert(status>0,'Timeout! '..status)
 	local res = unix.read(fd)
@@ -77,32 +77,39 @@ local function get_info(self)
 end
 
 -- Go to high speed baud
-local function change_baud(microstrain)
+local function change_baud(self)
+	-- Set the device to idle
+	idle(self)
+
 	local baud = 230400
 	local baud_change = {
 		0x75, 0x65, 0x0C,
 		0x07, -- Command length
 		0x07, 0x40, -- Length and command description
-		0x01, -- USE this setting (not saved at boot, tho...)
-		0x03, 0x84, 0x00
+		0x01,
+		0x00, 0x03, 0x84, 0x00
 	}
-
-	-- Set the device to idle
-	idle(microstrain)
+	local baud_change = {
+		0x75, 0x65, 0x0C,
+		0x03, -- Command length
+		0x03, 0x40, -- Length and command description
+		0x02,
+	}
 
 	-- Write the command
 	print('baud_change')
 	cmd2string(baud_change, true)
-	local response = write_command(microstrain.fd,baud_change)
+	local response = write_command(self.fd, baud_change)
 	cmd2string(response, true)
 
-	microstrain:close()
+	--microstrain:close()
+	
 	--unix.usleep(1e6)
 	-- Open with new baud
 	--libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
 
 	-- Ping the microstrain
-	write_command(microstrain.fd, {0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
+	--write_command(microstrain.fd, {0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
 end
 
 local function configure(self)
@@ -475,6 +482,7 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
 		ahrs_and_nav_on = ahrs_and_nav_on,
 		get_info = get_info,
 		read_ahrs = read_ahrs,
+		change_baud = change_baud,
 	}
 	local copacket = coroutine.create(process_data)
 	coroutine.resume(copacket, dev)

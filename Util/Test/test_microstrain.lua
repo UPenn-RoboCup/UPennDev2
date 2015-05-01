@@ -13,7 +13,7 @@ if TEST_M2 then libMicrostrain = lM2 end
 
 local imu = assert(libMicrostrain.new_microstrain(
 --  '/dev/cu.usbmodem1421', 921600 )
-  '/dev/ttyACM0'), 'No imu present!')
+  '/dev/ttyACM0', 921600), 'No imu present!')
 
 util.ptable(imu)
 
@@ -27,7 +27,7 @@ print('Opened Microstrain')
 --os.exit()
 
 -- Change the baud rate to fastest for this session
---libMicrostrain.change_baud(imu)
+--imu:change_baud(imu)
 --os.exit()
 
 -- Turn on the stream
@@ -45,7 +45,7 @@ while running do
 	local acc, gyr, del_gyr, rpy, mag = imu:read_ahrs()
 	local t = unix.time()
 	if t - t_debug > .1 then
-		print()
+		print('cnt', cnt, t-t0, cnt/(t-t0))
 		--print('rpy', rpy[0]*180/math.pi, rpy[1]*180/math.pi, rpy[2]*180/math.pi)
 		--print('gyr', gyr[0]*180/math.pi, gyr[1]*180/math.pi, gyr[2]*180/math.pi)
 --[[

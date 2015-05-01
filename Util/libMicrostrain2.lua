@@ -125,14 +125,12 @@ local function configure(self)
 	-- New IMU format
 	local imu_fmt = {
 		0x75, 0x65, 0x0C,
-		0x13, -- Command length
-		0x13, 0x08, -- Field Length, and Field Desctiption (AHRS)
-		0x01, 0x05, -- Set 5 messages
-		0x04, 0x00, 0x01, -- Accel Scaled Message @ 1000Hz
-		0x05, 0x00, 0x01, -- Gyro Scaled Message @ 1000Hz
-		0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
-		0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
-		0x0C, 0x00, 0x01 -- Euler
+		0x0D, -- Command length
+		0x0D, 0x08, -- Field Length, and Field Desctiption (AHRS)
+		0x01, 0x03, -- Set 3 messages
+		0x04, 0x00, 0x06, -- Accel Scaled Message @ 1000Hz / num
+		0x05, 0x00, 0x06, -- Gyro Scaled Message @ 1000Hz
+		0x0C, 0x00, 0x06 -- Euler
 	}
 	print('imu_fmt')
 	cmd2string(imu_fmt, true)
@@ -211,10 +209,10 @@ local function configure(self)
 		0x0D,
 		0x0D, 0x51,
 		0x01, -- Apply new settings
-		0x00, -- Up compensation
+		0x01, -- Up compensation
 		0x00, -- North compensation
-		0x00, 0x00, 0x00, 0x00, -- timeconstant
-		0x00, 0x00, 0x00, 0x00 -- timeconstant
+		63, 128, 0x00, 0x00, -- timeconstant
+		63, 128, 0x00, 0x00 -- timeconstant
 	}
 	print('disable_north')
 	cmd2string(disable_north, true)
@@ -357,12 +355,16 @@ extract[0x80] = function(pkt)
 	ffi.copy(acc_tmp, pkt:sub(7, 18):reverse(), cpy_sz)
 	-- Gyro
 	ffi.copy(gyr_tmp, pkt:sub(21, 32):reverse(), cpy_sz)
+	-- Euler
+	ffi.copy(euler_tmp, pkt:sub(35, 46):reverse(), cpy_sz)
+--[[
 	-- Delta
 	ffi.copy(del_gyr_tmp, pkt:sub(35, 46):reverse(), cpy_sz)
 	-- Mag
 	ffi.copy(mag_tmp, pkt:sub(49, 60):reverse(), cpy_sz)
 	-- Euler
 	ffi.copy(euler_tmp, pkt:sub(63, 74):reverse(), cpy_sz)
+--]]
 
 	--[[
 	local gyr = {}

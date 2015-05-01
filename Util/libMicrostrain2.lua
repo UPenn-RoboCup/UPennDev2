@@ -48,7 +48,7 @@ end
 local function write_command(fd, cmd)
 	local str = generate_packet(cmd)
 	local ret = unix.write(fd, str)
-	assert(ret==#str, 'Bad write of command!')
+	assert(ret==#str, string.format('Bad write of command! %d, %d', tonumber(ret), #str))
 	local status, ready = unix.select( {fd}, 0.1 )
 	assert(status>0,'Timeout! '..status)
 	local res = unix.read(fd)
@@ -77,32 +77,39 @@ local function get_info(self)
 end
 
 -- Go to high speed baud
-local function change_baud(microstrain)
+local function change_baud(self)
+	-- Set the device to idle
+	idle(self)
+
 	local baud = 230400
 	local baud_change = {
 		0x75, 0x65, 0x0C,
 		0x07, -- Command length
 		0x07, 0x40, -- Length and command description
-		0x01, -- USE this setting (not saved at boot, tho...)
-		0x03, 0x84, 0x00
+		0x01,
+		0x00, 0x03, 0x84, 0x00
 	}
-
-	-- Set the device to idle
-	idle(microstrain)
+	local baud_change = {
+		0x75, 0x65, 0x0C,
+		0x03, -- Command length
+		0x03, 0x40, -- Length and command description
+		0x02,
+	}
 
 	-- Write the command
 	print('baud_change')
 	cmd2string(baud_change, true)
-	local response = write_command(microstrain.fd,baud_change)
+	local response = write_command(self.fd, baud_change)
 	cmd2string(response, true)
 
-	microstrain:close()
+	--microstrain:close()
+	
 	--unix.usleep(1e6)
 	-- Open with new baud
 	--libMicrostrain.new_microstrain(microstrain.ttyname,baud,microstrain)
 
 	-- Ping the microstrain
-	write_command(microstrain.fd, {0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
+	--write_command(microstrain.fd, {0x75, 0x65, 0x01, 0x02, 0x02, 0x01 })
 end
 
 local function configure(self)
@@ -118,14 +125,12 @@ local function configure(self)
 	-- New IMU format
 	local imu_fmt = {
 		0x75, 0x65, 0x0C,
-		0x13, -- Command length
-		0x13, 0x08, -- Field Length, and Field Desctiption (AHRS)
-		0x01, 0x05, -- Set 5 messages
-		0x04, 0x00, 0x01, -- Accel Scaled Message @ 1000Hz
-		0x05, 0x00, 0x01, -- Gyro Scaled Message @ 1000Hz
-		0x07, 0x00, 0x01, -- Delta Theta Message @ 100Hz
-		0x06, 0x00, 0x01, -- Magnetometer Message @ 100Hz
-		0x0C, 0x00, 0x01 -- Euler
+		0x0D, -- Command length
+		0x0D, 0x08, -- Field Length, and Field Desctiption (AHRS)
+		0x01, 0x03, -- Set 3 messages
+		0x04, 0x00, 0x06, -- Accel Scaled Message @ 1000Hz / num
+		0x05, 0x00, 0x06, -- Gyro Scaled Message @ 1000Hz
+		0x0C, 0x00, 0x06 -- Euler
 	}
 	print('imu_fmt')
 	cmd2string(imu_fmt, true)
@@ -143,9 +148,9 @@ local function configure(self)
 		0x75, 0x65, 0x0C,
 		0x0A, -- Command length
 		0x0A, 0x0A, -- Field Length, and Field Desctiption (NAV)
-		0x01, 0x02, -- Set 3 messages
-		0x10, 0x00, 0x01, -- Filter status
-		0x05, 0x00, 0x01, -- Estimated Orientation, Euler Angles @ 500Hz
+		0x01, 0x02, -- Set 2 messages
+		0x10, 0x00, 0x04, -- Filter status
+		0x05, 0x00, 0x04, -- Estimated Orientation, Euler Angles @ 500Hz
 	}
 	print('nav_fmt')
 	cmd2string(nav_fmt, true)
@@ -157,24 +162,36 @@ local function configure(self)
 	unix.usleep(1e5)
 
 	-- Just AHRS
+--[[
   local save_fmt = {
-		0x75, 0x65, 0x0C,
+    0x75, 0x65, 0x0C,
     0x04, -- Command length
     0x04, 0x08, -- Packet length
     0x03, 0x00 -- 3 to perform the save
   }
+--]]
 
 	-- AHRS and NAV
-	--[[
 	local save_fmt = {
 		0x75, 0x65, 0x0C,
 		0x08, -- Command length
-		0x04, 0x08, -- Packet length
+		0x04, 0x08,
 		0x03, 0x00, -- 3 to perform the save
-		0x04, 0x0A, -- Packet length
+		0x04, 0x0A,
 		0x03, 0x00 -- 3 to perform the save
 	}
-	--]]
+
+-- Just NAV
+--[[
+  local save_fmt = {
+    0x75, 0x65, 0x0C,
+    0x04, -- Command length
+    0x04, 0x0A, -- Packet length
+    0x03, 0x00 -- 3 to perform the save
+  }
+--]]
+
+
 	print('save_fmt')
 	cmd2string(save_fmt, true)
 	local response = write_command(self.fd,save_fmt)
@@ -204,10 +221,10 @@ local function configure(self)
 		0x0D,
 		0x0D, 0x51,
 		0x01, -- Apply new settings
-		0x00, -- Up compensation
+		0x01, -- Up compensation
 		0x00, -- North compensation
-		0x00, 0x00, 0x00, 0x00, -- timeconstant
-		0x00, 0x00, 0x00, 0x00 -- timeconstant
+		63, 128, 0x00, 0x00, -- timeconstant
+		63, 128, 0x00, 0x00 -- timeconstant
 	}
 	print('disable_north')
 	cmd2string(disable_north, true)
@@ -248,7 +265,6 @@ local function configure(self)
 	idle(self)
 	unix.usleep(1e5)
 
-
 	local sensor_frame = {
 		0x75, 0x65, 0x0D,
 		0x0F, -- Command length
@@ -259,7 +275,7 @@ local function configure(self)
 		0x00, 0x00, 0x00, 0x00, --pitch
 		--64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
 		0x00, 0x00, 0x00, 0x00, --yaw
-		--63, 201, 15, 219, --yaw (reverse bytes from osx) -- 90deg
+		--64, 73, 15, 219, --pitch (reverse bytes from osx) -- 180 deg
 		--219, 15, 201, 63, --yaw (reverse bytes from osx) -- 90deg
 	}
 	print('sensor_frame')
@@ -284,7 +300,6 @@ local function configure(self)
 	-- Set the device to idle
 	idle(self)
 	unix.usleep(1e5)
-
 	-- Set the initial attitude
 	local init_att = {
 		0x75, 0x65, 0x0D,
@@ -297,12 +312,14 @@ local function configure(self)
 	local response = write_command(self.fd, init_att)
 
 	-- Set the initial heading to zero
+----[[
 	local init_heading = { 0x75, 0x65, 0x0D,
 	0x06, -- Command length
 	0x06, 0x03, -- Packet length
 	0x00, 0x00, 0x00, 0x00,
-}
+	}
 local response = write_command(self.fd, init_heading)
+--]]
 
 -- Set the device to idle
 idle(self)
@@ -350,12 +367,16 @@ extract[0x80] = function(pkt)
 	ffi.copy(acc_tmp, pkt:sub(7, 18):reverse(), cpy_sz)
 	-- Gyro
 	ffi.copy(gyr_tmp, pkt:sub(21, 32):reverse(), cpy_sz)
+	-- Euler
+	ffi.copy(euler_tmp, pkt:sub(35, 46):reverse(), cpy_sz)
+--[[
 	-- Delta
 	ffi.copy(del_gyr_tmp, pkt:sub(35, 46):reverse(), cpy_sz)
 	-- Mag
 	ffi.copy(mag_tmp, pkt:sub(49, 60):reverse(), cpy_sz)
 	-- Euler
 	ffi.copy(euler_tmp, pkt:sub(63, 74):reverse(), cpy_sz)
+--]]
 
 	--[[
 	local gyr = {}
@@ -387,7 +408,7 @@ extract[0x82] = function(pkt)
 	--print('Valid', valid[0], valid[1])
 	
 
-	--[[
+	----[[
 	local rpy = {}
 	for i=1,3 do rpy[i] = euler_tmp[i-1] end
 	print('rpy', rpy[1]*180/math.pi, rpy[2]*180/math.pi, rpy[3]*180/math.pi)
@@ -432,7 +453,7 @@ local function read_ahrs(self)
 		status, descriptor = coroutine.resume(self.copacket, '')
 		assert(status, descriptor)
 	end
-	return acc_tmp, gyr_tmp, del_gyr_tmp, euler_tmp, mag_tmp
+	return acc_tmp, gyr_tmp, euler_tmp
 end
 
 ---------------------------
@@ -475,6 +496,7 @@ function libMicrostrain.new_microstrain(ttyname, ttybaud)
 		ahrs_and_nav_on = ahrs_and_nav_on,
 		get_info = get_info,
 		read_ahrs = read_ahrs,
+		change_baud = change_baud,
 	}
 	local copacket = coroutine.create(process_data)
 	coroutine.resume(copacket, dev)

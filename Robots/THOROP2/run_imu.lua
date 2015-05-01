@@ -30,7 +30,6 @@ if not IS_THREAD then
   signal.signal("SIGTERM", shutdown)
 end
 
-local USE_MAG = false
 local OVERRIDE_YAW = true
 local CALIBRATE_GYRO_BIAS = true
 local CALIBRATION_THRESHOLD = 0.01
@@ -45,8 +44,7 @@ local get_time = unix.time
 local acc_ptr  = dcm.sensorPtr.accelerometer
 local gyro_ptr = dcm.sensorPtr.gyro
 local rpy_ptr  = dcm.sensorPtr.rpy
-local mag_ptr  = dcm.sensorPtr.magnetometer
-local acc, gyro, mag, rpy = vector.zeros(3), vector.zeros(3), vector.zeros(3), vector.zeros(3)
+local acc, gyro, rpy = vector.zeros(3), vector.zeros(3), vector.zeros(3)
 local read_count, last_read_count = 0,0 --to get hz
 local sformat = string.format
 
@@ -63,28 +61,22 @@ collectgarbage()
 
 local function do_read()
 	-- Get the accelerometer, gyro, magnetometer, and euler angles
-	local a, g, dg, e, m = microstrain:read_ahrs()
-  t_read = get_time()
+	local a, g, e = microstrain:read_ahrs()
+	t_read = get_time()
 	if not a then return end
 
 	-- Quickly set in shared memory
 	acc_ptr[0], acc_ptr[1], acc_ptr[2] = a[1], a[2], -a[0]
 	gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] =
     -g[1] - gyro_yaw_bias[1], -g[2] - gyro_yaw_bias[2], -g[0] - gyro_yaw_bias[3]
-  if USE_MAG then
-	  mag_ptr[0], mag_ptr[1], mag_ptr[2] = m[1], m[2], -m[0]
-  end
-  -- delta yaw in that episode, less the initial offset
-  local del_yaw = -dg[0]
-  --yaw = yaw + (del_yaw - gyro_yaw_bias[3] * (t_read - t_last_read) )
-  -- NOTE: Assume a 100Hz update rate, as timestamps may be inaccurate
-  yaw = yaw + (del_yaw - gyro_yaw_bias[3] * 0.01 )
+
+yaw = yaw + 6 * gyro_ptr[2] / 1e3
   
   -- Overwrite the RPY value
   if OVERRIDE_YAW then
   	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], yaw
   else
-    rpy0_yaw = rpy0_yaw or -e[0]
+	rpy0_yaw = rpy0_yaw or -e[0]
   	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], -e[0] - rpy0_yaw
   end
 
@@ -143,7 +135,7 @@ while running do
 	--------------------
   if t - t_debug > 1 then
     os.execute('clear')
-		kb = collectgarbage('count')
+    kb = collectgarbage('count')
     uptime = t - t0
     fps = (read_count-last_read_count) / (t-t_debug)
     last_read_count = read_count
@@ -152,7 +144,7 @@ while running do
     local mag = dcm.get_sensor_magnetometer()
     local rpy = dcm.get_sensor_rpy()
 		local debug_str = {
-			sformat('\nIMU | Uptime %.2f sec, Mem: %d kB', t-t0, kb),
+			sformat('\nIMU | Uptime %.2f sec, Mem: %d kB, %.1fHz', t-t0, kb, fps),
 			sformat('Acc (g): %.2f %.2f %.2f', unpack(acc)),
 			sformat('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)),
 			sformat('RPY:  %.2f %.2f %.2f', unpack(RAD_TO_DEG * rpy)),

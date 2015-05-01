@@ -49,7 +49,7 @@ local function set_larm(q, do_now)
 		end
 		hcm.set_teleop_larm(qLtmp)
 		vector.copy(qLtmp, qL0)
-		arm_ch:send'params'
+		arm_ch:send'teleop'
 	end
 end
 local qRtmp, qR0
@@ -74,7 +74,7 @@ local function set_rarm(q, do_now)
 		end
 		hcm.set_teleop_rarm(qRtmp)
 		vector.copy(qRtmp, qR0)
-		arm_ch:send'params'
+		arm_ch:send'teleop'
 	end
 end
 -- Immediately write the changes?
@@ -121,7 +121,7 @@ code_lut[127] = function()
 	--]]
 	USE_COMPENSATION = USE_COMPENSATION==1 and 2 or 1
 	hcm.set_teleop_compensation(USE_COMPENSATION)
-	arm_ch:send'params'
+	arm_ch:send'teleop'
 end
 
 -- Switch to head teleop
@@ -166,7 +166,7 @@ lower_lut['r'] = function()
 		local options = hcm.get_teleop_loptions()
 		options[1] = math.max(options[1] - DEG_TO_RAD, 0)
 		hcm.set_teleop_loptions(options)
-		arm_ch:send'params'
+		arm_ch:send'teleop'
 		--[[
 		local qLArm = get_larm()
     --print('Pre',qLArm*RAD_TO_DEG)
@@ -180,7 +180,7 @@ lower_lut['r'] = function()
 		local options = hcm.get_teleop_roptions()
 		options[1] = math.min(options[1] - DEG_TO_RAD, 0)
 		hcm.set_teleop_roptions(options)
-		arm_ch:send'params'
+		arm_ch:send'teleop'
 		--[[
     local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)

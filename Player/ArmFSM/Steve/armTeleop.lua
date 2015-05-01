@@ -30,8 +30,9 @@ local function set_iterators(teleopLArm, teleopRArm)
 	uTorso0 = uTorsoCompNow
 	uTorso0[3] = 0
 
-	return movearm.goto_tr_stack(fkLComp, fkRComp)
-
+	--return movearm.goto_tr_stack(fkLComp, fkRComp)
+	--return movearm.goto_tr_via_q(fkLComp, fkRComp)
+	return movearm.goto_tr(fkLComp, fkRComp)
 end
 
 

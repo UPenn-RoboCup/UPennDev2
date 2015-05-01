@@ -100,10 +100,10 @@ stance.dHeight = 0.04 --4cm per sec
 
 
 if IS_WEBOTS then
-  Config.supportY_preview = 0.01
+  Config.supportY_preview = 0.0
   Config.supportY_preview2 = 0.0
   walk.velLimitX = {-.10,.30}  
-  walk.hipRollCompensation = 0.5*DEG_TO_RAD
+  walk.hipRollCompensation = 0*DEG_TO_RAD
   walk.ankleRollCompensation = 0*DEG_TO_RAD  
   walk.kneePitchCompensation = 0*DEG_TO_RAD
   walk.footSagCompensation = {0.0,0.0}
@@ -112,6 +112,10 @@ if IS_WEBOTS then
   walk.velLimitX = {-.10,.20}
 
   walk.tZMP = 0.30 --has much lower com?
+
+
+  walk.tZMP = 0.35 --has much lower com?
+
   walk.tStep = .75
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
@@ -120,9 +124,7 @@ else
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1.5*DEG_TO_RAD
   walk.ankleRollCompensation = 0*DEG_TO_RAD  
-
   walk.hipRollCompensation = 2*DEG_TO_RAD
-
   walk.footSagCompensation = {0.0,0.0}
 
   walk.velLimitX = {-.10,.10}
@@ -133,15 +135,13 @@ else
   walk.delay_factor = {0.8,1.7}
 
   walk.tZMP = 0.30 --has much lower com?
-  walk.supportX = 0.0
-  walk.supportY = 0.0
   walk.tStep = .75
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
-  walk.supportY = 0.00
+  Config.supportY_preview = -0.01
 end
 
-Config.supportY_preview = -0.01
+
 
 ------------------------------------
 -- Associate with the table

@@ -31,14 +31,18 @@ const double shoulderOffsetZ = shoulderOffsetZ2-originOffsetZ; //virtual shoulde
 const double elbowOffsetX =   .030; 
 
 /*
-const double upperArmLength = .246; //mk1 value
-const double lowerArmLength = .250; //mk1 longarm
 const double upperArmLength = .281; //Elongated mk1 value
 const double lowerArmLength = .298; //Elongated mk1 value
 */
 
+/*
 const double upperArmLength = .261; //mk2 stock value
 const double lowerArmLength = .252;
+*/
+
+const double upperArmLength = .246; //mk1 value
+const double lowerArmLength = .250; //mk1 longarm
+
 
 //Robotis hand: 0.31 0 0
 //UCLA hand   : 0.15 0 0
@@ -80,11 +84,10 @@ const double footHeelX = 0.130; //from ankle to heel, mk2 stock feet
 
 
 //mkw lidar positions
-const double chestLidarHingeX = 0.05 
-const double chestLidarX = 0 //after lidar servo
-const double chestLidarZ = -0.028 //based on shoulder height
-
-const double headLidarX = 0.10 //based on neck servo
+const double chestLidarHingeX = 0.05; 
+const double chestLidarX = 0; //after lidar servo
+const double chestLidarZ = -0.028; //based on shoulder height
+const double headLidarX = 0.10; //based on neck servo
 
 
 //=================================================================

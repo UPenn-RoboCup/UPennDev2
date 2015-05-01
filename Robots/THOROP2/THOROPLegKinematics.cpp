@@ -97,8 +97,8 @@ std::vector<double> THOROP_kinematics_inverse_leg(Transform trLeg, int leg, doub
 
 
 
-  //if (dLeg>dLegMax*dLegMax) {
-  if (false){
+  if (dLeg>dLegMax*dLegMax) {
+  //if (false){
 
 
 

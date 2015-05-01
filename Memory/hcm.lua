@@ -40,8 +40,8 @@ shared_data.teleop = {
 	rgrip_torque = zeros(3),
 	lgrip_position = zeros(3),
 	rgrip_position = zeros(3),
-	-- Walk bias
-	walkbias = zeros(3)
+	-- Waypoint
+	waypoint = zeros(3)
 }
 
 shared_data.demo = {

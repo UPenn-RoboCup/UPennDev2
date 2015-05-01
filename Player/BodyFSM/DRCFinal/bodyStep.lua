@@ -126,7 +126,7 @@ function state.entry()
   end
 
   local st,wt = 1.0,3.0
-  if IS_WEBOTS then st,wt = 1.0,1.0 end
+--  if IS_WEBOTS then st,wt = 1.0,1.0 end
   if IS_WEBOTS and not Config.enable_touchdown then 
     st,wt = 0.3,1.0 
     st,wt = 0.3,1.5 
@@ -166,12 +166,10 @@ function state.entry()
 --]]
 
 
-  
-
-
-
   if supportLeg == 1 then
     --Take right step
+
+    print("left support, supportY:",Config.walk.supportY)
 
     local uRightTarget = util.pose_global(step_relpos, uRight)
     local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeft)
@@ -180,11 +178,21 @@ function state.entry()
     local uLeftTorsoTarget = util.pose_relative(uTorsoTarget, uLeftSupport)
     local side_adj = Config.walk.supportY - 0.00
     local com_side = Config.walk.footY+Config.walk.supportY-side_adj
+ 
 
+--[[
+    print("uLeft:",unpack(uLeft))
+    print("uRight:",unpack(uRight))
+    print("uRightTarget:",unpack(uRightTarget))
+    print("uTorsoTarget:",unpack(uTorsoTarget))
+    print("uLeftTorso:",unpack(uLeftTorso))
+    print("uLeftTorsoTarget:",unpack(uLeftTorsoTarget))
+
+    print("side_adj:",side_adj)
+    print("com_side:",com_side)
+--]]
 
     if Config.enable_touchdown then
-
-
       step_queues={
          {
           {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
@@ -196,17 +204,38 @@ function state.entry()
          },
       }
     else
-      step_queues={
+      if Config.piecewise_step then
+
+        step_queues={
+        {
+          {{0,0,0},    2,  st*3, st, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+        },
+        {
+          {step_relpos,0,  st,wt2,st ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+        },
+        {
+          {{0,0,0},2,        st*3, st, st,   {0,0},{0,0,0} },  --move to center
+        },
+        }
+
+
+      else
+        step_queues={
          {
           {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
           {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
-          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+          {{0,0,0},2,        st*3, st, 0.1,   {0,0},{0,0,0} },  --move to center
          },
-      }
+        }
 
+      end
+      
     end
 
   else
+
+--print("right support, supportY:",Config.walk.supportY)
+
     --Take left step
     local uLeftTarget = util.pose_global(step_relpos, uLeft)
     local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftTarget)
@@ -215,13 +244,24 @@ function state.entry()
     local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
     local side_adj = Config.walk.supportY - 0.00
     local com_side = Config.walk.footY+Config.walk.supportY-side_adj
-    
+
+--[[  
+    print("uLeft:",unpack(uLeft))
+    print("uRight:",unpack(uRight))
+    print("uLeftTarget:",unpack(uLeftTarget))
+    print("uTorsoTarget:",unpack(uTorsoTarget))
+    print("uRightTorso:",unpack(uRightTorso))
+    print("uRightTorsoTarget:",unpack(uRightTorsoTarget))
+
+    print("side_adj:",side_adj)
+    print("com_side:",com_side)
+--]]    
+
     if Config.enable_touchdown then
       step_queues={
          {
           {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
           {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-         
          },
 
          {
@@ -229,16 +269,29 @@ function state.entry()
          },
       }
     else
-      step_queues={
+      if Config.piecewise_step then
+        step_queues={
+        {
+          {{0,0,0},2,        st*3, st, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+        },
+        {
+          {step_relpos,1,   st,wt2,st ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+        },
+        {
+          {{0,0,0},2,        st*3, st, st,   {0,0},{0,0,0} },  --move to center
+        },
+        }
+
+      else
+       step_queues={
          {
           {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
           {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+          {{0,0,0},2,        st*3, st, 0.1,   {0,0},{0,0,0} },  --move to center
          },
       }
+      end
     end
-
-
   end
 
 
@@ -281,6 +334,8 @@ function state.update()
 
 
     elseif hcm.get_state_proceed()==1 then     
+
+      print("STEPADVANCE")
       --Clear the zmp compensation value here between transition---------------------
       local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
       local uTorso = mcm.get_status_uTorso()

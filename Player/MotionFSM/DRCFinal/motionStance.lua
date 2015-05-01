@@ -53,10 +53,20 @@ function state.entry()
   local zLeg = mcm.get_status_zLeg()
   print("zLeg:",unpack(zLeg))
 
+--[[
+  print("uLeft:",unpack(uLeft))
+  print("uRight:",unpack(uRight))
+  print("uTorso:",unpack(uTorso))
+--]]
+
   hcm.set_legdebug_left({uLeft[1],uLeft[2],uLeft[3],zLeg[1]})
   hcm.set_legdebug_right({uRight[1],uRight[2],uRight[3],zLeg[2]})
   hcm.set_legdebug_torso({uTorso[1],uTorso[2]})
   hcm.set_legdebug_torso_angle({0,0}) 
+
+
+
+
 
 end
 

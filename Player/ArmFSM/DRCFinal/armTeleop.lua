@@ -14,8 +14,8 @@ end
 local arm_planner = libArmPlan.new_planner()
 
 local handle_clearance = vector.new({0,0,-0.05})
-local lhand_rpy0 = {0,0,45*DEG_TO_RAD}
-local rhand_rpy0 = {0,0,45*DEG_TO_RAD}
+local lhand_rpy0 = Config.armfsm.teleop.lhand_rpy0 or {0,0,45*DEG_TO_RAD}
+local rhand_rpy0 = Config.armfsm.teleop.rhand_rpy0 or {0,0,45*DEG_TO_RAD}
 
 local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
 local trLArmLast, trRArmLast

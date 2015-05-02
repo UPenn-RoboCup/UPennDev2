@@ -1,16 +1,12 @@
 #VRML_SIM V7.4.3 utf8
 #16 8 6 block, we assume the size of 40 20 15cm instead
+#15 degree angle
+#Block size 0.4 *0.4 * 0.15
+#Total dimension: 42.5193187281 cm
 PROTO CinderRamp [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
 ]
-
-
-#15 degree angle
-#Block size 0.4 *0.4 * 0.15
-#Total dimension: 42.5193187281 cm
-
-
 {
 Solid {
   translation IS translation

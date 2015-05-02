@@ -41,7 +41,7 @@ DEF TASKFLOOR Floor {
   ]
 }
 #THOROP_UPENN {
-THOROP_mk2 {
+THOROP_mk2_oldarm {
   translation 0 1.17 -0.03
   rotation 1 0 0 0
   controller "thorop"

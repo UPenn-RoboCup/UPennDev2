@@ -41,14 +41,14 @@ fsm.Body = {
 	--
 	{'bodyStop', 'init', 'bodyInit'},
 	{'bodyStop', 'approach', 'bodyApproach'},
-	{'bodyStop', 'stop', 'bodyStop'},
+	{'bodyStop', 'stepover1', 'bodyStep'},
 	--
 	{'bodyApproach', 'done', 'bodyStop'},
 	{'bodyApproach', 'stop', 'bodyStop'},
 	{'bodyApproach', 'init', 'bodyInit'},
 	--
-	{'bodyWaypoints', 'done', 'bodyStop'},
-	{'bodyWaypoints', 'stop', 'bodyStop'},
+	{'bodyStep', 'nextstep', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},
 }
 
 fsm.Head = {
@@ -207,27 +207,29 @@ if fsm.libraries.MotionLib == 'RoboCup' then
 elseif fsm.libraries.MotionLib == 'DRCFinal' then
 	fsm.select.Motion = 'DRCFinal'
 	fsm.Motion = {
-		{'motionIdle', 'timeout', 'motionIdle'},
-		{'motionIdle', 'stand', 'motionInit'},
-		{'motionInit', 'done', 'motionStance'},
+  {'motionIdle', 'timeout', 'motionIdle'},
+  {'motionIdle', 'stand', 'motionInit'},
+  {'motionInit', 'done', 'motionStance'},
 
-		{'motionIdle', 'bias', 'motionBiasInit'},
-		{'motionStance', 'bias', 'motionBiasInit'},
-		{'motionBiasInit', 'done', 'motionBiasIdle'},
-		{'motionBiasIdle', 'stand', 'motionInit'},
+  {'motionIdle', 'bias', 'motionBiasInit'},
+  {'motionStance', 'bias', 'motionBiasInit'},
+  {'motionBiasInit', 'done', 'motionBiasIdle'},
+  {'motionBiasIdle', 'stand', 'motionInit'},
 
 
-		{'motionStance', 'preview', 'motionStepPreview'},
-		{'motionStepPreview', 'done', 'motionStance'},
+  {'motionStance', 'preview', 'motionStepPreview'},
+  {'motionStepPreview', 'done', 'motionStance'},
 
-		{'motionStance', 'stair', 'motionStepPreviewStair'},
-		{'motionStepPreviewStair', 'done', 'motionStance'},
+  {'motionStance', 'stair', 'motionStepPreviewStair'},
+  {'motionStepPreviewStair', 'done', 'motionStance'},
 
-		{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-		{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
-		{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
-		{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
-		{'motionHybridWalkEnd', 'done', 'motionStance'},
+  {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+  {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+  {'motionHybridWalkEnd', 'done', 'motionStance'},
+
+  {'motionStance', 'uninit', 'motionUnInit'},
+  {'motionUnInit', 'done', 'motionIdle'},
 	}
 end
 

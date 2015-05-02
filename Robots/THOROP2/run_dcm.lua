@@ -661,30 +661,39 @@ end
 local function form_write_command(bus, m_ids)
 	local m_ids = bus.m_ids
 	local send_ids, commands, cmd_addrs = {}, {}, {}
+	local mx_send_ids, mx_commands, mx_cmd_addrs = {}, {}, {}
 	local has_mx, has_nx = false, false
 	for i, m_id in ipairs(m_ids) do
 		is_mx = bus.has_mx_id[m_id]
-		has_mx = has_mx or is_mx
-		has_nx = has_nx or (not is_mx)
 		j_id = m_to_j[m_id]
 		-- Only add position commands if torque enabled
 		-- TODO: Gripper should get a command_torque!
 		if tq_en_ptr[j_id-1]==1 then
-			table.insert(send_ids, m_id)
 			if is_gripper[j_id] and gripper_mode[j_id]==1 then
+				has_mx = true
+				table.insert(send_ids, m_id)
 				table.insert(commands, torque_to_cmd(j_id, tq_ptr[j_id-1]))
 				table.insert(cmd_addrs, lD.mx_registers.command_torque)
+			elseif is_mx then
+				--has_mx = true
+				table.insert(mx_send_ids, m_id)
+				table.insert(mx_commands, radian_to_step(j_id, cp_ptr[j_id-1]))
 			else
+				has_nx = true
+				table.insert(send_ids, m_id)
 				table.insert(commands, radian_to_step(j_id, cp_ptr[j_id-1]))
-				table.insert(cmd_addrs,
-				is_mx and lD.mx_registers.command_position or lD.nx_registers.command_position
-				)
+				table.insert(cmd_addrs, lD.nx_registers.command_position)
 			end
+			--print(m_id, commands[#commands], unpack(cmd_addrs[#cmd_addrs]))
 		end
 	end
+	local just_mx = #mx_send_ids>0
+	if #mx_send_ids==1 then
+		lD.set_mx_command_position(mx_send_ids[1], mx_commands[1], bus)
+	elseif #mx_send_ids>1 then lD.set_mx_command_position(mx_send_ids, mx_commands, bus) end
 	-- MX-only sync does not work for some reason
 	if not has_mx then cmd_addrs = nil end
-	return send_ids, commands, cmd_addrs
+	return send_ids, commands, cmd_addrs, just_mx
 end
 
 ------------------------
@@ -702,9 +711,9 @@ local function output_co(bus)
 	while true do
 		cnt = cnt +1
 		-- Send the position commands
-		local send_ids, commands, cmd_addrs = form_write_command(bus)
+		local send_ids, commands, cmd_addrs, just_mx = form_write_command(bus)
 		-- Perform the sync write
-		if #commands>0 then
+		if #commands>0 or just_mx then
 			if cmd_addrs then
 				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
 			else

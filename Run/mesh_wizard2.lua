@@ -31,7 +31,6 @@ local function check_send_mesh()
 			request = true
 		end
 	end
-
 	if mesh0 and (t-t_send_mesh0>t_sweep0 or request) then
 		t_send_mesh0 = t
 		local metadata = mesh0.metadata
@@ -53,7 +52,7 @@ local function check_send_mesh()
 			local ret, err = mesh0_udp_ch:send(meta..c_mesh)
 			--print('Mesh0 | Sent UDP', unpack(ret))
 		end
-		print('Mesh0')
+		io.write('Mesh0 | Sending\n')
 	end
 
 	if mesh1 and (t-t_send_mesh1>t_sweep1 or request) then
@@ -122,6 +121,7 @@ end
 
 
 local function update(meta, ranges)
+--require'util'.ptable(meta)
 	-- Check shared parameters
 	if meta.id=='lidar0' then
 		local mag_sweep, t_sweep = unpack(vcm.get_mesh0_sweep())
@@ -193,7 +193,7 @@ local lidar1_ch = si.new_subscriber'lidar1'
 
 lidar0_ch.callback = cb
 lidar1_ch.callback = cb
-poller = si.wait_on_channels({lidar_ch})
+poller = si.wait_on_channels({lidar0_ch, lidar1_ch})
 
 -- Cleanly exit on Ctrl-C
 local signal = require'signal'.signal

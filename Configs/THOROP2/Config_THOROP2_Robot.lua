@@ -130,8 +130,8 @@ local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
---	2,4,6,8,10,12,14,
-	2,4,6,
+	2,4,6,8,10,12,14,
+--	2,4,6,
 	-- lidar
 	37,
 	-- gripper
@@ -259,7 +259,8 @@ servo.joint_to_motor={
 	16,18,20,22,24,26, -- left leg
 	15,17,19,21,23,25, -- right leg
 	1,3,5,7,9,11,13,  --RArm
-	27,28, --Waist yaw/pitch
+--	27,28, --Waist yaw/pitch
+	28,27, --Waist yaw/pitch (mk2 is inverted)
 	64,66,68, -- left gripper/trigger (This is the order)
 	63,67,65, -- right gripper/trigger/extra
 	37, -- Lidar pan
@@ -283,7 +284,8 @@ servo.steps = 2 * vector.new({
 
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
-	1,-1, -- Head
+--	1,-1, -- Head, mk1
+	1,1, -- Head, mk2
 --	1,1,1, 1, 1,1,1, --LArm, mk2, tested
 	1,-1,1, 1, 1,1,1, --LArm, mk1 retrofitted, tested
 	------
@@ -292,7 +294,8 @@ servo.direction = vector.new({
 	------
 --	-1,1,1, -1, -1,-1,1, --RArm
 	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
-	-1, -1, -- Waist
+--	-1, -1, -- Waist, mk1
+	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
 	-1, -- Lidar pan

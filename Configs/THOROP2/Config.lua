@@ -57,7 +57,7 @@ if IS_STEVE then
 	}
 	if IS_WEBOTS then
 		Config.sensors.mesh = 'mesh_wizard2'
-		--Config.sensors.chest_lidar = true
+		Config.sensors.chest_lidar = true
 		--Config.sensors.head_lidar = true
 		--[[
 		Config.sensors.kinect = 'kinect2_wizard'

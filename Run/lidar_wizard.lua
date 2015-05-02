@@ -14,6 +14,7 @@ local pose_global = require'util'.pose_global
 local color = require'util'.color
 local si = require'simple_ipc'
 local Body = require'Body'
+local T = require'Transform'
 require'wcm'
 require'mcm'
 
@@ -53,6 +54,8 @@ local cb = function(self, data)
 
 	metadata.tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
 	metadata.tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+	metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
+	metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))
 	metadata.n = self.n
 	metadata.res = self.res
 	metadata.rsz = #data

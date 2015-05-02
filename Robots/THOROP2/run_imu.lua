@@ -77,7 +77,7 @@ yaw = yaw + 6 * gyro_ptr[2] / 1e3
   	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], yaw
   else
 	rpy0_yaw = rpy0_yaw or -e[0]
-  	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], -e[0] - rpy0_yaw
+  	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], -e[2], -e[0] - rpy0_yaw
   end
 
   -- Save the time and count

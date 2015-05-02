@@ -74,7 +74,6 @@ streams.mesh0 = {
 	udp = 17001,
 	sub = 'mesh0'
 }
--- Lossy Link
 streams.mesh1 = {
 	ws = 9002,
 	udp = 17002,

@@ -12,7 +12,8 @@ local Body = require'Body'
 require'vcm'
 require'hcm'
 
-local mesh_ch, mesh_udp_ch
+local mesh0_udp_ch, mesh1_udp_ch
+local mesh0_ch, mesh1_ch
 local t_send_mesh0 = -math.huge
 local t_send_mesh1 = -math.huge
 local libLog, logger
@@ -109,6 +110,8 @@ local function entry()
 	local stream1 = Config.net.streams.mesh1
 	local operator = Config.net.use_wireless and Config.net.operator.wireless or Config.net.operator.wired
 	mesh0_udp_ch = stream0.udp and si.new_sender(operator, stream0.udp)
+require'util'.ptable(stream0)
+print('operator', operator, stream0.udp)
 	mesh0_ch = stream0.sub and si.new_publisher(stream0.sub)
 	mesh1_udp_ch = stream1.udp and si.new_sender(operator, stream1.udp)
 	mesh1_ch = stream1.sub and si.new_publisher(stream1.sub)
@@ -175,9 +178,16 @@ local function update(meta, ranges)
 
 end
 
+local function exit()
+if ENABLE_LOG then
+	logger0:stop()
+	logger1:stop()
+end
+end
+
 -- If required from Webots, return the table
 if ... and type(...)=='string' then
-	return {entry=entry, update=update, exit=nil}
+	return {entry=entry, update=update, exit=exit}
 end
 
 local poller
@@ -205,9 +215,6 @@ end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
+entry()
 poller:start()
-
-if ENABLE_LOG then
-	logger0:stop()
-	logger1:stop()
-end
+exit()

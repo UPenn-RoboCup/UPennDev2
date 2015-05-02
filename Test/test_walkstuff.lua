@@ -61,21 +61,34 @@ local function update(key_code)
 elseif key_char_lower==("3") then      
 		hcm.set_step_supportLeg(1)
 		hcm.set_step_relpos({0.28,0,0})
+--		hcm.set_step_relpos({0.35,0,0})
 		--hcm.set_step_relpos({0.0,0,0})
 		hcm.set_step_zpr({0.00,0,0})
+
+		hcm.set_step_relpos({0.32,0,0})
+		hcm.set_step_zpr({0.15,0,0})
+		
 		body_ch:send'stepover1'		
 
 elseif key_char_lower==("4") then      
 		hcm.set_step_supportLeg(0)
 		hcm.set_step_relpos({0.28,0,0})
+--		hcm.set_step_relpos({0.35,0,0})
 		--hcm.set_step_relpos({0.0,0,0})
 		hcm.set_step_zpr({0.00,0,0})
+
+
+
+		hcm.set_step_relpos({0.32,0,0})
+		hcm.set_step_zpr({0.15,0,0})
+		
 		body_ch:send'stepover1'		
 
 
 	elseif key_char_lower==("5") then      
 		hcm.set_step_supportLeg(1)
-		hcm.set_step_relpos({0.17,0,0})
+		--hcm.set_step_relpos({0.17,0,0})
+		hcm.set_step_relpos({-0.28,0,0})
 		hcm.set_step_zpr({0.00,0,0})
 		body_ch:send'stepover1'		
 

@@ -6,6 +6,10 @@ PROTO CinderRamp [
 ]
 
 
+#15 degree angle
+#Block size 0.4 *0.4 * 0.15
+#Total dimension: 42.5193187281 cm
+
 
 {
 Solid {
@@ -13,14 +17,11 @@ Solid {
   rotation IS rotation
   children [
 		DEF block Transform{
-			#Height: 0.075 + 0.20*tan x
-			#X position: 0.20cosx +0.075sinx - 0.20
-			#translation 0 0.105227 0  
-
-			rotation 0 0 1 0.1745 #10 deg
-			translation -0.00998387541 0.1102586 0  #10 deg	
-
-
+			
+			#Total x size: 0.40cosx +0.15 sinx   = 0.4251931872 (15 deg)			
+			#Z position: 0.20sinx + 0.075cosx
+			rotation 0 0 1 0.26179938779915 #15 deg
+			translation 0	0.12858983848   0  #15 deg	
 			children[
 			  DEF cinderblock Shape {
 			     appearance Appearance {material Material {diffuseColor 0.5 0.5 0.5}}

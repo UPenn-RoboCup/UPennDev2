@@ -50,33 +50,34 @@ THOROP_mk2 {
   footContactMaterial "feet"
   #max_knee_torque 90
 }
+
+
+
 CinderRamp {
-  translation 0.2 0 0.4
-  rotation 0 1 0 1.57
+  translation 0.2 0 0.43
+  rotation 0 1 0 0
 }
 CinderRamp {
-  translation -0.2 0 0.4
+  translation -0.2 0 0.43
   rotation 0 1 0 -1.57
 }
 CinderRamp {
-  translation 0.2 0 0.8
+  translation -0.6 0 0.43
+  rotation 0 1 0 -3.14
+}
+
+
+
+
+CinderRamp {
+  translation 0.2 0.15 0.8
+  rotation 0 1 0 1.57
 }
 CinderRamp {
   translation -0.2 0 0.8
-  rotation 0 1 0 3.14
+  rotation 0 1 0 0
 }
 CinderRamp {
-  translation 0.2 0 1.2
-  rotation 0 1 0 1.57
-}
-CinderRamp {
-  translation -0.2 0 1.2
+  translation -0.6 0 0.8
   rotation 0 1 0 -1.57
-}
-CinderRamp {
-  translation 0.2 0 1.6
-}
-CinderRamp {
-  translation -0.2 0 1.6
-  rotation 0 1 0 3.14
 }

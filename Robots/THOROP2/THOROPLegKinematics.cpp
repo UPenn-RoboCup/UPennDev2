@@ -194,7 +194,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   }else {
       ankle_tilt_angle = 0;
   }
-    if (ankle_tilt_angle>30*3.1415/180)  ankle_tilt_angle=30*3.1415/180;
+//    if (ankle_tilt_angle>45*3.1415/180)  ankle_tilt_angle=45*3.1415/180;
     //Compensate the ankle position according to ankle tilt angle
 //    xLeg[0] = xLeg[0] - (sin(ankle_tilt_angle)*footHeight + (1-cos(ankle_tilt_angle))*footToeX);
 //    xLeg[2] = xLeg[2] - sin(afootA+ankle_tilt_angle)*footC;
@@ -333,13 +333,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   }else {
       ankle_tilt_angle = 0;
     }
-    if (ankle_tilt_angle<-30*3.1415/180)  ankle_tilt_angle=-30*3.1415/180;
-
-
-
-
-
-//ankle_tilt_angle = 0; //disable
+//    if (ankle_tilt_angle<-45*3.1415/180)  ankle_tilt_angle=-45*3.1415/180;
 
     //Compensate the ankle position according to ankle tilt angle
 //    xLeg[0] = xLeg[0] - (sin(ankle_tilt_angle)*footHeight + (1-cos(ankle_tilt_angle))*footToeX);

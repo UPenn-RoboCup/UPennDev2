@@ -26,9 +26,9 @@ PROTO THOROP_mk2_oldarm [ # Half-masssed model
 	field SFFloat    lidarFov 3.1415926536
 	field SFInt32    lidarRays 720
 	#SJ - robotis rating is not enough to keep the robot standing
-	field SFFloat    max_torque_400w 44
+	field SFFloat    max_torque_400w 90
 	field SFFloat    max_torque_200w 44
-  field SFFloat    max_torque_100w 24
+ field SFFloat    max_torque_100w 24 
 	field SFFloat    damping_constant 0.1  
   # We may want wider FOV for head lidar	
   field SFString   name "THOR-OP"
@@ -144,6 +144,7 @@ Robot {
 										name "PelvYR"
 										maxVelocity 3.15 maxTorque IS max_torque_100w
 										minPosition -2.92343 maxPosition 2.92343
+										maxTorque IS max_torque_100w
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
@@ -294,7 +295,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootR"
 																									maxVelocity 3.1520646292
-																									maxTorque IS max_torque_100w		
+																									maxTorque IS max_torque_200w		
 																									minPosition -2.92343 maxPosition 2.92343
 																								} # End of the LegLowerR RotationalMotor
 																								jointParameters HingeJointParameters {
@@ -516,7 +517,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootL"
 																									maxVelocity 3.1520646292
-																									maxTorque IS max_torque_100w
+																									maxTorque IS max_torque_200w
 																									minPosition -2.92343 maxPosition 2.92343
 																								}
 																								jointParameters HingeJointParameters {

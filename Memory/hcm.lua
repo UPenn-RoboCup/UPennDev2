@@ -77,7 +77,7 @@ shared_data.ball = ball
 
 
 shared_data.state={}
-shared_data.state.proceed = vector.zeros(0)
+shared_data.state.proceed = vector.zeros(1)
 
 --Now we use TWO sets of params (both are INCREMENTS)
 

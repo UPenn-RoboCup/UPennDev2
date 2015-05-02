@@ -33,11 +33,13 @@ walk.stanceLimitA = {-10*DEG_TO_RAD,30*DEG_TO_RAD}
 walk.bodyHeight = 0.93
 walk.footY = 0.095
 walk.footY = 0.105 --mk2, wider
-
-
 walk.footX = 0
 walk.bodyTilt = 0
 walk.torsoX = 0.02     -- com-to-body-center offset (which is not being used)
+
+walk.ankle_dim = {0.130, -0.130, 0.100}  --toe heel height
+
+
 
 ------------------------------------
 -- Gait parameters

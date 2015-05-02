@@ -525,7 +525,6 @@ static int inverse_legs(lua_State *L) {
 	std::vector<double> aShiftX = lua_checkvector(L, 4);
 	std::vector<double> aShiftY = lua_checkvector(L, 5);
 
-
 	Transform trLLeg = transform6D(&pLLeg[0]);
 	Transform trRLeg = transform6D(&pRLeg[0]);
 	Transform trTorso = transform6D(&pTorso[0]);
@@ -533,8 +532,18 @@ static int inverse_legs(lua_State *L) {
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 
-	qLLeg = THOROP_kinematics_inverse_l_leg(trTorso_LLeg,aShiftX[0],aShiftY[0]);
-	qRLeg = THOROP_kinematics_inverse_r_leg(trTorso_RLeg,aShiftX[0],aShiftY[0]);
+//	qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
+//	qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
+
+	if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
+		qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
+		qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
+//		printf("Rightt heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
+	}else{
+		qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
+		qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
+//		printf("Left heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
+	}
 	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
 
 	lua_pushvector(L, qLLeg);
@@ -644,6 +653,8 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_l_leg", inverse_l_leg},
 	{"inverse_r_leg", inverse_r_leg},
 	{"inverse_legs", inverse_legs},
+
+
 
   /* 7 DOF specific */
 	{"l_arm_torso_7", l_arm_torso_7},

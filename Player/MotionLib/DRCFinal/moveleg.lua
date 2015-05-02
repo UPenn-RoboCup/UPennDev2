@@ -399,13 +399,12 @@ function moveleg.set_leg_positions()
   
   local delta_legs = mcm.get_walk_delta_legs()  
 
-
   local aShiftX = mcm.get_walk_aShiftX()
   local aShiftY = mcm.get_walk_aShiftY()
 
-
 --ankle height compensation
-local ankle_height = 0.118
+  local ankle_dim = Config.walk.ankle_dim or {0.130,-0.110,0.118}
+  local ankle_height = ankle_dim[3]
 
 
 local uLeftComp=util.pose_global( {math.sin(aShiftY[1])*ankle_height,0,0},uLeft)
@@ -439,8 +438,22 @@ uLeftComp,uRightComp=uLeft,uRight
     uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
-  
-  local qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
+  local qLegs
+
+--[[
+  if Config.toeheel_lift then    
+    local uLeftTorso = util.pose_relative(uLeft,uTorso)
+    local uRightTorso = util.pose_relative(uRight,uTorso)
+    if uLeftTorso[1]>uRightTorso[1] then
+      qLegs = K.inverse_legs_toeheellift(pLLeg, pRLeg, pTorso,aShiftX,aShiftY,1)
+    else
+      qLegs = K.inverse_legs_toeheellift(pLLeg, pRLeg, pTorso,aShiftX,aShiftY,0)
+    end
+  else
+    qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
+  end
+--]]
+  qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
 
   -------------------Incremental COM filtering
   local com_z = 0

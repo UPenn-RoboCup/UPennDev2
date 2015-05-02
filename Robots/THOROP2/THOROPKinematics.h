@@ -325,6 +325,12 @@ const double InertiaLeg[12][6]={
 Transform THOROP_kinematics_forward_head(const double *q);
 Transform THOROP_kinematics_forward_l_leg(const double *q);
 Transform THOROP_kinematics_forward_r_leg(const double *q);
+
+std::vector<double> THOROP_kinematics_inverse_leg(const Transform trLeg, int leg, double aShiftX, double aShiftY);
+std::vector<double> THOROP_kinematics_inverse_leg_toelift(const Transform trLeg, int leg,double aShiftX, double aShiftY);
+std::vector<double> THOROP_kinematics_inverse_leg_heellift(const Transform trLeg, int leg, double aShiftX, double aShiftY);
+
+
 std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg, double aShiftX, double aShiftY);
 std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg, double aShiftX, double aShiftY);
 

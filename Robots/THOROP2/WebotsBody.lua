@@ -502,7 +502,7 @@ function WebotsBody.update(Body)
 				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
 				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
       }
-					metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
+			metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
 			metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))
 			WebotsBody.update_chest_lidar(metadata,ranges)
       --local lidar_array = require'carray'.float(ranges, w)

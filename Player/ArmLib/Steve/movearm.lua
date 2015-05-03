@@ -112,7 +112,8 @@ end
 
 --[[
 SJ's arm compensation:
-calculate_com_pos -> get_torso_compensation -> get_next_movement -> plan_unified -> plan_arm_sequence -> armTeleop
+calculate_com_pos -> get_torso_compensation ->
+get_next_movement -> plan_unified -> plan_arm_sequence -> armTeleop
 --]]
 function movearm.get_compensation()
 	-- Legs are a bit different, since we are working in IK space

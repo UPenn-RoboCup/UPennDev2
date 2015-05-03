@@ -82,6 +82,7 @@ local is_open = hcm.get_network_open()==1
 	e.t = t
 	e.u = get_torso()
 	e.p = Body.get_position()
+	e.cp = Body.get_command_position()
 	e.fL = Body.get_lfoot()
 	e.fR = Body.get_rfoot()
 	--[[

@@ -143,7 +143,15 @@ else
   Config.supportY_preview = -0.01
 end
 
+if HOSTNAME=="teddy2" then
+  walk.hipRollCompensation = 1.5*DEG_TO_RAD
+  walk.tZMP = 0.33 
+  walk.supportX = 0.02 
+  walk.footY = 0.115 --teddy, even wider
+  walk.supportY = -0.01 
 
+
+end
 
 ------------------------------------
 -- Associate with the table

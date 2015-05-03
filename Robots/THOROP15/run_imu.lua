@@ -68,9 +68,14 @@ local function do_read()
 -----------------------------------------------------------------
 --Teddy has IMU mounted upside down
   a[0],a[1],a[2]=a[0],-a[1],-a[2]
-  g[0],g[1],g[2]=-g[0],-g[1],-g[2] 
+
+
+--  g[0],g[1],g[2]=-g[0],-g[1],-g[2] --roll filpped
+--  e[0],e[1], e[2]= -e[0],e[1],  math.pi - e[2] --yaw is wrong
+  g[0],g[1],g[2]=-g[0],g[1],-g[2] --roll filpped
+  e[0],e[1], e[2]= -e[0],-e[1],  math.pi - e[2] --yaw is wrong
+
   dg[0]=-dg[0]
-  e[0],e[1], e[2]= -e[0],e[1],  math.pi - e[2] --yaw is wrong
 -----------------------------------------------------------------
 
   t_read = get_time()

@@ -24,6 +24,9 @@ shared_data.network = {
 shared_data.teleop = {
 	-- Head angles
   head = zeros(2),
+	-- Delta Transforms (xyz,rpy)
+	dlarm = zeros(6),
+	drarm = zeros(6),
   -- Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),

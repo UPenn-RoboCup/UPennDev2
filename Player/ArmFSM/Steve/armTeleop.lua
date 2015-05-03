@@ -16,26 +16,6 @@ local qLD, qRD
 local uTorso0, uTorsoComp
 local loptions, roptions
 
--- Sets uTorsoComp, uTorso0 externall
-local function set_iterators(teleopLArm, teleopRArm)
-	-- Grab the torso compensation
-	local uTorsoAdapt, uTorso = movearm.get_compensation()
-	local uTorsoCompNow = mcm.get_stance_uTorsoComp()
-	--print(uTorsoAdapt, uTorso)
-	--print(uTorsoCompNow)
-	local fkLComp, fkRComp
-	fkLComp, fkRComp, uTorsoComp, uTorso0 =
-		movearm.apply_q_compensation(teleopLArm, teleopRArm, uTorsoAdapt, uTorso)
-
-	uTorso0 = uTorsoCompNow
-	uTorso0[3] = 0
-
-	--return movearm.goto_tr_stack(fkLComp, fkRComp)
-	--return movearm.goto_tr_via_q(fkLComp, fkRComp)
-	return movearm.goto_tr(fkLComp, fkRComp)
-end
-
-
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -48,12 +28,18 @@ function state.entry()
 	local teleopLArm = hcm.get_teleop_larm()
 	local teleopRArm = hcm.get_teleop_rarm()
 
-	lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = set_iterators(teleopLArm, teleopRArm)
+	-- Grab the torso compensation
+	local uTorsoAdapt, uTorso = movearm.get_compensation()
+	local uTorsoCompNow = mcm.get_stance_uTorsoComp()
+	local fkLComp, fkRComp
+	fkLComp, fkRComp, uTorsoComp, uTorso0 =
+		movearm.apply_q_compensation(teleopLArm, teleopRArm, uTorsoAdapt, uTorso)
+	uTorso0 = uTorsoCompNow
+	uTorso0[3] = 0
 
-	--loptions = {qLGoal[3], 0}
-	--roptions = {qRGoal[3], 0}
-	--hcm.set_teleop_loptions(loptions or {qcLArm[3], 0})
-	--hcm.set_teleop_roptions(roptions or {qcRArm[3], 0})
+	--return movearm.goto_tr_stack(fkLComp, fkRComp)
+	lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = movearm.goto_tr_via_q(fkLComp, fkRComp)
+	--lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = movearm.goto_tr(fkLComp, fkRComp)
 
 end
 
@@ -66,7 +52,7 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-	-- Update our measurements availabl in the state
+	-- Update our measurements available in the state
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
 
@@ -84,12 +70,6 @@ function state.update()
 	assert(uTorso0)
 	local phase = math.max(phaseL, phaseR)
 	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
-
-	--[[
-	print(state._NAME..' | uTorso0', uTorso0)
-	print(state._NAME..' | uTorsoComp', uTorsoComp)
-	print(state._NAME..' | uTorsoNow', uTorsoNow)
-	--]]
 
 	-- Send to the joints
 	mcm.set_stance_uTorsoComp(uTorsoNow)

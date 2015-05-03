@@ -294,8 +294,12 @@ servo.direction = vector.new({
 	------
 --	-1, 1,1,   1,  1,1, --LLeg
 --	-1, 1,-1, -1,  -1,1, --RLeg
-	-1, -1,1,   1,  -1,1, --LLeg, mk1
-	-1, -1,-1, -1,  1,1, --RLeg, mk1
+--	-1, -1,1,   1,  -1,1, --LLeg, mk1
+--	-1, -1,-1, -1,  1,1, --RLeg, mk1
+
+--After left-right leg swap
+	-1, -1,-1, -1,  1,1, --LLeg, mk1
+	-1, -1,1,   1,  -1,1, --RLeg, mk1
 
 
 	------
@@ -314,8 +318,15 @@ servo.rad_offset = vector.new({
 	-90,  -90,  -90,45,  90,0,0, --LArm
 --	0,0,0,  0  ,0,0, --LLeg
 --	0,0,0,  0  ,0,0, --RLeg
-	0,0,0,  -45  ,0,0, --LLeg  , teddy2
-	0,0,0,  45  ,0,0, --RLeg , teddy2
+
+--	0,0,0,  -45  ,0,0, --LLeg  , teddy2
+--	0,0,0,  45  ,0,0, --RLeg , teddy2
+
+	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
+	0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
+
+
+
 	90,  90,  90,-45,  -90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger

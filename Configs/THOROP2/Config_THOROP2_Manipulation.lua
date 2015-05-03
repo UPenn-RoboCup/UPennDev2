@@ -137,9 +137,11 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 arm.trLArm0 = {0.0, 0.25,-0.25,0,0,0}
 arm.trRArm0 = {0.0, -0.25,-0.25,0,0,0}
 
---arm.trLArm0 = {0.0, 0.30,-0.25,0,0,0}
---arm.trRArm0 = {0.0, -0.30,-0.25,0,0,0}
-
+--Wider arm stance for teddy (thick thighs)
+if HOSTNAME=="teddy2" then
+  arm.trLArm0 = {0.0, 0.30,-0.25,0,0,0}
+  arm.trRArm0 = {0.0, -0.30,-0.25,0,0,0}
+end
 
 --arm.ShoulderYaw0 = {5*DEG_TO_RAD,-5*DEG_TO_RAD}
 arm.ShoulderYaw0=vector.new({0.1,-0.1})*DEG_TO_RAD

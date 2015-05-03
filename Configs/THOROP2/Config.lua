@@ -1,11 +1,12 @@
 -- Global Config
 Config = {}
 
-IS_STEVE = true
---IS_STEVE = false
+--IS_STEVE = true
+IS_STEVE = false
 
 -- General parameters
 Config.PLATFORM_NAME = 'THOROP2'
+
 Config.nJoint = 37
 Config.IS_COMPETING = false
 Config.demo = true

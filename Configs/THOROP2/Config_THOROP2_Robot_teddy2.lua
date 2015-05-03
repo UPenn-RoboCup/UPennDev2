@@ -1,8 +1,7 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
-
-print("ROBOT HOSTNAME:",HOSTNAME)
+print("TEDDY2 TEDDY2 TEDDY2")
 
 ---------
 -- IMU --
@@ -119,13 +118,13 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-		1,3,5,7,9,11,13,
+--	1,3,5,7,9,11,13,
 		-- waist
 	28,
 	--head
-		29, 30,
+	29, 30,
 		-- gripper
---		63, 65, 67
+--	63, 65, 67
 	},
 	enable_read = true,
 }
@@ -137,7 +136,7 @@ local left_arm = {
 	2,4,6,8,10,12,14,
 --	2,4,6,
 	-- lidar
-	37,
+--	37,
 	-- gripper
 --	64, 66, 68
 	},
@@ -189,12 +188,12 @@ else
 	Config.chain[left_leg.name] = left_leg
 	table.insert(Config.chain, right_leg)
 	table.insert(Config.chain, left_leg)
-----[[
+--
 		table.insert(Config.chain, right_arm)
 		table.insert(Config.chain, left_arm)
 		Config.chain[right_arm.name] = right_arm
 		Config.chain[left_arm.name] = left_arm
---]]
+--
 	one_chain = nil
 end
 
@@ -290,14 +289,18 @@ servo.steps = 2 * vector.new({
 servo.direction = vector.new({
 --	1,-1, -- Head, mk1
 	1,1, -- Head, mk2
---	1,1,1, 1, 1,1,1, --LArm, mk2, tested
-	1,-1,1, 1, 1,1,1, --LArm, mk1 retrofitted, tested
+	1,1,-1, 1, 1,1,1, --LArm, mk2
+--	1,-1,1, 1, 1,1,1, --LArm, mk1 retrofitted, tested
 	------
-	-1, 1,1,   1,  1,1, --LLeg
-	-1, 1,-1, -1,  -1,1, --RLeg
+--	-1, 1,1,   1,  1,1, --LLeg
+--	-1, 1,-1, -1,  -1,1, --RLeg
+	-1, -1,1,   1,  -1,1, --LLeg, mk1
+	-1, -1,-1, -1,  1,1, --RLeg, mk1
+
+
 	------
---	-1,1,1, -1, -1,-1,1, --RArm
-	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
+	-1,1,1, -1, -1,-1,1, --RArm
+--	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
 --	-1, -1, -- Waist, mk1
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
@@ -309,8 +312,10 @@ servo.direction = vector.new({
 servo.rad_offset = vector.new({
 	0,0, -- Head
 	-90,  -90,  -90,45,  90,0,0, --LArm
-	0,0,0,  0  ,0,0, --LLeg
-	0,0,0,  0  ,0,0, --RLeg
+--	0,0,0,  0  ,0,0, --LLeg
+--	0,0,0,  0  ,0,0, --RLeg
+	0,0,0,  -45  ,0,0, --LLeg  , teddy2
+	0,0,0,  45  ,0,0, --RLeg , teddy2
 	90,  90,  90,-45,  -90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger

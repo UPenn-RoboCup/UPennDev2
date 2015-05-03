@@ -78,6 +78,13 @@ else
 	end
 end
 
+if HOSTNAME=="teddy2" then
+  exo[1]='Robot_teddy2'
+end
+
+
+
+
 Config.use_jacobian_arm_planning = true
 --Config.use_jacobian_arm_planning = false
 

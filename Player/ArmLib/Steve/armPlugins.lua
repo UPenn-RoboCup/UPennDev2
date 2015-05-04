@@ -41,7 +41,6 @@ function plugins.pull_door(m)
 
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
 	local pHinge = T.position(tfHinge)
-	--print('pHinge', pHinge)
 	tfHinge = T.trans(unpack(pHinge))
 
 	for ph = ph0, ph1 do

@@ -6,10 +6,10 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish, t_command
 local timeout = 30.0
 
-local piterators
+local piterators, status, msg
 local lPathIter, rPathIter
 local qLD, qRD
-local uTorsoComp, uTorso0
+local uTorso0, uTorsoComp
 local qLGoalFiltered, qRGoalFiltered
 
 function state.entry()
@@ -33,15 +33,16 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
 	if not lPathIter or not rPathIter then
-		local it
-		it, uTorsoComp, uTorso0 = piterators()
+		status, msg = coroutine.resume(piterators)
+		if not status then return'done' end
+		if coroutine.status(piterators)=='dead' then return'done' end
+		-- We are done if the coroutine emits nothing
+		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD, uTorsoComp, uTorso0 = unpack(msg)
 		uTorso0 = mcm.get_stance_uTorsoComp()
 		uTorso0[3] = 0
-		-- We are done if the coroutine emits nothing
-		if not it then return'done' end
-		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD = unpack(it)
-		hcm.set_teleop_loptions({qLGoalFiltered[3], 0})
-		hcm.set_teleop_roptions({qRGoalFiltered[3], 0})
+		-- Static means true
+		lPathIter = lPathIter or true
+		rPathIter = rPathIter or true
 	end
 
 	local qcLArm = Body.get_larm_command_position()
@@ -82,7 +83,6 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
 	-- For teleop if called next
-	--hcm.set_teleop_compensation(2)
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
 	hcm.set_teleop_larm(qcLArm)

@@ -1,20 +1,16 @@
 local state = {}
 state._NAME = ...
 local Body = require'Body'
+local K = require'K_ffi'
 local movearm = require'movearm'
-
--- Compensation
--- 1: Use the compensation, but search for the shoulder
--- 2: Use the compenstation, and use the teleop shoulder options
-local USE_COMPENSATION = 1
 
 local t_entry, t_update, t_finish
 local timeout = 30.0
 local lPathIter, rPathIter
-local qLGoal, qRGoal
+local qLGoalFiltered, qRGoalFiltered
 local qLD, qRD
 local uTorso0, uTorsoComp
-local loptions, roptions
+local piterators
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -28,18 +24,26 @@ function state.entry()
 	local teleopLArm = hcm.get_teleop_larm()
 	local teleopRArm = hcm.get_teleop_rarm()
 
+	local fkL = K.forward_larm(teleopLArm)
+	local fkR = K.forward_rarm(teleopRArm)
+
 	-- Grab the torso compensation
-	local uTorsoAdapt, uTorso = movearm.get_compensation()
-	local uTorsoCompNow = mcm.get_stance_uTorsoComp()
+	--[[
 	local fkLComp, fkRComp
+	local uTorsoAdapt, uTorso = movearm.get_compensation()
 	fkLComp, fkRComp, uTorsoComp, uTorso0 =
 		movearm.apply_q_compensation(teleopLArm, teleopRArm, uTorsoAdapt, uTorso)
-	uTorso0 = uTorsoCompNow
+	uTorso0 = mcm.get_stance_uTorsoComp()
 	uTorso0[3] = 0
+	--]]
 
 	--return movearm.goto_tr_stack(fkLComp, fkRComp)
-	lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = movearm.goto_tr_via_q(fkLComp, fkRComp)
+	--lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = movearm.goto_tr_via_q(fkLComp, fkRComp)
 	--lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = movearm.goto_tr(fkLComp, fkRComp)
+
+	piterators = movearm.path_iterators({
+		{fkL, fkR, 'goto_tr_via_q'}
+	})
 
 end
 
@@ -52,22 +56,29 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-	-- Update our measurements available in the state
+	if not lPathIter or not rPathIter then
+		status, msg = coroutine.resume(piterators)
+		if not status then return'done' end
+		if coroutine.status(piterators)=='dead' then return'done' end
+		-- We are done if the coroutine emits nothing
+		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD, uTorsoComp, uTorso0 = unpack(msg)
+		uTorso0 = mcm.get_stance_uTorsoComp()
+		uTorso0[3] = 0
+		-- Static means true
+		lPathIter = lPathIter or true
+		rPathIter = rPathIter or true
+	end
+
+	-- Timing necessary for next waypoint
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
-
-	-- Timing necessary
 	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
 	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
-
-	local qLNext = moreL and q_lWaypoint or qLGoal
-	local qRNext = moreR and q_rWaypoint or qRGoal
+	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
+	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
 
 	local phaseL = moreL and moreL/qLD or 0
 	local phaseR = moreR and moreR/qRD or 0
-
-	assert(uTorsoComp)
-	assert(uTorso0)
 	local phase = math.max(phaseL, phaseR)
 	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
 
@@ -76,6 +87,7 @@ function state.update()
 	Body.set_larm_command_position(qLNext)
 	Body.set_rarm_command_position(qRNext)
   
+	if not moreL and not moreR then lPathIter, rPathIter = nil, nil end
 end
 
 function state.exit()  

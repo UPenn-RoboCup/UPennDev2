@@ -7,7 +7,7 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
-local piterators, ok
+local piterators, status, msg
 local lPathIter, rPathIter
 local qLD, qRD
 local uTorsoComp, uTorso0
@@ -40,14 +40,10 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
 	if not lPathIter or not rPathIter then
-		if coroutine.status(piterators)=='dead' then
-			return'done'
-		end
-		ok, lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD = coroutine.resume(piterators)
-		if not ok then
-			print(state._NAME, ok, lPathIter)
-			return'done'
-		end
+		status, msg = coroutine.resume(piterators)
+		if coroutine.status(piterators)=='dead' then return'done' end
+		if not status then return'done' end
+		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD = unpack(msg)
 		lPathIter = lPathIter or true
 		rPathIter = rPathIter or true
 	end
@@ -73,7 +69,8 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+  io.write(state._NAME, ' Exit\n')
+	print(state._NAME, status, msg)
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
 	hcm.set_teleop_larm(qcLArm)

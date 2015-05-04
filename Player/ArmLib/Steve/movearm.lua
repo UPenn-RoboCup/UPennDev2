@@ -182,20 +182,24 @@ end
 -- Uses the quasi-static compensation
 function movearm.path_iterators(list)
 	-- return a coroutine
-	return coroutine.wrap(function()
+	return coroutine.create(function()
 		for i, entry in ipairs(list) do
 			local lGoal, rGoal, via, lw, rw = unpack(entry)
 			local go = movearm[via]
 			-- FK goals for use with copmensation
 			local fkLComp, fkRComp, uTorsoComp, uTorso0
+			local uTorsoAdapt, uTorso = movearm.get_compensation()
 			if via:find'tr' then
 				fkLComp, fkRComp, uTorsoComp, uTorso0 =
-					movearm.apply_tr_compensation(lGoal, rGoal, movearm.get_compensation())
+					movearm.apply_tr_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
 			else
 				fkLComp, fkRComp, uTorsoComp, uTorso0 =
-					movearm.apply_q_compensation(lGoal, rGoal, movearm.get_compensation())
+					movearm.apply_q_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
 			end
-			coroutine.yield({go(fkLComp, fkRComp,nil,nil,lw,rw)}, uTorsoComp, uTorso0)
+			local msg = {go(fkLComp, fkRComp,nil,nil,lw,rw)}
+			table.insert(msg, uTorsoComp)
+			table.insert(msg, uTorso0)
+			coroutine.yield(msg)
 		end
 	end)
 end
@@ -208,7 +212,7 @@ function movearm.model_iterators(co, model)
 		while coroutine.status(co)~='dead' do
 			local ok, tfHandGoal, model = coroutine.resume(co, model)
 			local go = movearm[via]
-			coroutine.yield(go(nil, tfHandGoal))
+			coroutine.yield({go(nil, tfHandGoal)})
 		end
 	end)
 end

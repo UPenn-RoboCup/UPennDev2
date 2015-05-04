@@ -392,7 +392,7 @@ setmetatable(lower_lut, {
 local color = require'util'.color
 function show_status()
 	
-	
+local qrarm = Body.get_rarm_command_position()
 	local fkL = K.forward_larm(qlarm)
 	local fkR = K.forward_rarm(qrarm)
 	local rTr6 = T.position6D(fkR)

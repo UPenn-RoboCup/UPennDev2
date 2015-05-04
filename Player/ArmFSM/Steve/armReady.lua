@@ -87,7 +87,6 @@ function state.exit()
 	local qcRArm = Body.get_rarm_command_position()
 	hcm.set_teleop_larm(qcLArm)
   hcm.set_teleop_rarm(qcRArm)
-	hcm.set_teleop_compensation(1)
 end
 
 return state

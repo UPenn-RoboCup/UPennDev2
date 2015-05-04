@@ -13,9 +13,6 @@ local timeout = 30.0
 local lPathIter, rPathIter
 local qLGoal, qRGoal
 local qLD, qRD
-local uTorso0, uTorsoComp
-local loptions, roptions
-
 
 function state.entry()
   io.write(state._NAME, ' Entry' )
@@ -51,7 +48,6 @@ function state.update()
 	-- Timing necessary
 	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
 	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
-	--io.write(moreL or -1,' ', moreR or -1)
 
 	local qLNext = moreL and q_lWaypoint or qLGoal
 	local qRNext = moreR and q_rWaypoint or qRGoal

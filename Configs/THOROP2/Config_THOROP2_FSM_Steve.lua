@@ -111,16 +111,20 @@ fsm.Arm = {
 	{'armReady', 'timeout', 'armReady'},
 	{'armReady', 'done', 'armTeleop'},
 	{'armReady', 'init', 'armInit'},
+	{'armReady', 'door', 'armDoor'},
 	-- Teleop
 	{'armTeleop', 'init', 'armInit'},
 	{'armTeleop', 'teleop', 'armTeleop'},
 	{'armTeleop', 'ready', 'armReady'},
 	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
+	{'armTeleop', 'door', 'armDoor'}, -- eh...
 	-- Teleop Raw
 	{'armTeleopRaw', 'init', 'armInit'},
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
 	{'armTeleopRaw', 'ready', 'armReady'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
+	--
+	{'armDoor', 'done', 'armTeleop'}, -- eh...
 }
 
 fsm.Motion = {

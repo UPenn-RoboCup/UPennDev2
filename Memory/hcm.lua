@@ -151,6 +151,9 @@ shared_data.motion.headangle = vector.zeros(2)
 --Body height Target
 shared_data.motion.bodyHeightTarget = vector.zeros(1)
 
+--waist yaw target
+shared_data.motion.waistTarget = vector.zeros(1)
+
 
 -- Waypoints
 -- {[x y a][x y a][x y a][x y a]...}

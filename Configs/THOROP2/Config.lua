@@ -47,6 +47,9 @@ Config.toeheel_lift = true
 Config.enable_touchdown = false
 Config.raise_body = true
 
+Config.waist_testing = true
+
+
 ----------------------------------
 -- Application specific Configs --
 ----------------------------------

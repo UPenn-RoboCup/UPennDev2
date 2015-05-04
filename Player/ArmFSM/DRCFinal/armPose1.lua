@@ -571,11 +571,16 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  --if t-t_entry > timeout then return'timeout' end
-  if enable_force_control then forcecontrol(dt) end
 
+  if Config.waist_testing then
 
-  jacobian_control(dt)
+  else
+
+    --if t-t_entry > timeout then return'timeout' end
+    if enable_force_control then forcecontrol(dt) end
+    jacobian_control(dt)
+  end
+  
 end
 
 

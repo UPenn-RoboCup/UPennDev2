@@ -78,6 +78,40 @@ function Transform.trans(dx, dy, dz)
 	}, mt)
 end
 
+
+function Transform.rotZdot(a)
+  local ca = cos(a)
+  local sa = sin(a)
+  return setmetatable({
+	  {-sa, -ca, 0, 0},
+	  {ca, -sa, 0, 0},
+	  {0, 0, 0, 0},
+	  {0, 0, 0, 1}
+	}, mt)
+end
+
+function Transform.rotYdot(a)
+  local ca = cos(a)
+  local sa = sin(a)
+  return setmetatable({
+	  {-sa, 0, ca, 0},
+	  {0, 0, 0, 0},
+	  {-ca, 0, -sa, 0},
+	  {0, 0, 0, 1}
+	}, mt)
+end
+
+function Transform.rotXdot(a)
+  local ca = cos(a)
+  local sa = sin(a)
+  return setmetatable({
+	  {0, 0, 0, 0},
+	  {0, -sa, -ca, 0},
+	  {0, ca, -sa, 0},
+	  {0, 0, 0, 1}
+	}, mt)
+end
+
 -- Recovering Euler Angles
 -- Good resource: http://www.vectoralgebra.info/eulermatrix.html
 function Transform.to_zyz(t)

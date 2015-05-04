@@ -443,6 +443,17 @@ local function joint_stack(self, qGoal, qArm)
 	return setmetatable(qStack, mt)
 end
 
+local function get_jacaobian()
+	K0.calculate_arm_jacobian(
+    qArm,qWaist,
+    {0,0,0}, --rpy angle
+    isLeft,
+    Config.arm.handoffset.gripper3[1],
+    handOffsetY,
+    Config.arm.handoffset.gripper3[3]
+	);
+end
+
 -- Set the forward and inverse
 local function set_chain(self, forward, inverse, name)
 	self.forward = assert(forward)
@@ -494,6 +505,8 @@ function libArmPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 		line_iter = line_iter,
 		joint_stack = joint_stack,
 		joint_iter = joint_iter,
+		--
+		get_jacobian = get_jacobian,
 		--
 		find_shoulder = find_shoulder,
 		--

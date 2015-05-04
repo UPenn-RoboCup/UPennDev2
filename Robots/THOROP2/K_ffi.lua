@@ -6,6 +6,7 @@
 -- TODO: No automatic toe lift when limit reached, yet
 local K = {}
 -- Cache needed functions
+local T = require'Transform'
 local Tnew = require'Transform'.new
 local Tinv = require'Transform'.inv
 local TrotX = require'Transform'.rotX
@@ -272,6 +273,113 @@ end
 function K.inverse_legs(trLLeg, trRLeg, trTorso)
 	local invTorso = Tinv(trTorso)
 	return ik_leg(invTorso*trLLeg, offsetLHip), ik_leg(invTorso*trRLeg, offsetRHip)
+end
+
+------------
+-- Jacobian
+------------
+local tfLlinks = {}
+tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
+--tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
+tfLlinks[2] = Ttrans(0,0,0) -- shoulder pitch-shoulder roll
+tfLlinks[3] = Ttrans(0,0,0) -- shouder roll-shoulder yaw
+tfLlinks[4] = Ttrans(upperArmLength, 0, elbowOffsetX) -- shoulder yaw-elbow 
+tfLlinks[5] = Ttrans(lowerArmLength,0,-elbowOffsetX) -- elbow to wrist yaw 1
+tfLlinks[6] = Ttrans(0,0,0) -- wrist yaw1 to wrist roll
+tfLlinks[7] = Ttrans(0,0,0) -- wrist roll to wrist yaw2
+local tfRlinks = {}
+for i,v in ipairs(tfLlinks) do tfRlinks[i] = v end
+tfRlinks[4] = Ttrans(0,-shoulderOffsetY,shoulderOffsetZ)
+
+-- TODO: Simplify the matrix multiplication with sympy
+function K.arm_jacobian(qArm)
+	
+	
+	
+	local tfTorso = T.eye()
+	
+	local tfQ, tfQdot = {}, {}
+	table.insert(tfQ, TrotY(qArm[1]))
+	table.insert(tfQ, TrotZ(qArm[2]))
+	table.insert(tfQ, TrotX(qArm[3]))
+	table.insert(tfQ, TrotY(qArm[4]))
+	table.insert(tfQ, TrotX(qArm[5]))
+	table.insert(tfQ, TrotZ(qArm[6]))
+	table.insert(tfQ, TrotX(qArm[7]))
+	--
+	table.insert(tfQdot, T.rotYdot(qArm[1]))
+	table.insert(tfQdot, T.rotZdot(qArm[2]))
+	table.insert(tfQdot, T.rotXdot(qArm[3]))
+	table.insert(tfQdot, T.rotYdot(qArm[4]))
+	table.insert(tfQdot, T.rotXdot(qArm[5]))
+	table.insert(tfQdot, T.rotZdot(qArm[6]))
+	table.insert(tfQdot, T.rotXdot(qArm[7]))
+	
+	local tfLinkQ = {}
+	local tfLinkQdot = {}
+	for i,tfLink in ipairs(tfLlinks) do
+		--print('tfLink', i-1)
+		--print(tfLink)
+		table.insert(tfLinkQ, tfQ[i] * tfLink)
+		table.insert(tfLinkQdot, tfQdot[i] * tfLink)
+	end
+	
+	local com = tfTorso
+	for i, tf in ipairs(tfLinkQ) do
+		--print('tfLinkQ', i-1)
+		--print(tf)
+		com = tf * com
+	end
+	
+	--print('rotDot test PI/3')
+	--print(T.rotZdot(math.pi/3))
+	
+	----[[
+	print('COM')
+	print(com)
+	--]]
+	
+	local jacobians = {}
+	for i=1,7 do
+		local jac = tfTorso
+		for ii = 1, i-1 do
+			--print('s1',i,ii)
+			jac = jac * tfLinkQ[ii]
+		end
+		jac = jac * tfLinkQdot[i]
+		for ii = i+1, 7 do
+			--print('s2',i,ii)
+			jac = jac * tfLinkQ[ii]
+		end
+		table.insert(jacobians, jac)
+		print('Jac', i-1)
+		print(jac)
+	end
+
+	--[[
+	local jac0 = tfTorso
+	* tfLinkQdot[1]
+	* tfLinkQ[2]
+	* tfLinkQ[3]
+	* tfLinkQ[4]
+	* tfLinkQ[5]
+	* tfLinkQ[6]
+	* tfLinkQ[7]
+	print('jac0')
+	print(jac0)
+	
+	local jac0 = tfLinkQ[7]
+	* tfLinkQ[6]
+	* tfLinkQ[5]
+	* tfLinkQ[4]
+	* tfLinkQ[3]
+	* tfLinkQ[2]
+	* tfLinkQdot[1]
+	* tfTorso
+	print('jac01')
+	print(jac0)
+	--]]
+	
 end
 
 return K

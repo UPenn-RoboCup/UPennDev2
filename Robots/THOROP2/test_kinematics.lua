@@ -7,6 +7,7 @@ local torch = require'torch'
 local util = require'util'
 local ok, ffi = pcall(require, 'ffi')
 
+--[[
 print()
 print('================')
 print()
@@ -25,8 +26,8 @@ local qLArm2 = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 local fL2_t, fL2a_t = torch.eye(4), torch.eye(4)
 -- Hack to make super fast (don't go to C ever)
 if jit then
-	fL2_d = fL2_t:data()
-	fL2a_d = fL2a_t:data()
+fL2_d = fL2_t:data()
+fL2a_d = fL2a_t:data()
 end
 
 -- Correctness
@@ -39,17 +40,17 @@ print(T.position6D(fL2))
 dt_all = vector.zeros(4)
 local n = 1000
 for i=1,n do
-	t0 = unix.time()
-	fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
-	t1 = unix.time()
-	fL2 = K2.forward_larm(qLArm)
-	t2 = unix.time()
-	fLa = K.l_arm_torso_7(qLArm2, 0, {0,0}, 0,0,0)
-	t3 = unix.time()
-	fL2a = K2.forward_larm(qLArm2)
-	t4 = unix.time()
-	dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3}
-	dt_all = dt_all + dt
+t0 = unix.time()
+fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
+t1 = unix.time()
+fL2 = K2.forward_larm(qLArm)
+t2 = unix.time()
+fLa = K.l_arm_torso_7(qLArm2, 0, {0,0}, 0,0,0)
+t3 = unix.time()
+fL2a = K2.forward_larm(qLArm2)
+t4 = unix.time()
+dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3}
+dt_all = dt_all + dt
 end
 print('Times:', dt_all, n)
 
@@ -89,16 +90,16 @@ fL2a_t4 = ffi.new('double[4][4]', fL2a)
 dt_all = vector.zeros(4)
 --n = 10
 for i=1,n do
-	t0 = unix.time()
-	iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)
-	t1 = unix.time()
-	iqLArm1 = K2.inverse_larm(fL2, qLArm, 0)
-	t2 = unix.time()
-	iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
-	t3 = unix.time()
-	iqLArm3 = ik2.ik2(fL2_t4, qLArm, 0, false)
-	t4 = unix.time()
-	dt_all = vector.new{t1-t0, t2-t1, t3-t2, t4-t3} + dt_all
+t0 = unix.time()
+iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)
+t1 = unix.time()
+iqLArm1 = K2.inverse_larm(fL2, qLArm, 0)
+t2 = unix.time()
+iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
+t3 = unix.time()
+iqLArm3 = ik2.ik2(fL2_t4, qLArm, 0, false)
+t4 = unix.time()
+dt_all = vector.new{t1-t0, t2-t1, t3-t2, t4-t3} + dt_all
 end
 
 print('Time:', dt_all, n)
@@ -118,7 +119,8 @@ print(qLArm2)
 print(vector.new(iqLArm_a))
 print(vector.new(iqLArm2a))
 print(vector.new(iqLArm3a))
-
+--]]
+--
 --[[
 K2 = require'K_ffi'
 T = require'Transform'
@@ -218,3 +220,23 @@ print(itrL)
 print(qL)
 print(iqL)
 --]]
+
+local qArm = vector.zeros(7)
+local JacArm = K.calculate_arm_jacobian(
+qArm,
+{0,0},
+{0,0,0}, --rpy angle
+0, --isLeft,
+0,--Config.arm.handoffset.gripper3[1],
+0,--handOffsetY,
+0 --Config.arm.handoffset.gripper3[3]
+)  --tool xyz
+
+print('JacArm', unpack(JacArm))
+local J = torch.Tensor(JacArm):resize(6,7)  
+local JT = torch.Tensor(J):transpose(1,2)
+util.ptorch(J, 5, 2)
+util.ptorch(JT, 5, 2)
+
+print()
+K2.arm_jacobian(qArm)

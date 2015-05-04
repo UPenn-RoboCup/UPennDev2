@@ -109,16 +109,13 @@ end
 
 local function valid_cost(iq, minArm, maxArm)
 	for i, q in ipairs(iq) do
-		if q<minArm[i] or q>maxArm[i] then
-			--print(i, 'invalid', q, minArm[i], maxArm[i])
-			return INFINITY
-		end
+		if q<minArm[i] or q>maxArm[i] then return INFINITY end
 	end
 	return 0
 end
-local IK_POS_ERROR_THRESH = 0.035
---local defaultWeights = {1,1,0}
-local defaultWeights = {0,1,0}
+local IK_POS_ERROR_THRESH = 0.0254
+-- Weights: cusage, cdiff, ctight
+local defaultWeights = {1, 1, 0}
 local function find_shoulder(self, tr, qArm, weights)
 	--require'util'.ptable(self)
 	weights = weights or defaultWeights
@@ -126,14 +123,8 @@ local function find_shoulder(self, tr, qArm, weights)
 	local iqArms = {}
 	for _, q in ipairs(self.shoulderAngles) do
 		local iq = self.inverse(tr, qArm, q)
-		--vector.new(iq)
-		--local iq0 = vector.copy(iq)
 		local du = sanitize0(iq, qArm)
 		tinsert(iqArms, iq)
-		--tinsert(iqArms, iq0)
-		--print(iq-iq0)
-		--print(unpack(du))
-		--print()
 	end
 	-- Form the FKs
 	local fks = {}
@@ -176,16 +167,11 @@ local function find_shoulder(self, tr, qArm, weights)
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
 		tinsert(cost, valid + cfk[ic]
-			+ weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic]
-		)
+			+ weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic])
 	end
-	--print(unpack(cost))
 	-- Find the smallest cost
 	local ibest, cbest = 0, INFINITY
 	for i, c in ipairs(cost) do if c<cbest then cbest = c; ibest = i end end
-	--print('ibest, cbest', ibest, cbest, #cost, #iqArms)
-	--print(iqArms[ibest] and unpack(iqArms[ibest]))
-
 	-- Yield the least cost arms
 	return iqArms[ibest]
 end
@@ -481,7 +467,7 @@ local function set_limits(self, min_q, max_q, dqdt_limit)
 end
 
 local function set_shoulder_angles(self, granularity)
-	local granularity = 5*DEG_TO_RAD
+	local granularity = 2*DEG_TO_RAD
 	local minShoulder, maxShoulder = self.min_q[3], self.max_q[3]
 	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
 	local shoulderAngles = {}

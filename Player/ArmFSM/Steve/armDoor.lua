@@ -28,7 +28,9 @@ function state.entry()
   m.hinge = -1
   m.roll = -math.pi/2
 	m.hand = 'right'
-	piterators = movearm.model_iterators(pull_door, m)
+	m.lweights = {1,1,1}
+	m.rweights = {1,1,1}
+	piterators = movearm.model_iterators(pull_door, m, nil, {})
 
 end
 

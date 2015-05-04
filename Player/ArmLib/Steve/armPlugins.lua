@@ -35,17 +35,17 @@ function plugins.pull_door(m)
 	-- TODO: Search over the roll to keep smooth
 
 
-	local ph1 = 10
+	local n_ph = 20
 	local yawGoal = math.pi / 4
-	local ph0 = math.ceil((m.yaw / yawGoal) * ph1)
+	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
 	local pHinge = T.position(tfHinge)
 	tfHinge = T.trans(unpack(pHinge))
 
-	for ph = ph0, ph1 do
+	for ph = ph0, n_ph do
 		m.ph = ph
-		m.yaw = (ph / ph1) * yawGoal
+		m.yaw = (ph / n_ph) * yawGoal
 		--print('m.yaw', m.yaw)
 		-- Know where the handle is
 		local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)

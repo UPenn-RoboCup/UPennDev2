@@ -27,20 +27,6 @@ function state.entry()
 	local fkL = K.forward_larm(teleopLArm)
 	local fkR = K.forward_rarm(teleopRArm)
 
-	-- Grab the torso compensation
-	--[[
-	local fkLComp, fkRComp
-	local uTorsoAdapt, uTorso = movearm.get_compensation()
-	fkLComp, fkRComp, uTorsoComp, uTorso0 =
-		movearm.apply_q_compensation(teleopLArm, teleopRArm, uTorsoAdapt, uTorso)
-	uTorso0 = mcm.get_stance_uTorsoComp()
-	uTorso0[3] = 0
-	--]]
-
-	--return movearm.goto_tr_stack(fkLComp, fkRComp)
-	--lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = movearm.goto_tr_via_q(fkLComp, fkRComp)
-	--lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = movearm.goto_tr(fkLComp, fkRComp)
-
 	piterators = movearm.path_iterators({
 		{fkL, fkR, 'goto_tr_via_q'}
 	})
@@ -57,9 +43,11 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
 	if not lPathIter or not rPathIter then
-		status, msg = coroutine.resume(piterators)
-		if not status then return'done' end
 		if coroutine.status(piterators)=='dead' then return'done' end
+		status, msg = coroutine.resume(piterators)
+		-- Escape into raw teleop if no plan in teleop
+		if not status then return'teleopraw' end
+		if not msg then return'done' end
 		-- We are done if the coroutine emits nothing
 		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD, uTorsoComp, uTorso0 = unpack(msg)
 		uTorso0 = mcm.get_stance_uTorsoComp()
@@ -91,7 +79,10 @@ function state.update()
 end
 
 function state.exit()  
-  print(state._NAME..' Exit' )
+  io.write(state._NAME, ' Exit\n' )
+	if not status then
+		print(state._NAME, coroutine.status(piterators), status, msg)
+	end
 end
 
 return state

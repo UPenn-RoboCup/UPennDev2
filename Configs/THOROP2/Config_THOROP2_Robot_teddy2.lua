@@ -119,6 +119,7 @@ local right_arm = {
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
 --	1,3,5,7,9,11,13,
+	1,3,5,7,
 		-- waist
 	28,
 	--head
@@ -136,6 +137,7 @@ local left_arm = {
 	2,4,6,8,10,12,14,
 	-- lidar
 --	37,   --THIS SERVO DOESNT WORK(NEWEST FW)
+	37,
 	-- gripper
 --	64, 66, 68
 	},
@@ -303,7 +305,8 @@ servo.direction = vector.new({
 
 
 	------
-	-1,1,1, -1, -1,-1,1, --RArm
+--	-1,1,1, -1, -1,-1,1, --RArm
+	-1,1,-1, -1, -1,-1,1, --RArm, mk2, tested
 --	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
 --	-1, -1, -- Waist, mk1
 	1, 1, -- Waist, mk2

@@ -1,8 +1,8 @@
 -- Global Config
 Config = {}
 
-IS_STEVE = true
---IS_STEVE = false
+--IS_STEVE = true
+IS_STEVE = false
 
 -- General parameters
 Config.PLATFORM_NAME = 'THOROP2'
@@ -46,6 +46,9 @@ end
 Config.toeheel_lift = true
 Config.enable_touchdown = false
 Config.raise_body = true
+
+Config.waist_testing = true
+
 
 ----------------------------------
 -- Application specific Configs --

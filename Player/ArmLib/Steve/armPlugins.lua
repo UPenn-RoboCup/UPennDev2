@@ -1,6 +1,6 @@
 local plugins = {}
 local T = require'Transform'
-
+local util = require'util'
 
 local function get_world_torso()
 	local rpy = Body.get_rpy()
@@ -31,15 +31,37 @@ function plugins.pull_door(m)
 	-- Assume right hand for now
 	-- Assume hinge to the right of the handle
 	-- Assume Relative to torso
-	local phase
-	-- Need to know where the hinge is?
-	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(-m.yaw) * T.trans(-m.x, -m.y, m.z)
-	-- Know where the handle is
-	local tfHandle = T.transform6D({m.x, m.y, m.z, 0, 0, m.yaw})
-	-- Roll for the grip
-	local tfGrip = T.rotX(m.roll)
-	local tfHandGoal = tfHandle * tfGrip
-	print(T.tostring(tfHandGoal))
+
+	-- TODO: Search over the roll to keep smooth
+
+
+	local ph1 = 10
+	local yawGoal = math.pi / 4
+	local ph0 = math.ceil((m.yaw / yawGoal) * ph1)
+
+	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
+	local pHinge = T.position(tfHinge)
+	--print('pHinge', pHinge)
+	tfHinge = T.trans(unpack(pHinge))
+
+	for ph = ph0, ph1 do
+		m.ph = ph
+		m.yaw = (ph / ph1) * yawGoal
+		--print('m.yaw', m.yaw)
+		-- Know where the handle is
+		local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
+		local pHandle = T.position(tfHandle)
+		-- Roll for the grip
+		local tfGrip = T.rotX(m.roll)
+		local tfHandGoal = tfHandle * tfGrip
+		m = coroutine.yield(tfHandGoal, m)
+	end
+end
+
+function plugins.gen(name)
+	if not name then return end
+	if not plugins[name] then return end
+	return coroutine.create(plugins[name])
 end
 
 function plugins.test()
@@ -48,9 +70,22 @@ function plugins.test()
   m.y = -.21
   m.z = 0
   m.yaw = 0
-  m.hinge = 1
+  m.hinge = -1
   m.roll = -math.pi/2
-  plugins.pull_door(m)
+	m.hand = 'right'
+
+	local f = coroutine.create(plugins.pull_door)
+	local ok, tfHandGoal
+	repeat
+		local ok, tfHandGoal, ph = coroutine.resume(f, m)
+		print(ok)
+		if ok and ph then
+			print(T.tostring(tfHandGoal))
+		else
+			print(tfHandGoal)
+		end
+		--util.ptable(ph or {})
+	until not ok
 end
 
 return plugins

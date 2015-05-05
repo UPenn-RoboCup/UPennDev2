@@ -301,7 +301,7 @@ local tfRots = { TrotY, TrotZ, TrotX, TrotY, TrotX, TrotZ, TrotX}
 local tfRotDots = { TrotYdot, TrotZdot, TrotXdot, TrotYdot, TrotXdot, TrotZdot, TrotXdot}
 
 -- TODO: Simplify the matrix multiplication with sympy
-function K.arm_jacobian(qArm)
+local function jacobian_transpose(qArm)
 	local tfLinks = tfLlinks
 	local tfTorso = T.eye()
 	
@@ -344,6 +344,13 @@ function K.arm_jacobian(qArm)
 	end
 	return JT -- Jacobian Transpose
 	
+end
+
+function K.arm_jacobian(qArm)
+	local JT0 = jacobian_transpose(qArm)
+	local JT = torch.Tensor(JT0)
+	local J = JT:t():clone()
+	return J, JT
 end
 
 local function calculate_b_matrix()

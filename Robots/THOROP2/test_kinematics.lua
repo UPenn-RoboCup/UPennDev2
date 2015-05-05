@@ -241,20 +241,19 @@ local J = torch.Tensor(JacArm):resize(6,7)
 local JT = torch.Tensor(J):transpose(1,2)
 
 --print('JacArm', unpack(JacArm))
---util.ptorch(J, 5, 3)
+print('Jacobian')
+util.ptorch(J, 5, 3)
 print('Jacobian Transpose')
 util.ptorch(JT, 5, 3)
 
 print()
-local _JT2 = K2.arm_jacobian(qArm)
+local J2, JT2 = K2.arm_jacobian(qArm)
 print('Jacobian Transpose 2')
-local JT2 = torch.Tensor(_JT2)
+util.ptorch(J2, 5, 3)
 util.ptorch(JT2, 5, 3)
 
-util.ptorch(JT2-JT, 5, 3)
-
 print('qArm', qArm)
-----[[
+--[[
 local qs = {}
 for i=1,1e3 do
 		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
@@ -270,6 +269,8 @@ for i,q in ipairs(qs) do
 	0,--handOffsetY,
 	0 --Config.arm.handoffset.gripper3[3]
 	)  --tool xyz
+	local J = torch.Tensor(JacArm):resize(6,7)  
+	local JT = torch.Tensor(J):transpose(1,2)
 end
 local t1 = unix.time()
 local d0 = t1-t0

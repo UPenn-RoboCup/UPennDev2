@@ -107,17 +107,18 @@ local function find_shoulder_sj(self, tr, qArm)
 	return qBest
 end
 
+
+
+local IK_POS_ERROR_THRESH = 0.0254
+-- Weights: cusage, cdiff, ctight
+local defaultWeights = {1, 1, 0}
 local function valid_cost(iq, minArm, maxArm)
 	for i, q in ipairs(iq) do
 		if q<minArm[i] or q>maxArm[i] then return INFINITY end
 	end
 	return 0
 end
-local IK_POS_ERROR_THRESH = 0.0254
--- Weights: cusage, cdiff, ctight
-local defaultWeights = {1, 1, 0}
 local function find_shoulder(self, tr, qArm, weights)
-	--require'util'.ptable(self)
 	weights = weights or defaultWeights
 	-- Form the inverses
 	local iqArms = {}
@@ -176,7 +177,8 @@ local function find_shoulder(self, tr, qArm, weights)
 	local ibest, cbest = 0, INFINITY
 	for i, c in ipairs(cost) do if c<cbest then cbest = c; ibest = i end end
 	-- Yield the least cost arms
-	return iqArms[ibest]
+	assert(iqArms[ibest], 'find_shoulder | No solution')
+	return iqArms[ibest], fks[ibest]
 end
 
 -- TODO List for the planner
@@ -355,7 +357,6 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 	-- Must also fix the rotation matrix, else the yaw will not be correct!
 	--local qGoal = inverse(trGoal, qArm0)
 	local qGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
-	assert(qGoal, 'No goal found in stack formation')
 	--
 	--qGoal = clamp_vector(qGoal,self.qMin,self.qMax)
 	sanitize0(qGoal, qArm0)
@@ -426,70 +427,41 @@ local function joint_stack(self, qGoal, qArm)
 	return setmetatable(qStack, mt)
 end
 
---[[
--- Joint angle limits - slightly different than in the config
-local joint_limits={
-	{-math.pi/2*100/180, math.pi*200/180},
-	{0,math.pi/2},
-	{-math.pi/2, math.pi/2},
-	{-math.pi, -0.2}, --temp value
-	{-math.pi*1.5, math.pi*1.5},
-	{-math.pi/2, math.pi/2},
-	{-math.pi, math.pi}
-}
-if isLeft==0 then
-	joint_limits[2]={-math.pi/2,0}
-	joint_limits[5]={-math.pi*1.5, math.pi*1.5}
-end
---]]
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
 local torch = require'torch'
 -- Use the Jacobian
 local function get_delta_qarm(self, vwTarget, qArm)
-	local J = torch.Tensor(self.jacobian(qArm))
-	local JT = J:t():clone()
-
+	-- Penalty for joint limits
 	local qMin, qMax, qRange = self.qMin, self.qMax, self.qRange
-
 	local lambda = {}
 	for i, q in ipairs(qArm) do
     lambda[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
   end
-
+	-- Calculate the pseudo inverse
+	local J = torch.Tensor(self.jacobian(qArm))
+	local JT = J:t():clone()
 	local I = torch.diag(torch.Tensor(lambda)):addmm(JT, J)
 	local Iinv = torch.inverse(I)
-	local I2 = torch.mm(Iinv,JT)
+	local I2 = torch.mm(Iinv, JT)
 	local e = torch.Tensor(vwTarget)
 	local dqArm = torch.mv(I2, e)
 	return vector.new(dqArm)
 end
 
-
+-- Plan a direct path using a straight line via Jacobian
+-- res_pos: resolution in meters
+-- res_ang: resolution in radians
 -- Plan a direct path using a straight line via Jacobian
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
 local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weights)
-
-	print("AT JACOBIAN STACK")
-
 	local res_pos = self.res_pos
 	local res_ang = self.res_ang
-	qArm0 = qArm0 or self.armZeros
 	local forward, inverse = self.forward, self.inverse
-	-- Must also fix the rotation matrix, else the yaw will not be correct!
-	--local qGoal = inverse(trGoal, qArm0)
-	local qGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
-	assert(qGoal, 'No goal found in stack formation')
-
-	--print('qGoal', vector.new(qGoal)*RAD_TO_DEG)
-	sanitize0(qGoal, qArm0)
-	local fkGoal = forward(qGoal)
+	local qGoal, fkGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
 	local fkArm  = forward(qArm0)
-	--print('fkGoal')
-	--print(fkGoal)
-	--print('fkArm')
-	--print(fkArm)
+
 	local quatGoal, posGoal = T.to_quaternion(fkGoal)
 	local quatArm, posArm = T.to_quaternion(fkArm)
 	vector.new(posGoal)
@@ -530,6 +502,10 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 	-- We return the stack and the final joint configuarion
 	return setmetatable(qStack, mt), qGoal, distance
 end
+
+
+
+
 
 
 

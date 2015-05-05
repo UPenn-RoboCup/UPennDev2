@@ -1,4 +1,4 @@
-local f = io.open('jacobian2.txt','r')
+local f = io.open('jacobian_com.txt','r')
 local x = f:read('*all')
 f:close()
 

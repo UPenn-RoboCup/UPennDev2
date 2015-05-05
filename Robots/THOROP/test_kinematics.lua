@@ -274,16 +274,15 @@ end
 
 local t0 = unix.time()
 for i,q in ipairs(qs) do
-	local _JT3 = K2.jac(qArm)
+	local _JT3 = K2.jac(q)
 end
 local t1 = unix.time()
 local d2 = t1-t0
-print(d2)
 
 local t0 = unix.time()
 for i,q in ipairs(qs) do
 	local JacArm = K.calculate_arm_jacobian(
-	qArm,
+	q,
 	{0,0},
 	{0,0,0}, --rpy angle
 	0, --isLeft,
@@ -296,7 +295,7 @@ for i,q in ipairs(qs) do
 end
 local t1 = unix.time()
 local d0 = t1-t0
-print(d0)
+
 
 local t0 = unix.time()
 for i,q in ipairs(qs) do
@@ -304,13 +303,39 @@ for i,q in ipairs(qs) do
 end
 local t1 = unix.time()
 local d1 = t1-t0
-print(d1)
+
+print('Method0',d0)
+print('Method1',d1)
+print('Method2',d2)
 
 
 
-print(d1/d0)
+print('Speedup1',d0/d1)
+print('Speedup2',d0/d2)
 --]]
+print()
+print('Check diff')
+local dJ = J3-J
 
-util.ptorch(J3 - J)
+print('Sum', torch.sum(dJ))
+
 util.ptorch(J3, 5, 2)
 util.ptorch(J, 5, 2)
+
+for i,q in ipairs(qs) do
+		local JacArm = K.calculate_arm_jacobian(
+	q,
+	{0,0},
+	{0,0,0}, --rpy angle
+	0, --isLeft,
+	0,--Config.arm.handoffset.gripper3[1],
+	0,--handOffsetY,
+	0 --Config.arm.handoffset.gripper3[3]
+	)  --tool xyz
+	local J = torch.Tensor(JacArm):resize(6,7)
+	local JT = torch.Tensor(J):transpose(1,2)
+	local d = (torch.Tensor(K2.jac(q)) - J):sum()
+	--print(d)
+	assert( d < 1e-10, 'BAD')
+end
+print('OK!')

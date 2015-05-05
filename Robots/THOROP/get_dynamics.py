@@ -32,8 +32,8 @@ dp = rbtdef.dynparms()
 
 rbt = sympybotics.RobotDynCode(rbtdef, verbose=True)
 
-print('Generate the C code for the inverse dynamics')
-tau_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.invdyn_code, 'tau_out', 'tau', rbtdef)
+#print('Generate the C code for the inverse dynamics')
+#tau_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.invdyn_code, 'tau_out', 'tau', rbtdef)
 
 # Just printing stuff
 #rbt.geo.T[-1]
@@ -46,13 +46,13 @@ tau_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.invdyn_code, 'tau
 
 f = open("jacobian.txt", "w")
 try:
-    f.write(str(rbt.kin.J[-1]))
+    f.write(str(rbt.kin.J[-2]))
 finally:
     f.close()
 
 f = open("jacobian_com.txt", "w")
 try:
-    f.write(str(rbt.kin.Jc[-1]))
+    f.write(str(rbt.kin.Jc[-2]))
 finally:
     f.close()
 

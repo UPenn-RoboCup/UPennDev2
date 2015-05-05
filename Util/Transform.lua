@@ -133,7 +133,7 @@ function Transform.rotateX(t, a)
 	return t
 end
 
-function Transform.rotYdot(t, a)
+function Transform.rotateY(t, a)
   local ca = cos(a)
   local sa = sin(a)
 	for i=1,3 do
@@ -145,7 +145,7 @@ function Transform.rotYdot(t, a)
 	return t
 end
 
-function Transform.rotZdot(t, a)
+function Transform.rotateZ(t, a)
   local ca = cos(a)
   local sa = sin(a)
 	for i=1,3 do
@@ -154,6 +154,13 @@ function Transform.rotZdot(t, a)
 		t[i][1] = ca*tx + sa*ty
 		t[i][2] = -sa*tx + ca*ty
 	end
+	return t
+end
+
+function Transform.translate(t, px, py, pz)
+	t[1][4] = t[1][4] + t[1][1]*px + t[1][2]*py + t[1][3]*pz
+  t[2][4] = t[2][4] + t[2][1]*px + t[2][2]*py + t[2][3]*pz
+  t[3][4] = t[3][4] + t[3][1]*px + t[3][2]*py + t[3][3]*pz
 	return t
 end
 

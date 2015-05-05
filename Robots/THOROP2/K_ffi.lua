@@ -13,9 +13,9 @@ local Tinv = require'Transform'.inv
 local TrotX = require'Transform'.rotX
 local TrotY = require'Transform'.rotY
 local TrotZ = require'Transform'.rotZ
-local TrotXdot = require'Transform'.rotXdot
-local TrotYdot = require'Transform'.rotYdot
-local TrotZdot = require'Transform'.rotZdot
+local TrotateXdot = require'Transform'.rotateXdot
+local TrotateYdot = require'Transform'.rotateYdot
+local TrotateZdot = require'Transform'.rotateZdot
 local Ttrans = require'Transform'.trans
 local vnew = require'vector'.new
 local sin, cos = require'math'.sin, require'math'.cos
@@ -296,7 +296,7 @@ for i,v in ipairs(tfLlinks) do tfRlinks[i] = v end
 tfRlinks[4] = Ttrans(0,-shoulderOffsetY,shoulderOffsetZ)
 
 local tfRots = { TrotY, TrotZ, TrotX, TrotY, TrotX, TrotZ, TrotX}
-local tfRotDots = { TrotYdot, TrotZdot, TrotXdot, TrotYdot, TrotXdot, TrotZdot, TrotXdot}
+local tfRotDots = { TrotateYdot, TrotateZdot, TrotateXdot, TrotateYdot, TrotateXdot, TrotateZdot, TrotateXdot}
 
 -- TODO: Simplify the matrix multiplication with sympy
 local function jacobian_transpose(qArm)

@@ -1,3 +1,4 @@
+#!/usr/local/bin/luajit
 dofile'../../include.lua'
 local vector = require'vector'
 local K = require'THOROPKinematics'
@@ -247,14 +248,14 @@ print('Jacobian Transpose')
 util.ptorch(JT, 5, 3)
 
 print()
-local J2, JT2 = K2.arm_jacobian(qArm)
+local J2, JT2 = K2.jacobian(qArm)
 print('Jacobian 2')
 util.ptorch(J2, 5, 3)
 print('Jacobian Transpose 2')
 util.ptorch(JT2, 5, 3)
 
 print('qArm', qArm)
-----[[
+--[[
 local qs = {}
 for i=1,1e3 do
 		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
@@ -279,7 +280,7 @@ print(d0)
 
 local t0 = unix.time()
 for i,q in ipairs(qs) do
-	local _JT2 = K2.arm_jacobian(q)
+	local _JT2 = K2.jacobian(q)
 end
 local t1 = unix.time()
 local d1 = t1-t0

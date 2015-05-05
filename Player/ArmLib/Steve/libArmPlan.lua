@@ -77,7 +77,7 @@ local mt = {
 
 -- Similar to SJ's method for the margin
 local function find_shoulder_sj(self, tr, qArm)
-	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
+	local minArm, maxArm, rangeArm = self.qMin, self.qMax, self.qRange
 	local invArm = self.inverse
 	local iqArm, margin, qBest
 	local dMin, dMax
@@ -130,8 +130,8 @@ local function find_shoulder(self, tr, qArm, weights)
 	local fks = {}
 	for ic, iq in ipairs(iqArms) do fks[ic] = self.forward(iq) end
 	--
-	local minArm, maxArm = self.min_q, self.max_q
-	local rangeArm, halfway = self.range_q, self.halves
+	local minArm, maxArm = self.qMin, self.qMax
+	local rangeArm, halfway = self.qRange, self.halves
 	-- Cost for valid configurations
 	local cvalid = {}
 	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, minArm, maxArm) ) end
@@ -302,7 +302,7 @@ local function joint_iter(self, qGoal0, qArm0, SANITIZE)
 	local res_ang = self.res_ang
 	local dq_max = res_ang * self.ones
 	local dq_min = -1 * dq_max
-	local qGoal = clamp_vector(qGoal0, self.min_q, self.max_q)
+	local qGoal = clamp_vector(qGoal0, self.qMin, self.qMax)
 	local dqdt_limit = self.dqdt_limit
 	if SANITIZE then sanitize0(qGoal, qArm0) end
 	local distance0 = vnorm(qGoal - qArm0)
@@ -363,7 +363,7 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 		assert(qGoal, 'No goal found in stack formation')
 	end
 	--
-	--qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
+	--qGoal = clamp_vector(qGoal,self.qMin,self.qMax)
 	sanitize0(qGoal, qArm0)
 	--
 	local fkGoal = forward(qGoal)
@@ -430,7 +430,7 @@ end
 
 local function joint_stack(self, qGoal, qArm)
 	local res_ang = self.res_ang
-	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
+	qGoal = clamp_vector(qGoal,self.qMin,self.qMax)
 	--
 	local dq = qGoal - qArm
 	local distance = vnorm(dq)
@@ -443,7 +443,8 @@ local function joint_stack(self, qGoal, qArm)
 	return setmetatable(qStack, mt)
 end
 
--- Speedlimits for the joints
+--[[
+-- Joint angle limits - slightly different than in the config
 local joint_limits={
 	{-math.pi/2*100/180, math.pi*200/180},
 	{0,math.pi/2},
@@ -457,16 +458,19 @@ if isLeft==0 then
 	joint_limits[2]={-math.pi/2,0}
 	joint_limits[5]={-math.pi*1.5, math.pi*1.5}
 end
+--]]
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
 -- Use the Jacobian
 local function get_delta_qarm(self, vwTarget, qArm)
 	local J, JT = self.jacobian(qArm)
 
+	local qMin, qMax, qRange = self.qMin, self.qMax, self.qRange
+
 	local lambda = {}
-	for i, lim in ipairs(joint_limits) do
+	for i, q in ipairs(qArm) do
     lambda[i]= speed_eps + c*
-      ((2*qArm[i]-lim[1]-lim[2])/(lim[2]-lim[1]))^p
+      ((2*q - qMin[i] - qMax[i])/qRange[i])^p
   end
 
 	local I = torch.diag(torch.Tensor(lambda)):addmm(JT, J)
@@ -493,16 +497,16 @@ local function set_resolution(self, res_pos, res_ang)
 end
 
 -- Set the iterator resolutions
-local function set_limits(self, min_q, max_q, dqdt_limit)
-	self.min_q = assert(min_q)
-	self.max_q = assert(max_q)
+local function set_limits(self, qMin, qMax, dqdt_limit)
+	self.qMin = assert(qMin)
+	self.qMax = assert(qMax)
 	self.dqdt_limit = assert(dqdt_limit)
   return self
 end
 
 local function set_shoulder_angles(self, granularity)
 	local granularity = 2*DEG_TO_RAD
-	local minShoulder, maxShoulder = self.min_q[3], self.max_q[3]
+	local minShoulder, maxShoulder = self.qMin[3], self.qMax[3]
 	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
 	local shoulderAngles = {}
 	for i=0,n do table.insert(shoulderAngles, minShoulder + i * granularity) end
@@ -511,7 +515,7 @@ local function set_shoulder_angles(self, granularity)
 end
 
 -- Still must set the forward and inverse kinematics
-function libArmPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
+function libArmPlan.new_planner(qMin, qMax, dqdt_limit, res_pos, res_ang)
 	local armOnes = vector.ones(7)
 	local obj = {
 		forward = nil,
@@ -520,8 +524,8 @@ function libArmPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 		ones = armOnes,
 		halves = armOnes * 0.5,
 		--
-		min_q = min_q or -90*DEG_TO_RAD*armOnes,
-		max_q = max_q or 90*DEG_TO_RAD*armOnes,
+		qMin = qMin or -90*DEG_TO_RAD*armOnes,
+		qMax = qMax or 90*DEG_TO_RAD*armOnes,
 		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
 		--
 		res_pos = res_pos or 0.01,
@@ -541,7 +545,7 @@ function libArmPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 		set_resolution = set_resolution,
 		set_limits = set_limits,
 	}
-	obj.range_q = obj.max_q - obj.min_q
+	obj.qRange = obj.qMax - obj.qMin
 	-- Setup the shoulder angles
 	set_shoulder_angles(obj)
 	--

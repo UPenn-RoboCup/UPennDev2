@@ -79,10 +79,10 @@ function Transform.trans(dx, dy, dz)
 end
 
 -- Mutate a matrix
-function Transform.rotXdot(t, a)
+function Transform.rotateXdot(t, a)
   local ca = cos(a)
   local sa = sin(a)
-	for i=1,4 do
+	for i=1,3 do
 		local ty = t[i][2]
 		local tz = t[i][3]
 		t[i][1] = 0
@@ -93,10 +93,10 @@ function Transform.rotXdot(t, a)
 	return t
 end
 
-function Transform.rotYdot(t, a)
+function Transform.rotateYdot(t, a)
   local ca = cos(a)
   local sa = sin(a)
-	for i=1,4 do
+	for i=1,3 do
 		local tx = t[i][1]
 		local tz = t[i][3]
 		t[i][1] = -sa*tx - ca*tz
@@ -107,7 +107,7 @@ function Transform.rotYdot(t, a)
 	return t
 end
 
-function Transform.rotZdot(t, a)
+function Transform.rotateZdot(t, a)
   local ca = cos(a)
   local sa = sin(a)
 	for i=1,3 do
@@ -124,13 +124,35 @@ end
 function Transform.rotateX(t, a)
   local ca = cos(a)
   local sa = sin(a)
-	for i=1,4 do
+	for i=1,3 do
 		local ty = t[i][2]
 		local tz = t[i][3]
-		t[i][1] = 0
 		t[i][2] = ca*ty + sa*tz
 		t[i][3] = -sa*ty + ca*tz
-		t[i][4] = 0
+	end
+	return t
+end
+
+function Transform.rotYdot(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,3 do
+		local tx = t[i][1]
+		local tz = t[i][3]
+		t[i][1] = ca*tx - sa*tz
+		t[i][3] = sa*tx + ca*tz
+	end
+	return t
+end
+
+function Transform.rotZdot(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,3 do
+		local tx = t[i][1]
+		local ty = t[i][2]
+		t[i][1] = ca*tx + sa*ty
+		t[i][2] = -sa*tx + ca*ty
 	end
 	return t
 end

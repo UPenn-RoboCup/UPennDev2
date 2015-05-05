@@ -24,10 +24,27 @@ do
 end
 
 -- Velocity and angular velocity [m/sec | rad/sec]
-local qRArm = vector.new{0,0,0, 0, 0,0,0} * DEG_TO_RAD
-local vwTarget = vector.new{-0.10,0,0, 0,0,0}
-local dqArm = rPlanner:get_delta_qarm(vwTarget, qRArm)
+--local qRArm = vector.new{10,0,0, -5, 90,5,-90} * DEG_TO_RAD
+--local qRArm = vector.new{90,0,0, -90, 0,0,0} * DEG_TO_RAD
+--local vwRTarget = vector.new{-0.10,0,0, 0,0,0}
+local qRArm = vector.new{90,0,0, -90, 0,0,0} * DEG_TO_RAD
+local vwRTarget = vector.new{0,-0.1,0, 0,0,0}
+local dqRArm = rPlanner:get_delta_qarm(vwRTarget, qRArm)
 
-print(qRArm)
-print(vwTarget)
-print(dqArm)
+-- Velocity and angular velocity [m/sec | rad/sec]
+--local qLArm = vector.new{10,0,0, -5, 90,5,-90} * DEG_TO_RAD
+--local qLArm = vector.new{90,0,0, -90, 0,0,0} * DEG_TO_RAD
+--local vwTarget = vector.new{-0.10,0,0, 0,0,0}
+local qLArm = vector.new{90,0,0, -90, 0,0,0} * DEG_TO_RAD
+local vwLTarget = vector.new{0,0.1,0, 0,0,0}
+local dqLArm = lPlanner:get_delta_qarm(vwLTarget, qLArm)
+
+print('Right')
+print(qRArm * RAD_TO_DEG)
+print(vwRTarget)
+print(dqRArm * RAD_TO_DEG)
+
+print('Left')
+print(qLArm * RAD_TO_DEG)
+print(vwLTarget)
+print(dqLArm * RAD_TO_DEG)

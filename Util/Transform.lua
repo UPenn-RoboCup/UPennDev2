@@ -36,13 +36,13 @@ local function eye()
 end
 Transform.eye = eye
 
-function Transform.rotZ(a)
+function Transform.rotX(a)
   local ca = cos(a)
   local sa = sin(a)
   return setmetatable({
-	  {ca, -sa, 0, 0},
-	  {sa, ca, 0, 0},
-	  {0, 0, 1, 0},
+	  {1, 0, 0, 0},
+	  {0, ca, -sa, 0},
+	  {0, sa, ca, 0},
 	  {0, 0, 0, 1}
 	}, mt)
 end
@@ -58,13 +58,13 @@ function Transform.rotY(a)
 	}, mt)
 end
 
-function Transform.rotX(a)
+function Transform.rotZ(a)
   local ca = cos(a)
   local sa = sin(a)
   return setmetatable({
-	  {1, 0, 0, 0},
-	  {0, ca, -sa, 0},
-	  {0, sa, ca, 0},
+	  {ca, -sa, 0, 0},
+	  {sa, ca, 0, 0},
+	  {0, 0, 1, 0},
 	  {0, 0, 0, 1}
 	}, mt)
 end

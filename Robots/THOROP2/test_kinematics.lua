@@ -226,6 +226,7 @@ local qArm = vector.zeros(7)
 --local qArm = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
 local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
+
 local JacArm = K.calculate_arm_jacobian(
 qArm,
 {0,0},
@@ -253,3 +254,34 @@ util.ptorch(JT2, 5, 3)
 util.ptorch(JT2-JT, 5, 3)
 
 print('qArm', qArm)
+----[[
+local qs = {}
+for i=1,1e3 do
+		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
+end
+local t0 = unix.time()
+for i,q in ipairs(qs) do
+	local JacArm = K.calculate_arm_jacobian(
+	qArm,
+	{0,0},
+	{0,0,0}, --rpy angle
+	0, --isLeft,
+	0,--Config.arm.handoffset.gripper3[1],
+	0,--handOffsetY,
+	0 --Config.arm.handoffset.gripper3[3]
+	)  --tool xyz
+end
+local t1 = unix.time()
+local d0 = t1-t0
+print(d0)
+
+local t0 = unix.time()
+for i,q in ipairs(qs) do
+	local _JT2 = K2.arm_jacobian(q)
+end
+local t1 = unix.time()
+local d1 = t1-t0
+print(d1)
+
+print(d1/d0)
+--]]

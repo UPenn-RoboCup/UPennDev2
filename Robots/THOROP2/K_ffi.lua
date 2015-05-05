@@ -302,43 +302,47 @@ local tfRotDots = { TrotYdot, TrotZdot, TrotXdot, TrotYdot, TrotXdot, TrotZdot, 
 
 -- TODO: Simplify the matrix multiplication with sympy
 function K.arm_jacobian(qArm)
-	
-	local tfTorso = T.eye()
 	local tfLinks = tfLlinks
-	local tfLinkQ = {}
-	for i, rot in ipairs(tfRots) do
-		table.insert(tfLinkQ, tfLinks[i] * rot(qArm[i]))
-	end
-	
-	local tfLinkQdot = {}
-	table.insert(tfLinkQdot, T.rotYdot(T.copy(tfLinks[1]), qArm[1]))
-	table.insert(tfLinkQdot, T.rotZdot(T.copy(tfLinks[2]), qArm[2]))
-	table.insert(tfLinkQdot, T.rotXdot(T.copy(tfLinks[3]), qArm[3]))
-	table.insert(tfLinkQdot, T.rotYdot(T.copy(tfLinks[4]), qArm[4]))
-	table.insert(tfLinkQdot, T.rotXdot(T.copy(tfLinks[5]), qArm[5]))
-	table.insert(tfLinkQdot, T.rotZdot(T.copy(tfLinks[6]), qArm[6]))
-	table.insert(tfLinkQdot, T.rotXdot(T.copy(tfLinks[7]), qArm[7]))
 	
 	local rots = {}
-	for i, rot in ipairs(tfRots) do
-		print(qArm[i])
-		rots[i] = rot(qArm[i])
+	for i, rot in ipairs(tfRots) do rots[i] = rot(qArm[i]) end
+	
+	local tfLinkQ = {}
+	for i, rot in ipairs(rots) do tfLinkQ[i] = tfLinks[i] * rot end
+	
+	local com = T.eye()
+	for i=1,#tfLinkQ do com = com * tfLinkQ[i] end
+	--print('com')
+	--print(com)
+	
+	--local com = T.eye() * rots[1] * tfLinks[2] * rots[2] * tfLinks[3] * rots[3] * tfLinks[4] * rots[4] * tfLinks[5] * rots[6] * tfLinks[7] * rots[7]
+	--print('COM')
+	--print(com)
+	
+	local tfTorso = T.eye()
+	
+	local tfRunning = {}
+	tfRunning[0] = tfTorso
+	for i, tfLinkQ in ipairs(tfLinkQ) do
+		tfRunning[i] = tfRunning[i-1] * tfLinkQ
 	end
 	
+	local dots = {}
+	for i, tfRotDot in ipairs(tfRotDots) do
+		dots[i] = tfRotDot(tfRunning[i-1] * tfLinks[i], qArm[i])
+		for j=i+1,#tfLinkQ do
+			dots[i] = dots[i] * tfLinkQ[j]
+		end
+		--if i>0 then print('Jac', i-1); print(dots0[i]) end
+	end
+	--[[
 	
-	local com = T.eye() * rots[1] * tfLinks[2] * rots[2] * tfLinks[3] * rots[3] * tfLinks[4] * rots[4] * tfLinks[5] * rots[6] * tfLinks[7] * rots[7]
-	
-	
-	----[[
-	print('COM')
-	print(com)
-	--]]
+	print()
 	
 	local dots = {}
 	for i=1,7 do
 		local jac = tfTorso
 		for ii = 1, i-1 do
-			--print('s1',i,ii)
 			jac = jac * tfLinkQ[ii]
 		end
 		jac = tfRotDots[i](jac * tfLinks[i], qArm[i])
@@ -347,9 +351,9 @@ function K.arm_jacobian(qArm)
 			jac = jac * tfLinkQ[ii]
 		end
 		table.insert(dots, jac)
-		--if i>0 then print('Jac', i-1); print(jac) end
+		if i>0 then print('Jac', i-1); print(jac) end
 	end
-	
+	--]]
 	--[[
 	print('TESTZ')
 	print(T.rotZdot(T.eye(), math.pi/3))
@@ -385,15 +389,14 @@ function K.arm_jacobian(qArm)
 	print(jac0)
 	--]]
 	
-	
 	local invCom = Tinv(com)
 	local JT = {}
 	for i, tf in ipairs(dots) do
 		local pos = T.position(tf)
 		local Aw = tf * invCom
-		table.insert(pos, Aw[2][3])
-		table.insert(pos, Aw[3][1])
-		table.insert(pos, Aw[1][2])
+		pos[4] = Aw[2][3]
+		pos[5] = Aw[3][1]
+		pos[6] = Aw[1][2]
 		table.insert(JT, pos)
 	end
 	--print('Jacobian Transpose')

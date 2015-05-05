@@ -460,8 +460,8 @@ end
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
 -- Use the Jacobian
-local function get_delta_qarm(trArmVel, qArm)
-	local J, JT = K.arm_jacobian(qArm)
+local function get_delta_qarm(self, vwTarget, qArm)
+	local J, JT = self.jacobian(qArm)
 
 	local lambda = {}
 	for i, lim in ipairs(joint_limits) do
@@ -469,19 +469,19 @@ local function get_delta_qarm(trArmVel, qArm)
       ((2*qArm[i]-lim[1]-lim[2])/(lim[2]-lim[1]))^p
   end
 
-	local I = torch.diag(lambda):addmm(JT, J)
+	local I = torch.diag(torch.Tensor(lambda)):addmm(JT, J)
 	local Iinv = torch.inverse(I)
 	local I2 = torch.mm(Iinv,JT)
-	local e = torch.Tensor(trArmVel)
-	local qArmVel = torch.mv(I2, e)
-	return vector.new(qArmVel)
+	local e = torch.Tensor(vwTarget)
+	local dqArm = torch.mv(I2, e)
+	return vector.new(dqArm)
 end
 
 -- Set the forward and inverse
-local function set_chain(self, forward, inverse, name)
+local function set_chain(self, forward, inverse, jacobian)
 	self.forward = assert(forward)
 	self.inverse = assert(inverse)
-	self.name = name
+	self.jacobian = jacobian
   return self
 end
 
@@ -516,7 +516,6 @@ function libArmPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 	local obj = {
 		forward = nil,
 		inverse = nil,
-		name = 'arm',
 		--
 		ones = armOnes,
 		halves = armOnes * 0.5,

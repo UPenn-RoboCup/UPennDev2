@@ -340,7 +340,8 @@ local function jacobian_transpose(qArm)
 	
 end
 
-function K.arm_jacobian(qArm)
+local torch = require'torch'
+function K.jacobian(qArm)
 	local JT0 = jacobian_transpose(qArm)
 	local JT = torch.Tensor(JT0)
 	local J = JT:t():clone()

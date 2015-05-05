@@ -78,6 +78,7 @@ function Transform.trans(dx, dy, dz)
 	}, mt)
 end
 
+-- Mutate a matrix
 function Transform.rotXdot(t, a)
   local ca = cos(a)
   local sa = sin(a)
@@ -119,6 +120,22 @@ function Transform.rotZdot(t, a)
 	end
 	return t
 end
+
+function Transform.rotateX(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,4 do
+		local ty = t[i][2]
+		local tz = t[i][3]
+		t[i][1] = 0
+		t[i][2] = ca*ty + sa*tz
+		t[i][3] = -sa*ty + ca*tz
+		t[i][4] = 0
+	end
+	return t
+end
+
+-- End mutations
 
 -- Recovering Euler Angles
 -- Good resource: http://www.vectoralgebra.info/eulermatrix.html

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sympybotics
 
 print('Define the Robot')

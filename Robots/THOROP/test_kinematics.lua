@@ -260,7 +260,7 @@ util.ptorch(com, 5, 3)
 
 ----[[
 print()
-local J3 = torch.Tensor(K2.jac(qArm)):sub(1,6,1,7)
+local J3 = torch.Tensor(K2.jac(qArm))--:sub(1,6,1,7)
 util.ptorch(J3, 5, 3)
 --]]
 

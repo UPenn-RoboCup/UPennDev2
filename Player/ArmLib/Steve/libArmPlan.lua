@@ -520,19 +520,12 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 		--sanitize0(cur_qArm, qArm0)
 		--sanitize0(cur_qArm, qGoal)
 		--print('cur_qArm', cur_qArm)
-		table.insert(qStack, {vnorm(ddp*i), vector.new(cur_qArm)})
+		table.insert(qStack, {distance-vnorm(ddp*(i-1)), vector.new(cur_qArm)})
 	end
 	qStack.dqdt_limit = self.dqdt_limit
 	-- We return the stack and the final joint configuarion
 	return setmetatable(qStack, mt), qGoal, distance
 end
-
-
-
-
-
-
-
 
 
 

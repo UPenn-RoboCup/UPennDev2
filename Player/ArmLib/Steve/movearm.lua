@@ -33,9 +33,9 @@ do
 		Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm])
 	--
 	lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond):set_chain(
-		K.forward_larm, K.inverse_larm, 'larm')
+		K.forward_larm, K.inverse_larm, K.jacobian)
 	rPlanner = P.new_planner(minRArm, maxRArm, radiansPerSecond):set_chain(
-		K.forward_rarm, K.inverse_rarm, 'rarm')
+		K.forward_rarm, K.inverse_rarm, K.jacobian)
 end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
@@ -99,15 +99,29 @@ function movearm.goto_tr(trL, rwrist, loptions, roptions, lweights, rweights)
 end
 
 -- Take a desired Transformation matrix and move in a line towards it
-function movearm.goto_tr_stack(trL, rwrist, loptions, roptions, lweights, rweights)
+function movearm.goto_tr_stack(trL, trR, loptions, roptions, lweights, rweights)
 	local lPathIter, rPathIter
 	if trL then
 		local qcLArm = Body.get_larm_command_position()
 		lPathIter, iqLArm, pLDist = lPlanner:line_stack(trL, qcLArm, loptions, lweights)
 	end
-	if rwrist then
+	if trR then
 		local qcRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, pRDist = rPlanner:line_stack(rwrist, qcRArm, roptions, rweights)
+		rPathIter, iqRArm, pRDist = rPlanner:line_stack(trR, qcRArm, roptions, rweights)
+	end
+	return lPathIter, rPathIter, vector.new(iqLArm), vector.new(iqRArm), pLDist, pRDist
+end
+
+-- Take a desired Transformation matrix and move in a line towards it
+function movearm.goto_jacobian_stack(trL, trR, loptions, roptions, lweights, rweights)
+	local lPathIter, rPathIter
+	if trL then
+		local qcLArm = Body.get_larm_command_position()
+		lPathIter, iqLArm, pLDist = lPlanner:jacobian_stack(trL, qcLArm, loptions, lweights)
+	end
+	if trR then
+		local qcRArm = Body.get_rarm_command_position()
+		rPathIter, iqRArm, pRDist = rPlanner:jacobian_stack(trR, qcRArm, roptions, rweights)
 	end
 	return lPathIter, rPathIter, vector.new(iqLArm), vector.new(iqRArm), pLDist, pRDist
 end

@@ -254,22 +254,34 @@ util.ptorch(J2, 5, 3)
 print('Jacobian Transpose 2')
 util.ptorch(JT2, 5, 3)
 print('COM')
-print(com)
+--print(com)
 com = torch.Tensor(com)
 util.ptorch(com, 5, 3)
 
---[[
+----[[
 print()
-local J3 = K2.jacobian_com(qArm)
-util.ptorch(torch.Tensor(J3))
+local J3 = torch.Tensor(K2.jac(qArm)):sub(1,6,1,7)
+util.ptorch(J3, 5, 3)
 --]]
 
+util.ptorch(J3 - J)
+
+
 print('qArm', qArm)
---[[
+----[[
 local qs = {}
 for i=1,1e3 do
 		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
 end
+
+local t0 = unix.time()
+for i,q in ipairs(qs) do
+	local _JT3 = K2.jac(qArm)
+end
+local t1 = unix.time()
+local d2 = t1-t0
+print(d2)
+
 local t0 = unix.time()
 for i,q in ipairs(qs) do
 	local JacArm = K.calculate_arm_jacobian(
@@ -295,6 +307,8 @@ end
 local t1 = unix.time()
 local d1 = t1-t0
 print(d1)
+
+
 
 print(d1/d0)
 --]]

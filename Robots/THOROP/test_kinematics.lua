@@ -226,7 +226,7 @@ local qArm = vector.zeros(7)
 --local qArm = vector.new({180,0,0, 0, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
---local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
+local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
 
 local JacArm = K.calculate_arm_jacobian(
 qArm,
@@ -260,11 +260,9 @@ util.ptorch(com, 5, 3)
 
 ----[[
 print()
-local J3 = torch.Tensor(K2.jac(qArm))--:sub(1,6,1,7)
+local J3 = torch.Tensor(K2.jac(qArm))
 util.ptorch(J3, 5, 3)
 --]]
-
-util.ptorch(J3 - J)
 
 
 print('qArm', qArm)
@@ -312,3 +310,7 @@ print(d1)
 
 print(d1/d0)
 --]]
+
+util.ptorch(J3 - J)
+util.ptorch(J3, 5, 2)
+util.ptorch(J, 5, 2)

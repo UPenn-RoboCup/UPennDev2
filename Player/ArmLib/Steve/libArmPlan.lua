@@ -69,7 +69,7 @@ local mt = {
 			local dist, wp = unpack(next)
 			local blend_wp = vector.copy(wp)
 			local diff_use = sanitize(blend_wp, q, dt, t.dqdt_limit)
-			t.done_wp = vector.norm(diff_use) < 0.001
+			t.done_wp = vnorm(diff_use) < 0.001
 			return dist, t.done_wp and sanitize0(wp, q) or blend_wp
 		end
 	end
@@ -443,15 +443,38 @@ local function joint_stack(self, qGoal, qArm)
 	return setmetatable(qStack, mt)
 end
 
-local function get_jacaobian()
-	K0.calculate_arm_jacobian(
-    qArm,qWaist,
-    {0,0,0}, --rpy angle
-    isLeft,
-    Config.arm.handoffset.gripper3[1],
-    handOffsetY,
-    Config.arm.handoffset.gripper3[3]
-	);
+-- Speedlimits for the joints
+local joint_limits={
+	{-math.pi/2*100/180, math.pi*200/180},
+	{0,math.pi/2},
+	{-math.pi/2, math.pi/2},
+	{-math.pi, -0.2}, --temp value
+	{-math.pi*1.5, math.pi*1.5},
+	{-math.pi/2, math.pi/2},
+	{-math.pi, math.pi}
+}
+if isLeft==0 then
+	joint_limits[2]={-math.pi/2,0}
+	joint_limits[5]={-math.pi*1.5, math.pi*1.5}
+end
+local speed_eps = 0.1 * 0.1
+local c, p = 2, 10
+-- Use the Jacobian
+local function get_delta_qarm(trArmVel, qArm)
+	local J, JT = K.arm_jacobian(qArm)
+
+	local lambda = {}
+	for i, lim in ipairs(joint_limits) do
+    lambda[i]= speed_eps + c*
+      ((2*qArm[i]-lim[1]-lim[2])/(lim[2]-lim[1]))^p
+  end
+
+	local I = torch.diag(lambda):addmm(JT, J)
+	local Iinv = torch.inverse(I)
+	local I2 = torch.mm(Iinv,JT)
+	local e = torch.Tensor(trArmVel)
+	local qArmVel = torch.mv(I2, e)
+	return vector.new(qArmVel)
 end
 
 -- Set the forward and inverse
@@ -491,6 +514,10 @@ end
 function libArmPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 	local armOnes = vector.ones(7)
 	local obj = {
+		forward = nil,
+		inverse = nil,
+		name = 'arm',
+		--
 		ones = armOnes,
 		halves = armOnes * 0.5,
 		--
@@ -500,13 +527,14 @@ function libArmPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
 		--
 		res_pos = res_pos or 0.01,
 		res_ang = res_ang or 2*DEG_TO_RAD,
+		shoulderAngles = nil,
 		--
 		line_stack = line_stack,
 		line_iter = line_iter,
 		joint_stack = joint_stack,
 		joint_iter = joint_iter,
 		--
-		get_jacobian = get_jacobian,
+		get_delta_qarm = get_delta_qarm,
 		--
 		find_shoulder = find_shoulder,
 		--

@@ -336,16 +336,16 @@ local function jacobian_transpose(qArm)
 	for i, Aw in ipairs(angvel) do
 		JT[i] = {vel[i][1], vel[i][2], vel[i][3], Aw[2][3], Aw[3][1], Aw[1][2]}
 	end
-	return JT -- Jacobian Transpose
+	return JT, com -- Jacobian Transpose
 	
 end
 
 local torch = require'torch'
 function K.jacobian(qArm)
-	local JT0 = jacobian_transpose(qArm)
+	local JT0, com = jacobian_transpose(qArm)
 	local JT = torch.Tensor(JT0)
 	local J = JT:t():clone()
-	return J, JT
+	return J, JT, com
 end
 
 local function calculate_b_matrix()

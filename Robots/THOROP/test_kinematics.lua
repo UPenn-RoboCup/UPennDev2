@@ -1,3 +1,4 @@
+#!/usr/local/bin/luajit
 dofile'../../include.lua'
 local vector = require'vector'
 local K = require'THOROPKinematics'
@@ -7,6 +8,7 @@ local torch = require'torch'
 local util = require'util'
 local ok, ffi = pcall(require, 'ffi')
 
+--[[
 print()
 print('================')
 print()
@@ -25,8 +27,8 @@ local qLArm2 = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 local fL2_t, fL2a_t = torch.eye(4), torch.eye(4)
 -- Hack to make super fast (don't go to C ever)
 if jit then
-	fL2_d = fL2_t:data()
-	fL2a_d = fL2a_t:data()
+fL2_d = fL2_t:data()
+fL2a_d = fL2a_t:data()
 end
 
 -- Correctness
@@ -39,17 +41,17 @@ print(T.position6D(fL2))
 dt_all = vector.zeros(4)
 local n = 1000
 for i=1,n do
-	t0 = unix.time()
-	fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
-	t1 = unix.time()
-	fL2 = K2.forward_larm(qLArm)
-	t2 = unix.time()
-	fLa = K.l_arm_torso_7(qLArm2, 0, {0,0}, 0,0,0)
-	t3 = unix.time()
-	fL2a = K2.forward_larm(qLArm2)
-	t4 = unix.time()
-	dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3}
-	dt_all = dt_all + dt
+t0 = unix.time()
+fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
+t1 = unix.time()
+fL2 = K2.forward_larm(qLArm)
+t2 = unix.time()
+fLa = K.l_arm_torso_7(qLArm2, 0, {0,0}, 0,0,0)
+t3 = unix.time()
+fL2a = K2.forward_larm(qLArm2)
+t4 = unix.time()
+dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3}
+dt_all = dt_all + dt
 end
 print('Times:', dt_all, n)
 
@@ -89,16 +91,16 @@ fL2a_t4 = ffi.new('double[4][4]', fL2a)
 dt_all = vector.zeros(4)
 --n = 10
 for i=1,n do
-	t0 = unix.time()
-	iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)
-	t1 = unix.time()
-	iqLArm1 = K2.inverse_larm(fL2, qLArm, 0)
-	t2 = unix.time()
-	iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
-	t3 = unix.time()
-	iqLArm3 = ik2.ik2(fL2_t4, qLArm, 0, false)
-	t4 = unix.time()
-	dt_all = vector.new{t1-t0, t2-t1, t3-t2, t4-t3} + dt_all
+t0 = unix.time()
+iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)
+t1 = unix.time()
+iqLArm1 = K2.inverse_larm(fL2, qLArm, 0)
+t2 = unix.time()
+iqLArm2 = ik2.ik(fL2_t, qLArm, 0, false)
+t3 = unix.time()
+iqLArm3 = ik2.ik2(fL2_t4, qLArm, 0, false)
+t4 = unix.time()
+dt_all = vector.new{t1-t0, t2-t1, t3-t2, t4-t3} + dt_all
 end
 
 print('Time:', dt_all, n)
@@ -118,7 +120,8 @@ print(qLArm2)
 print(vector.new(iqLArm_a))
 print(vector.new(iqLArm2a))
 print(vector.new(iqLArm3a))
-
+--]]
+--
 --[[
 K2 = require'K_ffi'
 T = require'Transform'
@@ -217,4 +220,71 @@ print(trL)
 print(itrL)
 print(qL)
 print(iqL)
+--]]
+
+local qArm = vector.zeros(7)
+--local qArm = vector.new({180,0,0, 0, 0,0,0})*DEG_TO_RAD
+--local qArm = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
+local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
+local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
+
+local JacArm = K.calculate_arm_jacobian(
+qArm,
+{0,0},
+{0,0,0}, --rpy angle
+0, --isLeft,
+0,--Config.arm.handoffset.gripper3[1],
+0,--handOffsetY,
+0 --Config.arm.handoffset.gripper3[3]
+)  --tool xyz
+
+local J = torch.Tensor(JacArm):resize(6,7)  
+local JT = torch.Tensor(J):transpose(1,2)
+
+--print('JacArm', unpack(JacArm))
+print('Jacobian')
+util.ptorch(J, 5, 3)
+print('Jacobian Transpose')
+util.ptorch(JT, 5, 3)
+
+print()
+local J2, JT2 = K2.jacobian(qArm)
+print('Jacobian 2')
+util.ptorch(J2, 5, 3)
+print('Jacobian Transpose 2')
+util.ptorch(JT2, 5, 3)
+
+print('qArm', qArm)
+--[[
+local qs = {}
+for i=1,1e3 do
+		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
+end
+local t0 = unix.time()
+for i,q in ipairs(qs) do
+	local JacArm = K.calculate_arm_jacobian(
+	qArm,
+	{0,0},
+	{0,0,0}, --rpy angle
+	0, --isLeft,
+	0,--Config.arm.handoffset.gripper3[1],
+	0,--handOffsetY,
+	0 --Config.arm.handoffset.gripper3[3]
+	)  --tool xyz
+	local J = torch.Tensor(JacArm):resize(6,7)  
+	local JT = torch.Tensor(J):transpose(1,2)
+end
+local t1 = unix.time()
+local d0 = t1-t0
+print(d0)
+
+local t0 = unix.time()
+for i,q in ipairs(qs) do
+	local _JT2 = K2.jacobian(q)
+end
+local t1 = unix.time()
+local d1 = t1-t0
+print(d1)
+
+print(d1/d0)
 --]]

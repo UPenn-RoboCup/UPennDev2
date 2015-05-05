@@ -282,8 +282,8 @@ end
 -- Jacobian
 ------------
 local tfLlinks = {}
---tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
-tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
+tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
+--tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
 tfLlinks[2] = Ttrans(0,0,0) -- shoulder pitch-shoulder roll
 tfLlinks[3] = Ttrans(0,0,0) -- shouder roll-shoulder yaw
 tfLlinks[4] = Ttrans(upperArmLength, 0, elbowOffsetX) -- shoulder yaw-elbow 
@@ -319,8 +319,16 @@ function K.arm_jacobian(qArm)
 	table.insert(tfLinkQdot, T.rotZdot(T.copy(tfLinks[6]), qArm[6]))
 	table.insert(tfLinkQdot, T.rotXdot(T.copy(tfLinks[7]), qArm[7]))
 	
-	local com = tfTorso
-	for i, tf in ipairs(tfLinkQ) do com = tf * com end
+	local rots = {}
+	for i, rot in ipairs(tfRots) do
+		print(qArm[i])
+		rots[i] = rot(qArm[i])
+	end
+	
+	
+	local com = T.eye() * rots[1] * tfLinks[2] * rots[2] * tfLinks[3] * rots[3] * tfLinks[4] * rots[4] * tfLinks[5] * rots[6] * tfLinks[7] * rots[7]
+	
+	
 	----[[
 	print('COM')
 	print(com)

@@ -221,7 +221,8 @@ print(qL)
 print(iqL)
 --]]
 
---local qArm = vector.zeros(7)
+local qArm = vector.zeros(7)
+--local qArm = vector.new({180,0,0, 0, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
 local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD

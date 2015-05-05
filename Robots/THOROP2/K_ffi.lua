@@ -282,8 +282,8 @@ end
 -- Jacobian
 ------------
 local tfLlinks = {}
-tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
---tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
+--tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
+tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
 tfLlinks[2] = Ttrans(0,0,0) -- shoulder pitch-shoulder roll
 tfLlinks[3] = Ttrans(0,0,0) -- shouder roll-shoulder yaw
 tfLlinks[4] = Ttrans(upperArmLength, 0, elbowOffsetX) -- shoulder yaw-elbow 
@@ -303,6 +303,7 @@ local tfRotDots = { TrotYdot, TrotZdot, TrotXdot, TrotYdot, TrotXdot, TrotZdot, 
 -- TODO: Simplify the matrix multiplication with sympy
 function K.arm_jacobian(qArm)
 	local tfLinks = tfLlinks
+	local tfTorso = T.eye()
 	
 	local rots = {}
 	for i, rot in ipairs(tfRots) do rots[i] = rot(qArm[i]) end
@@ -312,123 +313,40 @@ function K.arm_jacobian(qArm)
 	
 	local com = T.eye()
 	for i=1,#tfLinkQ do com = com * tfLinkQ[i] end
-	--print('com')
-	--print(com)
-	
-	--local com = T.eye() * rots[1] * tfLinks[2] * rots[2] * tfLinks[3] * rots[3] * tfLinks[4] * rots[4] * tfLinks[5] * rots[6] * tfLinks[7] * rots[7]
-	--print('COM')
-	--print(com)
-	
-	local tfTorso = T.eye()
+	local invCom = Tinv(com)
 	
 	local tfRunning = {}
 	tfRunning[0] = tfTorso
-	for i, tfLinkQ in ipairs(tfLinkQ) do
-		tfRunning[i] = tfRunning[i-1] * tfLinkQ
-	end
+	for i, tfLinkQ in ipairs(tfLinkQ) do tfRunning[i] = tfRunning[i-1] * tfLinkQ end
 	
 	local dots = {}
 	for i, tfRotDot in ipairs(tfRotDots) do
 		dots[i] = tfRotDot(tfRunning[i-1] * tfLinks[i], qArm[i])
-		for j=i+1,#tfLinkQ do
-			dots[i] = dots[i] * tfLinkQ[j]
-		end
-		--if i>0 then print('Jac', i-1); print(dots0[i]) end
 	end
-	--[[
 	
-	print()
-	
-	local dots = {}
-	for i=1,7 do
-		local jac = tfTorso
-		for ii = 1, i-1 do
-			jac = jac * tfLinkQ[ii]
-		end
-		jac = tfRotDots[i](jac * tfLinks[i], qArm[i])
-		for ii = i+1, 7 do
-			--print('s2',i,ii)
-			jac = jac * tfLinkQ[ii]
-		end
-		table.insert(dots, jac)
-		if i>0 then print('Jac', i-1); print(jac) end
+	for i=1,#dots do
+		for j=i+1,#tfLinkQ do dots[i] = dots[i] * tfLinkQ[j] end
 	end
-	--]]
-	--[[
-	print('TESTZ')
-	print(T.rotZdot(T.eye(), math.pi/3))
 	
-	print('TESTX')
-	print(T.rotXdot(T.eye(), math.pi/3))
+	local vel = {}
+	for i, tf in ipairs(dots) do
+		vel[i] = T.position(tf)
+	end
 	
-	print('TESTY')
-	print(T.rotYdot(T.eye(), math.pi/3))
-	--]]
+	local angvel = {}
+	for i, tf in ipairs(dots) do
+		angvel[i] = tf * invCom
+	end
 	
-	--[[
-	local jac0 = tfTorso
-	* tfLinkQdot[1]
-	* tfLinkQ[2]
-	* tfLinkQ[3]
-	* tfLinkQ[4]
-	* tfLinkQ[5]
-	* tfLinkQ[6]
-	* tfLinkQ[7]
-	print('jac0')
-	print(jac0)
-	
-	local jac0 = tfLinkQ[7]
-	* tfLinkQ[6]
-	* tfLinkQ[5]
-	* tfLinkQ[4]
-	* tfLinkQ[3]
-	* tfLinkQ[2]
-	* tfLinkQdot[1]
-	* tfTorso
-	print('jac01')
-	print(jac0)
-	--]]
-	
-	local invCom = Tinv(com)
 	local JT = {}
-	for i, tf in ipairs(dots) do
-		local pos = T.position(tf)
-		local Aw = tf * invCom
-		pos[4] = Aw[2][3]
-		pos[5] = Aw[3][1]
-		pos[6] = Aw[1][2]
-		table.insert(JT, pos)
+	for i, Aw in ipairs(angvel) do
+		JT[i] = {vel[i][1], vel[i][2], vel[i][3], Aw[2][3], Aw[3][1], Aw[1][2]}
 	end
-	--print('Jacobian Transpose')
-	--for i,row in ipairs(JT) do print(unpack(row)) end
-	--[[
-	-- Position velocity
-	local v = {}
-	for i, tf in ipairs(dots) do
-		local pos = T.position(tf)
-		print(i,pos)
-		table.insert(v, pos)
-	end
-	-- Angular velocity
-	local w = {}
-	for i, tf in ipairs(dots) do
-		local Aw = tf * invCom
-		table.insert(w, {Aw[2][3], Aw[3][1], Aw[1][2]})
-	end
-	--[[
-	--[[
-	print('Jacobian')
-	for i,vv in ipairs(v) do
-		print(unpack(vv))
-	end
-	print('-')
-	for i,ww in ipairs(w) do
-		print(unpack(ww))
-	end
-	--]]
+	return JT -- Jacobian Transpose
 	
-	-- Calculate b matrix
-	--[[
+end
+
+local function calculate_b_matrix()
 	local b = {}
 	for i, wi in ipairs(w) do
 		b[i] = {}
@@ -443,12 +361,6 @@ function K.arm_jacobian(qArm)
 			b[i][j] = inertia_v + inertia_w
 		end
 	end
-	
-	for i,v in ipairs(b) do
-		print(unpack(v))
-	end
-	--]]
-	return JT
 end
 
 return K

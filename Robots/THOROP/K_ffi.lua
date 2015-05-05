@@ -301,6 +301,7 @@ local tfRots = { TrotY, TrotZ, TrotX, TrotY, TrotX, TrotZ, TrotX}
 local tfRotDots = { TrotateYdot, TrotateZdot, TrotateXdot, TrotateYdot, TrotateXdot, TrotateZdot, TrotateXdot}
 
 -- TODO: Simplify the matrix multiplication with sympy
+--[[
 local function jacobian_transpose(qArm)
 
 	--local com = fk_arm(qArm)
@@ -367,8 +368,9 @@ local function calculate_b_matrix()
 		end
 	end
 end
+--]]
 
-function K.jac(q)
+function K.jacobian(q)
 local c1, s1 = cos(q[1]), sin(q[1])
 local c2, s2 = cos(q[2]), sin(q[2])
 local c3, s3 = cos(q[3]), sin(q[3])

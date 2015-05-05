@@ -444,16 +444,17 @@ end
 --]]
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
+local torch = require'torch'
 -- Use the Jacobian
 local function get_delta_qarm(self, vwTarget, qArm)
-	local J, JT = self.jacobian(qArm)
+	local J = torch.Tensor(self.jacobian(qArm))
+	local JT = J:t():clone()
 
 	local qMin, qMax, qRange = self.qMin, self.qMax, self.qRange
 
 	local lambda = {}
 	for i, q in ipairs(qArm) do
-    lambda[i]= speed_eps + c*
-      ((2*q - qMin[i] - qMax[i])/qRange[i])^p
+    lambda[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
   end
 
 	local I = torch.diag(torch.Tensor(lambda)):addmm(JT, J)
@@ -514,8 +515,8 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(q.to_rpy(quatDiff))
 		--print('vwTarget', unpack(vwTarget))
 		local dqArm = self:get_delta_qarm(vwTarget, cur_qArm)
-		--print('dqArm', unpack(dqArm))
-		cur_qArm = cur_qArm + dqArm
+		--print('dqArm', dqArm * RAD_TO_DEG)
+		cur_qArm = cur_qArm + dqArm / 100
 
 		--sanitize0(cur_qArm, qArm0)
 		--sanitize0(cur_qArm, qGoal)

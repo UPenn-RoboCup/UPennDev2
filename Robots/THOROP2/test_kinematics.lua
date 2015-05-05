@@ -224,7 +224,7 @@ print(iqL)
 local qArm = vector.zeros(7)
 --local qArm = vector.new({180,0,0, 0, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
---local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
+local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
 local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
 
 local JacArm = K.calculate_arm_jacobian(
@@ -248,12 +248,13 @@ util.ptorch(JT, 5, 3)
 
 print()
 local J2, JT2 = K2.arm_jacobian(qArm)
-print('Jacobian Transpose 2')
+print('Jacobian 2')
 util.ptorch(J2, 5, 3)
+print('Jacobian Transpose 2')
 util.ptorch(JT2, 5, 3)
 
 print('qArm', qArm)
---[[
+----[[
 local qs = {}
 for i=1,1e3 do
 		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD

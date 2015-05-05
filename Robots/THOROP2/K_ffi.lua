@@ -8,6 +8,7 @@ local K = {}
 -- Cache needed functions
 local T = require'Transform'
 local Tnew = require'Transform'.new
+local Tposition = require'Transform'.position
 local Tinv = require'Transform'.inv
 local TrotX = require'Transform'.rotX
 local TrotY = require'Transform'.rotY
@@ -294,14 +295,15 @@ local tfRlinks = {}
 for i,v in ipairs(tfLlinks) do tfRlinks[i] = v end
 tfRlinks[4] = Ttrans(0,-shoulderOffsetY,shoulderOffsetZ)
 
---print('tflinks')
---for i,v in ipairs(tfLlinks) do print(unpack(T.position(v)) end
-
 local tfRots = { TrotY, TrotZ, TrotX, TrotY, TrotX, TrotZ, TrotX}
 local tfRotDots = { TrotYdot, TrotZdot, TrotXdot, TrotYdot, TrotXdot, TrotZdot, TrotXdot}
 
 -- TODO: Simplify the matrix multiplication with sympy
 local function jacobian_transpose(qArm)
+
+	local com = fk_arm(qArm)
+	local invCom = Tinv(com)
+
 	local tfLinks = tfLlinks
 	local tfTorso = T.eye()
 	
@@ -310,11 +312,7 @@ local function jacobian_transpose(qArm)
 	
 	local tfLinkQ = {}
 	for i, rot in ipairs(rots) do tfLinkQ[i] = tfLinks[i] * rot end
-	
-	local com = T.eye()
-	for i=1,#tfLinkQ do com = com * tfLinkQ[i] end
-	local invCom = Tinv(com)
-	
+
 	local tfRunning = {}
 	tfRunning[0] = tfTorso
 	for i, tfLinkQ in ipairs(tfLinkQ) do tfRunning[i] = tfRunning[i-1] * tfLinkQ end
@@ -322,18 +320,14 @@ local function jacobian_transpose(qArm)
 	local dots = {}
 	for i, tfRotDot in ipairs(tfRotDots) do
 		dots[i] = tfRotDot(tfRunning[i-1] * tfLinks[i], qArm[i])
-	end
-	
-	for i=1,#dots do
 		for j=i+1,#tfLinkQ do dots[i] = dots[i] * tfLinkQ[j] end
 	end
 	
-	local vel = {}
+	local vel, angvel = {}, {}
 	for i, tf in ipairs(dots) do
-		vel[i] = T.position(tf)
+		vel[i] = Tposition(tf)
 	end
-	
-	local angvel = {}
+
 	for i, tf in ipairs(dots) do
 		angvel[i] = tf * invCom
 	end
@@ -351,6 +345,40 @@ function K.arm_jacobian(qArm)
 	local JT = torch.Tensor(JT0)
 	local J = JT:t():clone()
 	return J, JT
+end
+
+-- Speedlimits for the joints
+local joint_limits={
+	{-math.pi/2*100/180, math.pi*200/180},
+	{0,math.pi/2},
+	{-math.pi/2, math.pi/2},
+	{-math.pi, -0.2}, --temp value
+	{-math.pi*1.5, math.pi*1.5},
+	{-math.pi/2, math.pi/2},
+	{-math.pi, math.pi}
+}
+if isLeft==0 then
+	joint_limits[2]={-math.pi/2,0}
+	joint_limits[5]={-math.pi*1.5, math.pi*1.5}
+end
+local speed_eps = 0.1 * 0.1
+local c, p = 2, 10
+local function K.arm_vel(tr, qArm)
+	local J, JT = K.arm_jacobian(qArm)
+	local trArmVelTarget = {-10*DEG_TO_RAD,0,0, 0,0,0}
+
+	local lambda = {}
+	for i, lim in ipairs(joint_limits) do
+    lambda[i][i]= speed_eps + c*
+      ((2*qArm[i]-lim[1]-lim[2])/(lim[2]-lim[1]))^p
+  end
+	local I = torch.diag(lambda):addmm(JT, J)
+	local Iinv = torch.inverse(I)
+	local I2 = torch.mm(Iinv,JT)
+	local e = torch.Tensor(trArmVelTarget)
+	local qArmVel = torch.mv(I2, e)
+	local qArmTarget = vector.new(qArm)+vector.new(qArmVel)*dt_step
+	return qArmTarget
 end
 
 local function calculate_b_matrix()

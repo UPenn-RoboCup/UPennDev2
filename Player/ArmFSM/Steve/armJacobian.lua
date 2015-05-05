@@ -16,19 +16,13 @@ local qLGoalFiltered, qRGoalFiltered
 local trL = T.transform6D{0.35, 0.25, 0.2, 0, 0, -45*DEG_TO_RAD}
 local trR = T.transform6D{0.35, -0.25, 0.2, 0, 0, 45*DEG_TO_RAD}
 
---local trL = T.transform6D{0.35, 0, 0, 0, 0, 0*DEG_TO_RAD}
---local trR = T.transform6D{0.35, 0, 0, 0, 0, 0*DEG_TO_RAD}
-
 function state.entry()
   print(state._NAME..' Entry')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-
-
 	lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered =
 		movearm.goto_jacobian_stack(trL, trR)
-
 end
 
 function state.update()

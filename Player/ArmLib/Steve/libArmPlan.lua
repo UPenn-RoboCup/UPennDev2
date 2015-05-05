@@ -459,44 +459,37 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 	local res_pos = self.res_pos
 	local res_ang = self.res_ang
 	local forward, inverse = self.forward, self.inverse
+	-- Find where we are
+	local fkArm0  = forward(qArm0)
+	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
+	-- Find where we want to go
 	local qGoal, fkGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
-	local fkArm  = forward(qArm0)
-
 	local quatGoal, posGoal = T.to_quaternion(fkGoal)
-	local quatArm, posArm = T.to_quaternion(fkArm)
-	vector.new(posGoal)
-	--
-	local nSteps
-	local dPos = posGoal - posArm
+	-- Determine the number of steps it will take, based on cartesian distance
+	local dPos = vector.new(posGoal) - posArm0
 	local distance = vnorm(dPos)
 	local nSteps_pos = math.ceil(distance / res_pos)
-	local quatDist, quatAngle = q.diff(quatArm, quatGoal)
-	--print('quatArm - quatGoal', quatArm - quatGoal)
-	--print('quatDist', quatDist, quatArm, quatGoal)
+	-- Find the number of steps via angular distance
+	local quatDist, quatAngle = q.diff(quatArm0, quatGoal)
 	local quatDiff = q.from_angle_axis(quatDist, quatAngle)
 	local nSteps_ang = math.ceil(fabs(quatDist) / res_ang)
-	nSteps = max(nSteps_pos, nSteps_ang)
-	--
+	-- Set the true number of steps
+	local nSteps = max(nSteps_pos, nSteps_ang)
 	local inv_nSteps = 1 / nSteps
-	--local dTransBack = T.trans(unpack(dPos/-nSteps))
-	local ddp = dPos/-nSteps
-	-- Form the precomputed stack
-	local qStack = {}
-	local cur_qArm, cur_posArm = vector.copy(qGoal), vector.copy(posGoal)
-	--local cur_trArm = trGoal
-	--local cur_quatArm = quatArm
-	local vwTarget = {unpack(ddp)}
+	-- Set the Effective position and angular velocities
+	local vwTarget = {unpack(dPos/-nSteps)}
 	vwTarget[4], vwTarget[5], vwTarget[6] = unpack(q.to_rpy(quatDiff))
 	--print('vwTarget', unpack(vwTarget))
+	-- Form the stack
+	local qStack = {}
+	local cur_qArm, cur_posArm = vector.copy(qGoal), vector.copy(posGoal)
+	local prev_qArm = cur_qArm
 	for i=nSteps,1,-1 do
 		local dqArm = self:get_delta_qarm(vwTarget, cur_qArm)
-		--print('dqArm', dqArm * RAD_TO_DEG)
 		cur_qArm = cur_qArm + dqArm / 100
-		--sanitize0(cur_qArm, old_qArm)
-		--sanitize0(cur_qArm, qArm0)
-		--sanitize0(cur_qArm, qGoal)
-		--print('cur_qArm', cur_qArm)
-		table.insert(qStack, {distance-vnorm(ddp*(i-1)), vector.new(cur_qArm)})
+		sanitize0(cur_qArm, prev_qArm)
+		prev_qArm = cur_qArm
+		table.insert(qStack, {i, vector.new(cur_qArm)})
 	end
 	qStack.dqdt_limit = self.dqdt_limit
 	-- We return the stack and the final joint configuarion

@@ -470,6 +470,9 @@ end
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
 local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weights)
+
+	print("AT JACOBIAN STACK")
+
 	local res_pos = self.res_pos
 	local res_ang = self.res_ang
 	qArm0 = qArm0 or self.armZeros
@@ -478,6 +481,7 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 	--local qGoal = inverse(trGoal, qArm0)
 	local qGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
 	assert(qGoal, 'No goal found in stack formation')
+
 	--print('qGoal', vector.new(qGoal)*RAD_TO_DEG)
 	sanitize0(qGoal, qArm0)
 	local fkGoal = forward(qGoal)
@@ -499,7 +503,7 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 	--print('quatDist', quatDist, quatArm, quatGoal)
 	local quatDiff = q.from_angle_axis(quatDist, quatAngle)
 	local nSteps_ang = math.ceil(fabs(quatDist) / res_ang)
-	nSteps = max(nSteps_pos,nSteps_ang)
+	nSteps = max(nSteps_pos, nSteps_ang)
 	--
 	local inv_nSteps = 1 / nSteps
 	--local dTransBack = T.trans(unpack(dPos/-nSteps))
@@ -509,15 +513,14 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 	local cur_qArm, cur_posArm = vector.copy(qGoal), vector.copy(posGoal)
 	--local cur_trArm = trGoal
 	--local cur_quatArm = quatArm
+	local vwTarget = {unpack(ddp)}
+	vwTarget[4], vwTarget[5], vwTarget[6] = unpack(q.to_rpy(quatDiff))
+	--print('vwTarget', unpack(vwTarget))
 	for i=nSteps,1,-1 do
-
-		local vwTarget = {unpack(ddp)}
-		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(q.to_rpy(quatDiff))
-		--print('vwTarget', unpack(vwTarget))
 		local dqArm = self:get_delta_qarm(vwTarget, cur_qArm)
 		--print('dqArm', dqArm * RAD_TO_DEG)
 		cur_qArm = cur_qArm + dqArm / 100
-
+		--sanitize0(cur_qArm, old_qArm)
 		--sanitize0(cur_qArm, qArm0)
 		--sanitize0(cur_qArm, qGoal)
 		--print('cur_qArm', cur_qArm)

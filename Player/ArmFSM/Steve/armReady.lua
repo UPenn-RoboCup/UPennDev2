@@ -24,7 +24,7 @@ function state.entry()
 end
 
 function state.update()
---  print(state._NAME..' Update' )
+  --io.write(state._NAME, ' Update\n' )
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
@@ -56,20 +56,19 @@ function state.update()
 	--print(moreL, q_lWaypoint, qLGoalFiltered)
 
 	-- Find the torso compensation position
-	local phaseL = moreL and moreL/qLD or 0
-	local phaseR = moreR and moreR/qRD or 0
-	local phase = math.max(phaseL, phaseR)
-
-	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
-
-	--[[
-	print(state._NAME..' | uTorso0', uTorso0)
-	print(state._NAME..' | uTorsoComp', uTorsoComp)
-	print(state._NAME..' | uTorsoNow', uTorsoNow)
-	--]]
-
-	-- Set the arm and torso commands
-	mcm.set_stance_uTorsoComp(uTorsoNow)
+	if uTorsoComp then
+		--[[
+		print(state._NAME..' | uTorso0', uTorso0)
+		print(state._NAME..' | uTorsoComp', uTorsoComp)
+		print(state._NAME..' | uTorsoNow', uTorsoNow)
+		--]]
+		local phaseL = moreL and moreL/qLD or 0
+		local phaseR = moreR and moreR/qRD or 0
+		local phase = math.max(phaseL, phaseR)
+		local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
+		-- Set the arm and torso commands
+		mcm.set_stance_uTorsoComp(uTorsoNow)
+	end
 	Body.set_larm_command_position(qLNext)
 	Body.set_rarm_command_position(qRNext)
 	t_command = t
@@ -79,7 +78,7 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+  io.write(state._NAME, ' Exit\n' )
 	if not status then print(status, msg) end
 	-- For teleop if called next
 	local qcLArm = Body.get_larm_command_position()

@@ -114,6 +114,7 @@ end
 
 -- Take a desired Transformation matrix and move in a line towards it
 function movearm.goto_jacobian_stack(trL, trR, loptions, roptions, lweights, rweights)
+	print('AT goto_jacobian_stack')
 	local lPathIter, rPathIter
 	if trL then
 		local qcLArm = Body.get_larm_command_position()
@@ -207,9 +208,11 @@ function movearm.path_iterators(list)
 			if via:find'tr' then
 				fkLComp, fkRComp, uTorsoComp, uTorso0 =
 					movearm.apply_tr_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
-			else
+			elseif via:find'q' then
 				fkLComp, fkRComp, uTorsoComp, uTorso0 =
 					movearm.apply_q_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
+			else
+					fkLComp, fkRComp = lGoal, rGoal
 			end
 			local msg = {go(fkLComp, fkRComp,nil,nil,lw,rw)}
 			table.insert(msg, uTorsoComp)

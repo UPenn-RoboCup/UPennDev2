@@ -16,11 +16,13 @@ arm.trRArm0 = {0.05, -0.35, -0.25,0,0,0}
 arm.readyFromInitStages = {
 	{
 		tr6D{0.25, 0.3, -0.1,  0,0,0}, tr6D{0.25, -0.3, -0.1, 0,0,0},
-		'goto_tr_via_q', {0,1,0}, {0,1,0}
+		--'goto_tr_via_q', {0,1,0}, {0,1,0}
+		'goto_jacobian_stack', {0,1,0}, {0,1,0}
 	},
 	{
 		tr6D{0.25, 0.3, 0,  0,0,-45*DEG_TO_RAD}, tr6D{0.25, -0.3, 0, 0,0,45*DEG_TO_RAD},
-		'goto_tr_via_q', {1,1,0}, {1,1,0}
+		--'goto_tr_via_q', {1,1,0}, {1,1,0}
+		'goto_jacobian_stack', {1,1,0}, {1,1,0}
 	},
 	{
 		tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD},

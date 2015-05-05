@@ -221,7 +221,10 @@ print(qL)
 print(iqL)
 --]]
 
-local qArm = vector.zeros(7)
+--local qArm = vector.zeros(7)
+--local qArm = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
+--local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
+local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
 local JacArm = K.calculate_arm_jacobian(
 qArm,
 {0,0},
@@ -232,11 +235,20 @@ qArm,
 0 --Config.arm.handoffset.gripper3[3]
 )  --tool xyz
 
-print('JacArm', unpack(JacArm))
 local J = torch.Tensor(JacArm):resize(6,7)  
 local JT = torch.Tensor(J):transpose(1,2)
-util.ptorch(J, 5, 2)
-util.ptorch(JT, 5, 2)
+
+--print('JacArm', unpack(JacArm))
+--util.ptorch(J, 5, 3)
+print('Jacobian Transpose')
+util.ptorch(JT, 5, 3)
 
 print()
-K2.arm_jacobian(qArm)
+local _JT2 = K2.arm_jacobian(qArm)
+print('Jacobian Transpose 2')
+local JT2 = torch.Tensor(_JT2)
+util.ptorch(JT2, 5, 3)
+
+util.ptorch(JT2-JT, 5, 3)
+
+print('qArm', qArm)

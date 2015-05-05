@@ -78,38 +78,46 @@ function Transform.trans(dx, dy, dz)
 	}, mt)
 end
 
-
-function Transform.rotZdot(a)
+function Transform.rotXdot(t, a)
   local ca = cos(a)
   local sa = sin(a)
-  return setmetatable({
-	  {-sa, -ca, 0, 0},
-	  {ca, -sa, 0, 0},
-	  {0, 0, 0, 0},
-	  {0, 0, 0, 1}
-	}, mt)
+	for i=1,4 do
+		local ty = t[i][2]
+		local tz = t[i][3]
+		t[i][1] = 0
+		t[i][2] = -sa*ty + ca*tz
+		t[i][3] = -ca*ty - sa*tz
+		t[i][4] = 0
+	end
+	return t
 end
 
-function Transform.rotYdot(a)
+function Transform.rotYdot(t, a)
   local ca = cos(a)
   local sa = sin(a)
-  return setmetatable({
-	  {-sa, 0, ca, 0},
-	  {0, 0, 0, 0},
-	  {-ca, 0, -sa, 0},
-	  {0, 0, 0, 1}
-	}, mt)
+	for i=1,4 do
+		local tx = t[i][1]
+		local tz = t[i][3]
+		t[i][1] = -sa*tx - ca*tz
+		t[i][2] = 0
+		t[i][3] = ca*tx - sa*tz
+		t[i][4] = 0
+	end
+	return t
 end
 
-function Transform.rotXdot(a)
+function Transform.rotZdot(t, a)
   local ca = cos(a)
   local sa = sin(a)
-  return setmetatable({
-	  {0, 0, 0, 0},
-	  {0, -sa, -ca, 0},
-	  {0, ca, -sa, 0},
-	  {0, 0, 0, 1}
-	}, mt)
+	for i=1,3 do
+		local tx = t[i][1]
+		local ty = t[i][2]
+		t[i][1] = -sa*tx + ca*ty
+		t[i][2] = -ca*tx - sa*ty
+		t[i][3] = 0
+		t[i][4] = 0
+	end
+	return t
 end
 
 -- Recovering Euler Angles

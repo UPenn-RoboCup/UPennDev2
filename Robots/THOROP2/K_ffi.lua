@@ -282,8 +282,8 @@ end
 -- Jacobian
 ------------
 local tfLlinks = {}
-tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
---tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
+--tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
+tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
 tfLlinks[2] = Ttrans(0,0,0) -- shoulder pitch-shoulder roll
 tfLlinks[3] = Ttrans(0,0,0) -- shouder roll-shoulder yaw
 tfLlinks[4] = Ttrans(upperArmLength, 0, elbowOffsetX) -- shoulder yaw-elbow 
@@ -294,6 +294,9 @@ local tfRlinks = {}
 for i,v in ipairs(tfLlinks) do tfRlinks[i] = v end
 tfRlinks[4] = Ttrans(0,-shoulderOffsetY,shoulderOffsetZ)
 
+--print('tflinks')
+--for i,v in ipairs(tfLlinks) do print(unpack(T.position(v)) end
+
 local tfRots = { TrotY, TrotZ, TrotX, TrotY, TrotX, TrotZ, TrotX}
 local tfRotDots = { TrotYdot, TrotZdot, TrotXdot, TrotYdot, TrotXdot, TrotZdot, TrotXdot}
 
@@ -303,8 +306,8 @@ function K.arm_jacobian(qArm)
 	local tfTorso = T.eye()
 	local tfLinks = tfLlinks
 	local tfLinkQ = {}
-	for i, r in ipairs(tfRots) do
-		table.insert(tfLinkQ, r(qArm[i]) * tfLinks[i])
+	for i, rot in ipairs(tfRots) do
+		table.insert(tfLinkQ, tfLinks[i] * rot(qArm[i]))
 	end
 	
 	local tfLinkQdot = {}
@@ -318,15 +321,12 @@ function K.arm_jacobian(qArm)
 	
 	local com = tfTorso
 	for i, tf in ipairs(tfLinkQ) do com = tf * com end
-	--[[
+	----[[
 	print('COM')
 	print(com)
 	--]]
 	
-	--print('tfLinkQdot[6]')
-	--print(tfLinkQdot[6])
-	
-	local jacobians = {}
+	local dots = {}
 	for i=1,7 do
 		local jac = tfTorso
 		for ii = 1, i-1 do
@@ -338,8 +338,8 @@ function K.arm_jacobian(qArm)
 			--print('s2',i,ii)
 			jac = jac * tfLinkQ[ii]
 		end
-		table.insert(jacobians, jac)
-		--if i>4 then print('Jac', i-1); print(jac) end
+		table.insert(dots, jac)
+		--if i>0 then print('Jac', i-1); print(jac) end
 	end
 	
 	--[[
@@ -377,12 +377,67 @@ function K.arm_jacobian(qArm)
 	print(jac0)
 	--]]
 	
-	local pos = {}
-	for i, tf in ipairs(jacobians) do
-		table.insert(pos, T.position(tf))
-		print('v['..(i-1)..']', pos[i])
+	
+	local invCom = Tinv(com)
+	local JT = {}
+	for i, tf in ipairs(dots) do
+		local pos = T.position(tf)
+		local Aw = tf * invCom
+		table.insert(pos, Aw[2][3])
+		table.insert(pos, Aw[3][1])
+		table.insert(pos, Aw[1][2])
+		table.insert(JT, pos)
+	end
+	--print('Jacobian Transpose')
+	--for i,row in ipairs(JT) do print(unpack(row)) end
+	--[[
+	-- Position velocity
+	local v = {}
+	for i, tf in ipairs(dots) do
+		local pos = T.position(tf)
+		print(i,pos)
+		table.insert(v, pos)
+	end
+	-- Angular velocity
+	local w = {}
+	for i, tf in ipairs(dots) do
+		local Aw = tf * invCom
+		table.insert(w, {Aw[2][3], Aw[3][1], Aw[1][2]})
+	end
+	--[[
+	--[[
+	print('Jacobian')
+	for i,vv in ipairs(v) do
+		print(unpack(vv))
+	end
+	print('-')
+	for i,ww in ipairs(w) do
+		print(unpack(ww))
+	end
+	--]]
+	
+	-- Calculate b matrix
+	--[[
+	local b = {}
+	for i, wi in ipairs(w) do
+		b[i] = {}
+		for j, wj in ipairs(w) do
+			local inertia_v = (v[i][1]*v[j][1]+v[i][2]*v[j][2]+v[i][3]*v[j][3]) * m
+			local inertia_w = wi[1] * wj[1] * inertia[1]
+			+ wi[2] * wj[2] * inertia[2]
+			+ wi[3] * wj[3] * inertia[3]
+			+ wi[1] * wj[2] * inertia[4] + wi[2] * wj[1] * inertia[4]
+			+ wi[1] * wj[3] * inertia[5] + wi[3] * wj[1] * inertia[5]
+			+ wi[2] * wj[3] * inertia[5] + wi[3] * wj[2] * inertia[5]
+			b[i][j] = inertia_v + inertia_w
+		end
 	end
 	
+	for i,v in ipairs(b) do
+		print(unpack(v))
+	end
+	--]]
+	return JT
 end
 
 return K

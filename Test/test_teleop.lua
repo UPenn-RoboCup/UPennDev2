@@ -154,6 +154,9 @@ char_lut['6'] = function()
   --arm_ch:send'poke'
 end
 
+char_lut['7'] = function()
+	arm_ch:send'init'
+end
 char_lut['8'] = function()
 	body_ch:send'stop'
 end

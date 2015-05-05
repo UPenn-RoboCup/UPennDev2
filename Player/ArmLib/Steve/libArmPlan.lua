@@ -136,9 +136,12 @@ local function find_shoulder(self, tr, qArm, weights)
 	local cvalid = {}
 	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, minArm, maxArm) ) end
 	-- FK sanity check
+	local dps = {}
+	local p_tr = vector.new(T.position(tr))
+	for i, fk in ipairs(fks) do dps[i] = p_tr - T.position(fk) end
 	local cfk = {}
-	for ic, fk in ipairs(fks) do
-		tinsert(cfk, vnorm(T.position(tr) - T.position(fk))<IK_POS_ERROR_THRESH and 0 or INFINITY)
+	for ic, dp in ipairs(dps) do
+		tinsert(cfk, vnorm(dp)<IK_POS_ERROR_THRESH and 0 or INFINITY)
 	end
 	-- Minimum Difference in angles
 	local cdiff = {}

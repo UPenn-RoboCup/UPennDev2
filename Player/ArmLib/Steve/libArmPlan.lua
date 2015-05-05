@@ -352,44 +352,29 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 	local res_pos = self.res_pos
 	local res_ang = self.res_ang
 	local forward, inverse = self.forward, self.inverse
-	-- If goal is position vector, then skip check
-	local skip_angles = type(trGoal[1])=='number'
-	-- Save the goal
-	local qGoal, posGoal, quatGoal
-	if skip_angles==true then
-		posGoal = trGoal
-		qGoal = inverse(posGoal, qArm0)
-	else
-		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		--qGoal = inverse(trGoal, qArm0)
-		qGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
-		assert(qGoal, 'No goal found in stack formation')
-	end
+	-- Must also fix the rotation matrix, else the yaw will not be correct!
+	--local qGoal = inverse(trGoal, qArm0)
+	local qGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
+	assert(qGoal, 'No goal found in stack formation')
 	--
 	--qGoal = clamp_vector(qGoal,self.qMin,self.qMax)
 	sanitize0(qGoal, qArm0)
 	--
 	local fkGoal = forward(qGoal)
 	local fkArm  = forward(qArm0)
-	if skip_angles==true then
-		posArm = vector.new{fkArm[1][4],fkArm[2][4],fkArm[3][4]}
-	else
-		quatGoal, posGoal = T.to_quaternion(fkGoal)
-		quatArm, posArm   = T.to_quaternion(fkArm)
-		vector.new(posGoal)
-	end
+
+	local quatGoal, posGoal = T.to_quaternion(fkGoal)
+	local quatArm, posArm   = T.to_quaternion(fkArm)
+	vector.new(posGoal)
+
 	--
 	local nSteps
 	local dPos = posGoal - posArm
 	local distance = vnorm(dPos)
 	local nSteps_pos = math.ceil(distance / res_pos)
-	if skip_angles==true then
-		nSteps = nSteps_pos
-	else
-		local quatDist = quatArm - quatGoal
-		local nSteps_ang = math.ceil(fabs(quatDist) / res_ang)
-		nSteps = max(nSteps_pos,nSteps_ang)
-	end
+	local quatDist = quatArm - quatGoal
+	local nSteps_ang = math.ceil(fabs(quatDist) / res_ang)
+	nSteps = max(nSteps_pos,nSteps_ang)
 	--
 	local inv_nSteps = 1 / nSteps
 	--local dTransBack = T.trans(unpack(dPos/-nSteps))
@@ -401,16 +386,11 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 	--local cur_quatArm = quatArm
 	for i=nSteps,1,-1 do
 		cur_posArm = cur_posArm + ddp
-		if skip_angles==true then
-			-- TODO: Does not exist
-			cur_qArm = inverse_position(cur_posArm, cur_qArm)
-		else
-			local qSlerp = q.slerp( quatArm, quatGoal, i*inv_nSteps )
-			local trStep = T.from_quaternion( qSlerp, cur_posArm )
-			--cur_qArm = inverse( trStep, cur_qArm )
-			cur_qArm = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
-			assert(cur_qArm, 'No waypoint found in stack formation')
-		end
+		local qSlerp = q.slerp( quatArm, quatGoal, i*inv_nSteps )
+		local trStep = T.from_quaternion( qSlerp, cur_posArm )
+		--cur_qArm = inverse( trStep, cur_qArm )
+		cur_qArm = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
+		assert(cur_qArm, 'No waypoint found in stack formation')
 		--[[
 		local trWaypoint = dTransBack * cur_trArm
 		local qSlerp = q.slerp(quatArm,quatGoal,i*inv_nSteps)
@@ -484,6 +464,80 @@ local function get_delta_qarm(self, vwTarget, qArm)
 	return vector.new(dqArm)
 end
 
+
+-- Plan a direct path using a straight line via Jacobian
+-- res_pos: resolution in meters
+-- res_ang: resolution in radians
+local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weights)
+	local res_pos = self.res_pos
+	local res_ang = self.res_ang
+	qArm0 = qArm0 or self.armZeros
+	local forward, inverse = self.forward, self.inverse
+	-- Must also fix the rotation matrix, else the yaw will not be correct!
+	--local qGoal = inverse(trGoal, qArm0)
+	local qGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
+	assert(qGoal, 'No goal found in stack formation')
+	--print('qGoal', vector.new(qGoal)*RAD_TO_DEG)
+	sanitize0(qGoal, qArm0)
+	local fkGoal = forward(qGoal)
+	local fkArm  = forward(qArm0)
+	--print('fkGoal')
+	--print(fkGoal)
+	--print('fkArm')
+	--print(fkArm)
+	local quatGoal, posGoal = T.to_quaternion(fkGoal)
+	local quatArm, posArm = T.to_quaternion(fkArm)
+	vector.new(posGoal)
+	--
+	local nSteps
+	local dPos = posGoal - posArm
+	local distance = vnorm(dPos)
+	local nSteps_pos = math.ceil(distance / res_pos)
+	local quatDist, quatAngle = q.diff(quatArm, quatGoal)
+	--print('quatArm - quatGoal', quatArm - quatGoal)
+	--print('quatDist', quatDist, quatArm, quatGoal)
+	local quatDiff = q.from_angle_axis(quatDist, quatAngle)
+	local nSteps_ang = math.ceil(fabs(quatDist) / res_ang)
+	nSteps = max(nSteps_pos,nSteps_ang)
+	--
+	local inv_nSteps = 1 / nSteps
+	--local dTransBack = T.trans(unpack(dPos/-nSteps))
+	local ddp = dPos/-nSteps
+	-- Form the precomputed stack
+	local qStack = {}
+	local cur_qArm, cur_posArm = vector.copy(qGoal), vector.copy(posGoal)
+	--local cur_trArm = trGoal
+	--local cur_quatArm = quatArm
+	for i=nSteps,1,-1 do
+
+		local vwTarget = {unpack(ddp)}
+		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(q.to_rpy(quatDiff))
+		--print('vwTarget', unpack(vwTarget))
+		local dqArm = self:get_delta_qarm(vwTarget, cur_qArm)
+		--print('dqArm', unpack(dqArm))
+		cur_qArm = cur_qArm + dqArm
+
+		--sanitize0(cur_qArm, qArm0)
+		--sanitize0(cur_qArm, qGoal)
+		--print('cur_qArm', cur_qArm)
+		table.insert(qStack, {vnorm(ddp*i), vector.new(cur_qArm)})
+	end
+	qStack.dqdt_limit = self.dqdt_limit
+	-- We return the stack and the final joint configuarion
+	return setmetatable(qStack, mt), qGoal, distance
+end
+
+
+
+
+
+
+
+
+
+
+
+
 -- Set the forward and inverse
 local function set_chain(self, forward, inverse, jacobian)
 	self.forward = assert(forward)
@@ -520,10 +574,12 @@ end
 -- Still must set the forward and inverse kinematics
 function libArmPlan.new_planner(qMin, qMax, dqdt_limit, res_pos, res_ang)
 	local armOnes = vector.ones(7)
+	local armZeros = vector.zeros(7)
 	local obj = {
 		forward = nil,
 		inverse = nil,
 		--
+		zeros = armZeros,
 		ones = armOnes,
 		halves = armOnes * 0.5,
 		--
@@ -539,6 +595,7 @@ function libArmPlan.new_planner(qMin, qMax, dqdt_limit, res_pos, res_ang)
 		line_iter = line_iter,
 		joint_stack = joint_stack,
 		joint_iter = joint_iter,
+		jacobian_stack = jacobian_stack,
 		--
 		get_delta_qarm = get_delta_qarm,
 		--

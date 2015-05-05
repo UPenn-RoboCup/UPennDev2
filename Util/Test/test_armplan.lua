@@ -4,6 +4,7 @@ os.execute('clear')
 
 local P = require'libArmPlan'
 local K = require'K_ffi'
+local T = require'Transform'
 local vector = require'vector'
 
 local lPlanner, rPlanner
@@ -48,3 +49,18 @@ print('Left')
 print(qLArm * RAD_TO_DEG)
 print(vwLTarget)
 print(dqLArm * RAD_TO_DEG)
+
+--[[
+local qLArm0 = vector.new{90,0,0, -90, 0,0,0} * DEG_TO_RAD
+local trLArmGoal = T.transform6D{0.05, 0.35, -0.25, 0.00, 0.00, 0.00}
+lPlanner:jacobian_stack(trLArmGoal, qLArm0)
+--]]
+
+local qRArm0 = vector.new{90,0,0, -90, 0,0,0} * DEG_TO_RAD
+local trRArmGoal = T.transform6D{0.05, -0.35, -0.25, 0.00, 0.00, 0.00}
+local qStack, qRArmGoal, qRDist = rPlanner:jacobian_stack(trRArmGoal, qRArm0)
+print('qRArmGoal', vector.new(qRArmGoal)*RAD_TO_DEG)
+print('Guess', unpack{137.752, -22.7613, -5, -71.6028, -68.0006, -66.6442, 92.8623})
+for i, q in ipairs(qStack) do
+	print('Distance', q[1], q[2]*RAD_TO_DEG)
+end

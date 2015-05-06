@@ -450,6 +450,8 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 	local qStack = {}
 	local invGoal = T.inv(trGoal)
 
+	local qArmFGuess = self:find_shoulder(trGoal, qArm0, {0,0,1})
+
 	local qArm = qArm0
 	local done = false
 	local n = 0
@@ -474,15 +476,17 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 		local dq = vector.new(dqArm)
 		local mag = vnorm(dq)
 
-		local qnull = nullspace * dqArm
-		--print('qnull')
-		--util.ptorch(qnull)
+
 
 		if mag<5*DEG_TO_RAD then
 			qArm = qArm + dq / 10
 			break
 		else
+			--qArm = qArm + dqArm / 100
+			local qnull = nullspace * torch.Tensor(qArm - qArmFGuess)
+			--qArm = qArm + dqArm / 100 - vector.new(qnull) / 100
 			qArm = qArm + dqArm / 100 - vector.new(qnull) / 100
+
 		end
 
 		--[[

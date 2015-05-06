@@ -2,7 +2,6 @@
 -- (c) 2014 Stephen McGill
 -- Plan a path with the arm
 local libArmPlan = {}
-local util = require'util'
 local procFunc = require'util'.procFunc
 local mod_angle = require'util'.mod_angle
 local clamp_vector = require'util'.clamp_vector
@@ -30,11 +29,15 @@ end
 
 -- No dt needed
 local function sanitize0(iqArm, cur_qArm)
-	local diff, mod_diff
+	local diff_use = {}
+	local mod_diff
 	for i, v in ipairs(cur_qArm) do
-		diff = iqArm[i] - v
-		mod_diff = mod_angle(diff)
-    iqArm[i] = (fabs(diff) > fabs(mod_diff)) and v + mod_diff or iqArm[i]
+		diff_use[i] = iqArm[i] - v
+		mod_diff = mod_angle(diff_use[i])
+		if fabs(diff_use[i]) > fabs(mod_diff) then
+			iqArm[i] = v + mod_diff
+			diff_use[i] = mod_diff
+		end
 	end
 	return diff_use
 end
@@ -105,19 +108,23 @@ local function find_shoulder_sj(self, tr, qArm)
 end
 
 local function valid_cost(iq, minArm, maxArm)
-	for i, q in ipairs(iq) do if q<minArm[i] or q>maxArm[i] then return INFINITY end end
+	for i, q in ipairs(iq) do
+		if q<minArm[i] or q>maxArm[i] then return INFINITY end
+	end
 	return 0
 end
-local IK_POS_ERROR_THRESH = 0.035
---local defaultWeights = {1,1,0}
-local defaultWeights = {0,1,0}
+local IK_POS_ERROR_THRESH = 0.0254
+-- Weights: cusage, cdiff, ctight
+local defaultWeights = {1, 1, 0}
 local function find_shoulder(self, tr, qArm, weights)
+	--require'util'.ptable(self)
 	weights = weights or defaultWeights
 	-- Form the inverses
 	local iqArms = {}
 	for _, q in ipairs(self.shoulderAngles) do
-		--tinsert(iqArms, sanitize(self.inverse(tr, qArm, q), qArm))
-		tinsert(iqArms, self.inverse(tr, qArm, q))
+		local iq = self.inverse(tr, qArm, q)
+		local du = sanitize0(iq, qArm)
+		tinsert(iqArms, iq)
 	end
 	-- Form the FKs
 	local fks = {}
@@ -160,13 +167,13 @@ local function find_shoulder(self, tr, qArm, weights)
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
 		tinsert(cost, valid + cfk[ic]
-			+ weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic]
-		)
+			+ weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic])
 	end
 	-- Find the smallest cost
-	local cmin, imin = umin(cost)
+	local ibest, cbest = 0, INFINITY
+	for i, c in ipairs(cost) do if c<cbest then cbest = c; ibest = i end end
 	-- Yield the least cost arms
-	return iqArms[imin]
+	return iqArms[ibest]
 end
 
 -- TODO List for the planner
@@ -460,7 +467,7 @@ local function set_limits(self, min_q, max_q, dqdt_limit)
 end
 
 local function set_shoulder_angles(self, granularity)
-	local granularity = 3*DEG_TO_RAD
+	local granularity = 2*DEG_TO_RAD
 	local minShoulder, maxShoulder = self.min_q[3], self.max_q[3]
 	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
 	local shoulderAngles = {}

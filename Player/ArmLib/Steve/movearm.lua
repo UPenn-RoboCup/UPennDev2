@@ -12,8 +12,9 @@ local K0 = Body.Kinematics
 local dqLimit = DEG_TO_RAD / 3
 local radiansPerSecond, torso0
 do
+	local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
 	--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-	local degreesPerSecond = vector.ones(7) * 30
+	--local degreesPerSecond = vector.ones(7) * 30
 	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 	-- Compensation items
 	local torsoX = Config.walk.torsoX
@@ -53,8 +54,9 @@ end
 
 -- Take a desired Transformation matrix and move joint-wise to it
 function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
-	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
-	local flipL, flipR
+	local lPathIter, rPathIter = false, false
+	local iqLArm, iqRArm = false, false
+	local qLDist, qRDist = false, false
 	if trL then
 		local qcLArm = Body.get_larm_command_position()
 		if loptions then
@@ -76,7 +78,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 		end
 		--print('R TR GOTO', vector.new(iqRArm))
 		--print(trR)
-		assert(iqLArm, 'R via q not found!')
+		assert(iqRArm, 'R via q not found!')
 		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, true)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
@@ -181,20 +183,36 @@ end
 -- Uses the quasi-static compensation
 function movearm.path_iterators(list)
 	-- return a coroutine
-	return coroutine.wrap(function()
+	return coroutine.create(function()
 		for i, entry in ipairs(list) do
 			local lGoal, rGoal, via, lw, rw = unpack(entry)
 			local go = movearm[via]
 			-- FK goals for use with copmensation
-			local fkLComp, fkRComp
+			local fkLComp, fkRComp, uTorsoComp, uTorso0
+			local uTorsoAdapt, uTorso = movearm.get_compensation()
 			if via:find'tr' then
 				fkLComp, fkRComp, uTorsoComp, uTorso0 =
-					movearm.apply_tr_compensation(lGoal, rGoal, movearm.get_compensation())
+					movearm.apply_tr_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
 			else
 				fkLComp, fkRComp, uTorsoComp, uTorso0 =
-					movearm.apply_q_compensation(lGoal, rGoal, movearm.get_compensation())
+					movearm.apply_q_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
 			end
-			coroutine.yield({go(fkLComp, fkRComp,nil,nil,lw,rw)}, uTorsoComp, uTorso0)
+			local msg = {go(fkLComp, fkRComp,nil,nil,lw,rw)}
+			table.insert(msg, uTorsoComp)
+			table.insert(msg, uTorso0)
+			coroutine.yield(msg)
+		end
+	end)
+end
+
+function movearm.model_iterators(co, model)
+	-- return a coroutine
+	return coroutine.create(function()
+		local via = 'goto_tr_via_q'
+		while coroutine.status(co)~='dead' do
+			local ok, tfHandGoal, model = coroutine.resume(co, model)
+			local go = movearm[via]
+			coroutine.yield({go(nil, tfHandGoal)})
 		end
 	end)
 end

@@ -423,19 +423,20 @@ local torch = require'torch'
 local function get_delta_qarm(self, vwTarget, qArm)
 	-- Penalty for joint limits
 	local qMin, qMax, qRange = self.qMin, self.qMax, self.qRange
-	local lambda = {}
+	local l = {}
 	for i, q in ipairs(qArm) do
-    lambda[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
+    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
   end
 	-- Calculate the pseudo inverse
 	local J = torch.Tensor(self.jacobian(qArm))
 	local JT = J:t():clone()
-	local I = torch.diag(torch.Tensor(lambda)):addmm(JT, J)
-	local Iinv = torch.inverse(I)
-	local I2 = torch.mm(Iinv, JT)
-	local e = torch.Tensor(vwTarget)
-	local dqArm = torch.mv(I2, e)
-	return vector.new(dqArm)
+	local lambda = torch.Tensor(l)
+	local Jpseudoinv = torch.mm(torch.inverse(torch.diag(lambda):addmm(JT, J)), JT)
+
+	local null = torch.eye(#l) - Jpseudoinv * J
+
+	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
+	return dqArm, null
 end
 
 -- Plan a direct path using a straight line via Jacobian
@@ -469,14 +470,19 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 		local d = vnorm(dp)
 		local vwTarget = vector.new{unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
-		local dqArm = self:get_delta_qarm(vwTarget, qArm)
-		local mag = vnorm(dqArm)
-		--print(mag)
+		local dqArm, nullspace = self:get_delta_qarm(vwTarget, qArm)
+		local dq = vector.new(dqArm)
+		local mag = vnorm(dq)
+
+		local qnull = nullspace * dqArm
+		--print('qnull')
+		--util.ptorch(qnull)
+
 		if mag<5*DEG_TO_RAD then
-			qArm = qArm + dqArm / 10
+			qArm = qArm + dq / 10
 			break
 		else
-			qArm = qArm + dqArm / 100
+			qArm = qArm + dqArm / 100 - vector.new(qnull) / 100
 		end
 
 		--[[

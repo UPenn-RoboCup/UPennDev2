@@ -1,85 +1,100 @@
+--------------------------------
+-- Humanoid arm state
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+--------------------------------
 local state = {}
 state._NAME = ...
-local Body = require'Body'
+
+local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
-local t_entry, t_update, t_finish, t_command
+
+local t_entry, t_update, t_finish
 local timeout = 30.0
 
-local piterators, status, msg
-local lPathIter, rPathIter
-local qLD, qRD
-local uTorso0, uTorsoComp
-local qLGoalFiltered, qRGoalFiltered
+local lco, rco
+local okL, qLWaypoint
+local okR, qRWaypoint
 
 function state.entry()
-  print(state._NAME..' Entry')
+  io.write(state._NAME, ' Entry\n')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
 
-	-- TODO: Autodetect which stges to use, based on our initial position
-	piterators = movearm.path_iterators(Config.arm.readyFromInitStages)
+	lco, rco = movearm.goto(Config.arm.trLArm1, Config.arm.trRArm1)
+	okL = false
+	okR = false
 
-	status, msg = nil, nil
-
+	-- Set Hardware limits in case
+  for i=1,5 do
+    Body.set_larm_torque_enable(1)
+    Body.set_rarm_torque_enable(1)
+    Body.set_larm_command_velocity(500)
+    Body.set_rarm_command_velocity(500)
+    Body.set_larm_command_acceleration(50)
+    Body.set_rarm_command_acceleration(50)
+    Body.set_larm_position_p(8)
+    Body.set_rarm_position_p(8)
+    if not IS_WEBOTS then unix.usleep(1e5) end
+  end
 end
 
 function state.update()
-  --io.write(state._NAME, ' Update\n' )
+	--  io.write(state._NAME,' Update\n')
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-	if not lPathIter or not rPathIter then
-		if coroutine.status(piterators)=='dead' then return'done' end
-		status, msg = coroutine.resume(piterators)
-		if not status or not msg then return'done' end
-		-- We are done if the coroutine emits nothing
-		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD, uTorsoComp, uTorso0 = unpack(msg)
-		uTorso0 = mcm.get_stance_uTorsoComp()
-		uTorso0[3] = 0
-		-- Static means true
-		lPathIter = lPathIter or true
-		rPathIter = rPathIter or true
+	if type(lco)~='thread' then print('L', lco) end
+	if type(rco)~='thread' then print('R', lco) end
+
+	local lStatus = coroutine.status(lco)
+	local rStatus = coroutine.status(rco)
+	--local qcLArm = Body.get_larm_command_position()
+	--local qcRArm = Body.get_rarm_command_position()
+
+	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco) end
+	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco) end
+	if not okL and not okR then return'escape' end
+
+	if type(qLWaypoint)=='table' then
+		Body.set_larm_command_position(qLWaypoint)
+	end
+	if type(qRWaypoint)=='table' then
+		Body.set_rarm_command_position(qRWaypoint)
 	end
 
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
-
-	-- Find the next arm position
-	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
-	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
-	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
-	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
-
-	-- Find the torso compensation position
-	if uTorsoComp then
-		--[[
-		print(state._NAME..' | uTorso0', uTorso0)
-		print(state._NAME..' | uTorsoComp', uTorsoComp)
-		print(state._NAME..' | uTorsoNow', uTorsoNow)
-		--]]
-		local phaseL = moreL and moreL/qLD or 0
-		local phaseR = moreR and moreR/qRD or 0
-		local phase = math.max(phaseL, phaseR)
-		local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
-		-- Set the arm and torso commands
-		mcm.set_stance_uTorsoComp(uTorsoNow)
+	-- Catch the errors
+	if not okL then
+		print(okL, qLWaypoint)
 	end
-	Body.set_larm_command_position(qLNext)
-	Body.set_rarm_command_position(qRNext)
-	t_command = t
+	if not okR then
+		print(okR, qRWaypoint)
+	end
 
-	-- Check if done and reset the iterators
-	if not moreL and not moreR then lPathIter, rPathIter = nil, nil end
+	-- Check if done
+	if lStatus=='dead' and rStatus=='dead' then
+		return 'done'
+	end
+
 end
 
 function state.exit()
-  io.write(state._NAME, ' Exit\n' )
-	if not status then print(status, msg) end
-	-- For teleop if called next
+	io.write(state._NAME, ' Exit\n')
+
+	-- Undo the hardware limits
+  for i=1,3 do
+    Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
+    Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
+    Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
+    Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
+    Body.set_larm_position_p(32)
+    Body.set_rarm_position_p(32)
+    if not IS_WEBOTS then unix.usleep(1e5) end
+  end
+
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
 	hcm.set_teleop_larm(qcLArm)

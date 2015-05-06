@@ -17,6 +17,16 @@ arm.trRArm0 = {
 	via='jacobian', weights = {1,0,0}
 }
 
+-- Default ready position
+arm.trLArm1 = {
+	tr=tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, options = {5*DEG_TO_RAD}, t=10,
+	via='jacobian', weights = {1,0,0}
+}
+arm.trRArm1 = {
+	tr=tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD}, options = {-5*DEG_TO_RAD}, t=10,
+	via='jacobian', weights = {1,0,1}
+}
+
 -- Stages: L, R (Transforms or joints), type of motion, left shoulder search weights, right weights
 -- Planner: usage, diff, tight
 arm.readyFromInitStages = {

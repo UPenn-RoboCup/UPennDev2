@@ -31,9 +31,9 @@ function state.update()
   if t-t_entry > timeout then return'timeout' end
 
 	if not lPathIter or not rPathIter then
-		status, msg = coroutine.resume(piterators)
-		if not status then return'done' end
 		if coroutine.status(piterators)=='dead' then return'done' end
+		status, msg = coroutine.resume(piterators)
+		if not status or not msg then return'done' end
 		-- We are done if the coroutine emits nothing
 		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD, uTorsoComp, uTorso0 = unpack(msg)
 		uTorso0 = mcm.get_stance_uTorsoComp()

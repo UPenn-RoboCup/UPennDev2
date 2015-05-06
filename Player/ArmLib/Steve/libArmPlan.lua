@@ -60,7 +60,7 @@ end
 local mt = {
 	__call = function(t, q, dt)
 		local nxt = t[#t]
-		if not nxt then print('done stack'); return end
+		if not nxt then return end
 		if t.done_wp then
 			t.done_wp = false
 			local dist, wp = unpack(tremove(t))
@@ -470,8 +470,14 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 		local vwTarget = vector.new{unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		local dqArm = self:get_delta_qarm(vwTarget, qArm)
-		--local mag = vnorm(dqArm)
-		qArm = qArm + dqArm / 100
+		local mag = vnorm(dqArm)
+		--print(mag)
+		if mag<3*DEG_TO_RAD then
+			qArm = qArm + dqArm
+			break
+		else
+			qArm = qArm + dqArm / 100
+		end
 
 		--[[
 		print('--')

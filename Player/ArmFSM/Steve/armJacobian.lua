@@ -13,8 +13,8 @@ local qLD, qRD
 local uTorso0, uTorsoComp
 local qLGoalFiltered, qRGoalFiltered
 
-local trL = T.transform6D{0.35, 0.25, 0, 0, 0, -45*DEG_TO_RAD}
-local trR = T.transform6D{0.35, -0.25, 0, 0, 0, 45*DEG_TO_RAD}
+local trL = T.transform6D{0.35, 0.25, 0.0, 0, 0, -45*DEG_TO_RAD}
+local trR = T.transform6D{0.35, -0.25, 0.0, 0, 0, 45*DEG_TO_RAD}
 
 function state.entry()
   print(state._NAME..' Entry')
@@ -42,6 +42,8 @@ function state.update()
 	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
 	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
 	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
+
+	--print('moreL', moreL)
 
 	Body.set_larm_command_position(qLNext)
 	Body.set_rarm_command_position(qRNext)

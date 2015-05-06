@@ -296,20 +296,9 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights)
 
 	--if n>1e3 then print('Jacobian stack is stuck') end
 	assert(n<=1e3, 'Jacobian stack is stuck')
-
 	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0})
-	table.insert(qPath, {0, qArmF})
-
 	return qArmF, 1
 end
-
-
-
-
-
-
-
-
 
 -- Set the forward and inverse
 local function set_chain(self, forward, inverse, jacobian)

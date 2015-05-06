@@ -192,31 +192,26 @@ end
 -- This should have exponential approach properties...
 -- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
 local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
+
 	local dqdt_limit = self.dqdt_limit
 	local res_pos = self.res_pos
 	local res_ang = self.res_ang
-	-- If goal is position vector, then skip check
-	local skip_angles = type(trGoal[1])=='number'
 	--
 	local forward, inverse = self.forward, self.inverse
 	-- Save the goal
-	local qGoal, posGoal, quatGoal
-	if skip_angles then
-		posGoal = trGoal
-		qGoal = inverse_position(posGoal, qArm0, unpack(null_options))
+	local qGoal
+	-- Must also fix the rotation matrix, else the yaw will not be correct!
+	if null_options then
+		qGoal = inverse(trGoal, qArm0, unpack(null_options))
+		sanitize0(qGoal, qArm0)
 	else
-		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		if null_options then
-			qGoal = inverse(trGoal, qArm0, unpack(null_options))
-			sanitize0(qGoal, qArm0)
-		else
-			qGoal, null_options = find_shoulder(self, trGoal, qArm0, shoulder_weights)
-		end
-		assert(qGoal, 'line_iter | No valid qGoal!')
-		local fkGoal = forward(qGoal)
-		quatGoal, posGoal = T.to_quaternion(fkGoal)
-		vector.new(posGoal)
+		qGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
+		-- TODO: set null_options
 	end
+	assert(qGoal, 'line_iter | No valid qGoal!')
+	local fkGoal = forward(qGoal)
+	local quatGoal, posGoal = T.to_quaternion(fkGoal)
+	vector.new(posGoal)
 	--
 	local fkArm0, null_options0 = forward(qArm0)
 	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
@@ -227,20 +222,15 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 	-- TODO: Add failure detection; if no dist/ang changes in a while
 	return function(cur_qArm, dt)
 		local cur_trArm = forward(cur_qArm)
-		--if skip_angles==false and is_singular then print('PLAN SINGULARITY') end
-		local trStep, dAng, dAxis, quatArm, posArm
-		if skip_angles then
-			posArm = vector.new{cur_trArm[1][4], cur_trArm[2][4], cur_trArm[3][4]}
-		else
-			quatArm, posArm = T.to_quaternion(cur_trArm)
-			dAng, dAxis = q.diff(quatArm,quatGoal)
-		end
+		local trStep
+		local quatArm, posArm = T.to_quaternion(cur_trArm)
+		local dAng, dAxis = q.diff(quatArm,quatGoal)
 		--
 		local dPos = posGoal - vector.new(posArm)
 		--print('dPos', dPos, posGoal, posArm)
 		local distance = vnorm(dPos)
 		if distance < res_pos then
-			if skip_angles or fabs(dAng)<res_ang or is_singular then
+			if fabs(dAng)<res_ang or is_singular then
 				-- If both within tolerance, then we are done
 				-- If singular and no position to go, then done
 					-- TODO: Return the goal
@@ -249,18 +239,15 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 				else
 					sanitize0(qGoal, cur_qArm)
 				end
-				return nil, qGoal, is_singular
+				return false, qGoal, is_singular
 			end
 			-- Else, just rotate in place
 			local qSlerp = q.slerp(quatArm,quatGoal,res_ang/dAng)
 			trStep = T.from_quaternion(qSlerp,posGoal)
-		elseif skip_angles or fabs(dAng)<res_ang or is_singular then
+		elseif fabs(dAng)<res_ang or is_singular then
 			-- Just translation
 			local ddpos = (res_pos / distance) * dPos
 			ddpos = distance < 2*res_pos and ddpos / 2 or ddpos
-			if skip_angles then
-				return inverse_position(ddpos+posArm, cur_qArm, unpack(null_options))
-			end
 			trStep = T.trans(unpack(ddpos)) * cur_trArm
 		else
 			local ddrot = res_ang/dAng
@@ -278,6 +265,7 @@ local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
 		-- Closer to the finish, the null options should be closer to the goal options
 		-- null_options_tmp: has the *current* option
 		local iqWaypoint
+		--print(null_options)
 		if null_options then
 			local null_options_tmp = {}
 			local null_ph = 1 - max(0, min(1, distance / distance0))
@@ -391,7 +379,6 @@ local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 		local trStep = T.from_quaternion( qSlerp, cur_posArm )
 		--cur_qArm = inverse( trStep, cur_qArm )
 		cur_qArm = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
-		assert(cur_qArm, 'No waypoint found in stack formation')
 		--[[
 		local trWaypoint = dTransBack * cur_trArm
 		local qSlerp = q.slerp(quatArm,quatGoal,i*inv_nSteps)
@@ -452,48 +439,74 @@ end
 -- Plan a direct path using a straight line via Jacobian
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
--- Plan a direct path using a straight line via Jacobian
--- res_pos: resolution in meters
--- res_ang: resolution in radians
 local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weights)
 	local res_pos = self.res_pos
 	local res_ang = self.res_ang
 	local forward, inverse = self.forward, self.inverse
-	-- Find where we are
-	local fkArm0  = forward(qArm0)
-	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
-	-- Find where we want to go
-	local qGoal, fkGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
-	local quatGoal, posGoal = T.to_quaternion(fkGoal)
-	-- Determine the number of steps it will take, based on cartesian distance
-	local dPos = vector.new(posGoal) - posArm0
-	local distance = vnorm(dPos)
-	local nSteps_pos = math.ceil(distance / res_pos)
-	-- Find the number of steps via angular distance
-	local quatDist, quatAngle = q.diff(quatArm0, quatGoal)
-	local quatDiff = q.from_angle_axis(quatDist, quatAngle)
-	local nSteps_ang = math.ceil(fabs(quatDist) / res_ang)
-	-- Set the true number of steps
-	local nSteps = max(nSteps_pos, nSteps_ang)
-	local inv_nSteps = 1 / nSteps
-	-- Set the Effective position and angular velocities
-	local vwTarget = {unpack(dPos/-nSteps)}
-	vwTarget[4], vwTarget[5], vwTarget[6] = unpack(q.to_rpy(quatDiff))
-	--print('vwTarget', unpack(vwTarget))
-	-- Form the stack
+	local pG = vector.new(T.position(trGoal))
 	local qStack = {}
-	local cur_qArm, cur_posArm = vector.copy(qGoal), vector.copy(posGoal)
-	local prev_qArm = cur_qArm
-	for i=nSteps,1,-1 do
-		local dqArm = self:get_delta_qarm(vwTarget, cur_qArm)
-		cur_qArm = cur_qArm + dqArm / 100
-		sanitize0(cur_qArm, prev_qArm)
-		prev_qArm = cur_qArm
-		table.insert(qStack, {i, vector.new(cur_qArm)})
+	local invGoal = T.inv(trGoal)
+
+	local qArm = qArm0
+	local done = false
+	local n = 0
+	repeat
+		n = n + 1
+		local fkArm = forward(qArm)
+		local invArm = T.inv(fkArm)
+
+		--local p = vector.new(T.position(fkArm))
+		--local dp = pG - p
+
+		local here = invArm*trGoal
+		local dp = T.position(here)
+		local drpy = T.to_rpy(here)
+		--print(unpack(dp))
+		--print(vector.new(drpy)*RAD_TO_DEG)
+
+		local d = vnorm(dp)
+		local vwTarget = vector.new{unpack(dp)}
+		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
+		local dqArm = self:get_delta_qarm(vwTarget, qArm)
+		--local mag = vnorm(dqArm)
+		qArm = qArm + dqArm / 100
+
+		--[[
+		print('--')
+		print(unpack(T.position(invGoal*fkArm)))
+		print(unpack(T.position(fkArm*invGoal)))
+		print(unpack(T.position(invArm*trGoal))) -- good
+		print(unpack(T.position(trGoal*invArm)))
+		print(dp)
+		--]]
+
+		--[[
+		if self.id=='Right' then
+			--print('dqArm', dqArm / 20 * RAD_TO_DEG)
+			print(vector.new(dp), d, pG)
+		--print(unpack(dp))
+		--print(vector.new(drpy)*RAD_TO_DEG)
+			--print('dist', d, p - pG)
+		end
+		--]]
+
+		table.insert(qStack, {d, qArm})
+		done = d < 0.02 or n > 1e3
+	until done
+
+	print('qStack', n)
+
+
+
+	-- Reverse
+	local qStack2 = setmetatable({}, mt)
+	for i=#qStack, 1, -1 do
+		table.insert(qStack2, qStack[i])
 	end
-	qStack.dqdt_limit = self.dqdt_limit
-	-- We return the stack and the final joint configuarion
-	return setmetatable(qStack, mt), qGoal, distance
+	local qArmF = self:find_shoulder(trGoal, qStack2[1][2], {0,1,0})
+
+	qStack2.dqdt_limit = self.dqdt_limit
+	return qStack2, qStack2[1][2], 1
 end
 
 

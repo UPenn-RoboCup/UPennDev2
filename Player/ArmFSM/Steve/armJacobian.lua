@@ -13,8 +13,8 @@ local qLD, qRD
 local uTorso0, uTorsoComp
 local qLGoalFiltered, qRGoalFiltered
 
-local trL = T.transform6D{0.35, 0.25, 0.2, 0, 0, -45*DEG_TO_RAD}
-local trR = T.transform6D{0.35, -0.25, 0.2, 0, 0, 45*DEG_TO_RAD}
+local trL = T.transform6D{0.35, 0.25, 0, 0, 0, -45*DEG_TO_RAD}
+local trR = T.transform6D{0.35, -0.25, 0, 0, 0, 45*DEG_TO_RAD}
 
 function state.entry()
   print(state._NAME..' Entry')
@@ -55,8 +55,8 @@ function state.update()
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
-	if not status then print(status, msg) end
+  io.write(state._NAME, ' Exit\n')
+	--if not status then print(state._NAME, status, msg) end
 	-- For teleop if called next
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()

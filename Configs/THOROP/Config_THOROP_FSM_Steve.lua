@@ -109,11 +109,12 @@ fsm.Arm = {
 	{'armInit', 'teleopraw', 'armTeleopRaw'},
 	-- Test the jacobian
 	{'armInit', 'jacobian', 'armJacobian'},
-	{'armJacobian', 'done', 'armTeleop'},
+	{'armReady', 'jacobian', 'armJacobian'},
+	{'armJacobian', 'done', 'armTeleopRaw'},
 
 	-- Ready pose (for manipulating)
 	{'armReady', 'timeout', 'armReady'},
-	{'armReady', 'done', 'armTeleop'},
+	--{'armReady', 'done', 'armTeleop'},
 	{'armReady', 'init', 'armInit'},
 	{'armReady', 'door', 'armDoor'},
 	-- Teleop

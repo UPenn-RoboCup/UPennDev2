@@ -36,6 +36,8 @@ do
 		K.forward_larm, K.inverse_larm, K.jacobian)
 	rPlanner = P.new_planner(minRArm, maxRArm, radiansPerSecond):set_chain(
 		K.forward_rarm, K.inverse_rarm, K.jacobian)
+	lPlanner.id = 'Left'
+	rPlanner.id = 'Right'
 end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
@@ -114,14 +116,22 @@ end
 
 -- Take a desired Transformation matrix and move in a line towards it
 function movearm.goto_jacobian_stack(trL, trR, loptions, roptions, lweights, rweights)
-	print('AT goto_jacobian_stack')
+	--print('trL0')
+	--print(trL)
 	local lPathIter, rPathIter
 	if trL then
 		local qcLArm = Body.get_larm_command_position()
+		--print('trL1', qcLArm)
+		--print(lPlanner.forward(qcLArm))
 		lPathIter, iqLArm, pLDist = lPlanner:jacobian_stack(trL, qcLArm, loptions, lweights)
 	end
+
+	--print('trR0')
+	--print(trR)
 	if trR then
 		local qcRArm = Body.get_rarm_command_position()
+		--print('trR1', qcRArm)
+		--print(rPlanner.forward(qcRArm))
 		rPathIter, iqRArm, pRDist = rPlanner:jacobian_stack(trR, qcRArm, roptions, rweights)
 	end
 	return lPathIter, rPathIter, vector.new(iqLArm), vector.new(iqRArm), pLDist, pRDist
@@ -214,7 +224,7 @@ function movearm.path_iterators(list)
 			else
 					fkLComp, fkRComp = lGoal, rGoal
 			end
-			local msg = {go(fkLComp, fkRComp,nil,nil,lw,rw)}
+			local msg = {go(fkLComp, fkRComp,false,false,lw,rw)}
 			table.insert(msg, uTorsoComp)
 			table.insert(msg, uTorso0)
 			coroutine.yield(msg)

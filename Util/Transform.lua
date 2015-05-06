@@ -182,7 +182,7 @@ end
 function Transform.to_rpy(t)
   -- http://planning.cs.uiuc.edu/node103.html
   -- returns [roll, pitch, yaw] vector
-  local e = vector.zeros(3)
+  local e = {}
   e[1]=atan2(t[3][2],t[3][3]) --Roll
   e[2]=atan2(-t[3][1],sqrt( t[3][2]^2 + t[3][3]^2) ) -- Pitch
   e[3]=atan2(t[2][1],t[1][1]) -- Yaw

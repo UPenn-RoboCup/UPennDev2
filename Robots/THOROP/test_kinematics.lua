@@ -248,17 +248,17 @@ print('Jacobian Transpose')
 util.ptorch(JT, 5, 3)
 
 print()
-local J2, JT2, com = K2.jacobian(qArm)
+local J2, JT2 = K2.jacobian(qArm)
 print('Jacobian 2')
 util.ptorch(J2, 5, 3)
 print('Jacobian Transpose 2')
 util.ptorch(JT2, 5, 3)
-print('COM')
+--print('COM')
 --print(com)
-com = torch.Tensor(com)
-util.ptorch(com, 5, 3)
+--com = torch.Tensor(com)
+--util.ptorch(com, 5, 3)
 
-----[[
+--[[
 print()
 local J3 = torch.Tensor(K2.jac(qArm))
 util.ptorch(J3, 5, 3)
@@ -272,12 +272,14 @@ for i=1,1e3 do
 		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
 end
 
+--[[
 local t0 = unix.time()
 for i,q in ipairs(qs) do
-	local _JT3 = K2.jac(q)
+	local JT3 = torch.Tensor(K2.jac(q))
 end
 local t1 = unix.time()
 local d2 = t1-t0
+--]]
 
 local t0 = unix.time()
 for i,q in ipairs(qs) do
@@ -291,7 +293,7 @@ for i,q in ipairs(qs) do
 	0 --Config.arm.handoffset.gripper3[3]
 	)  --tool xyz
 	local J = torch.Tensor(JacArm):resize(6,7)  
-	local JT = torch.Tensor(J):transpose(1,2)
+	--local JT = torch.Tensor(J):transpose(1,2)
 end
 local t1 = unix.time()
 local d0 = t1-t0
@@ -299,7 +301,7 @@ local d0 = t1-t0
 
 local t0 = unix.time()
 for i,q in ipairs(qs) do
-	local _JT2 = K2.jacobian(q)
+	local JT2 = torch.Tensor(K2.jacobian(q))
 end
 local t1 = unix.time()
 local d1 = t1-t0
@@ -309,17 +311,17 @@ print('Method1',d1)
 print('Method2',d2)
 
 
-
 print('Speedup1',d0/d1)
-print('Speedup2',d0/d2)
+print('Speedup2',d2 and d0/d2)
 --]]
+--[[
 print()
 print('Check diff')
-local dJ = J3-J
-
+local dJ = J2 - J
 print('Sum', torch.sum(dJ))
+--]]
 
-util.ptorch(J3, 5, 2)
+util.ptorch(J2, 5, 2)
 util.ptorch(J, 5, 2)
 
 for i,q in ipairs(qs) do
@@ -334,8 +336,8 @@ for i,q in ipairs(qs) do
 	)  --tool xyz
 	local J = torch.Tensor(JacArm):resize(6,7)
 	local JT = torch.Tensor(J):transpose(1,2)
-	local d = (torch.Tensor(K2.jac(q)) - J):sum()
+	local d = (torch.Tensor(K2.jacobian(q)) - J):sum()
 	--print(d)
-	assert( d < 1e-10, 'BAD')
+	assert( d < 1e-10, 'BAD '..d)
 end
 print('OK!')

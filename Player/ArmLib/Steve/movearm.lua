@@ -223,6 +223,8 @@ function movearm.path_iterators(list)
 					movearm.apply_q_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
 			else
 					fkLComp, fkRComp = lGoal, rGoal
+					fkLComp, fkRComp, uTorsoComp, uTorso0 =
+					movearm.apply_tr_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
 			end
 			local msg = {go(fkLComp, fkRComp,false,false,lw,rw)}
 			table.insert(msg, uTorsoComp)

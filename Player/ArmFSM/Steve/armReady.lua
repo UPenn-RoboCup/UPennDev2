@@ -21,6 +21,8 @@ function state.entry()
 	-- TODO: Autodetect which stges to use, based on our initial position
 	piterators = movearm.path_iterators(Config.arm.readyFromInitStages)
 
+	status, msg = nil, nil
+
 end
 
 function state.update()
@@ -45,15 +47,12 @@ function state.update()
 
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
-	--local qLArm = Body.get_larm_position()
-	--local qRArm = Body.get_rarm_position()
 
 	-- Find the next arm position
 	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
 	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
 	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
 	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
-	--print(moreL, q_lWaypoint, qLGoalFiltered)
 
 	-- Find the torso compensation position
 	if uTorsoComp then

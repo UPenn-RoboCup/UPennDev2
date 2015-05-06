@@ -44,6 +44,9 @@ local gen_via = {}
 function gen_via.q(planner, goal, q0)
 	if not goal then return end
 	local co = coroutine.create(P.joint_preplan)
+	if goal.tr then
+		goal.q = planner:find_shoulder(goal.tr, q0, goal.weights)
+	end
 	local ok, msg = coroutine.resume(co, planner, goal.q, q0, goal.t)
 	if not ok then co = msg end
 	return co
@@ -65,61 +68,6 @@ function movearm.goto(l, r)
 	local rco = gen_via[r.via](rPlanner, r, qRArm)
 
 	return lco, rco
-end
-
--- Take a desired Transformation matrix and move joint-wise to it
-function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
-	local lPathIter, rPathIter = false, false
-	local iqLArm, iqRArm = false, false
-	local qLDist, qRDist = false, false
-	if trL then
-		local qcLArm = Body.get_larm_command_position()
-		if loptions then
-			iqLArm = lPlanner.inverse(trL, qcLArm, unpack(loptions))
-		else
-			iqLArm = lPlanner:find_shoulder(trL, qcLArm, lweights)
-		end
-		--print('L TR GOTO', vector.new(iqLArm))
-		--print(trL)
-		assert(iqLArm, 'L via q not found!')
-		lPathIter, iqLArm, qLDist = lPlanner:joint_stack(iqLArm, qcLArm, 5)
-	end
-	if trR then
-		local qcRArm = Body.get_rarm_command_position()
-		if roptions then
-			iqRArm = rPlanner.inverse(trR, qcRArm, unpack(roptions))
-		else
-			iqRArm = rPlanner:find_shoulder(trR, qcRArm, rweights)
-		end
-		--print('R TR GOTO', vector.new(iqRArm))
-		--print(trR)
-		assert(iqRArm, 'R via q not found!')
-		rPathIter, iqRArm, qRDist = rPlanner:joint_stack(iqRArm, qcRArm, 5)
-	end
-	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
-end
-
--- Take a desired Transformation matrix and move in a line towards it
-function movearm.goto_jacobian_stack(trL, trR, loptions, roptions, lweights, rweights)
-	--print('trL0')
-	--print(trL)
-	local lPathIter, rPathIter
-	if trL then
-		local qcLArm = Body.get_larm_command_position()
-		--print('trL1', qcLArm)
-		--print(lPlanner.forward(qcLArm))
-		lPathIter, iqLArm, pLDist = lPlanner:jacobian_stack(trL, qcLArm, loptions, lweights)
-	end
-
-	--print('trR0')
-	--print(trR)
-	if trR then
-		local qcRArm = Body.get_rarm_command_position()
-		--print('trR1', qcRArm)
-		--print(rPlanner.forward(qcRArm))
-		rPathIter, iqRArm, pRDist = rPlanner:jacobian_stack(trR, qcRArm, roptions, rweights)
-	end
-	return lPathIter, rPathIter, vector.new(iqLArm), vector.new(iqRArm), pLDist, pRDist
 end
 
 --[[

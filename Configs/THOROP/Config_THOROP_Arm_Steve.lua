@@ -27,28 +27,6 @@ arm.trRArm1 = {
 	via='jacobian', weights = {1,0,1}
 }
 
--- Stages: L, R (Transforms or joints), type of motion, left shoulder search weights, right weights
--- Planner: usage, diff, tight
-arm.readyFromInitStages = {
-	{
-		tr6D{0.25, 0.3, -0.1,  0,0,0}, tr6D{0.25, -0.3, -0.1, 0,0,0},
-		--'goto_tr_via_q', {0,1,0}, {0,1,0}
-		'goto_jacobian_stack',
-	},
-	----[[
-	{
-		tr6D{0.25, 0.3, 0,  0,0,-45*DEG_TO_RAD}, tr6D{0.25, -0.3, 0, 0,0,45*DEG_TO_RAD},
-		--'goto_tr_via_q', {1,1,0}, {1,1,0}
-		'goto_jacobian_stack',
-	},
-	{
-		tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD},
-		'goto_tr_via_q', {1,0,1}, {1,0,1}
-		--'goto_jacobian_stack',
-	},
-	--]]
-}
-
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset = {}

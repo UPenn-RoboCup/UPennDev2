@@ -59,18 +59,20 @@ end
 
 local mt = {
 	__call = function(t, q, dt)
-		local next = t[#t]
-		if not next then return end
+		local nxt = t[#t]
+		if not nxt then print('done stack'); return end
 		if t.done_wp then
 			t.done_wp = false
 			local dist, wp = unpack(tremove(t))
 			return dist, wp
-		else
-			local dist, wp = unpack(next)
+		elseif t.dqdt_limit then
+			local dist, wp = unpack(nxt)
 			local blend_wp = vector.copy(wp)
 			local diff_use = sanitize(blend_wp, q, dt, t.dqdt_limit)
 			t.done_wp = vnorm(diff_use) < 0.001
 			return dist, t.done_wp and sanitize0(wp, q) or blend_wp
+		else
+			return unpack(tremove(t))
 		end
 	end
 }
@@ -505,7 +507,7 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 	end
 	local qArmF = self:find_shoulder(trGoal, qStack2[1][2], {0,1,0})
 
-	qStack2.dqdt_limit = self.dqdt_limit
+	--qStack2.dqdt_limit = self.dqdt_limit
 	return qStack2, qStack2[1][2], 1
 end
 

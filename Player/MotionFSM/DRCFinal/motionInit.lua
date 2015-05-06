@@ -29,7 +29,7 @@ local stage = 1
 local t_last_debug
 local last_error = 999
 
-local bodyHeight = 1.0
+local bodyHeight = 0.98
 
 
 function state.entry()

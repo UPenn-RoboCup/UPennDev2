@@ -472,8 +472,8 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 		local dqArm = self:get_delta_qarm(vwTarget, qArm)
 		local mag = vnorm(dqArm)
 		--print(mag)
-		if mag<3*DEG_TO_RAD then
-			qArm = qArm + dqArm
+		if mag<5*DEG_TO_RAD then
+			qArm = qArm + dqArm / 10
 			break
 		else
 			qArm = qArm + dqArm / 100

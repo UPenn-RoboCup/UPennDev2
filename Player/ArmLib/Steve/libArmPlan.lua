@@ -77,6 +77,12 @@ local mt = {
 	end
 }
 
+local mt2 = {
+	__call = function(t, q, dt)
+		return unpack(tremove(t, 1))
+	end
+}
+
 -- Similar to SJ's method for the margin
 local function find_shoulder_sj(self, tr, qArm)
 	local minArm, maxArm, rangeArm = self.qMin, self.qMax, self.qRange
@@ -108,8 +114,6 @@ local function find_shoulder_sj(self, tr, qArm)
 	end
 	return qBest
 end
-
-
 
 local IK_POS_ERROR_THRESH = 0.0254
 -- Weights: cusage, cdiff, ctight
@@ -144,7 +148,8 @@ local function find_shoulder(self, tr, qArm, weights)
 	for i, fk in ipairs(fks) do dps[i] = p_tr - T.position(fk) end
 	local cfk = {}
 	for ic, dp in ipairs(dps) do
-		tinsert(cfk, vnorm(dp)<IK_POS_ERROR_THRESH and 0 or INFINITY)
+		local ndp = vnorm(dp) -- NOTE: cost not in joint space
+		tinsert(cfk, ndp<IK_POS_ERROR_THRESH and ndp or INFINITY)
 	end
 	-- Minimum Difference in angles
 	local cdiff = {}
@@ -447,11 +452,10 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 	local res_ang = self.res_ang
 	local forward, inverse = self.forward, self.inverse
 	local pG = vector.new(T.position(trGoal))
-	local qStack = {}
 	local invGoal = T.inv(trGoal)
+	local qArmFGuess = self:find_shoulder(trGoal, qArm0, shoulder_weights)
 
-	local qArmFGuess = self:find_shoulder(trGoal, qArm0, {0,0,1})
-
+	local qStack = setmetatable({}, mt2)
 	local qArm = qArm0
 	local done = false
 	local n = 0
@@ -460,14 +464,9 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 		local fkArm = forward(qArm)
 		local invArm = T.inv(fkArm)
 
-		--local p = vector.new(T.position(fkArm))
-		--local dp = pG - p
-
-		local here = invArm*trGoal
+		local here = invArm * trGoal
 		local dp = T.position(here)
 		local drpy = T.to_rpy(here)
-		--print(unpack(dp))
-		--print(vector.new(drpy)*RAD_TO_DEG)
 
 		local d = vnorm(dp)
 		local vwTarget = vector.new{unpack(dp)}
@@ -475,12 +474,11 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 		local dqArm, nullspace = self:get_delta_qarm(vwTarget, qArm)
 		local dq = vector.new(dqArm)
 		local mag = vnorm(dq)
-
-
-
-		if mag<5*DEG_TO_RAD then
-			qArm = qArm + dq / 10
+		if mag<2*DEG_TO_RAD then
 			break
+		elseif mag<5*DEG_TO_RAD then
+			qArm = qArm + dq / 10
+			--break
 		else
 			--qArm = qArm + dqArm / 100
 			local qnull = nullspace * torch.Tensor(qArm - qArmFGuess)
@@ -488,43 +486,18 @@ local function jacobian_stack(self, trGoal, qArm0, null_options, shoulder_weight
 			qArm = qArm + dqArm / 100 - vector.new(qnull) / 100
 
 		end
-
-		--[[
-		print('--')
-		print(unpack(T.position(invGoal*fkArm)))
-		print(unpack(T.position(fkArm*invGoal)))
-		print(unpack(T.position(invArm*trGoal))) -- good
-		print(unpack(T.position(trGoal*invArm)))
-		print(dp)
-		--]]
-
-		--[[
-		if self.id=='Right' then
-			--print('dqArm', dqArm / 20 * RAD_TO_DEG)
-			print(vector.new(dp), d, pG)
-		--print(unpack(dp))
-		--print(vector.new(drpy)*RAD_TO_DEG)
-			--print('dist', d, p - pG)
-		end
-		--]]
-
 		table.insert(qStack, {d, qArm})
 		done = d < 0.02 or n > 1e3
 	until done
 
-	print('qStack', n)
+	--if n>1e3 then print('Jacobian stack is stuck') end
+	assert(n<=1e3, 'Jacobian stack is stuck')
 
-
-
-	-- Reverse
-	local qStack2 = setmetatable({}, mt)
-	for i=#qStack, 1, -1 do
-		table.insert(qStack2, qStack[i])
-	end
-	local qArmF = self:find_shoulder(trGoal, qStack2[1][2], {0,1,0})
+	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0})
+	table.insert(qStack, {0, qArmF})
 
 	--qStack2.dqdt_limit = self.dqdt_limit
-	return qStack2, qStack2[1][2], 1
+	return qStack, qArmF, 1
 end
 
 

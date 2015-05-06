@@ -8,8 +8,14 @@ local tr6D = require'Transform'.transform6D
 local arm = {}
 
 -- Default init position
-arm.trLArm0 = {0.05, 0.35, -0.25,0,0,0}
-arm.trRArm0 = {0.05, -0.35, -0.25,0,0,0}
+arm.trLArm0 = {
+	tr=tr6D{0.05, 0.35, -0.25,0,0,0}, options = {5*DEG_TO_RAD}, t=10,
+	via='jacobian', weights = {1,0,0}
+}
+arm.trRArm0 = {
+	tr=tr6D{0.05, -0.35, -0.25,0,0,0}, options = {-5*DEG_TO_RAD}, t=10,
+	via='jacobian', weights = {1,0,0}
+}
 
 -- Stages: L, R (Transforms or joints), type of motion, left shoulder search weights, right weights
 -- Planner: usage, diff, tight

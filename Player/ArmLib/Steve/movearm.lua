@@ -31,7 +31,7 @@ do
 		Config.servo.min_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm])
 	local maxRArm = vector.slice(
 		Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm])
-	--
+	-- Set up the planners for each arm
 	lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond):set_chain(
 		K.forward_larm, K.inverse_larm, K.jacobian)
 	rPlanner = P.new_planner(minRArm, maxRArm, radiansPerSecond):set_chain(
@@ -40,18 +40,31 @@ do
 	rPlanner.id = 'Right'
 end
 
+local gen_via = {}
+function gen_via.q(planner, goal, q0)
+	if not goal then return end
+	local co = coroutine.create(P.joint_preplan)
+	local ok, msg = coroutine.resume(co, planner, goal.q, q0, goal.t)
+	if not ok then co = msg end
+	return co
+end
+function gen_via.jacobian(planner, goal, q0)
+	if not goal then return end
+	local co = coroutine.create(P.jacobian_preplan)
+	local ok, msg = coroutine.resume(co, planner, goal.tr, q0, goal.weights)
+	if not ok then co = msg end
+	return co
+end
+
 -- Take a desired joint configuration and move linearly in each joint towards it
-function movearm.goto_q(qL, qR, safe)
-	local lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
-	if qL then
-		local qLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(qL, qLArm, safe)
-	end
-	if qR then
-		local qRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(qR, qRArm, safe)
-	end
-	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
+function movearm.goto(l, r)
+	local qLArm = Body.get_larm_command_position()
+	local lco = gen_via[l.via](lPlanner, l, qLArm)
+
+	local qRArm = Body.get_rarm_command_position()
+	local rco = gen_via[r.via](rPlanner, r, qRArm)
+
+	return lco, rco
 end
 
 -- Take a desired Transformation matrix and move joint-wise to it
@@ -69,7 +82,7 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 		--print('L TR GOTO', vector.new(iqLArm))
 		--print(trL)
 		assert(iqLArm, 'L via q not found!')
-		lPathIter, iqLArm, qLDist = lPlanner:joint_iter(iqLArm, qcLArm, true)
+		lPathIter, iqLArm, qLDist = lPlanner:joint_stack(iqLArm, qcLArm, 5)
 	end
 	if trR then
 		local qcRArm = Body.get_rarm_command_position()
@@ -81,37 +94,9 @@ function movearm.goto_tr_via_q(trL, trR, loptions, roptions, lweights, rweights)
 		--print('R TR GOTO', vector.new(iqRArm))
 		--print(trR)
 		assert(iqRArm, 'R via q not found!')
-		rPathIter, iqRArm, qRDist = rPlanner:joint_iter(iqRArm, qcRArm, true)
+		rPathIter, iqRArm, qRDist = rPlanner:joint_stack(iqRArm, qcRArm, 5)
 	end
 	return lPathIter, rPathIter, iqLArm, iqRArm, qLDist, qRDist
-end
-
--- Take a desired Transformation matrix and move in a line towards it
-function movearm.goto_tr(trL, rwrist, loptions, roptions, lweights, rweights)
-	local lPathIter, rPathIter
-	if trL then
-		local qcLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, pLDist = lPlanner:line_iter(trL, qcLArm, loptions, lweights)
-	end
-	if rwrist then
-		local qcRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, pRDist = rPlanner:line_iter(rwrist, qcRArm, roptions, rweights)
-	end
-	return lPathIter, rPathIter, iqLArm, iqRArm, pLDist, pRDist
-end
-
--- Take a desired Transformation matrix and move in a line towards it
-function movearm.goto_tr_stack(trL, trR, loptions, roptions, lweights, rweights)
-	local lPathIter, rPathIter
-	if trL then
-		local qcLArm = Body.get_larm_command_position()
-		lPathIter, iqLArm, pLDist = lPlanner:line_stack(trL, qcLArm, loptions, lweights)
-	end
-	if trR then
-		local qcRArm = Body.get_rarm_command_position()
-		rPathIter, iqRArm, pRDist = rPlanner:line_stack(trR, qcRArm, roptions, rweights)
-	end
-	return lPathIter, rPathIter, vector.new(iqLArm), vector.new(iqRArm), pLDist, pRDist
 end
 
 -- Take a desired Transformation matrix and move in a line towards it

@@ -104,7 +104,7 @@ fsm.Arm = {
 	{'armIdle', 'init', 'armInit'},
 	-- Init
 	{'armInit', 'timeout', 'armInit'},
-	{'armInit', 'done', 'armInit'},
+	--{'armInit', 'done', 'armInit'},
 	{'armInit', 'ready', 'armReady'},
 	{'armInit', 'teleopraw', 'armTeleopRaw'},
 	-- Test the jacobian

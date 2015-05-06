@@ -5,34 +5,22 @@
 local state = {}
 state._NAME = ...
 
-local NO_YAW_FIRST = true
-local USE_TR = true
+local USE_SAFE_YAW = true
+local IS_YAW_SAFE
 
 local Body   = require'Body'
 local vector = require'vector'
-local T = require'Transform'
 local movearm = require'movearm'
 
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
-----[[
-local trLGoal = T.transform6D(Config.arm.trLArm0)
-local trRGoal = T.transform6D(Config.arm.trRArm0)
---]]
--- From the IK solution above, in webots
-----[[
-local qLGoal = vector.new{140.055, 14.5738, 5, -82.3928, 65.0266, 38.4997, -59.7267} * DEG_TO_RAD
-local qRGoal = vector.new{157.166, -50.6751, -5, -101.136, -55.7423, -26.6821, 63.5934} * DEG_TO_RAD
---]]
-
-local shoulderLGoal, shoulderRGoal = 5*DEG_TO_RAD, -5*DEG_TO_RAD
-
-local lPathIter, rPathIter
-local setShoulderYaw
+local lco, rco
+local okL, qLWaypoint
+local okR, qRWaypoint
 
 function state.entry()
-  print(state._NAME..' Entry' )
+  io.write(state._NAME, ' Entry\n')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
@@ -40,28 +28,18 @@ function state.entry()
 	local qL = Body.get_larm_position()
 	local qR = Body.get_rarm_position()
 
-  -- To get to the IK solution
-	if USE_TR then
-  	lPathIter, rPathIter, qLGoal, qRGoal =
-		movearm.goto_tr_via_q(trLGoal, trRGoal, {shoulderLGoal}, {shoulderRGoal})
-	else
-		-- Given the IK solution
-		lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal)
-	end
-
-	-- Ensure we have them
-	assert(lPathIter, 'No left iterator')
-	assert(rPathIter, 'No right iterator')
-
-  if NO_YAW_FIRST then
-    setShoulderYaw = true
-  else
-    -- First, ignore the shoulderYaw, since it can cause issues of self collision
+	IS_YAW_SAFE = true
+  if USE_SAFE_YAW then
+    -- Try to avoid self collisions
     qL[3] = -20*DEG_TO_RAD
     qR[3] = 20*DEG_TO_RAD
-    lPathIter, rPathIter = movearm.goto_q(qL, qR)
-    setShoulderYaw = false
+    lco, rco = movearm.goto({q = qL, t = 3, via='q'},{q = qR, t = 3, via='q'})
+    IS_YAW_SAFE = false
+	else
+		lco, rco = movearm.goto(Config.arm.trLArm0, Config.arm.trRArm0)
   end
+	okL = false
+	okR = false
 
 	-- Set Hardware limits in case
   for i=1,5 do
@@ -78,44 +56,44 @@ function state.entry()
 end
 
 function state.update()
-	--  print(state._NAME..' Update' )
+	--  io.write(state._NAME,' Update\n')
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  --if t-t_entry > timeout then return'timeout' end
+  if t-t_entry > timeout then return'timeout' end
 
-	-- Timing necessary
-	----[[
-	local qLArm = Body.get_larm_command_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm, dt)
-	--]]
-	-- No time needed
-	--[[
-	local qLArm = Body.get_larm_position()
-	local moreL, q_lWaypoint = lPathIter(qLArm)
-	--]]
-	Body.set_larm_command_position(q_lWaypoint)
+	if type(lco)~='thread' then print('L', lco) end
+	if type(rco)~='thread' then print('R', lco) end
 
-	----[[
-	local qRArm = Body.get_rarm_command_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm, dt)
-	--]]
-	--[[
-	local qRArm = Body.get_rarm_position()
-	local moreR, q_rWaypoint = rPathIter(qRArm)
-	--]]
-	Body.set_rarm_command_position(q_rWaypoint)
+	local lStatus = coroutine.status(lco)
+	local rStatus = coroutine.status(rco)
+	--local qcLArm = Body.get_larm_command_position()
+	--local qcRArm = Body.get_rarm_command_position()
+
+	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco) end
+	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco) end
+	if not okL and not okR then return'escape' end
+
+	if type(qLWaypoint)=='table' then
+		Body.set_larm_command_position(qLWaypoint)
+	end
+	if type(qRWaypoint)=='table' then
+		Body.set_rarm_command_position(qRWaypoint)
+	end
+
+	-- Catch the errors
+	if not okL then
+		print(okL, qLWaypoint)
+	end
+	if not okR then
+		print(okR, qRWaypoint)
+	end
+
 	-- Check if done
-	if not moreL and not moreR then
-		--print('setShoulderYaw', setShoulderYaw)
-		if setShoulderYaw then
-			-- done
-			--return 'done'
-			return
-		end
-			-- ignore sanitization for the init position, which is absolutely known
-      lPathIter, rPathIter = movearm.goto_q(qLGoal, qRGoal, true)
-      setShoulderYaw = true
+	if lStatus=='dead' and rStatus=='dead' then
+		if IS_YAW_SAFE then return 'done' end
+		IS_YAW_SAFE = true
+		lco, rco = movearm.goto(Config.arm.trLArm0, Config.arm.trRArm0)
 	end
 
 end

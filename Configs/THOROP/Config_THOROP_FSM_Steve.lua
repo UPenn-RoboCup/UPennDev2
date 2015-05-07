@@ -114,9 +114,10 @@ fsm.Arm = {
 	{'armReady', 'init', 'armInit'},
 	{'armReady', 'door', 'armDoor'},
 	{'armReady', 'jacobian', 'armJacobian'},
-	--
+	-- armJacobian is for testing purposes only!
 	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
 	{'armJacobian', 'done', 'armJacobian'},
+	{'armJacobian', 'ready', 'armReady'},
 	-- Teleop
 	{'armTeleop', 'init', 'armInit'},
 	--{'armTeleop', 'done', 'armTeleop'},

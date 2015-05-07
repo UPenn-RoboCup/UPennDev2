@@ -448,6 +448,79 @@ function libArmPlan.jacobian_velocity(self, vwTarget, qArm0, timeout)
 	return qArm
 end
 
+-- Plan a direct path using a straight line via Jacobian
+-- res_pos: resolution in meters
+-- res_ang: resolution in radians
+function libArmPlan.jacobian_smart_velocity(self, vwTarget, qArm0, weights, timeout)
+	local hz, dt = self.hz, self.dt
+	local dq_limit = self.dq_limit
+	local qMin, qMax = self.qMin, self.qMax
+	local forward = self.forward
+	-- 3 second default timeout
+	timeout = math.ceil(timeout or 3)
+	local nStepsTimeout = timeout * hz
+	-- Find a guess of the final arm position
+	local fkArm0 = forward(qArm0)
+	--print('fkArm0', fkArm0)
+	local qArmFGuess = self:find_shoulder(fkArm0, qArm0, weights) or qArm0
+	local qArm = qArm0
+
+	local qArmSensed, vwTargetNew = coroutine.yield(nStepsTimeout)
+	vwTarget = vwTargetNew or vwTarget
+	local done = false
+	local n = 0
+	local max_usage
+	repeat
+		n = n + 1
+		-- Grab the joint velocities needed to accomplish the se(3) velocities
+		local dqdtArm, nullspace = get_delta_qarm(self, vwTarget, qArmSensed)
+		-- Grab the null space velocities toward our guessed configuration
+		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+		-- Linear combination of the two
+		local dqdtCombo = dqdtArm - dqdtNull
+		-- Respect the update rate, place as a lua table
+		local dqCombo = vector.new(dqdtCombo:mul(dt))
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			local use = fabs(dqCombo[i]) / limit
+			rescale = rescale or use > 1
+			table.insert(usage, use)
+		end
+		max_usage = max(unpack(usage))
+		if rescale then
+			--print('Rescaling!', max_usage)
+			for i = 1, #dqCombo do
+				dqCombo[i] = dqCombo[i] / max_usage
+			end
+		end
+		-- Apply the joint change
+		qArm = qArm + dqCombo
+		-- Check joint limit compliance
+		for i, q in ipairs(qArm) do qArm[i] = min(max(qMin[i], q), qMax[i]) end
+		-- Yield the progress
+		qArmSensed, vwTargetNew, weightsNew = coroutine.yield(qArm, n)
+		-- Smart adaptation
+		vwTarget = vwTargetNew or vwTarget
+		weights = weightsNew or weights
+		local fkArmSensed = forward(qArmSensed)
+		--print('fkArm0', fkArm0)
+		qArmFGuess = self:find_shoulder(fkArmSensed, qArmSensed, weights) or qArmFGuess
+		-- If we are lagging badly, then there may be a collision
+		local dqLag = qArm - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		-- Use a higher tolerance here, since using position feedback
+		for i, dq in ipairs(dqLag) do
+			--print(dq, dqCombo[i])
+			--print((dq-dqCombo[i])*RAD_TO_DEG)
+			assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+		end
+	until n > nStepsTimeout
+
+	return qArm
+end
+
+
 -- Set the forward and inverse
 local function set_chain(self, forward, inverse, jacobian)
 	self.forward = assert(forward)
@@ -477,7 +550,6 @@ local function set_update_rate(self, hz)
 end
 
 local function set_shoulder_granularity(self, granularity)
-	print('granularity', granularity)
 	assert(type(granularity)=='number', 'Granularity not a number')
 	local minShoulder, maxShoulder = self.qMin[3], self.qMax[3]
 	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)

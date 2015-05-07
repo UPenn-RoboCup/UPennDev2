@@ -110,7 +110,7 @@ end
 function gen_via.velocity(planner, goal, q0)
 	if not goal then return end
 	if not goal.vw then return end
-	local co = coroutine.create(P.jacobian_velocity)
+	local co = coroutine.create(P.jacobian_smart_velocity)
 	local ok, msg = coroutine.resume(co, planner, goal.vw, q0, goal.timeout)
 	if not ok then co = msg else goal.q = msg end
 	return co

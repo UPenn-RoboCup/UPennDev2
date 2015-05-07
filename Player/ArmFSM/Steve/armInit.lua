@@ -33,7 +33,11 @@ function state.entry()
     -- Try to avoid self collisions
     qL[3] = -20*DEG_TO_RAD
     qR[3] = 20*DEG_TO_RAD
-    lco, rco = movearm.goto({q = qL, t = 3, via='q'},{q = qR, t = 3, via='q'})
+    lco, rco = movearm.goto({
+				q = qL, duration = 5, timeout = 7, via='jointspace'
+			},{
+				q = qR, duration = 5, timeout = 7, via='jointspace'
+			})
     IS_YAW_SAFE = false
 	else
 		lco, rco = movearm.goto(Config.arm.trLArm0, Config.arm.trRArm0)
@@ -74,6 +78,9 @@ function state.update()
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint, lco)
 		print(state._NAME, 'R', okR, qRWaypoint, rco)
+		-- Safety
+		Body.set_larm_command_position(qLArm)
+		Body.set_rarm_command_position(qRArm)
 		return'teleopraw'
 	end
 
@@ -109,10 +116,17 @@ function state.exit()
     if not IS_WEBOTS then unix.usleep(1e5) end
   end
 
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
-	hcm.set_teleop_larm(qcLArm)
-  hcm.set_teleop_rarm(qcRArm)
+	if not okL or not okR then
+		local qLArm = Body.get_larm_position()
+		local qRArm = Body.get_rarm_position()
+		hcm.set_teleop_larm(qLArm)
+		hcm.set_teleop_rarm(qRArm)
+	else
+		local qcLArm = Body.get_larm_command_position()
+		local qcRArm = Body.get_rarm_command_position()
+		hcm.set_teleop_larm(qcLArm)
+		hcm.set_teleop_rarm(qcRArm)
+	end
 end
 
 return state

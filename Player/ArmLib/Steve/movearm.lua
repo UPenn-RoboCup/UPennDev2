@@ -85,36 +85,45 @@ local function get_compensation(qcLArm, qcRArm, qcWaist)
 end
 
 local gen_via = {}
-function gen_via.q(planner, goal, q0)
+function gen_via.jointspace(planner, goal, q0)
 	if not goal then return end
 	local co = coroutine.create(P.joint_preplan)
 	if goal.tr then
 		goal.q = planner:find_shoulder(goal.tr, q0, goal.weights)
-		if not q then return 'via q | No target shoulder solution' end
+		if not q then return 'via jointspace | No target shoulder solution' end
 	else
 		goal.tr = planner.forward(goal.q)
 	end
-	local ok, msg = coroutine.resume(co, planner, goal.q, q0, goal.t)
+	local ok, msg = coroutine.resume(co, planner, goal.q, q0, goal.timeout, goal.duration)
 	if not ok then co = msg end
 	return co
 end
+
 function gen_via.jacobian(planner, goal, q0)
 	if not goal then return end
 	local co = coroutine.create(P.jacobian_preplan)
 	if not goal.tr then goal.tr = planner.forward(goal.q) end
-	local ok, msg = coroutine.resume(co, planner, goal.tr, q0, goal.weights, goal.t)
+	local ok, msg = coroutine.resume(co, planner, goal.tr, q0, goal.weights, goal.timeout)
+	if not ok then co = msg else goal.q = msg end
+	return co
+end
+function gen_via.velocity(planner, goal, q0)
+	if not goal then return end
+	if not goal.vw then return end
+	local co = coroutine.create(P.jacobian_velocity)
+	local ok, msg = coroutine.resume(co, planner, goal.vw, q0, goal.timeout)
 	if not ok then co = msg else goal.q = msg end
 	return co
 end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto(l, r, add_compensation)
-
+	local lco, rco
 	local qLArm = Body.get_larm_command_position()
 	local qRArm = Body.get_rarm_command_position()
 
-	local lco = gen_via[l.via](lPlanner, l, qLArm)
-	local rco = gen_via[r.via](rPlanner, r, qRArm)
+	lco = l and type(gen_via[l.via])=='function' and gen_via[l.via](lPlanner, l, qLArm)
+	rco = r and type(gen_via[r.via])=='function' and gen_via[r.via](rPlanner, r, qRArm)
 	if type(lco)=='string' or type(rco)=='string' then
 		print('goto | lco', lco)
 		print('goto | rco', rco)

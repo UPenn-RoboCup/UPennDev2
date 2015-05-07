@@ -141,7 +141,7 @@ local function find_shoulder(self, tr, qArm, weights)
 	return iqArms[ibest], fks[ibest]
 end
 
-function libArmPlan.joint_preplan2(self, qArmF, qArm0, timeout, duration)
+function libArmPlan.joint_preplan(self, qArmF, qArm0, timeout, duration)
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax
@@ -223,42 +223,6 @@ function libArmPlan.joint_preplan2(self, qArmF, qArm0, timeout, duration)
 	assert(dqAverage or n <= nStepsTimeout, 'joint_preplan2 | Final timeout')
 end
 
--- Give a time to complete this
-function libArmPlan.joint_preplan(self, qGoal, qArm0, duration)
-	assert(type(qGoal)=='table', 'Bad qGoal table')
-	assert(#qGoal==self.nq, 'Improper qGoal size')
-	assert(type(qArm0)=='table', 'Bad qArm table')
-	assert(#qArm0==self.nq, 'Improper qArm size')
-	-- Check joint limit compliance
-	local qMin, qMax = self.qMin, self.qMax
-	for i, q in ipairs(qGoal) do
-		assert(q+EPSILON>=qMin[i], string.format('Below qMax[%d] %g < %g', i, q, qMin[i]))
-	end
-	for i, q in ipairs(qGoal) do
-		assert(q-EPSILON<=qMax[i], string.format('Above qMin[%d] %g > %g', i, q, qMax[i]))
-	end
-	-- Check speed limit compliance
-	assert(type(duration)=='number', "Improper duration: "..type(duration))
-	local dqTotal = qGoal - qArm0
-	local dqdtAverage = dqTotal / duration
-	local dqdt_limit = self.dqdt_limit
-	for i, dqdt in ipairs(dqdtAverage) do
-		assert(fabs(dqdt) <= dqdt_limit[i],
-			string.format("Above dqdt[%d] |%g| > %g", i, dqdt, dqdt_limit[i]))
-	end
-	-- Assume 100 Hz
-	local hz, dt = self.hz, self.dt
-	local nSteps = math.ceil(duration * hz)
-	-- Set the path
-	local qArm = qArm0
-	-- Yield the joint values and % complete
-	coroutine.yield()
-	for i=2, nSteps do
-		qArm = qArm + dqdtAverage * dt
-		coroutine.yield(qArm, i/nSteps)
-	end
-	return qGoal, 1
-end
 
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10

@@ -87,7 +87,7 @@ end
 local gen_via = {}
 function gen_via.jointspace(planner, goal, q0)
 	if not goal then return end
-	local co = coroutine.create(P.joint_preplan2)
+	local co = coroutine.create(P.joint_preplan)
 	if goal.tr then
 		goal.q = planner:find_shoulder(goal.tr, q0, goal.weights)
 		if not q then return 'via jointspace | No target shoulder solution' end
@@ -98,19 +98,7 @@ function gen_via.jointspace(planner, goal, q0)
 	if not ok then co = msg end
 	return co
 end
-function gen_via.q(planner, goal, q0)
-	if not goal then return end
-	local co = coroutine.create(P.joint_preplan)
-	if goal.tr then
-		goal.q = planner:find_shoulder(goal.tr, q0, goal.weights)
-		if not q then return 'via q | No target shoulder solution' end
-	else
-		goal.tr = planner.forward(goal.q)
-	end
-	local ok, msg = coroutine.resume(co, planner, goal.q, q0, goal.timeout)
-	if not ok then co = msg end
-	return co
-end
+
 function gen_via.jacobian(planner, goal, q0)
 	if not goal then return end
 	local co = coroutine.create(P.jacobian_preplan)

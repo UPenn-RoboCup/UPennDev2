@@ -62,19 +62,16 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-	if type(lco)~='thread' then print('L', lco) end
-	if type(rco)~='thread' then print('R', lco) end
-
-	local lStatus = coroutine.status(lco)
-	local rStatus = coroutine.status(rco)
-	--local qcLArm = Body.get_larm_command_position()
-	--local qcRArm = Body.get_rarm_command_position()
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
 	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco) end
 	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco) end
+
+	-- Check if errors in either
 	if not okL or not okR then
-		print(state._NAME, 'L', okL, qLWaypoint)
-		print(state._NAME, 'R', okR, qRWaypoint)
+		print(state._NAME, 'L', okL, qLWaypoint, lco)
+		print(state._NAME, 'R', okR, qRWaypoint, rco)
 		return'teleopraw'
 	end
 

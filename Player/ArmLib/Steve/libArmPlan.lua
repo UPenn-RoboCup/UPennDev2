@@ -26,7 +26,6 @@ local function qDiff(iq, q0)
 	return diff_use
 end
 
--- No dt needed
 local function sanitize0(iqArm, cur_qArm)
 	local diff_use = {}
 	local mod_diff
@@ -166,8 +165,7 @@ function libArmPlan.joint_preplan(self, qGoal, qArm0, duration)
 			string.format("Above dqdt[%d] |%g| > %g", i, dqdt, dqdt_limit[i]))
 	end
 	-- Assume 100 Hz
-	local hz = 100
-	local dt = 1 / hz
+	local hz, dt = self.hz, self.dt
 	local nSteps = math.ceil(duration * hz)
 	-- Set the path
 	local qArm = qArm0
@@ -196,61 +194,79 @@ local function get_delta_qarm(self, vwTarget, qArm)
 	local JT = J:t():clone()
 	local lambda = torch.Tensor(l)
 	local Jpseudoinv = torch.mm(torch.inverse(torch.diag(lambda):addmm(JT, J)), JT)
-
 	local null = torch.eye(#l) - Jpseudoinv * J
-
 	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
 	return dqArm, null
+end
+
+local function normalize_velocity(self, qArm)
+
 end
 
 -- Plan a direct path using a straight line via Jacobian
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
 function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights)
-	local res_pos = self.res_pos
-	local res_ang = self.res_ang
+	local hz, dt = self.hz, self.dt
 	local forward, inverse = self.forward, self.inverse
-	local pG = vector.new(T.position(trGoal))
-	local invGoal = T.inv(trGoal)
+	local dq_limit = self.dq_limit
 	local qArmFGuess = self:find_shoulder(trGoal, qArm0, shoulder_weights)
 	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
 	qArmFGuess = qArmFGuess or qArm0
-	local qArm = qArm0
 	coroutine.yield(qArmFGuess)
+	-- What is the weight of the null movement?
+	local alpha_n = 0.5
+	local qArm = qArm0
 	local done = false
 	local n = 0
 	repeat
 		n = n + 1
+		-- Grab our relative transform from here to the goal
 		local fkArm = forward(qArm)
 		local invArm = T.inv(fkArm)
-
 		local here = invArm * trGoal
+		-- Determine the position and angular velocity target
 		local dp = T.position(here)
 		local drpy = T.to_rpy(here)
-
-		local d = vnorm(dp)
-		local vwTarget = vector.new{unpack(dp)}
+		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
-		local dqArm, nullspace = self:get_delta_qarm(vwTarget, qArm)
-		local dq = vector.new(dqArm)
-		local mag = vnorm(dq)
-		if mag<2*DEG_TO_RAD then
-			break
-		elseif mag<5*DEG_TO_RAD then
-			qArm = qArm + dq / 10
-			--break
-		else
-			--qArm = qArm + dqArm / 100
-			local qnull = nullspace * torch.Tensor(qArm - qArmFGuess)
-			--qArm = qArm + dqArm / 100 - vector.new(qnull) / 100
-			qArm = qArm + dqArm / 100 - vector.new(qnull) / 100
-
+		-- Grab the joint velocities needed to accomplish the se(3) velocities
+		local dqdtArm, nullspace = get_delta_qarm(self, vwTarget, qArm)
+		-- Grab the null space velocities toward our guessed configuration
+		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+		-- Linear combination of the two
+		local dqdtCombo = dqdtArm - dqdtNull
+		-- Respect the update rate, place as a lua table
+		local dqCombo = vector.new(dqdtCombo:mul(dt))
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			local use = fabs(dqCombo[i]) / limit
+			rescale = rescale or use > 1
+			table.insert(usage, use)
 		end
-		coroutine.yield(qArm, 50)
-		done = d < 0.02 or n > 1e3
-	until done
+		if rescale then
+			local max_usage = max(unpack(usage))
+			--print('Rescaling!', max_usage)
+			for i = 1, #dqCombo do
+				dqCombo[i] = dqCombo[i] / max_usage
+			end
+		end
+		-- TODO: Check the joint limits
 
-	--if n>1e3 then print('Jacobian stack is stuck') end
+		--print('dp', unpack(dp))
+		--print('drpy', vector.new(drpy)*RAD_TO_DEG)
+		--print('|dp|', vnorm(dp), '|dp|', vnorm(drpy)*RAD_TO_DEG)
+		if vnorm(dp) < 0.02 and vnorm(drpy)<2*RAD_TO_DEG then
+			break
+		end
+		-- Apply
+		--local mag = vnorm(dqCombo)
+		--print('mag', mag*RAD_TO_DEG)
+		qArm = qArm + dqCombo
+		coroutine.yield(qArm, 50)
+	until n > 1e3
+	print(n, 'jacobian steps')
 	assert(n<=1e3, 'Jacobian stack is stuck')
 	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0})
 	--assert(qArmF, 'jacobian_preplan | No final shoulder solution')
@@ -267,22 +283,28 @@ local function set_chain(self, forward, inverse, jacobian)
 end
 
 -- Set the iterator resolutions
-local function set_resolution(self, res_pos, res_ang)
-	self.res_pos = assert(res_pos)
-	self.res_ang = assert(res_ang)
-  return self
-end
-
--- Set the iterator resolutions
 local function set_limits(self, qMin, qMax, dqdt_limit)
 	self.qMin = assert(qMin)
 	self.qMax = assert(qMax)
 	self.dqdt_limit = assert(dqdt_limit)
+	self.qRange = qMax - qMin
   return self
 end
 
-local function set_shoulder_angles(self, granularity)
-	local granularity = 2*DEG_TO_RAD
+-- Set the iterator resolutions
+local function set_update_rate(self, hz)
+	assert(type(hz)=='number', 'libArmPlan | Bad update rate for '..tostring(self.id))
+	assert(type(self.dqdt_limit)=='table',
+		'libArmPlan | Unknown dqdt_limit for '..tostring(self.id))
+	self.hz = hz
+	self.dt = 1/hz
+	self.dq_limit = self.dqdt_limit / hz
+  return self
+end
+
+local function set_shoulder_granularity(self, granularity)
+	print('granularity', granularity)
+	assert(type(granularity)=='number', 'Granularity not a number')
 	local minShoulder, maxShoulder = self.qMin[3], self.qMax[3]
 	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
 	local shoulderAngles = {}
@@ -292,39 +314,25 @@ local function set_shoulder_angles(self, granularity)
 end
 
 -- Still must set the forward and inverse kinematics
-function libArmPlan.new_planner(qMin, qMax, dqdt_limit, res_pos, res_ang)
+function libArmPlan.new_planner(id)
 	local nq = 7
 	local armOnes = vector.ones(nq)
 	local armZeros = vector.zeros(nq)
 	local obj = {
+		id = id or 'Unknown',
 		nq = nq,
-		forward = nil,
-		inverse = nil,
-		--
 		zeros = armZeros,
 		ones = armOnes,
 		halves = armOnes * 0.5,
 		--
-		qMin = qMin or -90*DEG_TO_RAD*armOnes,
-		qMax = qMax or 90*DEG_TO_RAD*armOnes,
-		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
-		--
-		res_pos = res_pos or 0.01,
-		res_ang = res_ang or 2*DEG_TO_RAD,
 		shoulderAngles = nil,
-		--
-		get_delta_qarm = get_delta_qarm,
-		--
 		find_shoulder = find_shoulder,
 		--
 		set_chain = set_chain,
-		set_resolution = set_resolution,
 		set_limits = set_limits,
+		set_update_rate = set_update_rate,
+		set_shoulder_granularity = set_shoulder_granularity,
 	}
-	obj.qRange = obj.qMax - obj.qMin
-	-- Setup the shoulder angles
-	set_shoulder_angles(obj)
-	--
 	return obj
 end
 

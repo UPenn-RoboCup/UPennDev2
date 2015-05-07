@@ -12,9 +12,9 @@ local K0 = Body.Kinematics
 local dqLimit = DEG_TO_RAD / 3
 local radiansPerSecond, torso0
 do
-	local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
+	--local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
 	--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-	--local degreesPerSecond = vector.ones(7) * 30
+	local degreesPerSecond = vector.ones(7) * 30
 	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 	-- Compensation items
 	torso0 = {-Config.walk.torsoX, 0, 0}
@@ -31,12 +31,17 @@ do
 	local maxRArm = vector.slice(
 		Config.servo.max_rad, Config.parts.RArm[1], Config.parts.RArm[#Config.parts.RArm])
 	-- Set up the planners for each arm
-	lPlanner = P.new_planner(minLArm, maxLArm, radiansPerSecond):set_chain(
-		K.forward_larm, K.inverse_larm, K.jacobian)
-	rPlanner = P.new_planner(minRArm, maxRArm, radiansPerSecond):set_chain(
-		K.forward_rarm, K.inverse_rarm, K.jacobian)
-	lPlanner.id = 'Left'
-	rPlanner.id = 'Right'
+	print('Setting up planners')
+	lPlanner = P.new_planner('Left')
+		:set_chain(K.forward_larm, K.inverse_larm, K.jacobian)
+		:set_limits(minLArm, maxLArm, radiansPerSecond)
+		:set_update_rate(100)
+		:set_shoulder_granularity(2*DEG_TO_RAD)
+	rPlanner = P.new_planner('Right')
+		:set_chain(K.forward_rarm, K.inverse_rarm, K.jacobian)
+		:set_limits(minRArm, maxRArm, radiansPerSecond)
+		:set_update_rate(100)
+		:set_shoulder_granularity(2*DEG_TO_RAD)
 end
 
 local function get_compensation(qcLArm, qcRArm, qcWaist)
@@ -84,7 +89,7 @@ function gen_via.q(planner, goal, q0)
 	local co = coroutine.create(P.joint_preplan)
 	if goal.tr then
 		goal.q = planner:find_shoulder(goal.tr, q0, goal.weights)
-		assert(goal.q, 'via q | No target shoulder solution')
+		if not q then return 'via q | No target shoulder solution' end
 	else
 		goal.tr = planner.forward(goal.q)
 	end

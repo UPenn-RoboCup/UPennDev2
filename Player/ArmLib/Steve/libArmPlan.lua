@@ -276,7 +276,6 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		-- If we are lagging badly, then there may be a collision
 		local dqLag = qArm - qArmSensed
 		local imax_lag, max_lag = 0, 0
-		-- TODO: must incorporate the dq, since that may be high
 		for i, dq in ipairs(dqLag) do
 			--print(dq, dqCombo[i])
 			--print((dq-dqCombo[i])*RAD_TO_DEG)
@@ -322,7 +321,14 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		-- Apply the joint change
 		qArm = qArm + dqArmF
 		-- Progress is different, now, since in joint space
-		coroutine.yield(qArm, dqArmF)
+		qArmSensed = coroutine.yield(qArm, dqArmF)
+		-- Check the lage
+		local dqLag = qArm - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		for i, dq in ipairs(dqLag) do
+			local lag = fabs(dq-dqCombo[i])
+			assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Final Lag: '..tostring(lag))
+		end
 		--print('final dist', dist*RAD_TO_DEG)
 		if dist < 0.5*DEG_TO_RAD then break end
 	until n > nStepsTimeout
@@ -385,11 +391,11 @@ function libArmPlan.jacobian_velocity(self, vwTarget, qArm0, timeout)
 		-- If we are lagging badly, then there may be a collision
 		local dqLag = qArm - qArmSensed
 		local imax_lag, max_lag = 0, 0
-		-- TODO: must incorporate the dq, since that may be high
+		-- Use a higher tolerance here, since using position feedback
 		for i, dq in ipairs(dqLag) do
 			--print(dq, dqCombo[i])
 			--print((dq-dqCombo[i])*RAD_TO_DEG)
-			assert(fabs(dq-dqCombo[i])<2*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+			assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
 		end
 	until n > nStepsTimeout
 

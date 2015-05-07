@@ -1,85 +1,76 @@
+--------------------------------
+-- Humanoid arm state
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+--------------------------------
 local state = {}
 state._NAME = ...
-local Body = require'Body'
+
+local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
-local t_entry, t_update, t_finish, t_command
+
+local t_entry, t_update, t_finish
 local timeout = 30.0
 
-local piterators, status, msg
-local lPathIter, rPathIter
-local qLD, qRD
-local uTorso0, uTorsoComp
-local qLGoalFiltered, qRGoalFiltered
+local USE_COMPENSATION = true
+local lco, rco, uComp
+local okL, qLWaypoint
+local okR, qRWaypoint
 
 function state.entry()
-  print(state._NAME..' Entry')
+  io.write(state._NAME, ' Entry\n')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
 
-	-- TODO: Autodetect which stges to use, based on our initial position
-	piterators = movearm.path_iterators(Config.arm.readyFromInitStages)
-
-	status, msg = nil, nil
+	lco, rco, uComp = movearm.goto(Config.arm.configL1, Config.arm.configR1, USE_COMPENSATION)
+	okL = false
+	okR = false
+	if uComp then print('uComp', unpack(uComp)) end
 
 end
 
 function state.update()
-  --io.write(state._NAME, ' Update\n' )
+	--  io.write(state._NAME,' Update\n')
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-	if not lPathIter or not rPathIter then
-		if coroutine.status(piterators)=='dead' then return'done' end
-		status, msg = coroutine.resume(piterators)
-		if not status or not msg then return'done' end
-		-- We are done if the coroutine emits nothing
-		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD, uTorsoComp, uTorso0 = unpack(msg)
-		uTorso0 = mcm.get_stance_uTorsoComp()
-		uTorso0[3] = 0
-		-- Static means true
-		lPathIter = lPathIter or true
-		rPathIter = rPathIter or true
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
+
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
+	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
+
+	if not okL or not okR then
+		print(state._NAME, 'L', okL, qLWaypoint)
+		print(state._NAME, 'R', okR, qRWaypoint)
+		return'teleopraw'
 	end
 
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
-
-	-- Find the next arm position
-	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
-	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
-	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
-	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
-
-	-- Find the torso compensation position
-	if uTorsoComp then
-		--[[
-		print(state._NAME..' | uTorso0', uTorso0)
-		print(state._NAME..' | uTorsoComp', uTorsoComp)
-		print(state._NAME..' | uTorsoNow', uTorsoNow)
-		--]]
-		local phaseL = moreL and moreL/qLD or 0
-		local phaseR = moreR and moreR/qRD or 0
-		local phase = math.max(phaseL, phaseR)
-		local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
-		-- Set the arm and torso commands
-		mcm.set_stance_uTorsoComp(uTorsoNow)
+	if type(qLWaypoint)=='table' then
+		Body.set_larm_command_position(qLWaypoint)
 	end
-	Body.set_larm_command_position(qLNext)
-	Body.set_rarm_command_position(qRNext)
-	t_command = t
+	if type(qRWaypoint)=='table' then
+		Body.set_rarm_command_position(qRWaypoint)
+	end
 
-	-- Check if done and reset the iterators
-	if not moreL and not moreR then lPathIter, rPathIter = nil, nil end
+	-- Check if done
+	if lStatus=='dead' and rStatus=='dead' then
+		return 'done'
+	end
+
+	-- Set the compensation: Not needed
+	--mcm.set_stance_uTorsoComp(uComp)
+
 end
 
 function state.exit()
-  io.write(state._NAME, ' Exit\n' )
-	if not status then print(status, msg) end
-	-- For teleop if called next
+	io.write(state._NAME, ' Exit\n')
+
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
 	hcm.set_teleop_larm(qcLArm)

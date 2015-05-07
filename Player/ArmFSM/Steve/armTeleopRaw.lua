@@ -15,20 +15,28 @@ local qLGoal, qRGoal
 local qLD, qRD
 
 function state.entry()
-  io.write(state._NAME, ' Entry' )
+  print(state._NAME..' Entry')
   -- Update the time of entry
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
+
+	-- This state starts with a safety mode in case we got here due to observed lag
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	Body.set_larm_command_position(qLArm)
+	Body.set_rarm_command_position(qRArm)
+
   -- Reset the human position
-	local qcLArm0 = Body.get_larm_command_position()
-	local qcRArm0 = Body.get_rarm_command_position()
 	local teleopLArm = hcm.get_teleop_larm()
 	local teleopRArm = hcm.get_teleop_rarm()
 
-	lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = movearm.goto_q(teleopLArm, teleopRArm, true)
-	--print(state._NAME..' | qLGoal', qLGoal)
-	--print(state._NAME..' | qRGoal', qRGoal)
+	lco, rco = movearm.goto({
+			q = teleopLArm, t = 5, via='q'
+
+		}, {
+			q = teleopRArm, t = 5, via='q'
+		})
 
 end
 
@@ -41,19 +49,35 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-	-- Update our measurements availabl in the state
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
-	-- Timing necessary
-	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
-	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
+	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
 
-	local qLNext = moreL and q_lWaypoint or qLGoal
-	local qRNext = moreR and q_rWaypoint or qRGoal
+	if not okL or not okR then
+		print(state._NAME, 'L', okL, qLWaypoint)
+		print(state._NAME, 'R', okR, qRWaypoint)
+		local qcLArm = Body.get_larm_command_position()
+		local qcRArm = Body.get_rarm_command_position()
+		hcm.set_teleop_larm(qcLArm)
+		hcm.set_teleop_rarm(qcRArm)
+		return'teleopraw'
+	end
 
-	Body.set_larm_command_position(qLNext)
-	Body.set_rarm_command_position(qRNext)
+	if type(qLWaypoint)=='table' then
+		Body.set_larm_command_position(qLWaypoint)
+	end
+	if type(qRWaypoint)=='table' then
+		Body.set_rarm_command_position(qRWaypoint)
+	end
+
+	-- Check if done
+	if lStatus=='dead' and rStatus=='dead' then
+		return 'done'
+	end
 
 end
 

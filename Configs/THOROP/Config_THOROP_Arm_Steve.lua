@@ -7,30 +7,25 @@ local tr6D = require'Transform'.transform6D
 -- For the arm FSM
 local arm = {}
 
+-- Weights: cusage, cdiff, ctight
 -- Default init position
-arm.trLArm0 = {0.05, 0.35, -0.25,0,0,0}
-arm.trRArm0 = {0.05, -0.35, -0.25,0,0,0}
+arm.trLArm0 = {
+	tr=tr6D{0.05, 0.35, -0.25,0,0,0}, options = {5*DEG_TO_RAD}, t=10,
+	via='jacobian', weights = {1,0,0}
+}
+arm.trRArm0 = {
+	tr=tr6D{0.05, -0.35, -0.25,0,0,0}, options = {-5*DEG_TO_RAD}, t=10,
+	via='jacobian', weights = {1,0,0}
+}
 
--- Stages: L, R (Transforms or joints), type of motion, left shoulder search weights, right weights
--- Planner: usage, diff, tight
-arm.readyFromInitStages = {
-	{
-		tr6D{0.25, 0.3, -0.1,  0,0,0}, tr6D{0.25, -0.3, -0.1, 0,0,0},
-		--'goto_tr_via_q', {0,1,0}, {0,1,0}
-		'goto_jacobian_stack',
-	},
-	----[[
-	{
-		tr6D{0.25, 0.3, 0,  0,0,-45*DEG_TO_RAD}, tr6D{0.25, -0.3, 0, 0,0,45*DEG_TO_RAD},
-		--'goto_tr_via_q', {1,1,0}, {1,1,0}
-		'goto_jacobian_stack',
-	},
-	{
-		tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD},
-		'goto_tr_via_q', {1,0,1}, {1,0,1}
-		--'goto_jacobian_stack',
-	},
-	--]]
+-- Default ready position
+arm.configL1 = {
+	tr=tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, options = {5*DEG_TO_RAD}, t=15,
+	via='jacobian', weights = {0,0,1}
+}
+arm.configR1 = {
+	tr=tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD}, options = {-5*DEG_TO_RAD}, t=15,
+	via='jacobian', weights = {0,0,1}
 }
 
 

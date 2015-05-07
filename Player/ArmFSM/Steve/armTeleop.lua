@@ -17,7 +17,7 @@ local okL, qLWaypoint
 local okR, qRWaypoint
 
 function state.entry()
-  io.write(state._NAME, ' Entry\n')
+  print(state._NAME..' Entry')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
@@ -78,7 +78,7 @@ function state.update()
 end
 
 function state.exit()
-	io.write(state._NAME, ' Exit\n')
+	print(state._NAME..' Exit')
 end
 
 return state

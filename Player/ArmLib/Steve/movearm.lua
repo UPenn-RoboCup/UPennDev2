@@ -106,15 +106,23 @@ function gen_via.jacobian(planner, goal, q0)
 	if not ok then co = msg else goal.q = msg end
 	return co
 end
+function gen_via.velocity(planner, goal, q0)
+	if not goal then return end
+	if not goal.vw then return end
+	local co = coroutine.create(P.jacobian_velocity)
+	local ok, msg = coroutine.resume(co, planner, goal.vw, q0, goal.t)
+	if not ok then co = msg else goal.q = msg end
+	return co
+end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto(l, r, add_compensation)
-
+	local lco, rco
 	local qLArm = Body.get_larm_command_position()
 	local qRArm = Body.get_rarm_command_position()
 
-	local lco = gen_via[l.via](lPlanner, l, qLArm)
-	local rco = gen_via[r.via](rPlanner, r, qRArm)
+	lco = l and type(gen_via[l.via])=='function' and gen_via[l.via](lPlanner, l, qLArm)
+	rco = r and type(gen_via[r.via])=='function' and gen_via[r.via](rPlanner, r, qRArm)
 	if type(lco)=='string' or type(rco)=='string' then
 		print('goto | lco', lco)
 		print('goto | rco', rco)

@@ -280,7 +280,8 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		for i, dq in ipairs(dqLag) do
 			--print(dq, dqCombo[i])
 			--print((dq-dqCombo[i])*RAD_TO_DEG)
-			assert(fabs(dq-dqCombo[i])<2*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+			local lag = fabs(dq-dqCombo[i])
+			assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Lag: '..tostring(lag))
 		end
 		-- Check if we are close enough
 		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
@@ -330,6 +331,80 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 
 	return qArmF
 end
+
+-- Plan a direct path using a straight line via Jacobian
+-- res_pos: resolution in meters
+-- res_ang: resolution in radians
+function libArmPlan.jacobian_velocity(self, vwTarget, qArm0, timeout)
+	local hz, dt = self.hz, self.dt
+	local dq_limit = self.dq_limit
+	local qMin, qMax = self.qMin, self.qMax
+	-- 3 second default timeout
+	timeout = math.ceil(timeout or 3)
+	-- What is the weight of the null movement?
+	--local alpha_n = 0.5
+	-- Find a guess of the final arm position
+	local qArmFGuess = qArm0
+	local qArm = qArm0
+	local nStepsTimeout = timeout * hz
+
+	local qArmSensed = coroutine.yield(nStepsTimeout)
+	local done = false
+	local n = 0
+	local max_usage
+	repeat
+		n = n + 1
+		-- Grab the joint velocities needed to accomplish the se(3) velocities
+		local dqdtArm, nullspace = get_delta_qarm(self, vwTarget, qArmSensed)
+		-- Grab the null space velocities toward our guessed configuration
+		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+		-- Linear combination of the two
+		local dqdtCombo = dqdtArm - dqdtNull
+		-- Respect the update rate, place as a lua table
+		local dqCombo = vector.new(dqdtCombo:mul(dt))
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			local use = fabs(dqCombo[i]) / limit
+			rescale = rescale or use > 1
+			table.insert(usage, use)
+		end
+		max_usage = max(unpack(usage))
+		if rescale then
+			--print('Rescaling!', max_usage)
+			for i = 1, #dqCombo do
+				dqCombo[i] = dqCombo[i] / max_usage
+			end
+		end
+		-- Apply the joint change
+		qArm = qArm + dqCombo
+		-- Check joint limit compliance
+		for i, q in ipairs(qArm) do qArm[i] = min(max(qMin[i], q), qMax[i]) end
+		-- Yield the progress
+		qArmSensed = coroutine.yield(qArm, n)
+		-- If we are lagging badly, then there may be a collision
+		local dqLag = qArm - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		-- TODO: must incorporate the dq, since that may be high
+		for i, dq in ipairs(dqLag) do
+			--print(dq, dqCombo[i])
+			--print((dq-dqCombo[i])*RAD_TO_DEG)
+			assert(fabs(dq-dqCombo[i])<2*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+		end
+	until n > nStepsTimeout
+
+	return qArm
+end
+
+
+
+
+
+
+
+
+
+
 
 -- Set the forward and inverse
 local function set_chain(self, forward, inverse, jacobian)

@@ -23,11 +23,11 @@ function state.entry()
   t_update = t_entry
 
 	local configL = {
-		q=hcm.get_teleop_larm(), t=10,
+		q=hcm.get_teleop_larm(), timeout=10,
 		via='jacobian', weights = {0,1,0}
 	}
 	local configR = {
-		q=hcm.get_teleop_rarm(), t=10,
+		q=hcm.get_teleop_rarm(), timeout=10,
 		via='jacobian', weights = {0,1,0}
 	}
 
@@ -56,10 +56,11 @@ function state.update()
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint)
 		print(state._NAME, 'R', okR, qRWaypoint)
-		local qcLArm = Body.get_larm_command_position()
-		local qcRArm = Body.get_rarm_command_position()
-		hcm.set_teleop_larm(qcLArm)
-		hcm.set_teleop_rarm(qcRArm)
+		-- Safety
+		Body.set_larm_command_position(qLArm)
+		Body.set_rarm_command_position(qRArm)
+		hcm.set_teleop_larm(qLArm)
+		hcm.set_teleop_rarm(qRArm)
 		return'teleopraw'
 	end
 

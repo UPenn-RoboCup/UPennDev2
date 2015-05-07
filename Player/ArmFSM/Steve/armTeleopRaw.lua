@@ -21,21 +21,15 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	-- This state starts with a safety mode in case we got here due to observed lag
-	local qLArm = Body.get_larm_position()
-	local qRArm = Body.get_rarm_position()
-	Body.set_larm_command_position(qLArm)
-	Body.set_rarm_command_position(qRArm)
-
   -- Reset the human position
 	local teleopLArm = hcm.get_teleop_larm()
 	local teleopRArm = hcm.get_teleop_rarm()
 
 	lco, rco = movearm.goto({
-			q = teleopLArm, t = 5, via='q'
+			q = teleopLArm, timeout = 5, via='q'
 
 		}, {
-			q = teleopRArm, t = 5, via='q'
+			q = teleopRArm, timeout = 5, via='q'
 		})
 
 end
@@ -60,10 +54,9 @@ function state.update()
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint)
 		print(state._NAME, 'R', okR, qRWaypoint)
-		local qcLArm = Body.get_larm_command_position()
-		local qcRArm = Body.get_rarm_command_position()
-		hcm.set_teleop_larm(qcLArm)
-		hcm.set_teleop_rarm(qcRArm)
+		-- Safety
+		Body.set_larm_command_position(qLArm)
+		Body.set_rarm_command_position(qRArm)
 		return'teleopraw'
 	end
 
@@ -83,6 +76,19 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
+
+	if not okL or not okR then
+		local qLArm = Body.get_larm_position()
+		local qRArm = Body.get_rarm_position()
+		hcm.set_teleop_larm(qLArm)
+		hcm.set_teleop_rarm(qRArm)
+	else
+		local qcLArm = Body.get_larm_command_position()
+		local qcRArm = Body.get_rarm_command_position()
+		hcm.set_teleop_larm(qcLArm)
+		hcm.set_teleop_rarm(qcRArm)
+	end
+
 end
 
 return state

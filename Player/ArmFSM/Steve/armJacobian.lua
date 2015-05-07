@@ -8,6 +8,7 @@ state._NAME = ...
 local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
+local plugins = require'armplugins'
 
 local t_entry, t_update, t_finish
 local timeout = 30.0

@@ -448,9 +448,7 @@ function libArmPlan.jacobian_velocity(self, vwTarget, qArm0, timeout)
 	return qArm
 end
 
--- Plan a direct path using a straight line via Jacobian
--- res_pos: resolution in meters
--- res_ang: resolution in radians
+-- resume with: qArmSensed, vwTargetNew, weightsNew
 function libArmPlan.jacobian_smart_velocity(self, vwTarget, qArm0, weights, timeout)
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
@@ -461,7 +459,6 @@ function libArmPlan.jacobian_smart_velocity(self, vwTarget, qArm0, weights, time
 	local nStepsTimeout = timeout * hz
 	-- Find a guess of the final arm position
 	local fkArm0 = forward(qArm0)
-	--print('fkArm0', fkArm0)
 	local qArmFGuess = self:find_shoulder(fkArm0, qArm0, weights) or qArm0
 	local qArm = qArm0
 
@@ -489,10 +486,7 @@ function libArmPlan.jacobian_smart_velocity(self, vwTarget, qArm0, weights, time
 		end
 		max_usage = max(unpack(usage))
 		if rescale then
-			--print('Rescaling!', max_usage)
-			for i = 1, #dqCombo do
-				dqCombo[i] = dqCombo[i] / max_usage
-			end
+			for i = 1, #dqCombo do dqCombo[i] = dqCombo[i] / max_usage end
 		end
 		-- Apply the joint change
 		qArm = qArm + dqCombo
@@ -511,8 +505,6 @@ function libArmPlan.jacobian_smart_velocity(self, vwTarget, qArm0, weights, time
 		local imax_lag, max_lag = 0, 0
 		-- Use a higher tolerance here, since using position feedback
 		for i, dq in ipairs(dqLag) do
-			--print(dq, dqCombo[i])
-			--print((dq-dqCombo[i])*RAD_TO_DEG)
 			assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
 		end
 	until n > nStepsTimeout

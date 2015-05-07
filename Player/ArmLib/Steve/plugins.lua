@@ -34,7 +34,6 @@ function plugins.pull_door(m)
 
 	-- TODO: Search over the roll to keep smooth
 
-
 	local n_ph = 20
 	local yawGoal = math.pi / 4
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)

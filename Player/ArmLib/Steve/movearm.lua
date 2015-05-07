@@ -12,9 +12,10 @@ local K0 = Body.Kinematics
 local dqLimit = DEG_TO_RAD / 3
 local radiansPerSecond, torso0
 do
-	--local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
+	local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
 	--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-	local degreesPerSecond = vector.ones(7) * 30
+	--local degreesPerSecond = vector.ones(7) * 30
+	--local degreesPerSecond = vector.ones(7) * 100
 	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 	-- Compensation items
 	torso0 = {-Config.walk.torsoX, 0, 0}
@@ -101,7 +102,7 @@ function gen_via.jacobian(planner, goal, q0)
 	if not goal then return end
 	local co = coroutine.create(P.jacobian_preplan)
 	if not goal.tr then goal.tr = planner.forward(goal.q) end
-	local ok, msg = coroutine.resume(co, planner, goal.tr, q0, goal.weights)
+	local ok, msg = coroutine.resume(co, planner, goal.tr, q0, goal.weights, goal.t)
 	if not ok then co = msg else goal.q = msg end
 	return co
 end
@@ -114,6 +115,11 @@ function movearm.goto(l, r, add_compensation)
 
 	local lco = gen_via[l.via](lPlanner, l, qLArm)
 	local rco = gen_via[r.via](rPlanner, r, qRArm)
+	if type(lco)=='string' or type(rco)=='string' then
+		print('lco', lco)
+		print('rco', rco)
+		return lco, rco
+	end
 
 	-- Add compensation
 	local uTorsoComp

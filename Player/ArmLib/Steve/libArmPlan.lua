@@ -71,7 +71,7 @@ end
 
 local IK_POS_ERROR_THRESH = 0.0254
 -- Weights: cusage, cdiff, ctight
-local defaultWeights = {1, 1, 0}
+local defaultWeights = {1, 0, 0}
 local function valid_cost(iq, minArm, maxArm)
 	for i, q in ipairs(iq) do
 		if q<minArm[i] or q>maxArm[i] then return INFINITY end
@@ -221,7 +221,7 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 	-- 10 second default timeout
 	timeout = math.ceil(timeout or 10)
 	-- What is the weight of the null movement?
-	local alpha_n = 0.25
+	--local alpha_n = 0.5
 	-- Find a guess of the final arm position
 	local qArmFGuess = self:find_shoulder(trGoal, qArm0, shoulder_weights)
 	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
@@ -245,7 +245,8 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		-- Grab the null space velocities toward our guessed configuration
 		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
 		-- Linear combination of the two
-		local dqdtCombo = dqdtArm:mul(1-alpha_n) - dqdtNull:mul(alpha_n)
+		--local dqdtCombo = dqdtArm:mul(1-alpha_n) - dqdtNull:mul(alpha_n)
+		local dqdtCombo = dqdtArm - dqdtNull
 		-- Respect the update rate, place as a lua table
 		local dqCombo = vector.new(dqdtCombo:mul(dt))
 		-- Check the speed limit usage

@@ -24,11 +24,11 @@ function state.entry()
 
 	local configL = {
 		q=hcm.get_teleop_larm(), t=5,
-		via='jacobian', weights = {1,0,0}
+		via='jacobian', weights = {0,1,0}
 	}
 	local configR = {
 		q=hcm.get_teleop_rarm(), t=5,
-		via='jacobian', weights = {1,0,0}
+		via='jacobian', weights = {0,1,0}
 	}
 
 	-- Always add compensation

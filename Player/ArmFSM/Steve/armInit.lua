@@ -72,7 +72,11 @@ function state.update()
 
 	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco) end
 	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco) end
-	if not okL and not okR then return'escape' end
+	if not okL or not okR then
+		print(state._NAME, 'L', okL, qLWaypoint)
+		print(state._NAME, 'R', okR, qRWaypoint)
+		return'teleopraw'
+	end
 
 	if type(qLWaypoint)=='table' then
 		Body.set_larm_command_position(qLWaypoint)

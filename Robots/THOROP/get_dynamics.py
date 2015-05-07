@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import sympy
 import sympybotics
 
 print('Define the Robot')
@@ -14,32 +15,22 @@ print('Define the Robot')
 		.mDH(-PI/2, 0, -PI/2, 0)
 '''
 
-		pi = sympy.pi
-				q = sympybotics.robotdef.q
+pi = sympy.pi
+q = sympybotics.robotdef.q
 
-						a1, a2, d3, d4 = sympy.symbols('a1, a2, d3, d4')
+upperArmLength, elbowOffsetX, lowerArmLength = sympy.symbols('upperArmLength, elbowOffsetX, lowerArmLength')
+dh_params = [
+	(-pi/2, 0, 0, q),
+	(pi/2, 0, 0, q+pi/2),
+	(pi/2, 0, upperArmLength, q+pi/2),
+	(pi/2, elbowOffsetX, 0, q),
+	(-pi/2, -elbowOffsetX, lowerArmLength, q-pi/2),
+	(-pi/2, 0, 0, q),
+	(pi/2, 0, 0, q),
+	(-pi/2, 0, 0, -pi/2)
+]
 
-								scara = sympybotics.robotdef.RobotDef(
-										'SCARA - Spong',
-										[( 0, a1,  0, q),
-											(pi, a2,  0, q),
-											( 0,  0,  q, 0),
-											( 0,  0, d4,
-												q)],
-											dh_convention='standard')
-
-								dh_params = [
-										('-pi/2', 0, 0, 'q'),
-										('pi/2', 0, 0, 'q+pi/2'),
-										('pi/2', 0, 'upperArmLength', 'q+pi/2'),
-										('pi/2', 'elbowOffsetX', 0, 'q'),
-										('-pi/2', '-elbowOffsetX', 'lowerArmLength', 'q-pi/2'),
-										('-pi/2', 0, 0, 'q'),
-										('pi/2', 0, 0, 'q'),
-										('-pi/2', 0, 0, '-pi/2')
-										]
-
-								#rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='standard')
+#rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='standard')
 rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='modified')
 
 dp = rbtdef.dynparms()
@@ -49,9 +40,10 @@ rbt = sympybotics.RobotDynCode(rbtdef, verbose=True)
 #print('Generate the C code for the inverse dynamics')
 #tau_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.invdyn_code, 'tau_out', 'tau', rbtdef)
 
+print(rbt.M_code)
+
 print('Generate the C code for the inertia matrix')
-m_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.M_code, 'm_out',
-'m', rbtdef)
+m_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.M_code, 'm_out', 'm', rbtdef)
 
 # Just printing stuff
 #rbt.geo.T[-1]
@@ -83,7 +75,7 @@ finally:
 f = open("DH Parameters used.txt", "w")
 try:
 	f.write('(alpha, a, d, theta)\n')
-		f.write(str(dh_params))
+	f.write(str(dh_params))
 finally:
 	f.close()
 
@@ -98,8 +90,8 @@ rbt.calc_base_parms(verbose=True)
 f = open("m.txt", "w")
 try:
 	f.write(str(rbt.dyn.baseparms))
-		f.write('\n')
-		f.write(m_str)
+	f.write('\n')
+	f.write(m_str)
 finally:
 	f.close()
 

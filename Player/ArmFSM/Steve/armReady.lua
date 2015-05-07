@@ -26,7 +26,7 @@ function state.entry()
 	lco, rco, uComp = movearm.goto(Config.arm.configL1, Config.arm.configR1, USE_COMPENSATION)
 	okL = false
 	okR = false
-	print('uComp', uComp and unpack(uComp))
+	if uComp then print('uComp', unpack(uComp)) end
 
 end
 
@@ -47,7 +47,11 @@ function state.update()
 
 	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco) end
 	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco) end
-	if not okL and not okR then return'escape' end
+	if not okL or not okR then
+		print(state._NAME, 'L', okL, qLWaypoint)
+		print(state._NAME, 'R', okR, qRWaypoint)
+		return'teleopraw'
+	end
 
 	if type(qLWaypoint)=='table' then
 		Body.set_larm_command_position(qLWaypoint)
@@ -69,8 +73,8 @@ function state.update()
 		return 'done'
 	end
 
-	-- Set the compensation
-	mcm.set_stance_uTorsoComp(uComp)
+	-- Set the compensation: Not needed
+	--mcm.set_stance_uTorsoComp(uComp)
 
 end
 

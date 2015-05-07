@@ -12,7 +12,7 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
-local lco, rco
+local lco, rco, uComp
 local okL, qLWaypoint
 local okR, qRWaypoint
 
@@ -31,7 +31,8 @@ function state.entry()
 		via='jacobian', weights = {1,0,0}
 	}
 
-	lco, rco = movearm.goto(configL, configR)
+	-- Always add compensation
+	lco, rco, uComp = movearm.goto(configL, configR, true)
 	okL = false
 	okR = false
 
@@ -48,12 +49,12 @@ function state.update()
 	if type(lco)=='thread' then
 		lStatus = coroutine.status(lco)
 	else
-		print('L', lco)
+		print('L', type(lco), lco)
 	end
 	if type(rco)=='thread' then
 		rStatus = coroutine.status(rco)
 	else
-		print('R', rco)
+		print('R', type(rco), rco)
 	end
 
 	--local qcLArm = Body.get_larm_command_position()
@@ -61,7 +62,11 @@ function state.update()
 
 	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco) end
 	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco) end
-	if not okL and not okR then return'escape' end
+	if not okL or not okR then
+		print(state._NAME, 'L', okL, qLWaypoint)
+		print(state._NAME, 'R', okR, qRWaypoint)
+		return'teleopraw'
+	end
 
 	if type(qLWaypoint)=='table' then
 		Body.set_larm_command_position(qLWaypoint)
@@ -88,10 +93,6 @@ end
 function state.exit()
 	io.write(state._NAME, ' Exit\n')
 
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
-	hcm.set_teleop_larm(qcLArm)
-  hcm.set_teleop_rarm(qcRArm)
 end
 
 return state

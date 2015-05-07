@@ -139,7 +139,6 @@ local function find_shoulder(self, tr, qArm, weights)
 	local ibest, cbest = 0, INFINITY
 	for i, c in ipairs(cost) do if c<cbest then cbest = c; ibest = i end end
 	-- Yield the least cost arms
-	assert(iqArms[ibest], 'find_shoulder | No solution')
 	return iqArms[ibest], fks[ibest]
 end
 
@@ -214,7 +213,8 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights)
 	local pG = vector.new(T.position(trGoal))
 	local invGoal = T.inv(trGoal)
 	local qArmFGuess = self:find_shoulder(trGoal, qArm0, shoulder_weights)
-
+	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
+	qArmFGuess = qArmFGuess or qArm0
 	local qArm = qArm0
 	coroutine.yield(qArmFGuess)
 	local done = false
@@ -253,6 +253,8 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights)
 	--if n>1e3 then print('Jacobian stack is stuck') end
 	assert(n<=1e3, 'Jacobian stack is stuck')
 	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0})
+	--assert(qArmF, 'jacobian_preplan | No final shoulder solution')
+	qArmF = qArmF or qArm
 	return qArmF, 1
 end
 

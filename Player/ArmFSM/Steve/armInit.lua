@@ -65,8 +65,10 @@ function state.update()
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
-	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco) end
-	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco) end
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
+	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
 
 	-- Check if errors in either
 	if not okL or not okR then
@@ -80,14 +82,6 @@ function state.update()
 	end
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
-	end
-
-	-- Catch the errors
-	if not okL then
-		print(okL, qLWaypoint)
-	end
-	if not okR then
-		print(okR, qRWaypoint)
 	end
 
 	-- Check if done

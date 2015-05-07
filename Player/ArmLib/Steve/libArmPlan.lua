@@ -13,7 +13,7 @@ local tinsert = require'table'.insert
 local fabs = require'math'.abs
 local min, max = require'math'.min, require'math'.max
 local INFINITY = require'math'.huge
-local EPSILON = 1e-6
+local EPSILON = 1e-3 * DEG_TO_RAD
 
 local function qDiff(iq, q0)
 	local diff_use = {}
@@ -229,10 +229,12 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 	local qArm = qArm0
 	--print('get_distance')
 	local dp, drpy, dist_components = get_distance(self, qArm, trGoal)
-	local dp0, drpy0, dist_components0 = dp, drpy, dist_components
+	--local dp0, drpy0, dist_components0 = dp, drpy, dist_components
 	--print('dist_components', unpack(dist_components))
-	coroutine.yield(qArmFGuess, dist_components)
+	local qArmSensed = coroutine.yield(qArmFGuess, dist_components)
+	--print('qArmSensed', qArmSensed)
 
+	local nStepsTimeout = timeout * hz
 	local done = false
 	local n = 0
 	local max_usage
@@ -270,14 +272,20 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		-- Yield the progress
 		dp, drpy, dist_components = get_distance(self, qArm, trGoal)
 		--print('dist_components', unpack(dist_components))
-		coroutine.yield(qArm, dist_components)
+		qArmSensed = coroutine.yield(qArm, dist_components)
+		-- If we are lagging badly, then there may be a collision
+		local qLag = qArmSensed - qArm
+		local imax_lag, max_lag = 0, 0
+		for i, q in ipairs(qLag) do
+			assert(fabs(q)<3*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+		end
 		-- Check if we are close enough
-		if dist_components[1] < 0.02 and dist_components[2] < 2*RAD_TO_DEG then
+		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
 			break
 		end
-	until n > timeout * hz
+	until n > nStepsTimeout
 	print(n, 'jacobian steps')
-	assert(n <= 1e3, 'Jacobian stack is stuck')
+	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0})
 	--assert(qArmF, 'jacobian_preplan | No final shoulder solution')
 	qArmF = qArmF or qArm
@@ -287,6 +295,7 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 	-- Use the last known max_usage to finalize
 	print('max_usage final', max_usage)
 	n = 0
+	nStepsTimeout = 3 * hz -- 3 second timeout to finish
 	repeat
 		n = n + 1
 		local dqArmF = qArmF - qArm
@@ -312,8 +321,9 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		coroutine.yield(qArm, dqArmF)
 		--print('final dist', dist*RAD_TO_DEG)
 		if dist < 0.5*DEG_TO_RAD then break end
-	until n > 3*hz -- 3 second timeout to finish
+	until n > nStepsTimeout
 	print(n, 'final steps')
+	assert(n <= nStepsTimeout, 'jacobian_preplan | Final timeout')
 
 	return qArmF
 end

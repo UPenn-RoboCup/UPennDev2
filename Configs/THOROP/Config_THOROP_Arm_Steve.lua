@@ -20,11 +20,11 @@ arm.trRArm0 = {
 
 -- Default ready position
 arm.configL1 = {
-	tr=tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, options = {5*DEG_TO_RAD}, t=10,
+	tr=tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, options = {5*DEG_TO_RAD}, t=15,
 	via='jacobian', weights = {0,0,1}
 }
 arm.configR1 = {
-	tr=tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD}, options = {-5*DEG_TO_RAD}, t=10,
+	tr=tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD}, options = {-5*DEG_TO_RAD}, t=15,
 	via='jacobian', weights = {0,0,1}
 }
 

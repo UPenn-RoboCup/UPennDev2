@@ -37,16 +37,14 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
-	if type(lco)~='thread' then print('L', lco) end
-	if type(rco)~='thread' then print('R', lco) end
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
-	local lStatus = coroutine.status(lco)
-	local rStatus = coroutine.status(rco)
-	--local qcLArm = Body.get_larm_command_position()
-	--local qcRArm = Body.get_rarm_command_position()
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
+	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
 
-	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco) end
-	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco) end
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint)
 		print(state._NAME, 'R', okR, qRWaypoint)
@@ -58,14 +56,6 @@ function state.update()
 	end
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
-	end
-
-	-- Catch the errors
-	if not okL then
-		print(okL, qLWaypoint)
-	end
-	if not okR then
-		print(okR, qRWaypoint)
 	end
 
 	-- Check if done

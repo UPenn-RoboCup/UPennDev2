@@ -17,8 +17,7 @@ do
 	--local degreesPerSecond = vector.ones(7) * 30
 	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 	-- Compensation items
-	local torsoX = Config.walk.torsoX
-	torso0 = vector.new({-torsoX,0,0})
+	torso0 = {-Config.walk.torsoX, 0, 0}
 end
 
 local lPlanner, rPlanner
@@ -40,12 +39,53 @@ do
 	rPlanner.id = 'Right'
 end
 
+local function get_compensation(qcLArm, qcRArm, qcWaist)
+	-- Legs are a bit different, since we are working in IK space
+	local bH = mcm.get_stance_bodyHeight()
+	local bT = mcm.get_stance_bodyTilt()
+	local uTorso = mcm.get_status_uTorso()
+	local aShiftX = mcm.get_walk_aShiftX()
+  local aShiftY = mcm.get_walk_aShiftY()
+	-- Current Foot Positions
+	local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+	local zLeg = mcm.get_status_zLeg()
+  local zSag = mcm.get_walk_zSag()
+	local zLegComp = mcm.get_status_zLegComp()
+	local zLeft, zRight = unpack(zLeg + zSag + zLegComp)
+	local pLLeg = {uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]}
+  local pRLeg = {uRight[1],uRight[2],zRight,0,0,uRight[3]}
+	qcWaist = qcWaist or {0, 0}
+
+	-- Initial guess is torso0, our default position.
+	-- See how far this guess is from our current torso position
+	local uTorsoAdapt = util.pose_global(torso0, uTorso)
+	local adapt_factor = 1.0
+	for i=1,4 do
+		-- Form the torso position now in the 6D space
+		local pTorso = {uTorsoAdapt[1], uTorsoAdapt[2], bH, 0, bT, uTorsoAdapt[3]}
+		local qLegs = K0.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
+		-- Grab the intended leg positions from this shift
+		local qLLeg = {unpack(qLegs, 1, 6)}
+		local qRLeg = {unpack(qLegs, 7, 12)}
+		-- Calculate the COM position
+		local com = K0.calculate_com_pos(qcWaist, qcLArm, qcRArm, qLLeg, qRLeg, 0, 0, 0)
+		local uCOM = util.pose_global({com[1]/com[4], com[2]/com[4], 0}, uTorsoAdapt)
+		uTorsoAdapt = uTorsoAdapt + adapt_factor * (uTorso - uCOM)
+	end
+	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso)
+	table.remove(uTorsoComp)
+	return uTorsoComp
+end
+
 local gen_via = {}
 function gen_via.q(planner, goal, q0)
 	if not goal then return end
 	local co = coroutine.create(P.joint_preplan)
 	if goal.tr then
 		goal.q = planner:find_shoulder(goal.tr, q0, goal.weights)
+	else
+		goal.tr = planner.forward(goal.q)
 	end
 	local ok, msg = coroutine.resume(co, planner, goal.q, q0, goal.t)
 	if not ok then co = msg end
@@ -55,19 +95,35 @@ function gen_via.jacobian(planner, goal, q0)
 	if not goal then return end
 	local co = coroutine.create(P.jacobian_preplan)
 	local ok, msg = coroutine.resume(co, planner, goal.tr, q0, goal.weights)
-	if not ok then co = msg end
+	if not ok then co = msg else goal.q = msg end
 	return co
 end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
-function movearm.goto(l, r)
-	local qLArm = Body.get_larm_command_position()
-	local lco = gen_via[l.via](lPlanner, l, qLArm)
+function movearm.goto(l, r, add_compensation)
 
+	local qLArm = Body.get_larm_command_position()
 	local qRArm = Body.get_rarm_command_position()
+
+	local lco = gen_via[l.via](lPlanner, l, qLArm)
 	local rco = gen_via[r.via](rPlanner, r, qRArm)
 
-	return lco, rco
+	-- Add compensation
+	local uTorsoComp
+	if add_compensation then
+		uTorsoComp = get_compensation(l.q, r.q, qcWaist)
+		local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
+		-- Save the old transform, and update
+		l.tr0 = l.tr
+		r.tr0 = r.tr
+		l.tr = trComp * l.tr0
+		r.tr = trComp * r.tr0
+		-- Rerun the planner
+		lco = gen_via[l.via](lPlanner, l, qLArm)
+		rco = gen_via[r.via](rPlanner, r, qRArm)
+	end
+
+	return lco, rco, uTorsoComp
 end
 
 --[[
@@ -108,7 +164,7 @@ function movearm.get_compensation()
 		local qLLeg = vector.slice(qLegs,1,6)
 		local qRLeg = vector.slice(qLegs,7,12)
 		-- Calculate the COM position
-		local com = K0.calculate_com_pos(qcWaist, qcLArm, qcRArm, qLLeg, qRLeg, 0, 0, 0)
+		local com = K0.calculate_com_pos(qcWaist or {0,0}, qcLArm, qcRArm, qLLeg, qRLeg, 0, 0, 0)
 		local uCOM = util.pose_global(
 			vector.new({com[1]/com[4], com[2]/com[4],0}),
 			uTorsoAdapt
@@ -116,67 +172,6 @@ function movearm.get_compensation()
 		uTorsoAdapt = uTorsoAdapt + adapt_factor * (uTorso - uCOM)
 	end
 	return uTorsoAdapt, uTorso
-end
-
-function movearm.apply_q_compensation(qLGoal, qRGoal, uTorsoAdapt, uTorso0)
-	local fkL = K.forward_larm(qLGoal)
-	local fkR = K.forward_rarm(qRGoal)
-	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
-	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
-	local fkLComp = trComp * fkL
-	local fkRComp = trComp * fkR
-	return fkLComp, fkRComp, uTorsoComp, uTorso0
-end
-
--- uTorsoAdapt, uTorso0: global frame torso positions
-function movearm.apply_tr_compensation(fkL, fkR, uTorsoAdapt, uTorso0)
-	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso0)
-	local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
-	local fkLComp = trComp * fkL
-	local fkRComp = trComp * fkR
-	return fkLComp, fkRComp, uTorsoComp, uTorso0
-end
-
--- list entry format: {tr, tr, }
--- Uses the quasi-static compensation
-function movearm.path_iterators(list)
-	-- return a coroutine
-	return coroutine.create(function()
-		for i, entry in ipairs(list) do
-			local lGoal, rGoal, via, lw, rw = unpack(entry)
-			local go = movearm[via]
-			-- FK goals for use with copmensation
-			local fkLComp, fkRComp, uTorsoComp, uTorso0
-			local uTorsoAdapt, uTorso = movearm.get_compensation()
-			if via:find'tr' then
-				fkLComp, fkRComp, uTorsoComp, uTorso0 =
-					movearm.apply_tr_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
-			elseif via:find'q' then
-				fkLComp, fkRComp, uTorsoComp, uTorso0 =
-					movearm.apply_q_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
-			else
-					fkLComp, fkRComp = lGoal, rGoal
-					fkLComp, fkRComp, uTorsoComp, uTorso0 =
-					movearm.apply_tr_compensation(lGoal, rGoal, uTorsoAdapt, uTorso)
-			end
-			local msg = {go(fkLComp, fkRComp,false,false,lw,rw)}
-			table.insert(msg, uTorsoComp)
-			table.insert(msg, uTorso0)
-			coroutine.yield(msg)
-		end
-	end)
-end
-
-function movearm.model_iterators(co, model)
-	-- return a coroutine
-	return coroutine.create(function()
-		local via = 'goto_tr_via_q'
-		while coroutine.status(co)~='dead' do
-			local ok, tfHandGoal, model = coroutine.resume(co, model)
-			local go = movearm[via]
-			coroutine.yield({go(nil, tfHandGoal)})
-		end
-	end)
 end
 
 return movearm

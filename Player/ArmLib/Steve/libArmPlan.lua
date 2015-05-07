@@ -143,50 +143,6 @@ local function find_shoulder(self, tr, qArm, weights)
 	return iqArms[ibest], fks[ibest]
 end
 
--- TODO: Optimize the feedforward ratio
-local function joint_iter(self, qGoal0, qArm0, SANITIZE)
-	local res_ang = self.res_ang
-	local dq_max = res_ang * self.ones
-	local dq_min = -1 * dq_max
-	local qGoal = clamp_vector(qGoal0, self.qMin, self.qMax)
-	local dqdt_limit = self.dqdt_limit
-	if SANITIZE then sanitize0(qGoal, qArm0) end
-	local distance0 = vnorm(qGoal - qArm0)
-	local qPrev
-	return function(cur_qArm, dt)
-		-- Feedback
-		local dqFB = qGoal - cur_qArm
-		local distanceFB = vnorm(dqFB)
-		-- Check if done
-		if distanceFB < res_ang then return nil, qGoal end
-		local qWaypointFB = cur_qArm + clamp_vector(dqFB, dq_min, dq_max)
-		if dt then
-			sanitize(qWaypointFB, cur_qArm, dt, dqdt_limit)
-		else
-			sanitize0(qWaypointFB, cur_qArm)
-		end
-		-- Feedforward
-		qPrev = qPrev or cur_qArm
-		local dqFF = qGoal - cur_qArm --qPrev
-		local distanceFF = vnorm(dqFF)
-		local qWaypointFF
-		if distanceFF < res_ang then
-			qWaypointFF = qGoal
-		else
-			qWaypointFF = qPrev + clamp_vector(dqFF, dq_min, dq_max)
-			if dt then
-				sanitize(qWaypointFF, qPrev, dt, dqdt_limit)
-			else
-				sanitize0(qWaypointFF, qPrev)
-			end
-		end
-		-- Mix Feedback and Feedforward
-		local qWaypoint = 0.2 * qWaypointFB + 0.8 * qWaypointFF
-		qPrev = qWaypoint
-		return distanceFB, qWaypoint
-	end, qGoal, distance0
-end
-
 -- Give a time to complete this
 function libArmPlan.joint_preplan(self, qGoal, qArm0, duration)
 	assert(type(qGoal)=='table', 'Bad qGoal table')
@@ -217,7 +173,7 @@ function libArmPlan.joint_preplan(self, qGoal, qArm0, duration)
 	-- Set the path
 	local qArm = qArm0
 	-- Yield the joint values and % complete
-	coroutine.yield(qArm0, 0)
+	coroutine.yield()
 	for i=2, nSteps do
 		qArm = qArm + dqdtAverage * dt
 		coroutine.yield(qArm, i/nSteps)
@@ -260,7 +216,7 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights)
 	local qArmFGuess = self:find_shoulder(trGoal, qArm0, shoulder_weights)
 
 	local qArm = qArm0
-	coroutine.yield(qArm, 0)
+	coroutine.yield(qArmFGuess)
 	local done = false
 	local n = 0
 	repeat
@@ -354,8 +310,6 @@ function libArmPlan.new_planner(qMin, qMax, dqdt_limit, res_pos, res_ang)
 		res_pos = res_pos or 0.01,
 		res_ang = res_ang or 2*DEG_TO_RAD,
 		shoulderAngles = nil,
-		--
-		joint_iter = joint_iter,
 		--
 		get_delta_qarm = get_delta_qarm,
 		--

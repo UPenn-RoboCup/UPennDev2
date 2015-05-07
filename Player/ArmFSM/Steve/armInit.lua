@@ -93,6 +93,8 @@ function state.update()
 	if lStatus=='dead' and rStatus=='dead' then
 		if IS_YAW_SAFE then return 'done' end
 		IS_YAW_SAFE = true
+		-- No longer need to use for future arm motions
+		USE_SAFE_YAW = false
 		lco, rco = movearm.goto(Config.arm.trLArm0, Config.arm.trRArm0)
 	end
 

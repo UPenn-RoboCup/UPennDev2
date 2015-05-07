@@ -12,7 +12,8 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
-local lco, rco
+local USE_COMPENSATION = true
+local lco, rco, uComp
 local okL, qLWaypoint
 local okR, qRWaypoint
 
@@ -22,22 +23,11 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	lco, rco = movearm.goto(Config.arm.trLArm1, Config.arm.trRArm1)
+	lco, rco, uComp = movearm.goto(Config.arm.configL1, Config.arm.configR1, USE_COMPENSATION)
 	okL = false
 	okR = false
+	print('uComp', uComp and unpack(uComp))
 
-	-- Set Hardware limits in case
-  for i=1,5 do
-    Body.set_larm_torque_enable(1)
-    Body.set_rarm_torque_enable(1)
-    Body.set_larm_command_velocity(500)
-    Body.set_rarm_command_velocity(500)
-    Body.set_larm_command_acceleration(50)
-    Body.set_rarm_command_acceleration(50)
-    Body.set_larm_position_p(8)
-    Body.set_rarm_position_p(8)
-    if not IS_WEBOTS then unix.usleep(1e5) end
-  end
 end
 
 function state.update()
@@ -79,21 +69,13 @@ function state.update()
 		return 'done'
 	end
 
+	-- Set the compensation
+	mcm.set_stance_uTorsoComp(uComp)
+
 end
 
 function state.exit()
 	io.write(state._NAME, ' Exit\n')
-
-	-- Undo the hardware limits
-  for i=1,3 do
-    Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
-    Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
-    Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
-    Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
-    Body.set_larm_position_p(32)
-    Body.set_rarm_position_p(32)
-    if not IS_WEBOTS then unix.usleep(1e5) end
-  end
 
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()

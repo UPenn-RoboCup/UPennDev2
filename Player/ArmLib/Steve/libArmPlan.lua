@@ -274,10 +274,13 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		--print('dist_components', unpack(dist_components))
 		qArmSensed = coroutine.yield(qArm, dist_components)
 		-- If we are lagging badly, then there may be a collision
-		local qLag = qArmSensed - qArm
+		local dqLag = qArm - qArmSensed
 		local imax_lag, max_lag = 0, 0
-		for i, q in ipairs(qLag) do
-			assert(fabs(q)<3*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+		-- TODO: must incorporate the dq, since that may be high
+		for i, dq in ipairs(dqLag) do
+			--print(dq, dqCombo[i])
+			--print((dq-dqCombo[i])*RAD_TO_DEG)
+			assert(fabs(dq-dqCombo[i])<2*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
 		end
 		-- Check if we are close enough
 		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then

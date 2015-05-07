@@ -116,8 +116,8 @@ function movearm.goto(l, r, add_compensation)
 	local lco = gen_via[l.via](lPlanner, l, qLArm)
 	local rco = gen_via[r.via](rPlanner, r, qRArm)
 	if type(lco)=='string' or type(rco)=='string' then
-		print('lco', lco)
-		print('rco', rco)
+		print('goto | lco', lco)
+		print('goto | rco', rco)
 		return lco, rco
 	end
 

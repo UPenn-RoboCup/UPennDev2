@@ -44,6 +44,8 @@ do
 		:set_update_rate(100)
 		:set_shoulder_granularity(2*DEG_TO_RAD)
 end
+movearm.lPlanner = lPlanner
+movearm.rPlanner = rPlanner
 
 local function get_compensation(qcLArm, qcRArm, qcWaist)
 	-- Legs are a bit different, since we are working in IK space

@@ -19,6 +19,10 @@ local okL, qLWaypoint
 local okR, qRWaypoint
 
 local dir = 1
+local USE_PLUGIN = true
+local pco
+
+local pStatus, vwDoor
 
 function state.entry()
   io.write(state._NAME, ' Entry\n')
@@ -38,6 +42,22 @@ function state.entry()
 	}
 	dir = -dir
 
+	if USE_PLUGIN then
+		local model ={
+			x = 0.5,
+			y = -0.21,
+			z = 0,
+			yaw = 0,
+			hinge = -1,
+			roll = -math.pi/2,
+			hand = 'right'
+
+		}
+		if not pco then
+			pco = plugins.gen('pulldoor', model)
+		end
+	end
+
 	lco, rco, uComp = movearm.goto(configL, configR, USE_COMPENSATION)
 	okL = false
 	okR = false
@@ -52,13 +72,27 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
+
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
-	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
+	if lStatus=='suspended' then
+		okL, qLWaypoint = coroutine.resume(lco, qLArm)
+	end
+	if rStatus=='suspended' then
+		okR, qRWaypoint = coroutine.resume(rco, qRArm, vwDoor)
+	end
+
+	-- Try the model
+	if coroutine.status(pco)=='suspended' then
+		pStatus, vwDoor = coroutine.resume(pco, qLArm, qRArm)
+		if not pStatus then
+			print('pco', pStatus, vwDoor)
+			vwDoor = nil
+		end
+	end
 
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint)

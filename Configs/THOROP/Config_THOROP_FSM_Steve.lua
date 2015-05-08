@@ -112,7 +112,6 @@ fsm.Arm = {
 	{'armReady', 'teleop', 'armTeleop'},
 	{'armReady', 'teleopraw', 'armTeleopRaw'},
 	{'armReady', 'init', 'armInit'},
-	{'armReady', 'door', 'armDoor'},
 	{'armReady', 'jacobian', 'armJacobian'},
 	-- armJacobian is for testing purposes only!
 	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
@@ -124,14 +123,11 @@ fsm.Arm = {
 	{'armTeleop', 'teleop', 'armTeleop'},
 	{'armTeleop', 'ready', 'armReady'},
 	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
-	{'armTeleop', 'door', 'armDoor'}, -- eh...
 	-- Teleop Raw
 	{'armTeleopRaw', 'init', 'armInit'},
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
 	{'armTeleopRaw', 'ready', 'armReady'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
-	--
-	{'armDoor', 'done', 'armTeleop'}, -- eh...
 }
 
 fsm.Motion = {

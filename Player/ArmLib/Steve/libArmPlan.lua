@@ -494,6 +494,7 @@ function libArmPlan.jacobian_smart_velocity(self, vwTarget, qArm0, weights, time
 		for i, q in ipairs(qArm) do qArm[i] = min(max(qMin[i], q), qMax[i]) end
 		-- Yield the progress
 		qArmSensed, vwTargetNew, weightsNew = coroutine.yield(qArm, n)
+		--print('vwTargetNew', unpack(vwTargetNew))
 		-- Smart adaptation
 		vwTarget = vwTargetNew or vwTarget
 		weights = weightsNew or weights

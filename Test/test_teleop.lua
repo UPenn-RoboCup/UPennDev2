@@ -139,6 +139,7 @@ char_lut['2'] = function()
 end
 char_lut['3'] = function()
 	head_ch:send'teleop'
+	arm_ch:send'jacobian'
 end
 char_lut['4'] = function()
 	head_ch:send'teleop'

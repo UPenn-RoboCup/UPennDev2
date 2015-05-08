@@ -32,20 +32,20 @@ function state.entry()
 
 	local configL = {
 		vw = {0,-1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		t = 3,
-		via='velocity'
+		via='velocity',
+		weights = {1,1,0},
 	}
 	local configR = {
 		vw = {0,1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		t = 3,
-		via='velocity'
+		via='velocity',
+		weights = {1,1,0},
 	}
 	dir = -dir
 
 	if USE_PLUGIN then
 		local model ={
-			x = 0.5,
-			y = -0.21,
+			x = 0.55,
+			y = -0.2,
 			z = 0,
 			yaw = 0,
 			hinge = -1,
@@ -71,7 +71,6 @@ function state.update()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
-
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)

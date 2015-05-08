@@ -34,11 +34,11 @@ function plugins.pulldoor(m)
 		local drpy = T.to_rpy(here)
 		local components = {vnorm(dp), vnorm(drpy)}
 		--print('components', unpack(components))
-		return {dp[1], dp[2], dp[3], unpack(drpy)}, components
+		return 10*vector.new{dp[1], dp[2], dp[3], unpack(drpy)}, components
 	end
 
-	local n_ph = 10
-	local yawGoal = math.pi / 4
+	local n_ph = 50
+	local yawGoal = math.pi / 6
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
@@ -85,7 +85,7 @@ function plugins.pulldoor(m)
 		local fkRArm = rPlanner.forward(qRArm)
 		vw, components = get_vw(tfHandle, fkRArm)
 		--print('components', components[1], components[2]*RAD_TO_DEG)
-		if components[1]<0.01 and components[2]<2*DEG_TO_RAD then
+		if components[1]<0.02 and components[2]<3*DEG_TO_RAD then
 			ph = ph + 1
 			print(ph, 'pHandle', vector.new(pHandle))
 		end

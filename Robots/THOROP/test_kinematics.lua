@@ -24,14 +24,20 @@ print()
 local qLArm = vector.new({0,0,0, 0, 0,0,0})*DEG_TO_RAD
 local qWaist = vector.new({0, 0})*DEG_TO_RAD
 local qLArm2 = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
+local qRArm = vector.new({0,0,0, 0, 0,0,0})*DEG_TO_RAD
 
 -- Correctness
 fL = vector.new(K.l_arm_torso_7(qLArm, 0, qWaist, 0.125, 0,0))
 fL2 = vector.new(T.position6D(K2.forward_larm(qLArm, qWaist)))
-
 print('Forward Left')
 print(fL)
 print(fL2)
+
+fR = vector.new(K.r_arm_torso_7(qRArm, 0, qWaist, 0.125, 0,0))
+fR2 = vector.new(T.position6D(K2.forward_rarm(qRArm, qWaist)))
+print('Forward Right')
+print(fR)
+print(fR2)
 
 ----[[
 local qs = {}
@@ -43,10 +49,13 @@ dt_all = vector.zeros(2)
 for i, q in ipairs(qs) do
 	t0 = unix.time()
 	fL = vector.new(K.l_arm_torso_7(q, 0, qWaist, 0.125,0,0))
+	fR = vector.new(K.r_arm_torso_7(q, 0, qWaist, 0.125,0,0))
 	t1 = unix.time()
 	fL2 = vector.new(T.position6D(K2.forward_larm(q, qWaist)))
+	fR2 = vector.new(T.position6D(K2.forward_rarm(q, qWaist)))
 	t2 = unix.time()
 	assert(vector.norm(fL2-fL)<0.001)
+	assert(vector.norm(fR2-fR)<0.001)
 	dt = vector.new{t1-t0, t2-t1}
 	dt_all = dt_all + dt
 end
@@ -225,11 +234,12 @@ local qArm = vector.zeros(7)
 --local qArm = vector.new({180,0,0, 0, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
-local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
+--local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
+local qWaist = vector.new{45,0} * DEG_TO_RAD
 
 local JacArm = K.calculate_arm_jacobian(
 qArm,
-{0,0},
+qWaist,
 {0,0,0}, --rpy angle
 0, --isLeft,
 0,--Config.arm.handoffset.gripper3[1],
@@ -243,25 +253,24 @@ local JT = torch.Tensor(J):transpose(1,2)
 --print('JacArm', unpack(JacArm))
 print('Jacobian')
 util.ptorch(J, 5, 3)
-print('Jacobian Transpose')
-util.ptorch(JT, 5, 3)
+--print('Jacobian Transpose')
+--util.ptorch(JT, 5, 3)
 
 print()
-local J2, JT2 = K2.jacobian(qArm)
+local J2 = torch.Tensor(K2.jacobian(qArm))
 print('Jacobian 2')
 util.ptorch(J2, 5, 3)
-print('Jacobian Transpose 2')
-util.ptorch(JT2, 5, 3)
+--print('Jacobian Transpose 2')
+--util.ptorch(J2:t(), 5, 3)
 --print('COM')
 --print(com)
 --com = torch.Tensor(com)
 --util.ptorch(com, 5, 3)
 
---[[
 print()
-local J3 = torch.Tensor(K2.jac(qArm))
+print('Jacobian Waist')
+local J3 = torch.Tensor(K2.jacobian_waist({qWaist[1], unpack(qArm)}))
 util.ptorch(J3, 5, 3)
---]]
 
 
 print('qArm', qArm)

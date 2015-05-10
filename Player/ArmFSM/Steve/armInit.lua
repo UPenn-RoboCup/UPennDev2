@@ -5,9 +5,6 @@
 local state = {}
 state._NAME = ...
 
-local USE_SAFE_YAW = true
-local IS_YAW_SAFE
-
 local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
@@ -19,6 +16,8 @@ local lco, rco
 local okL, qLWaypoint
 local okR, qRWaypoint
 
+local sequence, s = Config.arm.init
+
 function state.entry()
   io.write(state._NAME, ' Entry\n')
   local t_entry_prev = t_entry
@@ -28,35 +27,25 @@ function state.entry()
 	local qL = Body.get_larm_position()
 	local qR = Body.get_rarm_position()
 
-	IS_YAW_SAFE = true
-  if USE_SAFE_YAW then
-    -- Try to avoid self collisions
-    qL[3] = -20*DEG_TO_RAD
-    qR[3] = 20*DEG_TO_RAD
-    lco, rco = movearm.goto({
-				q = qL, duration = 5, timeout = 7, via='jointspace'
-			},{
-				q = qR, duration = 5, timeout = 7, via='jointspace'
-			})
-    IS_YAW_SAFE = false
-	else
-		lco, rco = movearm.goto(Config.arm.trLArm0, Config.arm.trRArm0)
-  end
+	-- Avoid self collisions. Cannot place into the config, since require reading
+	-- to customize the positions
+	s = 0
+	local stage = {
+		left = {
+			q = qL, duration = 5, timeout = 7,
+			via='jointspace'
+		},
+		right = {
+			q = qR, duration = 5, timeout = 7,
+			via='jointspace'
+		}
+	}
+
+	lco, rco = movearm.goto(stage.left, stage.right)
+
 	okL = false
 	okR = false
 
-	-- Set Hardware limits in case
-  for i=1,5 do
-    Body.set_larm_torque_enable(1)
-    Body.set_rarm_torque_enable(1)
-    Body.set_larm_command_velocity(500)
-    Body.set_rarm_command_velocity(500)
-    Body.set_larm_command_acceleration(50)
-    Body.set_rarm_command_acceleration(50)
-    Body.set_larm_position_p(8)
-    Body.set_rarm_position_p(8)
-    if not IS_WEBOTS then unix.usleep(1e5) end
-  end
 end
 
 function state.update()
@@ -93,40 +82,18 @@ function state.update()
 
 	-- Check if done
 	if lStatus=='dead' and rStatus=='dead' then
-		if IS_YAW_SAFE then return 'done' end
-		IS_YAW_SAFE = true
-		-- No longer need to use for future arm motions
-		USE_SAFE_YAW = false
-		lco, rco = movearm.goto(Config.arm.trLArm0, Config.arm.trRArm0)
+		-- Goto the nextitem in the sequnce
+		s = s + 1
+		local stage = sequence[s]
+		if not stage then return'done' end
+		lco, rco = movearm.goto(stage.left, stage.right)
 	end
 
 end
 
 function state.exit()
-	io.write(state._NAME, ' Exit\n')
+	print(state._NAME..' Exit')
 
-	-- Undo the hardware limits
-  for i=1,3 do
-    Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
-    Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
-    Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
-    Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
-    Body.set_larm_position_p(32)
-    Body.set_rarm_position_p(32)
-    if not IS_WEBOTS then unix.usleep(1e5) end
-  end
-
-	if not okL or not okR then
-		local qLArm = Body.get_larm_position()
-		local qRArm = Body.get_rarm_position()
-		hcm.set_teleop_larm(qLArm)
-		hcm.set_teleop_rarm(qRArm)
-	else
-		local qcLArm = Body.get_larm_command_position()
-		local qcRArm = Body.get_rarm_command_position()
-		hcm.set_teleop_larm(qcLArm)
-		hcm.set_teleop_rarm(qcRArm)
-	end
 end
 
 return state

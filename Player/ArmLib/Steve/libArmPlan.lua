@@ -214,7 +214,7 @@ function libArmPlan.joint_preplan(self, qArmF, qArm0, timeout, duration)
 		local imax_lag, max_lag = 0, 0
 		for i, dq in ipairs(dqLag) do
 			local lag = fabs(dq-dqUsed[i])
-			assert(lag<3*DEG_TO_RAD, 'joint_preplan2 | Bad Final Lag: '..tostring(lag))
+			--assert(lag<3*DEG_TO_RAD, 'joint_preplan2 | Bad Final Lag: '..tostring(lag))
 		end
 		--print('final dist', dist*RAD_TO_DEG)
 		if (not dqAverage) and (dist < 0.5*DEG_TO_RAD) then break end
@@ -284,6 +284,7 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 	local done = false
 	local n = 0
 	local max_usage
+	local path = {}
 	repeat
 		n = n + 1
 		local vwTarget = {unpack(dp)}
@@ -318,6 +319,9 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		-- Yield the progress
 		dp, drpy, dist_components = get_distance(self, qArm, trGoal)
 		--print('dist_components', unpack(dist_components))
+
+		table.insert(path, qArm)
+
 		qArmSensed = coroutine.yield(qArm, dist_components)
 		-- If we are lagging badly, then there may be a collision
 		local dqLag = qArm - qArmSensed
@@ -326,13 +330,17 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 			--print(dq, dqCombo[i])
 			--print((dq-dqCombo[i])*RAD_TO_DEG)
 			local lag = fabs(dq-dqCombo[i])
-			assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Lag: '..tostring(lag))
+			--assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Lag: '..tostring(lag))
 		end
 		-- Check if we are close enough
 		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
 			break
 		end
 	until n > nStepsTimeout
+
+	--for i, p in ipairs(oath) do end
+
+
 	print(n, 'jacobian steps')
 	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0})
@@ -373,7 +381,7 @@ function libArmPlan.jacobian_preplan(self, trGoal, qArm0, shoulder_weights, time
 		local imax_lag, max_lag = 0, 0
 		for i, dq in ipairs(dqLag) do
 			local lag = fabs(dq-dqArmF[i])
-			assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Final Lag: '..tostring(lag))
+			--assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Final Lag: '..tostring(lag))
 		end
 		--print('final dist', dist*RAD_TO_DEG)
 		if dist < 0.5*DEG_TO_RAD then break end
@@ -441,7 +449,7 @@ function libArmPlan.jacobian_velocity(self, vwTarget, qArm0, timeout)
 		for i, dq in ipairs(dqLag) do
 			--print(dq, dqCombo[i])
 			--print((dq-dqCombo[i])*RAD_TO_DEG)
-			assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+			--assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
 		end
 	until n > nStepsTimeout
 

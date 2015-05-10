@@ -126,9 +126,9 @@ function movearm.goto(l, r, add_compensation)
 
 	lco = l and type(gen_via[l.via])=='function' and gen_via[l.via](lPlanner, l, qLArm)
 	rco = r and type(gen_via[r.via])=='function' and gen_via[r.via](rPlanner, r, qRArm)
-	if type(lco)=='string' or type(rco)=='string' then
-		print('goto | lco', lco)
-		print('goto | rco', rco)
+	if type(lco)~='thread' or type(rco)~='thread' then
+		print('goto | lco', lco, l)
+		print('goto | rco', rco, r)
 		return lco, rco
 	end
 

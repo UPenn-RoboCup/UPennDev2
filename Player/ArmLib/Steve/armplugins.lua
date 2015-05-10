@@ -8,6 +8,25 @@ local vnorm = vector.norm
 local lPlanner = movearm.lPlanner
 local rPlanner = movearm.rPlanner
 
+local function get_vw(tfObject, fkArm)
+	assert(tfObject)
+	assert(fkArm)
+	local invArm = T.inv(fkArm)
+	local here = invArm * tfObject
+	local dp = T.position(here)
+	local drpy = T.to_rpy(here)
+	return vector.new{dp[1], dp[2], dp[3], unpack(drpy)}, vnorm(dp), vnorm(drpy)
+end
+
+
+function plugins.turnvalve(m)
+
+end
+
+function plugins.pushdoor(m)
+
+end
+
 -- Open Pull Door
 --[[
 x: World x coordinate of the handle
@@ -25,71 +44,42 @@ function plugins.pulldoor(m)
 	-- Assume Relative to torso
 
 	-- TODO: Search over the roll to keep smooth
-	local function get_vw(tfObject, fkArm)
-		assert(tfObject)
-		assert(fkArm)
-		local invArm = T.inv(fkArm)
-		local here = invArm * tfObject
-		local dp = T.position(here)
-		local drpy = T.to_rpy(here)
-		local components = {vnorm(dp), vnorm(drpy)}
-		--print('components', unpack(components))
-		return 10*vector.new{dp[1], dp[2], dp[3], unpack(drpy)}, components
-	end
-
-	local n_ph = 50
-	local yawGoal = math.pi / 6
-	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
 	local pHinge = T.position(tfHinge)
 	tfHinge = T.trans(unpack(pHinge))
-	print('tfHinge')
-	print(tfHinge)
-
 	local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
-	print('tfHandle')
-	print(tfHandle)
 
-	-- Find where we are
-	local components
-	local vw
+	local vw, distp, dista
 	local qLArm, qRArm = coroutine.yield()
-	-- TODO: Add a timeout here for reaching the handle
+	-- TODO: Add a timeout here for reaching the handle...
 	repeat
-		local fkLArm = lPlanner.forward(qLArm)
 		local fkRArm = rPlanner.forward(qRArm)
-		vw, components = get_vw(tfHandle, fkRArm)
-		assert(vw)
-		assert(components)
+		vw, distp, dista = get_vw(tfHandle, fkRArm)
 		qLArm, qRArm = coroutine.yield(vw)
-		--print('dp', unpack(dp))
-		--print('drpy', vector.new(drpy)*RAD_TO_DEG)
-		--print('components', components[1], components[2]*RAD_TO_DEG)
-	until components[1]<0.01 and components[2]<2*DEG_TO_RAD
+	until distp<0.01 and dista<2*DEG_TO_RAD
 	print('At the handle')
 
-	--for ph = ph0, n_ph do
+	local n_ph = 50
+	local yawGoal = math.pi / 6
+	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
 	repeat
 		m.ph = ph
 		m.yaw = (ph / n_ph) * yawGoal
-		--print('m.yaw', m.yaw)
 		-- Know where the handle is
 		local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
 		local pHandle = T.position(tfHandle)
 		-- Roll for the grip
 		local tfGrip = T.rotX(m.roll)
 		local tfHandGoal = tfHandle * tfGrip
-		local fkLArm = lPlanner.forward(qLArm)
 		local fkRArm = rPlanner.forward(qRArm)
-		vw, components = get_vw(tfHandle, fkRArm)
+		vw, distp, dista = get_vw(tfHandle, fkRArm)
 		--print('components', components[1], components[2]*RAD_TO_DEG)
-		if components[1]<0.02 and components[2]<3*DEG_TO_RAD then
+		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
 			print(ph, 'pHandle', vector.new(pHandle))
 		end
-
 		qLArm, qRArm = coroutine.yield(vw)
 	until ph>=n_ph
 	print('Done routine')

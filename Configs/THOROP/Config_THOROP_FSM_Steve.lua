@@ -5,7 +5,7 @@ local fsm = {}
 Config.torque_legs = true
 
 -- Update rate in Hz
-fsm.update_rate = 100
+fsm.update_rate = 120
 
 -- Which FSMs should be enabled?
 fsm.enabled = {

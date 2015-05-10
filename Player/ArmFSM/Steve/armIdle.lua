@@ -24,7 +24,21 @@ function state.entry()
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()
 
-  mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
+	--[[
+		-- Set Hardware limits in case
+  for i=1,3 do
+    Body.set_larm_torque_enable(1)
+    Body.set_rarm_torque_enable(1)
+    Body.set_larm_command_velocity(500)
+    Body.set_rarm_command_velocity(500)
+    Body.set_larm_command_acceleration(50)
+    Body.set_rarm_command_acceleration(50)
+    Body.set_larm_position_p(8)
+    Body.set_rarm_position_p(8)
+    if not IS_WEBOTS then unix.usleep(1e5) end
+  end
+	--]]
+
 end
 
 function state.update()
@@ -49,8 +63,17 @@ end
 
 function state.exit()
   --print(state._NAME..' Exit' )
---  Body.set_larm_torque_enable(1)
---  Body.set_rarm_torque_enable(1)
+	-- Undo the hardware limits
+  for i=1,3 do
+    Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
+    Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
+    Body.set_larm_command_acceleration({200,200,200,200,200,200,200})
+    Body.set_rarm_command_acceleration({200,200,200,200,200,200,200})
+    Body.set_larm_position_p(32)
+    Body.set_rarm_position_p(32)
+    if not IS_WEBOTS then unix.usleep(1e5) end
+  end
+
 end
 
 return state

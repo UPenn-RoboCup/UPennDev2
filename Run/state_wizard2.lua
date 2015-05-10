@@ -35,12 +35,19 @@ local function co_fsm(sm, en)
 end
 
 local state_threads = {}
+local state_times = {}
 for sm, en in pairs(Config.fsm.enabled) do
 	local co = coroutine.create(co_fsm)
 	state_threads[sm] = co
+	state_times[sm] = 0
 	-- Initial setup
 	local status, msg = coroutine.resume(co, sm, en)
 	if not status then print(msg) end
+end
+
+if IS_WEBOTS then
+  Body.entry()
+  Body.update()
 end
 
 -- Timing
@@ -48,24 +55,51 @@ local t_sleep = 1 / Config.fsm.update_rate
 local t0 = get_time()
 local t_debug = t0
 local debug_interval = 5.0
+local count = 0
 repeat
-  local t = get_time()
+	count = count + 1
+  local t_start = get_time()
 
+	--print()
   -- Update the state machines
   for name,th in pairs(state_threads) do
-		if coroutine.status(th)=='suspended' then
+		if coroutine.status(th)~='dead' then
+			local t00 = get_time()
 			local status, msg = coroutine.resume(th, running)
+			local t11 = get_time()
+			state_times[name] = state_times[name] + (t11-t00)
+			--print(name, t11-t00)
 			if not status then print(string.format('%s: %s', util.color(name, 'red'), msg)) end
 		end
 	end
-		-- If time for debug
-	if t-t_debug>debug_interval then
-		t_debug = t
+
+	--print('Total',get_time()-t_start)
+
+	-- If time for debug
+	local dt_debug = t_start - t_debug
+	if dt_debug>debug_interval then
+		local times_str = {}
+		local total = 0
+		for name,time in pairs(state_times) do
+			--print(time, count)
+			table.insert(times_str, string.format('%s: %g ms average', name, 1e3*time/count))
+			total = total + time
+			state_times[name] = 0
+		end
+
 		local kb = collectgarbage('count')
-		print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, kb))
+		print(string.format('\nState | Uptime: %.2f sec, Mem: %d kB, %.2f Hz %g ms cycle\n%s',
+				t_start-t0, kb, count/dt_debug, 1e3*total/count, table.concat(times_str, '\n')))
+		count = 0
+		t_debug = t_start
+		--collectgarbage('step')
   end
 
-	collectgarbage('step')
-	local t_s = (t_sleep - (get_time() - t))
-	if t_s>0 then usleep(1e6 * t_s) end
+	if IS_WEBOTS then
+		Body.update()
+	else
+		local t_end = get_time()
+		local t_s = (t_sleep - (t_end - t_start))
+		if t_s>0 then usleep(1e6 * t_s) end
+	end
 until not running

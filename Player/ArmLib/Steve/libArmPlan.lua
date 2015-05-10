@@ -241,7 +241,7 @@ function libArmPlan.joint_preplan(self, qArm0, plan)
 			--assert(lag<3*DEG_TO_RAD, 'joint_preplan2 | Bad Final Lag: '..tostring(lag))
 		end
 	end
-	return dqArmF
+	return qArmF
 end
 
 

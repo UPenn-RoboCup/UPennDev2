@@ -2,6 +2,7 @@ local plugins = {}
 -- Allowed to use Body here
 local Body = require'Body'
 local T = require'Transform'
+local tr6D = require'Transform'.transform6D
 local movearm = require'movearm'
 local util = require'util'
 local vector = require'vector'
@@ -49,7 +50,8 @@ function plugins.pulldoor(m)
 
 	-- Use velocity control
 	local configL = {
-		via='jacobian_velocity',
+		tr=tr6D{0.2, 0.2, -0.1,  0,0*DEG_TO_RAD,-90*DEG_TO_RAD}, timeout=15,
+		via='joint_preplan', weights = {1,0,1}
 	}
 	local configR = {
 		via='jacobian_velocity',

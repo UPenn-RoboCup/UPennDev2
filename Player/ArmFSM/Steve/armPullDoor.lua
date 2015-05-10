@@ -58,6 +58,8 @@ function state.update()
 		if not okP then
 			print(state._NAME, 'pco', okL, lmovement)
 			return'teleopraw'
+		elseif lmovement.via then
+			-- A new movement type for lco
 		end
 	end
 

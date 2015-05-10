@@ -12,10 +12,11 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
-local USE_COMPENSATION = true
 local lco, rco, uComp
 local okL, qLWaypoint
 local okR, qRWaypoint
+
+local sequence, s = Config.arm.ready
 
 function state.entry()
   io.write(state._NAME, ' Entry\n')
@@ -23,7 +24,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	lco, rco, uComp = movearm.goto(Config.arm.configL1, Config.arm.configR1, USE_COMPENSATION)
+	s = 1
+	local stage = sequence[s]
+	lco, rco = movearm.goto(stage.left, stage.right)
+
 	okL = false
 	okR = false
 	if uComp then print('uComp', unpack(uComp)) end
@@ -63,7 +67,11 @@ function state.update()
 
 	-- Check if done
 	if lStatus=='dead' and rStatus=='dead' then
-		return 'done'
+		-- Goto the nextitem in the sequnce
+		s = s + 1
+		local stage = sequence[s]
+		if not stage then return'done' end
+		lco, rco = movearm.goto(stage.left, stage.right)
 	end
 
 	-- Set the compensation: Not needed

@@ -44,6 +44,8 @@ do
 		:set_update_rate(100)
 		:set_shoulder_granularity(2*DEG_TO_RAD)
 end
+movearm.lPlanner = lPlanner
+movearm.rPlanner = rPlanner
 
 local function get_compensation(qcLArm, qcRArm, qcWaist)
 	-- Legs are a bit different, since we are working in IK space
@@ -84,54 +86,28 @@ local function get_compensation(qcLArm, qcRArm, qcWaist)
 	return uTorsoComp
 end
 
-local gen_via = {}
-function gen_via.jointspace(planner, goal, q0)
-	if not goal then return end
-	local co = coroutine.create(P.joint_preplan)
-	if goal.tr then
-		goal.q = planner:find_shoulder(goal.tr, q0, goal.weights)
-		if not q then return 'via jointspace | No target shoulder solution' end
-	else
-		goal.tr = planner.forward(goal.q)
-	end
-	local ok, msg = coroutine.resume(co, planner, goal.q, q0, goal.timeout, goal.duration)
-	if not ok then co = msg end
-	return co
-end
-
-function gen_via.jacobian(planner, goal, q0)
-	if not goal then return end
-	local co = coroutine.create(P.jacobian_preplan)
-	if not goal.tr then goal.tr = planner.forward(goal.q) end
-	local ok, msg = coroutine.resume(co, planner, goal.tr, q0, goal.weights, goal.timeout)
-	if not ok then co = msg else goal.q = msg end
-	return co
-end
-function gen_via.velocity(planner, goal, q0)
-	if not goal then return end
-	if not goal.vw then return end
-	local co = coroutine.create(P.jacobian_velocity)
-	local ok, msg = coroutine.resume(co, planner, goal.vw, q0, goal.timeout)
-	if not ok then co = msg else goal.q = msg end
-	return co
-end
-
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto(l, r, add_compensation)
 	local lco, rco
 	local qLArm = Body.get_larm_command_position()
 	local qRArm = Body.get_rarm_command_position()
 
-	lco = l and type(gen_via[l.via])=='function' and gen_via[l.via](lPlanner, l, qLArm)
-	rco = r and type(gen_via[r.via])=='function' and gen_via[r.via](rPlanner, r, qRArm)
-	if type(lco)=='string' or type(rco)=='string' then
-		print('goto | lco', lco)
-		print('goto | rco', rco)
-		return lco, rco
+	local lplan = P[l.via]
+	if type(lplan)=='function' then
+		lco = coroutine.create(lplan)
+		local ok, msg = coroutine.resume(lco, lPlanner, qLArm, l)
+		if not ok then print('goto l |', msg) end
+	end
+	local rplan = P[r.via]
+	if type(rplan)=='function' then
+		rco = coroutine.create(rplan)
+		local ok, msg = coroutine.resume(rco, rPlanner, qRArm, r)
+		if not ok then print('goto r |', msg) end
 	end
 
-	-- Add compensation
+	-- TODO: Add compensation again
 	local uTorsoComp
+	--[[
 	if add_compensation then
 		uTorsoComp = get_compensation(l.q, r.q, qcWaist)
 		local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
@@ -145,6 +121,7 @@ function movearm.goto(l, r, add_compensation)
 		lco = gen_via[l.via](lPlanner, l, qLArm)
 		rco = gen_via[r.via](rPlanner, r, qRArm)
 	end
+			--]]
 
 	return lco, rco, uTorsoComp
 end

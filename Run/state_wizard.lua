@@ -4,114 +4,123 @@
 -- (c) Stephen McGill    --
 ---------------------------
 dofile'../fiddle.lua'
-local Body = require('Body')
 -- Cache some functions
-local get_time, usleep = Body.get_time, unix.usleep
+local get_time, usleep = unix.time, unix.usleep
+
 -- Cleanly exit on Ctrl-C
 local running = true
 local function shutdown() running = false end
-local signal
-if not IS_WEBOTS then
-  signal = require'signal'
-  signal.signal("SIGINT", shutdown)
-  signal.signal("SIGTERM", shutdown)
-end
 
-local util = require'util'
-local vector = require'vector'
-require'mcm'
 local lW, uOdometry0
+
 if not IS_WEBOTS then
+	local signal = require'signal'
+	signal.signal("SIGINT", shutdown)
+	signal.signal("SIGTERM", shutdown)
+	-- TODO: Check this out
+	require'mcm'
   lW=require'libWorld'
   lW.entry()
 end
 
-local state_ch = require'simple_ipc'.new_subscriber('state!')
-
--- Load the FSMs and attach event handler
-local state_machines = {}
-local function load_fsm ()
-  for sm, en in pairs(Config.fsm.enabled) do
-		if en then
-			local my_fsm = require(sm..'FSM')
-			assert(type(my_fsm)=='table', "Bad FSM: "..sm)
-			local set_gcm_fsm = gcm and gcm['set_fsm_'..sm]
-			if set_gcm_fsm then
-				my_fsm.sm:set_state_debug_handle(function(cur_state_name, event)
-					set_gcm_fsm(cur_state_name)
-				end)
-				set_gcm_fsm('UNKNOWN')
-			end
-			state_machines[sm] = my_fsm
-			print('State | Loaded', sm)
-		end
-  end
+local function co_fsm(sm, en)
+	assert(type(sm)=='string', 'State | Not a proper name')
+	assert(en, 'State | '..sm..' not enabled')
+	local fsm = require(sm..'FSM')
+	assert(type(fsm)=='table', "State | Bad FSM: "..sm)
+	local set_gcm_fsm = gcm['set_fsm_'..sm]
+	assert(set_gcm_fsm, 'State | No gcm entry for '..sm)
+	--[[
+	my_fsm.sm:set_state_debug_handle(function(cur_state_name, event)
+		set_gcm_fsm(cur_state_name)
+	end)
+	--]]
+	fsm.sm:set_state_debug_handle(set_gcm_fsm)
+	set_gcm_fsm''
+	-- Run the stuff
+	fsm:entry()
+	while coroutine.yield() do fsm:update() end
+	fsm:exit()
 end
 
-if not Config.fsm.disabled then load_fsm() end
-
--- Timing
-local t_sleep
-if not IS_WEBOTS then
-	t_sleep = 1 / Config.fsm.update_rate
+local state_threads = {}
+local state_times = {}
+for sm, en in pairs(Config.fsm.enabled) do
+	local co = coroutine.create(co_fsm)
+	state_threads[sm] = co
+	state_times[sm] = 0
+	-- Initial setup
+	local status, msg = coroutine.resume(co, sm, en)
+	if not status then print(msg) end
 end
-local t0, t = get_time()
-local debug_interval, t_debug = 5.0, t0
 
--- Entry
-for _, my_fsm in pairs(state_machines) do
-  my_fsm:entry()
-end
 if IS_WEBOTS then
   Body.entry()
   Body.update()
 end
--- Update loop
-while running do
-  t = get_time()
 
-  local events = state_ch:receive(true)
-  if events then
-    for _, e in ipairs(events) do
-      if e=='reset' and Body.WebotsBody then
-        Body.WebotsBody.reset()
-      end
-    end
-  end
+-- Timing
+local t_sleep = 1 / Config.fsm.update_rate
+local t0 = get_time()
+local t_debug = t0
+local debug_interval = 5.0
+local count = 0
+repeat
+	count = count + 1
+  local t_start = get_time()
 
+	--print()
   -- Update the state machines
-  for _,my_fsm in pairs(state_machines) do my_fsm:update() end
-		-- If time for debug
-	if t-t_debug>debug_interval then
-		t_debug = t
-		local kb = collectgarbage('count')
-    if not IS_WEBOTS then --we don't need for webots
-		  print(string.format('State | Uptime: %.2f sec, Mem: %d kB', t-t0, kb))
-    end
-  end
+  for name,th in pairs(state_threads) do
+		if coroutine.status(th)~='dead' then
+			local t00 = get_time()
+			local status, msg = coroutine.resume(th, running)
+			local t11 = get_time()
+			state_times[name] = state_times[name] + (t11-t00)
+			--print(name, t11-t00)
+			if not status then print(string.format('%s: %s', util.color(name, 'red'), msg)) end
+		end
+	end
 
-  if lW then
+	if lW then
 		local uOdometry = mcm.get_status_odometry()
     dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
 		uOdometry0 = vector.copy(uOdometry)
     lW.update(dOdometry)
   end
 
-  -- If not webots, then wait the update cycle rate
-  if IS_WEBOTS then
-    Body.update()
-  else
-    collectgarbage('step')
-    local t_s = (t_sleep - (get_time() - t))
-    if t_s>0 then usleep(1e6 * t_s) end
-  end
-end
+	--print('Total',get_time()-t_start)
 
--- Exit
+	-- If time for debug
+	local dt_debug = t_start - t_debug
+	if dt_debug>debug_interval then
+		local times_str = {}
+		local total = 0
+		for name,time in pairs(state_times) do
+			--print(time, count)
+			table.insert(times_str, string.format('%s: %g ms average', name, 1e3*time/count))
+			total = total + time
+			state_times[name] = 0
+		end
+
+		local kb = collectgarbage('count')
+		print(string.format('\nState | Uptime: %.2f sec, Mem: %d kB, %.2f Hz %g ms cycle\n%s',
+				t_start-t0, kb, count/dt_debug, 1e3*total/count, table.concat(times_str, '\n')))
+		count = 0
+		t_debug = t_start
+		--collectgarbage('step')
+  end
+
+	if IS_WEBOTS then
+		Body.update()
+	else
+		local t_end = get_time()
+		local t_s = (t_sleep - (t_end - t_start))
+		if t_s>0 then usleep(1e6 * t_s) end
+	end
+until not running
+
 print'Exiting state wizard...'
-for _,my_fsm in pairs(state_machines) do
-  my_fsm:exit()
-end
 
 if lW then lW.exit() end
 

@@ -5,29 +5,32 @@ local tr6D = require'Transform'.transform6D
 
 ------------------------------------
 -- For the arm FSM
+-- Weights: cusage, cdiff, ctight
 local arm = {}
 
--- Weights: cusage, cdiff, ctight
--- Default init position
-arm.trLArm0 = {
-	tr=tr6D{0.05, 0.35, -0.25,0,0,0}, timeout=10,
-	via='jacobian', weights = {1,0,0}
-}
-arm.trRArm0 = {
-	tr=tr6D{0.05, -0.35, -0.25,0,0,0}, timeout=10,
-	via='jacobian', weights = {1,0,0}
-}
-
--- Default ready position
-arm.configL1 = {
-	tr=tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, timeout=15,
-	via='jacobian', weights = {0,0,1}
-}
-arm.configR1 = {
-	tr=tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD}, timeout=15,
-	via='jacobian', weights = {0,0,1}
+arm.init = {}
+arm.init[1] = {
+	left = {
+		tr=tr6D{0.05, 0.35, -0.25,0,0,0}, timeout=10,
+		via='jacobian_preplan', weights = {1,0,0}
+	},
+	right = {
+		tr=tr6D{0.05, -0.35, -0.25,0,0,0}, timeout=10,
+		via='jacobian_preplan', weights = {1,0,0}
+	}
 }
 
+arm.ready = {}
+arm.ready[1] = {
+	left = {
+		tr=tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, timeout=15,
+		via='jacobian_preplan', weights = {0,0,1}
+	},
+	right = {
+		tr=tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD}, timeout=15,
+		via='jacobian_preplan', weights = {0,0,1}
+	},
+}
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset = {}

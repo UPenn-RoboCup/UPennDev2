@@ -113,10 +113,7 @@ fsm.Arm = {
 	{'armReady', 'teleopraw', 'armTeleopRaw'},
 	{'armReady', 'init', 'armInit'},
 	{'armReady', 'jacobian', 'armJacobian'},
-	-- armJacobian is for testing purposes only!
-	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
-	{'armJacobian', 'done', 'armJacobian'},
-	{'armJacobian', 'ready', 'armReady'},
+	{'armReady', 'pulldoor', 'armPullDoor'},
 	-- Teleop
 	{'armTeleop', 'init', 'armInit'},
 	--{'armTeleop', 'done', 'armTeleop'},
@@ -128,6 +125,17 @@ fsm.Arm = {
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
 	{'armTeleopRaw', 'ready', 'armReady'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
+	-- armJacobian is for testing purposes only!
+	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
+	{'armJacobian', 'timeout', 'armJacobian'},
+	{'armJacobian', 'done', 'armTeleop'},
+	{'armJacobian', 'ready', 'armReady'},
+	{'armJacobian', 'pulldoor', 'armPullDoor'},
+	-- armPullDoor
+	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
+	{'armPullDoor', 'done', 'armTeleop'},
+	{'armPullDoor', 'ready', 'armReady'},
+	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 }
 
 fsm.Motion = {

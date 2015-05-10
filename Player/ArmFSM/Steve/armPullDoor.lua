@@ -11,14 +11,12 @@ local movearm = require'movearm'
 local plugins = require'armplugins'
 
 local t_entry, t_update, t_finish
-local timeout = 3.0
+local timeout = 30.0
 
 local USE_COMPENSATION = false
-local lco, rco, uComp
 local okL, qLWaypoint
 local okR, qRWaypoint
-
-local dir = 1
+local pco, lco, rco
 
 local pStatus, vwDoor, weightsDoor, qArmGuessDoor
 
@@ -28,20 +26,18 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	local configL = {
-		vw = {0,-1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		via='jacobian_velocity',
+	local model ={
+		x = 0.52,
+		y = -0.19,
+		z = -0.05,
+		yaw = 0,
+		hinge = -1,
+		roll = -math.pi/2,
+		hand = 'right'
 	}
-	local configR = {
-		vw = {0,1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		via='jacobian_velocity',
-	}
-	dir = -dir
-
-	lco, rco, uComp = movearm.goto(configL, configR, USE_COMPENSATION)
+	pco, lco, rco = plugins.gen('pulldoor', model)
 	okL = false
 	okR = false
-	if uComp then print('uComp', unpack(uComp)) end
 
 end
 
@@ -50,7 +46,7 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
@@ -61,7 +57,16 @@ function state.update()
 		okL, qLWaypoint = coroutine.resume(lco, qLArm)
 	end
 	if rStatus=='suspended' then
-		okR, qRWaypoint = coroutine.resume(rco, qRArm)
+		okR, qRWaypoint = coroutine.resume(rco, qRArm, vwDoor, weightsDoor, qArmGuessDoor)
+	end
+
+	-- Try the model
+	if coroutine.status(pco)=='suspended' then
+		pStatus, vwDoor, weightsDoor, qArmGuessDoor = coroutine.resume(pco, qLArm, qRArm)
+		if not pStatus then
+			print('pco', pStatus, vwDoor)
+			vwDoor = false
+		end
 	end
 
 	if not okL or not okR then
@@ -71,7 +76,7 @@ function state.update()
 	end
 
 	if type(qLWaypoint)=='table' then
-		Body.set_larm_command_position(qLWaypoint)
+		--Body.set_larm_command_position(qLWaypoint)
 	end
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
@@ -81,6 +86,9 @@ function state.update()
 	if lStatus=='dead' and rStatus=='dead' then
 		return 'done'
 	end
+
+	-- Set the compensation: Not needed
+	--mcm.set_stance_uTorsoComp(uComp)
 
 end
 

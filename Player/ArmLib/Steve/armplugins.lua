@@ -37,11 +37,22 @@ hinge: Relative y coordinate of the hinge. (+) is hinge to the left of the handl
 roll: Relative roll of the door handle. 0 is open, +/- pi/2 is closed
 
 Phase is the yaw on the door hinge
+
+Assume right hand for now
+Assume hinge to the right of the handle
+Assume Relative to torso
+
 --]]
 function plugins.pulldoor(m)
-	-- Assume right hand for now
-	-- Assume hinge to the right of the handle
-	-- Assume Relative to torso
+
+	-- Use velocity control
+	local configL = {
+		via='jacobian_velocity',
+	}
+	local configR = {
+		via='jacobian_velocity',
+	}
+
 
 	local alpha = 1
 	local yawGoal = math.pi / 6
@@ -71,7 +82,7 @@ function plugins.pulldoor(m)
 
 
 	local vw, distp, dista
-	local qLArm, qRArm = coroutine.yield()
+	local qLArm, qRArm = coroutine.yield(movearm.goto(configL, configR, USE_COMPENSATION))
 	-- TODO: Add a timeout here for reaching the handle...
 	repeat
 		local fkRArm = rPlanner.forward(qRArm)
@@ -81,7 +92,7 @@ function plugins.pulldoor(m)
 	until distp<0.02 and dista<3*DEG_TO_RAD
 	print('At the handle')
 
-	local n_ph = 100
+	local n_ph = 50
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
 	repeat
@@ -107,7 +118,7 @@ function plugins.pulldoor(m)
 		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
 			print(ph, 'pHandle', vector.new(pHandle))
-			qLArm, qRArm = coroutine.yield(scaled_vw, {1,0,0})
+			qLArm, qRArm = coroutine.yield(scaled_vw, ph < n_ph/2 and {1,0,0} or {1,0,1})
 		else
 			qLArm, qRArm = coroutine.yield(scaled_vw)
 		end
@@ -120,9 +131,9 @@ function plugins.gen(name, model)
 	if not name then return end
 	if not plugins[name] then return end
 	local pco =  coroutine.create(plugins[name], model)
-	local status, msg = coroutine.resume(pco, model)
-	if not status then print('pco', status, msg) end
-	return pco
+	local status, lco, rco = coroutine.resume(pco, model)
+	if not status then print('pco', status, lco) end
+	return pco, lco, rco
 end
 
 function plugins.test()

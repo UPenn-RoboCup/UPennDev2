@@ -339,12 +339,15 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 			end
 		end
 		-- Apply the joint change
-		qArm = qArm + dqCombo
+		local qArmOld = qArm
+		qArm = qArmOld + dqCombo
 		-- Check joint limit compliance
 		for i, q in ipairs(qArm) do qArm[i] = min(max(qMin[i], q), qMax[i]) end
 		-- Yield the progress
 		dp, drpy, dist_components = get_distance(self, qArm, trGoal)
 		--print('dist_components', unpack(dist_components))
+
+		sanitize0(qArm, qArmOld)
 
 		table.insert(path, qArm)
 
@@ -355,6 +358,7 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 	until n > nStepsTimeout
 	local t1 = unix.time()
 	print(n, 'jacobian steps planned in: ', t1-t0)
+	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 
 	local qArmSensed = coroutine.yield(qArmFGuess, dist_components)
 
@@ -371,7 +375,6 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 		end
 	end
 
-	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0})
 	--assert(qArmF, 'jacobian_preplan | No final shoulder solution')
 	qArmF = qArmF or qArm
@@ -381,7 +384,7 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 	-- Use the last known max_usage to finalize
 	print('max_usage final', max_usage)
 	n = 0
-	nStepsTimeout = 3 * hz -- 3 second timeout to finish
+	nStepsTimeout = 5 * hz -- 3 second timeout to finish
 	repeat
 		n = n + 1
 		local dqArmF = qArmF - qArm
@@ -424,7 +427,8 @@ end
 -- resume with: qArmSensed, vwTargetNew, weightsNew
 function libArmPlan.jacobian_velocity(self, qArm0, plan)
 	assert(type(plan)=='table', 'jacobian_velocity | Bad plan')
-	local vwTarget = assert(plan.vw, 'jacobian_velocity | No vw')
+	local vwTarget = plan.vw or {0,0,0, 0,0,0}
+	assert(type(vwTarget)=='table' and #vwTarget==6, 'jacobian_velocity | Bad vw')
 
 	local weights = plan.weights
 

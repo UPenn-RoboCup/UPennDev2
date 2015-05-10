@@ -43,12 +43,23 @@ function plugins.pulldoor(m)
 	-- Assume hinge to the right of the handle
 	-- Assume Relative to torso
 
+	local alpha = 1
+	local yawGoal = math.pi / 6
+
 	-- TODO: Search over the roll to keep smooth
 
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
 	local pHinge = T.position(tfHinge)
 	tfHinge = T.trans(unpack(pHinge))
 	local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
+
+	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
+	local pHinge = T.position(tfHinge)
+	tfHinge = T.trans(unpack(pHinge))
+	local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
+
+	--get_vw(tfObject, fkArm)
+
 
 	local vw, distp, dista
 	local qLArm, qRArm = coroutine.yield()
@@ -61,7 +72,6 @@ function plugins.pulldoor(m)
 	print('At the handle')
 
 	local n_ph = 50
-	local yawGoal = math.pi / 6
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
 	repeat
@@ -75,12 +85,16 @@ function plugins.pulldoor(m)
 		local tfHandGoal = tfHandle * tfGrip
 		local fkRArm = rPlanner.forward(qRArm)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
+
+		-- Scale by the phase
+		local scaled_vw = alpha * vw
+
 		--print('components', components[1], components[2]*RAD_TO_DEG)
 		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
 			print(ph, 'pHandle', vector.new(pHandle))
 		end
-		qLArm, qRArm = coroutine.yield(vw)
+		qLArm, qRArm = coroutine.yield(scaled_vw, weights, qArmGuess)
 	until ph>=n_ph
 	print('Done routine')
 end

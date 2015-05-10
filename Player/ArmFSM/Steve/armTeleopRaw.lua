@@ -26,10 +26,10 @@ function state.entry()
 	local teleopRArm = hcm.get_teleop_rarm()
 
 	lco, rco = movearm.goto({
-			q = teleopLArm, timeout = 5, via='q'
+			q = teleopLArm, timeout = 5, via='joint_preplan'
 
 		}, {
-			q = teleopRArm, timeout = 5, via='q'
+			q = teleopRArm, timeout = 5, via='joint_preplan'
 		})
 
 end

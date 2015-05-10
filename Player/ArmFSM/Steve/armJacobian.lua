@@ -32,12 +32,12 @@ function state.entry()
 
 	local configL = {
 		vw = {0,-1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		via='velocity',
+		via='jacobian_velocity',
 		weights = {1,1,0},
 	}
 	local configR = {
 		vw = {0,1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		via='velocity',
+		via='jacobian_velocity',
 		weights = {1,1,0},
 	}
 	dir = -dir
@@ -86,7 +86,7 @@ function state.update()
 
 	-- Try the model
 	if coroutine.status(pco)=='suspended' then
-		pStatus, vwDoor = coroutine.resume(pco, qLArm, qRArm)
+		pStatus, vwDoor, weightsDoor, qArmGuessDoor = coroutine.resume(pco, qLArm, qRArm)
 		if not pStatus then
 			print('pco', pStatus, vwDoor)
 			vwDoor = nil

@@ -12,11 +12,11 @@ arm.init = {}
 arm.init[1] = {
 	left = {
 		tr=tr6D{0.05, 0.35, -0.25,0,0,0}, timeout=10,
-		via='jacobian', weights = {1,0,0}
+		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
 		tr=tr6D{0.05, -0.35, -0.25,0,0,0}, timeout=10,
-		via='jacobian', weights = {1,0,0}
+		via='jacobian_preplan', weights = {1,0,0}
 	}
 }
 
@@ -24,11 +24,11 @@ arm.ready = {}
 arm.ready[1] = {
 	left = {
 		tr=tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, timeout=15,
-		via='jacobian', weights = {0,0,1}
+		via='jacobian_preplan', weights = {0,0,1}
 	},
 	right = {
 		tr=tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD}, timeout=15,
-		via='jacobian', weights = {0,0,1}
+		via='jacobian_preplan', weights = {0,0,1}
 	},
 }
 

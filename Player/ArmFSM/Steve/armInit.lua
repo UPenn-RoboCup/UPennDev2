@@ -15,8 +15,7 @@ local timeout = 30.0
 local lco, rco
 local okL, qLWaypoint
 local okR, qRWaypoint
-
-local sequence, s = Config.arm.init
+local sequence, s, stage = Config.arm.init
 
 function state.entry()
   io.write(state._NAME, ' Entry\n')
@@ -30,14 +29,16 @@ function state.entry()
 	-- Avoid self collisions. Cannot place into the config, since require reading
 	-- to customize the positions
 	s = 0
-	local stage = {
+	qL[3] = -20*DEG_TO_RAD
+	qR[3] = 20*DEG_TO_RAD
+	stage = {
 		left = {
 			q = qL, duration = 5, timeout = 7,
-			via='jointspace'
+			via='joint_preplan'
 		},
 		right = {
 			q = qR, duration = 5, timeout = 7,
-			via='jointspace'
+			via='joint_preplan'
 		}
 	}
 
@@ -55,13 +56,19 @@ function state.update()
   t_update = t
   if t-t_entry > timeout then return'timeout' end
 
+	if not stage then return'done' end
+
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
-	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
+	if lStatus=='suspended' then
+		okL, qLWaypoint = coroutine.resume(lco, qLArm)
+	end
+	if rStatus=='suspended' then
+		okR, qRWaypoint = coroutine.resume(rco, qRArm)
+	end
 
 	-- Check if errors in either
 	if not okL or not okR then
@@ -84,9 +91,11 @@ function state.update()
 	if lStatus=='dead' and rStatus=='dead' then
 		-- Goto the nextitem in the sequnce
 		s = s + 1
-		local stage = sequence[s]
-		if not stage then return'done' end
-		lco, rco = movearm.goto(stage.left, stage.right)
+		stage = sequence[s]
+		if stage then
+			print('Next sequence:', s, stage)
+			lco, rco = movearm.goto(stage.left, stage.right)
+		end
 	end
 
 end

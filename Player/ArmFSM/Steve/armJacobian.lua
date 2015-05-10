@@ -22,7 +22,7 @@ local dir = 1
 local USE_PLUGIN = true
 local pco
 
-local pStatus, vwDoor
+local pStatus, vwDoor, weightsDoor, qArmGuessDoor
 
 function state.entry()
   io.write(state._NAME, ' Entry\n')
@@ -33,22 +33,22 @@ function state.entry()
 	local configL = {
 		vw = {0,-1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		via='jacobian_velocity',
-		weights = {1,1,0},
+		weights = {1,0,0},
 		timeout=300
 	}
 	local configR = {
 		vw = {0,1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		via='jacobian_velocity',
-		weights = {1,1,0},
+		weights = {1,0,0},
 		timeout=3e5
 	}
 	dir = -dir
 
 	if USE_PLUGIN then
 		local model ={
-			x = 0.55,
-			y = -0.2,
-			z = 0,
+			x = 0.52,
+			y = -0.19,
+			z = -0.05,
 			yaw = 0,
 			hinge = -1,
 			roll = -math.pi/2,
@@ -83,7 +83,7 @@ function state.update()
 		okL, qLWaypoint = coroutine.resume(lco, qLArm)
 	end
 	if rStatus=='suspended' then
-		okR, qRWaypoint = coroutine.resume(rco, qRArm, vwDoor)
+		okR, qRWaypoint = coroutine.resume(rco, qRArm, vwDoor, weightsDoor, qArmGuessDoor)
 	end
 
 	-- Try the model

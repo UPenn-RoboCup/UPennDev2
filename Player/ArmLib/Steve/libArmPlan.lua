@@ -480,9 +480,24 @@ function libArmPlan.jacobian_velocity(self, qArm0, plan)
 		vwTarget = vwTargetNew or vwTarget
 		weights = weightsNew or weights
 		qArmFGuess = qArmFGuessNew or qArmFGuess
-		local fkArmSensed = forward(qArmSensed)
-		if weightsNew and not qArmFGuessNew then
-			qArmFGuess = self:find_shoulder(fkArmSensed, qArmSensed, weights) or qArmFGuess
+		--print('qArmFGuessNew', qArmFGuessNew, qArmFGuess)
+		if weightsNew then
+			local fkArmSensed = forward(qArmSensed)
+			local qArmFGuessNew = self:find_shoulder(fkArmSensed, qArmSensed, weights)
+			if not qArmFGuessNew then
+				print('jacobian_velocity | Bad velocity guess')
+			else
+				qArmFGuess = qArmFGuessNew
+			end
+			--assert(qArmFGuess, 'Bad guess!')
+			----or qArmFGuess
+			--print('qArmFGuess', vector.new(qArmFGuess))
+			--print('qArmSensed', qArmSensed)
+			--print(vector.norm(qArmFGuess-qArmSensed)*RAD_TO_DEG, 'diff', (qArmFGuess-qArmSensed)*RAD_TO_DEG)
+			if(math.abs(qArmFGuess[3]-qArmSensed[3])>10*DEG_TO_RAD) then
+				print('jacobian_velocity | wait!')
+				vwTarget = {0,0,0, 0,0,0}
+			end
 		end
 		-- If we are lagging badly, then there may be a collision
 		local dqLag = qArm - qArmSensed

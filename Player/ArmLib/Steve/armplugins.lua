@@ -43,7 +43,7 @@ function plugins.pulldoor(m)
 	-- Assume hinge to the right of the handle
 	-- Assume Relative to torso
 
-	local alpha = 10
+	local alpha = 1
 	local yawGoal = math.pi / 6
 
 	-- TODO: Search over the roll to keep smooth
@@ -52,6 +52,11 @@ function plugins.pulldoor(m)
 	local pHinge = T.position(tfHinge)
 	tfHinge = T.trans(unpack(pHinge))
 	local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
+	--find_shoulder(self, tr, qArm, weights)
+	print()
+	local qRArm = Body.get_rarm_command_position()
+	local qArmHandle0 = rPlanner:find_shoulder(tfHandle, qRArm, {1,0,0})
+	print('qArmHandle0', qArmHandle0)
 
 	--[[
 	local tfHingeGoal = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
@@ -71,9 +76,9 @@ function plugins.pulldoor(m)
 	repeat
 		local fkRArm = rPlanner.forward(qRArm)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
-		--print('distp, dista', distp, dista)
-		qLArm, qRArm = coroutine.yield(vw)
-	until distp<0.2 and dista<15*DEG_TO_RAD
+		--print('distp, dista', distp, dista, vw)
+		qLArm, qRArm = coroutine.yield(vw, false, qArmHandle0)
+	until distp<0.02 and dista<3*DEG_TO_RAD
 	print('At the handle')
 
 	local n_ph = 100
@@ -102,8 +107,11 @@ function plugins.pulldoor(m)
 		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
 			print(ph, 'pHandle', vector.new(pHandle))
+			qLArm, qRArm = coroutine.yield(scaled_vw, {1,0,0})
+		else
+			qLArm, qRArm = coroutine.yield(scaled_vw)
 		end
-		qLArm, qRArm = coroutine.yield(scaled_vw, weights, qArmGuess)
+
 	until ph>=n_ph
 	return false
 end

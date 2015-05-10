@@ -8,7 +8,6 @@ local torch = require'torch'
 local util = require'util'
 local ok, ffi = pcall(require, 'ffi')
 
---[[
 print()
 print('================')
 print()
@@ -22,39 +21,39 @@ print()
 
 -- Test forward left
 -- 6 DOF arm, with angles given in qLArm
-local qLArm = vector.new({0,0,0, -1, 0,0,0})*DEG_TO_RAD
+local qLArm = vector.new({0,0,0, 0, 0,0,0})*DEG_TO_RAD
+local qWaist = vector.new({0, 0})*DEG_TO_RAD
 local qLArm2 = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
-local fL2_t, fL2a_t = torch.eye(4), torch.eye(4)
--- Hack to make super fast (don't go to C ever)
-if jit then
-fL2_d = fL2_t:data()
-fL2a_d = fL2a_t:data()
-end
 
 -- Correctness
-fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
-fL2 = K2.forward_larm(qLArm)
+fL = vector.new(K.l_arm_torso_7(qLArm, 0, qWaist, 0.125, 0,0))
+fL2 = vector.new(T.position6D(K2.forward_larm(qLArm, qWaist)))
 
-print(unpack(fL))
-print(T.position6D(fL2))
+print('Forward Left')
+print(fL)
+print(fL2)
 
-dt_all = vector.zeros(4)
-local n = 1000
-for i=1,n do
-t0 = unix.time()
-fL = K.l_arm_torso_7(qLArm, 0, {0,0}, 0,0,0)
-t1 = unix.time()
-fL2 = K2.forward_larm(qLArm)
-t2 = unix.time()
-fLa = K.l_arm_torso_7(qLArm2, 0, {0,0}, 0,0,0)
-t3 = unix.time()
-fL2a = K2.forward_larm(qLArm2)
-t4 = unix.time()
-dt = vector.new{t1-t0, t2-t1,t3-t2,t4-t3}
-dt_all = dt_all + dt
+----[[
+local qs = {}
+for i=1,1e3 do
+		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
 end
-print('Times:', dt_all, n)
 
+dt_all = vector.zeros(2)
+for i, q in ipairs(qs) do
+	t0 = unix.time()
+	fL = vector.new(K.l_arm_torso_7(q, 0, qWaist, 0.125,0,0))
+	t1 = unix.time()
+	fL2 = vector.new(T.position6D(K2.forward_larm(q, qWaist)))
+	t2 = unix.time()
+	assert(vector.norm(fL2-fL)<0.001)
+	dt = vector.new{t1-t0, t2-t1}
+	dt_all = dt_all + dt
+end
+print('FK all good! Times:', dt_all, n)
+print()
+
+--[[
 -- Find the forward kinematics
 fL[2] = fL[2] - K.shoulderOffsetY
 fL[3] = fL[3] - K.shoulderOffsetZ
@@ -266,11 +265,7 @@ util.ptorch(J3, 5, 3)
 
 
 print('qArm', qArm)
-----[[
-local qs = {}
-for i=1,1e3 do
-		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
-end
+
 
 --[[
 local t0 = unix.time()

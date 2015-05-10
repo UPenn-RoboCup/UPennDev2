@@ -54,12 +54,12 @@ rbt = sympybotics.RobotDynCode(rbtdef, verbose=True)
 
 print('DH Parameters')
 print(dh_params)
-print('Forward kinematics @ -1')
-print(rbt.geo.T[-1])
+#print('Forward kinematics @ -1')
+#print(rbt.geo.T[-1])
 #print('Forward kinematics @ -2')
 #print(rbt.geo.T[-2])
-print('Jacobian @ -1')
-print(rbt.kin.J[-1])
+#print('Jacobian @ -1')
+#print(rbt.kin.J[-1])
 #print('Jacobian @ -2')
 #print(rbt.kin.J[-2])
 #print(tau_str)
@@ -81,7 +81,7 @@ finally:
 	# This may include the end effect, as l_8x
 f = open("jacobian_com"+kind+".txt", "w")
 try:
-	f.write(str(rbt.kin.Jc[-1]))
+	f.write(str(rbt.kin.Jc[-2]))
 finally:
 	f.close()
 

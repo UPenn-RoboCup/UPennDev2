@@ -36,7 +36,7 @@ export PLAYER_ID=$1
 export TEAM_ID=$2
 export PLATFORM=webots
 
-TESTFILE=state_wizard2.lua
+TESTFILE=state_wizard.lua
 #TESTFILE=body_wizard.lua
 #TESTFILE=webots_wizard.lua
 

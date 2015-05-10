@@ -34,11 +34,13 @@ function state.entry()
 		vw = {0,-1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		via='jacobian_velocity',
 		weights = {1,1,0},
+		timeout=300
 	}
 	local configR = {
 		vw = {0,1*dir,0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		via='jacobian_velocity',
 		weights = {1,1,0},
+		timeout=3e5
 	}
 	dir = -dir
 
@@ -70,7 +72,7 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
@@ -89,7 +91,7 @@ function state.update()
 		pStatus, vwDoor, weightsDoor, qArmGuessDoor = coroutine.resume(pco, qLArm, qRArm)
 		if not pStatus then
 			print('pco', pStatus, vwDoor)
-			vwDoor = nil
+			vwDoor = false
 		end
 	end
 
@@ -100,7 +102,7 @@ function state.update()
 	end
 
 	if type(qLWaypoint)=='table' then
-		Body.set_larm_command_position(qLWaypoint)
+		--Body.set_larm_command_position(qLWaypoint)
 	end
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)

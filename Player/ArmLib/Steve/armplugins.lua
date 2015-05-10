@@ -43,7 +43,7 @@ function plugins.pulldoor(m)
 	-- Assume hinge to the right of the handle
 	-- Assume Relative to torso
 
-	local alpha = 1
+	local alpha = 10
 	local yawGoal = math.pi / 6
 
 	-- TODO: Search over the roll to keep smooth
@@ -53,12 +53,16 @@ function plugins.pulldoor(m)
 	tfHinge = T.trans(unpack(pHinge))
 	local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
 
-	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
-	local pHinge = T.position(tfHinge)
-	tfHinge = T.trans(unpack(pHinge))
-	local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
-
+	--[[
+	local tfHingeGoal = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
+	local pHingeGoal = T.position(tfHingeGoal)
+	tfHingeGoal = T.trans(unpack(pHingeGoal))
+	local tfHandleGoal = tfHingeGoal * T.rotZ(yawGoal) * T.trans(0,-m.hinge,0)
+	--]]
 	--get_vw(tfObject, fkArm)
+	-- I know that drpy.yaw should be scaled, and dx, dy
+	-- Technically there should be some manifold distance metric on so(3) paths
+	--yawGoal - m.yaw
 
 
 	local vw, distp, dista
@@ -67,11 +71,12 @@ function plugins.pulldoor(m)
 	repeat
 		local fkRArm = rPlanner.forward(qRArm)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
+		--print('distp, dista', distp, dista)
 		qLArm, qRArm = coroutine.yield(vw)
-	until distp<0.01 and dista<2*DEG_TO_RAD
+	until distp<0.2 and dista<15*DEG_TO_RAD
 	print('At the handle')
 
-	local n_ph = 50
+	local n_ph = 100
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
 	repeat
@@ -87,7 +92,11 @@ function plugins.pulldoor(m)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
 
 		-- Scale by the phase
-		local scaled_vw = alpha * vw
+		local scaled_vw = alpha * vector.copy(vw)
+		scaled_vw[1] = alpha * scaled_vw[1]
+		scaled_vw[2] = alpha * scaled_vw[2]
+		scaled_vw[6] = alpha * scaled_vw[6]
+		--print(ph, distp, dista*RAD_TO_DEG, scaled_vw)
 
 		--print('components', components[1], components[2]*RAD_TO_DEG)
 		if distp<0.02 and dista<3*DEG_TO_RAD then
@@ -96,7 +105,7 @@ function plugins.pulldoor(m)
 		end
 		qLArm, qRArm = coroutine.yield(scaled_vw, weights, qArmGuess)
 	until ph>=n_ph
-	print('Done routine')
+	return false
 end
 
 function plugins.gen(name, model)

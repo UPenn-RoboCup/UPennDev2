@@ -423,25 +423,23 @@ end
 
 -- resume with: qArmSensed, vwTargetNew, weightsNew
 function libArmPlan.jacobian_velocity(self, qArm0, plan)
-	assert(type(plan)=='table', 'Bad plan')
-	local vwTarget = assert(plan.vwTarget)
-	local weights = assert(plan.weights)
-	local timeout = assert(plan.timeout)
+	assert(type(plan)=='table', 'jacobian_velocity | Bad plan')
+	local vwTarget = assert(plan.vw, 'jacobian_velocity | No vw')
+
+	local weights = plan.weights
 
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax
 	local forward = self.forward
 
-	-- 3 second default timeout
-	local nStepsTimeout = math.ceil(timeout * hz)
 	-- Find a guess of the final arm position
 	local fkArm0 = forward(qArm0)
 	local qArmFGuess = self:find_shoulder(fkArm0, qArm0, weights) or qArm0
 	local qArm = qArm0
 
 	local qArmSensed, vwTargetNew, weightsNew, qArmFGuessNew =
-		coroutine.yield(nStepsTimeout)
+		coroutine.yield()
 	vwTarget = vwTargetNew or vwTarget
 	weights = weightsNew or weights
 	qArmFGuess = qArmFGuessNew or qArmFGuess
@@ -472,9 +470,12 @@ function libArmPlan.jacobian_velocity(self, qArm0, plan)
 		-- Apply the joint change
 		qArm = qArm + dqCombo
 		-- Check joint limit compliance
-		for i, q in ipairs(qArm) do qArm[i] = min(max(qMin[i], q), qMax[i]) end
+		for i, q in ipairs(qArm) do
+			qArm[i] = min(max(qMin[i], q), qMax[i])
+		end
 		-- Yield the progress
-		qArmSensed, vwTargetNew, weightsNew, qArmFGuessNew = coroutine.yield(qArm, n)
+		qArmSensed, vwTargetNew, weightsNew, qArmFGuessNew =
+			coroutine.yield(qArm, n)
 		-- Smart adaptation
 		vwTarget = vwTargetNew or vwTarget
 		weights = weightsNew or weights
@@ -488,9 +489,9 @@ function libArmPlan.jacobian_velocity(self, qArm0, plan)
 		local imax_lag, max_lag = 0, 0
 		-- Use a higher tolerance here, since using position feedback
 		for i, dq in ipairs(dqLag) do
-			assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+			--assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
 		end
-	until n > nStepsTimeout
+	until vwTargetNew==false
 
 	return qArm
 end

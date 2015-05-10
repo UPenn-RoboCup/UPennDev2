@@ -1,4 +1,6 @@
 local plugins = {}
+-- Allowed to use Body here
+local Body = require'Body'
 local T = require'Transform'
 local movearm = require'movearm'
 local util = require'util'
@@ -82,13 +84,15 @@ function plugins.pulldoor(m)
 
 
 	local vw, distp, dista
-	local qLArm, qRArm = coroutine.yield(movearm.goto(configL, configR, USE_COMPENSATION))
+	coroutine.yield(movearm.goto(configL, configR, USE_COMPENSATION))
+
 	-- TODO: Add a timeout here for reaching the handle...
 	repeat
+		local qRArm = Body.get_rarm_position()
 		local fkRArm = rPlanner.forward(qRArm)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
 		--print('distp, dista', distp, dista, vw)
-		qLArm, qRArm = coroutine.yield(vw, false, qArmHandle0)
+		coroutine.yield({}, {vw, false, qArmHandle0})
 	until distp<0.02 and dista<3*DEG_TO_RAD
 	print('At the handle')
 
@@ -96,6 +100,10 @@ function plugins.pulldoor(m)
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
 	repeat
+		-- Find the arm
+		local qRArm = Body.get_rarm_position()
+		local fkRArm = rPlanner.forward(qRArm)
+
 		m.ph = ph
 		m.yaw = (ph / n_ph) * yawGoal
 		-- Know where the handle is
@@ -104,7 +112,6 @@ function plugins.pulldoor(m)
 		-- Roll for the grip
 		local tfGrip = T.rotX(m.roll)
 		local tfHandGoal = tfHandle * tfGrip
-		local fkRArm = rPlanner.forward(qRArm)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
 
 		-- Scale by the phase
@@ -118,9 +125,12 @@ function plugins.pulldoor(m)
 		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
 			print(ph, 'pHandle', vector.new(pHandle))
-			qLArm, qRArm = coroutine.yield(scaled_vw, ph < n_ph/2 and {1,0,0} or {1,0,1})
+			qLArm, qRArm = coroutine.yield(
+				{},
+				{scaled_vw, {1,1,0}}
+			)
 		else
-			qLArm, qRArm = coroutine.yield(scaled_vw)
+			qLArm, qRArm = coroutine.yield({},{scaled_vw})
 		end
 
 	until ph>=n_ph

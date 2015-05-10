@@ -7,18 +7,14 @@ state._NAME = ...
 
 local Body   = require'Body'
 local vector = require'vector'
-local movearm = require'movearm'
 local plugins = require'armplugins'
 
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
-local USE_COMPENSATION = false
-local okL, qLWaypoint
-local okR, qRWaypoint
 local pco, lco, rco
 
-local pStatus, vwDoor, weightsDoor, qArmGuessDoor
+local pStatus, lmovement, rmovement
 
 function state.entry()
   io.write(state._NAME, ' Entry\n')
@@ -48,42 +44,59 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-	local lStatus = type(lco)=='thread' and coroutine.status(lco)
-	local rStatus = type(rco)=='thread' and coroutine.status(rco)
-
-	local qLArm = Body.get_larm_position()
-	local qRArm = Body.get_rarm_position()
-	if lStatus=='suspended' then
-		okL, qLWaypoint = coroutine.resume(lco, qLArm)
-	end
-	if rStatus=='suspended' then
-		okR, qRWaypoint = coroutine.resume(rco, qRArm, vwDoor, weightsDoor, qArmGuessDoor)
-	end
-
-	-- Try the model
-	if coroutine.status(pco)=='suspended' then
-		pStatus, vwDoor, weightsDoor, qArmGuessDoor = coroutine.resume(pco, qLArm, qRArm)
-		if not pStatus then
-			print('pco', pStatus, vwDoor)
-			vwDoor = false
+	-- Evaluate the model
+	local pStatus = type(pco)=='thread' and coroutine.status(pco)
+	if not pStatus then
+		-- There may be some error, since pco is not a thread
+		print('pco | Failed to start')
+		return'teleopraw'
+	elseif pStatus=='dead' then
+		return 'done'
+	elseif pStatus=='suspended' then
+		okP, lmovement, rmovement = coroutine.resume(pco)
+		-- Check for errors
+		if not okP then
+			print(state._NAME, 'pco', okL, lmovement)
+			return'teleopraw'
 		end
 	end
 
-	if not okL or not okR then
-		print(state._NAME, 'L', okL, qLWaypoint)
-		print(state._NAME, 'R', okR, qRWaypoint)
-		return'teleopraw'
-	end
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
 
-	if type(qLWaypoint)=='table' then
-		--Body.set_larm_command_position(qLWaypoint)
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
+
+	if not lStatus then
+		print('lco | Failed to start')
+		return'teleopraw'
+	elseif lStatus=='suspended' then
+		local okL, qLWaypoint =
+			coroutine.resume(lco, qLArm, unpack(lmovement))
+		if okL and type(qLWaypoint)=='table'then
+			Body.set_larm_command_position(qLWaypoint)
+		else
+			print(state._NAME, 'lco', okL, qLWaypoint)
+			return'teleopraw'
+		end
 	end
-	if type(qRWaypoint)=='table' then
-		Body.set_rarm_command_position(qRWaypoint)
+	if not rStatus then
+		print('rco | Failed to start')
+		return'teleopraw'
+	elseif rStatus=='suspended' then
+		local okR, qRWaypoint =
+			coroutine.resume(rco, qRArm, unpack(rmovement))
+		if okR and type(qRWaypoint)=='table' then
+			Body.set_rarm_command_position(qRWaypoint)
+		else
+			print(state._NAME, 'rco', okR, qRWaypoint)
+			return'teleopraw'
+		end
 	end
 
 	-- Check if done
 	if lStatus=='dead' and rStatus=='dead' then
+		-- Should this be possible with pco? Maybe, should just regen
 		return 'done'
 	end
 
@@ -95,8 +108,8 @@ end
 function state.exit()
 	io.write(state._NAME, ' Exit\n')
 
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
+	local qcLArm = Body.get_larm_position()
+	local qcRArm = Body.get_rarm_position()
 	hcm.set_teleop_larm(qcLArm)
   hcm.set_teleop_rarm(qcRArm)
 end

@@ -58,9 +58,10 @@ function state.update()
 		if not okP then
 			print(state._NAME, 'pco', okL, lmovement)
 			return'teleopraw'
-		elseif lmovement.via then
-			-- A new movement type for lco
 		end
+		-- Check for new movement via
+		if type(lmovement)=='thread' then lco = lmovement end
+		if type(rmovement)=='thread' then rco = rmovement end
 	end
 
 	local qLArm = Body.get_larm_position()
@@ -96,14 +97,11 @@ function state.update()
 		end
 	end
 
-	-- Check if done
+	-- Always have an active item here?
 	if lStatus=='dead' and rStatus=='dead' then
-		-- Should this be possible with pco? Maybe, should just regen
-		return 'done'
+		print(state._NAME, 'No active threads')
+		return 'teleopraw'
 	end
-
-	-- Set the compensation: Not needed
-	--mcm.set_stance_uTorsoComp(uComp)
 
 end
 

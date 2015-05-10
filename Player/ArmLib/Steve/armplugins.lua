@@ -86,14 +86,13 @@ function plugins.pulldoor(m)
 
 
 	local vw, distp, dista
-	coroutine.yield(movearm.goto(configL, configR, USE_COMPENSATION))
+	coroutine.yield(movearm.goto(configL, configR))
 
 	-- TODO: Add a timeout here for reaching the handle...
 	repeat
 		local qRArm = Body.get_rarm_position()
 		local fkRArm = rPlanner.forward(qRArm)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
-		--print('distp, dista', distp, dista, vw)
 		coroutine.yield({}, {vw, false, qArmHandle0})
 	until distp<0.02 and dista<3*DEG_TO_RAD
 	print('At the handle')

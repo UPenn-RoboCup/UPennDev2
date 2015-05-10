@@ -284,6 +284,11 @@ end
 ------------
 -- Jacobian
 ------------
+
+-- TODO: Simplify the matrix multiplication with sympy
+--[[
+local tfRots = { TrotY, TrotZ, TrotX, TrotY, TrotX, TrotZ, TrotX}
+local tfRotDots = { TrotateYdot, TrotateZdot, TrotateXdot, TrotateYdot, TrotateXdot, TrotateZdot, TrotateXdot}
 local tfLlinks = {}
 --tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
 tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
@@ -296,12 +301,6 @@ tfLlinks[7] = Ttrans(0,0,0) -- wrist roll to wrist yaw2
 local tfRlinks = {}
 for i,v in ipairs(tfLlinks) do tfRlinks[i] = v end
 tfRlinks[4] = Ttrans(0,-shoulderOffsetY,shoulderOffsetZ)
-
-local tfRots = { TrotY, TrotZ, TrotX, TrotY, TrotX, TrotZ, TrotX}
-local tfRotDots = { TrotateYdot, TrotateZdot, TrotateXdot, TrotateYdot, TrotateXdot, TrotateZdot, TrotateXdot}
-
--- TODO: Simplify the matrix multiplication with sympy
---[[
 local function jacobian_transpose(qArm)
 
 	--local com = fk_arm(qArm)
@@ -434,6 +433,9 @@ elbowOffsetX*((s1*c3 + s2*s3*c1)*c4 + s4*c1*c2) - elbowOffsetX*(s1*c3 + s2*s3*c1
 ((((-s1*s2*s3 + c1*c3)*c4 - s1*s4*c2)*s5 + (s1*s2*c3 + s3*c1)*c5)*s6 + (-(-s1*s2*s3 + c1*c3)*s4 - s1*c2*c4)*c6)
 		}
 	}
+end
+
+function K.jacobian_waist(q)
 end
 
 return K

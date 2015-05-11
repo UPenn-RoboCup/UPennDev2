@@ -33,9 +33,17 @@ function state.entry()
 		roll = -math.pi/2,
 		hand = 'right'
 	}
-	pco, lco, rco = plugins.gen('pulldoor', model)
 	okL = false
 	okR = false
+	pco, lco, rco = plugins.gen('pulldoor', model)
+	if lco == false then
+		-- No motion
+		okL = true
+	end
+	if rco == false then
+		-- No motion
+		okR = true
+	end
 
 end
 
@@ -77,15 +85,6 @@ function state.update()
 		end
 	end
 
-	if not lStatus then
-		print('lco | Failed to start')
-		return'teleopraw'
-	end
-	if not rStatus then
-		print('rco | Failed to start')
-		return'teleopraw'
-	end
-
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
 	local qWaist = Body.get_waist_position()
@@ -123,12 +122,6 @@ function state.update()
 		Body.set_waist_command_position(qLWaist)
 	elseif qRWaist then
 		Body.set_waist_command_position(qRWaist)
-	end
-
-	-- Always have an active item here?
-	if lStatus=='dead' and rStatus=='dead' then
-		print(state._NAME, 'No active threads')
-		return 'teleopraw'
 	end
 
 end

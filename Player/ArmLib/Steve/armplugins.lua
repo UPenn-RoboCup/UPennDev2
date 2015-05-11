@@ -83,9 +83,7 @@ function plugins.pulldoor(m)
 	-- Technically there should be some manifold distance metric on so(3) paths
 	--yawGoal - m.yaw
 
-	local configL = {
-		via='jacobian_velocity',
-	}
+	local configL = false -- not moving
 	local configR = {
 		tr=tfHandle0, timeout=10,
 		via='jacobian_waist_preplan', weights = {1,0,0},
@@ -101,7 +99,7 @@ function plugins.pulldoor(m)
 		--print('lstatus, rstatus', lstatus, rstatus)
 	until rstatus=='dead'
 	print('At the handle')
-
+	if true then return end
 
 	local vw, distp, dista
 	-- Next stage
@@ -145,7 +143,7 @@ function plugins.pulldoor(m)
 		end
 
 	until ph>=n_ph
-	return false
+	return
 end
 
 function plugins.gen(name, model)

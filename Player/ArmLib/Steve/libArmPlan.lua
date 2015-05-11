@@ -567,10 +567,12 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 			{qWaistArmFGuess[1], 0}, dist_components
 	)
 
+
 	for i, qWaistArmPlanned in ipairs(path) do
+		qWaistArm = qWaistArmPlanned
 		qArmSensed, qWaistSensed = coroutine.yield(
-			{unpack(qWaistArmPlanned,2,#qWaistArmPlanned)},
-			{qWaistArmPlanned[1], 0}
+			{unpack(qWaistArm,2,#qWaistArm)},
+			{qWaistArm[1], 0}
 		)
 		-- If we are lagging badly, then there may be a collision
 		--[[
@@ -594,8 +596,8 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	else
 		table.insert(qWaistArmF, 1, qWaistArm[1])
 	end
-	--print('qWaistArmF', vector.new(qWaistArmF) * RAD_TO_DEG)
-	--print('qWaistArm', vector.new(qWaistArm) * RAD_TO_DEG)
+	print('qWaistArm', vector.new(qWaistArm) * RAD_TO_DEG)
+	print('qWaistArmF', vector.new(qWaistArmF) * RAD_TO_DEG)
 	--if true then return qWaistArm end
 
 	-- Goto the final arm position as quickly as possible

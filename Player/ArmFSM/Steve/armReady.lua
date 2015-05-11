@@ -16,7 +16,7 @@ local lco, rco, uComp
 local okL, qLWaypoint
 local okR, qRWaypoint
 
-local sequence, s = Config.arm.ready
+local sequence, s, stage = Config.arm.ready
 
 function state.entry()
   io.write(state._NAME, ' Entry\n')
@@ -25,7 +25,7 @@ function state.entry()
   t_update = t_entry
 
 	s = 1
-	local stage = sequence[s]
+	stage = sequence[s]
 	lco, rco = movearm.goto(stage.left, stage.right)
 
 	okL = false
@@ -40,6 +40,7 @@ function state.update()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
+	if not stage then return'done' end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
@@ -69,9 +70,11 @@ function state.update()
 	if lStatus=='dead' and rStatus=='dead' then
 		-- Goto the nextitem in the sequnce
 		s = s + 1
-		local stage = sequence[s]
-		if not stage then return'done' end
-		lco, rco = movearm.goto(stage.left, stage.right)
+		stage = sequence[s]
+		if stage then
+			print('Next sequence:', s, stage)
+			lco, rco = movearm.goto(stage.left, stage.right)
+		end
 	end
 
 	-- Set the compensation: Not needed

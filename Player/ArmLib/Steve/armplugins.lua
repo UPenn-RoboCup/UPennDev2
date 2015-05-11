@@ -1,5 +1,8 @@
 local plugins = {}
+-- Allowed to use Body here
+local Body = require'Body'
 local T = require'Transform'
+local tr6D = require'Transform'.transform6D
 local movearm = require'movearm'
 local util = require'util'
 local vector = require'vector'
@@ -37,13 +40,25 @@ hinge: Relative y coordinate of the hinge. (+) is hinge to the left of the handl
 roll: Relative roll of the door handle. 0 is open, +/- pi/2 is closed
 
 Phase is the yaw on the door hinge
+
+Assume right hand for now
+Assume hinge to the right of the handle
+Assume Relative to torso
+
 --]]
 function plugins.pulldoor(m)
-	-- Assume right hand for now
-	-- Assume hinge to the right of the handle
-	-- Assume Relative to torso
 
-	local alpha = 10
+	-- Use velocity control
+	local configL = {
+		tr=tr6D{0.2, 0.2, -0.1,  0,0*DEG_TO_RAD,-90*DEG_TO_RAD}, timeout=15,
+		via='joint_preplan', weights = {1,0,1}
+	}
+	local configR = {
+		via='jacobian_velocity',
+	}
+
+
+	local alpha = 1
 	local yawGoal = math.pi / 6
 
 	-- TODO: Search over the roll to keep smooth
@@ -52,6 +67,11 @@ function plugins.pulldoor(m)
 	local pHinge = T.position(tfHinge)
 	tfHinge = T.trans(unpack(pHinge))
 	local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
+	--find_shoulder(self, tr, qArm, weights)
+	print()
+	local qRArm = Body.get_rarm_command_position()
+	local qArmHandle0 = rPlanner:find_shoulder(tfHandle, qRArm, {1,0,0})
+	print('qArmHandle0', qArmHandle0)
 
 	--[[
 	local tfHingeGoal = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
@@ -66,20 +86,25 @@ function plugins.pulldoor(m)
 
 
 	local vw, distp, dista
-	local qLArm, qRArm = coroutine.yield()
+	coroutine.yield(movearm.goto(configL, configR))
+
 	-- TODO: Add a timeout here for reaching the handle...
 	repeat
+		local qRArm = Body.get_rarm_position()
 		local fkRArm = rPlanner.forward(qRArm)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
-		--print('distp, dista', distp, dista)
-		qLArm, qRArm = coroutine.yield(vw)
-	until distp<0.2 and dista<15*DEG_TO_RAD
+		coroutine.yield({}, {vw, false, qArmHandle0})
+	until distp<0.02 and dista<3*DEG_TO_RAD
 	print('At the handle')
 
-	local n_ph = 100
+	local n_ph = 50
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
 	repeat
+		-- Find the arm
+		local qRArm = Body.get_rarm_position()
+		local fkRArm = rPlanner.forward(qRArm)
+
 		m.ph = ph
 		m.yaw = (ph / n_ph) * yawGoal
 		-- Know where the handle is
@@ -88,7 +113,6 @@ function plugins.pulldoor(m)
 		-- Roll for the grip
 		local tfGrip = T.rotX(m.roll)
 		local tfHandGoal = tfHandle * tfGrip
-		local fkRArm = rPlanner.forward(qRArm)
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
 
 		-- Scale by the phase
@@ -102,8 +126,14 @@ function plugins.pulldoor(m)
 		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
 			print(ph, 'pHandle', vector.new(pHandle))
+			qLArm, qRArm = coroutine.yield(
+				{},
+				{scaled_vw, {1,1,0}}
+			)
+		else
+			qLArm, qRArm = coroutine.yield({},{scaled_vw})
 		end
-		qLArm, qRArm = coroutine.yield(scaled_vw, weights, qArmGuess)
+
 	until ph>=n_ph
 	return false
 end
@@ -112,9 +142,9 @@ function plugins.gen(name, model)
 	if not name then return end
 	if not plugins[name] then return end
 	local pco =  coroutine.create(plugins[name], model)
-	local status, msg = coroutine.resume(pco, model)
-	if not status then print('pco', status, msg) end
-	return pco
+	local status, lco, rco = coroutine.resume(pco, model)
+	if not status then print('pco', status, lco) end
+	return pco, lco, rco
 end
 
 function plugins.test()

@@ -15,7 +15,7 @@ local timeout = 30.0
 local lco, rco
 local okL, qLWaypoint
 local okR, qRWaypoint
-local sequence, s, stage = Config.arm.init
+local sequence, s, stage
 
 function state.entry()
   io.write(state._NAME, ' Entry\n')
@@ -23,15 +23,15 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
+	sequence = {unpack(Config.arm.init)}
+
+	-- Avoid self collisions.
+	-- NOTE: Cannot place into the config, since require reading
 	local qL = Body.get_larm_position()
 	local qR = Body.get_rarm_position()
-
-	-- Avoid self collisions. Cannot place into the config, since require reading
-	-- to customize the positions
-	s = 0
 	qL[3] = -20*DEG_TO_RAD
 	qR[3] = 20*DEG_TO_RAD
-	stage = {
+	table.insert(sequence, 1, {
 		left = {
 			q = qL, duration = 5, timeout = 7,
 			via='joint_preplan'
@@ -40,8 +40,10 @@ function state.entry()
 			q = qR, duration = 5, timeout = 7,
 			via='joint_preplan'
 		}
-	}
+	})
 
+	s = 1
+	stage = sequence[s]
 	lco, rco = movearm.goto(stage.left, stage.right)
 
 	okL = false

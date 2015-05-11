@@ -340,10 +340,10 @@ function Transform.copy(tt)
   if type(tt)=='table' then
     -- Copy the table
     return setmetatable({
-    	vcopy(tt[1]),
-    	vcopy(tt[2]),
-    	vcopy(tt[3]),
-    	vcopy(tt[4])
+    	{unpack(tt[1])},
+    	{unpack(tt[2])},
+    	{unpack(tt[3])},
+    	{unpack(tt[4])},
 		}, mt)
   end
   local t = eye()

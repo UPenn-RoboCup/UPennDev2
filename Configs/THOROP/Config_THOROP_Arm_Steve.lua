@@ -11,11 +11,11 @@ local arm = {}
 arm.init = {}
 arm.init[1] = {
 	left = {
-		tr=tr6D{0.05, 0.35, -0.25,0,0,0}, timeout=10,
+		tr=tr6D{0.05, 0.35, -0.25, 0,0,0}, timeout=10,
 		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
-		tr=tr6D{0.05, -0.35, -0.25,0,0,0}, timeout=10,
+		tr=tr6D{0.05, -0.35, -0.25, 0,0,0}, timeout=10,
 		via='jacobian_preplan', weights = {1,0,0}
 	}
 }
@@ -23,11 +23,21 @@ arm.init[1] = {
 arm.ready = {}
 arm.ready[1] = {
 	left = {
-		tr=tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, timeout=15,
+		tr=tr6D{0.2, 0.2, -0.1,  0,0*DEG_TO_RAD,-90*DEG_TO_RAD}, timeout=15,
+		via='joint_preplan', weights = {1,0,1}
+	},
+	right = {
+		tr=tr6D{0.2, -0.2, -0.1, 0,0*DEG_TO_RAD,90*DEG_TO_RAD}, timeout=15,
+		via='joint_preplan', weights = {1,0,1}
+	},
+}
+arm.ready[2] = {
+	left = {
+		tr=tr6D{0.24, 0.25, 0.2,  0,0,-60*DEG_TO_RAD}, timeout=15,
 		via='jacobian_preplan', weights = {0,0,1}
 	},
 	right = {
-		tr=tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD}, timeout=15,
+		tr=tr6D{0.24, -0.25, 0.2, 0,0,60*DEG_TO_RAD}, timeout=15,
 		via='jacobian_preplan', weights = {0,0,1}
 	},
 }

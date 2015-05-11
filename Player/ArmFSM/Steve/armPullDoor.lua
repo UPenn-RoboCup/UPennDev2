@@ -13,6 +13,8 @@ local t_entry, t_update, t_finish
 local timeout = 30.0
 
 local pco, lco, rco
+local okL, qLWaypoint, qLWaist
+local okR, qRWaypoint, qRWaist
 
 local pStatus, lmovement, rmovement
 
@@ -64,37 +66,55 @@ function state.update()
 		if type(rmovement)=='thread' then rco = rmovement end
 	end
 
-	local qLArm = Body.get_larm_position()
-	local qRArm = Body.get_rarm_position()
-
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
 	if not lStatus then
 		print('lco | Failed to start')
 		return'teleopraw'
-	elseif lStatus=='suspended' then
-		local okL, qLWaypoint =
-			coroutine.resume(lco, qLArm, unpack(lmovement))
-		if okL and type(qLWaypoint)=='table'then
-			Body.set_larm_command_position(qLWaypoint)
-		else
-			print(state._NAME, 'lco', okL, qLWaypoint)
-			return'teleopraw'
-		end
 	end
 	if not rStatus then
 		print('rco | Failed to start')
 		return'teleopraw'
-	elseif rStatus=='suspended' then
-		local okR, qRWaypoint =
-			coroutine.resume(rco, qRArm, unpack(rmovement))
-		if okR and type(qRWaypoint)=='table' then
-			Body.set_rarm_command_position(qRWaypoint)
-		else
-			print(state._NAME, 'rco', okR, qRWaypoint)
-			return'teleopraw'
-		end
+	end
+
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	local qWaist = Body.get_waist_position()
+
+	if lStatus=='suspended' then
+		okL, qLWaypoint, qLWaist =
+			coroutine.resume(lco, qLArm, qWaist, unpack(lmovement))
+	end
+	if not okL then
+		print(state._NAME, 'L', okL, qLWaypoint, lco)
+		Body.set_larm_command_position(qLArm)
+		return'teleopraw'
+	end
+
+	if rStatus=='suspended' then
+		okR, qRWaypoint, qRWaist =
+			coroutine.resume(rco, qRArm, qWaist, unpack(rmovement))
+	end
+	if not okR then
+		print(state._NAME, 'R', okR, qRWaypoint, rco)
+		Body.set_rarm_command_position(qRArm)
+		return'teleopraw'
+	end
+
+	if type(qLWaypoint)=='table'then
+		Body.set_larm_command_position(qLWaypoint)
+	end
+	if type(qRWaypoint)=='table'then
+		Body.set_rarm_command_position(qRWaypoint)
+	end
+
+	if qLWaist and qRWaist then
+		print(state._NAME, 'Conflicting Waist')
+	elseif qLWaist then
+		Body.set_waist_command_position(qLWaist)
+	elseif qRWaist then
+		Body.set_waist_command_position(qRWaist)
 	end
 
 	-- Always have an active item here?

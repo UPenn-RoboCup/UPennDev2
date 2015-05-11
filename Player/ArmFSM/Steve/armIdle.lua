@@ -65,6 +65,8 @@ function state.exit()
   --print(state._NAME..' Exit' )
 	-- Undo the hardware limits
   for i=1,3 do
+		Body.set_larm_torque_enable(1)
+		Body.set_rarm_torque_enable(1)
     Body.set_larm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_rarm_command_velocity({17000,17000,17000,17000,17000,17000,17000})
     Body.set_larm_command_acceleration({200,200,200,200,200,200,200})

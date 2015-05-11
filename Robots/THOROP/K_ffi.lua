@@ -235,7 +235,12 @@ function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll, qWaist)
 		-qWaist[1])
 		* Ttranslate(Tcopy(trL), -handOffsetX, -handOffsetY, -handOffsetZ)
 	-- Call the generic IK routine
-	return ik_arm(trL0, qLArm, shoulderYaw or qLArm[3], flipRoll==1 and PI)
+	return ik_arm(
+		trL0,
+		qLArm or {0,0,0, 0, 0,0,0},
+		shoulderYaw or qLArm[3],
+		flipRoll==1 and PI
+	)
 end
 
 function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll, qWaist)
@@ -248,7 +253,10 @@ function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll, qWaist)
 		-qWaist[2]),
 		-qWaist[1])
 		* Ttranslate(Tcopy(trR), -handOffsetX, -handOffsetY, -handOffsetZ)
-	return ik_arm(trR0, qRArm, shoulderYaw or qLArm[3], flipRoll==1 and PI)
+	return ik_arm(trR0,
+		qRArm or {0,0,0, 0, 0,0,0},
+		shoulderYaw or qLArm[3],
+		flipRoll==1 and PI)
 end
 
 -- Left leg based. Same for right for DH params, anyway
@@ -487,7 +495,7 @@ end
 
 function K.jacobian_rarm(qRArm, qWaist)
 	if qWaist then
-		return jacobian_waist({qWaist[1], unpack(qLArm)}, false)
+		return jacobian_waist({qWaist[1], unpack(qRArm)}, false)
 	else
 		return jacobian(qRArm)
 	end

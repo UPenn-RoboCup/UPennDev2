@@ -33,9 +33,17 @@ function state.entry()
 		roll = -math.pi/2,
 		hand = 'right'
 	}
-	pco, lco, rco = plugins.gen('pulldoor', model)
 	okL = false
 	okR = false
+	pco, lco, rco = plugins.gen('pulldoor', model)
+	if lco == false then
+		-- No motion
+		okL = true
+	end
+	if rco == false then
+		-- No motion
+		okR = true
+	end
 
 end
 
@@ -46,8 +54,11 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-	-- Evaluate the model
 	local pStatus = type(pco)=='thread' and coroutine.status(pco)
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
+
+	-- Evaluate the model
 	if not pStatus then
 		-- There may be some error, since pco is not a thread
 		print('pco | Failed to start')
@@ -55,27 +66,25 @@ function state.update()
 	elseif pStatus=='dead' then
 		return 'done'
 	elseif pStatus=='suspended' then
-		okP, lmovement, rmovement = coroutine.resume(pco)
+		okP, lmovement, rmovement = coroutine.resume(pco, lStatus, rStatus)
 		-- Check for errors
 		if not okP then
 			print(state._NAME, 'pco', okL, lmovement)
 			return'teleopraw'
 		end
 		-- Check for new movement via
-		if type(lmovement)=='thread' then lco = lmovement end
-		if type(rmovement)=='thread' then rco = rmovement end
-	end
-
-	local lStatus = type(lco)=='thread' and coroutine.status(lco)
-	local rStatus = type(rco)=='thread' and coroutine.status(rco)
-
-	if not lStatus then
-		print('lco | Failed to start')
-		return'teleopraw'
-	end
-	if not rStatus then
-		print('rco | Failed to start')
-		return'teleopraw'
+		if type(lmovement)=='thread' then
+			print('New lco!')
+			lco = lmovement
+			lStatus = coroutine.status(lco)
+			lmovement = {}
+		end
+		if type(rmovement)=='thread' then
+			print('New rco!')
+			rco = rmovement
+			lStatus = coroutine.status(rco)
+			rmovement = {}
+		end
 	end
 
 	local qLArm = Body.get_larm_position()
@@ -115,12 +124,6 @@ function state.update()
 		Body.set_waist_command_position(qLWaist)
 	elseif qRWaist then
 		Body.set_waist_command_position(qRWaist)
-	end
-
-	-- Always have an active item here?
-	if lStatus=='dead' and rStatus=='dead' then
-		print(state._NAME, 'No active threads')
-		return 'teleopraw'
 	end
 
 end

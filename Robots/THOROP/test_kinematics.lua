@@ -64,29 +64,47 @@ end
 print('FK all good! Times:', dt_all, n)
 print()
 
-qLArm = qs[10]
-fkL = fkLs[10]
-fL = T.position6D(fkL)
-
-print('FK:', vector.new(fL))
-iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, qWaist, 0.125,0,0, 0)
-iqLArm1 = K2.inverse_larm(fkL, qLArm, 0, 0)
+s = math.ceil(math.random()*60)
+iqLArm = K.inverse_l_arm_7(T.position6D(fkLs[s]), qs[s], qs[s][3], 0, qWaist, 0.125,0,0, 0)
+iqLArm1 = K2.inverse_larm(fkLs[s], qs[s], qs[s][3], 0)
 
 print('IK left')
+print('qLArm', qs[s])
 print('iqLArm',vector.new(iqLArm))
 print('iqLArm1',vector.new(iqLArm1))
+print()
 
+print('Timing IK...')
+local err = {}
 dt_all = vector.zeros(4)
 for i, fk in ipairs(fkLs) do
+	local qL = qs[i]
+	local fk6 = T.position6D(fk)
+	local qWaist = {0, 0}
 	t0 = unix.time()
-	iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, {0,0}, 0,0,0, 0)
+	iqLArm = K.inverse_l_arm_7(fk6, qL, qL[3], 0, qWaist, 0.125,0,0, 0)
 	t1 = unix.time()
-	iqLArm1 = K2.inverse_larm(fkL2, qLArm, 0)
+	iqLArm1 = K2.inverse_larm(fk, qL, qL[3], 0)
 	t2 = unix.time()
 	dt_all = vector.new{t1-t0, t2-t1} + dt_all
+	local diff = vector.norm(
+			vector.new(iqLArm1) - vector.new(iqLArm)
+		)
+	if diff > math.pi/180 then
+		table.insert(err, i)
+	end
+	--[[
+	print('iqLArm1', vector.new(iqLArm1))
+	print('iqLArm', vector.new(iqLArm))
+	print('fk6', vector.new(fk6))
+	print('fk')
+	print(fk)
+	assert(diff < math.pi/180, diff..' '..i)
+	--]]
 end
 print('Time:', dt_all)
 print('New/Old', dt_all[2] / dt_all[1])
+print('Errors', #err, 'of', #fkLs)
 
 
 local qArm = vector.zeros(7)

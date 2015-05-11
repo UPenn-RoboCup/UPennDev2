@@ -116,7 +116,12 @@ function plugins.pulldoor(m)
 	local n_ph = 50
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
+	local intra_ph_count = 0
+	local intra_ph_timeout = 5 * rPlanner.hz
 	repeat
+		intra_ph_count = intra_ph_count + 1
+		assert(intra_ph_count < intra_ph_timeout,
+			string.format("pulldoor | intra_ph_timeout %d/%d", ph, n_ph))
 		-- Find the arm
 		local qRArm = Body.get_rarm_position()
 		local qWaist = Body.get_waist_position()
@@ -135,6 +140,7 @@ function plugins.pulldoor(m)
 		--print(distp, 'vw', vector.new(vw))
 		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
+			intra_ph_count = 0
 			print(ph, 'pHandle', vector.new(pHandle))
 			qLArm, qRArm = coroutine.yield(
 				{},

@@ -8,6 +8,7 @@ local K = {}
 -- Cache needed functions
 local T = require'Transform'
 local Tnew = require'Transform'.new
+local Tcopy = require'Transform'.copy
 local Tposition = require'Transform'.position
 local Tinv = require'Transform'.inv
 local Ttrans = require'Transform'.trans
@@ -96,20 +97,21 @@ end
 K.forward_arm = fk_arm
 
 -- Forward with respect to the torso
+-- Use waist yaw only for now
 local function forward_larm(qLArm, qWaist)
-	-- Use waist yaw only for now
+	qWaist = qWaist or {0,0}
 	return Ttranslate(fk_arm({qWaist[1], unpack(qLArm)}, true), handOffsetX, handOffsetY, handOffsetZ), {qLArm[3]}
 end
 local function forward_rarm(qRArm, qWaist)
-	-- Use waist yaw only for now
+	qWaist = qWaist or {0,0}
 	return Ttranslate(fk_arm({qWaist[1], unpack(qRArm)}, false), handOffsetX, handOffsetY, handOffsetZ), {qRArm[3]}
 end
 K.forward_larm = forward_larm
 K.forward_rarm = forward_rarm
 
 -- Precalculate some stuff
-local trans_upper = Ttrans(upperArmLength, 0, elbowOffsetX)
-local trans_lower = Ttrans(lowerArmLength, 0, -elbowOffsetX)
+--local trans_upper = Ttrans(upperArmLength, 0, elbowOffsetX)
+--local trans_lower = Ttrans(lowerArmLength, 0, -elbowOffsetX)
 local dUpperArm = sqrt(upperArmLength^2 + elbowOffsetX^2)
 local dLowerArm = sqrt(lowerArmLength^2 + elbowOffsetX^2)
 local aUpperArm = atan(elbowOffsetX / upperArmLength)
@@ -130,6 +132,16 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 
   -- From shoulder yaw to wrist
   local m = TrotX(shoulderYaw) * trans_upper * TrotY(elbowPitch) * trans_lower
+	--[[
+	local m = Ttranslate(
+		TrotateY(
+			Ttranslate(
+				TrotX(shoulderYaw),
+				upperArmLength,0, elbowOffsetX),
+			elbowPitch),
+		lowerArmLength, 0, -elbowOffsetX)
+	--]]
+
   local a = m[1][4]^2 + m[2][4]^2
   local b = -m[1][4] * xWrist2
   local c = xWrist2^2 - m[2][4]^2
@@ -160,14 +172,17 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 
   local shoulderPitch = atan2(s1, c1)
 
-	local qArm = {shoulderPitch, shoulderRoll, shoulderYaw, elbowPitch}
+	--local qArm = {shoulderPitch, shoulderRoll, shoulderYaw, elbowPitch}
 
 	--
 	-- Now find the wrist
 	--
   -- Now we know shoulder pich, roll, yaw and elbow pitch
   -- Calc the final transform for the wrist based on rotation alone
-	local rotWrist = TrotY(-elbowPitch) * TrotX(-shoulderYaw) * TrotZ(-shoulderRoll) * TrotY(-shoulderPitch) * trArm
+
+	--local rotWrist = TrotY(-elbowPitch) * TrotX(-shoulderYaw) * TrotZ(-shoulderRoll) * TrotY(-shoulderPitch) * trArm
+
+	local rotWrist = TrotateY(TrotateX(TrotateZ(TrotateY(Tcopy(trArm), -shoulderPitch), -shoulderRoll), -shoulderYaw), -elbowPitch)
 
   -- NOTE: singular point: just use current angles
 	local wristYaw_a, wristYaw2_a, wristRoll_b, wristYaw_b, wristYaw2_b
@@ -193,16 +208,16 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
   local err_a = ( (qOrg[5] - wristYaw_a+5*PI) % TWO_PI ) - PI
   local err_b = ( (qOrg[5] - wristYaw_b+5*PI) % TWO_PI ) - PI
   if err_a^2 < err_b^2 then
-    qArm[5] = wristYaw_a
-    qArm[6] = wristRoll_a
-    qArm[7] = wristYaw2_a
+    --qArm[5] = wristYaw_a
+    --qArm[6] = wristRoll_a
+    --qArm[7] = wristYaw2_a
+		return {shoulderPitch, shoulderRoll, shoulderYaw, elbowPitch, wristYaw_a, wristRoll_a, wristYaw2_a}
   else
-    qArm[5] = wristYaw_b
-    qArm[6] = wristRoll_b
-    qArm[7] = wristYaw2_b
+    --qArm[5] = wristYaw_b
+    --qArm[6] = wristRoll_b
+    --qArm[7] = wristYaw2_b
+		return {shoulderPitch, shoulderRoll, shoulderYaw, elbowPitch, wristYaw_b, wristRoll_b, wristYaw2_b}
   end
-	return qArm
-  --return vnew(qArm)
 end
 
 -- Mounting Transform offsets

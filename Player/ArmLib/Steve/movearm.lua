@@ -95,13 +95,13 @@ function movearm.goto(l, r, add_compensation)
 	local lplan = P[l.via]
 	if type(lplan)=='function' then
 		lco = coroutine.create(lplan)
-		local ok, msg = coroutine.resume(lco, lPlanner, qLArm, l)
+		local ok, msg = coroutine.resume(lco, lPlanner, l, qLArm)
 		if not ok then print('goto l |', msg) end
 	end
 	local rplan = P[r.via]
 	if type(rplan)=='function' then
 		rco = coroutine.create(rplan)
-		local ok, msg = coroutine.resume(rco, rPlanner, qRArm, r)
+		local ok, msg = coroutine.resume(rco, rPlanner, r, qRArm)
 		if not ok then print('goto r |', msg) end
 	end
 

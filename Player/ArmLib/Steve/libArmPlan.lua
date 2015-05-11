@@ -120,19 +120,21 @@ local function valid_cost(iq, minArm, maxArm)
 	end
 	return 0
 end
-local function find_shoulder(self, tr, qArm, weights)
+local function find_shoulder(self, tr, qArm, weights, qWaist)
 	weights = weights or defaultWeights
 	-- Form the inverses
 
 	local iqArms = {}
 	for i, q in ipairs(self.shoulderAngles) do
-		local iq = self.inverse(tr, qArm, q)
+		local iq = self.inverse(tr, qArm, q, 0, qWaist)
 		local du = sanitize0(iq, qArm)
 		tinsert(iqArms, iq)
 	end
 	-- Form the FKs
 	local fks = {}
-	for ic, iq in ipairs(iqArms) do fks[ic] = self.forward(iq) end
+	for ic, iq in ipairs(iqArms) do
+		fks[ic] = self.forward(iq, qWaist)
+	end
 	--
 	local minArm, maxArm = self.qMin, self.qMax
 	local rangeArm, halfway = self.qRange, self.halves
@@ -184,7 +186,7 @@ local function find_shoulder(self, tr, qArm, weights)
 	return iqArms[ibest], fks[ibest]
 end
 
-function libArmPlan.joint_preplan(self, qArm0, plan)
+function libArmPlan.joint_preplan(self, plan, qArm0)
 	assert(type(plan)=='table', 'joint_preplan | Bad plan')
 	local timeout = assert(plan.timeout, 'joint_preplan | No timeout')
 	local weights = plan.weights
@@ -290,7 +292,7 @@ end
 -- Plan a direct path using a straight line via Jacobian
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
-function libArmPlan.jacobian_preplan(self, qArm0, plan)
+function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 	assert(type(qArm0)=='table', 'jacobian_preplan | Bad qArm0')
 	assert(type(plan)=='table', 'jacobian_preplan | Bad plan')
 	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
@@ -301,11 +303,12 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax
-
+	
 	-- What is the weight of the null movement?
 	--local alpha_n = 0.5
 	-- Find a guess of the final arm position
-	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights)
+	-- TODO: Fix the find_shoulder api
+	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaist0)
 
 	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
 	qArmFGuess = qArmFGuess or qArm0
@@ -437,7 +440,7 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 	return qArmF
 end
 
-function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
+function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	assert(qArm0)
 	assert(qWaist0)
 	assert(type(plan)=='table', 'jacobian_waist_preplan | Bad plan')
@@ -447,14 +450,13 @@ function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
 	local weights = plan.weights
 
 	local hz, dt = self.hz, self.dt
-	local dq_limit = self.dq_limit
-	local qMin, qMax = self.qMin, self.qMax
+	local qMin, qMax = {math.pi,unpack(self.qMin)}, {math.pi,unpack(self.qMax)}
+	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
 
-	-- What is the weight of the null movement?
-	--local alpha_n = 0.5
+
 	-- Find a guess of the final arm position
-	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights)
-	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
+	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaist0)
+
 	qArmFGuess = qArmFGuess or qArm0
 	qArmFGuess = {0, unpack(qArmFGuess)}
 	local qWaistArm = {qWaist0[1], unpack(qArm0)}
@@ -584,7 +586,7 @@ function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
 end
 
 -- resume with: qArmSensed, vwTargetNew, weightsNew
-function libArmPlan.jacobian_velocity(self, qArm0, plan)
+function libArmPlan.jacobian_velocity(self, plan, qArm0)
 	assert(type(plan)=='table', 'jacobian_velocity | Bad plan')
 	local vwTarget = plan.vw or {0,0,0, 0,0,0}
 	assert(type(vwTarget)=='table' and #vwTarget==6, 'jacobian_velocity | Bad vw')

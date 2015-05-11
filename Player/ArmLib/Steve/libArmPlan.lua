@@ -40,6 +40,48 @@ local function sanitize0(iqArm, cur_qArm)
 	return diff_use
 end
 
+-- Use the Jacobian
+local speed_eps = 0.1 * 0.1
+local c, p = 2, 10
+local torch = require'torch'
+local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
+	-- Penalty for joint limits
+	local qMin, qMax, qRange = {unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
+
+	local qWaistArm = {unpack(qArm)}
+	if qWaist then
+		table.insert(qWaistArm, 1, qWaist[1])
+		table.insert(qMin, 1, -math.pi)
+		table.insert(qMax, 1, math.pi)
+		table.insert(qRange, 1, 2*math.pi)
+	end
+
+	local l = {}
+	for i, q in ipairs(qWaistArm) do
+    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
+  end
+	-- Calculate the pseudo inverse
+	local J = torch.Tensor(self.jacobian(qArm, qWaist))
+	local JT = J:t():clone()
+	local lambda = torch.Tensor(l)
+	local Jpseudoinv = torch.mm(torch.inverse(torch.diag(lambda):addmm(JT, J)), JT)
+	local null = torch.eye(#l) - Jpseudoinv * J
+	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
+	return dqArm, null
+end
+
+local function get_distance(self, trGoal, qArm, qWaist)
+	-- Grab our relative transform from here to the goal
+	local fkArm = self.forward(qArm, qWaist)
+	local invArm = T.inv(fkArm)
+	local here = invArm * trGoal
+	-- Determine the position and angular velocity target
+	local dp = T.position(here)
+	local drpy = T.to_rpy(here)
+	local components = {vnorm(dp), vnorm(drpy)}
+	return dp, drpy, components
+end
+
 -- Similar to SJ's method for the margin
 local function find_shoulder_sj(self, tr, qArm)
 	local minArm, maxArm, rangeArm = self.qMin, self.qMax, self.qRange
@@ -78,19 +120,21 @@ local function valid_cost(iq, minArm, maxArm)
 	end
 	return 0
 end
-local function find_shoulder(self, tr, qArm, weights)
+local function find_shoulder(self, tr, qArm, weights, qWaist)
 	weights = weights or defaultWeights
 	-- Form the inverses
 
 	local iqArms = {}
 	for i, q in ipairs(self.shoulderAngles) do
-		local iq = self.inverse(tr, qArm, q)
+		local iq = self.inverse(tr, qArm, q, 0, qWaist)
 		local du = sanitize0(iq, qArm)
 		tinsert(iqArms, iq)
 	end
 	-- Form the FKs
 	local fks = {}
-	for ic, iq in ipairs(iqArms) do fks[ic] = self.forward(iq) end
+	for ic, iq in ipairs(iqArms) do
+		fks[ic] = self.forward(iq, qWaist)
+	end
 	--
 	local minArm, maxArm = self.qMin, self.qMax
 	local rangeArm, halfway = self.qRange, self.halves
@@ -142,7 +186,7 @@ local function find_shoulder(self, tr, qArm, weights)
 	return iqArms[ibest], fks[ibest]
 end
 
-function libArmPlan.joint_preplan(self, qArm0, plan)
+function libArmPlan.joint_preplan(self, plan, qArm0)
 	assert(type(plan)=='table', 'joint_preplan | Bad plan')
 	local timeout = assert(plan.timeout, 'joint_preplan | No timeout')
 	local weights = plan.weights
@@ -245,47 +289,10 @@ function libArmPlan.joint_preplan(self, qArm0, plan)
 	return qArmF
 end
 
-
-local speed_eps = 0.1 * 0.1
-local c, p = 2, 10
-local torch = require'torch'
--- Use the Jacobian
-local function get_delta_qarm(self, vwTarget, qArm)
-	-- Penalty for joint limits
-	local qMin, qMax, qRange = self.qMin, self.qMax, self.qRange
-	local l = {}
-	for i, q in ipairs(qArm) do
-    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
-  end
-	-- Calculate the pseudo inverse
-	local J = torch.Tensor(self.jacobian(qArm))
-	local JT = J:t():clone()
-	local lambda = torch.Tensor(l)
-	local Jpseudoinv = torch.mm(torch.inverse(torch.diag(lambda):addmm(JT, J)), JT)
-	local null = torch.eye(#l) - Jpseudoinv * J
-	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
-	return dqArm, null
-end
-
-local function get_distance(self, qArm, trGoal)
-	-- Grab our relative transform from here to the goal
-	local fkArm = self.forward(qArm)
-	--print('\nfkArm')
-	--print(T.tostring(fkArm))
-
-	local invArm = T.inv(fkArm)
-	local here = invArm * trGoal
-	-- Determine the position and angular velocity target
-	local dp = T.position(here)
-	local drpy = T.to_rpy(here)
-	local components = {vnorm(dp), vnorm(drpy)}
-	return dp, drpy, components
-end
-
 -- Plan a direct path using a straight line via Jacobian
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
-function libArmPlan.jacobian_preplan(self, qArm0, plan)
+function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 	assert(type(qArm0)=='table', 'jacobian_preplan | Bad qArm0')
 	assert(type(plan)=='table', 'jacobian_preplan | Bad plan')
 	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
@@ -296,17 +303,18 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax
-
+	
 	-- What is the weight of the null movement?
 	--local alpha_n = 0.5
 	-- Find a guess of the final arm position
-	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights)
+	-- TODO: Fix the find_shoulder api
+	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaist0)
 
 	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
 	qArmFGuess = qArmFGuess or qArm0
 	local qArm = qArm0
 	--print('get_distance')
-	local dp, drpy, dist_components = get_distance(self, qArm, trGoal)
+	local dp, drpy, dist_components = get_distance(self, trGoal, qArm)
 	--local dp0, drpy0, dist_components0 = dp, drpy, dist_components
 	--print('dist_components', unpack(dist_components))
 	--print('qArmSensed', qArmSensed)
@@ -322,7 +330,7 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace = get_delta_qarm(self, vwTarget, qArm)
+		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qArm)
 		-- Grab the null space velocities toward our guessed configuration
 		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
 		-- Linear combination of the two
@@ -352,7 +360,7 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 			qArm[i] = min(max(qMin[i], q), qMax[i])
 		end
 		-- Yield the progress
-		dp, drpy, dist_components = get_distance(self, qArm, trGoal)
+		dp, drpy, dist_components = get_distance(self, trGoal, qArm)
 		--print('dist_components', unpack(dist_components))
 
 		sanitize0(qArm, qArmOld)
@@ -432,59 +440,31 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 	return qArmF
 end
 
--- Use the Jacobian
-local function get_delta_qwaistarm(self, vwTarget, qWaistArm)
-	-- Penalty for joint limits
-	local qMin, qMax, qRange = {-math.pi, unpack(self.qMin)}, {math.pi, unpack(self.qMax)}, {2*math.pi, unpack(self.qRange)}
-	local l = {}
-	for i, q in ipairs(qWaistArm) do
-    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
-  end
-	-- Calculate the pseudo inverse
-	local J = torch.Tensor(self.jacobian_waist(qWaistArm))
-	local JT = J:t():clone()
-	local lambda = torch.Tensor(l)
-	local Jpseudoinv = torch.mm(torch.inverse(torch.diag(lambda):addmm(JT, J)), JT)
-	local null = torch.eye(#l) - Jpseudoinv * J
-	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
-	return dqArm, null
-end
-
-local function get_distance_waist(self, qArm, trGoal)
-	-- Grab our relative transform from here to the goal
-	local fkArm = self.forward(qArm)
-	local invArm = T.inv(fkArm)
-	local here = invArm * trGoal
-	-- Determine the position and angular velocity target
-	local dp = T.position(here)
-	local drpy = T.to_rpy(here)
-	local components = {vnorm(dp), vnorm(drpy)}
-	return dp, drpy, components
-end
-
-function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
+function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	assert(qArm0)
 	assert(qWaist0)
 	assert(type(plan)=='table', 'jacobian_waist_preplan | Bad plan')
 	assert(plan.tr or plan.q, 'jacobian_waist_preplan | Need tr or q')
 	local trGoal = plan.tr or self.forward(plan.q)
 	local timeout = assert(plan.timeout, 'jacobian_waist_preplan | No timeout')
-	local weights = plan.weights
+	local weights = plan.weights or {1,0,0}
 
 	local hz, dt = self.hz, self.dt
-	local dq_limit = self.dq_limit
-	local qMin, qMax = self.qMin, self.qMax
+	local qMin, qMax = {math.pi,unpack(self.qMin)}, {math.pi,unpack(self.qMax)}
+	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
 
-	-- What is the weight of the null movement?
-	--local alpha_n = 0.5
+
 	-- Find a guess of the final arm position
-	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights)
-	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
+	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaist0)
+	print('qArmFGuess', qArmFGuess)
+	table.insert(qArmFGuess, 1, qWaist0[1])
+	
 	qArmFGuess = qArmFGuess or qArm0
 	qArmFGuess = {0, unpack(qArmFGuess)}
-	local qWaistArm = {qWaist0[1], unpack(qArm0)}
+	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}
 	--print('get_distance')
-	local dp, drpy, dist_components = get_distance(self, qArm, trGoal)
+	local dp, drpy, dist_components =
+		get_distance(self, trGoal, qArm0, qWaist0)
 	--local dp0, drpy0, dist_components0 = dp, drpy, dist_components
 	--print('dist_components', unpack(dist_components))
 	--print('qArmSensed', qArmSensed)
@@ -500,9 +480,15 @@ function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qWaistArm)
+		local dqdtArm, nullspace = get_delta_qwaistarm(
+			self,
+			vwTarget,
+			{unpack(qWaistArm,2,#qWaistArm)},
+			{qWaistArm[1],0}
+		)
+
 		-- Grab the null space velocities toward our guessed configuration
-		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+		local dqdtNull = nullspace * torch.Tensor(qWaistArm - qArmFGuess)
 		-- Linear combination of the two
 		--local dqdtCombo = dqdtArm:mul(1-alpha_n) - dqdtNull:mul(alpha_n)
 		local dqdtCombo = dqdtArm - dqdtNull
@@ -523,15 +509,20 @@ function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
 			end
 		end
 		-- Apply the joint change
-		local qArmOld = qArm
-		qArm = qArmOld + dqCombo
+		local qWaistArmOld = qWaistArm
+		qWaistArm = qWaistArmOld + dqCombo
 		-- Check joint limit compliance
-		for i, q in ipairs(qArm) do qArm[i] = min(max(qMin[i], q), qMax[i]) end
+		for i, q in ipairs(qWaistArm) do
+			qWaistArm[i] = min(max(qMin[i], q), qMax[i])
+		end
 		-- Yield the progress
-		dp, drpy, dist_components = get_distance(self, qArm, trGoal)
+		dp, drpy, dist_components = get_distance(self, trGoal,
+		{unpack(qWaistArm,2,#qWaistArm)},
+		{qWaistArm[1],0}
+		)
 		--print('dist_components', unpack(dist_components))
 
-		sanitize0(qArm, qArmOld)
+		sanitize0(qWaistArm, qWaistArmOld)
 
 		table.insert(path, qArm)
 
@@ -609,7 +600,7 @@ function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
 end
 
 -- resume with: qArmSensed, vwTargetNew, weightsNew
-function libArmPlan.jacobian_velocity(self, qArm0, plan)
+function libArmPlan.jacobian_velocity(self, plan, qArm0)
 	assert(type(plan)=='table', 'jacobian_velocity | Bad plan')
 	local vwTarget = plan.vw or {0,0,0, 0,0,0}
 	assert(type(vwTarget)=='table' and #vwTarget==6, 'jacobian_velocity | Bad vw')
@@ -637,7 +628,7 @@ function libArmPlan.jacobian_velocity(self, qArm0, plan)
 	repeat
 		n = n + 1
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace = get_delta_qarm(self, vwTarget, qArmSensed)
+		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qArmSensed)
 		-- Grab the null space velocities toward our guessed configuration
 		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
 		-- Linear combination of the two

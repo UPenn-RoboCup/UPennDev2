@@ -317,90 +317,6 @@ end
 -- Jacobian
 ------------
 
--- TODO: Simplify the matrix multiplication with sympy
---[[
-local tfRots = { TrotY, TrotZ, TrotX, TrotY, TrotX, TrotZ, TrotX}
-local tfRotDots = { TrotateYdot, TrotateZdot, TrotateXdot, TrotateYdot, TrotateXdot, TrotateZdot, TrotateXdot}
-local tfLlinks = {}
---tfLlinks[1] = Ttrans(0,0,0) -- Compare to SJ
-tfLlinks[1] = Ttrans(0,shoulderOffsetY,shoulderOffsetZ) -- waist-shoulder roll 
-tfLlinks[2] = Ttrans(0,0,0) -- shoulder pitch-shoulder roll
-tfLlinks[3] = Ttrans(0,0,0) -- shouder roll-shoulder yaw
-tfLlinks[4] = Ttrans(upperArmLength, 0, elbowOffsetX) -- shoulder yaw-elbow 
-tfLlinks[5] = Ttrans(lowerArmLength,0,-elbowOffsetX) -- elbow to wrist yaw 1
-tfLlinks[6] = Ttrans(0,0,0) -- wrist yaw1 to wrist roll
-tfLlinks[7] = Ttrans(0,0,0) -- wrist roll to wrist yaw2
-local tfRlinks = {}
-for i,v in ipairs(tfLlinks) do tfRlinks[i] = v end
-tfRlinks[4] = Ttrans(0,-shoulderOffsetY,shoulderOffsetZ)
-local function jacobian_transpose(qArm)
-
-	--local com = fk_arm(qArm)
-	local com = forward_larm(qArm)
-	local invCom = Tinv(com)
-
-	local tfLinks = tfLlinks
-	local tfTorso = T.eye()
-	
-	local rots = {}
-	for i, rot in ipairs(tfRots) do rots[i] = rot(qArm[i]) end
-	
-	local tfLinkQ = {}
-	for i, rot in ipairs(rots) do tfLinkQ[i] = tfLinks[i] * rot end
-
-	local tfRunning = {}
-	tfRunning[0] = tfTorso
-	for i, tfLinkQ in ipairs(tfLinkQ) do tfRunning[i] = tfRunning[i-1] * tfLinkQ end
-	
-	local dots = {}
-	for i, tfRotDot in ipairs(tfRotDots) do
-		dots[i] = tfRotDot(tfRunning[i-1] * tfLinks[i], qArm[i])
-		for j=i+1,#tfLinkQ do dots[i] = dots[i] * tfLinkQ[j] end
-	end
-	
-	local vel, angvel = {}, {}
-	for i, tf in ipairs(dots) do
-		vel[i] = Tposition(tf)
-	end
-
-	for i, tf in ipairs(dots) do
-		angvel[i] = tf * invCom
-	end
-	
-	local JT = {}
-	for i, Aw in ipairs(angvel) do
-		JT[i] = {vel[i][1], vel[i][2], vel[i][3], Aw[2][3], Aw[3][1], Aw[1][2]}
-	end
-	return JT, com
-	
-end
-
-local torch = require'torch'
-function K.jacobian(qArm)
-	local JT0, com = jacobian_transpose(qArm)
-	local JT = torch.Tensor(JT0)
-	local J = JT:t():clone()
-	return J, JT, com
-end
-
-local function calculate_b_matrix()
-	local b = {}
-	for i, wi in ipairs(w) do
-		b[i] = {}
-		for j, wj in ipairs(w) do
-			local inertia_v = (v[i][1]*v[j][1]+v[i][2]*v[j][2]+v[i][3]*v[j][3]) * m
-			local inertia_w = wi[1] * wj[1] * inertia[1]
-			+ wi[2] * wj[2] * inertia[2]
-			+ wi[3] * wj[3] * inertia[3]
-			+ wi[1] * wj[2] * inertia[4] + wi[2] * wj[1] * inertia[4]
-			+ wi[1] * wj[3] * inertia[5] + wi[3] * wj[1] * inertia[5]
-			+ wi[2] * wj[3] * inertia[5] + wi[3] * wj[2] * inertia[5]
-			b[i][j] = inertia_v + inertia_w
-		end
-	end
-end
---]]
-
 local function jacobian(q)
 	local c1, s1 = cos(q[1]), sin(q[1])
 	local c2, s2 = cos(q[2]), sin(q[2])
@@ -480,7 +396,7 @@ end
 -- Includes the endpoint links: l_8 (SJ has this actually)
 -- NOTE: l8_z is the wrist x, actually, since we did not apply the last DH for the jacobian com generation :P
 -- Input is {qwaist[1], qarm[1], qarm[2], qarm[3], ...}
-function K.jacobian_waist(q, is_left)
+local function jacobian_waist(q, is_left)
 	local c1, s1 = cos(q[1]), sin(q[1])
 	local c2, s2 = cos(q[2]), sin(q[2])
 	local c3, s3 = cos(q[3]), sin(q[3])

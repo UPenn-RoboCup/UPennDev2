@@ -222,32 +222,32 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
   end
 end
 
--- Mounting Transform offsets
--- Left: Assume UCLA gripper
-local preLArm, postLArm = Ttrans(shoulderOffsetX, shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, handOffsetY, handOffsetZ)
--- * Ttrans(0.045,0,0) * TrotZ(-45*DEG_TO_RAD) -- Add translation to the center of the palm, or what?
--- Right: UCLA Gripper
-local preRArm, postRArm = Ttrans(shoulderOffsetX, -shoulderOffsetY, shoulderOffsetZ), Ttrans(handOffsetX, -handOffsetY, handOffsetZ)
---* Ttrans(0.08,0,0) * TrotZ(45*DEG_TO_RAD)
-
 -- Inverse with respect to the torso
-local preLArmInv, postLArmInv = Tinv(preLArm), Tinv(postLArm)
-function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll)
-	return ik_arm(
-		preLArmInv * trL * postLArmInv,
-		qLArm,
-		shoulderYaw or qLArm[3],
-		flipRoll==1 and PI
-	)
+function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll, qWaist)
+	qWaist = qWaist or {0,0}
+	-- Bring into the shoulder frame
+	-- TODO: We need to add the IMU
+	local trL0 = TrotateZ(
+		TrotateY(
+		Ttrans(-shoulderOffsetX, -shoulderOffsetY, -shoulderOffsetZ),
+		-qWaist[2]),
+		-qWaist[1])
+		* Ttranslate(trL, -handOffsetX, -handOffsetY, -handOffsetZ)
+	-- Call the generic IK routine
+	return ik_arm(trL0, qLArm, shoulderYaw or qLArm[3], flipRoll==1 and PI)
 end
-local preRArmInv, postRArmInv = Tinv(preRArm), Tinv(postRArm)
-function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll)
-	return ik_arm(
-		preRArmInv * trR * postRArmInv,
-		qRArm,
-		shoulderYaw or qRArm[3],
-		flipRoll==1 and -PI
-	)
+
+function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll, qWaist)
+	qWaist = qWaist or {0,0}
+	-- Bring into the shoulder frame
+	-- TODO: We need to add the IMU
+	local trL0 = TrotateZ(
+		TrotateY(
+		Ttrans(-shoulderOffsetX, shoulderOffsetY, -shoulderOffsetZ),
+		-qWaist[2]),
+		-qWaist[1])
+		* Ttranslate(trR, -handOffsetX, -handOffsetY, -handOffsetZ)
+	return ik_arm(trL0, qLArm, shoulderYaw or qLArm[3], flipRoll==1 and PI)
 end
 
 -- Left leg based. Same for right for DH params, anyway

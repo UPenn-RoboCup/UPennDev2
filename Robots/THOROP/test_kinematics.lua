@@ -13,7 +13,7 @@ print('================')
 print()
 
 print'Kinematics Functions and variables'
-for k,v in pairs(K) do print(k,v) end
+--for k,v in pairs(K) do print(k,v) end
 
 print()
 print('================')
@@ -29,21 +29,24 @@ local qWaist = vector.new({0, 0})*DEG_TO_RAD
 fL = vector.new(K.l_arm_torso_7(qLArm, 0, qWaist, 0.125, 0,0))
 fkL2 = K2.forward_larm(qLArm, qWaist)
 fL2 = vector.new(T.position6D(fkL2))
-print('Forward Left')
-print(fL)
-print(fL2)
 
 fR = vector.new(K.r_arm_torso_7(qRArm, 0, qWaist, 0.125, 0,0))
 fR2 = vector.new(T.position6D(K2.forward_rarm(qRArm, qWaist)))
+
+print('Forward Left')
+print(fL)
+print(fL2)
 print('Forward Right')
 print(fR)
 print(fR2)
+print()
 
 local qs = {}
 for i=1,1e3 do
 		qs[i] = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
 end
 
+print('Timing FK...')
 local fkLs, fkRs = {}, {}
 dt_all = vector.zeros(2)
 for i, q in ipairs(qs) do
@@ -61,8 +64,8 @@ for i, q in ipairs(qs) do
 	fkLs[i] = K2.forward_larm(q, qWaist)
 	fkRs[i] = K2.forward_rarm(q, qWaist)
 end
-print('FK all good! Times:', dt_all, n)
-print()
+print('FK all good! Times:', dt_all)
+print('New/Old', dt_all[2] / dt_all[1])
 
 s = math.ceil(math.random()*60)
 iqLArm = K.inverse_l_arm_7(T.position6D(fkLs[s]), qs[s], qs[s][3], 0, qWaist, 0.125,0,0, 0)

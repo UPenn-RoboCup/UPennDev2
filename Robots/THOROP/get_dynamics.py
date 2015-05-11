@@ -68,8 +68,8 @@ rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='modi
 print('Find the Dynamic parameters')
 rbt = sympybotics.RobotDynCode(rbtdef, verbose=True)
 
-print('DH Parameters')
-print(dh_params)
+#print('DH Parameters')
+#print(dh_params)
 #print('Forward kinematics @ -1')
 #print(rbt.geo.T[-1])
 #print('Forward kinematics @ -2')
@@ -115,30 +115,31 @@ try:
 finally:
 	f.close()
 
-'''
-print('Find the base parameters for dynamics')
-rbt.calc_base_parms(verbose=True)
-f = open("m"+kind+".txt", "w")
+print('Generate the C code for the inertia matrix')
+#print(rbt.M_code)
+m_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.M_code, 'm_out', 'm', rbtdef)
+f = open("inertia"+kind+".txt", "w")
 try:
-	f.write(str(rbt.dyn.baseparms))
-	f.write('\n')
-	f.write(m_str)
+    f.write(m_str)
 finally:
-	f.close()
-
+    f.close()
 
 print('Generate the C code for the inverse dynamics')
 tau_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.invdyn_code, 'tau_out', 'tau', rbtdef)
 
-print(rbt.M_code)
-print('Generate the C code for the inertia matrix')
-m_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.M_code, 'm_out', 'm', rbtdef)
-
-f = open("inverse_dynamics.txt", "w")
+f = open("inverse_dynamics"+kind+".txt", "w")
 try:
-    f.write(str(rbt.dyn.baseparms))
-    f.write('\n')
     f.write(tau_str)
 finally:
     f.close()
+
+'''
+print('Find the base parameters for dynamics')
+rbt.calc_base_parms(verbose=True)
+f = open("baseparms"+kind+".txt", "w")
+try:
+	f.write(str(rbt.dyn.baseparms))
+finally:
+	f.close()
+
 '''

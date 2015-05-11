@@ -12,9 +12,10 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
+-- left and right will both request waist positions potentially
 local lco, rco
-local okL, qLWaypoint
-local okR, qRWaypoint
+local okL, qLWaypoint, qLWaist
+local okR, qRWaypoint, qRWaist
 local sequence, s, stage
 
 function state.entry()
@@ -65,12 +66,16 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
+	local qWaist = Body.get_waist_position()
 	if lStatus=='suspended' then
-		okL, qLWaypoint = coroutine.resume(lco, qLArm)
+		okL, qLWaypoint, qLWaist = coroutine.resume(lco, qLArm, qWaist)
 	end
 	if rStatus=='suspended' then
-		okR, qRWaypoint = coroutine.resume(rco, qRArm)
+		okR, qRWaypoint, qRWaist = coroutine.resume(rco, qRArm, qWaist)
 	end
+
+	--if qLWaist then print('qLWaist', unpack(qLWaist)) end
+	--if qRWaist then print('qRWaist', unpack(qRWaist)) end
 
 	-- Check if errors in either
 	if not okL or not okR then

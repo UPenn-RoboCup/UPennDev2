@@ -154,7 +154,7 @@ for i,q in ipairs(qs) do
 	q,
 	qWaist,
 	{0,0,0}, --rpy angle
-	0, --isLeft,
+	1, --isLeft,
 	0,--Config.arm.handoffset.gripper3[1],
 	0,--handOffsetY,
 	0 --Config.arm.handoffset.gripper3[3]
@@ -167,7 +167,7 @@ local d0 = t1-t0
 
 local t0 = unix.time()
 for i,q in ipairs(qs) do
-	local J2 = torch.Tensor(K2.jacobian(q))
+	local J2 = torch.Tensor(K2.jacobian_larm(q))
 end
 local t1 = unix.time()
 local d1 = t1-t0

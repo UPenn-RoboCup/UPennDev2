@@ -1,5 +1,5 @@
 #!/usr/local/bin/luajit
-local f = io.open('jacobian_com_waist.txt','r')
+local f = io.open('jacobian_com_nowaist.txt','r')
 local x = f:read('*all')
 f:close()
 

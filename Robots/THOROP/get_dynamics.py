@@ -19,11 +19,9 @@ pi = sympy.pi
 q = sympybotics.robotdef.q
 upperArmLength, elbowOffsetX, lowerArmLength, shoulderOffsetY, shoulderOffsetZ = sympy.symbols('upperArmLength, elbowOffsetX, lowerArmLength, shoulderOffsetY, shoulderOffsetZ')
 
-print(upperArmLength)
-
 kind = '_nowaist'
 dh_params_nowaist = [
-	(-pi/2, 0, 0, q),
+	(-pi/2, 0, shoulderOffsetY, q),
 	(pi/2, 0, 0, q+pi/2),
 	(pi/2, 0, upperArmLength, q+pi/2),
 	(pi/2, elbowOffsetX, 0, q),

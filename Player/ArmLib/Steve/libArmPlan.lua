@@ -274,10 +274,10 @@ function libArmPlan.joint_preplan(self, plan, qArm0)
 	assert(dqAverage or (n <= nStepsTimeout),
 		'joint_preplan | Timeout: '..nStepsTimeout)
 
-	local qArmSensed = coroutine.yield(qArmFGuess, dist_components)
+	local qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
 	-- Progress is different, now, since in joint space
 	for i, qArmPlanned in ipairs(path) do
-		qArmSensed = coroutine.yield(qArmPlanned)
+		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
 		-- Check the lage
 		local dqLag = qArm - qArmSensed
 		local imax_lag, max_lag = 0, 0
@@ -376,10 +376,10 @@ function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 	print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
 	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 
-	local qArmSensed = coroutine.yield(qArmFGuess, dist_components)
+	local qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
 
 	for i, qArmPlanned in ipairs(path) do
-		qArmSensed = coroutine.yield(qArmPlanned)
+		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
 		-- If we are lagging badly, then there may be a collision
 		local dqLag = qArmPlanned - qArmSensed
 		local imax_lag, max_lag = 0, 0
@@ -423,7 +423,7 @@ function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 		-- Apply the joint change
 		qArm = qArm + dqArmF
 		-- Progress is different, now, since in joint space
-		qArmSensed = coroutine.yield(qArm, dqArmF)
+		qArmSensed, qWaistSensed = coroutine.yield(qArm)
 		-- Check the lage
 		local dqLag = qArm - qArmSensed
 		local imax_lag, max_lag = 0, 0
@@ -456,10 +456,10 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	--print('qWaist0', qWaist0)
 
 	-- Find a guess of the final arm position
-	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaist0)
-	qArmFGuess = vector.new(qArmFGuess or {unpack(qArm0)})
-	table.insert(qArmFGuess, 1, qWaist0[1])
-	--print('qArmFGuess', qArmFGuess)
+	local qWaistArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaist0)
+	qWaistArmFGuess = vector.new(qWaistArmFGuess or {unpack(qArm0)})
+	table.insert(qWaistArmFGuess, 1, qWaist0[1])
+	--print('qWaistArmFGuess', qWaistArmFGuess)
 
 	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}
 	--print('qWaistArm*', qWaistArm)
@@ -491,10 +491,10 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 		)
 
 		-- Grab the null space velocities toward our guessed configuration
-		local dqdtNull = nullspace * torch.Tensor(qWaistArm - qArmFGuess)
+		local dqdtNull = nullspace * torch.Tensor(qWaistArm - qWaistArmFGuess)
 		-- Linear combination of the two
 		--local dqdtCombo = dqdtArm:mul(1-alpha_n) - dqdtNull:mul(alpha_n)
-		local dqdtCombo = dqdtArm -- - dqdtNull
+		local dqdtCombo = dqdtArm - dqdtNull
 		-- Respect the update rate, place as a lua table
 		local dqCombo = vector.new(dqdtCombo:mul(dt))
 		-- Check the speed limit usage
@@ -554,10 +554,17 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	print(n, 'jacobian_waist_preplan steps planned in: ', t1-t0)
 	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Timeout')
 
-	qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess, dist_components)
+
+	-- Why is this here?
+	--[[
+	qArmSensed, qWaistSensed = coroutine.yield(
+		{unpack(qWaistArmFGuess,2,#qWaistArmFGuess)},
+			{qWaistArmFGuess[1], 0}, dist_components
+	)
+	--]]
 
 	for i, qArmPlanned in ipairs(path) do
-		qArmSensed = coroutine.yield(qArmPlanned)
+		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
 		-- If we are lagging badly, then there may be a collision
 		local dqLag = qArmPlanned - qArmSensed
 		local imax_lag, max_lag = 0, 0
@@ -570,15 +577,16 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	end
 
 
-	local qWaistArmF = self:find_shoulder(trGoal, {unpack(qWaistArm,2,#qWaistArm)}, {0,1,0}, {qWaistArm[1], 0})
+	local qWaistArmF = self:find_shoulder(
+		trGoal, {unpack(qWaistArm,2,#qWaistArm)}, {0,1,0}, {qWaistArm[1], 0})
 	--assert(qWaistArmF, 'jacobian_preplan | No final shoulder solution')
 	if not qArmF then
 		qWaistArmF = qWaistArm
 	else
 		table.insert(qWaistArmF, 1, qWaistArm[1])
 	end
-	print('qWaistArmF', vector.new(qWaistArmF) * RAD_TO_DEG)
-	print('qWaistArm', vector.new(qWaistArm) * RAD_TO_DEG)
+	--print('qWaistArmF', vector.new(qWaistArmF) * RAD_TO_DEG)
+	--print('qWaistArm', vector.new(qWaistArm) * RAD_TO_DEG)
 	--if true then return qWaistArm end
 
 	-- Goto the final arm position as quickly as possible
@@ -608,6 +616,7 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 		end
 		-- Apply the joint change
 		qWaistArm = qWaistArm + dqWaistArmF
+		--print('qWaistArmQ', vector.new(qWaistArm)*RAD_TO_DEG)
 		-- Progress is different, now, since in joint space
 		qArmSensed, qWaistSensed = coroutine.yield(
 			{unpack(qWaistArm,2,#qWaistArm)},
@@ -628,8 +637,8 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	print('jacobian_waist_preplan | Final Steps:', n)
 	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Final timeout')
 
-	print('WA', vector.new(qWaistArm))
-	print('WAF', vector.new(qWaistArmF))
+	--print('WA', vector.new(qWaistArm))
+	--print('WAF', vector.new(qWaistArmF))
 
 	return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
 end
@@ -652,7 +661,7 @@ function libArmPlan.jacobian_velocity(self, plan, qArm0)
 	local qArmFGuess = self:find_shoulder(fkArm0, qArm0, weights) or qArm0
 	local qArm = qArm0
 
-	local qArmSensed, vwTargetNew, weightsNew, qArmFGuessNew =
+	local qArmSensed, qWaistSensed, vwTargetNew, weightsNew, qArmFGuessNew =
 		coroutine.yield()
 	vwTarget = vwTargetNew or vwTarget
 	weights = weightsNew or weights
@@ -688,8 +697,8 @@ function libArmPlan.jacobian_velocity(self, plan, qArm0)
 			qArm[i] = min(max(qMin[i], q), qMax[i])
 		end
 		-- Yield the progress
-		qArmSensed, vwTargetNew, weightsNew, qArmFGuessNew =
-			coroutine.yield(qArm, n)
+		qArmSensed, qWaistSensed, vwTargetNew, weightsNew, qArmFGuessNew =
+			coroutine.yield(qArm)
 		-- Smart adaptation
 		vwTarget = vwTargetNew or vwTarget
 		weights = weightsNew or weights

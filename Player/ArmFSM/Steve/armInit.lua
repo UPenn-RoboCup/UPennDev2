@@ -74,12 +74,6 @@ function state.update()
 		okR, qRWaypoint, qRWaist = coroutine.resume(rco, qRArm, qWaist)
 	end
 
-	if qLWaist then
-		--print('qLWaist', unpack(qLWaist))
-		Body.set_waist_command_position(qLWaist)
-	end
-	--if qRWaist then print('qRWaist', unpack(qRWaist)) end
-
 	-- Check if errors in either
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint, lco)
@@ -95,6 +89,13 @@ function state.update()
 	end
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
+	end
+	if qLWaist and qRWaist then
+		print('Conflicting Waist')
+	elseif qLWaist then
+		Body.set_waist_command_position(qLWaist)
+	elseif qRWaist then
+		Body.set_waist_command_position(qRWaist)
 	end
 
 	-- Check if done

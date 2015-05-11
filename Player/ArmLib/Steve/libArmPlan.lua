@@ -693,11 +693,10 @@ end
 
 
 -- Set the forward and inverse
-local function set_chain(self, forward, inverse, jacobian, jacobian_waist)
+local function set_chain(self, forward, inverse, jacobian)
 	self.forward = assert(forward)
 	self.inverse = assert(inverse)
 	self.jacobian = jacobian
-	self.jacobian_waist = jacobian_waist
   return self
 end
 

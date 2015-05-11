@@ -108,68 +108,51 @@ end
 print('Time:', dt_all)
 print('New/Old', dt_all[2] / dt_all[1])
 print('Errors', #err, 'of', #fkLs)
+print()
 
+print('TESTING JACOBIAN')
+print()
 
 local qArm = vector.zeros(7)
+local qWaist = vector.zeros(2)
 --local qArm = vector.new({180,0,0, 0, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,0, -45, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90,0,90*math.random(), -45, 0,0,0})*DEG_TO_RAD
 --local qArm = vector.new({90*math.random(),-90*math.random(),90*math.random(), -90*math.random(), 0,90*math.random(),0})*DEG_TO_RAD
-local qWaist = vector.new{45,0} * DEG_TO_RAD
+--local qWaist = vector.new{45, 0} * DEG_TO_RAD
 
 local JacArm = K.calculate_arm_jacobian(
 qArm,
 qWaist,
 {0,0,0}, --rpy angle
 0, --isLeft,
-0,--Config.arm.handoffset.gripper3[1],
+0.125,--Config.arm.handoffset.gripper3[1],
 0,--handOffsetY,
 0 --Config.arm.handoffset.gripper3[3]
 )  --tool xyz
 
-local J = torch.Tensor(JacArm):resize(6,7)  
-local JT = torch.Tensor(J):transpose(1,2)
+local J = torch.Tensor(JacArm):resize(6,7)
 
---print('JacArm', unpack(JacArm))
 print('Jacobian')
 util.ptorch(J, 5, 3)
---print('Jacobian Transpose')
---util.ptorch(JT, 5, 3)
-
 print()
+util.ptorch(J, 5, 3)
+print()
+
 local J2 = torch.Tensor(K2.jacobian(qArm))
 print('Jacobian 2')
 util.ptorch(J2, 5, 3)
---print('Jacobian Transpose 2')
---util.ptorch(J2:t(), 5, 3)
---print('COM')
---print(com)
---com = torch.Tensor(com)
---util.ptorch(com, 5, 3)
-
 print()
+
 print('Jacobian Waist')
 local J3 = torch.Tensor(K2.jacobian_waist({qWaist[1], unpack(qArm)}))
 util.ptorch(J3, 5, 3)
-
-
-print('qArm', qArm)
-
-
---[[
-local t0 = unix.time()
-for i,q in ipairs(qs) do
-	local JT3 = torch.Tensor(K2.jac(q))
-end
-local t1 = unix.time()
-local d2 = t1-t0
---]]
 
 local t0 = unix.time()
 for i,q in ipairs(qs) do
 	local JacArm = K.calculate_arm_jacobian(
 	q,
-	{0,0},
+	qWaist,
 	{0,0,0}, --rpy angle
 	0, --isLeft,
 	0,--Config.arm.handoffset.gripper3[1],
@@ -182,31 +165,18 @@ end
 local t1 = unix.time()
 local d0 = t1-t0
 
-
 local t0 = unix.time()
 for i,q in ipairs(qs) do
-	local JT2 = torch.Tensor(K2.jacobian(q))
+	local J2 = torch.Tensor(K2.jacobian(q))
 end
 local t1 = unix.time()
 local d1 = t1-t0
 
-print('Method0',d0)
-print('Method1',d1)
-print('Method2',d2)
-
-
-print('Speedup1',d0/d1)
-print('Speedup2',d2 and d0/d2)
---]]
---[[
+print('Method0', d0)
+print('Method1', d1)
+print('Speedup New/Old', d1/d0)
 print()
-print('Check diff')
-local dJ = J2 - J
-print('Sum', torch.sum(dJ))
---]]
 
-util.ptorch(J2, 5, 2)
-util.ptorch(J, 5, 2)
 
 for i,q in ipairs(qs) do
 		local JacArm = K.calculate_arm_jacobian(
@@ -219,9 +189,11 @@ for i,q in ipairs(qs) do
 	0 --Config.arm.handoffset.gripper3[3]
 	)  --tool xyz
 	local J = torch.Tensor(JacArm):resize(6,7)
-	local JT = torch.Tensor(J):transpose(1,2)
-	local d = (torch.Tensor(K2.jacobian(q)) - J):sum()
+	-- Invert this... SJ *may* have an error. I doubt it, of course :D
+	J:sub(4,6,1,7):mul(-1)
+	local J2 = torch.Tensor(K2.jacobian(q))
+	local d = (J2 - J):sum()
 	--print(d)
 	assert( d < 1e-10, 'BAD '..d)
 end
-print('OK!')
+print('Jacobian OK!')

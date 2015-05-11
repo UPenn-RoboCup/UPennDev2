@@ -18,6 +18,9 @@ import sympybotics
 pi = sympy.pi
 q = sympybotics.robotdef.q
 upperArmLength, elbowOffsetX, lowerArmLength, shoulderOffsetY, shoulderOffsetZ = sympy.symbols('upperArmLength, elbowOffsetX, lowerArmLength, shoulderOffsetY, shoulderOffsetZ')
+
+print(upperArmLength)
+
 kind = '_nowaist'
 dh_params_nowaist = [
 	(-pi/2, 0, 0, q),
@@ -31,6 +34,7 @@ dh_params_nowaist = [
 ]
 dh_params = dh_params_nowaist
 
+'''
 kind = '_waist'
 dh_params_waist = [
 	(0, 0, shoulderOffsetZ, q), #yaw
@@ -44,6 +48,7 @@ dh_params_waist = [
 	(-pi/2, 0, 0, -pi/2)
 ]
 dh_params = dh_params_waist
+'''
 
 # We use the modified convention
 print('Define the Robot')
@@ -99,6 +104,7 @@ try:
 finally:
 	f.close()
 
+'''
 print('Find the base parameters for dynamics')
 rbt.calc_base_parms(verbose=True)
 f = open("m"+kind+".txt", "w")
@@ -110,19 +116,18 @@ finally:
 	f.close()
 
 
-#print('Generate the C code for the inverse dynamics')
-#tau_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.invdyn_code, 'tau_out', 'tau', rbtdef)
+print('Generate the C code for the inverse dynamics')
+tau_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.invdyn_code, 'tau_out', 'tau', rbtdef)
 
-#print(rbt.M_code)
-#print('Generate the C code for the inertia matrix')
-#m_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.M_code, 'm_out', 'm', rbtdef)
+print(rbt.M_code)
+print('Generate the C code for the inertia matrix')
+m_str = sympybotics.robotcodegen.robot_code_to_func('C', rbt.M_code, 'm_out', 'm', rbtdef)
 
-#print('Find the base parameters for dynamics')
-#rbt.calc_base_parms(verbose=True)
-#f = open("inverse_dynamics.txt", "w")
-#try:
-#    f.write(str(rbt.dyn.baseparms))
-#    f.write('\n')
-#    f.write(tau_str)
-#finally:
-#    f.close()
+f = open("inverse_dynamics.txt", "w")
+try:
+    f.write(str(rbt.dyn.baseparms))
+    f.write('\n')
+    f.write(tau_str)
+finally:
+    f.close()
+'''

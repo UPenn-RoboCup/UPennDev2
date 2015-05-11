@@ -447,7 +447,7 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	assert(plan.tr or plan.q, 'jacobian_waist_preplan | Need tr or q')
 	local trGoal = plan.tr or self.forward(plan.q)
 	local timeout = assert(plan.timeout, 'jacobian_waist_preplan | No timeout')
-	local weights = plan.weights
+	local weights = plan.weights or {1,0,0}
 
 	local hz, dt = self.hz, self.dt
 	local qMin, qMax = {math.pi,unpack(self.qMin)}, {math.pi,unpack(self.qMax)}
@@ -456,12 +456,15 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 
 	-- Find a guess of the final arm position
 	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaist0)
-
+	print('qArmFGuess', qArmFGuess)
+	table.insert(qArmFGuess, 1, qWaist0[1])
+	
 	qArmFGuess = qArmFGuess or qArm0
 	qArmFGuess = {0, unpack(qArmFGuess)}
-	local qWaistArm = {qWaist0[1], unpack(qArm0)}
+	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}
 	--print('get_distance')
-	local dp, drpy, dist_components = get_distance(self, trGoal, qArm)
+	local dp, drpy, dist_components =
+		get_distance(self, trGoal, qArm0, qWaist0)
 	--local dp0, drpy0, dist_components0 = dp, drpy, dist_components
 	--print('dist_components', unpack(dist_components))
 	--print('qArmSensed', qArmSensed)
@@ -477,9 +480,15 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qWaistArm)
+		local dqdtArm, nullspace = get_delta_qwaistarm(
+			self,
+			vwTarget,
+			{unpack(qWaistArm,2,#qWaistArm)},
+			{qWaistArm[1],0}
+		)
+
 		-- Grab the null space velocities toward our guessed configuration
-		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+		local dqdtNull = nullspace * torch.Tensor(qWaistArm - qArmFGuess)
 		-- Linear combination of the two
 		--local dqdtCombo = dqdtArm:mul(1-alpha_n) - dqdtNull:mul(alpha_n)
 		local dqdtCombo = dqdtArm - dqdtNull
@@ -500,15 +509,20 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 			end
 		end
 		-- Apply the joint change
-		local qArmOld = qArm
-		qArm = qArmOld + dqCombo
+		local qWaistArmOld = qWaistArm
+		qWaistArm = qWaistArmOld + dqCombo
 		-- Check joint limit compliance
-		for i, q in ipairs(qArm) do qArm[i] = min(max(qMin[i], q), qMax[i]) end
+		for i, q in ipairs(qWaistArm) do
+			qWaistArm[i] = min(max(qMin[i], q), qMax[i])
+		end
 		-- Yield the progress
-		dp, drpy, dist_components = get_distance(self, trGoal, qArm)
+		dp, drpy, dist_components = get_distance(self, trGoal,
+		{unpack(qWaistArm,2,#qWaistArm)},
+		{qWaistArm[1],0}
+		)
 		--print('dist_components', unpack(dist_components))
 
-		sanitize0(qArm, qArmOld)
+		sanitize0(qWaistArm, qWaistArmOld)
 
 		table.insert(path, qArm)
 

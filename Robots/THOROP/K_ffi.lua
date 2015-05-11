@@ -396,7 +396,7 @@ end
 -- Includes the endpoint links: l_8 (SJ has this actually)
 -- NOTE: l8_z is the wrist x, actually, since we did not apply the last DH for the jacobian com generation :P
 -- Input is {qwaist[1], qarm[1], qarm[2], qarm[3], ...}
-function K.jacobian_waist(q, is_left)
+local function jacobian_waist(q, is_left)
 	local c1, s1 = cos(q[1]), sin(q[1])
 	local c2, s2 = cos(q[2]), sin(q[2])
 	local c3, s3 = cos(q[3]), sin(q[3])

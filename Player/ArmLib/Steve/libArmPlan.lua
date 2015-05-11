@@ -454,11 +454,22 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
 
 	--print('qWaist0', qWaist0)
+	local qArmFGuess = plan.qArmGuess or qArm0
+	local qWaistFGuess = plan.qWaistGuess or qWaist0
 
 	-- Find a guess of the final arm position
-	local qWaistArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaist0)
-	qWaistArmFGuess = vector.new(qWaistArmFGuess or {unpack(qArm0)})
-	table.insert(qWaistArmFGuess, 1, qWaist0[1])
+	local qWaistArmFGuess = self:find_shoulder(
+		trGoal, qArmFGuess, weights, qWaistFGuess)
+	vector.new(qWaistArmFGuess)
+
+	print('qArmFGuess', qArmFGuess*RAD_TO_DEG)
+	print('qWaistFGuess', qWaistFGuess*RAD_TO_DEG)
+	if not qWaistArmFGuess then
+		print('jacobian_waist_preplan | Bad Guess')
+		qWaistArmFGuess = {qWaist0[1], unpack(qArm0)}
+	else
+		table.insert(qWaistArmFGuess, 1, qWaistFGuess[1])
+	end
 	--print('qWaistArmFGuess', qWaistArmFGuess)
 
 	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}

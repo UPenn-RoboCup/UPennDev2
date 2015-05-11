@@ -56,9 +56,21 @@ function plugins.pulldoor(m)
 	local tfHandle0 = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
 
 	local qRArm0 = Body.get_rarm_command_position()
-	--local qArmHandle0 = rPlanner:find_shoulder(tfHandle0, qRArm0, {1,0,0})
-	--print()
-	--print('qArmHandle0', qArmHandle0)
+	local qWaist0 = Body.get_waist_command_position()
+	local qWaistGuess = vector.new{15, 0}*DEG_TO_RAD
+	local qArmHandle0 = rPlanner:find_shoulder(tfHandle0, qRArm0, {1,0,0}, qWaist0)
+	qArmHandle0 = qArmHandle0 or rPlanner.zeros
+	local qArmHandle0 = rPlanner:find_shoulder(tfHandle0, qArmHandle0, {1,0,0}, qWaistGuess)
+	vector.new(qArmHandle0)
+
+	print()
+	print('qWaistGuess', qWaistGuess*RAD_TO_DEG)
+	print(tfHandle0)
+	if qArmHandle0 then
+		print('qArmHandle0',qArmHandle0*RAD_TO_DEG)
+	else
+		print('qArmHandle0 no good')
+	end
 
 	--[[
 	local tfHingeGoal = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
@@ -76,7 +88,9 @@ function plugins.pulldoor(m)
 	}
 	local configR = {
 		tr=tfHandle0, timeout=10,
-		via='jacobian_waist_preplan', weights = {1,0,0}
+		via='jacobian_waist_preplan', weights = {1,0,0},
+		qWaistGuess = qWaistGuess,
+		qArmGuess = qArmHandle0
 	}
 
 	local lstatus, rstatus = coroutine.yield(movearm.goto(configL, configR))

@@ -82,7 +82,7 @@ function state.update()
 		if type(rmovement)=='thread' then
 			print('New rco!')
 			rco = rmovement
-			lStatus = coroutine.status(rco)
+			rStatus = coroutine.status(rco)
 			rmovement = {}
 		end
 	end
@@ -111,10 +111,10 @@ function state.update()
 		return'teleopraw'
 	end
 
-	if type(qLWaypoint)=='table'then
+	if type(qLWaypoint)=='table' then
 		Body.set_larm_command_position(qLWaypoint)
 	end
-	if type(qRWaypoint)=='table'then
+	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
 	end
 

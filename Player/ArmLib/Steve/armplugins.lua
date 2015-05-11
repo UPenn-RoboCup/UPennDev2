@@ -99,7 +99,7 @@ function plugins.pulldoor(m)
 		--print('lstatus, rstatus', lstatus, rstatus)
 	until rstatus=='dead'
 	print('At the handle')
-	if true then return end
+	--if true then return end
 
 	local vw, distp, dista
 	-- Next stage

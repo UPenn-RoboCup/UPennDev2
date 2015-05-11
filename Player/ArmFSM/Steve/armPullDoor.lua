@@ -74,11 +74,13 @@ function state.update()
 		end
 		-- Check for new movement via
 		if type(lmovement)=='thread' then
+			print('New lco!')
 			lco = lmovement
 			lStatus = coroutine.status(lco)
 			lmovement = {}
 		end
 		if type(rmovement)=='thread' then
+			print('New rco!')
 			rco = rmovement
 			lStatus = coroutine.status(rco)
 			rmovement = {}

@@ -74,7 +74,10 @@ function state.update()
 		okR, qRWaypoint, qRWaist = coroutine.resume(rco, qRArm, qWaist)
 	end
 
-	--if qLWaist then print('qLWaist', unpack(qLWaist)) end
+	if qLWaist then
+		--print('qLWaist', unpack(qLWaist))
+		Body.set_waist_command_position(qLWaist)
+	end
 	--if qRWaist then print('qRWaist', unpack(qRWaist)) end
 
 	-- Check if errors in either

@@ -545,7 +545,6 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 		--print('qWaistSensed', qWaistSensed)
 
 
-
 		-- Check if we are close enough
 		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
 			break
@@ -555,7 +554,7 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	print(n, 'jacobian_waist_preplan steps planned in: ', t1-t0)
 	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Timeout')
 
-	qArmSensed = coroutine.yield(qArmFGuess, dist_components)
+	qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess, dist_components)
 
 	for i, qArmPlanned in ipairs(path) do
 		qArmSensed = coroutine.yield(qArmPlanned)
@@ -578,6 +577,9 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	else
 		table.insert(qWaistArmF, 1, qWaistArm[1])
 	end
+	print('qWaistArmF', vector.new(qWaistArmF) * RAD_TO_DEG)
+	print('qWaistArm', vector.new(qWaistArm) * RAD_TO_DEG)
+	--if true then return qWaistArm end
 
 	-- Goto the final arm position as quickly as possible
 	-- NOTE: We assume the find_shoulder yields a valid final configuration
@@ -623,10 +625,13 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 		--print('final dist', dist*RAD_TO_DEG)
 		if dist < 0.5*DEG_TO_RAD then break end
 	until n > nStepsTimeout
-	print(n, 'final steps')
+	print('jacobian_waist_preplan | Final Steps:', n)
 	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Final timeout')
 
-	return qWaistArmF
+	print('WA', vector.new(qWaistArm))
+	print('WAF', vector.new(qWaistArmF))
+
+	return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
 end
 
 -- resume with: qArmSensed, vwTargetNew, weightsNew

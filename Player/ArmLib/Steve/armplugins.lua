@@ -48,30 +48,17 @@ Assume Relative to torso
 --]]
 function plugins.pulldoor(m)
 
-	-- Use velocity control
-	local configL = {
-		tr=tr6D{0.2, 0.2, -0.1,  0,0*DEG_TO_RAD,-90*DEG_TO_RAD}, timeout=15,
-		via='joint_preplan', weights = {1,0,1}
-	}
-	local configR = {
-		via='jacobian_velocity',
-	}
-
-
-	local alpha = 1
-	local yawGoal = math.pi / 6
-
 	-- TODO: Search over the roll to keep smooth
-
+	local yawGoal = math.pi / 6
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
 	local pHinge = T.position(tfHinge)
 	tfHinge = T.trans(unpack(pHinge))
-	local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
-	--find_shoulder(self, tr, qArm, weights)
-	print()
-	local qRArm = Body.get_rarm_command_position()
-	local qArmHandle0 = rPlanner:find_shoulder(tfHandle, qRArm, {1,0,0})
-	print('qArmHandle0', qArmHandle0)
+	local tfHandle0 = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
+
+	local qRArm0 = Body.get_rarm_command_position()
+	--local qArmHandle0 = rPlanner:find_shoulder(tfHandle0, qRArm0, {1,0,0})
+	--print()
+	--print('qArmHandle0', qArmHandle0)
 
 	--[[
 	local tfHingeGoal = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
@@ -84,18 +71,34 @@ function plugins.pulldoor(m)
 	-- Technically there should be some manifold distance metric on so(3) paths
 	--yawGoal - m.yaw
 
+	local configL = {
+		via='jacobian_velocity',
+	}
+	local configR = {
+		tr=tfHandle0, timeout=10,
+		via='jacobian_waist_preplan', weights = {1,0,0}
+	}
 
-	local vw, distp, dista
-	coroutine.yield(movearm.goto(configL, configR))
+	local lstatus, rstatus = coroutine.yield(movearm.goto(configL, configR))
 
 	-- TODO: Add a timeout here for reaching the handle...
 	repeat
-		local qRArm = Body.get_rarm_position()
-		local fkRArm = rPlanner.forward(qRArm)
-		vw, distp, dista = get_vw(tfHandle, fkRArm)
-		coroutine.yield({}, {vw, false, qArmHandle0})
-	until distp<0.02 and dista<3*DEG_TO_RAD
+		lstatus, rstatus = coroutine.yield({}, {})
+		--print('lstatus, rstatus', lstatus, rstatus)
+	until rstatus=='dead'
 	print('At the handle')
+
+
+	local vw, distp, dista
+	-- Next stage
+	local configL = {
+		via='jacobian_velocity',
+	}
+	local configR = {
+		via='jacobian_velocity',
+	}
+	coroutine.yield(movearm.goto(configL, configR))
+
 
 	local n_ph = 50
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
@@ -115,13 +118,6 @@ function plugins.pulldoor(m)
 		local tfHandGoal = tfHandle * tfGrip
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
 
-		-- Scale by the phase
-		local scaled_vw = alpha * vector.copy(vw)
-		scaled_vw[1] = alpha * scaled_vw[1]
-		scaled_vw[2] = alpha * scaled_vw[2]
-		scaled_vw[6] = alpha * scaled_vw[6]
-		--print(ph, distp, dista*RAD_TO_DEG, scaled_vw)
-
 		--print('components', components[1], components[2]*RAD_TO_DEG)
 		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
@@ -131,7 +127,7 @@ function plugins.pulldoor(m)
 				{scaled_vw, {1,1,0}}
 			)
 		else
-			qLArm, qRArm = coroutine.yield({},{scaled_vw})
+			qLArm, qRArm = coroutine.yield({},{vw})
 		end
 
 	until ph>=n_ph

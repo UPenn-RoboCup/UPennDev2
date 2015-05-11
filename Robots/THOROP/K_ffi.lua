@@ -487,7 +487,7 @@ end
 
 function K.jacobian_rarm(qRArm, qWaist)
 	if qWaist then
-		return jacobian_waist({qWaist[1], unpack(qLArm)}, false)
+		return jacobian_waist({qWaist[1], unpack(qRArm)}, false)
 	else
 		return jacobian(qRArm)
 	end

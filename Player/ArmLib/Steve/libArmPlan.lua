@@ -489,7 +489,6 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 			{unpack(qWaistArm,2,#qWaistArm)},
 			{qWaistArm[1], 0}
 		)
-
 		-- Grab the null space velocities toward our guessed configuration
 		local dqdtNull = nullspace * torch.Tensor(qWaistArm - qWaistArmFGuess)
 		-- Linear combination of the two
@@ -535,13 +534,8 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 		print('dqCombo', dqCombo)
 		--]]
 
-		-- Immediately yield for testing purposes
-		--table.insert(path, qWaistArm)
 
-		qArmSensed, qWaistSensed = coroutine.yield(
-			{unpack(qWaistArm,2,#qWaistArm)},
-			{qWaistArm[1], 0}
-		)
+		table.insert(path, qWaistArm)
 		--print('qWaistSensed', qWaistSensed)
 
 
@@ -555,17 +549,20 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Timeout')
 
 
-	-- Why is this here?
-	--[[
+	-- This gives our guessed final configuration.
+	-- This may not be at all correct, since we are jacobian in waist, too, and do not search over waist angles
 	qArmSensed, qWaistSensed = coroutine.yield(
 		{unpack(qWaistArmFGuess,2,#qWaistArmFGuess)},
 			{qWaistArmFGuess[1], 0}, dist_components
 	)
-	--]]
 
-	for i, qArmPlanned in ipairs(path) do
-		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
+	for i, qWaistArmPlanned in ipairs(path) do
+		qArmSensed, qWaistSensed = coroutine.yield(
+			{unpack(qWaistArmPlanned,2,#qWaistArmPlanned)},
+			{qWaistArmPlanned[1], 0}
+		)
 		-- If we are lagging badly, then there may be a collision
+		--[[
 		local dqLag = qArmPlanned - qArmSensed
 		local imax_lag, max_lag = 0, 0
 		for i, dq in ipairs(dqLag) do
@@ -574,6 +571,7 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 			--local lag = fabs(dq-dqCombo[i])
 			--assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Lag: '..tostring(lag))
 		end
+		--]]
 	end
 
 

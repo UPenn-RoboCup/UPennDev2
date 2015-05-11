@@ -46,8 +46,11 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-	-- Evaluate the model
 	local pStatus = type(pco)=='thread' and coroutine.status(pco)
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
+
+	-- Evaluate the model
 	if not pStatus then
 		-- There may be some error, since pco is not a thread
 		print('pco | Failed to start')
@@ -55,19 +58,24 @@ function state.update()
 	elseif pStatus=='dead' then
 		return 'done'
 	elseif pStatus=='suspended' then
-		okP, lmovement, rmovement = coroutine.resume(pco)
+		okP, lmovement, rmovement = coroutine.resume(pco, lStatus, rStatus)
 		-- Check for errors
 		if not okP then
 			print(state._NAME, 'pco', okL, lmovement)
 			return'teleopraw'
 		end
 		-- Check for new movement via
-		if type(lmovement)=='thread' then lco = lmovement end
-		if type(rmovement)=='thread' then rco = rmovement end
+		if type(lmovement)=='thread' then
+			lco = lmovement
+			lStatus = coroutine.status(lco)
+			lmovement = {}
+		end
+		if type(rmovement)=='thread' then
+			rco = rmovement
+			lStatus = coroutine.status(rco)
+			rmovement = {}
+		end
 	end
-
-	local lStatus = type(lco)=='thread' and coroutine.status(lco)
-	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
 	if not lStatus then
 		print('lco | Failed to start')

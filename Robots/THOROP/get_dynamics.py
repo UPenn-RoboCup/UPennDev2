@@ -2,6 +2,19 @@
 import sympy
 import sympybotics
 
+'''
+
+Make sure you know if you are using waist or nowaist!
+Edit in convert_*.lua and get_dynamics.py if needed
+
+Run python get_dynamics.py
+Run luajit convert_jacobian.lua > test_jacobian_nowaist.lua
+Run luajit convert_fk.lua > test_fk_nowaist.lua
+
+l_8z is the x frame end effector offset from torso, since it does not use the last DH in the definition, it seems
+
+'''
+
 # DH Definition from Lua codebase
 '''
 		.mDH(-PI/2, 0, q[0], 0)

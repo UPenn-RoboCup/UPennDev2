@@ -63,14 +63,16 @@ function plugins.pulldoor(m)
 	local qArmHandle0 = rPlanner:find_shoulder(tfHandle0, qArmHandle0, {1,0,0}, qWaistGuess)
 	vector.new(qArmHandle0)
 
+	--[[
 	print()
-	print('qWaistGuess', qWaistGuess*RAD_TO_DEG)
+	print('pulldoor | qWaistGuess', qWaistGuess*RAD_TO_DEG)
 	print(tfHandle0)
 	if qArmHandle0 then
-		print('qArmHandle0',qArmHandle0*RAD_TO_DEG)
+		print('pulldoor | qArmHandle0',qArmHandle0*RAD_TO_DEG)
 	else
-		print('qArmHandle0 no good')
+		print('pulldoor | qArmHandle0 no good')
 	end
+	--]]
 
 	--[[
 	local tfHingeGoal = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
@@ -83,15 +85,15 @@ function plugins.pulldoor(m)
 	-- Technically there should be some manifold distance metric on so(3) paths
 	--yawGoal - m.yaw
 
-	local configL = false -- not moving
-	local configR = {
+	local configL1 = false -- not moving
+	local configR1 = {
 		tr=tfHandle0, timeout=10,
 		via='jacobian_waist_preplan', weights = {1,0,0},
 		qWaistGuess = qWaistGuess,
 		qArmGuess = qArmHandle0
 	}
 
-	local lstatus, rstatus = coroutine.yield(movearm.goto(configL, configR))
+	local lstatus, rstatus = coroutine.yield(movearm.goto(configL1, configR1))
 
 	-- TODO: Add a timeout here for reaching the handle...
 	repeat
@@ -103,22 +105,22 @@ function plugins.pulldoor(m)
 
 	local vw, distp, dista
 	-- Next stage
-	local configL = {
+	local configL2 = false
+	local configR2 = {
 		via='jacobian_velocity',
+		vw = {0,0,0, 0,0,0}
 	}
-	local configR = {
-		via='jacobian_velocity',
-	}
-	coroutine.yield(movearm.goto(configL, configR))
+	coroutine.yield(movearm.goto(configL2, configR2))
 
-
+	print('Running next motion...')
 	local n_ph = 50
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
 	repeat
 		-- Find the arm
 		local qRArm = Body.get_rarm_position()
-		local fkRArm = rPlanner.forward(qRArm)
+		local qWaist = Body.get_waist_position()
+		local fkRArm = rPlanner.forward(qRArm, qWaist)
 
 		m.ph = ph
 		m.yaw = (ph / n_ph) * yawGoal
@@ -130,13 +132,13 @@ function plugins.pulldoor(m)
 		local tfHandGoal = tfHandle * tfGrip
 		vw, distp, dista = get_vw(tfHandle, fkRArm)
 
-		--print('components', components[1], components[2]*RAD_TO_DEG)
+		--print(distp, 'vw', vector.new(vw))
 		if distp<0.02 and dista<3*DEG_TO_RAD then
 			ph = ph + 1
 			print(ph, 'pHandle', vector.new(pHandle))
 			qLArm, qRArm = coroutine.yield(
 				{},
-				{scaled_vw, {1,1,0}}
+				{vw, {1,1,0}}
 			)
 		else
 			qLArm, qRArm = coroutine.yield({},{vw})

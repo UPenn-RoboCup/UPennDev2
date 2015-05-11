@@ -11,11 +11,11 @@ local arm = {}
 arm.init = {}
 arm.init[1] = {
 	left = {
-		tr=tr6D{0.05, 0.35, -0.25,0,0,0}, timeout=10,
+		tr=tr6D{0.05, 0.35, -0.25, 0,0,0}, timeout=10,
 		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
-		tr=tr6D{0.05, -0.35, -0.25,0,0,0}, timeout=10,
+		tr=tr6D{0.05, -0.35, -0.25, 0,0,0}, timeout=10,
 		via='jacobian_preplan', weights = {1,0,0}
 	}
 }

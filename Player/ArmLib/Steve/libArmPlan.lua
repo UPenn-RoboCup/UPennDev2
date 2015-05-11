@@ -81,8 +81,9 @@ end
 local function find_shoulder(self, tr, qArm, weights)
 	weights = weights or defaultWeights
 	-- Form the inverses
+
 	local iqArms = {}
-	for _, q in ipairs(self.shoulderAngles) do
+	for i, q in ipairs(self.shoulderAngles) do
 		local iq = self.inverse(tr, qArm, q)
 		local du = sanitize0(iq, qArm)
 		tinsert(iqArms, iq)
@@ -269,6 +270,9 @@ end
 local function get_distance(self, qArm, trGoal)
 	-- Grab our relative transform from here to the goal
 	local fkArm = self.forward(qArm)
+	--print('\nfkArm')
+	--print(T.tostring(fkArm))
+
 	local invArm = T.inv(fkArm)
 	local here = invArm * trGoal
 	-- Determine the position and angular velocity target
@@ -282,6 +286,7 @@ end
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
 function libArmPlan.jacobian_preplan(self, qArm0, plan)
+	assert(type(qArm0)=='table', 'jacobian_preplan | Bad qArm0')
 	assert(type(plan)=='table', 'jacobian_preplan | Bad plan')
 	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
 	local trGoal = plan.tr or self.forward(plan.q)
@@ -296,6 +301,7 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 	--local alpha_n = 0.5
 	-- Find a guess of the final arm position
 	local qArmFGuess = self:find_shoulder(trGoal, qArm0, weights)
+
 	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
 	qArmFGuess = qArmFGuess or qArm0
 	local qArm = qArm0
@@ -342,7 +348,9 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 		local qArmOld = qArm
 		qArm = qArmOld + dqCombo
 		-- Check joint limit compliance
-		for i, q in ipairs(qArm) do qArm[i] = min(max(qMin[i], q), qMax[i]) end
+		for i, q in ipairs(qArm) do
+			qArm[i] = min(max(qMin[i], q), qMax[i])
+		end
 		-- Yield the progress
 		dp, drpy, dist_components = get_distance(self, qArm, trGoal)
 		--print('dist_components', unpack(dist_components))
@@ -357,7 +365,7 @@ function libArmPlan.jacobian_preplan(self, qArm0, plan)
 		end
 	until n > nStepsTimeout
 	local t1 = unix.time()
-	print(n, 'jacobian steps planned in: ', t1-t0)
+	print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
 	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 
 	local qArmSensed = coroutine.yield(qArmFGuess, dist_components)
@@ -474,7 +482,7 @@ function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
 	--assert(qArmFGuess, 'jacobian_preplan | No guess shoulder solution')
 	qArmFGuess = qArmFGuess or qArm0
 	qArmFGuess = {0, unpack(qArmFGuess)}
-	local qArm = {qWaist0[1], unpack(qArm0)}
+	local qWaistArm = {qWaist0[1], unpack(qArm0)}
 	--print('get_distance')
 	local dp, drpy, dist_components = get_distance(self, qArm, trGoal)
 	--local dp0, drpy0, dist_components0 = dp, drpy, dist_components
@@ -492,7 +500,7 @@ function libArmPlan.jacobian_waist_preplan(self, qArm0, qWaist0, plan)
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qArm)
+		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qWaistArm)
 		-- Grab the null space velocities toward our guessed configuration
 		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
 		-- Linear combination of the two

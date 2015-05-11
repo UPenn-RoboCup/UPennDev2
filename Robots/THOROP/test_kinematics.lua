@@ -64,9 +64,13 @@ end
 print('FK all good! Times:', dt_all, n)
 print()
 
-print('FK:', vector.new(fL2))
-iqLArm = K.inverse_l_arm_7(fL2, qLArm, 0, 0, qWaist, 0,0,0, 0)
-iqLArm1 = K2.inverse_larm(fkL2, qLArm, 0, 0)
+qLArm = qs[10]
+fkL = fkLs[10]
+fL = T.position6D(fkL)
+
+print('FK:', vector.new(fL))
+iqLArm = K.inverse_l_arm_7(fL, qLArm, 0, 0, qWaist, 0.125,0,0, 0)
+iqLArm1 = K2.inverse_larm(fkL, qLArm, 0, 0)
 
 print('IK left')
 print('iqLArm',vector.new(iqLArm))

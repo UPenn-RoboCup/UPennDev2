@@ -131,8 +131,8 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
   local elbowPitch = -acos(cElbow) - aUpperArm - aLowerArm
 
   -- From shoulder yaw to wrist
-  local m = TrotX(shoulderYaw) * trans_upper * TrotY(elbowPitch) * trans_lower
-	--[[
+  --local m = TrotX(shoulderYaw) * trans_upper * TrotY(elbowPitch) * trans_lower
+	----[[
 	local m = Ttranslate(
 		TrotateY(
 			Ttranslate(
@@ -182,7 +182,9 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
 
 	--local rotWrist = TrotY(-elbowPitch) * TrotX(-shoulderYaw) * TrotZ(-shoulderRoll) * TrotY(-shoulderPitch) * trArm
 
-	local rotWrist = TrotateY(TrotateX(TrotateZ(TrotateY(Tcopy(trArm), -shoulderPitch), -shoulderRoll), -shoulderYaw), -elbowPitch)
+	local rotWrist = TrotateY(TrotateZ(TrotateX(TrotY(-elbowPitch), -shoulderYaw), -shoulderRoll), -shoulderPitch) * trArm
+
+	--local rotWrist = TrotateY(TrotateX(TrotateZ(TrotateY(Tcopy(trArm), -shoulderPitch), -shoulderRoll), -shoulderYaw), -elbowPitch)
 
   -- NOTE: singular point: just use current angles
 	local wristYaw_a, wristYaw2_a, wristRoll_b, wristYaw_b, wristYaw2_b

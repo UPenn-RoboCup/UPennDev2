@@ -177,6 +177,27 @@ function plugins.pulldoor(m)
 		--print('lstatus, rstatus', lstatus, rstatus)
 	until lstatus=='dead'
 	print('Two hand hold')
+	
+	-- Release the right hand
+	print('pHandle', pHandle)
+	--local tfReleaseGoal = T.trans(pHandle[1]-0.05,pHandle[2]-0.1, pHandle[1]-0.05) * T.rotZ(0*DEG_TO_RAD)
+	
+	local qWaist = Body.get_waist_command_position()
+	local tfReleaseGoal = T.trans(pHandle[1]-0.1,pHandle[2]-0.05, pHandle[3]-0.1) * T.rotZ(qWaist[1]) * T.rotY(60*DEG_TO_RAD)
+	
+	local configL4 = false
+	local configR4 = {
+		tr=tfReleaseGoal, timeout=20,
+		via='jacobian_preplan', weights = {1,0,0},
+	}
+	
+	coroutine.yield(movearm.goto(configL4, configR4))
+	
+	repeat
+		lstatus, rstatus = coroutine.yield({}, {})
+		--print('lstatus, rstatus', lstatus, rstatus)
+	until rstatus=='dead'
+	print('Two hand hold')
 
 	return
 end

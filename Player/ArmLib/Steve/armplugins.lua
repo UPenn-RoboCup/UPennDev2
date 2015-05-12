@@ -49,8 +49,8 @@ Assume Relative to torso
 function plugins.pulldoor(m)
 
 	-- TODO: Search over the roll to keep smooth
-	local yawGoal = math.pi / 6
-	local qWaistGuess = vector.new{20, 0}*DEG_TO_RAD
+	local yawGoal = math.pi / 5
+	local qWaistGuess = vector.new{45, 0}*DEG_TO_RAD
 
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
 	local pHinge = T.position(tfHinge)

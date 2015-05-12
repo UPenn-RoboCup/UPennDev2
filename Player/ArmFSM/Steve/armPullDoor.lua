@@ -25,7 +25,7 @@ function state.entry()
   t_update = t_entry
 
 	local model ={
-		x = 0.5,
+		x = 0.6,
 		y = -0.25,
 		z = -0.05,
 		yaw = 0,

@@ -61,6 +61,19 @@ dh_params_waist = [
 dh_params = dh_params_waist
 '''
 
+'''
+kind = '_rleg'
+dh_params = [
+(0, 0, 0, q+pi/2),
+(pi/2, 0, 0, q+pi/2),
+(pi/2, 0, 0, q+aThigh),
+('0', -dThigh, 0, q-aTibia-aThigh),
+('0', -dTibia, 0, q+aTibia),
+(-pi/2, 0, 0, q),
+]
+'''
+
+
 # We use the modified convention
 print('Define the Robot')
 rbtdef = sympybotics.RobotDef('THOR-OP 7DOF Arm', dh_params, dh_convention='modified')
@@ -88,13 +101,17 @@ try:
 finally:
 	f.close()
 
+'''
+# This is not useful
 f = open("jacobian"+kind+".txt", "w")
 try:
 	f.write(str(rbt.kin.J[-1]))
 finally:
 	f.close()
+'''
 
-	# This may include the end effect, as l_8x
+# This may include the end effect, as l_8x
+# For the leg, do -1, not -2
 f = open("jacobian_com"+kind+".txt", "w")
 try:
 	f.write(str(rbt.kin.Jc[-2]))

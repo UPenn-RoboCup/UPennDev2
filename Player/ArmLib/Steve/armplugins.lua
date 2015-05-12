@@ -50,6 +50,8 @@ function plugins.pulldoor(m)
 
 	-- TODO: Search over the roll to keep smooth
 	local yawGoal = math.pi / 6
+	local qWaistGuess = vector.new{20, 0}*DEG_TO_RAD
+
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
 	local pHinge = T.position(tfHinge)
 	tfHinge = T.trans(unpack(pHinge))
@@ -57,7 +59,6 @@ function plugins.pulldoor(m)
 
 	local qRArm0 = Body.get_rarm_command_position()
 	local qWaist0 = Body.get_waist_command_position()
-	local qWaistGuess = vector.new{15, 0}*DEG_TO_RAD
 	local qArmHandle0 = rPlanner:find_shoulder(tfHandle0, qRArm0, {1,0,0}, qWaist0)
 	qArmHandle0 = qArmHandle0 or rPlanner.zeros
 	local qArmHandle0 = rPlanner:find_shoulder(tfHandle0, qArmHandle0, {1,0,0}, qWaistGuess)
@@ -107,17 +108,18 @@ function plugins.pulldoor(m)
 	-- Next stage
 	local configL2 = false
 	local configR2 = {
-		via='jacobian_velocity',
-		vw = {0,0,0, 0,0,0}
+		via='jacobian_waist_velocity',
+		vw = {0,0,0, 0,0,0},
+		qWaistGuess = vector.new{-30, 0}*DEG_TO_RAD,
 	}
 	coroutine.yield(movearm.goto(configL2, configR2))
 
 	print('Running next motion...')
-	local n_ph = 50
+	local n_ph = 40
 	local ph0 = math.ceil((m.yaw / yawGoal) * n_ph)
 	local ph = ph0
 	local intra_ph_count = 0
-	local intra_ph_timeout = 5 * rPlanner.hz
+	local intra_ph_timeout = 15 * rPlanner.hz
 	repeat
 		intra_ph_count = intra_ph_count + 1
 		assert(intra_ph_count < intra_ph_timeout,

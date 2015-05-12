@@ -25,8 +25,8 @@ function state.entry()
   t_update = t_entry
 
 	local model ={
-		x = 0.52,
-		y = -0.19,
+		x = 0.5,
+		y = -0.25,
 		z = -0.05,
 		yaw = 0,
 		hinge = -1,
@@ -93,7 +93,7 @@ function state.update()
 
 	if lStatus=='suspended' then
 		okL, qLWaypoint, qLWaist =
-			coroutine.resume(lco, qLArm, qWaist, unpack(lmovement))
+			coroutine.resume(lco, qLArm, qWaist, unpack(lmovement or {}))
 	end
 	if not okL then
 		print(state._NAME, 'L', okL, qLWaypoint, lco)
@@ -103,7 +103,7 @@ function state.update()
 
 	if rStatus=='suspended' then
 		okR, qRWaypoint, qRWaist =
-			coroutine.resume(rco, qRArm, qWaist, unpack(rmovement))
+			coroutine.resume(rco, qRArm, qWaist, unpack(rmovement or {}))
 	end
 	if not okR then
 		print(state._NAME, 'R', okR, qRWaypoint, rco)

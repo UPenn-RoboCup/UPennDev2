@@ -49,7 +49,7 @@ Assume Relative to torso
 function plugins.pulldoor(m)
 
 	-- TODO: Search over the roll to keep smooth
-	local yawGoal = math.pi / 5
+	local yawGoal = 30*DEG_TO_RAD
 	local qWaistGuess = vector.new{45, 0}*DEG_TO_RAD
 
 	local tfHinge = T.trans(0, m.hinge, 0) * T.rotZ(m.yaw) * T.trans(m.x, m.y, m.z)
@@ -75,12 +75,6 @@ function plugins.pulldoor(m)
 	end
 	--]]
 
-	--[[
-	local tfHingeGoal = T.trans(0, m.hinge, 0) * T.rotZ(yawGoal) * T.trans(m.x, m.y, m.z)
-	local pHingeGoal = T.position(tfHingeGoal)
-	tfHingeGoal = T.trans(unpack(pHingeGoal))
-	local tfHandleGoal = tfHingeGoal * T.rotZ(yawGoal) * T.trans(0,-m.hinge,0)
-	--]]
 	--get_vw(tfObject, fkArm)
 	-- I know that drpy.yaw should be scaled, and dx, dy
 	-- Technically there should be some manifold distance metric on so(3) paths
@@ -104,13 +98,15 @@ function plugins.pulldoor(m)
 	print('At the handle')
 	--if true then return end
 
+	local qWaistGuess1 = vector.new{-30, 0}*DEG_TO_RAD
+
 	local vw, distp, dista
 	-- Next stage
 	local configL2 = false
 	local configR2 = {
 		via='jacobian_waist_velocity',
 		vw = {0,0,0, 0,0,0},
-		qWaistGuess = vector.new{-30, 0}*DEG_TO_RAD,
+		qWaistGuess = qWaistGuess1
 	}
 	coroutine.yield(movearm.goto(configL2, configR2))
 
@@ -120,6 +116,7 @@ function plugins.pulldoor(m)
 	local ph = ph0
 	local intra_ph_count = 0
 	local intra_ph_timeout = 15 * rPlanner.hz
+	local pHandle
 	repeat
 		intra_ph_count = intra_ph_count + 1
 		assert(intra_ph_count < intra_ph_timeout,
@@ -133,7 +130,7 @@ function plugins.pulldoor(m)
 		m.yaw = (ph / n_ph) * yawGoal
 		-- Know where the handle is
 		local tfHandle = tfHinge * T.rotZ(m.yaw) * T.trans(0,-m.hinge,0)
-		local pHandle = T.position(tfHandle)
+		pHandle = T.position(tfHandle)
 		-- Roll for the grip
 		local tfGrip = T.rotX(m.roll)
 		local tfHandGoal = tfHandle * tfGrip
@@ -153,6 +150,34 @@ function plugins.pulldoor(m)
 		end
 
 	until ph>=n_ph
+
+	print('Door opened!')
+
+	-- Now change hands
+	print('pHandle', pHandle)
+	local tfEdgeGoal = T.trans(0.36,pHandle[2]+0.05, 0.15) * T.rotZ(-90*DEG_TO_RAD)
+	print('tfEdgeGoal')
+	print(tfEdgeGoal)
+	local qLArm = Body.get_larm_command_position()
+	local qWaist = Body.get_waist_command_position()
+	local tfL = lPlanner.forward(qLArm, qWaist)
+	print('tfL')
+	print(T.tostring(tfL))
+	--
+	local configL3 = {
+		tr=tfEdgeGoal, timeout=20,
+		via='jacobian_preplan', weights = {1,0,0},
+		--qWaistGuess = qWaistGuess1
+	}
+	local configR3 = false
+	coroutine.yield(movearm.goto(configL3, configR3))
+
+	repeat
+		lstatus, rstatus = coroutine.yield({}, {})
+		--print('lstatus, rstatus', lstatus, rstatus)
+	until lstatus=='dead'
+	print('Two hand hold')
+
 	return
 end
 

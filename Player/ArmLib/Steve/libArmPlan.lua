@@ -315,23 +315,25 @@ function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax
 
+	-- How far away is it?
+	local dp, drpy, dist_components =
+		get_distance(self, trGoal, qArm0, qWaist0)
+
 	-- Find a guess of the final arm position
 	local qWaistFGuess = plan.qWaistGuess or qWaist0
 	local qArmFGuess = plan.qArmGuess
-		or self:find_shoulder(trGoal, qArm0, weights, qWaistFGuess)
-		or qArm0
+	if not qArmFGuess then
+		qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaistFGuess)
+		assert(qArmFGuess, 'jacobian_preplan | No guess found for the final!')
+	end
 
 	local t0 = unix.time()
-	local dp, drpy, dist_components =
-		get_distance(self, trGoal, qArm0, qWaist0)
 	local qArm = qArm0
 	local nStepsTimeout = math.ceil(timeout * hz)
 	local done = false
 	local n = 0
 	local max_usage
 	local path = {}
-	print('qArmFGuess', qArmFGuess)
-	print('qArm', qArm)
 	repeat
 		n = n + 1
 		local vwTarget = {unpack(dp)}
@@ -400,7 +402,7 @@ function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 		end
 	end
 
-	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0})
+	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaistSensed)
 	--assert(qArmF, 'jacobian_preplan | No final shoulder solution')
 	qArmF = qArmF or qArm
 

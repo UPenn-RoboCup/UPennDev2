@@ -24,17 +24,12 @@ shared_data.network = {
 shared_data.teleop = {
 	-- Head angles
   head = zeros(2),
-	-- Delta Transforms (xyz,rpy)
-	dlarm = zeros(6),
-	drarm = zeros(6),
   -- Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),
-	-- Null space options (Shoulder angle, flip_roll)
-  loptions = zeros(2),
-  roptions = zeros(2),
-	-- Use compensation when moving the arm?
-	compensation = ones(1),
+	-- Transform: quaternion, pos
+	tflarm = {1,0,0,0, 0,0,0},
+	tfrarm = {1,0,0,0, 0,0,0},
 	-- Gripper has some modes it can use: 0 is torque, 1 is position
 	lgrip_mode = zeros(1),
 	rgrip_mode = zeros(1),

@@ -239,8 +239,33 @@ function Transform.to_quaternion( t )
   return q, vnew{t[1][4],t[2][4],t[3][4]}
 end
 
--- Can give the position
 function Transform.from_quaternion(q, pos)
+  return setmetatable({
+		{
+			1 - 2 * q[3] * q[3] - 2 * q[4] * q[4],
+			2 * q[2] * q[3] - 2 * q[4] * q[1],
+			2 * q[2] * q[4] + 2 * q[3] * q[1],
+			pos[1],
+		},
+		{
+			2 * q[2] * q[3] + 2 * q[4] * q[1],
+			1 - 2 * q[2] * q[2] - 2 * q[4] * q[4],
+			2 * q[3] * q[4] - 2 * q[2] * q[1],
+			pos[2]
+		},
+		{
+			2 * q[2] * q[4] - 2 * q[3] * q[1],
+			2 * q[3] * q[4] + 2 * q[2] * q[1],
+			1 - 2 * q[2] * q[2] - 2 * q[3] * q[3],
+			pos[3],
+		},
+		{0,0,0,1}
+	}, mt)
+end
+
+-- Can give the position
+local trans = Transform.trans
+function Transform.from_quaternion2(q, pos)
   local t = Transform.eye()
   t[1][1] = 1 - 2 * q[3] * q[3] - 2 * q[4] * q[4]
   t[1][2] = 2 * q[2] * q[3] - 2 * q[4] * q[1]
@@ -251,7 +276,7 @@ function Transform.from_quaternion(q, pos)
   t[3][1] = 2 * q[2] * q[4] - 2 * q[3] * q[1]
   t[3][2] = 2 * q[3] * q[4] + 2 * q[2] * q[1]
   t[3][3] = 1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]
-  if pos then return Transform.trans(unpack(pos))*t end
+  if pos then return trans(unpack(pos))*t end
   return t
 end
 

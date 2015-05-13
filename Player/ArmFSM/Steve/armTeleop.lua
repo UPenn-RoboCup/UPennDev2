@@ -8,9 +8,11 @@ state._NAME = ...
 local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
+local fromQ = require'Transform'.from_quaternion
+local toQ = require'Transform'.to_quaternion
 
 local t_entry, t_update, t_finish
-local timeout = 30.0
+local timeout = 10.0
 
 local lco, rco, uComp
 local okL, qLWaypoint
@@ -22,19 +24,30 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
+	-- Grab the transform
+	local qL = hcm.get_teleop_tflarm()
+	local qR = hcm.get_teleop_tfrarm()
+	local tfL = fromQ({unpack(qL, 1, 4)}, {unpack(qL, 5, 7)})
+	local tfR = fromQ({unpack(qR, 1, 4)}, {unpack(qR, 5, 7)})
+
+	print('tfL')
+	print(tfL)
+	print('tfR')
+	print(tfR)
+
 	local configL = {
-		q=hcm.get_teleop_larm(), timeout=10,
+		tr=tfL, timeout=5,
 		via='jacobian', weights = {0,1,0}
 	}
 	local configR = {
-		q=hcm.get_teleop_rarm(), timeout=10,
+		tr=tfR, timeout=5,
 		via='jacobian', weights = {0,1,0}
 	}
 
-	-- Always add compensation
-	lco, rco, uComp = movearm.goto(configL, configR, true)
-	okL = false
-	okR = false
+	lco, rco, uComp = movearm.goto(configL, configR)
+	-- Check for no motion
+	okL = lco==false
+	okR = rco==false
 
 end
 
@@ -43,15 +56,19 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
-	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
+	if lStatus=='suspended' then
+		okL, qLWaypoint = coroutine.resume(lco, qLArm)
+	end
+	if rStatus=='suspended' then
+		okR, qRWaypoint = coroutine.resume(rco, qRArm)
+	end
 
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint)

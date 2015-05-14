@@ -18,6 +18,7 @@ local lco, rco
 local okL, qLWaypoint
 local okR, qRWaypoint
 local quatpL, quatpR
+local default_weights = {0,1,0}
 
 function state.entry()
   print(state._NAME..' Entry')
@@ -26,21 +27,24 @@ function state.entry()
   t_update = t_entry
 
 	-- Set where we are
-	local qLArm = Body.get_larm_command_position()
-	local qRArm = Body.get_rarm_command_position()
-	local qWaist = Body.get_waist_command_position()
-	quatpL = toQ(movearm.lPlanner.forward(qLArm, qWaist))
-	quatpR = toQ(movearm.rPlanner.forward(qLArm, qWaist))
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+	local qcWaist = Body.get_waist_command_position()
+	quatpL = toQ(movearm.lPlanner.forward(qcLArm, qcWaist))
+	quatpR = toQ(movearm.rPlanner.forward(qcRArm, qcWaist))
 	hcm.set_teleop_tflarm(quatpL)
 	hcm.set_teleop_tfrarm(quatpR)
+	-- TODO: Find the appropriate weights from the position we are in...
+	hcm.set_teleop_lweights(default_weights)
+	hcm.set_teleop_rweights(default_weights)
 	
 	local configL = {
-		q=qLArm, timeout=5,
-		via='joint_preplan', weights = {0,1,0}
+		q=qcLArm, timeout=5,
+		via='joint_preplan', weights = default_weights
 	}
 	local configR = {
-		tr=qRArm, timeout=5,
-		via='joint_preplan', weights = {0,1,0}
+		tr=qcRArm, timeout=5,
+		via='joint_preplan', weights = default_weights
 	}
 
 	lco, rco, uComp = movearm.goto(configL, configR)

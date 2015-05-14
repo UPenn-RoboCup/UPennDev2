@@ -112,7 +112,8 @@ local function unm(v1)
   return mulnum(v1, -1)
 end
 
-local function eq(v1,v2)
+local function eq(v1, v2)
+	if #v1~=#v2 then return false end
   for i,v in ipairs(v1) do
     if v~=v2[i] then return false end
   end

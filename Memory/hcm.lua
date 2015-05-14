@@ -30,6 +30,9 @@ shared_data.teleop = {
 	-- Transform: quaternion, pos
 	tflarm = {1,0,0,0, 0,0,0},
 	tfrarm = {1,0,0,0, 0,0,0},
+	-- Weights for the shoulder search
+	lweights = zeros(3),
+	rweights = zeros(3),
 	-- Gripper has some modes it can use: 0 is torque, 1 is position
 	lgrip_mode = zeros(1),
 	rgrip_mode = zeros(1),

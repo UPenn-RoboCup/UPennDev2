@@ -14,6 +14,9 @@ local lPathIter, rPathIter
 local qLGoal, qRGoal
 local qLD, qRD
 
+local teleopLArm
+local teleopRArm
+
 function state.entry()
   print(state._NAME..' Entry')
   -- Update the time of entry
@@ -21,9 +24,14 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  -- Reset the human position
-	local teleopLArm = hcm.get_teleop_larm()
-	local teleopRArm = hcm.get_teleop_rarm()
+	-- Set where we are
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	local qWaist = Body.get_waist_position()
+	teleopLArm = qLArm
+	teleopRArm = qRArm
+	hcm.set_teleop_larm(teleopLArm)
+	hcm.set_teleop_rarm(teleopRArm)
 
 	lco, rco = movearm.goto({
 		q = teleopLArm, timeout = 5, via='joint_preplan'
@@ -41,7 +49,17 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
+
+	local teleopLArm1 = hcm.get_teleop_larm()
+	local teleopRArm1 = hcm.get_teleop_rarm()
+
+	if teleopLArm~=teleopLArm1 then
+		print(state._NAME,'L target', teleopLArm1)
+	end
+	if teleopRArm~=teleopRArm1 then
+		print(state._NAME,'R target', teleopRArm1)
+	end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)

@@ -55,10 +55,20 @@ function state.update()
 	local teleopRArm1 = hcm.get_teleop_rarm()
 
 	if teleopLArm~=teleopLArm1 then
-		print(state._NAME,'L target', teleopLArm1)
+		teleopLArm = teleopLArm1
+		print(state._NAME,'L target', teleopLArm)
+		local lco1, rco1 = movearm.goto({
+			q = teleopLArm, timeout = 5, via='joint_preplan'
+		}, false)
+		lco = lco1
 	end
 	if teleopRArm~=teleopRArm1 then
-		print(state._NAME,'R target', teleopRArm1)
+		teleopLArm = teleopLArm1
+		print(state._NAME,'R target', teleopRArm)
+		local lco1, rco1 = movearm.goto(false, {
+			q = teleopRArm, timeout = 5, via='joint_preplan'
+		})
+		rco = rco1
 	end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)

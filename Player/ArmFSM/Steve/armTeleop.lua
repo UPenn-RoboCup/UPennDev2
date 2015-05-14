@@ -68,11 +68,21 @@ function state.update()
 		print(state._NAME,'L target')
 		local tfL = fromQ({unpack(qL, 1, 4)}, {unpack(qL, 5, 7)})
 		print(tfL)
+		local lco1, rco1 = movearm.goto({
+			tr = tfL, timeout = 5, via='jacobian_preplan'
+		}, false)
+		lco = lco1
+		quatpL = quatpL1
 	end
 	if quatpR1~=quatpR then
 		print(state._NAME,'R target')
 		local tfR = fromQ({unpack(qR, 1, 4)}, {unpack(qR, 5, 7)})
 		print(tfR)
+		local lco1, rco1 = movearm.goto(false, {
+			tr = tfR, timeout = 5, via='jacobian_preplan'
+		})
+		lco = lco1
+		quatpR = quatpR1
 	end
 	
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)

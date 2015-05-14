@@ -5,7 +5,7 @@ local fsm = {}
 Config.torque_legs = true
 
 -- Update rate in Hz
-fsm.update_rate = 100
+fsm.update_rate = 120
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
@@ -104,7 +104,7 @@ fsm.Arm = {
 	{'armIdle', 'init', 'armInit'},
 	-- Init
 	{'armInit', 'timeout', 'armInit'},
-	{'armInit', 'done', 'armInit'},
+	--{'armInit', 'done', 'armInit'},
 	{'armInit', 'ready', 'armReady'},
 	{'armInit', 'teleopraw', 'armTeleopRaw'},
 	-- Test the jacobian
@@ -115,22 +115,33 @@ fsm.Arm = {
 
 	-- Ready pose (for manipulating)
 	{'armReady', 'timeout', 'armReady'},
-	{'armReady', 'done', 'armTeleop'},
+	{'armReady', 'teleop', 'armTeleop'},
+	{'armReady', 'teleopraw', 'armTeleopRaw'},
 	{'armReady', 'init', 'armInit'},
-	{'armReady', 'door', 'armDoor'},
+	{'armReady', 'jacobian', 'armJacobian'},
+	{'armReady', 'pulldoor', 'armPullDoor'},
 	-- Teleop
 	{'armTeleop', 'init', 'armInit'},
+	--{'armTeleop', 'done', 'armTeleop'},
 	{'armTeleop', 'teleop', 'armTeleop'},
 	{'armTeleop', 'ready', 'armReady'},
 	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
-	{'armTeleop', 'door', 'armDoor'}, -- eh...
 	-- Teleop Raw
 	{'armTeleopRaw', 'init', 'armInit'},
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
 	{'armTeleopRaw', 'ready', 'armReady'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
-	--
-	{'armDoor', 'done', 'armTeleop'}, -- eh...
+	-- armJacobian is for testing purposes only!
+	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
+	{'armJacobian', 'timeout', 'armJacobian'},
+	{'armJacobian', 'done', 'armTeleop'},
+	{'armJacobian', 'ready', 'armReady'},
+	{'armJacobian', 'pulldoor', 'armPullDoor'},
+	-- armPullDoor
+	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
+	{'armPullDoor', 'done', 'armTeleop'},
+	{'armPullDoor', 'ready', 'armReady'},
+	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 }
 
 fsm.Motion = {

@@ -5,29 +5,42 @@ local tr6D = require'Transform'.transform6D
 
 ------------------------------------
 -- For the arm FSM
+-- Weights: cusage, cdiff, ctight
 local arm = {}
 
--- Default init position
-arm.trLArm0 = {0.05, 0.35, -0.25,0,0,0}
-arm.trRArm0 = {0.05, -0.35, -0.25,0,0,0}
-
--- Stages: L, R (Transforms or joints), type of motion, left shoulder search weights, right weights
--- Planner: usage, diff, tight
-arm.readyFromInitStages = {
-	{
-		tr6D{0.25, 0.3, -0.1,  0,0,0}, tr6D{0.25, -0.3, -0.1, 0,0,0},
-		'goto_tr_via_q', {0,1,0}, {0,1,0}
+arm.init = {}
+arm.init[1] = {
+	left = {
+		tr=tr6D{0.05, 0.35, -0.25, 0,0,0}, timeout=10,
+		via='jacobian_preplan', weights = {1,0,0}
 	},
-	{
-		tr6D{0.25, 0.3, 0,  0,0,-45*DEG_TO_RAD}, tr6D{0.25, -0.3, 0, 0,0,45*DEG_TO_RAD},
-		'goto_tr_via_q', {1,1,1}, {1,1,1}
-	},
-	{
-		tr6D{0.28, 0.25, 0.2,  0,0,-45*DEG_TO_RAD}, tr6D{0.28, -0.25, 0.2, 0,0,45*DEG_TO_RAD},
-		'goto_tr_via_q', {1,0,1}, {1,0,1}
-	},
+	right = {
+		tr=tr6D{0.05, -0.35, -0.25, 0,0,0}, timeout=10,
+		via='jacobian_preplan', weights = {1,0,0}
+	}
 }
 
+arm.ready = {}
+arm.ready[1] = {
+	left = {
+		tr=tr6D{0.2, 0.2, -0.1,  0,0*DEG_TO_RAD,-90*DEG_TO_RAD}, timeout=15,
+		via='joint_preplan', weights = {1,0,1}
+	},
+	right = {
+		tr=tr6D{0.2, -0.2, -0.1, 0,0*DEG_TO_RAD,90*DEG_TO_RAD}, timeout=15,
+		via='joint_preplan', weights = {1,0,1}
+	},
+}
+arm.ready[2] = {
+	left = {
+		tr=tr6D{0.24, 0.25, 0.2,  0,0,-60*DEG_TO_RAD}, timeout=15,
+		via='jacobian_preplan', weights = {0,0,1}
+	},
+	right = {
+		tr=tr6D{0.24, -0.25, 0.2, 0,0,60*DEG_TO_RAD}, timeout=15,
+		via='jacobian_preplan', weights = {0,0,1}
+	},
+}
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset = {}

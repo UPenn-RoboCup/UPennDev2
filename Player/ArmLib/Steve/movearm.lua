@@ -87,17 +87,16 @@ local function get_compensation(qcLArm, qcRArm, qcWaist)
 end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
-function movearm.goto(l, r, add_compensation)
+function movearm.goto(l, r)
 	-- Assume no motion
 	local lco, rco = false, false
-	local qLArm = Body.get_larm_command_position()
-	local qRArm = Body.get_rarm_command_position()
-	local qWaist = Body.get_waist_command_position()
 
 	local lplan = type(l)=='table' and P[l.via]
 	if type(lplan)=='function' then
 		lco = coroutine.create(lplan)
-		local ok, msg = coroutine.resume(lco, lPlanner, l, qLArm, qWaist)
+		local qLArm0 = lplan.qLArm0 or Body.get_larm_command_position()
+		local qWaist0 = lplan.qWaist0 or Body.get_waist_command_position()
+		local ok, msg = coroutine.resume(lco, lPlanner, l, qLArm0, qWaist0)
 		if not ok then
 			print('Error goto l |', msg)
 		end
@@ -105,7 +104,9 @@ function movearm.goto(l, r, add_compensation)
 	local rplan = type(r)=='table' and P[r.via]
 	if type(rplan)=='function' then
 		rco = coroutine.create(rplan)
-		local ok, msg = coroutine.resume(rco, rPlanner, r, qRArm, qWaist)
+		local qRArm0 = lplan.qRArm0 or Body.get_rarm_command_position()
+		local qWaist0 = lplan.qWaist0 or Body.get_waist_command_position()
+		local ok, msg = coroutine.resume(rco, rPlanner, r, qRArm0, qWaist0)
 		if not ok then
 			print('Error goto r |', msg)
 		end
@@ -129,7 +130,7 @@ function movearm.goto(l, r, add_compensation)
 	end
 			--]]
 
-	return lco, rco, uTorsoComp
+	return lco, rco
 end
 
 return movearm

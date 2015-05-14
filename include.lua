@@ -72,7 +72,7 @@ unix = require'unix.ffi'
 -- Save the hostname
 HOSTNAME = unix.gethostname()
 
-print("HOSTNAME:",HOSTNAME)
+--print("HOSTNAME:",HOSTNAME)
 
 OPERATING_SYSTEM = unix.uname():lower()
 
@@ -81,7 +81,7 @@ KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs"
 
 -- Use functional idioms
-require "fun" ()
+--require "fun" ()
 
 -- include platform specific modules
 require'Config'

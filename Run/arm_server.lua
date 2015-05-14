@@ -6,7 +6,23 @@ local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
 
 local function get_armplan(plan)
-	return 'hello'
+	local lco, rco = movearm.goto(unpack(plan))
+	local lpath, rpath
+	if lco then
+		lpath = {}
+		while coroutine.status(lco)~='dead' do
+			local okL, qLWaypoint = coroutine.resume(lco)
+			table.insert(lpath, qLWaypoint)
+		end
+	end
+	if rco then
+		rpath = {}
+		while coroutine.status(rco)~='dead' do
+			local okR, qRWaypoint = coroutine.resume(rco)
+			table.insert(rpath, qRWaypoint)
+		end
+	end
+	return lpath, rpath
 end
 
 local poller, lut

@@ -191,11 +191,11 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	-- Find the smallest cost
 	local ibest, cbest = 0, INFINITY
 	for i, c in ipairs(cost) do if c<cbest then cbest = c; ibest = i end end
-	-- Yield the least cost arms
+	-- Return the least cost arms
 	return iqArms[ibest], fks[ibest]
 end
 
-function libArmPlan.joint_preplan(self, plan, qArm0)
+function libArmPlan.joint_preplan(self, plan, qArm0, qWaist0)
 	assert(type(plan)=='table', 'joint_preplan | Bad plan')
 	local timeout = assert(plan.timeout, 'joint_preplan | No timeout')
 	local weights = plan.weights
@@ -242,7 +242,6 @@ function libArmPlan.joint_preplan(self, plan, qArm0)
 		nStepsTimeout = duration * hz
 	end
 
-
 	local path = {}
 	local qArm = qArm0
 	n = 0
@@ -285,10 +284,15 @@ function libArmPlan.joint_preplan(self, plan, qArm0)
 	assert(dqAverage or (n <= nStepsTimeout),
 		'joint_preplan | Timeout: '..nStepsTimeout)
 
+	-- Start the sensing
 	local qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
+	qArmSensed = qArmSensed or qArm0
+	qWaistSensed = qWaistSensed or qWaist0
 	-- Progress is different, now, since in joint space
 	for i, qArmPlanned in ipairs(path) do
-		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
+		local qArmSensedNew, qWaistSensedNew = coroutine.yield(qArmPlanned)
+		qArmSensed = qArmSensedNew or qArmSensed
+		qWaistSensed = qWaistSensedNew or qWaistSensed
 		-- Check the lage
 		local dqLag = qArm - qArmSensed
 		local imax_lag, max_lag = 0, 0
@@ -370,7 +374,6 @@ function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 				qArm[i] = min(max(qMin[i], q), qMax[i])
 			end
 		end
-		-- Yield the progress
 		dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
 		--print('dist_components', unpack(dist_components))
 
@@ -388,9 +391,14 @@ function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 
 	local qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
+	qArmSensed = qArmSensed or qArm0
+	qWaistSensed = qWaistSensed or qWaist0
 
 	for i, qArmPlanned in ipairs(path) do
 		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
+		local qArmSensedNew, qWaistSensedNew = coroutine.yield(qArmFGuess)
+		qArmSensed = qArmSensedNew or qArmSensed
+		qWaistSensed = qWaistSensedNew or qWaistSensed
 		-- If we are lagging badly, then there may be a collision
 		local dqLag = qArmPlanned - qArmSensed
 		local imax_lag, max_lag = 0, 0

@@ -24,7 +24,7 @@ shared_data.network = {
 shared_data.teleop = {
 	-- Head angles
   head = zeros(2),
-  -- Assume 7DOF arm
+  -- Joint space: Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),
 	-- Transform: quaternion, pos

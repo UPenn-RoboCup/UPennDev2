@@ -208,7 +208,7 @@ end
 
 -- Rotation Matrix to quaternion
 -- from Yida.  Adapted to take a transformation matrix
-function Transform.to_quaternion( t )
+function Transform.to_quatp( t )
   local q = quaternion.new()
   local tr = t[1][1] + t[2][2] + t[3][3]
   if tr > 0 then
@@ -236,7 +236,10 @@ function Transform.to_quaternion( t )
     q[3] = (t[2][3] + t[3][2]) / S
     q[4] = 0.25 * S
   end
-  return q, vnew{t[1][4],t[2][4],t[3][4]}
+	q[5] = t[1][4]
+	q[6] = t[2][4]
+	q[7] = t[3][4]
+  return q
 end
 
 function Transform.from_quaternion(q, pos)

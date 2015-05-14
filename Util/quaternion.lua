@@ -7,10 +7,18 @@
 local vector=require'vector'
 local util=require'util'
 local quaternion = {}
+
+local sin = require'math'.sin
+local cos = require'math'.acos
+local acos = require'math'.acos
+local atan2 = require'math'.atan2
+local abs = require'math'.abs
+local mod_angle = require'util'.mod_angle
+
 local mt = {}
 
 local function cross(v1, v2)
-  return vector.new{
+  return {
   ( (v1[2] * v2[3]) - (v1[3] * v2[2]) ),
   - ( (v1[1] * v2[3]) - (v1[3] * v2[1]) ),
   ( (v1[1] * v2[2]) - (v1[2] * v2[1]) ),
@@ -18,7 +26,7 @@ local function cross(v1, v2)
 end
 
 -- New quaternion from a 3 or 4 element table
-function quaternion.new(t,alpha)
+function quaternion.new(t, alpha)
   if not t then return setmetatable({1,0,0,0}, mt) end
   if #t==4 then return setmetatable(t, mt) end
   -- Rotation vector to a quaternion
@@ -29,9 +37,9 @@ function quaternion.new(t,alpha)
   if wNorm < 1e-6 then return setmetatable({1,0,0,0}, mt) end
   -- If given, use alpha as the amount of rotation about the axis vector t
   alpha = alpha or wNorm
-  local scale = math.sin(alpha/2) / wNorm
+  local scale = sin(alpha/2) / wNorm
 	local q = {
-  	math.cos(alpha/2),
+  	cos(alpha/2),
   	scale*t[1], scale*t[2], scale*t[3],
 	}
   return setmetatable(q, mt)
@@ -41,17 +49,11 @@ end
 -- Modified from Yida's UKF
 -- http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 function quaternion.to_rpy( q )
-  local rpy = {}
-  rpy[1] = util.mod_angle( 
-    math.atan2( 2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]) )
+  return {		
+		mod_angle( atan2(2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]) ),
+		mod_angle(asin( util.procFunc(2*(q[1]*q[3]-q[4]*q[2]),0,1) ),
+		mod_angle(atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4])),
   )
-  rpy[2] = util.mod_angle(
-    math.asin( util.procFunc(2*(q[1]*q[3]-q[4]*q[2]),0,1) )
-  )
-  rpy[3] = util.mod_angle(
-    math.atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4]))
-  )
-  return vector.new(rpy)
 end
 
 function quaternion.conjugate( q )
@@ -79,20 +81,21 @@ end
 -- Return a rotation vector
 -- From Yida
 function quaternion.vector(q)
-  assert( math.abs(q[1])<=1, 'Bad unit quaternion' )
-  local alphaW = 2*math.acos(q[1])
+  --assert( abs(q[1])<=1, 'Bad unit quaternion' )
+	if abs(q[1]) > 1 then return end
+  local alphaW = 2*acos(q[1])
 	-- Avoid the divide by zero scenario
-  if alphaW < 1e-6 then return vector.zeros(3) end
-	local factor = alphaW / math.sin(alphaW/2)
+  if alphaW < 1e-6 then return {0,0,0} end
+	local factor = alphaW / sin(alphaW/2)
   return factor * vector.new({q[2],q[3],q[4]})
 end
 
 function quaternion.from_angle_axis(angle,axis)
   local norm = vector.norm(axis)
   if norm<1e-6 then return quaternion.new() end
-  local s = math.sin(angle/2)/norm
+  local s = sin(angle/2)/norm
   return quaternion.new({
-    math.cos(angle/2),
+    cos(angle/2),
     s*axis[1],
     s*axis[2],
     s*axis[3],
@@ -104,18 +107,19 @@ end
 function quaternion.from_dipole( dipole )
   local z_axis = vector.new{0,0,1}
 --  local axis   = cross(dipole,z_axis)
-  local axis   = cross(z_axis,dipole)
-  local angle  = math.acos(dipole * z_axis)
-  return quaternion.from_angle_axis(angle,axis)
+  local axis   = cross(z_axis, dipole)
+  local angle  = acos(dipole * z_axis)
+  return quaternion.from_angle_axis(angle, axis)
 end
 
 function quaternion.angle_axis(q)
   q = quaternion.unit( q )
-  assert( math.abs(q[1])<=1, 'Bad unit quaternion' )
-  local angle = 2*math.acos(q[1])
+  --assert( abs(q[1])<=1, 'Bad unit quaternion' )
+	--if abs(q[1]) > 1 then return end
+  local angle = 2*acos(q[1])
   -- Avoid the divide by zero scenario
-	if angle< 1e-6 then return 0, vector.new({1,0,0}) end
-	return angle, vector.new({q[2],q[3],q[4]})/math.sin(angle/2)
+	if angle < 1e-6 then return 0, {1,0,0} end
+	return angle, {unpack(q,2,4)}/sin(angle/2)
 end
 
 -- Get the angle between two quaternions
@@ -133,7 +137,7 @@ local function diff(q0,q1)
 	print('--')
 	--]]
 	-- Check the other direction
-	if math.abs(angle1)<math.abs(angle0) then
+	if abs(angle1) < abs(angle0) then
 		return angle1, axis1
 	end
 	return angle0, axis0
@@ -167,12 +171,15 @@ function quaternion.squad(q0,q1,t,s0,s1)
 	)
 end
 
+-- Makes no sense for quaternions...
+--[[
 -- Metatable methods are local
 local function add(q1, q2)
   local q = {}
   for i,v in ipairs(q1) do q[i] = v + q2[i] end
   return setmetatable(q, mt)
 end
+--]]
 
 --http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/
 local function negate(q)
@@ -205,7 +212,7 @@ local function tostring(v1, formatstr)
 end
 
 -- Set the metatable values
-mt.__add = add
+--mt.__add = add
 mt.__sub = diff
 mt.__mul = mul
 mt.__unm = negate

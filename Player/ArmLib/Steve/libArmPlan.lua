@@ -243,7 +243,7 @@ function libArmPlan.joint_preplan(self, plan, qArm0, qWaist0)
 	end
 
 	local path = {}
-	local qArm = qArm0
+	local qArm = vector.new(qArm0)
 	n = 0
 	repeat
 		n = n + 1
@@ -332,7 +332,7 @@ function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 	end
 
 	local t0 = unix.time()
-	local qArm = qArm0
+	local qArm = vector.new(qArm0)
 	local nStepsTimeout = math.ceil(timeout * hz)
 	local done = false
 	local n = 0

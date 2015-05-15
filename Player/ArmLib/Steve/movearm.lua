@@ -94,8 +94,8 @@ function movearm.goto(l, r)
 	local lplan = type(l)=='table' and P[l.via]
 	if type(lplan)=='function' then
 		lco = coroutine.create(lplan)
-		local qLArm0 = lplan.qLArm0 or Body.get_larm_command_position()
-		local qWaist0 = lplan.qWaist0 or Body.get_waist_command_position()
+		local qLArm0 = l.qLArm0 or Body.get_larm_command_position()
+		local qWaist0 = l.qWaist0 or Body.get_waist_command_position()
 		local ok, msg = coroutine.resume(lco, lPlanner, l, qLArm0, qWaist0)
 		if not ok then
 			print('Error goto l |', msg)
@@ -104,8 +104,8 @@ function movearm.goto(l, r)
 	local rplan = type(r)=='table' and P[r.via]
 	if type(rplan)=='function' then
 		rco = coroutine.create(rplan)
-		local qRArm0 = lplan.qRArm0 or Body.get_rarm_command_position()
-		local qWaist0 = lplan.qWaist0 or Body.get_waist_command_position()
+		local qRArm0 = r.qRArm0 or Body.get_rarm_command_position()
+		local qWaist0 = r.qWaist0 or Body.get_waist_command_position()
 		local ok, msg = coroutine.resume(rco, rPlanner, r, qRArm0, qWaist0)
 		if not ok then
 			print('Error goto r |', msg)

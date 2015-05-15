@@ -94,6 +94,16 @@ function movearm.goto(l, r)
 	local lplan = type(l)=='table' and P[l.via]
 	if type(lplan)=='function' then
 		lco = coroutine.create(lplan)
+
+		-- Check the various formats
+		if l.tr then
+			if #l.tr==6 then
+				l.tr = T.transform6D(l.tr)
+			elseif #l.tr==7 then
+				l.tr = T.from_quatp(l.tr)
+			end
+		end
+
 		local qLArm0 = l.qLArm0 or Body.get_larm_command_position()
 		local qWaist0 = l.qWaist0 or Body.get_waist_command_position()
 		local ok, msg = coroutine.resume(lco, lPlanner, l, qLArm0, qWaist0)
@@ -104,6 +114,16 @@ function movearm.goto(l, r)
 	local rplan = type(r)=='table' and P[r.via]
 	if type(rplan)=='function' then
 		rco = coroutine.create(rplan)
+
+		-- Check the various formats
+		if r.tr then
+			if #r.tr==6 then
+				r.tr = T.transform6D(r.tr)
+			elseif #r.tr==7 then
+				r.tr = T.from_quatp(r.tr)
+			end
+		end
+
 		local qRArm0 = r.qRArm0 or Body.get_rarm_command_position()
 		local qWaist0 = r.qWaist0 or Body.get_waist_command_position()
 		local ok, msg = coroutine.resume(rco, rPlanner, r, qRArm0, qWaist0)

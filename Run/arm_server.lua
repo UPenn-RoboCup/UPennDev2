@@ -9,14 +9,6 @@ local T = require'Transform'
 
 local function get_armplan(plan)
 	print('Received a plan')
-	util.ptable(plan)
-
-	if plan[1] and plan[1].tr and #plan[1].tr==6 then
-		plan[1].tr = T.transform6D(plan[1].tr)
-	end
-	if plan[2] and plan[2].tr and #plan[2].tr==6 then
-		plan[2].tr = T.transform6D(plan[2].tr)
-	end
 
 	local lco, rco = movearm.goto(unpack(plan))
 	local lpath, rpath

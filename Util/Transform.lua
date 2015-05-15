@@ -242,6 +242,30 @@ function Transform.to_quatp( t )
   return q
 end
 
+function Transform.from_quatp(q)
+  return setmetatable({
+		{
+			1 - 2 * q[3] * q[3] - 2 * q[4] * q[4],
+			2 * q[2] * q[3] - 2 * q[4] * q[1],
+			2 * q[2] * q[4] + 2 * q[3] * q[1],
+			q[5],
+		},
+		{
+			2 * q[2] * q[3] + 2 * q[4] * q[1],
+			1 - 2 * q[2] * q[2] - 2 * q[4] * q[4],
+			2 * q[3] * q[4] - 2 * q[2] * q[1],
+			q[6]
+		},
+		{
+			2 * q[2] * q[4] - 2 * q[3] * q[1],
+			2 * q[3] * q[4] + 2 * q[2] * q[1],
+			1 - 2 * q[2] * q[2] - 2 * q[3] * q[3],
+			q[7],
+		},
+		{0,0,0,1}
+	}, mt)
+end
+
 function Transform.from_quaternion(q, pos)
   return setmetatable({
 		{

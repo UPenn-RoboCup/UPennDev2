@@ -8,8 +8,8 @@ state._NAME = ...
 local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
-local fromQ = require'Transform'.from_quaternion
-local toQ = require'Transform'.to_quaternion
+local fromQ = require'Transform'.from_quatp
+local toQ = require'Transform'.to_quatp
 
 local t_entry, t_update, t_finish
 local timeout = 10.0
@@ -66,7 +66,7 @@ function state.update()
 	local quatpR1 = hcm.get_teleop_tfrarm()
 	if quatpL1~=quatpL then
 		print(state._NAME,'L target')
-		local tfL = fromQ({unpack(qL, 1, 4)}, {unpack(qL, 5, 7)})
+		local tfL = fromQ(qL)
 		print(tfL)
 		local lco1, rco1 = movearm.goto({
 			tr = tfL, timeout = 5, via='jacobian_preplan'
@@ -76,7 +76,7 @@ function state.update()
 	end
 	if quatpR1~=quatpR then
 		print(state._NAME,'R target')
-		local tfR = fromQ({unpack(qR, 1, 4)}, {unpack(qR, 5, 7)})
+		local tfR = fromQ(qR)
 		print(tfR)
 		local lco1, rco1 = movearm.goto(false, {
 			tr = tfR, timeout = 5, via='jacobian_preplan'

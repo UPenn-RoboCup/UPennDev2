@@ -50,10 +50,10 @@ end
 -- http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 function quaternion.to_rpy( q )
   return {		
-		mod_angle( atan2(2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]) ),
-		mod_angle(asin( util.procFunc(2*(q[1]*q[3]-q[4]*q[2]),0,1) ),
-		mod_angle(atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4])),
-  )
+		mod_angle(atan2( 2*(q[1]*q[2]+q[3]*q[4]), 1-2*(q[2]*q[2]+q[3]*q[3]) )),
+		mod_angle(asin( util.procFunc(2*(q[1]*q[3]-q[4]*q[2]),0,1) )),
+		mod_angle(atan2(2*(q[1]*q[4]+q[2]*q[3]), 1-2*(q[3]*q[3]+q[4]*q[4]))),
+  }
 end
 
 function quaternion.conjugate( q )

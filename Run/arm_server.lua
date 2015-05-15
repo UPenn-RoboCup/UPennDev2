@@ -4,8 +4,11 @@ local si = require'simple_ipc'
 local util = require'util'
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
+local movearm = require'movearm'
 
 local function get_armplan(plan)
+	print('Received a plan')
+	util.ptable(plan)
 	local lco, rco = movearm.goto(unpack(plan))
 	local lpath, rpath
 	local wpath = {}
@@ -26,7 +29,7 @@ local function get_armplan(plan)
 		end
 	end
 	-- TODO: Check that the waist was not twice populated
-	return lpath, rpath, wpath
+	return {lpath, rpath, wpath}
 end
 
 local poller, lut
@@ -34,13 +37,12 @@ local channels = {}
 local function cb(skt)
 	local ch_id = lut[skt]
 	local ch = channels[ch_id]
-	local mdata = skt:recv_all()
-	local mdata, ranges = unpack(skt:recv_all())
+	local mdata = unpack(skt:recv_all())
 	local meta = munpack(mdata)
 	local result = ch.process(meta)
 	if ch.kind=='rep' then
 		-- if REQ/REP then reply
-		local ret = ch:send(mp.pack(result))
+		local ret = ch:send(mpack(result))
 	end
 end
 

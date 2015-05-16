@@ -129,6 +129,8 @@ else
   walk.hipRollCompensation = 2*DEG_TO_RAD
   walk.footSagCompensation = {0.0,0.0}
 
+  walk.kneePitchCompensation = 0*DEG_TO_RAD
+
   walk.velLimitX = {-.10,.10}
   walk.velLimitY = {-.06,.06}
   walk.torsoX = 0.0     -- com-to-body-center offset
@@ -140,7 +142,28 @@ else
   walk.tStep = .75
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
-  Config.supportY_preview = -0.01
+
+
+--chipette
+  Config.supportY_preview = 0.02 --this smooths out first step a bit
+
+--
+  Config.supportY_preview = 0.01 --this smooths out first step a bit
+  walk.supportY = 0.01
+  walk.tZMP = 0.32 
+--mk2 pelvis width:0.210
+  walk.stanceLimitY = {0.16,0.30}
+  walk.stanceLimitY = {0.18,0.30}
+
+
+  walk.tStep = .80
+  Config.supportY_preview = 0.01 --this smooths out first step a bit
+--  walk.stepHeight = 0.04 
+
+--  walk.stepHeight = 0.05 
+  walk.velLimitX = {-.10,.20}
+  Config.supportY_preview = 0.00 --this smooths out first step a bit
+
 end
 
 if HOSTNAME=="teddy2" then

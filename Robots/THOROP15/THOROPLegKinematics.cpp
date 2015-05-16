@@ -50,6 +50,7 @@ Transform THOROP_kinematics_forward_r_leg(const double *q){
 }
 
 
+//This does not have toe or heel automatic tilt - we no longer use this 
 std::vector<double> THOROP_kinematics_inverse_leg(Transform trLeg, int leg, double aShiftX, double aShiftY){
   std::vector<double> qLeg(6);
   Transform trInvLeg = inv(trLeg);
@@ -100,9 +101,10 @@ std::vector<double> THOROP_kinematics_inverse_leg(Transform trLeg, int leg, doub
   return qLeg;
 }
 
+//new leg IK with automatic toe/hill lift
 
+std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY, int birdwalk){
 
-std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY){
   std::vector<double> qLeg(6);
   Transform trInvLeg = inv(trLeg);
 
@@ -118,45 +120,76 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   for (int i = 0; i < 3; i++) xLeg[i] = xHipOffset[i];
   trInvLeg.apply(xLeg);
 
-  // Knee pitch
-  double dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + (xLeg[2]-footHeight)*(xLeg[2]-footHeight);
-//  double dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + (xLeg[2]-footHeight/cos(aShiftY))*(xLeg[2]-footHeight/cos(aShiftY));
+  //primary axes for the ground frame
+  double vecx0 = cos(aShiftY);
+  double vecx1 = 0;
+  double vecx2 = sin(aShiftY);
+
+  double vecy0 = sin(aShiftY)*cos(aShiftX);
+  double vecy1 = cos(aShiftX);
+  double vecy2 = cos(aShiftY)*sin(aShiftX);
+
+  double vecz0 = sin(aShiftY)*cos(aShiftX);
+  double vecz1 = -sin(aShiftX);
+  double vecz2 = cos(aShiftY)*cos(aShiftX);
+
+  //Relative ankle position in global frame (origin is the landing position)
+  double dAnkle0 = footHeight*vecz0;
+  double dAnkle1 = footHeight*vecz1;
+  double dAnkle2 = footHeight*vecz2;
+
+  //Find relative torso position from ankle position (in global frame)
+  double xAnkle0 = xLeg[0] - dAnkle0;
+  double xAnkle1 = xLeg[1] - dAnkle1;
+  double xAnkle2 = xLeg[2] - dAnkle2;
+
+  //Calculate the knee pitch
+  double dLeg = xAnkle0*xAnkle0 + xAnkle1*xAnkle1 + xAnkle2*xAnkle2;
   double cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
-
-  //Automatic heel lift when IK limit is reached
-  double footCompZ = 0;
   double ankle_tilt_angle = 0;
-
-  
   double dLegMax = dTibia + dThigh;
+  double footC = sqrt(footHeight*footHeight + footToeX*footToeX);
+  double afootA = asin(footHeight/footC);
 
   if (dLeg>dLegMax*dLegMax) {
-    double footC = sqrt(footHeight*footHeight + footToeX*footToeX);
-    double afootA = asin(footHeight/footC);
-    double xLeg0Mod = xLeg[0] - footToeX;
-    double xLeg2Mod = xLeg[2];
+    //now we lift heel by x radian
 
+    //  new Ankle position in surface frame:
+    //   (toeX,0,0) - Fc*(cos(x+c),0,-sin(x+c))
+    // = (toeX-Fc*cos(x+c),  0,   footHeight+Fc*sin(x+c))
 
-    
-   
-    //Calculate the amount of heel lift
-    // then rotated ankle position (ax,az) is footToeX-cos(a+aFootA)*footC, sin(a+aFootA)*footC
-    // or footToeX-cosb*footC, sinb *footC
-    // then 
-    // (xLeg[0]-ax)^2 + xLeg[1]^2 + (xLeg[2]-az)^2 = dLegMax^2
-    // or (xLeg0Mod + cosb*footC)^2 + xLeg[1]^2 + (xLeg[2]-sinb*footC)^2 = dLegMax^2
+    //new ankle position in global frame:
+    // {  vecx0 * (toeX-Fc*cos(x+c)) + vecz0* (Fc*sin(x+c)),
+    //    vecx1 * (toeX-Fc*cos(x+c)) + vecz1* (Fc*sin(x+c)),
+    //    vecx2 * (toeX-Fc*cos(x+c)) + vecz2* (Fc*sin(x+c)),
+    // }
+
+    // or 
+
+    // {  (vecx0 * toeX)    - vecx0*Fc*cos(b)+ vecz0*Fc*sin(b),
+    //    (vecx1 * toeX)    - vecx1*Fc*cos(b)+ vecz1*Fc*sin(b),
+    //    (vecx2 * toeX)    - vecx2*Fc*cos(b)+ vecz2*Fc*sin(b),
+    // }
+
+///////////////////TODOTODOTODO
+
+// for flat surface case, vecx0 = vecy1=vecz2=1 and others are 0
+// then the new ankle position (ax,ay,az) in surface frame:
+// {toeX- Fc*cos(b), 0, Fc*sin(b)}
+
+// Leg distant constraint
+// (xLeg[0]-ax)^2 + xLeg[1]^2 + (xLeg[2]-az)^2 = dLegMax^2
+// ((xLeg[0]-toeX) + Fc*cos(b))^2 + xLeg[1]^2 + ((xLeg[2] - Fc*sin(b))^2=dLegMax^2
+// or (xLeg0Mod + cosb*footC)^2 + xLeg[1]^2 + (xLeg[2]-sinb*footC)^2 = dLegMax^2
     //this eq: p * sinb + q*cosb + r = 0
 
-/*
-    double p = -2*footC*xLeg[2];
-    double q = 2*footC*xLeg0Mod;
-    double r = xLeg0Mod*xLeg0Mod + xLeg[1]*xLeg[1] +xLeg[2]*xLeg[2] - dLegMax*dLegMax +footC*footC;
-*/
+    double xLegM0 = xLeg[0]-footToeX;
+    double xLegM1 = xLeg[1];
+    double xLegM2 = xLeg[2];
 
-    double p = -2*footC*xLeg2Mod;
-    double q = 2*footC*xLeg0Mod;
-    double r = xLeg0Mod*xLeg0Mod + xLeg[1]*xLeg[1] +xLeg2Mod*xLeg2Mod - dLegMax*dLegMax +footC*footC;
-
+    double p = -2*footC*xLegM2;
+    double q =  2*footC*xLegM0;
+    double r = xLegM0*xLegM0 + xLegM1*xLegM1 + xLegM2*xLegM2 + footC*footC - dLegMax*dLegMax;
 
     double a = (p*p/q/q + 1);
     double b = 2*p*r/q/q;
@@ -174,15 +207,10 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
       double a2 = (-b - sqrt(d))/2/a;
       double err1 = fabs(p*a1 + q*sqrt(1-a1*a1)+r);
       double err2 = fabs(p*a2 + q*sqrt(1-a2*a2)+r);
-//      double ankle_tilt_angle1 = asin(a1)-afootA;
-//      double ankle_tilt_angle2 = asin(a2)-afootA;
-
       double ankle_tilt_angle1 = asin(a1)-afootA-aShiftY;
       double ankle_tilt_angle2 = asin(a2)-afootA-aShiftY;
-
-
       if ((err1<0.0001) && (err2<0.0001)) { //we have two solutions
-//        printf("Two lift angle: %.2f %.2f\n",-ankle_tilt_angle1*180/3.1415,-ankle_tilt_angle2*180/3.1415);
+//      printf("Two lift angle: %.2f %.2f\n",-ankle_tilt_angle1*180/3.1415,-ankle_tilt_angle2*180/3.1415);
         if (fabs(ankle_tilt_angle1)<fabs(ankle_tilt_angle2))
           ankle_tilt_angle = ankle_tilt_angle1;
         else
@@ -194,24 +222,26 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   }else {
       ankle_tilt_angle = 0;
   }
+  
 //    if (ankle_tilt_angle>45*3.1415/180)  ankle_tilt_angle=45*3.1415/180;
-    //Compensate the ankle position according to ankle tilt angle
-//    xLeg[0] = xLeg[0] - (sin(ankle_tilt_angle)*footHeight + (1-cos(ankle_tilt_angle))*footToeX);
-//    xLeg[2] = xLeg[2] - sin(afootA+ankle_tilt_angle)*footC;
-    xLeg[0] = xLeg[0] + footToeX*cos(aShiftY) - 
-              sin(aShiftY+ankle_tilt_angle)*footHeight - footToeX*cos(aShiftY+ankle_tilt_angle);
-    xLeg[2] = xLeg[2] + footToeX*sin(aShiftY)
-    - sin(afootA+ankle_tilt_angle+aShiftY)*footC;
+
+    xLeg[0] = xLeg[0] - (footToeX - footC*cos(ankle_tilt_angle+afootA));
+    xLeg[2] = xLeg[2] - footC*sin(ankle_tilt_angle+afootA);
     dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
     cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
   }else{    
-    xLeg[2] -= footHeight;
+    xLeg[2]-= footHeight;
   }
 
 
   if (cKnee > 1) cKnee = 1;
   if (cKnee < -1) cKnee = -1;
   double kneePitch = acos(cKnee);
+  double kneeOffsetA=1;
+  if (birdwalk>0) {
+    kneePitch=-kneePitch;
+    kneeOffsetA=-1;
+  }
 
   // Ankle pitch and roll
   double ankleRoll = atan2(xLeg[1], xLeg[2]);
@@ -231,9 +261,9 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   // Need to compensate for KneeOffsetX:
   qLeg[0] = hipYaw;
   qLeg[1] = hipRoll;
-  qLeg[2] = hipPitch-aThigh;
-  qLeg[3] = kneePitch+aThigh+aTibia;
-  qLeg[4] = anklePitch-aTibia;
+  qLeg[2] = hipPitch-aThigh*kneeOffsetA;
+  qLeg[3] = kneePitch+aThigh*kneeOffsetA+aTibia*kneeOffsetA;
+  qLeg[4] = anklePitch-aTibia*kneeOffsetA;
   qLeg[5] = ankleRoll;
 
   qLeg[4] = qLeg[4]+ankle_tilt_angle;
@@ -241,7 +271,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
 }
 
 
-std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int leg, double aShiftX, double aShiftY){
+std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int leg, double aShiftX, double aShiftY,int birdwalk){
 
   //TODOTODOTODOTODOTODO!!!!!!!!!!!!!!
   std::vector<double> qLeg(6);
@@ -259,40 +289,49 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   for (int i = 0; i < 3; i++) xLeg[i] = xHipOffset[i];
   trInvLeg.apply(xLeg);
 
-  // Knee pitch
-  double dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + (xLeg[2]-footHeight)*(xLeg[2]-footHeight);
-//  double dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + (xLeg[2]-footHeight/cos(aShiftY))*(xLeg[2]-footHeight/cos(aShiftY));
-  
-  double dLegMax = dTibia + dThigh;
+  //Find relative torso position from ankle position
+  double xAnkle0 = xLeg[0] - footHeight*sin(aShiftY);
+  double xAnkle1 = xLeg[1] + footHeight*sin(aShiftX); //roll: clockwise
+  double xAnkle2 = xLeg[2] - footHeight*cos(aShiftY)*cos(aShiftX);
 
+  // Knee pitch
+  double dLeg = xAnkle0*xAnkle0 + xAnkle1*xAnkle1 + xAnkle2*xAnkle2;
   double cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
 
-  //Automatic heel lift when IK limit is reached
-  double footCompZ = 0;
-  double ankle_tilt_angle = 0;
 
+  //Automatic toe lift when IK limit is reached
+  double ankle_tilt_angle = 0;
+  double dLegMax = dTibia + dThigh;
   double footC = sqrt(footHeight*footHeight + footHeelX*footHeelX);
   double afootA = asin(footHeight/footC);
 
-  double xLeg0Mod = xLeg[0] + footHeelX;
-  double xLeg2Mod = xLeg[2];
-
-
   if (dLeg>dLegMax*dLegMax) {
+    //with inclined surface
+    //ORG ankle position : 
+    //  footHeight*sin(aShiftY), footHeight*sin(aShiftX), footHeight*cos(aShiftY) * cos(aShiftX)
+    //tilted ankle position, where b = theta + aFootA - aShiftY
+    //  -HeelX *cos(aShiftY) + footC* cos(b), 
+    //   footC*sin(b)*sin(aShiftX),  
+    //  HeelX*sin(aShiftY) + footC*sin(b)*cos(aShiftY)*cos(aShiftX)
 
-//    printf("xLeg: %.3f,%.3f,%.3f\n",xLeg[0],xLeg[1],xLeg[2]);
+    // (xAnkle0-ax)^2 + (xAnkle1-ay)^2 + (xAnkle2-az)^2 = dLegMax^2
+    //ax = -HeelX*cos(Y)-footHeight*sin(Y)   + footC*cos(b)
+    //ay = footC*sin(X)*sin(b) - footHeight*sin(X)
+    //az = HeelX*sin(Y) + footC*sin(b)*cos(X)*cos(Y) - footHeight*cos(Y)*cos(X)
+
+    //(xLegM0  - cosb*footC)^2 + (xLegM1  - sin(b)*footC*sin(X))^2 + (xLegM2  - sin(b)*footC*cos(X)*cos(Y))^2 = dLegMax^2
+    //this eq: p * sinb + q*cosb + r = 0
+    double xLegM0 = xAnkle0 + footHeelX*cos(aShiftY) +footHeight*sin(aShiftY);
+    double xLegM1 = xAnkle1 + footHeight*sin(aShiftX);
+    double xLegM2 = xAnkle2 - footHeelX*sin(aShiftY) + footHeight*cos(aShiftX)*cos(aShiftY);
+
+    double p = -2*footC*xLegM1*sin(aShiftX) -2*footC*xLegM2*cos(aShiftX)*cos(aShiftY);
+    double q = -2*footC*xLegM0;
+
+    //////// TODOTODOTODOTODO
+    //////// TODOTODOTODOTODO
+    double r = xLegM0*xLegM0 + xLegM1*xLegM1 + xLegM2*xLegM2 + footC*footC - dLegMax*dLegMax;
    
-    //Calculate the amount of heel lift
-    // then rotated ankle position (ax,az) is footToeX-cos(a+aFootA)*footC, sin(a+aFootA)*footC
-    // or footToeX-cosb*footC, sinb *footC
-    // then 
-    // (xLeg[0]-ax)^2 + xLeg[1]^2 + (xLeg[2]-az)^2 = dLegMax^2
-    // or (xLeg0Mod - cosb*footC)^2 + xLeg[1]^2 + (xLeg2Mod-sinb*footC)^2 = dLegMax^2
-    // this eq: p * sinb + q*cosb + r = 0
-
-    double p = -2*footC*xLeg[2];
-    double q = -2*footC*xLeg0Mod;
-    double r = xLeg0Mod*xLeg0Mod + xLeg[1]*xLeg[1] +xLeg2Mod*xLeg2Mod - dLegMax*dLegMax +footC*footC;
 
     double a = (p*p/q/q + 1);
     double b = 2*p*r/q/q;
@@ -316,7 +355,6 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
       double ankle_tilt_angle1 = asin(a1)-afootA-aShiftY;
       double ankle_tilt_angle2 = asin(a2)-afootA-aShiftY;
 
-
       if ((err1<0.0001) && (err2<0.0001)) { //we have two solutions
 //        printf("Two lift angle: %.2f %.2f\n",-ankle_tilt_angle1*180/3.1415,-ankle_tilt_angle2*180/3.1415);
         if (fabs(ankle_tilt_angle1)<fabs(ankle_tilt_angle2))
@@ -328,22 +366,22 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
         else ankle_tilt_angle = ankle_tilt_angle2;
       }
 
-
-      ankle_tilt_angle = -ankle_tilt_angle; //convert into pitch angle
-  }else {
+      ankle_tilt_angle = -ankle_tilt_angle; //convert into ankle pitch angle
+    }else {
       ankle_tilt_angle = 0;
     }
 //    if (ankle_tilt_angle<-45*3.1415/180)  ankle_tilt_angle=-45*3.1415/180;
+ 
+    xLeg[0] = xLeg[0] + footHeelX - footC*cos(-ankle_tilt_angle+afootA);
+    xLeg[2] = xLeg[2] - sin(afootA-ankle_tilt_angle)*footC;
 
-    //Compensate the ankle position according to ankle tilt angle
-//    xLeg[0] = xLeg[0] - (sin(ankle_tilt_angle)*footHeight + (1-cos(ankle_tilt_angle))*footToeX);
-//    xLeg[2] = xLeg[2] - sin(afootA+ankle_tilt_angle)*footC;
-
+/*
+  //Compensate the ankle position according to ankle tilt angle
     xLeg[0] = xLeg[0] - footHeelX*cos(aShiftY) - 
               sin(aShiftY-ankle_tilt_angle)*footHeight + footHeelX*cos(aShiftY-ankle_tilt_angle);
     
     xLeg[2] = xLeg[2] + footHeelX*sin(aShiftY) - sin(afootA+ankle_tilt_angle+aShiftY)*footC;
-
+*/
     dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
     cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
   }else{    
@@ -355,6 +393,11 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   if (cKnee > 1) cKnee = 1;
   if (cKnee < -1) cKnee = -1;
   double kneePitch = acos(cKnee);
+  double kneeOffsetA=1;
+  if (birdwalk>0) {
+    kneePitch=-kneePitch;
+    kneeOffsetA=-1;
+  }
 
   // Ankle pitch and roll
   double ankleRoll = atan2(xLeg[1], xLeg[2]);
@@ -374,9 +417,9 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   // Need to compensate for KneeOffsetX:
   qLeg[0] = hipYaw;
   qLeg[1] = hipRoll;
-  qLeg[2] = hipPitch-aThigh;
-  qLeg[3] = kneePitch+aThigh+aTibia;
-  qLeg[4] = anklePitch-aTibia;
+  qLeg[2] = hipPitch-aThigh*kneeOffsetA;
+  qLeg[3] = kneePitch+aThigh*kneeOffsetA+aTibia*kneeOffsetA;
+  qLeg[4] = anklePitch-aTibia*kneeOffsetA;
   qLeg[5] = ankleRoll;
 
   qLeg[4] = qLeg[4]+ankle_tilt_angle;

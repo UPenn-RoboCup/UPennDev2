@@ -420,13 +420,19 @@ function moveleg.set_leg_positions()
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
   local qLegs
-  qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
+
+  local birdwalk = 0
+  if Config.birdwalk then birdwalk=1 end
+
+  qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY,birdwalk)
 
   -------------------Incremental COM filtering
   local com_z = 0
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
+
+--TODO: need birdwalk check for com pos calculation too    
     com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0, 1,1)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
@@ -437,7 +443,7 @@ function moveleg.set_leg_positions()
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
-   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
+   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY,birdwalk)
    count = count+1
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)

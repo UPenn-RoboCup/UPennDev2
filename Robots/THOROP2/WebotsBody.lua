@@ -363,16 +363,32 @@ function WebotsBody.update(Body)
 		t = get_time()
 
     if ENABLE_IMU then
-      -- Accelerometer data (verified)
-      local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
-      dcm.sensorPtr.accelerometer[0] = (accel[1]-512)/128
-      dcm.sensorPtr.accelerometer[1] = (accel[2]-512)/128
-      dcm.sensorPtr.accelerometer[2] = (accel[3]-512)/128
-      -- Gyro data (verified)
-      local gyro = webots.wb_gyro_get_values(tags.gyro)
-      dcm.sensorPtr.gyro[0] = -(gyro[1]-512)/512*39.24
-      dcm.sensorPtr.gyro[1] = -(gyro[2]-512)/512*39.24
-      dcm.sensorPtr.gyro[2] = (gyro[3]-512)/512*39.24
+      if not Config.birdwalk then
+        -- Accelerometer data (verified)
+        local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
+        dcm.sensorPtr.accelerometer[0] = (accel[1]-512)/128
+        dcm.sensorPtr.accelerometer[1] = (accel[2]-512)/128
+        dcm.sensorPtr.accelerometer[2] = (accel[3]-512)/128
+        -- Gyro data (verified)
+        local gyro = webots.wb_gyro_get_values(tags.gyro)
+        dcm.sensorPtr.gyro[0] = -(gyro[1]-512)/512*39.24
+        dcm.sensorPtr.gyro[1] = -(gyro[2]-512)/512*39.24
+        dcm.sensorPtr.gyro[2] = (gyro[3]-512)/512*39.24
+      else
+        --For birdwalk, the lower body is flipped
+        --so pitch and roll angles are inverted
+        -- acc X and Y flipped
+        local accel = webots.wb_accelerometer_get_values(tags.accelerometer)
+        dcm.sensorPtr.accelerometer[0] = -(accel[1]-512)/128
+        dcm.sensorPtr.accelerometer[1] = -(accel[2]-512)/128
+        dcm.sensorPtr.accelerometer[2] = (accel[3]-512)/128
+        -- Gyro data (verified)
+        -- Gyro pitch and roll flipped
+        local gyro = webots.wb_gyro_get_values(tags.gyro)
+        dcm.sensorPtr.gyro[0] = (gyro[1]-512)/512*39.24
+        dcm.sensorPtr.gyro[1] = (gyro[2]-512)/512*39.24
+        dcm.sensorPtr.gyro[2] = (gyro[3]-512)/512*39.24
+      end
     end
 
     -- FSR

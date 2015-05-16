@@ -96,6 +96,8 @@ Config.use_jacobian_arm_planning = true
 Config.piecewise_step = true
 --Config.piecewise_step = false
 
+--Config.birdwalk = true --testing birdwalk!
+
 -----------------------------------
 -- Load Paths and Configurations --
 -----------------------------------

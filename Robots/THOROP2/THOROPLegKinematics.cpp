@@ -102,7 +102,7 @@ std::vector<double> THOROP_kinematics_inverse_leg(Transform trLeg, int leg, doub
 
 
 
-std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY){
+std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY, int birdwalk){
   std::vector<double> qLeg(6);
   Transform trInvLeg = inv(trLeg);
 
@@ -213,6 +213,11 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   if (cKnee > 1) cKnee = 1;
   if (cKnee < -1) cKnee = -1;
   double kneePitch = acos(cKnee);
+  double kneeOffsetA=1;
+  if (birdwalk>0) {
+    kneePitch=-kneePitch;
+    kneeOffsetA=-1;
+  }
 
   // Ankle pitch and roll
   double ankleRoll = atan2(xLeg[1], xLeg[2]);
@@ -232,9 +237,9 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   // Need to compensate for KneeOffsetX:
   qLeg[0] = hipYaw;
   qLeg[1] = hipRoll;
-  qLeg[2] = hipPitch-aThigh;
-  qLeg[3] = kneePitch+aThigh+aTibia;
-  qLeg[4] = anklePitch-aTibia;
+  qLeg[2] = hipPitch-aThigh*kneeOffsetA;
+  qLeg[3] = kneePitch+aThigh*kneeOffsetA+aTibia*kneeOffsetA;
+  qLeg[4] = anklePitch-aTibia*kneeOffsetA;
   qLeg[5] = ankleRoll;
 
   qLeg[4] = qLeg[4]+ankle_tilt_angle;
@@ -242,7 +247,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
 }
 
 
-std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int leg, double aShiftX, double aShiftY){
+std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int leg, double aShiftX, double aShiftY,int birdwalk){
 
   //TODOTODOTODOTODOTODO!!!!!!!!!!!!!!
   std::vector<double> qLeg(6);
@@ -368,6 +373,11 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   if (cKnee > 1) cKnee = 1;
   if (cKnee < -1) cKnee = -1;
   double kneePitch = acos(cKnee);
+  double kneeOffsetA=1;
+  if (birdwalk>0) {
+    kneePitch=-kneePitch;
+    kneeOffsetA=-1;
+  }
 
   // Ankle pitch and roll
   double ankleRoll = atan2(xLeg[1], xLeg[2]);
@@ -387,9 +397,9 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   // Need to compensate for KneeOffsetX:
   qLeg[0] = hipYaw;
   qLeg[1] = hipRoll;
-  qLeg[2] = hipPitch-aThigh;
-  qLeg[3] = kneePitch+aThigh+aTibia;
-  qLeg[4] = anklePitch-aTibia;
+  qLeg[2] = hipPitch-aThigh*kneeOffsetA;
+  qLeg[3] = kneePitch+aThigh*kneeOffsetA+aTibia*kneeOffsetA;
+  qLeg[4] = anklePitch-aTibia*kneeOffsetA;
   qLeg[5] = ankleRoll;
 
   qLeg[4] = qLeg[4]+ankle_tilt_angle;

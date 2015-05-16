@@ -529,6 +529,8 @@ static int inverse_legs(lua_State *L) {
 	Transform trRLeg = transform6D(&pRLeg[0]);
 	Transform trTorso = transform6D(&pTorso[0]);
 
+	int birdwalk = luaL_optnumber(L, 6,0);
+
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 
@@ -536,12 +538,12 @@ static int inverse_legs(lua_State *L) {
 //	qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
 
 	if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
-		qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
-		qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
+		qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk);
+		qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk);
 //		printf("Rightt heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
 	}else{
-		qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
-		qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
+		qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk);
+		qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk);
 //		printf("Left heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
 	}
 	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());

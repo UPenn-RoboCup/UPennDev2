@@ -72,7 +72,8 @@ if IS_STEVE then
 else
 	--Config.testfile = 'test_balance'
   --Config.testfile = 'test_testbed'
-  Config.testfile = 'test_walkstuff'
+ -- Config.testfile = 'test_walkstuff'
+    Config.testfile = 'test_teleop2'
 	exo = {
 		'Robot','Walk','Net','Manipulation',
 		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'

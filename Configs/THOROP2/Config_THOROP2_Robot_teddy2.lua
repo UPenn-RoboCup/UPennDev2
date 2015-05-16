@@ -119,7 +119,7 @@ local right_arm = {
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
 --	1,3,5,7,9,11,13,
-	1,3,5,7,
+	1,3,5,7,9,11,13,
 		-- waist
 	28,
 	--head
@@ -306,7 +306,11 @@ servo.direction = vector.new({
 
 	------
 --	-1,1,1, -1, -1,-1,1, --RArm
-	-1,1,-1, -1, -1,-1,1, --RArm, mk2, tested
+--	-1,1,-1, -1, -1,1,1, --RArm, teddy2, tested
+
+	-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
+
+
 --	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
 --	-1, -1, -- Waist, mk1
 	1, 1, -- Waist, mk2
@@ -323,14 +327,13 @@ servo.rad_offset = vector.new({
 --	0,0,0,  0  ,0,0, --RLeg
 
 --	0,0,0,  -45  ,0,0, --LLeg  , teddy2
---	0,0,0,  45  ,0,0, --RLeg , teddy2
+--	0,0,0,  45  ,0,0, --RLeg , teddy2, wrist yaw fix
 
 	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
 	0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
 
-
-
-	90,  90,  90,-45,  -90,0,0, --RArm
+--	90,  90,  90,-45,  -90,0,0, --RArm
+	90,  90,  90,-45,  90,0,0, --RArm, teddy, wristYaw fix
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
 	70, -125, 0, -- right gripper/trigger (UCLA verified)

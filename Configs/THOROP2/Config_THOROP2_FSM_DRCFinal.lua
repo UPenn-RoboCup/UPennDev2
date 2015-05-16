@@ -49,6 +49,9 @@ fsm.Lidar = {
 
 fsm.Head = {
   {'headIdle', 'teleop', 'headTeleop'},
+  {'headIdle', 'lookaround', 'headLookaround'},
+  {'headLookaround', 'lookaround', 'headLookaround'},
+  {'headLookaround', 'idle', 'headIdle'},
 }
 
 fsm.Body = {

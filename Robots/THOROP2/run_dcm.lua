@@ -101,6 +101,11 @@ local function radian_to_step(idx, radian)
 	return floor(direction[idx] * radian_clamp(idx, radian) * to_steps[idx] + step_zero[idx] + step_offset[idx])
 end
 local function step_to_radian(idx, step)
+
+	if not idx then
+	  printf("IDX NULL!!!!!!!!!!!!!!!!!!")
+
+	end
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 local function torque_to_cmd(idx, tq)

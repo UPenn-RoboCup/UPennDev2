@@ -379,7 +379,7 @@ std::vector<double> THOROP_kinematics_calculate_com_positions(
     const double *qWaist,  const double *qLArm,   const double *qRArm,
     const double *qLLeg,   const double *qRLeg,   
     double mLHand, double mRHand, double bodyPitch,
-    int use_lleg, int use_rleg
+    int use_lleg, int use_rleg, int birdwalk
     );
 
 void THOROP_kinematics_calculate_arm_com(const double* rpyangle,  

@@ -455,6 +455,16 @@ function moveleg.set_leg_positions()
     -uTorsoOffset[1],-uTorsoOffset[2],com[3]/com[4]
     })
 
+--Knee angle check
+if Config.birdwalk then
+  --knee pitch should be neagitve
+  qLegs[4]= math.min(0,qLegs[4])
+  qLegs[10]= math.min(0,qLegs[10])
+else
+  --knee pitch should be positive
+  qLegs[4]= math.max(0,qLegs[4])
+  qLegs[10]= math.max(0,qLegs[10])  
+end
 
   local legBias = vector.new(mcm.get_leg_bias())
   qLegs = qLegs + delta_legs + legBias

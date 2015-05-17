@@ -34,6 +34,8 @@ local bodyHeight = 0.98
 
 function state.entry()
   print(state._NAME..' Entry' )
+  hcm.set_motion_waistTarget(0) --set target waist to zero
+
   Body.enable_read'lleg'
   Body.enable_read'rleg'
 

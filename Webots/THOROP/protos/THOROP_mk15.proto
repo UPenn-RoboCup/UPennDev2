@@ -69,9 +69,7 @@ Robot {
 			device RotationalMotor {
 				name "TorsoYaw"
 				maxVelocity 2.9216811678
-				maxTorque 44.2				
-				minPosition -2.92343
-				maxPosition 2.92343
+				maxTorque 44.2								
 			}
 			jointParameters HingeJointParameters {
 				axis 0 1 0 #mk2

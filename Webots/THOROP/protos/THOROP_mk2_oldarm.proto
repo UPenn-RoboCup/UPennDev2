@@ -545,8 +545,7 @@ Robot {
 	                           contactMaterial IS footContactMaterial    
 	                           boundingObject Transform {
 	                               #Foot height for mk2: 0.100
-	                              #translation 0 -0.093 0.01
-	                              translation 0 -0.075 0.01
+	                              translation 0 -0.075 0.00
 	                               children [
 	                                 Box {size 0.160 0.05 0.260}
 	                               ]

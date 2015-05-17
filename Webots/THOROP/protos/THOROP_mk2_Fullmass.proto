@@ -69,8 +69,6 @@ Robot {
 				name "TorsoYaw"
 				maxVelocity 2.9216811678
 				maxTorque 44.2				
-				minPosition -2.92343
-				maxPosition 2.92343
 			}
 			jointParameters HingeJointParameters {
 				axis 0 1 0 #mk2
@@ -320,10 +318,7 @@ Robot {
 												                             	 #Foot height for mk2: 0.100
 												                               #translation 0 -0.093 0.01
 												                               translation 0 -0.075 0.0 #now symmetric foot
-												                               children [               
-												                                 #Box {size 0.147 0.05 0.240}
-												                                 Box {size 0.160 0.05 0.260}
-												                               ]
+												                               children [Box {size 0.160 0.05 0.260}]
 												                             }
 												                            	physics Physics {
 												                            		#we consider the mass of force sensor...
@@ -535,14 +530,10 @@ Robot {
 												                            name "LAnkle_force"
 												                            contactMaterial IS footContactMaterial    
 												                            boundingObject Transform {
-												                                #Foot height for mk2: 0.100
+											                                #Foot height for mk2: 0.100
 												                               #translation 0 -0.093 0.01
-												                               translation 0 -0.075 0.01
-												                                children [
-												                                  Box {
-												                                    size 0.160 0.05 0.260
-												                                  }
-												                                ]
+												                               translation 0 -0.075 0.0
+												                                children [Box {size 0.160 0.05 0.260}]
 												                              }                                                 
 												                        		physics Physics {
 												                        			density -1 mass 1.0
@@ -626,21 +617,20 @@ Robot {
 									rotation 0 1 0 3.14159265
 									pixelSize 0
 								}
-								kinect2 {      			  
-									translation 0 0.15 0
-									rotation 0 1 0 3.14159265
-									mass 0.1
-									#TODO: add a pitch angle
-									maxRange 6
-									pixelSize 0
-								}
-								hokuyo {
-									name "HeadLidar"
-									width IS lidarRays
-									fieldOfView IS lidarFov
-									translation 0 0.10 0
-									#rotation 0.707107 -0.707107 0 3.14159
-								}
+
+
+#								kinect2 {      			  
+#									translation 0 0.15 0
+#									rotation 0 1 0 3.14159265
+#									mass 0.1 maxRange 6 pixelSize 0}
+
+#								hokuyo {
+#									name "HeadLidar"
+#									width IS lidarRays
+#									fieldOfView IS lidarFov
+#									translation 0 0.10 0
+#									rotation 0.707107 -0.707107 0 3.14159
+#								}
 							]
 							physics Physics {
 								density -1
@@ -860,7 +850,7 @@ Robot {
 																																							WRIST {
                                       		translation 0 0 0
                                       		scale 0.001 0.001 0.001}
-#        																															WRIST {        																																
+#        																															WRIST {
 #        																																translation 0 -0.0750 0
 #        																																scale 0.001 0.001 0.001
 #                                        rotation 1 0 0 1.5708
@@ -876,20 +866,20 @@ Robot {
                                          axis 0 -1 0
                                          dampingConstant IS damping_constant     
                                         }
-#				                                    endPoint Solid {
-#													                            translation 0 -0.116 0 #mk2 joint : 141-25 = 116
-#						                            							boundingObject Box { size 0.05 0.05 0.05 }
-#						                           								physics Physics{density -1 mass 0.1 centerOfMass 0 0.0 0}
-#																                    			}
+				                                    endPoint Solid {
+													                            translation 0 -0.116 0 #mk2 joint : 141-25 = 116
+						                            							boundingObject Box { size 0.05 0.05 0.05 }
+						                           								physics Physics{density -1 mass 0.1 centerOfMass 0 0.0 0}
+																                    			}
 
 	#                   endPoint CHOPSTICKS {translation 0 -0.05 0}
-																					endPoint GRIPPER_3finger {
-																						translation 0 0 0
-	  																			rotation 0 0 -1 0
-																						trigger_name "r_trigger"
-																						grip_name "r_grip"
-																						extra_name "r_extra"
-																					}
+	#																				endPoint GRIPPER_3finger {
+	#																					translation 0 0 0
+	#  																			rotation 0 0 -1 0
+	#																					trigger_name "r_trigger"
+	#																					grip_name "r_grip"
+	#																					extra_name "r_extra"
+	#																				}
 
                                         } # End of the Wrist Yaw2 HingeJoint
                                       ] # End the solid children
@@ -1097,11 +1087,11 @@ Robot {
                                     	WRIST {
                                     		translation 0 0 0
                                     		scale 0.001 0.001 0.001}
-												        																WRIST {
-												        																	translation 0 -0.0750 0
-        																													scale 0.001 0.001 0.0015												        																	
-	                                    rotation 1 0 0 1.5708
-												        																}
+#												        																WRIST {
+#												        																	translation 0 -0.0750 0
+#        																													scale 0.001 0.001 0.0015												        																	
+#	                                    rotation 1 0 0 1.5708
+#												        																}
 	                                   DEF Left_wrist_yaw2 HingeJoint {
 	                                		  device RotationalMotor {
 	                                  	  name "LeftWristYaw2"
@@ -1112,20 +1102,20 @@ Robot {
                                       axis 0 -1 0
 																																						dampingConstant IS damping_constant                                            
                                      }
- 																                    endPoint GRIPPER_pincer {
-																 	                    translation 0 -0.141 0
-																																						rotation 0 0 -1 0
-																	                					#trigger_name "l_trigger"
-																																					grip_name "l_grip"
-																																				}
 
+# 																                    endPoint GRIPPER_pincer {
+#																 	                    translation 0 -0.141 0
+#																																						rotation 0 0 -1 0
+#																	                					#trigger_name "l_trigger"
+#																																					grip_name "l_grip"
+#																																				}
 
 															                            ##############################################################
-#	                  																								endPoint Solid {
-#																															            	translation 0 -0.116 0 #mk2 joint : 141-25 = 116
-#																                            boundingObject Box { size 0.05 0.05 0.05 }
-#																                           	physics Physics{density -1 mass 0.1 centerOfMass 0 0 0}
-#																																										}
+	                  																								endPoint Solid {
+																															            	translation 0 -0.116 0 #mk2 joint : 141-25 = 116
+																                            boundingObject Box { size 0.05 0.05 0.05 }
+																                           	physics Physics{density -1 mass 0.1 centerOfMass 0 0 0}
+																																										}
 															                            ##############################################################		    
 																		                    			
                                         } # End of the Wrist Yaw2 HingeJoint

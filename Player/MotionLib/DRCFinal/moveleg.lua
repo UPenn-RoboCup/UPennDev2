@@ -413,6 +413,10 @@ function moveleg.set_leg_positions()
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
+
+revise_max=10 --temporary test
+
+
   --Initial guess 
   local uTorsoAdapt = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
   local pTorso = vector.new({
@@ -421,10 +425,7 @@ function moveleg.set_leg_positions()
 
   local qLegs
 
-  local birdwalk = 0
-  if Config.birdwalk then birdwalk=1 end
-
-  qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY,birdwalk)
+  qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY, Config.birdwalk or 0)
 
   -------------------Incremental COM filtering
   local com_z = 0
@@ -432,8 +433,7 @@ function moveleg.set_leg_positions()
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
 
---TODO: need birdwalk check for com pos calculation too    
-    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0, 1,1)
+    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0, Config.birdwalk or 0)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
@@ -443,13 +443,15 @@ function moveleg.set_leg_positions()
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
-   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY,birdwalk)
+   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0)
    count = count+1
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
   
+
+--print("com:",com[1]/com[4])
 --  print("uTorsoZ:",com[3]/com[4])
---  print("uTorso:",uTorso[1],uLeft[1])
+--  print("uTorso:",uTorso[1],uTorsoAdapt[1])
 --  print("Torso offset:",uTorsoOffset[1],uTorsoOffset[2])
   mcm.set_stance_COMoffset({
     -uTorsoOffset[1],-uTorsoOffset[2],com[3]/com[4]

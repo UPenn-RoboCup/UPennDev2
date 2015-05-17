@@ -76,14 +76,16 @@ THOROP_kinematics_calculate_com_positions(
     double bodyPitch,
 
     int use_lleg,
-    int use_rleg
+    int use_rleg,
+
+    int birdwalk
     ){
   
   
   Transform 
     tPelvis, tTorso, 
-    tLArm0, tLArm1, tLArm2, tLArm3, tLArm4,
-    tRArm0, tRArm1, tRArm2, tRArm3, tRArm4,
+    tLArm0, tLArm1, tLArm2, tLArm3, tLArm4, tLArm5, tLArm6,
+    tRArm0, tRArm1, tRArm2, tRArm3, tRArm4, tRArm5, tRArm6,
 
     tLLeg0, tLLeg1, tLLeg2, tLLeg3, tLLeg4, tLLeg5,
     tRLeg0, tRLeg1, tRLeg2, tRLeg3, tRLeg4, tRLeg5,
@@ -91,13 +93,17 @@ THOROP_kinematics_calculate_com_positions(
     tPelvisCOM, tTorsoCOM
     ;
     
+  //COM is calculated based on PELVIS frame
+  //for birdwalk, the frame is flipped and x,y positions are negated
+
 
   tPelvis = tPelvis
     .rotateY(bodyPitch);
 
-  tTorso = trcopy(tPelvis)
-    .rotateZ(qWaist[0])
-    .rotateY(qWaist[1]);
+  tTorso = trcopy(tPelvis)    
+  .rotateY(qWaist[1])
+  .rotateZ(qWaist[0]); //for mk2 body, fixed
+ 
 
   tLArm0= trcopy(tTorso).translate(armLink[0])
           .rotateY(qLArm[0]);
@@ -124,6 +130,15 @@ THOROP_kinematics_calculate_com_positions(
           .translate(armLink[4]).rotateX(qLArm[4])
           .translate(armCom[4]);
 
+  tLArm5= trcopy(tTorso).translate(armLink[0])
+          .rotateY(qLArm[0]).rotateZ(qLArm[1])
+          .translate(armLink[2]).rotateX(qLArm[2])
+          .translate(armLink[3]).rotateY(qLArm[3])
+          .translate(armLink[4]).rotateX(qLArm[4])
+          .rotateZ(qLArm[5]).translate(armCom[5]);
+
+
+
   tRArm0= trcopy(tTorso).translate(rarmLink0)
           .rotateY(qRArm[0]);          
 
@@ -148,6 +163,13 @@ THOROP_kinematics_calculate_com_positions(
           .translate(armLink[3]).rotateY(qRArm[3])
           .translate(armLink[4]).rotateX(qRArm[4])
           .translate(armCom[4]);          
+
+  tRArm5= trcopy(tTorso).translate(rarmLink0)
+          .rotateY(qRArm[0]).rotateZ(qRArm[1])
+          .translate(armLink[2]).rotateX(qRArm[2])
+          .translate(armLink[3]).rotateY(qRArm[3])
+          .translate(armLink[4]).rotateX(qRArm[4])
+          .rotateZ(qRArm[5]).translate(armCom[5]);
 
 
   tLLeg0 = trcopy(tPelvis).translate(llegLink0)
@@ -206,8 +228,13 @@ THOROP_kinematics_calculate_com_positions(
   tTorsoCOM = tTorso
     .translate(bodyCom[0][0],bodyCom[0][1],bodyCom[0][2]);
 
-  tPelvisCOM = tPelvis
-    .translate(bodyCom[1][0],bodyCom[1][1],bodyCom[1][2]);
+  if (birdwalk==1)
+    tPelvisCOM = tPelvis
+      .translate(-bodyCom[1][0],-bodyCom[1][1],bodyCom[1][2]);
+  else{
+    tPelvisCOM = tPelvis
+      .translate(bodyCom[1][0],bodyCom[1][1],bodyCom[1][2]);
+  }
 
 
 //make a single compound COM position (from pelvis frame)
@@ -216,14 +243,16 @@ THOROP_kinematics_calculate_com_positions(
 
  r[0] = 
          MassBody[0] * tTorsoCOM(0,3) +
-         MassBody[1] * tPelvisCOM(0,3) +
          
          MassArm[0]* (tLArm0(0,3)+tRArm0(0,3))+
          MassArm[1]* (tLArm1(0,3)+tRArm1(0,3))+
          MassArm[2]* (tLArm2(0,3)+tRArm2(0,3))+
          MassArm[3]* (tLArm3(0,3)+tRArm3(0,3))+
          MassArm[4]* (tLArm4(0,3)+tRArm4(0,3))+
+         MassArm[5]* (tLArm5(0,3)+tRArm5(0,3))+
 
+
+         MassBody[1] * tPelvisCOM(0,3) +    
          MassLeg[0]* (tLLeg0(0,3)*use_lleg+tRLeg0(0,3)*use_rleg)+
          MassLeg[1]* (tLLeg1(0,3)*use_lleg+tRLeg1(0,3)*use_rleg)+
          MassLeg[2]* (tLLeg2(0,3)*use_lleg+tRLeg2(0,3)*use_rleg)+
@@ -233,15 +262,16 @@ THOROP_kinematics_calculate_com_positions(
 
 
   r[1] = 
-         MassBody[0] * tTorsoCOM(1,3) +
-         MassBody[1] * tPelvisCOM(1,3) +
+         MassBody[0] * tTorsoCOM(1,3) +         
 
          MassArm[0]* (tLArm0(1,3)+tRArm0(1,3))+
          MassArm[1]* (tLArm1(1,3)+tRArm1(1,3))+
          MassArm[2]* (tLArm2(1,3)+tRArm2(1,3))+
          MassArm[3]* (tLArm3(1,3)+tRArm3(1,3))+
          MassArm[4]* (tLArm4(1,3)+tRArm4(1,3))+
+         MassArm[5]* (tLArm5(1,3)+tRArm5(1,3))+
 
+         MassBody[1] * tPelvisCOM(1,3) +
          MassLeg[0]* (tLLeg0(1,3)*use_lleg+tRLeg0(1,3)*use_rleg)+
          MassLeg[1]* (tLLeg1(1,3)*use_lleg+tRLeg1(1,3)*use_rleg)+
          MassLeg[2]* (tLLeg2(1,3)*use_lleg+tRLeg2(1,3)*use_rleg)+
@@ -251,14 +281,15 @@ THOROP_kinematics_calculate_com_positions(
 
   r[2] = 
          MassBody[0] * tTorsoCOM(2,3) +
-         MassBody[1] * tPelvisCOM(2,3) +
 
          MassArm[0]* (tLArm0(2,3)+tRArm0(2,3))+
          MassArm[1]* (tLArm1(2,3)+tRArm1(2,3))+
          MassArm[2]* (tLArm2(2,3)+tRArm2(2,3))+
          MassArm[3]* (tLArm3(2,3)+tRArm3(2,3))+
          MassArm[4]* (tLArm4(2,3)+tRArm4(2,3))+
+         MassArm[5]* (tLArm5(2,3)+tRArm5(2,3));
 
+         MassBody[1] * tPelvisCOM(2,3) +
          MassLeg[0]* (tLLeg0(2,3)*use_lleg+tRLeg0(2,3)*use_rleg)+
          MassLeg[1]* (tLLeg1(2,3)*use_lleg+tRLeg1(2,3)*use_rleg)+
          MassLeg[2]* (tLLeg2(2,3)*use_lleg+tRLeg2(2,3)*use_rleg)+

@@ -159,6 +159,28 @@ local left_leg = {
 	enable_read = true,
 }
 
+if Config.birdwalk then
+  --for birdwalk, swap chain names too
+  left_leg = {
+	name = 'lleg',
+	ttyname = '/dev/ttyUSB2',
+	-- waist pitch
+	m_ids = {15,17,19, 21, 23,25, 27},
+	enable_read = true,
+  }
+  right_leg = {
+	name = 'rleg',
+	ttyname = '/dev/ttyUSB3',
+	m_ids = {16,18,20, 22, 24,26},
+	enable_read = true,
+  }
+end
+
+
+
+
+
+
 if OPERATING_SYSTEM=='darwin' then
 	right_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0A'
 	left_arm.ttyname = '/dev/cu.usbserial-FTVTLUY0B'
@@ -189,10 +211,10 @@ else
 	table.insert(Config.chain, right_leg)
 	table.insert(Config.chain, left_leg)
 --
-		table.insert(Config.chain, right_arm)
-		table.insert(Config.chain, left_arm)
-		Config.chain[right_arm.name] = right_arm
-		Config.chain[left_arm.name] = left_arm
+	table.insert(Config.chain, right_arm)
+	table.insert(Config.chain, left_arm)
+	Config.chain[right_arm.name] = right_arm
+	Config.chain[left_arm.name] = left_arm
 --
 	one_chain = nil
 end
@@ -341,17 +363,16 @@ if Config.birdwalk then
 servo.rad_offset = vector.new({
 	0,0, -- Head
 	-90,  -90,  -90,45,  90,0,0, --LArm
-	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
+--leg swapped
 	0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
+	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
+
 	90,  90,  90,-45,  90,0,0, --RArm, teddy, wristYaw fix
-	-180,0, -- Waist is flipped
+	180,0, -- Waist is flipped
 	0, 0, 0, -- left gripper/trigger
 	70, -125, 0, -- right gripper/trigger (UCLA verified)
 	0, -- Lidar pan
 })*DEG_TO_RAD
-
---	16,18,20,22,24,26, -- left leg
---	15,17,19,21,23,25, -- right leg
 
 servo.joint_to_motor={
 	29,30,  --Head yaw/pitch
@@ -370,18 +391,14 @@ servo.direction = vector.new({
 	1,1,-1, 1, 1,1,1, --LArm, mk2
 --	-1, -1,-1, -1,  1,1, --LLeg, mk1
 --	-1, -1,1,   1,  -1,1, --RLeg, mk1
-
---leg is flipped, so pitch/roll gets inverted
-	-1, 1,1, 1,  -1,-1, --LLeg, mk1
-	-1, 1,-1,-1,  1,-1, --RLeg, mk1
-
+	-1, 1,   -1, -1, 1,-1, --LLeg, mk1, flipped
+	-1, 1,    1,1,  -1,-1, --RLeg, mk1, flipped
 	-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
 	-1, -- Lidar pan
 })
-
 
 
 end

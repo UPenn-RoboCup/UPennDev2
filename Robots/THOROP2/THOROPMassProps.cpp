@@ -137,6 +137,13 @@ THOROP_kinematics_calculate_com_positions(
           .translate(armLink[4]).rotateX(qLArm[4])
           .rotateZ(qLArm[5]).translate(armCom[5]);
 
+  tLArm6= trcopy(tTorso).translate(armLink[0])
+          .rotateY(qLArm[0]).rotateZ(qLArm[1])
+          .translate(armLink[2]).rotateX(qLArm[2])
+          .translate(armLink[3]).rotateY(qLArm[3])
+          .translate(armLink[4]).rotateX(qLArm[4])
+          .rotateZ(qLArm[5]).rotateX(qLArm[6])
+          .translate(armCom[6]);
 
 
   tRArm0= trcopy(tTorso).translate(rarmLink0)
@@ -171,6 +178,13 @@ THOROP_kinematics_calculate_com_positions(
           .translate(armLink[4]).rotateX(qRArm[4])
           .rotateZ(qRArm[5]).translate(armCom[5]);
 
+  tRArm6= trcopy(tTorso).translate(rarmLink0)
+          .rotateY(qRArm[0]).rotateZ(qRArm[1])
+          .translate(armLink[2]).rotateX(qRArm[2])
+          .translate(armLink[3]).rotateY(qRArm[3])
+          .translate(armLink[4]).rotateX(qRArm[4])
+          .rotateZ(qRArm[5]).rotateX(qRArm[6])
+          .translate(armCom[6]);
 
   tLLeg0 = trcopy(tPelvis).translate(llegLink0)
           .rotateZ(qLLeg[0])
@@ -250,6 +264,7 @@ THOROP_kinematics_calculate_com_positions(
          MassArm[3]* (tLArm3(0,3)+tRArm3(0,3))+
          MassArm[4]* (tLArm4(0,3)+tRArm4(0,3))+
          MassArm[5]* (tLArm5(0,3)+tRArm5(0,3))+
+         MassArm[6]* (tLArm6(0,3)+tRArm6(0,3))+
 
 
          MassBody[1] * tPelvisCOM(0,3) +    
@@ -270,6 +285,7 @@ THOROP_kinematics_calculate_com_positions(
          MassArm[3]* (tLArm3(1,3)+tRArm3(1,3))+
          MassArm[4]* (tLArm4(1,3)+tRArm4(1,3))+
          MassArm[5]* (tLArm5(1,3)+tRArm5(1,3))+
+         MassArm[6]* (tLArm6(1,3)+tRArm6(1,3))+
 
          MassBody[1] * tPelvisCOM(1,3) +
          MassLeg[0]* (tLLeg0(1,3)*use_lleg+tRLeg0(1,3)*use_rleg)+
@@ -287,7 +303,8 @@ THOROP_kinematics_calculate_com_positions(
          MassArm[2]* (tLArm2(2,3)+tRArm2(2,3))+
          MassArm[3]* (tLArm3(2,3)+tRArm3(2,3))+
          MassArm[4]* (tLArm4(2,3)+tRArm4(2,3))+
-         MassArm[5]* (tLArm5(2,3)+tRArm5(2,3));
+         MassArm[5]* (tLArm5(2,3)+tRArm5(2,3))+
+         MassArm[6]* (tLArm6(2,3)+tRArm6(2,3))+
 
          MassBody[1] * tPelvisCOM(2,3) +
          MassLeg[0]* (tLLeg0(2,3)*use_lleg+tRLeg0(2,3)*use_rleg)+

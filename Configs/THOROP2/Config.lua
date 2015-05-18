@@ -50,6 +50,17 @@ Config.raise_body = true
 Config.waist_testing = true
 
 
+Config.use_jacobian_arm_planning = true
+--Config.use_jacobian_arm_planning = false
+
+Config.piecewise_step = true
+--Config.piecewise_step = false
+
+--birdwalk TODO : IMU and FT values swap
+--Config.birdwalk = 1 --testing birdwalk
+
+
+
 ----------------------------------
 -- Application specific Configs --
 ----------------------------------
@@ -72,7 +83,8 @@ if IS_STEVE then
 else
 	--Config.testfile = 'test_balance'
   --Config.testfile = 'test_testbed'
-  Config.testfile = 'test_walkstuff'
+ -- Config.testfile = 'test_walkstuff'
+    Config.testfile = 'test_teleop2'
 	exo = {
 		'Robot','Walk','Net','Manipulation',
 		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'
@@ -86,14 +98,13 @@ if HOSTNAME=="teddy2" then
   exo[1]='Robot_teddy2'
 end
 
+if IS_WEBOTS then
+	--Config.birdwalk = 1 --testing birdwalk
+end
 
 
 
-Config.use_jacobian_arm_planning = true
---Config.use_jacobian_arm_planning = false
 
-Config.piecewise_step = true
---Config.piecewise_step = false
 
 -----------------------------------
 -- Load Paths and Configurations --

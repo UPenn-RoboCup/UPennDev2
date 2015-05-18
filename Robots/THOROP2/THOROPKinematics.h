@@ -17,7 +17,6 @@ const double SQRT2 = sqrt(2);
 const double neckOffsetZ = .117;
 const double neckOffsetX = 0;
 
-
 //ORIGIN is at the mk1 waist position
 //which is 111mm higher than mk2 waist position
 //then the shoulder offset Z is the same (165mm)
@@ -30,30 +29,18 @@ const double shoulderOffsetZ2 = 0.276; //mk2 value, for reference
 const double shoulderOffsetZ = shoulderOffsetZ2-originOffsetZ; //virtual shoulderoffset, the same as mk1 (0.165)
 const double elbowOffsetX =   .030; 
 
-/*
-const double upperArmLength = .281; //Elongated mk1 value
-const double lowerArmLength = .298; //Elongated mk1 value
-*/
-
-/*
-const double upperArmLength = .261; //mk2 stock value
+//const double upperArmLength = .261; //mk2 stock value
+const double upperArmLength = .246; //mk1 longarm 
 const double lowerArmLength = .252;
+
+/*
+const double upperArmLength = .246; //mk1 longarm
+const double lowerArmLength = .252; //mk2 longarm (2mm shorter, but we will use the same value for convenience)
 */
-
-const double upperArmLength = .246; //mk1 value
-const double lowerArmLength = .250; //mk1 longarm
-
-
-//Robotis hand: 0.31 0 0
-//UCLA hand   : 0.15 0 0
 
 const double handOffsetX = 0.310; //mk2 value
 const double handOffsetY = 0;
 const double handOffsetZ = 0; 
-
-//Total reach: mk1: 246+250+230 = 72.6cm
-//						 mk2: 261+252+310 = 82.3cm
-//	 elongated mk1: 281+298+150 = 72.9cm
 
 //const double hipOffsetY = 0.072;	//mk1 value
 //const double hipOffsetZ = 0.282; 	//mk1 value
@@ -72,16 +59,10 @@ const double hipOffsetZ = hipOffsetZ2+originOffsetZ;  //mk2 virtual hipoffset (p
 
 const double thighLength = 0.30;
 const double tibiaLength = 0.30;
-//const double kneeOffsetX = 0.03; //only mk1 has kneeoffset
-const double kneeOffsetX = 0.0;    //mk2 lacks kneeoffset
-//const double footHeight = 0.118; //mk1 feet height
+const double kneeOffsetX = 0.00;    //mk2 lacks kneeoffset
 const double footHeight = 0.10;    //mk2 feet height
-
-//const double footToeX = 0.130; //from ankle to toe
-//const double footHeelX = 0.110; //from ankle to heel
 const double footToeX = 0.130; //from ankle to toe, mk2 stock feet
 const double footHeelX = 0.130; //from ankle to heel, mk2 stock feet
-
 
 //mkw lidar positions
 const double chestLidarHingeX = 0.05; 
@@ -91,129 +72,18 @@ const double headLidarX = 0.10; //based on neck servo
 
 
 //=================================================================
-
 const double dThigh = sqrt(thighLength*thighLength+kneeOffsetX*kneeOffsetX);
 const double aThigh = atan(kneeOffsetX/thighLength);
 const double dTibia = sqrt(tibiaLength*tibiaLength+kneeOffsetX*kneeOffsetX);
 const double aTibia = atan(kneeOffsetX/tibiaLength);
-
 const double dUpperArm = sqrt(upperArmLength*upperArmLength+elbowOffsetX*elbowOffsetX);
 const double dLowerArm = sqrt(lowerArmLength*lowerArmLength+elbowOffsetX*elbowOffsetX);
 const double aUpperArm = atan(elbowOffsetX/upperArmLength);
 const double aLowerArm = atan(elbowOffsetX/lowerArmLength);
-
-
 //=================================================================
 //Those values are used to calculate the multi-body COM of the robot
 
 const double g = 9.81;
-
-
-/* MK1 mass and com values
-
-const double MassBody[2]={
-	9.21, //torso
-	8.0,  //pelvis	
-}
-};
-const double bodyCom[2][3]={
-	{-0.0208,0,0.1557},	
-	{-0.0264,0,-0.1208},
-};
-
-//Based on webots mass 
-const double MassArm[7]={
-	0.1,2.89,0.13, 0.81, 0.97, 0.1,	 0.1,	//gripper mass... TBD
-};
-
-const double InertiaArm[7][6]={
-	{0.0000625, 0.0000625, 0.0000625, 0,0,0},
-	{0.00180625, 0.00180625, 0.00180625, 0,0,0},
-	{0.00008125, 0.00008125, 0.00008125, 0,0,0},
-	{0.00050625,0.00050625, 0.00050625, 0,0,0},
-	{0.00060625,0.00060625, 0.00060625, 0,0,0},
-	{0.0000625,0.0000625,0.0000625, 0,0,0},
-	{0.0000625,0.0000625,0.0000625, 0,0,0}
-};
-
-const double armLink[7][3]={
-	{0,0.234,0.165}, //waist-shoulder roll 
-	{0,0,0}, //shoulder pitch-shoulder roll
-	{0,0,0}, //shouder roll-shoulder yaw
-	{0.246,0,0.030},//shoulder yaw-elbow 
-	{0.250,0,-0.030},//elbow to wrist yaw 1
-	{0,0,0},//wrist yaw1 to wrist roll
-	{0,0,0}//wrist roll to wrist yaw2
-};
-const double rarmLink0[3] = {0,-0.234,0.165};
-
-//Com position from joint center
-const double armCom[7][3]={
-	{0,0,0},	//after shoulder pitch
-	{0.1027,0,-0.008},//after shoulder roll
-	{0.246,0,0.030}, //after shoulder yaw	
-	{0.0464,0,0},//after elbow
-//	{-0.2036,0,0},//after elbow	
-	{-0.040,0,0}, //after wrist yaw 1
-	{0,0,0}, //after wrist roll
-	{0.095,0,0} //after wrist yaw 2
-};
-
-const double MassLeg[6]={
-	0.165, 1.122, 3.432, 2.464, 0.946, 1.133
-};
-
-const double legLink[7][3]={
-	{0,0.072,-0.282}, //waist-hipyaw
-	{0,0,0}, //hip yaw-roll
-	{0,0,0}, //hip roll-pitch
-	{-0.030,0,-0.300}, //hip pitch-knee
-	{0.030,0,-0.300}, //knee-ankle pitch
-	{0,0,0}, //ankle pitch-ankle roll
-	{0,0,-0.118}, //ankle roll - foot bottom
-};
-
-
-const double llegLink0[3] = {0,0.072,-0.282};
-const double rlegLink0[3] = {0,-0.072,-0.282};
-
-const double legCom[12][3]={
-	//left
-	{0,0,0},	//after hip yaw
-	{0,0,0},	//after hip roll
-	{-0.029, 0.014,-0.130},	//after hip pitch (upper leg)
-	{0.031,  0.019,-0.119},	//after knee (lower leg)
-	{0,0,0}, //after ankle pitch
-	{0,0,-0.031}, //after ankle pitch	
-
-	//right
-	{0,0,0},	//after hip yaw
-	{0,0,0},	//after hip roll
-	{-0.029, -0.014,-0.130},	//after hip pitch (upper leg)
-	{0.031,  -0.019,-0.119},	//after knee (lower leg)
-	{0,0,0}, //after ankle pitch
-	{0,0,-0.031}, //after ankle pitch	
-};
-
-
-const double InertiaLeg[12][6]={
-	//left
-	{0.000103125,0.000103125,0.000103125,0,0,0},
-	{0.00070125,0.00070125,0.00070125,0,0,0},
-	{0.002145,0.002145,0.002145,0,0,0},
-	{0.00154,0.00154,0.00154,0,0,0},
-	{0.00059125,0.00059125,0.00059125,0,0,0},
-	{0.000708125,0.000708125,0.000708125,0,0,0},
-
-	//right
-	{0.000103125,0.000103125,0.000103125,0,0,0},
-	{0.00070125,0.00070125,0.00070125,0,0,0},
-	{0.002145,0.002145,0.002145,0,0,0},
-	{0.00154,0.00154,0.00154,0,0,0},
-	{0.00059125,0.00059125,0.00059125,0,0,0},
-	{0.000708125,0.000708125,0.000708125,0,0,0}
-};
-*/
 
 // MK2 mass and com values
 
@@ -223,7 +93,7 @@ const double MassBody[2]={
 };
 //torso com: (-0.0042 -0.0007 0.2378), waist com (0 0 0.0579)
 const double bodyCom[2][3]={
-	{-0.0040, -0.0007, 0.2292},	 //combined com for torso and waist
+	{-0.0040, 0, 0.2292},	 //combined com for torso and waist
 	{-0.0212, 0.0002, 0.0032}
 };
 
@@ -250,12 +120,13 @@ const double armLink[7][3]={
 	{0,0,0},//wrist yaw1 to wrist roll
 	{0,0,0}//wrist roll to wrist yaw2
 };
+
 const double rarmLink0[3] = {0,-shoulderOffsetY,shoulderOffsetZ};
 
 //Com position from joint center
 const double armCom[7][3]={
 	{0,0,0},	//after shoulder pitch
-	{0.0,0,0.001},//after shoulder roll
+	{0.0282,0,0.0},//after shoulder roll
 	{0.1808,0,0.0129}, //after shoulder yaw	
 	{0.1239,0,-0.0301},//after elbow pitch
 	{-0.0070,0,0}, //after wrist yaw 1
@@ -298,7 +169,6 @@ const double legCom[12][3]={
 	{0.0113,-0.0018,-0.0828}, //after ankle pitch	
 };
 
-
 const double InertiaLeg[12][6]={
 	//left
 	{0.000103125,0.000103125,0.000103125,0,0,0},
@@ -318,6 +188,24 @@ const double InertiaLeg[12][6]={
 };
 
 
+//MK1 arms
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 // COM and ZMP generation functions
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -327,8 +215,8 @@ Transform THOROP_kinematics_forward_l_leg(const double *q);
 Transform THOROP_kinematics_forward_r_leg(const double *q);
 
 std::vector<double> THOROP_kinematics_inverse_leg(const Transform trLeg, int leg, double aShiftX, double aShiftY);
-std::vector<double> THOROP_kinematics_inverse_leg_toelift(const Transform trLeg, int leg,double aShiftX, double aShiftY);
-std::vector<double> THOROP_kinematics_inverse_leg_heellift(const Transform trLeg, int leg, double aShiftX, double aShiftY);
+std::vector<double> THOROP_kinematics_inverse_leg_toelift(const Transform trLeg, int leg,double aShiftX, double aShiftY,int birdwalk);
+std::vector<double> THOROP_kinematics_inverse_leg_heellift(const Transform trLeg, int leg, double aShiftX, double aShiftY, int birdwalk);
 
 
 std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg, double aShiftX, double aShiftY);
@@ -380,7 +268,7 @@ std::vector<double> THOROP_kinematics_calculate_com_positions(
     const double *qWaist,  const double *qLArm,   const double *qRArm,
     const double *qLLeg,   const double *qRLeg,   
     double mLHand, double mRHand, double bodyPitch,
-    int use_lleg, int use_rleg
+    int use_lleg, int use_rleg, int birdwalk
     );
 
 void THOROP_kinematics_calculate_arm_com(const double* rpyangle,  

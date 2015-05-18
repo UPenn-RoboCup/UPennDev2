@@ -335,29 +335,13 @@ static int calculate_com_pos(lua_State *L) {
 	double mRHand = luaL_optnumber(L, 7,0.0);
 	double bodyPitch = luaL_optnumber(L, 8,0.0);
 
-	std::vector<double> r = THOROP_kinematics_calculate_com_positions(
-		&qWaist[0],&qLArm[0],&qRArm[0],&qLLeg[0],&qRLeg[0],mLHand, mRHand,bodyPitch,
-		1,1);
-	lua_pushvector(L, r);
-	return 1;
-}
-
-static int calculate_com_pos2(lua_State *L) {
-	std::vector<double> qWaist = lua_checkvector(L, 1);
-	std::vector<double> qLArm = lua_checkvector(L, 2);
-	std::vector<double> qRArm = lua_checkvector(L, 3);
-	std::vector<double> qLLeg = lua_checkvector(L, 4);
-	std::vector<double> qRLeg = lua_checkvector(L, 5);
+	int birdwalk = luaL_optnumber(L, 9,0);
+	int use_lleg = luaL_optnumber(L, 10,1);
+	int use_rleg = luaL_optnumber(L, 11,1);
 	
-	double mLHand = luaL_optnumber(L, 6,0.0);
-	double mRHand = luaL_optnumber(L, 7,0.0);
-	double bodyPitch = luaL_optnumber(L, 8,0.0);
-	int use_lleg = luaL_optnumber(L, 9,0);
-	int use_rleg = luaL_optnumber(L, 10,0);
-
 	std::vector<double> r = THOROP_kinematics_calculate_com_positions(
 		&qWaist[0],&qLArm[0],&qRArm[0],&qLLeg[0],&qRLeg[0],mLHand, mRHand,bodyPitch,
-		use_lleg,use_rleg);
+		use_lleg, use_rleg, birdwalk);
 	lua_pushvector(L, r);
 	return 1;
 }
@@ -529,6 +513,8 @@ static int inverse_legs(lua_State *L) {
 	Transform trRLeg = transform6D(&pRLeg[0]);
 	Transform trTorso = transform6D(&pTorso[0]);
 
+	int birdwalk = luaL_optnumber(L, 6,0);
+
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 
@@ -536,12 +522,12 @@ static int inverse_legs(lua_State *L) {
 //	qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
 
 	if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
-		qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
-		qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
+		qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk);
+		qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk);
 //		printf("Rightt heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
 	}else{
-		qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
-		qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
+		qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk);
+		qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk);
 //		printf("Left heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
 	}
 	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
@@ -671,7 +657,6 @@ static const struct luaL_Reg kinematics_lib [] = {
 
  /* COM calculation */
 	{"calculate_com_pos", calculate_com_pos},
-	{"calculate_com_pos2", calculate_com_pos2},
 	{"calculate_zmp", calculate_zmp},
 	{"collision_check",collision_check},
 	{"collision_check_single",collision_check_single},

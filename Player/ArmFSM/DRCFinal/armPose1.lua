@@ -86,9 +86,6 @@ function state.entry()
   r_cmd_pos = Body.get_rarm_command_position()
   r_cmd_vel=vector.zeros(7)
 
-  mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper3)
-  mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper3)
-
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local trLArm = Body.get_forward_larm(qLArm)

@@ -83,9 +83,9 @@ shared.arm.dpVelRight = vector.zeros(6)
 
 --hand offset X and Y (for hook)
 if Config.arm then
-  shared.arm.handoffset = vector.new(Config.arm.handoffset.gripper)
-  shared.arm.lhandoffset = vector.new(Config.arm.handoffset.gripper)
-  shared.arm.rhandoffset = vector.new(Config.arm.handoffset.gripper)
+  shared.arm.handoffset = vector.zeros(3)
+  shared.arm.lhandoffset = vector.zeros(3)
+  shared.arm.rhandoffset = vector.zeros(3)
 end
 
 

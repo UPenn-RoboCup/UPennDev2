@@ -424,9 +424,10 @@ t0=unix.time()
     qWaist,
     {0,0,0}, --rpy angle
     1,       --is_left: not being used
-    Config.arm.handoffset.gripper3[1],
-    Config.arm.handoffset.gripper3[2],  
-    Config.arm.handoffset.gripper3[3]
+    0,0,0
+--    Config.arm.handoffset.gripper3[1],
+--    Config.arm.handoffset.gripper3[2],  
+--    Config.arm.handoffset.gripper3[3]
     );  --tool xyz
 
 
@@ -568,14 +569,11 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if Config.waist_testing then
 
-  else
+  --if t-t_entry > timeout then return'timeout' end
+  if enable_force_control then forcecontrol(dt) end
+--  jacobian_control(dt)
 
-    --if t-t_entry > timeout then return'timeout' end
-    if enable_force_control then forcecontrol(dt) end
-    jacobian_control(dt)
-  end
   
 end
 

@@ -29,13 +29,13 @@ const double shoulderOffsetZ2 = 0.276; //mk2 value, for reference
 const double shoulderOffsetZ = shoulderOffsetZ2-originOffsetZ; //virtual shoulderoffset, the same as mk1 (0.165)
 const double elbowOffsetX =   .030; 
 
-/*
 const double upperArmLength = .261; //mk2 stock value
 const double lowerArmLength = .252;
-*/
 
+/*
 const double upperArmLength = .246; //mk1 longarm
 const double lowerArmLength = .250; //mk1 longarm
+*/
 
 const double handOffsetX = 0.310; //mk2 value
 const double handOffsetY = 0;
@@ -92,7 +92,7 @@ const double MassBody[2]={
 };
 //torso com: (-0.0042 -0.0007 0.2378), waist com (0 0 0.0579)
 const double bodyCom[2][3]={
-	{-0.0040, -0.0007, 0.2292},	 //combined com for torso and waist
+	{-0.0040, 0, 0.2292},	 //combined com for torso and waist
 	{-0.0212, 0.0002, 0.0032}
 };
 
@@ -119,12 +119,13 @@ const double armLink[7][3]={
 	{0,0,0},//wrist yaw1 to wrist roll
 	{0,0,0}//wrist roll to wrist yaw2
 };
+
 const double rarmLink0[3] = {0,-shoulderOffsetY,shoulderOffsetZ};
 
 //Com position from joint center
 const double armCom[7][3]={
 	{0,0,0},	//after shoulder pitch
-	{0.0,0,0.001},//after shoulder roll
+	{0.0282,0,0.0},//after shoulder roll
 	{0.1808,0,0.0129}, //after shoulder yaw	
 	{0.1239,0,-0.0301},//after elbow pitch
 	{-0.0070,0,0}, //after wrist yaw 1
@@ -184,6 +185,24 @@ const double InertiaLeg[12][6]={
 	{0.00059125,0.00059125,0.00059125,0,0,0},
 	{0.000708125,0.000708125,0.000708125,0,0,0}
 };
+
+
+//MK1 arms
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////

@@ -173,9 +173,9 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
 --Calculate target velocity
   local trArmVelTarget={
     0,0,0,
-    util.procFunc(-trArmDiff[4],0,30*math.pi/180),
-    util.procFunc(-trArmDiff[5],0,30*math.pi/180),
-    util.procFunc(-trArmDiff[6],0,30*math.pi/180),
+    util.procFunc(-trArmDiff[4],0,15*math.pi/180),
+    util.procFunc(-trArmDiff[5],0,15*math.pi/180),
+    util.procFunc(-trArmDiff[6],0,15*math.pi/180),
   }  
   local linear_dist = util.norm(trArmDiff,3)
   local total_angular_vel = 

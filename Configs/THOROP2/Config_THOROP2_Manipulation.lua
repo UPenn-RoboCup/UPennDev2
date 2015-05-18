@@ -40,6 +40,7 @@ arm.plan.dt_step0 = 0.1
 arm.plan.dt_step = 0.2
 arm.plan.dt_step_min = 0.02
 arm.plan.dt_step_min = 0.2 --no speedup
+arm.plan.search_step = 0.25
 
 
 --for SJ's jacobian stuff------------------------------
@@ -47,7 +48,10 @@ arm.plan.dt_step0_jacobian = 0.05
 arm.plan.dt_step_jacobian = 0.1
 arm.plan.dt_step_min_jacobian = 0.02
 arm.plan.scale_limit={0.05,2}
-arm.plan.search_step = 0.25
+
+arm.plan.dt_step0_jacobian = 0.1
+arm.plan.dt_step_jacobian = 0.2
+
 
 -- Arm speed limits
 arm.torso_comp_limit = vector.new({0.02,0.01})
@@ -75,38 +79,6 @@ arm.ShoulderYaw0=vector.new({0.1,-0.1})*DEG_TO_RAD
 --Arm State specific infos
 armfsm = {}
 
----------------------------------------------------------------
-------   Drill pickup
----------------------------------------------------------------
-armfsm.toolgrip = {}
-armfsm.toolgrip.lhand_rpy = {0,0,-45*DEG_TO_RAD}
-armfsm.toolgrip.rhand_rpy = {0,0,45*DEG_TO_RAD}
-
---Conservative initial model (away from target)
-armfsm.toolgrip.default_model = {0.42,-0.06,0.20,  0*DEG_TO_RAD}
-
-armfsm.toolgrip.armpull={
-  {'wrist',nil,{0.42,-0.40,0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.42,-0.40,0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.42,-0.40,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.29,-0.40,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move',nil,{0.25,0.0,-0.20,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-}
-
---0.23 offset = (0.16,0.16) offset
-armfsm.toolgrip.arminit={
-  {'move0',nil,{0.13,-0.56,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move0',nil,{0.30,-0.56,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-}
-
-armfsm.toolgrip.armuninit={
-  {'move0',nil,{0.30,-0.56,0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
-  {'move0',nil,{0.13,-0.56,-0.15,0,0*DEG_TO_RAD, 45*DEG_TO_RAD}},
---  {'move0',nil,arm.trRArm1},
-  {'move0',nil,arm.trRArm0},
-}
-
-
 armfsm.teleop = {}
 
 --FOR DRC TESTBED
@@ -115,24 +87,37 @@ armfsm.teleop = {}
 --Valve center: 1.09 from ground, 0.16 from waist center
 --Hose center: 1.25 from groundm 0.32 from waist center
 
---straight arm
+
 armfsm.teleop.lhand_rpy0={0,0,0}
 armfsm.teleop.rhand_rpy0={0,0,0}
 
+--straight arm, works with mk1 arm
 armfsm.teleop.arminit={
   {'move0',nil,{0.15,-0.25,-0.15,0,0,0}},
   {'move0',nil,{0.23,-0.25,0.24,0,0,0}},
   {'move0',nil,{0.33,-0.15,0.24,0,0,0}},
-
-
---  {'move0',nil,{0.20,-0.15,0.22,0,0,0}},  
---  {'move',nil,{0.40,-0.05, 0.22,0,0,0}},
 }
 armfsm.teleop.armuninit={
-  {'move0',nil,{0.20,-0.15, 0.22  ,0,0,0}},
-  {'move0',nil,{0.20,-0.25,-0.15  ,0,0,0}},
-  {'move0',nil,{0.0,-0.25,-0.25,0,0,0}},
+  {'move0',nil,{0.23,-0.25, 0.24  ,0,0,0}},
+  {'move0',nil,{0.15,-0.25,-0.15  ,0,0,0}},
+  {'move0',nil,{0.0,-0.25, -0.25,0,0,0}},
 }
+
+
+
+--straight arm, works with mk2 stock arm
+armfsm.teleop.arminit={
+  {'move0',nil,{0.15,-0.25,-0.15,0,0,0}},
+  {'move0',nil,{0.25,-0.25,0.24,0,0,0}},
+  {'move0',nil,{0.40,-0.15,0.24,0,0,0}},
+}
+armfsm.teleop.armuninit={
+  {'move0',nil,{0.25,-0.25, 0.24  ,0,0,0}},
+  {'move0',nil,{0.15,-0.25,-0.15  ,0,0,0}},
+  {'move0',nil,{0.0,-0.25, -0.25,0,0,0}},   
+}
+
+
 
 ------------------------------------
 -- Associate with the table

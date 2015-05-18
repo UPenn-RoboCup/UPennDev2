@@ -99,7 +99,7 @@ if HOSTNAME=="teddy2" then
 end
 
 if IS_WEBOTS then
-	Config.birdwalk = 1 --testing birdwalk
+--	Config.birdwalk = 1 --testing birdwalk
 end
 
 

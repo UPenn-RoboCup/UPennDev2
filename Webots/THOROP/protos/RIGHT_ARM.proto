@@ -2,6 +2,7 @@ PROTO RIGHT_ARM [
 field SFVec3f scale 1 1 1
 field SFRotation rotation 1 0 0 0
 field SFVec3f translation 0 0 0
+field SFColor diffuseColor 0.24 0.24 0.24
 ]
 {
 Transform {
@@ -14,7 +15,7 @@ Transform {
                     Shape {
                       appearance Appearance {
                         material Material {
-                          diffuseColor 0.243 0.243 0.243
+                          diffuseColor IS diffuseColor
                           emissiveColor 0.08 0.08 0.08
                           shininess 0.5
                           specularColor 0.1 0.1 0.1

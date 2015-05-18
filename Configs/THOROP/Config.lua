@@ -2,8 +2,8 @@
 Config = {}
 
 
-IS_STEVE = true
---IS_STEVE = false
+--IS_STEVE = true
+IS_STEVE = false
 
 
 -- General parameters
@@ -68,7 +68,8 @@ if IS_STEVE then
 	end
 else
 	--Config.testfile = 'test_balance'
-  Config.testfile = 'test_testbed'
+--  Config.testfile = 'test_testbed'
+    Config.testfile = 'test_teleop2'
 	exo = {
 		'Robot','Walk','Net','Manipulation',
 		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'

@@ -32,6 +32,8 @@ local trLArmGoal,trRArmGoal --temporary variable for jacobian testing
 
 
 
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -84,9 +86,6 @@ function state.entry()
   r_cmd_pos = Body.get_rarm_command_position()
   r_cmd_vel=vector.zeros(7)
 
-  mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper3)
-  mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper3)
-
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local trLArm = Body.get_forward_larm(qLArm)
@@ -138,18 +137,15 @@ count=count+1
     local uTorsoRight= util.pose_relative(uRight,uTorso)
     local leftDist,rightDist =  uTorsoLeft[2],-uTorsoRight[2]
 
-
-
-
 --[[
     
-    local com_legless=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  0,0)
+    local com_legless=Body.Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  Config.birdwalk or 0,0,0)
     print("upper body com offset:",com_legless[1]/com_legless[4])
-    local com_leg=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  1,1)
+    local com_leg=Body.Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  Config.birdwalk or 0,1,1)
     print("whole body com offset:",com_leg[1]/com_leg[4])
 --]]
 
-  local com_whole_body=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  1,1)
+  local com_whole_body=Body.Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  Config.birdwalk or 0,1,1)
   local force_left = (rightDist/(leftDist+rightDist))*com_whole_body[4]*9.81
   local force_right = (leftDist/(leftDist+rightDist))*com_whole_body[4]*9.81
   if force_left<0 then force_left,force_right=0,com_whole_body[4]*9.81 end
@@ -173,9 +169,9 @@ count=count+1
 
   local lleg_torques = Body.Kinematics.calculate_leg_torque(rpy_angle,lleg_pos, 1,lft[1] , lsupport  )
 
-  local com_legless=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  0,0)
+  local com_legless=Body.Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  Config.birdwalk or 0,0,0)
 
---  local com_legless=Body.Kinematics.calculate_com_pos2(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  0,1)  --right leg only
+--  local com_legless=Body.Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,lleg_pos,rleg_pos,0,0,0,  Config.birdwalk or 0, 0,1)  --right leg only
   local com_offset_upperbody={com_legless[1]/com_legless[4],com_legless[2]/com_legless[4],com_legless[3]/com_legless[4]}
 
 
@@ -428,9 +424,10 @@ t0=unix.time()
     qWaist,
     {0,0,0}, --rpy angle
     1,       --is_left: not being used
-    Config.arm.handoffset.gripper3[1],
-    Config.arm.handoffset.gripper3[2],  
-    Config.arm.handoffset.gripper3[3]
+    0,0,0
+--    Config.arm.handoffset.gripper3[1],
+--    Config.arm.handoffset.gripper3[2],  
+--    Config.arm.handoffset.gripper3[3]
     );  --tool xyz
 
 
@@ -572,14 +569,11 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  if Config.waist_testing then
 
-  else
+  --if t-t_entry > timeout then return'timeout' end
+  if enable_force_control then forcecontrol(dt) end
+--  jacobian_control(dt)
 
-    --if t-t_entry > timeout then return'timeout' end
-    if enable_force_control then forcecontrol(dt) end
-    jacobian_control(dt)
-  end
   
 end
 

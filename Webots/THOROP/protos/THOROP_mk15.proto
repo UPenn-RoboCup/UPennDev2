@@ -14,10 +14,9 @@
 # Fixed kinematic params (arm and leg joint pos)
 # Enlarged foot (to match robotis foot size)
 # Fixed robotis chest lidar 
-# old arm IK (temporary, haven't changed masses)
 #############################################
 
-PROTO THOROP_mk2_oldarm [ # Half-masssed model
+PROTO THOROP_mk15 [ # Half-masssed model
   field SFVec3f    translation 0 1.155 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -26,9 +25,9 @@ PROTO THOROP_mk2_oldarm [ # Half-masssed model
 	field SFFloat    lidarFov 3.1415926536
 	field SFInt32    lidarRays 720
 	#SJ - robotis rating is not enough to keep the robot standing
-	field SFFloat    max_torque_400w 90
+	field SFFloat    max_torque_400w 44
 	field SFFloat    max_torque_200w 44
- field SFFloat    max_torque_100w 24 
+  field SFFloat    max_torque_100w 24
 	field SFFloat    damping_constant 0.1  
   # We may want wider FOV for head lidar	
   field SFString   name "THOR-OP"
@@ -142,7 +141,6 @@ Robot {
 										name "PelvYR"
 										maxVelocity 3.15 maxTorque IS max_torque_100w
 										minPosition -2.92343 maxPosition 2.92343
-										maxTorque IS max_torque_100w
 									}
 									jointParameters HingeJointParameters {
 										axis 0 1 0
@@ -223,9 +221,10 @@ Robot {
                 }
 																
 																children [
-																	R_THIGH_mk2{
-																		translation 0.012 0 0.0
+																	R_THIGH{
+																	 translation 0.03 0 0
 																		rotation 0 1 0 3.14159
+																		scale 0.001 0.001 0.001
 																	}
 																	DEF Right_knee_pitch HingeJoint {
 																		device RotationalMotor {
@@ -237,11 +236,11 @@ Robot {
 																		}
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
-																			anchor 0 -0.3 0
+																			anchor 0 -0.3 -0.03
 																			dampingConstant IS damping_constant             
 																		}
 																		endPoint Solid {
-																			translation 0 -0.3 -0.0
+																			translation 0 -0.3 -0.03
 																			boundingObject Transform {
 																				translation 0.012 -0.162 0 #mk2
 																				children [Box {size 0.144 0.29 0.085}]
@@ -255,9 +254,10 @@ Robot {
 																			#################################################################
                                       }
 																			children[
-																				R_LEG_mk2{
-																					translation 0.012 0 0.0
+																				R_LEG{
+																					translation 0.03 0 0.03
 																					rotation 0 1 0 3.14159
+																					scale 0.001 0.001 0.001
 																				}
 																				DEF Right_ankle_pitch HingeJoint {
 																					device RotationalMotor {
@@ -269,11 +269,11 @@ Robot {
 																					} # End of the LegLowerR RotationalMotor
 																					jointParameters HingeJointParameters {
 																						axis 1 0 0
-																						anchor 0 -0.3 0.0
+																						anchor 0 -0.3 0.03
 																						dampingConstant IS damping_constant             
 																					}
 																					endPoint Solid {
-																						translation 0 -0.3 0.0
+																						translation 0 -0.3 0.03
                        contactMaterial IS footContactMaterial
                        #############################################
                        boundingObject Transform {    
@@ -293,7 +293,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootR"
 																									maxVelocity 3.1520646292
-																									maxTorque IS max_torque_200w		
+																									maxTorque IS max_torque_100w		
 																									minPosition -2.92343 maxPosition 2.92343
 																								} # End of the LegLowerR RotationalMotor
 																								jointParameters HingeJointParameters {
@@ -446,11 +446,9 @@ Robot {
 															##############################################################
 																}
 																children [
-																	#L_THIGH{
-																	R_THIGH_mk2{
-																		translation -0.012 0 0.0
-																		#rotation 0 1 0 3.14159
-																		#scale 0.001 0.001 0.001
+																	L_THIGH{ 
+																		translation -0.03 0 0
+																		scale 0.001 0.001 0.001
 																	}
 																	DEF  Left_knee_pitch HingeJoint {
 																		device RotationalMotor {
@@ -461,11 +459,11 @@ Robot {
 																		}
 																		jointParameters HingeJointParameters {
 																			axis 1 0 0
-																			anchor 0 -0.3 0
+																			anchor 0 -0.3 -0.03
 																			dampingConstant IS damping_constant             
 																		}
 																		endPoint Solid {
-																			translation 0 -0.3 -0.0
+																			translation 0 -0.3 -0.03
 																			boundingObject Transform {
 																				translation -0.012 -0.162 0 #mk2
 																				children [Box {size 0.144 0.29 0.085}]
@@ -479,10 +477,9 @@ Robot {
 																			##############################################################
                                       }
 																			children[
-																				#L_LEG{
-																				R_LEG_mk2{
-																					translation -0.012 0 0.0
-																					#rotation 0 1 0 3.14159
+																				L_LEG{ 
+																					translation -0.03 0 0.03
+																					scale 0.001 0.001 0.001
 																				}
 																				DEF Left_ankle_pitch HingeJoint {
 																					device RotationalMotor {
@@ -493,10 +490,10 @@ Robot {
 																					} # End of the LegLowerR RotationalMotor
 																					jointParameters HingeJointParameters {
 																						axis 1 0 0
-																						anchor 0 -0.3 0
+																						anchor 0 -0.3 0.03
 																					} # End of the LegLowerR HingeJointParameters
 																					endPoint Solid {
-																						translation 0 -0.3 0.0
+																						translation 0 -0.3 0.03
 		                    contactMaterial IS footContactMaterial
 																							#########################################
 																						boundingObject Transform {    
@@ -515,7 +512,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootL"
 																									maxVelocity 3.1520646292
-																									maxTorque IS max_torque_200w
+																									maxTorque IS max_torque_100w
 																									minPosition -2.92343 maxPosition 2.92343
 																								}
 																								jointParameters HingeJointParameters {
@@ -545,7 +542,8 @@ Robot {
 	                           contactMaterial IS footContactMaterial    
 	                           boundingObject Transform {
 	                               #Foot height for mk2: 0.100
-	                              translation 0 -0.075 0.00
+	                              #translation 0 -0.093 0.01
+	                              translation 0 -0.075 0.01
 	                               children [
 	                                 Box {size 0.160 0.05 0.260}
 	                               ]
@@ -780,8 +778,8 @@ Robot {
 														#################################################
 	             children [
 			  										RIGHT_ARM{
-			  											translation 0 -0.027 0 #mk1
-			  											#translation 0 -0.042 0 #mk2 
+			  											#translation 0 -0.027 0
+			  											translation 0 -0.042 0 #mk2 
 			  											rotation 0 1 0 3.14159
 			  											scale 0.001 0.001 0.001
 			  										}
@@ -794,14 +792,11 @@ Robot {
 	                }
 	                jointParameters HingeJointParameters {
 	                  axis -1 0 0
-#	                  anchor 0 -0.261 0.030 #default mk2 length
-	                  anchor 0 -0.246 0.030 #mk1 length
-
+	                  anchor 0 -0.261 0.030 #default mk2 length
 	                  dampingConstant IS damping_constant                                                    
 	                }
 	                endPoint Solid {
-	                 #translation 0 -0.261 0.030
-	                 translation 0 -0.246 0.030
+	                 translation 0 -0.261 0.030
 	                 ##############################################################		                    
 	                 boundingObject Transform {
 							      						rotation 1 0 0 0.7854
@@ -825,13 +820,11 @@ Robot {
                     	} 
                     	jointParameters HingeJointParameters {                              
                       axis 0 1 0
-																						#anchor 0 -0.252 -0.03 #default mk2 
-																						anchor 0 -0.250 -0.03 #mk1
+																						anchor 0 -0.252 -0.03 #default mk2 
                       dampingConstant IS damping_constant																			
                      } # End of the RightWristYaw HingeJointParameters
                      endPoint Solid {
-                      #translation 0 -0.252 -0.03
-                      translation 0 -0.250 -0.03
+                      translation 0 -0.252 -0.03
                        ###########################################################
                        	boundingObject Transform {
 				          										translation 0 0.065 0
@@ -1013,8 +1006,8 @@ Robot {
                   ##############################################################
                   children [
 							  										LEFT_ARM {
-							  											translation 0 -0.027 0 #mk1
-							  											#translation 0 -0.042 0 #mk2 
+							  											#translation 0 -0.027 0
+							  											translation 0 -0.042 0 #mk2 
 							  											#rotation 0 1 0 3.14159
 							  											scale 0.001 0.001 0.001
 							  										}									    
@@ -1027,17 +1020,15 @@ Robot {
 	                    }
 	                    jointParameters HingeJointParameters {
 	                      axis 1 0 0
-	                      anchor 0 -0.246 0.030 #mk1
-	                      #anchor 0 -0.261 0.030 #mk2
+	                      #Arm length: default mk2 (261mm)
+	                      anchor 0 -0.261 0.030
 	                      dampingConstant IS damping_constant                          
 	 					          						staticFriction 0                          
 	                    }
 	                    endPoint Solid {
 	                    #############HERE HERE HERE HERE
 	                    #Arm length: default mk2 (261mm)
-	                    		translation 0 -0.246 0.030 #mk1
-	                      #translation 0 -0.261 0.030 #mk2
-
+	                      translation 0 -0.261 0.030
 	                      ##############################################################		                    
 	                      boundingObject Transform {
         							      			rotation 1 0 0 0.7854
@@ -1060,13 +1051,11 @@ Robot {
                           } # End of the LeftWristYaw RotationalMotor
                           jointParameters HingeJointParameters {
                             axis 0 1 0
-                            anchor 0 -0.250 -0.03 #mk1
-																												#anchor 0 -0.252 -0.03 #mk2 default
+																												anchor 0 -0.252 -0.03 #mk2 default
                             dampingConstant IS damping_constant																
                           } # End of the LeftWristYaw HingeJointParameters
                           endPoint Solid {                                
-                          		translation 0 -0.250 -0.03 #mk1
-                            #translation 0 -0.252 -0.03 #mk2                            
+                            translation 0 -0.252 -0.03
 				#############################################################	                                                  
                              boundingObject Transform {
 	          																			translation 0 0.065 0

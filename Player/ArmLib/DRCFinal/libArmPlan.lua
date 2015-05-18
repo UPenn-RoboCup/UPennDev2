@@ -16,6 +16,11 @@ debug_on_2 = false
 debugmsg = true
 
 
+
+
+
+
+
 --print(unpack(Config.arm.iklookup.x))
 
 local function tr_dist(trA,trB)
@@ -386,7 +391,7 @@ local function get_torso_compensation(qLArm,qRArm,qWaist,massL,massR)
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
-    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0)
+    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0,Config.birdwalk or 0)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 

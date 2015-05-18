@@ -127,7 +127,7 @@ local function get_torso_compensation(qLArm,qRArm,qWaist,massL,massR)
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
-    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0)
+    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0,Config.birdwalk or 0)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
@@ -151,13 +151,13 @@ local function reset_torso_comp(self,qLArm,qRArm)
   self:save_boundary_condition({qLArm,qRArm,qLArm,qRArm,{0.0}})
 end
 
-local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_step, linear_vel, debug)  
+local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_step, linear_vel, debug)  
   if not qArm or not trArmTarget then return end
-  local handOffsetY=Config.arm.handoffset.gripper3[2]  --positive Y value is inside
+  local handOffset = Config.arm.handoffset.right
   local trArm
   
   if isLeft ==1 then 
-    handOffsetY=-handOffsetY 
+    handOffset=Config.arm.handoffset.left    
     trArm= Body.get_forward_larm(qArm)
   else
     trArm= Body.get_forward_rarm(qArm)
@@ -166,18 +166,16 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
     qArm,qWaist,
     {0,0,0}, --rpy angle
     isLeft,
-    Config.arm.handoffset.gripper3[1],
-    handOffsetY,
-    Config.arm.handoffset.gripper3[3]
+    handOffset[1],handOffset[2],handOffset[3]
     );  --tool xyz
   local trArmDiff = util.diff_transform(trArmTarget,trArm)  
 
 --Calculate target velocity
   local trArmVelTarget={
     0,0,0,
-    util.procFunc(-trArmDiff[4],0,30*math.pi/180),
-    util.procFunc(-trArmDiff[5],0,30*math.pi/180),
-    util.procFunc(-trArmDiff[6],0,30*math.pi/180),
+    util.procFunc(-trArmDiff[4],0,15*math.pi/180),
+    util.procFunc(-trArmDiff[5],0,15*math.pi/180),
+    util.procFunc(-trArmDiff[6],0,15*math.pi/180),
   }  
   local linear_dist = util.norm(trArmDiff,3)
   local total_angular_vel = 
@@ -232,19 +230,23 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft, qWaist,dt_ste
   local Iinv=torch.inverse(I)  
   I2:addmm(Iinv,JT)   
   qArmVel:addmv(I2,e)
-  local qArmTarget = vector.new(qArm)+vector.new(qArmVel)*dt_step
+
+  local jacobianVelFactor = Config.arm.plan.jacobianVelFactor or 1
+
+  local qArmTarget = vector.new(qArm)+vector.new(qArmVel)*dt_step*jacobianVelFactor
 
   local trArmNext = Body.get_forward_rarm(qArmTarget)
   local trArmDiffActual = util.diff_transform(trArmNext,trArm)
   local linearDistActual = util.norm(trArmDiffActual,3)
   local linearVelActual = linearDistActual/dt_step
 
-  if linearDistActual<0.0001 then
+  if linearVelActual<0.001 then
     print("ARM STUCK!!!!")
     return 
   end
 
-  if debug and isLeft==0 then
+--  if debug and isLeft==0 then
+  if false then
     print(util.print_transform(trArmNext,3).." => "..util.print_transform(trArmTarget,3))
     print(sformat("T dist:%.3f Movement: %.3f vel:T%.3f A:%.3f ( %.1f percent)",
         linear_dist,linearDistActual, linear_vel,
@@ -352,7 +354,7 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
   while not done and not failed  do --we were skipping the last frame
     local t01 = unix.time()    
-    if t01-t00>1 then
+    if t01-t00>3 then
       print("PLANNING TOOK TOO LONG!!!!!")
       return
     end
@@ -366,6 +368,11 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
       local cdistL = tr_dist(init_param[1],trLArm)
       local cdistR = tr_dist(init_param[2],trRArm)
       local velL,velR = movfunc(cdistL,distL),movfunc(cdistR,distR)
+
+
+
+      velL, velR = 0.01,0.01 --constant speed
+
 
       --Waist yaw and pitch
       new_param[3],done3 = util.approachTol(current_param[3],target_param[3],vel_param[3],dt_step )

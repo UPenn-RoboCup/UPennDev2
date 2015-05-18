@@ -28,8 +28,10 @@ walk.maxStepCount = 30
 ------------------------------------
 walk.stanceLimitX = {-0.30,0.30}
 walk.stanceLimitY = {0.16,0.30}
-walk.stanceLimitA = {-10*DEG_TO_RAD,30*DEG_TO_RAD}
-
+walk.stanceLimitA = {-0*DEG_TO_RAD,30*DEG_TO_RAD}
+if Config.birdwalk then
+  walk.stanceLimitA = {-30*DEG_TO_RAD,0*DEG_TO_RAD}
+end
 walk.bodyHeight = 0.93
 walk.footY = 0.095
 walk.footY = 0.105 --mk2, wider

@@ -149,7 +149,7 @@ function state.update()
 
   if math.abs(Rwrist1)>math.pi*1.5 
     or math.abs(Rwrist1)>math.pi*1.5 then
-    print("wrist1 out of range!!!")
+  --  print("wrist1 out of range!!!")
   end
 
   if stage=="wristturn" then --Turn yaw angles first

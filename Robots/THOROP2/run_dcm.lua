@@ -103,8 +103,8 @@ end
 local function step_to_radian(idx, step)
 
 	if not idx then
-	  printf("IDX NULL!!!!!!!!!!!!!!!!!!")
-
+	  print("IDX NULL!!!!!!!!!!!!!!!!!!")
+	  return 0	
 	end
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
@@ -255,7 +255,21 @@ local function parse_read_leg(pkt, bus)
 	if #pkt.parameter ~= leg_packet_sz then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
+
+
+	if not pkt.id then 
+	  print("NO ID!!!!!!!!!!")
+	  return
+	end
+
+
 	local read_j_id = m_to_j[m_id]
+
+if not read_j_id then
+print("ERROR M_ID:",m_id)
+return
+end
+
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, leg_packet_offsets[1]))
 	local read_rad = step_to_radian(read_j_id, read_val)

@@ -16,7 +16,7 @@
 # Fixed robotis chest lidar 
 #############################################
 
-PROTO THOROP_mk15_Fullmass [
+PROTO THOROP_mk15_Fullmass_longarm [
   field SFVec3f    translation 0 1.155 0
   field SFRotation rotation 0 1 0 0
   field SFString   controller "void"
@@ -762,11 +762,14 @@ Robot {
 		            		}
 				#############################################################
                     children [
+                    	EXTENDER {translation 0 -0.08 0}
 									  										RIGHT_ARM{
 									  											#translation 0 -0.027 0
-									  											translation 0 -0.042 0 #mk2 
+									  											#translation 0 -0.042 0 #mk2 
+									  											translation 0 -0.122 0 #mk2 longarm (8cm extension)
 									  											rotation 0 1 0 3.14159
 									  											scale 0.001 0.001 0.001
+									  											diffuseColor 0.9 0.1 0
 									  										}
                       DEF Right_elbow_pitch HingeJoint {
                         device RotationalMotor {
@@ -777,11 +780,13 @@ Robot {
                         }
                         jointParameters HingeJointParameters {
                           axis -1 0 0
-                          anchor 0 -0.261 0.030 #default mk2 length
+                          #anchor 0 -0.261 0.030 #default mk2 length
+                          anchor 0 -0.341 0.030 #8cm extension
                           dampingConstant IS damping_constant                                                    
                         }
                         endPoint Solid {
-                          translation 0 -0.261 0.030
+                          #translation 0 -0.261 0.030
+                          translation 0 -0.341 0.030 #8cm extended
                           ##############################################################		                    
                           boundingObject Transform {
         							      						rotation 1 0 0 0.7854
@@ -794,7 +799,12 @@ Robot {
                           ##############################################################		
                           
                           children [																																									
-																											RIGHT_ELBOW_mk2 {translation 0 -0.115 -0.03}
+                          	EXTENDER {translation 0 -0.04 -0.03}
+																											RIGHT_ELBOW_mk2 {
+																												#translation 0 -0.115 -0.03
+																												translation 0 -0.195 -0.03 #8cm lower
+																												diffuseColor 0.9 0.1 0
+																											}
                            DEF Right_wrist_yaw HingeJoint {
                              device RotationalMotor {
                                name "RightWristYaw"
@@ -803,11 +813,13 @@ Robot {
                              } # End of the RightWristYaw RotationalMotor
                              jointParameters HingeJointParameters {                              
                                axis 0 1 0
-																															anchor 0 -0.252 -0.03 #default mk2 
+																															#anchor 0 -0.252 -0.03 #default mk2 
+																															anchor 0 -0.332 -0.03 #8cm extended
                                dampingConstant IS damping_constant																			
                              } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
-                                translation 0 -0.252 -0.03
+                                #translation 0 -0.252 -0.03
+                                translation 0 -0.332 -0.03
                                 #############################################################	                                                   
 																																boundingObject Transform {
 												          											translation 0 0.065 0
@@ -992,12 +1004,15 @@ Robot {
                   }  
                   ##############################################################
                   children [
-							  										LEFT_ARM {
-							  											#translation 0 -0.027 0
-							  											translation 0 -0.042 0 #mk2 
-							  											#rotation 0 1 0 3.14159
-							  											scale 0.001 0.001 0.001
-							  										}									    
+                  	EXTENDER {translation 0 -0.08 0}
+								  										RIGHT_ARM{
+									  											#translation 0 -0.027 0
+									  											#translation 0 -0.042 0 #mk2 
+									  											translation 0 -0.122 0 #mk2 longarm (8cm extension)
+									  											rotation 0 1 0 3.14159
+									  											scale 0.001 0.001 0.001
+									  											diffuseColor 0.9 0.1 0
+									  										}
 	                  DEF Left_elbow_pitch HingeJoint {
 	                    device RotationalMotor {
 	                      name "ArmLowerL"
@@ -1008,14 +1023,16 @@ Robot {
 	                    jointParameters HingeJointParameters {
 	                      axis 1 0 0
 	                      #Arm length: default mk2 (261mm)
-	                      anchor 0 -0.261 0.030
+	                      #anchor 0 -0.261 0.030
+	                      anchor 0 -0.341 0.030 #8cm extension
 	                      dampingConstant IS damping_constant                          
 	 					          						staticFriction 0                          
 	                    }
 	                    endPoint Solid {
 	                    #############HERE HERE HERE HERE
 	                    #Arm length: default mk2 (261mm)
-	                      translation 0 -0.261 0.030
+	                      #translation 0 -0.261 0.030
+	                      translation 0 -0.341 0.030 #8cm extended
 	                      ##############################################################		                    
 	                      boundingObject Transform {
         							      			rotation 1 0 0 0.7854
@@ -1027,7 +1044,12 @@ Robot {
                        }
                        ##############################################################		
                        children [
-																								RIGHT_ELBOW_mk2 {translation 0 -0.115 -0.03}
+                       	EXTENDER {translation 0 -0.04 -0.03}
+																								RIGHT_ELBOW_mk2 {
+																									#translation 0 -0.115 -0.03
+																									translation 0 -0.195 -0.03 #8cm lower
+																									diffuseColor 0.9 0.1 0
+																								}
                         DEF Left_wrist_yaw HingeJoint {
                           device RotationalMotor {
                             name "LeftWristYaw"
@@ -1036,11 +1058,13 @@ Robot {
                           } # End of the LeftWristYaw RotationalMotor
                           jointParameters HingeJointParameters {
                             axis 0 1 0
-																												anchor 0 -0.252 -0.03 #mk2 default
+																												#anchor 0 -0.252 -0.03 #mk2 default
+																												anchor 0 -0.332 -0.03 #8cm extended
                             dampingConstant IS damping_constant																
                           } # End of the LeftWristYaw HingeJointParameters
                           endPoint Solid {                                
-                            translation 0 -0.252 -0.03
+                            #translation 0 -0.252 -0.03
+                            translation 0 -0.332 -0.03
 				#############################################################	                                                  
                              boundingObject Transform {
 	          																			translation 0 0.065 0
@@ -1048,7 +1072,7 @@ Robot {
         																					}
                              physics Physics {
                              	density -1 
-                             	mass 0.441                                																															
+                             	mass 0.441								
                   												centerOfMass [0.0 0.0070 0] #mk2, arm low and elbow front
                              }
 	##############################################################		                                                    

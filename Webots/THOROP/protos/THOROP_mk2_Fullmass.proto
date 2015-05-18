@@ -766,6 +766,7 @@ Robot {
 									  											translation 0 -0.042 0 #mk2 
 									  											rotation 0 1 0 3.14159
 									  											scale 0.001 0.001 0.001
+									  											diffuseColor 0.8 0.8 0
 									  										}
                       DEF Right_elbow_pitch HingeJoint {
                         device RotationalMotor {
@@ -991,11 +992,12 @@ Robot {
                   }  
                   ##############################################################
                   children [
-							  										LEFT_ARM {
+							  										RIGHT_ARM {
 							  											#translation 0 -0.027 0
 							  											translation 0 -0.042 0 #mk2 
-							  											#rotation 0 1 0 3.14159
+							  											rotation 0 1 0 3.14159
 							  											scale 0.001 0.001 0.001
+							  											diffuseColor 0.8 0.8 0
 							  										}									    
 	                  DEF Left_elbow_pitch HingeJoint {
 	                    device RotationalMotor {

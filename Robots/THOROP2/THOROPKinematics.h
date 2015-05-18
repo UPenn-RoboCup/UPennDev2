@@ -29,12 +29,13 @@ const double shoulderOffsetZ2 = 0.276; //mk2 value, for reference
 const double shoulderOffsetZ = shoulderOffsetZ2-originOffsetZ; //virtual shoulderoffset, the same as mk1 (0.165)
 const double elbowOffsetX =   .030; 
 
-const double upperArmLength = .261; //mk2 stock value
+//const double upperArmLength = .261; //mk2 stock value
+const double upperArmLength = .246; //mk1 longarm 
 const double lowerArmLength = .252;
 
 /*
 const double upperArmLength = .246; //mk1 longarm
-const double lowerArmLength = .250; //mk1 longarm
+const double lowerArmLength = .252; //mk2 longarm (2mm shorter, but we will use the same value for convenience)
 */
 
 const double handOffsetX = 0.310; //mk2 value

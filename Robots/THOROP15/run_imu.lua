@@ -72,10 +72,18 @@ local function do_read()
 
 --  g[0],g[1],g[2]=-g[0],-g[1],-g[2] --roll filpped
 --  e[0],e[1], e[2]= -e[0],e[1],  math.pi - e[2] --yaw is wrong
-  g[0],g[1],g[2]=-g[0],g[1],-g[2] --roll filpped
-  e[0],e[1], e[2]= -e[0],-e[1],  math.pi - e[2] --yaw is wrong
 
-  dg[0]=-dg[0]
+  if Config.birdwalk then
+    g[0],g[1],g[2]=g[0],-g[1],-g[2] 
+    e[0],e[1], e[2]= -e[0],-e[1],  math.pi - e[2] --yaw is wrong
+    dg[0]=-dg[0]
+
+  else
+    g[0],g[1],g[2]=-g[0],g[1],-g[2] --roll filpped
+    e[0],e[1], e[2]= -e[0],-e[1],  math.pi - e[2] --yaw is wrong
+    dg[0]=-dg[0]
+
+  end
 -----------------------------------------------------------------
 
   t_read = get_time()
@@ -165,7 +173,7 @@ while running do
     local gyro = dcm.get_sensor_gyro()
     local mag = dcm.get_sensor_magnetometer()
     local rpy = dcm.get_sensor_rpy()
-		local debug_str = {
+	local debug_str = {
 			sformat('\nIMU | Uptime %.2f sec, Mem: %d kB', t-t0, kb),
 			sformat('Acc (g): %.2f %.2f %.2f', unpack(acc)),
 			sformat('Gyro (rad/s): %.2f %.2f %.2f', unpack(gyro)),

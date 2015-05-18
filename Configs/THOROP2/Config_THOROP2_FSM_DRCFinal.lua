@@ -49,6 +49,9 @@ fsm.Lidar = {
 
 fsm.Head = {
   {'headIdle', 'teleop', 'headTeleop'},
+--  {'headIdle', 'lookaround', 'headLookaround'},
+--  {'headLookaround', 'lookaround', 'headLookaround'},
+--  {'headLookaround', 'idle', 'headIdle'},
 }
 
 fsm.Body = {
@@ -84,13 +87,13 @@ fsm.Arm = {
 --  {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
 --  {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
 
-  {'armToolGrip', 'done', 'armPose1'},
+--  {'armToolGrip', 'done', 'armPose1'},
 --  {'armToolGrip', 'hold', 'armToolHold'},
   {'armTeleop', 'done', 'armPose1'},
 
 
   {'armPose1', 'uninit', 'armUnInit'},
-  {'armToolGrip', 'uninit', 'armUnInit'},
+--  {'armToolGrip', 'uninit', 'armUnInit'},
   {'armTeleop', 'uninit', 'armUnInit'},
 
   {'armUnInit', 'done', 'armIdle'},

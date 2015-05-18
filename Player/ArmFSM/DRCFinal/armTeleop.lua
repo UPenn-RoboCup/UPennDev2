@@ -85,10 +85,6 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-
-  mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper3)
-  mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper3)
-
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
@@ -149,7 +145,7 @@ function state.update()
 
   if math.abs(Rwrist1)>math.pi*1.5 
     or math.abs(Rwrist1)>math.pi*1.5 then
-    print("wrist1 out of range!!!")
+  --  print("wrist1 out of range!!!")
   end
 
   if stage=="wristturn" then --Turn yaw angles first

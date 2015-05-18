@@ -9,20 +9,19 @@ local T = require'Transform'
 
 local function get_armplan(plan)
 	print('Received a plan')
-
 	local lco, rco = movearm.goto(unpack(plan))
-	local lpath, rpath
 	local wpath = {}
+	--
+	local lpath = {}
 	if lco then
-		lpath = {}
 		while coroutine.status(lco)~='dead' do
 			local okL, qLWaypoint, qWaistpoint = coroutine.resume(lco)
 			table.insert(lpath, qLWaypoint)
 			if qWaistpoint then table.insert(wpath, qWaistpoint) end
 		end
 	end
+	local rpath = {}
 	if rco then
-		rpath = {}
 		while coroutine.status(rco)~='dead' do
 			local okR, qRWaypoint, qWaistpoint = coroutine.resume(rco)
 			table.insert(rpath, qRWaypoint)

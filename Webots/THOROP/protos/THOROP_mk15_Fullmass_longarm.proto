@@ -873,7 +873,10 @@ Robot {
 				                                    endPoint Solid {				                                    
 													                            translation 0 -0.0953 0
 						                            							boundingObject Box { size 0.05 0.05 0.05 }
-						                           								physics Physics{density -1 mass 0.474 centerOfMass 0 0.0 0}
+#						                           								physics Physics{density -1 mass 0.474 centerOfMass 0 0.0 0}
+						                           								physics Physics{density -1 mass 3.474 centerOfMass 0 0.0 0}
+
+
 						                           								children[WRIST {
 		        																																	translation 0 0.0253 0
         																																			scale 0.001 0.001 0.001

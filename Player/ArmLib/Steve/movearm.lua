@@ -104,9 +104,9 @@ function movearm.goto(l, r)
 			end
 		end
 
-		local qLArm0 = l.qLArm0 or Body.get_larm_command_position()
-		local qWaist0 = l.qWaist0 or Body.get_waist_command_position()
-		local ok, msg = coroutine.resume(lco, lPlanner, l, qLArm0, qWaist0)
+		l.qArm0 = l.qLArm0 or Body.get_larm_command_position()
+		l.qWaist0 = l.qWaist0 or Body.get_waist_command_position()
+		local ok, msg = coroutine.resume(lco, lPlanner, l)
 		if not ok then
 			print('Error goto l |', msg)
 		end
@@ -124,9 +124,9 @@ function movearm.goto(l, r)
 			end
 		end
 
-		local qRArm0 = r.qRArm0 or Body.get_rarm_command_position()
-		local qWaist0 = r.qWaist0 or Body.get_waist_command_position()
-		local ok, msg = coroutine.resume(rco, rPlanner, r, qRArm0, qWaist0)
+		r.qArm0 = r.qRArm0 or Body.get_rarm_command_position()
+		r.qWaist0 = r.qWaist0 or Body.get_waist_command_position()
+		local ok, msg = coroutine.resume(rco, rPlanner, r)
 		if not ok then
 			print('Error goto r |', msg)
 		end

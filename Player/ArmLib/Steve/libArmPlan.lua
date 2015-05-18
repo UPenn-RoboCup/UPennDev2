@@ -195,23 +195,20 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	return iqArms[ibest], fks[ibest]
 end
 
-function libArmPlan.joint_preplan(self, plan, qArm0, qWaist0)
+function libArmPlan.joint_preplan(self, plan)
 	assert(type(plan)=='table', 'joint_preplan | Bad plan')
 	local timeout = assert(plan.timeout, 'joint_preplan | No timeout')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
+	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
+
 	local weights = plan.weights
 	local qArmF = plan.q
 	if plan.tr then
 		qArmF = self:find_shoulder(plan.tr, qArm0, weights)
 	end
-	assert(qArmF, 'joint_preplan | No target shoulder solution')
-	local duration = plan.duration
-	local hz, dt = self.hz, self.dt
-	local dq_limit = self.dq_limit
+	assert(type(qArmF), 'joint_preplan | No target shoulder solution')
 	local qMin, qMax = self.qMin, self.qMax
-	assert(type(qArmF)=='table', 'joint_preplan | Bad qGoal table')
-	assert(#qArmF==self.nq, 'joint_preplan | Improper qGoal size')
-	assert(type(qArm0)=='table', 'joint_preplan | Bad qArm table')
-	assert(#qArm0==self.nq, 'joint_preplan | Improper qArm size')
 	-- Check joint limit compliance
 	for i, q in ipairs(qArmF) do
 		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
@@ -221,13 +218,13 @@ function libArmPlan.joint_preplan(self, plan, qArm0, qWaist0)
 				string.format('joint_preplan | Above qMin[%d] %g > %g', i, q, qMax[i]))
 		end
 	end
-
 	-- Set the timeout
-	assert(type(timeout)=='number', "joint_preplan | Improper timeout: "..type(timeout))
+	local hz, dt = self.hz, self.dt
+	local dq_limit = self.dq_limit
 	local nStepsTimeout = timeout * hz
-
 	-- If given a duration, then check speed limit compliance
 	local dqAverage
+	local duration = plan.duration
 	if type(duration)=='number' then
 		print('Using duration')
 		assert(timeout>=duration,
@@ -243,6 +240,7 @@ function libArmPlan.joint_preplan(self, plan, qArm0, qWaist0)
 	end
 
 	local path = {}
+	local qArmSensed, qWaistSensed
 	local qArm = vector.new(qArm0)
 	n = 0
 	repeat
@@ -263,43 +261,27 @@ function libArmPlan.joint_preplan(self, plan, qArm0, qWaist0)
 			end
 			if rescale then
 				local max_usage2 = max(unpack(usage))
-				--print('Rescaling 2!', max_usage2)
-				for i, qF in ipairs(dqArmF) do
-					dqArmF[i] = qF / max_usage2
-				end
+				for i, qF in ipairs(dqArmF) do dqArmF[i] = qF / max_usage2 end
 			end
 			dqUsed = dqArmF
 		end
 		-- Apply the joint change
 		qArm = qArm + dqUsed
-		--print(qArm, dqUsed)
 		table.insert(path, qArm)
-
-		--print('final dist', dist*RAD_TO_DEG)
 		if (not dqAverage) and (dist < 0.5*DEG_TO_RAD) then break end
 	until n > nStepsTimeout
-
 
 	print(n, 'joint_preplan steps')
 	assert(dqAverage or (n <= nStepsTimeout),
 		'joint_preplan | Timeout: '..nStepsTimeout)
 
 	-- Start the sensing
-	local qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
-	qArmSensed = qArmSensed or qArm0
-	qWaistSensed = qWaistSensed or qWaist0
+	qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
 	-- Progress is different, now, since in joint space
 	for i, qArmPlanned in ipairs(path) do
 		local qArmSensedNew, qWaistSensedNew = coroutine.yield(qArmPlanned)
 		qArmSensed = qArmSensedNew or qArmSensed
 		qWaistSensed = qWaistSensedNew or qWaistSensed
-		-- Check the lage
-		local dqLag = qArm - qArmSensed
-		local imax_lag, max_lag = 0, 0
-		for i, dq in ipairs(dqLag) do
-			--local lag = fabs(dq-dqUsed[i])
-			--assert(lag<3*DEG_TO_RAD, 'joint_preplan2 | Bad Final Lag: '..tostring(lag))
-		end
 	end
 	return qArmF
 end
@@ -307,9 +289,10 @@ end
 -- Plan a direct path using a straight line via Jacobian
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
-function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
-	assert(type(qArm0)=='table', 'jacobian_preplan | Bad qArm0')
+function libArmPlan.jacobian_preplan(self, plan)
 	assert(type(plan)=='table', 'jacobian_preplan | Bad plan')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
 	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
 	local trGoal = plan.tr or self.forward(plan.q)
 	local timeout = assert(plan.timeout, 'jacobian_preplan | No timeout')
@@ -461,15 +444,14 @@ function libArmPlan.jacobian_preplan(self, plan, qArm0, qWaist0)
 	return qArmF
 end
 
-function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
-	assert(qArm0)
-	assert(qWaist0)
-	local timeout = assert(plan.timeout,
-		'jacobian_waist_preplan | No timeout')
+function libArmPlan.jacobian_waist_preplan(self, plan)
 	assert(type(plan)=='table', 'jacobian_waist_preplan | Bad plan')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
 	assert(plan.tr or plan.q, 'jacobian_waist_preplan | Need tr or q')
 	local trGoal = plan.tr or self.forward(plan.q)
-
+	local timeout = assert(plan.timeout,
+		'jacobian_waist_preplan | No timeout')
 	local weights = plan.weights or {1,0,0}
 
 	local hz, dt = self.hz, self.dt
@@ -678,12 +660,14 @@ function libArmPlan.jacobian_waist_preplan(self, plan, qArm0, qWaist0)
 end
 
 -- resume with: qArmSensed, vwTargetNew, weightsNew
-function libArmPlan.jacobian_velocity(self, plan, qArm0, qWaist0)
+function libArmPlan.jacobian_velocity(self, plan)
 	assert(type(plan)=='table',
 		'jacobian_velocity | Bad plan')
 	local vwTarget = plan.vw
 	assert(type(vwTarget)=='table' and #vwTarget==6,
 		'jacobian_velocity | Bad vw')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
 
 	local weights = plan.weights
 	local hz, dt = self.hz, self.dt
@@ -779,12 +763,14 @@ function libArmPlan.jacobian_velocity(self, plan, qArm0, qWaist0)
 end
 
 -- resume with: qArmSensed, vwTargetNew, weightsNew
-function libArmPlan.jacobian_waist_velocity(self, plan, qArm0, qWaist0)
+function libArmPlan.jacobian_waist_velocity(self, plan)
 	assert(type(plan)=='table',
 		'jacobian_velocity | Bad plan')
 	local vwTarget = plan.vw
 	assert(type(vwTarget)=='table' and #vwTarget==6,
 		'jacobian_velocity | Bad vw')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
 
 	local forward = self.forward
 	local weights = plan.weights

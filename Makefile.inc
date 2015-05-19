@@ -22,7 +22,7 @@ INCLUDES=-I/usr/include -I/usr/local/include
 #LUA_INC=$(pkg-config --cflags-only-I lua5.1)
 # LuaJIT 2.1
 #LUA_INC=$(pkg-config --cflags-only-I luajit)
-LUA_INC=-I/usr/include/luajit-2.0
+LUA_INC=-I/usr/include/luajit-2.0 -I/usr/local/include/luajit-2.1
 INCLUDES+=$(LUA_INC)
 
 # OS Specific overrides

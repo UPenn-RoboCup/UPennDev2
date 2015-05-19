@@ -15,9 +15,8 @@ transfer_pool.o \
 usb_control.o \
 libfreenect2.o \
 rgb_packet_processor.o \
-cpu_depth_packet_processor.o
-
-#tinythread.o
+cpu_depth_packet_processor.o \
+tinythread.o
 
 #EXTRA_OBJ+=turbo_jpeg_rgb_packet_processor.o
 

@@ -176,6 +176,7 @@ end
 local freenect2 = require'freenect2'
 
 local function entry()
+print('init...')
 	local serial_number, firmware_version = freenect2.init()
 	print("serial_number, firmware_version:", serial_number, firmware_version)
 	if has_detection then detection.entry() end

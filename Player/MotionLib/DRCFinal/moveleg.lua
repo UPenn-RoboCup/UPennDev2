@@ -476,6 +476,10 @@ end
   qLegs[12]=qLegs[12]+aShiftX[2]
 
 
+print(string.format("AP: %.1f %.1f",qLegs[5]*180/math.pi,qLegs[11]*180/math.pi))
+
+
+
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))
 

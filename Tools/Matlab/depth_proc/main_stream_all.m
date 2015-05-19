@@ -48,10 +48,10 @@ while 1
 %                 disp('Bad k2_depth metadata!');
 %             else
                 
-               % raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
+                raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
                % uisetting; % See uisetting.m                
                % res = depth_proc(raw, metadata, ui);
-               % figure(1), imagesc(raw');            
+                figure(1), imagesc(raw');            
              % end
         elseif strcmp(char(metadata.id), 'k2_rgb') %%%%%%%%%%%%%%%%%%%%%%%%% RGB
             % rgb_img = djpeg(raw);

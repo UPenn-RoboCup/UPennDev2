@@ -207,7 +207,7 @@ function libArmPlan.joint_preplan(self, plan)
 	if plan.tr then
 		qArmF = self:find_shoulder(plan.tr, qArm0, weights)
 	end
-	assert(type(qArmF), 'joint_preplan | No target shoulder solution')
+	assert(type(qArmF)=='table', 'joint_preplan | No target shoulder solution')
 	local qMin, qMax = self.qMin, self.qMax
 	-- Check joint limit compliance
 	for i, q in ipairs(qArmF) do

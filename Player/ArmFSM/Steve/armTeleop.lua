@@ -30,8 +30,19 @@ function state.entry()
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
 	local qcWaist = Body.get_waist_command_position()
-	quatpL = toQ(movearm.lPlanner.forward(qcLArm, qcWaist))
-	quatpR = toQ(movearm.rPlanner.forward(qcRArm, qcWaist))
+	local trL = movearm.lPlanner.forward(qcLArm, qcWaist)
+	local trR = movearm.rPlanner.forward(qcRArm, qcWaist)
+	print('debugL')
+	print(require'Transform'.tostring(trL))
+	print()
+	--print(require'Transform'.tostring(trLnohand))
+	print('debugR')
+	print(require'Transform'.tostring(trR))
+	print()
+	--print(require'Transform'.tostring(trRnohand))
+	local trR = movearm.rPlanner.forward(qcRArm, qcWaist)
+	quatpL = toQ(trL)
+	quatpR = toQ(trR)
 	hcm.set_teleop_tflarm(quatpL)
 	hcm.set_teleop_tfrarm(quatpR)
 	-- TODO: Find the appropriate weights from the position we are in...
@@ -39,12 +50,12 @@ function state.entry()
 	hcm.set_teleop_rweights(default_weights)
 	
 	local configL = {
-		q=qcLArm, timeout=5,
-		via='joint_preplan', weights = default_weights
+		tr = trL, timeout=5,
+		via='jacobian_preplan', weights = default_weights
 	}
 	local configR = {
-		tr=qcRArm, timeout=5,
-		via='joint_preplan', weights = default_weights
+		tr=trR, timeout=5,
+		via='jacobian_preplan', weights = default_weights
 	}
 
 	lco, rco, uComp = movearm.goto(configL, configR)
@@ -66,7 +77,7 @@ function state.update()
 	local quatpR1 = hcm.get_teleop_tfrarm()
 	if quatpL1~=quatpL then
 		print(state._NAME,'L target')
-		local tfL = fromQ(qL)
+		local tfL = fromQ(quatpL1)
 		print(tfL)
 		local lco1, rco1 = movearm.goto({
 			tr = tfL, timeout = 5, via='jacobian_preplan'
@@ -76,7 +87,7 @@ function state.update()
 	end
 	if quatpR1~=quatpR then
 		print(state._NAME,'R target')
-		local tfR = fromQ(qR)
+		local tfR = fromQ(quatpR1)
 		print(tfR)
 		local lco1, rco1 = movearm.goto(false, {
 			tr = tfR, timeout = 5, via='jacobian_preplan'

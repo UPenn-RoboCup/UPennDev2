@@ -103,7 +103,7 @@ fsm.Arm = {
 	{'armIdle', 'timeout', 'armIdle'},
 	{'armIdle', 'init', 'armInit'},
 	-- Init
-	{'armInit', 'timeout', 'armInit'},
+	--{'armInit', 'timeout', 'armInit'},
 	--{'armInit', 'done', 'armInit'},
 	{'armInit', 'ready', 'armReady'},
 	{'armInit', 'teleopraw', 'armTeleopRaw'},

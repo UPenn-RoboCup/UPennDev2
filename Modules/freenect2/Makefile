@@ -25,7 +25,7 @@ ifdef USE_OPENCL
 EXTRA_OBJ+=opencl_depth_packet_processor.o
 endif
 
-#opengl.o
+#flextGL.o
 #opengl_depth_packet_processor.o
 #generate_resources.o \
 #test_opengl_depth_packet_processor.o
@@ -45,15 +45,12 @@ LDFLAGS+=-lusb-1.0
 #LDFLAGS+=-lturbojpeg
 
 ifdef USE_OPENCL
-INCLUDES+=-DGLEW_MX -DGLEW_STATIC -DUSE_OPENCL -DLIBFREENECT2_WITH_OPENCL_SUPPORT
-LDFLAGS+=-lglfw -lGLEW -lGLEWmx
+INCLUDES+=-DLIBFREENECT2_WITH_OPENCL_SUPPORT
 endif
 
-ifeq ($(shell uname),Darwin)
+ifeq ($(shell uname), Darwin)
 
 INCLUDES+=`pkg-config libusb-1.0 --cflags`
-
-#INCLUDES+=-I/usr/local/Cellar/jpeg-turbo/1.3.1/include -I/usr/local/opt/jpeg-turbo/include
 
 ifdef USE_OPENCL
 EXTRA_LINK+=-framework OpenCL
@@ -62,10 +59,6 @@ endif
 
 else
 
-# Use: https://github.com/wiedemeyer/libfreenect2
-#LIBFREENECT2_DIR=/home/thor/Desktop/libfreenect2-cl
-#INCLUDES+=-I$(LIBFREENECT2_DIR)/depends/libusb/include/libusb-1.0
-#EXTRA_LINK+=-L$(LIBFREENECT2_DIR)/depends/libusb/lib
 INCLUDES+=`pkg-config libusb-1.0 --cflags`
 EXTRA_LINK+=`pkg-config libusb-1.0 --libs`
 ifdef USE_OPENCL

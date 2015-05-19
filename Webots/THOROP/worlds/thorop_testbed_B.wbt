@@ -40,9 +40,9 @@ DirectionalLight {
   intensity 0.5
 }
 
-DEF ALVIN THOROP_UPENN {
-#DEF ALVIN THOROP_mk2_Fullmass {
-  translation -1 1.17 10
+#DEF ALVIN THOROP_UPENN {
+DEF ALVIN THOROP_mk2_oldarm {
+  translation -1.92 1.17 10.5
   rotation 0 1 0 -1.57
   controller "thorop"
   controllerArgs "0 32"

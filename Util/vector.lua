@@ -51,10 +51,12 @@ function vector.slice(v1, istart, iend)
   return setmetatable(v, mt)
 end
 
+local sqrt = require'math'.sqrt
+local pow = require'math'.pow
 function vector.norm(v1)
   local s = 0
-  for i = 1, #v1 do s = s + v1[i] * v1[i] end
-  return math.sqrt(s)
+  for i = 1, #v1 do s = s + pow(v1[i], 2) end
+  return sqrt(s)
 end
 
 function vector.sum(v1)
@@ -110,7 +112,8 @@ local function unm(v1)
   return mulnum(v1, -1)
 end
 
-local function eq(v1,v2)
+local function eq(v1, v2)
+	if #v1~=#v2 then return false end
   for i,v in ipairs(v1) do
     if v~=v2[i] then return false end
   end

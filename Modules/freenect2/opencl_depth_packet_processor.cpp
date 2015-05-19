@@ -250,7 +250,7 @@ public:
     {
       cl::Device &dev = devices[i];
       std::string devName, devVendor, devType;
-      size_t devTypeID;
+      cl_device_type devTypeID;
       dev.getInfo(CL_DEVICE_NAME, &devName);
       dev.getInfo(CL_DEVICE_VENDOR, &devVendor);
       dev.getInfo(CL_DEVICE_TYPE, &devTypeID);
@@ -291,7 +291,7 @@ public:
     for(size_t i = 0; i < devices.size(); ++i)
     {
       cl::Device &dev = devices[i];
-      size_t devTypeID;
+      cl_device_type devTypeID;
       dev.getInfo(CL_DEVICE_TYPE, &devTypeID);
 
       if(!selected || (selectedType != CL_DEVICE_TYPE_GPU && devTypeID == CL_DEVICE_TYPE_GPU))
@@ -332,7 +332,7 @@ public:
       if(selectDevice(devices, deviceId))
       {
         std::string devName, devVendor, devType;
-        size_t devTypeID;
+        cl_device_type devTypeID;
         device.getInfo(CL_DEVICE_NAME, &devName);
         device.getInfo(CL_DEVICE_VENDOR, &devVendor);
         device.getInfo(CL_DEVICE_TYPE, &devTypeID);

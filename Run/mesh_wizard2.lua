@@ -5,17 +5,17 @@ local ENABLE_LOG = false
 -- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
 dofile'../include.lua'
 local libMesh = require'libMesh'
-local torch = require'torch'
 local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
-local vector = require'vector'
 local Body = require'Body'
 require'vcm'
 require'hcm'
 
-local mesh_ch, mesh_udp_ch
-local t_send_mesh = -math.huge
+local mesh0_udp_ch, mesh1_udp_ch
+local mesh0_ch, mesh1_ch
+local t_send_mesh0 = -math.huge
+local t_send_mesh1 = -math.huge
 local libLog, logger
 local mesh0, mesh1
 local mag_sweep0, t_sweep0, ranges_fov0
@@ -28,16 +28,12 @@ local function check_send_mesh()
 	local t_open
 	if n_open==1 then
 		t_open = hcm.get_network_topen()
-		if t_open - t_send_mesh > 0.5 then request = true end
+		if t_open - t_send_mesh > 0.5 then
+			request = true
+		end
 	end
-
-	if mesh0 and t-t_send_mesh>t_sweep0 then request = true end
-	if mesh1 and t-t_send_mesh>t_sweep1 then request = true end
-	
-	if not request then return end
-	t_send_mesh = t
-
-	if mesh0 then
+	if mesh0 and (t-t_send_mesh0>t_sweep0 or request) then
+		t_send_mesh0 = t
 		local metadata = mesh0.metadata
 		metadata.t = t
 
@@ -57,22 +53,30 @@ local function check_send_mesh()
 			local ret, err = mesh0_udp_ch:send(meta..c_mesh)
 			--print('Mesh0 | Sent UDP', unpack(ret))
 		end
+		io.write('Mesh0 | Sending\n')
 	end
 
-	if mesh1 then
+	if mesh1 and (t-t_send_mesh1>t_sweep1 or request) then
+		t_send_mesh1 = t
+		local metadata = mesh1.metadata
 		metadata.t = t
 		mesh1:dynamic_range(vcm.get_mesh1_dynrange())
 		local c_mesh = mesh1:get_png_string2()
-		local metadata = mesh1.metadata
-		metadata.c = 'png'
+		
 		-- Send away
-		local meta = mpack(metadata)
-		if mesh1_ch then mesh1_ch:send{meta, c_mesh} end
+		if mesh1_ch then
+			metadata.c = 'raw'
+			mesh1_ch:send{mpack(metadata), mesh1:get_raw_string()}
+			--metadata.c = 'png'
+			--mesh1_ch:send{mpack(metadata), c_mesh}
+		end
 		if mesh1_udp_ch then
+			metadata.c = 'png'
+			local meta = mpack(metadata)
 			local ret, err = mesh1_udp_ch:send(meta..c_mesh)
 			--print('Mesh1 | Sent UDP', unpack(ret))
 		end
-		print('Mesh1 | Sent', #meta, #c_mesh)
+		print('Mesh1')
 	end
 
 	-- Log
@@ -106,6 +110,8 @@ local function entry()
 	local stream1 = Config.net.streams.mesh1
 	local operator = Config.net.use_wireless and Config.net.operator.wireless or Config.net.operator.wired
 	mesh0_udp_ch = stream0.udp and si.new_sender(operator, stream0.udp)
+require'util'.ptable(stream0)
+print('operator', operator, stream0.udp)
 	mesh0_ch = stream0.sub and si.new_publisher(stream0.sub)
 	mesh1_udp_ch = stream1.udp and si.new_sender(operator, stream1.udp)
 	mesh1_ch = stream1.sub and si.new_publisher(stream1.sub)
@@ -118,6 +124,7 @@ end
 
 
 local function update(meta, ranges)
+--require'util'.ptable(meta)
 	-- Check shared parameters
 	if meta.id=='lidar0' then
 		local mag_sweep, t_sweep = unpack(vcm.get_mesh0_sweep())
@@ -171,9 +178,16 @@ local function update(meta, ranges)
 
 end
 
+local function exit()
+if ENABLE_LOG then
+	logger0:stop()
+	logger1:stop()
+end
+end
+
 -- If required from Webots, return the table
 if ... and type(...)=='string' then
-	return {entry=entry, update=update, exit=nil}
+	return {entry=entry, update=update, exit=exit}
 end
 
 local poller
@@ -189,7 +203,7 @@ local lidar1_ch = si.new_subscriber'lidar1'
 
 lidar0_ch.callback = cb
 lidar1_ch.callback = cb
-poller = si.wait_on_channels({lidar_ch})
+poller = si.wait_on_channels({lidar0_ch, lidar1_ch})
 
 -- Cleanly exit on Ctrl-C
 local signal = require'signal'.signal
@@ -201,9 +215,6 @@ end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
+entry()
 poller:start()
-
-if ENABLE_LOG then
-	logger0:stop()
-	logger1:stop()
-end
+exit()

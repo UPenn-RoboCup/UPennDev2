@@ -2,11 +2,8 @@
 -- (c) 2014 Stephen McGill
 -- Plan a path with the arm
 local libArmPlan = {}
-local util = require'util'
 local procFunc = require'util'.procFunc
 local mod_angle = require'util'.mod_angle
-local clamp_vector = require'util'.clamp_vector
-local umin = require'util'.min
 local vector = require'vector'
 local vnorm = require'vector'.norm
 local q = require'quaternion'
@@ -16,6 +13,7 @@ local tinsert = require'table'.insert
 local fabs = require'math'.abs
 local min, max = require'math'.min, require'math'.max
 local INFINITY = require'math'.huge
+local EPSILON = 1e-3 * DEG_TO_RAD
 
 local function qDiff(iq, q0)
 	local diff_use = {}
@@ -28,53 +26,73 @@ local function qDiff(iq, q0)
 	return diff_use
 end
 
--- No dt needed
 local function sanitize0(iqArm, cur_qArm)
-	local diff, mod_diff
-	for i, v in ipairs(cur_qArm) do
-		diff = iqArm[i] - v
-		mod_diff = mod_angle(diff)
-    iqArm[i] = (fabs(diff) > fabs(mod_diff)) and v + mod_diff or iqArm[i]
-	end
-	return diff_use
-end
-
--- Requires dt
-local function sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
 	local diff_use = {}
-	local diff0, mod_diff, diff
+	local mod_diff
 	for i, v in ipairs(cur_qArm) do
-		diff0 = iqWaypoint[i] - v
-		mod_diff = mod_angle(diff0)
-		-- Use the smaller diff
-		diff = fabs(diff0) > fabs(mod_diff) and mod_diff or diff0
-		diff_use[i] = procFunc(diff, 0, dqdt_limit[i] * dt)
-		iqWaypoint[i] = v + diff_use[i]
-	end
-	return diff_use
-end
-
-local mt = {
-	__call = function(t, q, dt)
-		local next = t[#t]
-		if not next then return end
-		if t.done_wp then
-			t.done_wp = false
-			local dist, wp = unpack(tremove(t))
-			return dist, wp
-		else
-			local dist, wp = unpack(next)
-			local blend_wp = vector.copy(wp)
-			local diff_use = sanitize(blend_wp, q, dt, t.dqdt_limit)
-			t.done_wp = vector.norm(diff_use) < 0.001
-			return dist, t.done_wp and sanitize0(wp, q) or blend_wp
+		diff_use[i] = iqArm[i] - v
+		mod_diff = mod_angle(diff_use[i])
+		if fabs(diff_use[i]) > fabs(mod_diff) then
+			iqArm[i] = v + mod_diff
+			diff_use[i] = mod_diff
 		end
 	end
-}
+	return diff_use
+end
+
+-- Use the Jacobian
+local speed_eps = 0.1 * 0.1
+local c, p = 2, 10
+local torch = require'torch'
+local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
+	-- Penalty for joint limits
+	local qMin, qMax, qRange =
+		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
+
+	assert(type(qArm)=='table', 'get_delta_qwaistarm | Bad qArm')
+	assert(type(vwTarget)=='table', 'get_delta_qwaistarm | Bad vwTarget')
+
+	local qWaistArm = {unpack(qArm)}
+	if qWaist then
+		table.insert(qWaistArm, 1, qWaist[1])
+		table.insert(qMin, 1, -math.pi)
+		table.insert(qMax, 1, math.pi)
+		table.insert(qRange, 1, 2*math.pi)
+	end
+
+	local l = {}
+	for i, q in ipairs(qWaistArm) do
+    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
+  end
+	-- Calculate the pseudo inverse
+	--print('self.jacobian', qArm, qWaist)
+	local J = torch.Tensor(self.jacobian(qArm, qWaist))
+	local JT = J:t():clone()
+	local lambda = torch.Tensor(l)
+	local invInner = torch.inverse(torch.diag(lambda):addmm(JT, J))
+	--print('invInner', invInner)
+	local Jpseudoinv = torch.mm(invInner, JT)
+	--print('Jpseudoinv', Jpseudoinv)
+	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
+	local null = torch.eye(#l) - Jpseudoinv * J
+	return dqArm, null
+end
+
+local function get_distance(self, trGoal, qArm, qWaist)
+	-- Grab our relative transform from here to the goal
+	local fkArm = self.forward(qArm, qWaist)
+	local invArm = T.inv(fkArm)
+	local here = invArm * trGoal
+	-- Determine the position and angular velocity target
+	local dp = T.position(here)
+	local drpy = T.to_rpy(here)
+	local components = {vnorm(dp), vnorm(drpy)}
+	return dp, drpy, components
+end
 
 -- Similar to SJ's method for the margin
 local function find_shoulder_sj(self, tr, qArm)
-	local minArm, maxArm, rangeArm = self.min_q, self.max_q, self.range_q
+	local minArm, maxArm, rangeArm = self.qMin, self.qMax, self.qRange
 	local invArm = self.inverse
 	local iqArm, margin, qBest
 	local dMin, dMax
@@ -87,14 +105,11 @@ local function find_shoulder_sj(self, tr, qArm)
 		dMax = iqArm - maxArm
 		margin = INFINITY
 		for _, v in ipairs(dMin) do
-			if iq~=5 and iq~=7 then -- don't worry about the yaw ones
-				margin = min(fabs(v), margin)
-			end
+			-- don't worry about the yaw ones
+			if iq~=5 and iq~=7 then margin = min(fabs(v), margin) end
 		end
 		for _, v in ipairs(dMax) do
-			if iq~=5 and iq~=7 then
-				margin = min(fabs(v), margin)
-			end
+			if iq~=5 and iq~=7 then margin = min(fabs(v), margin) end
 		end
 		if margin > maxmargin then
 			maxmargin = margin
@@ -104,34 +119,45 @@ local function find_shoulder_sj(self, tr, qArm)
 	return qBest
 end
 
+local IK_POS_ERROR_THRESH = 0.0254
+-- Weights: cusage, cdiff, ctight
+local defaultWeights = {1, 0, 0}
 local function valid_cost(iq, minArm, maxArm)
-	for i, q in ipairs(iq) do if q<minArm[i] or q>maxArm[i] then return INFINITY end end
+	for i, q in ipairs(iq) do
+		if q<minArm[i] or q>maxArm[i] then return INFINITY end
+	end
 	return 0
 end
-local IK_POS_ERROR_THRESH = 0.035
---local defaultWeights = {1,1,0}
-local defaultWeights = {0,1,0}
-local function find_shoulder(self, tr, qArm, weights)
+-- TODO: Fix the find_shoulder api
+local function find_shoulder(self, tr, qArm, weights, qWaist)
 	weights = weights or defaultWeights
 	-- Form the inverses
+
 	local iqArms = {}
-	for _, q in ipairs(self.shoulderAngles) do
-		--tinsert(iqArms, sanitize(self.inverse(tr, qArm, q), qArm))
-		tinsert(iqArms, self.inverse(tr, qArm, q))
+	for i, q in ipairs(self.shoulderAngles) do
+		local iq = self.inverse(tr, qArm, q, 0, qWaist)
+		local du = sanitize0(iq, qArm)
+		tinsert(iqArms, iq)
 	end
 	-- Form the FKs
 	local fks = {}
-	for ic, iq in ipairs(iqArms) do fks[ic] = self.forward(iq) end
+	for ic, iq in ipairs(iqArms) do
+		fks[ic] = self.forward(iq, qWaist)
+	end
 	--
-	local minArm, maxArm = self.min_q, self.max_q
-	local rangeArm, halfway = self.range_q, self.halves
+	local minArm, maxArm = self.qMin, self.qMax
+	local rangeArm, halfway = self.qRange, self.halves
 	-- Cost for valid configurations
 	local cvalid = {}
 	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, minArm, maxArm) ) end
 	-- FK sanity check
+	local dps = {}
+	local p_tr = vector.new(T.position(tr))
+	for i, fk in ipairs(fks) do dps[i] = p_tr - T.position(fk) end
 	local cfk = {}
-	for ic, fk in ipairs(fks) do
-		tinsert(cfk, vnorm(T.position(tr) - T.position(fk))<IK_POS_ERROR_THRESH and 0 or INFINITY)
+	for ic, dp in ipairs(dps) do
+		local ndp = vnorm(dp) -- NOTE: cost not in joint space
+		tinsert(cfk, ndp<IK_POS_ERROR_THRESH and ndp or INFINITY)
 	end
 	-- Minimum Difference in angles
 	local cdiff = {}
@@ -160,308 +186,736 @@ local function find_shoulder(self, tr, qArm, weights)
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
 		tinsert(cost, valid + cfk[ic]
-			+ weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic]
-		)
+			+ weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic])
 	end
 	-- Find the smallest cost
-	local cmin, imin = umin(cost)
-	-- Yield the least cost arms
-	return iqArms[imin]
+	local ibest, cbest = 0, INFINITY
+	for i, c in ipairs(cost) do if c<cbest then cbest = c; ibest = i end end
+	-- Return the least cost arms
+	return iqArms[ibest], fks[ibest]
 end
 
--- TODO List for the planner
--- TODO: Check some metric of feasibility
--- TODO: Check the FK of the goal so that we are not in the ground, etc.
--- TODO: Check if we must pass through the x,y=0,0
--- to change the orientation through the singularity
--- TODO: Handle goal of transform or just position
--- Just position disables orientation checking
+function libArmPlan.joint_preplan(self, plan)
+	assert(type(plan)=='table', 'joint_preplan | Bad plan')
+	local timeout = assert(plan.timeout, 'joint_preplan | No timeout')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
+	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
 
--- This should have exponential approach properties...
--- ... are the kinematics "extras" - like shoulderYaw, etc. (Null space)
-local function line_iter(self, trGoal, qArm0, null_options, shoulder_weights)
-	local dqdt_limit = self.dqdt_limit
-	local res_pos = self.res_pos
-	local res_ang = self.res_ang
-	-- If goal is position vector, then skip check
-	local skip_angles = type(trGoal[1])=='number'
-	--
-	local forward, inverse = self.forward, self.inverse
-	-- Save the goal
-	local qGoal, posGoal, quatGoal
-	if skip_angles then
-		posGoal = trGoal
-		qGoal = inverse_position(posGoal, qArm0, unpack(null_options))
-	else
-		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		if null_options then
-			qGoal = inverse(trGoal, qArm0, unpack(null_options))
-			sanitize0(qGoal, qArm0)
-		else
-			qGoal, null_options = find_shoulder(self, trGoal, qArm0, shoulder_weights)
-		end
-		assert(qGoal, 'No shoulder found for the goal!')
-		local fkGoal = forward(qGoal)
-		quatGoal, posGoal = T.to_quaternion(fkGoal)
-		vector.new(posGoal)
+	local weights = plan.weights
+	local qArmF = plan.q
+	if plan.tr then
+		qArmF = self:find_shoulder(plan.tr, qArm0, weights)
 	end
-	--
-	local fkArm0, null_options0 = forward(qArm0)
-	local quatArm0, posArm0 = T.to_quaternion(fkArm0)
-	local dPos0 = posGoal - posArm0
-	local distance0 = vnorm(dPos0)
+	assert(type(qArmF), 'joint_preplan | No target shoulder solution')
+	local qMin, qMax = self.qMin, self.qMax
+	-- Check joint limit compliance
+	for i, q in ipairs(qArmF) do
+		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+			assert(q+EPSILON>=qMin[i],
+				string.format('joint_preplan | Below qMax[%d] %g < %g', i, q, qMin[i]))
+			assert(q-EPSILON<=qMax[i],
+				string.format('joint_preplan | Above qMin[%d] %g > %g', i, q, qMax[i]))
+		end
+	end
+	-- Set the timeout
+	local hz, dt = self.hz, self.dt
+	local dq_limit = self.dq_limit
+	local nStepsTimeout = timeout * hz
+	-- If given a duration, then check speed limit compliance
+	local dqAverage
+	local duration = plan.duration
+	if type(duration)=='number' then
+		print('Using duration')
+		assert(timeout>=duration,
+			string.format('joint_preplan | Timeout %g < Duration %g', timeout, duration))
+		local dqTotal = qArmF - qArm0
+		local dqdtAverage = dqTotal / duration
+		dqAverage = dqdtAverage * dt
+		for i, lim in ipairs(dq_limit) do
+			assert(fabs(dqAverage[i]) <= lim,
+				string.format("joint_preplan | dq[%d] |%g| > %g", i, dqAverage[i], lim))
+		end
+		nStepsTimeout = duration * hz
+	end
 
-	-- We return the iterator and the final joint configuarion
-	-- TODO: Add failure detection; if no dist/ang changes in a while
-	return function(cur_qArm, dt)
-		local cur_trArm = forward(cur_qArm)
-		--if skip_angles==false and is_singular then print('PLAN SINGULARITY') end
-		local trStep, dAng, dAxis, quatArm, posArm
-		if skip_angles then
-			posArm = vector.new{cur_trArm[1][4], cur_trArm[2][4], cur_trArm[3][4]}
+	local path = {}
+	local qArmSensed, qWaistSensed
+	local qArm = vector.new(qArm0)
+	n = 0
+	repeat
+		n = n + 1
+		local dqArmF = qArmF - qArm
+		local dist = vnorm(dqArmF)
+		local dqUsed
+		if dqAverage then
+			dqUsed = dqAverage
 		else
-			quatArm, posArm = T.to_quaternion(cur_trArm)
-			dAng, dAxis = q.diff(quatArm,quatGoal)
-		end
-		--
-		local dPos = posGoal - vector.new(posArm)
-		--print('dPos', dPos, posGoal, posArm)
-		local distance = vnorm(dPos)
-		if distance < res_pos then
-			if skip_angles or fabs(dAng)<res_ang or is_singular then
-				-- If both within tolerance, then we are done
-				-- If singular and no position to go, then done
-					-- TODO: Return the goal
-				if dt then
-					sanitize(qGoal, cur_qArm, dt, dqdt_limit)
-				else
-					sanitize0(qGoal, cur_qArm)
-				end
-				return nil, qGoal, is_singular
+			-- Check the speed limit usage
+			local usage, rescale = {}, false
+			for i, limit in ipairs(dq_limit) do
+				-- half speed?
+				local use = fabs(dqArmF[i]) / limit
+				rescale = rescale or use > 1
+				table.insert(usage, use)
 			end
-			-- Else, just rotate in place
-			local qSlerp = q.slerp(quatArm,quatGoal,res_ang/dAng)
-			trStep = T.from_quaternion(qSlerp,posGoal)
-		elseif skip_angles or fabs(dAng)<res_ang or is_singular then
-			-- Just translation
-			local ddpos = (res_pos / distance) * dPos
-			ddpos = distance < 2*res_pos and ddpos / 2 or ddpos
-			if skip_angles then
-				return inverse_position(ddpos+posArm, cur_qArm, unpack(null_options))
+			if rescale then
+				local max_usage2 = max(unpack(usage))
+				for i, qF in ipairs(dqArmF) do dqArmF[i] = qF / max_usage2 end
 			end
-			trStep = T.trans(unpack(ddpos)) * cur_trArm
-		else
-			local ddrot = res_ang/dAng
-			ddrot =  dAng < 2*res_ang and ddrot/2 or ddrot
-			local ddpos = (res_pos / distance) * dPos
-			ddpos = distance < 2*res_pos and ddpos / 2 or ddpos
-			-- Both translation and rotation
-			trStep = T.from_quaternion(
-				q.slerp(quatArm,quatGoal,ddrot),
-				ddpos + posArm
-			)
+			dqUsed = dqArmF
 		end
-		-- Abstract idea of how far we are from the goal, as a percentage.
-		-- Closer to the start, means the null options should be closer there, too.
-		-- Closer to the finish, the null options should be closer to the goal options
-		-- null_options_tmp: has the *current* option
-		local iqWaypoint
-		if null_options then
-			local null_options_tmp = {}
-			local null_ph = 1 - max(0, min(1, distance / distance0))
-			--[[
-			for i, v in ipairs(null_options) do
-				null_options_tmp[i] = null_options0[i] * (1-null_ph) + v * null_ph
-			end
-			--]]
-			local shoulderBlend = null_options0[1] * (1-null_ph) + null_options[1] * null_ph
-			iqWaypoint = inverse(trStep, cur_qArm, shoulderBlend, null_options0[2])
-		else
-			iqWaypoint = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
-			assert(iqWaypoint, 'No shoulder found for the waypoint!')
-		end
-		-- Sanitize to avoid trouble with wrist yaw
-		if dt then
-			sanitize(iqWaypoint, cur_qArm, dt, dqdt_limit)
-		else
-			sanitize0(iqWaypoint, cur_qArm)
-		end
-		return distance, iqWaypoint
-	end, qGoal, distance0
+		-- Apply the joint change
+		qArm = qArm + dqUsed
+		table.insert(path, qArm)
+		if (not dqAverage) and (dist < 0.5*DEG_TO_RAD) then break end
+	until n > nStepsTimeout
+
+	print(n, 'joint_preplan steps')
+	assert(dqAverage or (n <= nStepsTimeout),
+		'joint_preplan | Timeout: '..nStepsTimeout)
+
+	-- Start the sensing
+	qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
+	-- Progress is different, now, since in joint space
+	for i, qArmPlanned in ipairs(path) do
+		local qArmSensedNew, qWaistSensedNew = coroutine.yield(qArmPlanned)
+		qArmSensed = qArmSensedNew or qArmSensed
+		qWaistSensed = qWaistSensedNew or qWaistSensed
+	end
+	return qArmF
 end
 
--- TODO: Optimize the feedforward ratio
-local function joint_iter(self, qGoal0, qArm0, SANITIZE)
-	local res_ang = self.res_ang
-	local dq_max = res_ang * self.ones
-	local dq_min = -1 * dq_max
-	local qGoal = clamp_vector(qGoal0, self.min_q, self.max_q)
-	local dqdt_limit = self.dqdt_limit
-	if SANITIZE then sanitize0(qGoal, qArm0) end
-	local distance0 = vnorm(qGoal - qArm0)
-	local qPrev
-	return function(cur_qArm, dt)
-		-- Feedback
-		local dqFB = qGoal - cur_qArm
-		local distanceFB = vnorm(dqFB)
-		-- Check if done
-		if distanceFB < res_ang then return nil, qGoal end
-		local qWaypointFB = cur_qArm + clamp_vector(dqFB, dq_min, dq_max)
-		if dt then
-			sanitize(qWaypointFB, cur_qArm, dt, dqdt_limit)
-		else
-			sanitize0(qWaypointFB, cur_qArm)
-		end
-		-- Feedforward
-		qPrev = qPrev or cur_qArm
-		local dqFF = qGoal - cur_qArm --qPrev
-		local distanceFF = vnorm(dqFF)
-		local qWaypointFF
-		if distanceFF < res_ang then
-			qWaypointFF = qGoal
-		else
-			qWaypointFF = qPrev + clamp_vector(dqFF, dq_min, dq_max)
-			if dt then
-				sanitize(qWaypointFF, qPrev, dt, dqdt_limit)
-			else
-				sanitize0(qWaypointFF, qPrev)
-			end
-		end
-		-- Mix Feedback and Feedforward
-		local qWaypoint = 0.2 * qWaypointFB + 0.8 * qWaypointFF
-		qPrev = qWaypoint
-		return distanceFB, qWaypoint
-	end, qGoal, distance0
-end
-
--- Plan a direct path using
--- a straight line
+-- Plan a direct path using a straight line via Jacobian
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
-local function line_stack(self, trGoal, qArm0, null_options, shoulder_weights)
-	local res_pos = self.res_pos
-	local res_ang = self.res_ang
-	local forward, inverse = self.forward, self.inverse
-	-- If goal is position vector, then skip check
-	local skip_angles = type(trGoal[1])=='number'
-	-- Save the goal
-	local qGoal, posGoal, quatGoal
-	if skip_angles==true then
-		posGoal = trGoal
-		qGoal = inverse(posGoal, qArm0)
-	else
-		-- Must also fix the rotation matrix, else the yaw will not be correct!
-		--qGoal = inverse(trGoal, qArm0)
-		qGoal = find_shoulder(self, trGoal, qArm0, shoulder_weights)
-		assert(qGoal, 'No goal found in stack formation')
+function libArmPlan.jacobian_preplan(self, plan)
+	assert(type(plan)=='table', 'jacobian_preplan | Bad plan')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
+	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
+	local trGoal = plan.tr or self.forward(plan.q)
+	local timeout = assert(plan.timeout, 'jacobian_preplan | No timeout')
+	local weights = plan.weights
+
+	local hz, dt = self.hz, self.dt
+	local dq_limit = self.dq_limit
+	local qMin, qMax = self.qMin, self.qMax
+
+	-- How far away is it?
+	local dp, drpy, dist_components =
+		get_distance(self, trGoal, qArm0, qWaist0)
+
+	-- Find a guess of the final arm position
+	local qWaistFGuess = plan.qWaistGuess or qWaist0
+	local qArmFGuess = plan.qArmGuess
+	if not qArmFGuess then
+		qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaistFGuess)
+		assert(qArmFGuess, 'jacobian_preplan | No guess found for the final!')
 	end
-	--
-	--qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
-	sanitize0(qGoal, qArm0)
-	--
-	local fkGoal = forward(qGoal)
-	local fkArm  = forward(qArm0)
-	if skip_angles==true then
-		posArm = vector.new{fkArm[1][4],fkArm[2][4],fkArm[3][4]}
-	else
-		quatGoal, posGoal = T.to_quaternion(fkGoal)
-		quatArm, posArm   = T.to_quaternion(fkArm)
-		vector.new(posGoal)
-	end
-	--
-	local nSteps
-	local dPos = posGoal - posArm
-	local distance = vnorm(dPos)
-	local nSteps_pos = math.ceil(distance / res_pos)
-	if skip_angles==true then
-		nSteps = nSteps_pos
-	else
-		local quatDist = quatArm - quatGoal
-		local nSteps_ang = math.ceil(fabs(quatDist) / res_ang)
-		nSteps = max(nSteps_pos,nSteps_ang)
-	end
-	--
-	local inv_nSteps = 1 / nSteps
-	--local dTransBack = T.trans(unpack(dPos/-nSteps))
-	local ddp = dPos/-nSteps
-	-- Form the precomputed stack
-	local qStack = {}
-	local cur_qArm, cur_posArm = vector.copy(qGoal), vector.copy(posGoal)
-	--local cur_trArm = trGoal
-	--local cur_quatArm = quatArm
-	for i=nSteps,1,-1 do
-		cur_posArm = cur_posArm + ddp
-		if skip_angles==true then
-			-- TODO: Does not exist
-			cur_qArm = inverse_position(cur_posArm, cur_qArm)
-		else
-			local qSlerp = q.slerp( quatArm, quatGoal, i*inv_nSteps )
-			local trStep = T.from_quaternion( qSlerp, cur_posArm )
-			--cur_qArm = inverse( trStep, cur_qArm )
-			cur_qArm = find_shoulder(self, trStep, cur_qArm, shoulder_weights)
-			assert(cur_qArm, 'No waypoint found in stack formation')
+
+	local t0 = unix.time()
+	local qArm = vector.new(qArm0)
+	local nStepsTimeout = math.ceil(timeout * hz)
+	local done = false
+	local n = 0
+	local max_usage
+	local path = {}
+	repeat
+		n = n + 1
+		local vwTarget = {unpack(dp)}
+		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
+		-- Grab the joint velocities needed to accomplish the se(3) velocities
+		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qArm)
+		-- Grab the null space velocities toward our guessed configuration
+		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+		-- Linear combination of the two
+		--local dqdtCombo = dqdtArm:mul(1-alpha_n) - dqdtNull:mul(alpha_n)
+		local dqdtCombo = dqdtArm - dqdtNull
+		-- Respect the update rate, place as a lua table
+		local dqCombo = vector.new(dqdtCombo:mul(dt))
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			local use = fabs(dqCombo[i]) / limit
+			rescale = rescale or use > 1
+			table.insert(usage, use)
 		end
-		--[[
-		local trWaypoint = dTransBack * cur_trArm
-		local qSlerp = q.slerp(quatArm,quatGoal,i*inv_nSteps)
-		local trStep = T.from_quaternion(
-			qSlerp,
-			{trWaypoint[1][4],trWaypoint[2][4],trWaypoint[3][4]}
-		)
-		cur_qArm = inverse(trStep,cur_qArm)
-		cur_trArm = trStep
-		--]]
-		--sanitize0(cur_qArm, qArm0)
-		--sanitize0(cur_qArm, qGoal)
-		--print('cur_qArm', cur_qArm)
-		table.insert(qStack, {vnorm(ddp*i), vector.new(cur_qArm)})
+		max_usage = max(unpack(usage))
+		if rescale then
+			--print('Rescaling!', max_usage)
+			for i = 1, #dqCombo do
+				dqCombo[i] = dqCombo[i] / max_usage
+			end
+		end
+		-- Apply the joint change
+		local qArmOld = qArm
+		qArm = qArmOld + dqCombo
+		-- Check joint limit compliance
+		for i, q in ipairs(qArm) do
+			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+				qArm[i] = min(max(qMin[i], q), qMax[i])
+			end
+		end
+		dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
+		--print('dist_components', unpack(dist_components))
+
+		sanitize0(qArm, qArmOld)
+
+		table.insert(path, qArm)
+
+		-- Check if we are close enough
+		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
+			break
+		end
+	until n > nStepsTimeout
+	local t1 = unix.time()
+	print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
+	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
+
+	local qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
+	qArmSensed = qArmSensed or qArm0
+	qWaistSensed = qWaistSensed or qWaist0
+
+	for i, qArmPlanned in ipairs(path) do
+		local qArmSensedNew, qWaistSensedNew = coroutine.yield(qArmPlanned)
+		qArmSensed = qArmSensedNew or qArmSensed
+		qWaistSensed = qWaistSensedNew or qWaistSensed
+		-- If we are lagging badly, then there may be a collision
+		local dqLag = qArmPlanned - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		for i, dq in ipairs(dqLag) do
+			--print(dq, dqCombo[i])
+			--print((dq-dqCombo[i])*RAD_TO_DEG)
+			--local lag = fabs(dq-dqCombo[i])
+			--assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Lag: '..tostring(lag))
+		end
 	end
-	qStack.dqdt_limit = self.dqdt_limit
-	-- We return the stack and the final joint configuarion
-	return setmetatable(qStack, mt), qGoal, distance
+
+	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaistSensed)
+	--assert(qArmF, 'jacobian_preplan | No final shoulder solution')
+	qArmF = qArmF or qArm
+
+	-- Goto the final arm position as quickly as possible
+	-- NOTE: We assume the find_shoulder yields a valid final configuration
+	-- Use the last known max_usage to finalize
+	print('max_usage final', max_usage)
+	n = 0
+	nStepsTimeout = 5 * hz -- 3 second timeout to finish
+	repeat
+		n = n + 1
+		local dqArmF = qArmF - qArm
+		local dist = vnorm(dqArmF)
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			-- half speed?
+			local use = fabs(dqArmF[i]) / (limit*max_usage)
+			rescale = rescale or use > 1
+			table.insert(usage, use)
+		end
+		if rescale then
+			local max_usage2 = max(unpack(usage))
+			--print('Rescaling 2!', max_usage2)
+			for i, qF in ipairs(dqArmF) do
+				dqArmF[i] = qF / max_usage2
+			end
+		end
+		-- Apply the joint change
+		qArm = qArm + dqArmF
+		local qArmSensedNew, qWaistSensedNew = coroutine.yield(qArm)
+		qArmSensed = qArmSensedNew or qArmSensed
+		qWaistSensed = qWaistSensedNew or qWaistSensed
+		-- Check the lage
+		--[[
+		local dqLag = qArm - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		for i, dq in ipairs(dqLag) do
+			local lag = fabs(dq-dqArmF[i])
+			--assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Final Lag: '..tostring(lag))
+		end
+		--]]
+		--print('final dist', dist*RAD_TO_DEG)
+		if dist < 0.5*DEG_TO_RAD then break end
+	until n > nStepsTimeout
+	print(n, 'final steps')
+	assert(n <= nStepsTimeout, 'jacobian_preplan | Final timeout')
+
+	return qArmF
 end
 
-local function joint_stack(self, qGoal, qArm)
-	local res_ang = self.res_ang
-	qGoal = clamp_vector(qGoal,self.min_q,self.max_q)
-	--
-	local dq = qGoal - qArm
-	local distance = vnorm(dq)
-	local nSteps = math.ceil(distance / res_ang)
-	local ddq = dq / nSteps
-	-- Form the precomputed stack
-	local qStack = {}
-	for i=nSteps,1,-1 do table.insert(qStack,qArm + i*ddq) end
-	-- We return the stack and the final joint configuarion
-	return setmetatable(qStack, mt)
+function libArmPlan.jacobian_waist_preplan(self, plan)
+	assert(type(plan)=='table', 'jacobian_waist_preplan | Bad plan')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
+	assert(plan.tr or plan.q, 'jacobian_waist_preplan | Need tr or q')
+	local trGoal = plan.tr or self.forward(plan.q)
+	local timeout = assert(plan.timeout,
+		'jacobian_waist_preplan | No timeout')
+	local weights = plan.weights or {1,0,0}
+
+	local hz, dt = self.hz, self.dt
+	local qMin, qMax =
+	{-math.pi,unpack(self.qMin)}, {math.pi,unpack(self.qMax)}
+	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
+
+	--print('qWaist0', qWaist0)
+	local qArmFGuess = plan.qArmGuess or qArm0
+	local qWaistFGuess = plan.qWaistGuess or qWaist0
+
+	-- Find a guess of the final arm position
+	local qWaistArmFGuess = self:find_shoulder(
+		trGoal, qArmFGuess, weights, qWaistFGuess)
+	vector.new(qWaistArmFGuess)
+
+	--print('qArmFGuess', qArmFGuess*RAD_TO_DEG)
+	--print('qWaistFGuess', qWaistFGuess*RAD_TO_DEG)
+	if not qWaistArmFGuess then
+		print('jacobian_waist_preplan | Bad Guess')
+		qWaistArmFGuess = {qWaist0[1], unpack(qArm0)}
+	else
+		table.insert(qWaistArmFGuess, 1, qWaistFGuess[1])
+	end
+	--print('qWaistArmFGuess', qWaistArmFGuess)
+
+	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}
+	--print('qWaistArm*', qWaistArm)
+	--print('get_distance')
+	local dp, drpy, dist_components =
+		get_distance(self, trGoal, qArm0, qWaist0)
+	--local dp0, drpy0, dist_components0 = dp, drpy, dist_components
+	--print('dist_components', unpack(dist_components))
+	--print('qArmSensed', qArmSensed)
+
+	local t0 = unix.time()
+	local nStepsTimeout = math.ceil(timeout * hz)
+	local done = false
+	local n = 0
+	local max_usage
+	local path = {}
+	repeat
+		n = n + 1
+		local vwTarget = {unpack(dp)}
+		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
+		-- Grab the joint velocities needed to accomplish the se(3) velocities
+		local dqdtArm, nullspace = get_delta_qwaistarm(
+			self,
+			vwTarget,
+			{unpack(qWaistArm,2,#qWaistArm)},
+			{qWaistArm[1], 0}
+		)
+		-- Grab the null space velocities toward our guessed configuration
+		local dqdtNull = nullspace * torch.Tensor(qWaistArm - qWaistArmFGuess)
+		-- Linear combination of the two
+		--local dqdtCombo = dqdtArm:mul(1-alpha_n) - dqdtNull:mul(alpha_n)
+		local dqdtCombo = dqdtArm - dqdtNull
+		-- Respect the update rate, place as a lua table
+		local dqCombo = vector.new(dqdtCombo:mul(dt))
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			local use = fabs(dqCombo[i]) / limit
+			rescale = rescale or use > 1
+			table.insert(usage, use)
+		end
+		max_usage = max(unpack(usage))
+		if rescale then
+			--print('Rescaling!', max_usage)
+			for i = 1, #dqCombo do
+				dqCombo[i] = dqCombo[i] / max_usage
+			end
+		end
+		-- Apply the joint change
+		local qWaistArmOld = qWaistArm
+		qWaistArm = qWaistArmOld + dqCombo
+		-- Check joint limit compliance
+		for i, q in ipairs(qWaistArm) do
+			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+				qWaistArm[i] = min(max(qMin[i], q), qMax[i])
+			end
+		end
+		-- Yield the progress
+		dp, drpy, dist_components = get_distance(self, trGoal,
+		{unpack(qWaistArm,2,#qWaistArm)},
+		{qWaistArm[1],0}
+		)
+		--print('dqdtArm', dqdtArm)
+		--print('dist_components', unpack(dist_components))
+
+		--sanitize0(qWaistArm, qWaistArmOld)
+
+		--[[
+		print()
+		print('qWaistArmOld', qWaistArmOld)
+		print('qWaistArm', qWaistArm)
+		print('dqCombo', dqCombo)
+		--]]
+
+
+		table.insert(path, qWaistArm)
+		--print('qWaistSensed', qWaistSensed)
+
+
+		-- Check if we are close enough
+		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
+			break
+		end
+	until n > nStepsTimeout
+	local t1 = unix.time()
+	print(n, 'jacobian_waist_preplan steps planned in: ', t1-t0)
+	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Timeout')
+
+
+	-- This gives our guessed final configuration.
+	-- This may not be at all correct, since we are jacobian in waist, too, and do not search over waist angles
+	local qArmSensed, qWaistSensed = coroutine.yield(
+		{unpack(qWaistArmFGuess,2,#qWaistArmFGuess)},
+		{qWaistArmFGuess[1], 0}, dist_components
+	)
+
+	for i, qWaistArmPlanned in ipairs(path) do
+		qWaistArm = qWaistArmPlanned
+		local qArmSensedNew, qWaistSensedNew = coroutine.yield(
+			{unpack(qWaistArm,2,#qWaistArm)},
+			{qWaistArm[1], 0}
+		)
+		qArmSensed = qArmSensedNew or qArmSensed
+		qWaistSensed = qWaistSensedNew or qWaistSensed
+		-- If we are lagging badly, then there may be a collision
+		--[[
+		local dqLag = qArmPlanned - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		for i, dq in ipairs(dqLag) do
+			--print(dq, dqCombo[i])
+			--print((dq-dqCombo[i])*RAD_TO_DEG)
+			--local lag = fabs(dq-dqCombo[i])
+			--assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Lag: '..tostring(lag))
+		end
+		--]]
+	end
+
+
+	local qWaistArmF = self:find_shoulder(
+		trGoal, {unpack(qWaistArm,2,#qWaistArm)}, {0,1,0}, {qWaistArm[1], 0})
+	assert(qWaistArmF, 'jacobian_preplan | No final shoulder solution')
+	table.insert(qWaistArmF, 1, qWaistArm[1])
+	--print('qWaistArm', vector.new(qWaistArm) * RAD_TO_DEG)
+	--print('qWaistArmF', vector.new(qWaistArmF) * RAD_TO_DEG)
+	--if true then return qWaistArm end
+
+	-- Goto the final arm position as quickly as possible
+	-- NOTE: We assume the find_shoulder yields a valid final configuration
+	-- Use the last known max_usage to finalize
+	print('jacobian_waist_preplan | max_usage final', max_usage)
+	n = 0
+	nStepsTimeout = 5 * hz -- 3 second timeout to finish
+	repeat
+		n = n + 1
+		local dqWaistArmF = qWaistArmF - qWaistArm
+		local dist = vnorm(dqWaistArmF)
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			-- half speed?
+			local use = fabs(dqWaistArmF[i]) / (limit*max_usage)
+			rescale = rescale or use > 1
+			table.insert(usage, use)
+		end
+		if rescale then
+			local max_usage2 = max(unpack(usage))
+			--print('Rescaling 2!', max_usage2)
+			for i, qF in ipairs(dqWaistArmF) do
+				dqWaistArmF[i] = qF / max_usage2
+			end
+		end
+		-- Apply the joint change
+		qWaistArm = qWaistArm + dqWaistArmF
+		--print('qWaistArmQ', vector.new(qWaistArm)*RAD_TO_DEG)
+		-- Progress is different, now, since in joint space
+		local qArmSensedNew, qWaistSensedNew = coroutine.yield(
+			{unpack(qWaistArm,2,#qWaistArm)},
+			{qWaistArm[1], 0}
+		)
+		qArmSensed = qArmSensedNew or qArmSensed
+		qWaistSensed = qWaistSensedNew or qWaistSensed
+		-- Check the lage
+		--[[
+		local dqLag = qArm - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		for i, dq in ipairs(dqLag) do
+			local lag = fabs(dq-dqArmF[i])
+			--assert(lag<3*DEG_TO_RAD, 'jacobian_preplan | Bad Final Lag: '..tostring(lag))
+		end
+		--]]
+		--print('final dist', dist*RAD_TO_DEG)
+		if dist < 0.5*DEG_TO_RAD then break end
+	until n > nStepsTimeout
+	print('jacobian_waist_preplan | Final Steps:', n)
+	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Final timeout')
+
+	--print('WA', vector.new(qWaistArm))
+	--print('WAF', vector.new(qWaistArmF))
+
+	return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
+end
+
+-- resume with: qArmSensed, vwTargetNew, weightsNew
+function libArmPlan.jacobian_velocity(self, plan)
+	assert(type(plan)=='table',
+		'jacobian_velocity | Bad plan')
+	local vwTarget = plan.vw
+	assert(type(vwTarget)=='table' and #vwTarget==6,
+		'jacobian_velocity | Bad vw')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
+
+	local weights = plan.weights
+	local hz, dt = self.hz, self.dt
+	local dq_limit = self.dq_limit
+	local qMin, qMax = self.qMin, self.qMax
+	local forward = self.forward
+
+	-- Find a guess of the final arm position
+	local qArmFGuess = plan.qArmGuess or qArm0
+	local qWaistFGuess = plan.qWaistGuess or qWaist0
+
+	local qArm = qArm0
+
+	local qArmSensed, qWaistSensed, vwTargetNew, weightsNew, qArmFGuessNew =
+		coroutine.yield()
+	vwTarget = vwTargetNew or vwTarget
+	weights = weightsNew or weights
+	qArmFGuess = qArmFGuessNew or qArmFGuess
+
+	local done = false
+	local n = 0
+	local max_usage
+	repeat
+		n = n + 1
+		-- Grab the joint velocities needed to accomplish the se(3) velocities
+		local dqdtArm, nullspace =
+			get_delta_qwaistarm(self, vwTarget, qArmSensed)
+		-- Grab the null space velocities toward our guessed configuration
+		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+		-- Linear combination of the two
+		local dqdtCombo = dqdtArm - dqdtNull
+		-- Respect the update rate, place as a lua table
+		local dqCombo = vector.new(dqdtCombo:mul(dt))
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			local use = fabs(dqCombo[i]) / limit
+			rescale = rescale or use > 1
+			table.insert(usage, use)
+		end
+		max_usage = max(unpack(usage))
+		if rescale then
+			for i = 1, #dqCombo do dqCombo[i] = dqCombo[i] / max_usage end
+		end
+		-- Apply the joint change
+
+		local qArmOld = qArm
+		qArm = qArmOld + dqCombo
+
+		-- Check joint limit compliance
+		for i, q in ipairs(qArm) do
+			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+				qArm[i] = min(max(qMin[i], q), qMax[i])
+			end
+		end
+		-- Yield the progress
+		--print('Next yield',qArmOld, dqCombo, qArm)
+		qArmSensed, qWaistSensed, vwTargetNew, weightsNew, qArmFGuessNew =
+			coroutine.yield(qArm)
+		-- Smart adaptation
+		vwTarget = vwTargetNew or vwTarget
+		weights = weightsNew or weights
+		qArmFGuess = qArmFGuessNew or qArmFGuess
+		--print('qArmFGuessNew', qArmFGuessNew, qArmFGuess)
+		if weightsNew then
+			local fkArmSensed = forward(qArmSensed)
+			local qArmFGuessNew = self:find_shoulder(fkArmSensed, qArmSensed, weights)
+			if not qArmFGuessNew then
+				print('jacobian_velocity | Bad velocity guess')
+			else
+				qArmFGuess = qArmFGuessNew
+			end
+			--assert(qArmFGuess, 'Bad guess!')
+			----or qArmFGuess
+			--print('qArmFGuess', vector.new(qArmFGuess))
+			--print('qArmSensed', qArmSensed)
+			--print(vector.norm(qArmFGuess-qArmSensed)*RAD_TO_DEG, 'diff', (qArmFGuess-qArmSensed)*RAD_TO_DEG)
+			if(math.abs(qArmFGuess[3]-qArmSensed[3])>10*DEG_TO_RAD) then
+				print('jacobian_velocity | wait!')
+				vwTarget = {0,0,0, 0,0,0}
+			end
+		end
+		-- If we are lagging badly, then there may be a collision
+		local dqLag = qArm - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		-- Use a higher tolerance here, since using position feedback
+		for i, dq in ipairs(dqLag) do
+			--assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+		end
+	until vwTargetNew==false
+
+	return qArm
+end
+
+-- resume with: qArmSensed, vwTargetNew, weightsNew
+function libArmPlan.jacobian_waist_velocity(self, plan)
+	assert(type(plan)=='table',
+		'jacobian_velocity | Bad plan')
+	local vwTarget = plan.vw
+	assert(type(vwTarget)=='table' and #vwTarget==6,
+		'jacobian_velocity | Bad vw')
+	local qArm0 = assert(plan.qArm0, 'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
+
+	local forward = self.forward
+	local weights = plan.weights
+	local hz, dt = self.hz, self.dt
+
+	local qMin, qMax =
+		{-math.pi,unpack(self.qMin)}, {math.pi,unpack(self.qMax)}
+	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
+
+	-- Track here
+	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}
+
+	-- Find a guess of the final arm position
+	local qArmFGuess = plan.qArmGuess or qArm0
+	local qWaistFGuess = plan.qWaistGuess or qWaist0
+	local qWaistArmFGuess = {qWaistFGuess[1], unpack(qArmFGuess)}
+
+
+	local qArmSensed, qWaistSensed, vwTargetNew, weightsNew, qArmFGuessNew, qWaistFGuessNew =
+		coroutine.yield()
+	vwTarget = vwTargetNew or vwTarget
+	weights = weightsNew or weights
+	qArmFGuess = qArmFGuessNew or qArmFGuess
+
+	local done = false
+	local n = 0
+	local max_usage
+	repeat
+		n = n + 1
+
+		-- Grab the joint velocities needed to accomplish the se(3) velocities
+		local dqdtWaistArm, nullspace = get_delta_qwaistarm(
+			self,
+			vwTarget,
+			qArmSensed,
+			qWaistSensed
+		)
+		-- Grab the null space velocities toward our guessed configuration
+		local dqdtNull = nullspace * torch.Tensor(qWaistArm - qWaistArmFGuess)
+		-- Linear combination of the two
+		local dqdtCombo = dqdtWaistArm - dqdtNull
+		-- Respect the update rate, place as a lua table
+		local dqCombo = vector.new(dqdtCombo:mul(dt))
+		-- Check the speed limit usage
+		local usage, rescale = {}, false
+		for i, limit in ipairs(dq_limit) do
+			local use = fabs(dqCombo[i]) / limit
+			rescale = rescale or use > 1
+			table.insert(usage, use)
+		end
+		max_usage = max(unpack(usage))
+		if rescale then
+			for i = 1, #dqCombo do dqCombo[i] = dqCombo[i] / max_usage end
+		end
+		-- Apply the joint change
+
+		local qWaistArmOld = qWaistArm
+		qWaistArm = qWaistArmOld + dqCombo
+
+		-- Check joint limit compliance
+		for i, q in ipairs(qWaistArm) do
+			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+				qWaistArm[i] = min(max(qMin[i], q), qMax[i])
+			end
+		end
+		-- Yield the progress
+		--print('Next yield',qArmOld, dqCombo, qArm)
+		qArmSensed, qWaistSensed, vwTargetNew, weightsNew, qArmFGuessNew =
+			coroutine.yield({unpack(qWaistArm,2,#qWaistArm)}, {qWaistArm[1], 0})
+		-- Smart adaptation
+		vwTarget = vwTargetNew or vwTarget
+		weights = weightsNew or weights
+		qArmFGuess = qArmFGuessNew or qArmFGuess
+		qWaistFGuess = qWaistFGuessNew or qWaistFGuess
+		--print('qArmFGuessNew', qArmFGuessNew, qArmFGuess)
+		if weightsNew then
+			local fkArmSensed = forward(qArmSensed, qWaistSensed)
+			local qArmFGuessNew =
+				self:find_shoulder(fkArmSensed, qArmSensed, weights, qWaistSensed)
+			if qArmFGuessNew then
+				qArmFGuess = qArmFGuessNew
+			else
+				print('jacobian_velocity | Bad velocity guess')
+			end
+			-- Search space yields a new independent variable result
+			-- If too far away, then adjust in null space only
+			-- TODO: This should be on all updates
+		end
+		if qArmFGuessNew or qWaistFGuessNew or weightsNew then
+			qWaistArmFGuess = vector.new{qWaistFGuess[1], unpack(qArmFGuess)}
+			--print('New qWaistArmFGuess', vector.new(qWaistArmFGuess)*RAD_TO_DEG)
+			--print('diff',(qWaistArmFGuess-qWaistArm)*RAD_TO_DEG)
+		end
+
+		-- Make sure we can always move
+		if(math.abs(qWaistArmFGuess[4]-qWaistArm[4])>6*DEG_TO_RAD) then
+			--print('jacobian_velocity | wait!')
+			vwTarget = {0,0,0, 0,0,0}
+		end
+
+		-- If we are lagging badly, then there may be a collision
+		--[[
+		local dqLag = qArm - qArmSensed
+		local imax_lag, max_lag = 0, 0
+		-- Use a higher tolerance here, since using position feedback
+		for i, dq in ipairs(dqLag) do
+			--assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
+		end
+		--]]
+	until vwTargetNew==false
+
+	return {unpack(qWaistArm,2,#qWaistArm)}, {qWaistArm[1], 0}
 end
 
 -- Set the forward and inverse
-local function set_chain(self, forward, inverse, name)
+local function set_chain(self, forward, inverse, jacobian)
 	self.forward = assert(forward)
 	self.inverse = assert(inverse)
-	self.name = name
+	self.jacobian = jacobian
   return self
 end
 
 -- Set the iterator resolutions
-local function set_resolution(self, res_pos, res_ang)
-	self.res_pos = assert(res_pos)
-	self.res_ang = assert(res_ang)
-  return self
-end
-
--- Set the iterator resolutions
-local function set_limits(self, min_q, max_q, dqdt_limit)
-	self.min_q = assert(min_q)
-	self.max_q = assert(max_q)
+local function set_limits(self, qMin, qMax, dqdt_limit)
+	self.qMin = assert(qMin)
+	self.qMax = assert(qMax)
 	self.dqdt_limit = assert(dqdt_limit)
+	self.qRange = qMax - qMin
   return self
 end
 
-local function set_shoulder_angles(self, granularity)
-	local granularity = 3*DEG_TO_RAD
-	local minShoulder, maxShoulder = self.min_q[3], self.max_q[3]
+-- Set the iterator resolutions
+local function set_update_rate(self, hz)
+	assert(type(hz)=='number', 'libArmPlan | Bad update rate for '..tostring(self.id))
+	assert(type(self.dqdt_limit)=='table',
+		'libArmPlan | Unknown dqdt_limit for '..tostring(self.id))
+	self.hz = hz
+	self.dt = 1/hz
+	self.dq_limit = self.dqdt_limit / hz
+  return self
+end
+
+local function set_shoulder_granularity(self, granularity)
+	assert(type(granularity)=='number', 'Granularity not a number')
+	local minShoulder, maxShoulder = self.qMin[3], self.qMax[3]
 	local n = math.floor((maxShoulder - minShoulder) / granularity + 0.5)
 	local shoulderAngles = {}
 	for i=0,n do table.insert(shoulderAngles, minShoulder + i * granularity) end
@@ -470,34 +924,25 @@ local function set_shoulder_angles(self, granularity)
 end
 
 -- Still must set the forward and inverse kinematics
-function libArmPlan.new_planner(min_q, max_q, dqdt_limit, res_pos, res_ang)
-	local armOnes = vector.ones(7)
+function libArmPlan.new_planner(id)
+	local nq = 7
+	local armOnes = vector.ones(nq)
+	local armZeros = vector.zeros(nq)
 	local obj = {
+		id = id or 'Unknown',
+		nq = nq,
+		zeros = armZeros,
 		ones = armOnes,
 		halves = armOnes * 0.5,
 		--
-		min_q = min_q or -90*DEG_TO_RAD*armOnes,
-		max_q = max_q or 90*DEG_TO_RAD*armOnes,
-		dqdt_limit = dqdt_limit or 20*DEG_TO_RAD*armOnes,
-		--
-		res_pos = res_pos or 0.02,
-		res_ang = res_ang or 3*DEG_TO_RAD,
-		--
-		line_stack = line_stack,
-		line_iter = line_iter,
-		joint_stack = joint_stack,
-		joint_iter = joint_iter,
-		--
+		shoulderAngles = nil,
 		find_shoulder = find_shoulder,
 		--
 		set_chain = set_chain,
-		set_resolution = set_resolution,
 		set_limits = set_limits,
+		set_update_rate = set_update_rate,
+		set_shoulder_granularity = set_shoulder_granularity,
 	}
-	obj.range_q = obj.max_q - obj.min_q
-	-- Setup the shoulder angles
-	set_shoulder_angles(obj)
-	--
 	return obj
 end
 

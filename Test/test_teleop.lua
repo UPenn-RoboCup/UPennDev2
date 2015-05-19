@@ -49,7 +49,7 @@ local function set_larm(q, do_now)
 		end
 		hcm.set_teleop_larm(qLtmp)
 		vector.copy(qLtmp, qL0)
-		arm_ch:send'params'
+		arm_ch:send'teleop'
 	end
 end
 local qRtmp, qR0
@@ -74,7 +74,7 @@ local function set_rarm(q, do_now)
 		end
 		hcm.set_teleop_rarm(qRtmp)
 		vector.copy(qRtmp, qR0)
-		arm_ch:send'params'
+		arm_ch:send'teleop'
 	end
 end
 -- Immediately write the changes?
@@ -121,7 +121,7 @@ code_lut[127] = function()
 	--]]
 	USE_COMPENSATION = USE_COMPENSATION==1 and 2 or 1
 	hcm.set_teleop_compensation(USE_COMPENSATION)
-	arm_ch:send'params'
+	arm_ch:send'teleop'
 end
 
 -- Switch to head teleop
@@ -138,22 +138,24 @@ char_lut['2'] = function()
 	arm_ch:send'ready'
 end
 char_lut['3'] = function()
-	head_ch:send'teleop'
+	arm_ch:send'jacobian'
 end
 char_lut['4'] = function()
-	head_ch:send'teleop'
-	arm_ch:send'teleop'
+	arm_ch:send'pulldoor'
 end
 char_lut['5'] = function()
   body_ch:send'approach'
 end
 char_lut['6'] = function()
-	arm_ch:send'dean'
-	gripper_ch:send'dean'
+	arm_ch:send'teleop'
+	--gripper_ch:send'dean'
 	--head_ch:send'trackhand'
   --arm_ch:send'poke'
 end
 
+char_lut['7'] = function()
+	arm_ch:send'init'
+end
 char_lut['8'] = function()
 	body_ch:send'stop'
 end
@@ -166,7 +168,7 @@ lower_lut['r'] = function()
 		local options = hcm.get_teleop_loptions()
 		options[1] = math.max(options[1] - DEG_TO_RAD, 0)
 		hcm.set_teleop_loptions(options)
-		arm_ch:send'params'
+		arm_ch:send'teleop'
 		--[[
 		local qLArm = get_larm()
     --print('Pre',qLArm*RAD_TO_DEG)
@@ -180,7 +182,7 @@ lower_lut['r'] = function()
 		local options = hcm.get_teleop_roptions()
 		options[1] = math.min(options[1] - DEG_TO_RAD, 0)
 		hcm.set_teleop_roptions(options)
-		arm_ch:send'params'
+		arm_ch:send'teleop'
 		--[[
     local qRArm = get_rarm()
 		local tr = K.forward_rarm(qRArm)
@@ -392,7 +394,7 @@ setmetatable(lower_lut, {
 local color = require'util'.color
 function show_status()
 	
-	
+local qrarm = Body.get_rarm_command_position()
 	local fkL = K.forward_larm(qlarm)
 	local fkR = K.forward_rarm(qrarm)
 	local rTr6 = T.position6D(fkR)

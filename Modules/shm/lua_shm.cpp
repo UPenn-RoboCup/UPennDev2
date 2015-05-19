@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <lua.hpp>
+#include <iostream>
 
 using namespace boost::interprocess;
 

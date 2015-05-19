@@ -103,8 +103,8 @@ local function update(rgb, depth)
 	rgb.t = t
 	rgb.id = 'k2_rgb'
 	rgb.c = 'jpeg'
-	rgb.tfL = tfL_flat
-	rgb.tfG = tfG_flat
+	rgb.tfL16 = tfL_flat
+	rgb.tfG16 = tfG_flat
 	
 	local j_rgb = rgb.data
 	if IS_WEBOTS then j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height) end
@@ -118,8 +118,8 @@ local function update(rgb, depth)
 	depth.t = t
 	depth.id = 'k2_depth'
 	depth.c = 'raw'
-	depth.tfL = tfL_flat
-	depth.tfG = tfG_flat
+	depth.tfL16 = tfL_flat
+	depth.tfG16 = tfG_flat
 	
 	local ranges = depth.data
 	depth.data = nil
@@ -140,13 +140,16 @@ local function update(rgb, depth)
 
 	-- Send
 	if not IS_WEBOTS then io.write('Kinect2 | t_send ', t_send,'\n') end
-	if color_udp_ch then color_udp_ch:send(m_rgb..j_rgb) end
-	if depth_udp_ch then depth_udp_ch:send(m_depth..ranges) end
 
-	color_net_ch:send({m_rgb, j_rgb})
+	if depth_udp_ch then depth_udp_ch:send(m_depth..ranges) end
+	if color_udp_ch then color_udp_ch:send(m_rgb..j_rgb) end
+
 	depth_net_ch:send({m_depth, ranges})
-	color_ch:send({m_rgb, j_rgb})
+	color_net_ch:send({m_rgb, j_rgb})
+
 	depth_ch:send({m_depth, ranges})
+	color_ch:send({m_rgb, j_rgb})
+
 
 	-- Log at 4Hz
 --	if t - t_send < 0.25 then return t end

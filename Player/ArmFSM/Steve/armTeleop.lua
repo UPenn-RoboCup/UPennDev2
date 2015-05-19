@@ -1,126 +1,129 @@
+--------------------------------
+-- Humanoid arm state
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+--------------------------------
 local state = {}
 state._NAME = ...
-local Body = require'Body'
-local movearm = require'movearm'
 
--- Compensation
--- 1: Use the compensation, but search for the shoulder
--- 2: Use the compenstation, and use the teleop shoulder options
-local USE_COMPENSATION = 1
+local Body   = require'Body'
+local vector = require'vector'
+local movearm = require'movearm'
+local fromQ = require'Transform'.from_quatp
+local toQ = require'Transform'.to_quatp
 
 local t_entry, t_update, t_finish
 local timeout = 10.0
-local lPathIter, rPathIter
-local qLGoal, qRGoal
-local qLD, qRD
-local uTorso0, uTorsoComp
-local loptions, roptions
 
--- Sets uTorsoComp, uTorso0 externall
-local function set_iterators(teleopLArm, teleopRArm, teleopComp)
-	if teleopComp == 0 then
-		-- #nofilter
-		uTorsoComp, uTorso0 = nil
-		return movearm.goto_q(teleopLArm, teleopRArm, true)
-	end
-	-- Grab the torso compensation
-	local uTorsoAdapt, uTorso = movearm.get_compensation()
-	local uTorsoCompNow = mcm.get_stance_uTorsoComp()
-	--print(uTorsoAdapt, uTorso)
-	--print(uTorsoCompNow)
-	local fkLComp, fkRComp
-	fkLComp, fkRComp, uTorsoComp, uTorso0 =
-		movearm.apply_q_compensation(teleopLArm, teleopRArm, uTorsoAdapt, uTorso)
-
-	uTorso0 = uTorsoCompNow
-	uTorso0[3] = 0
-
-	-- Do we have desired null space options?
-	if teleopComp == 2 then
-		assert('NOT TESTED YET')
-		local loptions = hcm.get_teleop_loptions()
-		local roptions = hcm.get_teleop_roptions()
-		-- Form the iterator
-		--return movearm.goto_tr_via_q(fkLComp, fkRComp, loptions, roptions)
-		return movearm.goto_tr_stack(fkLComp, fkRComp, loptions, roptions)
-		--return movearm.goto_tr(fkLComp, fkRComp, loptions, roptions)
-	else
-		-- Form the iterator
-		--return movearm.goto_tr_via_q(fkLComp, fkRComp)
-		return movearm.goto_tr_stack(fkLComp, fkRComp)
-		--return movearm.goto_tr(fkLComp, fkRComp)
-	end
-end
-
+local lco, rco
+local okL, qLWaypoint
+local okR, qRWaypoint
+local quatpL, quatpR
+local default_weights = {0,1,0}
 
 function state.entry()
-  print(state._NAME..' Entry' )
-  -- Update the time of entry
+  print(state._NAME..' Entry')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-  -- Reset the human position
-	local qcLArm0 = Body.get_larm_command_position()
-	local qcRArm0 = Body.get_rarm_command_position()
-	local teleopLArm = hcm.get_teleop_larm()
-	local teleopRArm = hcm.get_teleop_rarm()
-	local teleopComp = hcm.get_teleop_compensation()
 
-	lPathIter, rPathIter, qLGoal, qRGoal, qLD, qRD = set_iterators(teleopLArm, teleopRArm, teleopComp)
+	-- Set where we are
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+	local qcWaist = Body.get_waist_command_position()
+	quatpL = toQ(movearm.lPlanner.forward(qcLArm, qcWaist))
+	quatpR = toQ(movearm.rPlanner.forward(qcRArm, qcWaist))
+	hcm.set_teleop_tflarm(quatpL)
+	hcm.set_teleop_tfrarm(quatpR)
+	-- TODO: Find the appropriate weights from the position we are in...
+	hcm.set_teleop_lweights(default_weights)
+	hcm.set_teleop_rweights(default_weights)
+	
+	local configL = {
+		q=qcLArm, timeout=5,
+		via='joint_preplan', weights = default_weights
+	}
+	local configR = {
+		tr=qcRArm, timeout=5,
+		via='joint_preplan', weights = default_weights
+	}
 
-	--loptions = {qLGoal[3], 0}
-	--roptions = {qRGoal[3], 0}
-	--hcm.set_teleop_loptions(loptions or {qcLArm[3], 0})
-	--hcm.set_teleop_roptions(roptions or {qcRArm[3], 0})
-
-	-- Close range mesh
-	vcm.set_mesh0_dynrange({.1,1})
+	lco, rco, uComp = movearm.goto(configL, configR)
+	-- Check for no motion
+	okL = lco==false
+	okR = rco==false
 
 end
 
 function state.update()
-	--  print(state._NAME..' Update' )
-  -- Get the time of update
+	--  io.write(state._NAME,' Update\n')
   local t  = Body.get_time()
   local dt = t - t_update
-  -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-	-- Update our measurements availabl in the state
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
+	-- Grab the transform
+	local quatpL1 = hcm.get_teleop_tflarm()
+	local quatpR1 = hcm.get_teleop_tfrarm()
+	if quatpL1~=quatpL then
+		print(state._NAME,'L target')
+		local tfL = fromQ(qL)
+		print(tfL)
+		local lco1, rco1 = movearm.goto({
+			tr = tfL, timeout = 5, via='jacobian_preplan'
+		}, false)
+		lco = lco1
+		quatpL = quatpL1
+	end
+	if quatpR1~=quatpR then
+		print(state._NAME,'R target')
+		local tfR = fromQ(qR)
+		print(tfR)
+		local lco1, rco1 = movearm.goto(false, {
+			tr = tfR, timeout = 5, via='jacobian_preplan'
+		})
+		lco = lco1
+		quatpR = quatpR1
+	end
+	
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 
-	-- Timing necessary
-	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
-	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	if lStatus=='suspended' then
+		okL, qLWaypoint = coroutine.resume(lco, qLArm)
+	end
+	if rStatus=='suspended' then
+		okR, qRWaypoint = coroutine.resume(rco, qRArm)
+	end
 
-	local qLNext = moreL and q_lWaypoint or qLGoal
-	local qRNext = moreR and q_rWaypoint or qRGoal
+	if not okL or not okR then
+		print(state._NAME, 'L', okL, qLWaypoint)
+		print(state._NAME, 'R', okR, qRWaypoint)
+		-- Safety
+		Body.set_larm_command_position(qLArm)
+		Body.set_rarm_command_position(qRArm)
+		hcm.set_teleop_larm(qLArm)
+		hcm.set_teleop_rarm(qRArm)
+		return'teleopraw'
+	end
 
-	local phaseL = moreL and moreL/qLD or 0
-	local phaseR = moreR and moreR/qRD or 0
+	if type(qLWaypoint)=='table' then
+		Body.set_larm_command_position(qLWaypoint)
+	end
+	if type(qRWaypoint)=='table' then
+		Body.set_rarm_command_position(qRWaypoint)
+	end
 
-	assert(uTorsoComp)
-	assert(uTorso0)
-	local phase = math.max(phaseL, phaseR)
-	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
+	-- Check if done
+	if lStatus=='dead' and rStatus=='dead' then
+		return 'done'
+	end
 
-	--[[
-	print(state._NAME..' | uTorso0', uTorso0)
-	print(state._NAME..' | uTorsoComp', uTorsoComp)
-	print(state._NAME..' | uTorsoNow', uTorsoNow)
-	--]]
-
-	-- Send to the joints
-	mcm.set_stance_uTorsoComp(uTorsoNow)
-	Body.set_larm_command_position(qLNext)
-	Body.set_rarm_command_position(qRNext)
-  
 end
 
-function state.exit()  
-  print(state._NAME..' Exit' )
+function state.exit()
+	print(state._NAME..' Exit')
 end
 
 return state

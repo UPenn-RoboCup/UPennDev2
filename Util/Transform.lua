@@ -36,13 +36,13 @@ local function eye()
 end
 Transform.eye = eye
 
-function Transform.rotZ(a)
+function Transform.rotX(a)
   local ca = cos(a)
   local sa = sin(a)
   return setmetatable({
-	  {ca, -sa, 0, 0},
-	  {sa, ca, 0, 0},
-	  {0, 0, 1, 0},
+	  {1, 0, 0, 0},
+	  {0, ca, -sa, 0},
+	  {0, sa, ca, 0},
 	  {0, 0, 0, 1}
 	}, mt)
 end
@@ -58,13 +58,13 @@ function Transform.rotY(a)
 	}, mt)
 end
 
-function Transform.rotX(a)
+function Transform.rotZ(a)
   local ca = cos(a)
   local sa = sin(a)
   return setmetatable({
-	  {1, 0, 0, 0},
-	  {0, ca, -sa, 0},
-	  {0, sa, ca, 0},
+	  {ca, -sa, 0, 0},
+	  {sa, ca, 0, 0},
+	  {0, 0, 1, 0},
 	  {0, 0, 0, 1}
 	}, mt)
 end
@@ -77,6 +77,94 @@ function Transform.trans(dx, dy, dz)
 	  {0, 0, 0, 1}
 	}, mt)
 end
+
+-- Mutate a matrix
+function Transform.rotateXdot(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,3 do
+		local ty = t[i][2]
+		local tz = t[i][3]
+		t[i][1] = 0
+		t[i][2] = -sa*ty + ca*tz
+		t[i][3] = -ca*ty - sa*tz
+		t[i][4] = 0
+	end
+	return t
+end
+
+function Transform.rotateYdot(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,3 do
+		local tx = t[i][1]
+		local tz = t[i][3]
+		t[i][1] = -sa*tx - ca*tz
+		t[i][2] = 0
+		t[i][3] = ca*tx - sa*tz
+		t[i][4] = 0
+	end
+	return t
+end
+
+function Transform.rotateZdot(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,3 do
+		local tx = t[i][1]
+		local ty = t[i][2]
+		t[i][1] = -sa*tx + ca*ty
+		t[i][2] = -ca*tx - sa*ty
+		t[i][3] = 0
+		t[i][4] = 0
+	end
+	return t
+end
+
+function Transform.rotateX(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,3 do
+		local ty = t[i][2]
+		local tz = t[i][3]
+		t[i][2] = ca*ty + sa*tz
+		t[i][3] = -sa*ty + ca*tz
+	end
+	return t
+end
+
+function Transform.rotateY(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,3 do
+		local tx = t[i][1]
+		local tz = t[i][3]
+		t[i][1] = ca*tx - sa*tz
+		t[i][3] = sa*tx + ca*tz
+	end
+	return t
+end
+
+function Transform.rotateZ(t, a)
+  local ca = cos(a)
+  local sa = sin(a)
+	for i=1,3 do
+		local tx = t[i][1]
+		local ty = t[i][2]
+		t[i][1] = ca*tx + sa*ty
+		t[i][2] = -sa*tx + ca*ty
+	end
+	return t
+end
+
+function Transform.translate(t, px, py, pz)
+	t[1][4] = t[1][4] + t[1][1]*px + t[1][2]*py + t[1][3]*pz
+  t[2][4] = t[2][4] + t[2][1]*px + t[2][2]*py + t[2][3]*pz
+  t[3][4] = t[3][4] + t[3][1]*px + t[3][2]*py + t[3][3]*pz
+	return t
+end
+
+-- End mutations
 
 -- Recovering Euler Angles
 -- Good resource: http://www.vectoralgebra.info/eulermatrix.html
@@ -94,22 +182,11 @@ end
 function Transform.to_rpy(t)
   -- http://planning.cs.uiuc.edu/node103.html
   -- returns [roll, pitch, yaw] vector
-  local e = vector.zeros(3)
+  local e = {}
   e[1]=atan2(t[3][2],t[3][3]) --Roll
   e[2]=atan2(-t[3][1],sqrt( t[3][2]^2 + t[3][3]^2) ) -- Pitch
   e[3]=atan2(t[2][1],t[1][1]) -- Yaw
   return e
-end
-
--- http://planning.cs.uiuc.edu/node102.html
-function Transform.from_rpy_trans(rpy, trans)
-  local gamma, beta, alpha = unpack(rpy)
-  return setmetatable({
-    {cos(alpha) * cos(beta), cos(alpha) * sin(beta) * sin(gamma) - sin(alpha) * cos(gamma), cos(alpha) * sin(beta) * cos(gamma) + sin(alpha) * sin(gamma), trans[1]},
-    {sin(alpha) * cos(beta), sin(alpha) * sin(beta) * sin(gamma) + cos(alpha) * cos(gamma), sin(alpha) * sin(beta) * cos(gamma) - cos(alpha) * sin(gamma), trans[2]},
-    {-sin(beta), cos(beta) * sin(gamma), cos(beta) * cos(gamma), trans[3]},
-    {0, 0, 0, 1}
-  }, mt)
 end
 
 function Transform.position6D(tr)
@@ -122,7 +199,7 @@ function Transform.position6D(tr)
 end
 
 function Transform.position(tr)
-  return vnew{tr[1][4],tr[2][4],tr[3][4]}
+  return {tr[1][4],tr[2][4],tr[3][4]}
 end
 
 function Transform.position4(tr)
@@ -131,7 +208,7 @@ end
 
 -- Rotation Matrix to quaternion
 -- from Yida.  Adapted to take a transformation matrix
-function Transform.to_quaternion( t )
+function Transform.to_quatp( t )
   local q = quaternion.new()
   local tr = t[1][1] + t[2][2] + t[3][3]
   if tr > 0 then
@@ -159,11 +236,63 @@ function Transform.to_quaternion( t )
     q[3] = (t[2][3] + t[3][2]) / S
     q[4] = 0.25 * S
   end
-  return q, vnew{t[1][4],t[2][4],t[3][4]}
+	q[5] = t[1][4]
+	q[6] = t[2][4]
+	q[7] = t[3][4]
+  return q
+end
+
+function Transform.from_quatp(q)
+  return setmetatable({
+		{
+			1 - 2 * q[3] * q[3] - 2 * q[4] * q[4],
+			2 * q[2] * q[3] - 2 * q[4] * q[1],
+			2 * q[2] * q[4] + 2 * q[3] * q[1],
+			q[5],
+		},
+		{
+			2 * q[2] * q[3] + 2 * q[4] * q[1],
+			1 - 2 * q[2] * q[2] - 2 * q[4] * q[4],
+			2 * q[3] * q[4] - 2 * q[2] * q[1],
+			q[6]
+		},
+		{
+			2 * q[2] * q[4] - 2 * q[3] * q[1],
+			2 * q[3] * q[4] + 2 * q[2] * q[1],
+			1 - 2 * q[2] * q[2] - 2 * q[3] * q[3],
+			q[7],
+		},
+		{0,0,0,1}
+	}, mt)
+end
+
+function Transform.from_quaternion(q, pos)
+  return setmetatable({
+		{
+			1 - 2 * q[3] * q[3] - 2 * q[4] * q[4],
+			2 * q[2] * q[3] - 2 * q[4] * q[1],
+			2 * q[2] * q[4] + 2 * q[3] * q[1],
+			pos[1],
+		},
+		{
+			2 * q[2] * q[3] + 2 * q[4] * q[1],
+			1 - 2 * q[2] * q[2] - 2 * q[4] * q[4],
+			2 * q[3] * q[4] - 2 * q[2] * q[1],
+			pos[2]
+		},
+		{
+			2 * q[2] * q[4] - 2 * q[3] * q[1],
+			2 * q[3] * q[4] + 2 * q[2] * q[1],
+			1 - 2 * q[2] * q[2] - 2 * q[3] * q[3],
+			pos[3],
+		},
+		{0,0,0,1}
+	}, mt)
 end
 
 -- Can give the position
-function Transform.from_quaternion(q, pos)
+local trans = Transform.trans
+function Transform.from_quaternion2(q, pos)
   local t = Transform.eye()
   t[1][1] = 1 - 2 * q[3] * q[3] - 2 * q[4] * q[4]
   t[1][2] = 2 * q[2] * q[3] - 2 * q[4] * q[1]
@@ -174,7 +303,7 @@ function Transform.from_quaternion(q, pos)
   t[3][1] = 2 * q[2] * q[4] - 2 * q[3] * q[1]
   t[3][2] = 2 * q[3] * q[4] + 2 * q[2] * q[1]
   t[3][3] = 1 - 2 * q[2] * q[2] - 2 * q[3] * q[3]
-  if pos then return Transform.trans(unpack(pos))*t end
+  if pos then return trans(unpack(pos))*t end
   return t
 end
 
@@ -191,6 +320,17 @@ function Transform.transform6D(p)
     {-swy, swx*cwy, cwx*cwy, p[3]},
     {0,0,0,1},
     }, mt)
+end
+
+-- http://planning.cs.uiuc.edu/node102.html
+function Transform.from_rpy_trans(rpy, trans)
+  local gamma, beta, alpha = unpack(rpy)
+  return setmetatable({
+    {cos(alpha) * cos(beta), cos(alpha) * sin(beta) * sin(gamma) - sin(alpha) * cos(gamma), cos(alpha) * sin(beta) * cos(gamma) + sin(alpha) * sin(gamma), trans[1]},
+    {sin(alpha) * cos(beta), sin(alpha) * sin(beta) * sin(gamma) + cos(alpha) * cos(gamma), sin(alpha) * sin(beta) * cos(gamma) - cos(alpha) * sin(gamma), trans[2]},
+    {-sin(beta), cos(beta) * sin(gamma), cos(beta) * cos(gamma), trans[3]},
+    {0, 0, 0, 1}
+  }, mt)
 end
 
 local function mul(t1, t2)
@@ -252,10 +392,10 @@ function Transform.copy(tt)
   if type(tt)=='table' then
     -- Copy the table
     return setmetatable({
-    	vcopy(tt[1]),
-    	vcopy(tt[2]),
-    	vcopy(tt[3]),
-    	vcopy(tt[4])
+    	{unpack(tt[1])},
+    	{unpack(tt[2])},
+    	{unpack(tt[3])},
+    	{unpack(tt[4])},
 		}, mt)
   end
   local t = eye()

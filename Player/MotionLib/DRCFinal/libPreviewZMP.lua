@@ -483,13 +483,11 @@ local function precompute(self)
   self.param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}}
   self.param_b=matrix.transpose({{timeStep^3/6, timeStep^2/2, timeStep,timeStep}})  
   
-  if Config.zmpstep.params then
-    self.param_k1_px = matrix:new({Config.zmpstep.param_k1_px});
-    self.param_k1 = matrix:new({Config.zmpstep.param_k1});
---    self.param_a = matrix:new(Config.zmpstep.param_a);
---    self.param_b = matrix.transpose(matrix:new({Config.zmpstep.param_b}));
-    print("ZMP parameters loaded")
+  if Config.zmpparam[self.tZmp] then
+    self.param_k1_px = matrix:new({Config.zmpparam[self.tZmp].param_k1_px});
+    self.param_k1 = matrix:new({Config.zmpparam[self.tZmp].param_k1});
   else
+    print("ERROR: zmp parma not precalculated!!!!")  
     print("Generating ZMP parameters")
     local timeStep = self.preview_tStep
     local tZmp = self.tZmp
@@ -540,10 +538,10 @@ libZMP.new_solver = function( params )
   params = params or {}
 	local s = {}
 
-  s.preview_interval = Config.zmpstep.preview_interval
-  s.preview_tStep = Config.zmpstep.preview_tStep
+  s.preview_interval = Config.zmpparam.preview_interval
+  s.preview_tStep = Config.zmpparam.preview_tStep
   s.preview_steps = s.preview_interval / s.preview_tStep  
-  s.r_q = Config.zmpstep.param_r_q
+  s.r_q = Config.zmpparam.param_r_q
 
   s.x = matrix:new{{0,0},{0,0},{0,0}}
   s.preview_queue={}

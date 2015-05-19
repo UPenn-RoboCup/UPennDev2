@@ -7,6 +7,7 @@
 PROTO RIGHT_ELBOW_mk2 [
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
+	field SFColor diffuseColor 0.8 0.8 0
 ]
 {
 Solid {
@@ -16,7 +17,7 @@ Solid {
 	  Shape {
 	     appearance DEF POS_APP Appearance {
 	       material Material {
-	         diffuseColor 1 1 0.5
+	         diffuseColor IS diffuseColor
 	         specularColor 0 0 0
 	       }
 	     }

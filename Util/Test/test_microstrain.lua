@@ -1,28 +1,25 @@
+#!/usr/local/bin/luajit
 dofile'../../include.lua'
-local Body       = require'Body'
-local signal     = require'signal'
-local carray     = require'carray'
-local mp         = require'msgpack'
 local util       = require'util'
 local simple_ipc = require'simple_ipc'
-local libMicrostrain  = require'libMicrostrain'
+local lM  = require'libMicrostrain'
+local lM2  = require'libMicrostrain2'
 local vector = require'vector'
 
-local RAD_TO_DEG = Body.RAD_TO_DEG
+local TEST_M2 = true
+local libMicrostrain
+if TEST_M2 then libMicrostrain = lM2 end
 
-local imu = libMicrostrain.new_microstrain(
+
+local imu = assert(libMicrostrain.new_microstrain(
 --  '/dev/cu.usbmodem1421', 921600 )
-  '/dev/ttyACM0')
+  '/dev/ttyACM0'), 'No imu present!')
 
-if not imu then
-  print('No imu present!')
-  os.exit()
-end
-
---util.ptable(imu)
+util.ptable(imu)
 
 -- Print info
 print('Opened Microstrain')
+imu:get_info()
 print(table.concat(imu.information,'\n'))
 
 -- Set up the defaults:
@@ -30,96 +27,45 @@ print(table.concat(imu.information,'\n'))
 --os.exit()
 
 -- Change the baud rate to fastest for this session
---libMicrostrain.change_baud(imu)
+--imu:change_baud(imu)
 --os.exit()
 
 -- Turn on the stream
+
+local t_debug = -math.huge
+local t0 = unix.time()
+
+print('ahrs_on')
 imu:ahrs_on()
 local cnt = 0
-while true do
-  local ret_fd = unix.select( {imu.fd} )
-  print('READING')
-  res = unix.read(imu.fd)
-  assert(res)
-  local response = {string.byte(res,1,-1)}
-  for i,b in ipairs(response) do print( string.format('%d: %02X %d',i,b,b) ) end
-  local gyr_str = res:sub(7,18)
-  local gyro = carray.float( gyr_str:reverse() )
-  print( string.format('GYRO: %g %g %g',unpack(gyro:table())))
-
-  local rpy_str = res:sub(21,32)
-  local rpy = carray.float( rpy_str:reverse() )
-  rpy = vector.new( rpy:table() )
-  print( 'RPY:', rpy*RAD_TO_DEG )
+local running = true
+while running do
+  cnt = cnt + 1
+	--print('read_ahrs')
+	local acc, gyr, rpy = imu:read_ahrs()
+	local t = unix.time()
+	if t - t_debug > .1 then
+--		print('cnt', cnt, t-t0, cnt/(t-t0))
+		--print('rpy', rpy[0]*180/math.pi, rpy[1]*180/math.pi, rpy[2]*180/math.pi)
+		--print('gyr', gyr[0]*180/math.pi, gyr[1]*180/math.pi, gyr[2]*180/math.pi)
 --[[
-  local acc_str = res:sub(7,18)
-  for i,b in ipairs{acc_str:byte(1,-1)} do
-    print( string.format('acc %d: %02X %d',i,b,b) )
-  end
-  local acc = carray.float( acc_str )
-  for i=1,#acc do
-    print('acc',acc[i])
-  end
-  local acc_rev = carray.float( acc_str:reverse() )
-  for i=1,#acc_rev do
-    print('acc_rev',acc_rev[i])
-  end
+print('Roll', -gyr[1])
+print('Pitch', -gyr[2])
+print('Yaw', gyr[0])
 --]]
-  cnt = cnt+1
-  if false and cnt>5 then
-    imu:ahrs_off()
-    break
-  end
-end
-print('done!')
+--[[
+print('Roll', -rpy[1]*RAD_TO_DEG)
+print('Pitch', -rpy[2]*RAD_TO_DEG)
+print('Yaw', rpy[0]*RAD_TO_DEG)
+--]]
 
--- test 1 sec timeout
-local ret_fd = unix.select( {imu.fd}, 1 )
-print('timeout!',ret_fd)
+		--print('acc', acc[0], acc[1], acc[2])
+		t_debug = t
+	end
+  if t-t0>30 then running = false end
+end
+print('ahrs_off!')
+imu:ahrs_off()
 
 imu:close()
 os.exit()
-
--- Ensure that we shutdown the devices properly
-function shutdown()
-  print'Shutting down the Hokuyos...'
-  for i,h in ipairs(hokuyos) do
-    h:stream_off()
-    h:close()
-    print('Closed Hokuyo',i)
-  end
-  os.exit()
-end
-signal.signal("SIGINT", shutdown)
-signal.signal("SIGTERM", shutdown)
-
--- Begin to service
-os.execute('clear')
-assert(#hokuyos>0,"No hokuyos detected!")
-print( util.color('Servicing '..#hokuyos..' Hokuyos','green') )
-
-local main = function()
-  local main_cnt = 0
-  local t0 = Body.get_time()
-  while true do
-    main_cnt = main_cnt + 1
-    local t_now = Body.get_time()
-    local t_diff = t_now - t0
-    if t_diff>1 then
-      local debug_str = string.format('\nMain loop: %7.2f Hz',main_cnt/t_diff)
-      debug_str = util.color(debug_str,'yellow')
-      for i,h in ipairs(hokuyos) do
-        debug_str = debug_str..string.format(
-        '\n\t%s Hokuyo was seen %5.3f seconds ago: %g m',
-        h.name,t_now - h.t_last,h.mid)
-      end
-      os.execute('clear')
-      print(debug_str)
-      t0 = t_now
-      main_cnt = 0
-    end
-    coroutine.yield()
-  end
-end
-libHokuyo.service( hokuyos, main )
-

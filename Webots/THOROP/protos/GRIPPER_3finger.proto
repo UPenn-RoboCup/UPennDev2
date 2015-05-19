@@ -1,9 +1,8 @@
 #VRML_SIM V6.0 utf8
 PROTO GRIPPER_3finger [
 	#3 finger gripper: UCLA modeled
+	#palm pos: 4~10cm (from stump)
 	#stump position: 13.5cm front
-	#gripper position:28cm front, 5cm to side 
-	#gripper palm relative pos: 14.5cm front
 	
   field SFVec3f translation 0 0 0
   #field SFRotation rotation  0 0 1 -0.785
@@ -16,21 +15,25 @@ PROTO GRIPPER_3finger [
 	Solid {
 		translation IS translation
 		rotation IS rotation
-		boundingObject Box { size 0.08 0.005 0.08 }
+		boundingObject Transform {    
+    	translation 0 -0.06 0
+	    children [Box {size 0.08 0.07 0.04 }]
+	  }
 		physics Physics {
-			density -1
-			mass 0.01
+			density -1 mass 1.0  #GUESSWORK!
+			centerOfMass [0 -0.07 0] #from wrist, with lowered pose			
 		}
 		children [
-			#Solid {
-			#	translation -0.05 0.05 0
-			#	rotation 0 0 1 0.785
-			#	children[Shape { geometry Box { size 0.05 0.14 0.05 } }]
-			#}
-			Shape { geometry Box { size 0.08 0.005 0.08 } }
+			Transform{
+				translation 0 -0.06 0
+				children[
+					Shape { geometry Box { size 0.08 0.07 0.04 } }
+				]
+			}
+
 			# Begin Extra
 			DEF EXTRA_NUB Solid {
-				translation -0.03 -0.01 0
+				translation -0.03 -0.09 0
 				children [
 					DEF EXTRA_NUB_PLATE Shape {
 						geometry Box { size 0.02 0.02 0.02 }
@@ -56,14 +59,14 @@ PROTO GRIPPER_3finger [
 						}
 						endPoint Solid {
 							translation 0 -0.04 0
-							boundingObject Box { size 0.02 0.06 0.02 }
+							boundingObject Box { size 0.02 0.06 0.03 }
 							physics Physics {
 								density -1
 								mass 0.01
 							}
 							children[
 								Shape {
-									geometry Box { size 0.02 0.06 0.02 }
+									geometry Box { size 0.02 0.06 0.03 }
 									appearance USE ROBOT_GREEN
 								}
 							]
@@ -79,7 +82,7 @@ PROTO GRIPPER_3finger [
 
 # Begin Trigger
 			DEF TRIGGER_NUB Solid {
-				translation 0.03 -0.01 -0.03
+				translation 0.03 -0.09 -0.03
 				children [
 					DEF TRIGGER_NUB_PLATE Shape {
 						geometry Box { size 0.02 0.02 0.02 }
@@ -131,7 +134,7 @@ PROTO GRIPPER_3finger [
 
 # Begin Grip
 			DEF GRIP_NUB Solid {
-				translation 0.03 -0.01 0.03
+				translation 0.03 -0.09 0.03
 				children [
 					DEF GRIP_NUB_PLATE Shape {
 						geometry Box { size 0.02 0.02 0.02 }

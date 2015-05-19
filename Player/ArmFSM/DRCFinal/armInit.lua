@@ -53,11 +53,6 @@ Body.set_rgrip_command_torque({0,0,0})
   Body.move_rgrip2(Config.arm.torque.movement)
 	--]]
 
-  --SJ: these can be dangerous... (may make arm jump at startup)
-
-  mcm.set_arm_lhandoffset(Config.arm.handoffset.gripper)
-  mcm.set_arm_rhandoffset(Config.arm.handoffset.gripper)
-
   qLArmTarget = Body.get_inverse_larm(
     vector.zeros(7),
     Config.arm.trLArm0,

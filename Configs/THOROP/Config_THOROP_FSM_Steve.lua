@@ -5,7 +5,7 @@ local fsm = {}
 Config.torque_legs = true
 
 -- Update rate in Hz
-fsm.update_rate = 100
+fsm.update_rate = 120
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
@@ -41,14 +41,14 @@ fsm.Body = {
 	--
 	{'bodyStop', 'init', 'bodyInit'},
 	{'bodyStop', 'approach', 'bodyApproach'},
-	{'bodyStop', 'stop', 'bodyStop'},
+	{'bodyStop', 'stepover1', 'bodyStep'},
 	--
 	{'bodyApproach', 'done', 'bodyStop'},
 	{'bodyApproach', 'stop', 'bodyStop'},
-	{'bodyApproach', 'init', 'bodyInit'},
+	{'bodyApproach', 'init', 'bodyStop'},
 	--
-	{'bodyWaypoints', 'done', 'bodyStop'},
-	{'bodyWaypoints', 'stop', 'bodyStop'},
+	{'bodyStep', 'nextstep', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},
 }
 
 fsm.Head = {
@@ -104,45 +104,38 @@ fsm.Arm = {
 	{'armIdle', 'init', 'armInit'},
 	-- Init
 	{'armInit', 'timeout', 'armInit'},
-	{'armInit', 'done', 'armStance'},
-	-- Stance pose (for walking)
-	{'armStance', 'dean', 'armDean'},
-	{'armStance', 'ready', 'armReady'},
-	{'armStance', 'teleop', 'armTeleop'},
-	{'armStance', 'null', 'armNull'},
-	--
-	{'armDean', 'teleop', 'armTeleop'},
-	{'armDean', 'init', 'armInit'},
+	--{'armInit', 'done', 'armInit'},
+	{'armInit', 'ready', 'armReady'},
+	{'armInit', 'teleopraw', 'armTeleopRaw'},
 	-- Ready pose (for manipulating)
 	{'armReady', 'timeout', 'armReady'},
-	--{'armReady', 'done', 'armStance'},
-	{'armReady', 'done', 'armTeleop'},
 	{'armReady', 'teleop', 'armTeleop'},
-	{'armReady', 'grab', 'armGrab'},
+	{'armReady', 'teleopraw', 'armTeleopRaw'},
 	{'armReady', 'init', 'armInit'},
+	{'armReady', 'jacobian', 'armJacobian'},
+	{'armReady', 'pulldoor', 'armPullDoor'},
 	-- Teleop
-	{'armTeleop', 'timeout', 'armTeleop'},
-	{'armTeleop', 'teleop', 'armTeleop'},
-	{'armTeleop', 'params', 'armTeleop'}, -- params updated
-	{'armTeleop', 'done', 'armStance'},
 	{'armTeleop', 'init', 'armInit'},
+	--{'armTeleop', 'done', 'armTeleop'},
+	{'armTeleop', 'teleop', 'armTeleop'},
 	{'armTeleop', 'ready', 'armReady'},
-	{'armTeleop', 'poke', 'armPoke'},
-	{'armTeleop', 'grab', 'armGrab'},
-	-- Poke
-	{'armPoke', 'timeout', 'armPoke'},
-	{'armPoke', 'done', 'armTeleop'},
-	{'armPoke', 'touch', 'armTeleop'},
-	-- Grab
-	{'armGrab', 'timeout', 'armGrab'},
-	{'armGrab', 'done', 'armTeleop'},
-	{'armGrab', 'teleop', 'armTeleop'},
-	{'armGrab', 'ready', 'armReady'},
-	{'armGrab', 'init', 'armInit'},
-	-- Push around the arm in the null space of our IK
-	{'armNull', 'null', 'armNull'},
-	{'armNull', 'teleop', 'armTeleop'},
-	{'armNull', 'done', 'armStance'},
+	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
+	-- Teleop Raw
+	{'armTeleopRaw', 'init', 'armInit'},
+	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
+	{'armTeleopRaw', 'ready', 'armReady'},
+	{'armTeleopRaw', 'teleop', 'armTeleop'},
+	-- armJacobian is for testing purposes only!
+	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
+	{'armJacobian', 'timeout', 'armJacobian'},
+	{'armJacobian', 'done', 'armTeleop'},
+	{'armJacobian', 'ready', 'armReady'},
+	{'armJacobian', 'pulldoor', 'armPullDoor'},
+	-- armPullDoor
+	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
+	{'armPullDoor', 'done', 'armTeleop'},
+	{'armPullDoor', 'ready', 'armReady'},
+	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 }
 
 fsm.Motion = {
@@ -229,27 +222,29 @@ if fsm.libraries.MotionLib == 'RoboCup' then
 elseif fsm.libraries.MotionLib == 'DRCFinal' then
 	fsm.select.Motion = 'DRCFinal'
 	fsm.Motion = {
-		{'motionIdle', 'timeout', 'motionIdle'},
-		{'motionIdle', 'stand', 'motionInit'},
-		{'motionInit', 'done', 'motionStance'},
+  {'motionIdle', 'timeout', 'motionIdle'},
+  {'motionIdle', 'stand', 'motionInit'},
+  {'motionInit', 'done', 'motionStance'},
 
-		{'motionIdle', 'bias', 'motionBiasInit'},
-		{'motionStance', 'bias', 'motionBiasInit'},
-		{'motionBiasInit', 'done', 'motionBiasIdle'},
-		{'motionBiasIdle', 'stand', 'motionInit'},
+  {'motionIdle', 'bias', 'motionBiasInit'},
+  {'motionStance', 'bias', 'motionBiasInit'},
+  {'motionBiasInit', 'done', 'motionBiasIdle'},
+  {'motionBiasIdle', 'stand', 'motionInit'},
 
 
-		{'motionStance', 'preview', 'motionStepPreview'},
-		{'motionStepPreview', 'done', 'motionStance'},
+  {'motionStance', 'preview', 'motionStepPreview'},
+  {'motionStepPreview', 'done', 'motionStance'},
 
-		{'motionStance', 'stair', 'motionStepPreviewStair'},
-		{'motionStepPreviewStair', 'done', 'motionStance'},
+  {'motionStance', 'stair', 'motionStepPreviewStair'},
+  {'motionStepPreviewStair', 'done', 'motionStance'},
 
-		{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-		{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
-		{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
-		{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
-		{'motionHybridWalkEnd', 'done', 'motionStance'},
+  {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+  {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+  {'motionHybridWalkEnd', 'done', 'motionStance'},
+
+  {'motionStance', 'uninit', 'motionUnInit'},
+  {'motionUnInit', 'done', 'motionIdle'},
 	}
 end
 

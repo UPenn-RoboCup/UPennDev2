@@ -24,14 +24,15 @@ shared_data.network = {
 shared_data.teleop = {
 	-- Head angles
   head = zeros(2),
-  -- Assume 7DOF arm
+  -- Joint space: Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),
-	-- Null space options (Shoulder angle, flip_roll)
-  loptions = zeros(2),
-  roptions = zeros(2),
-	-- Use compensation when moving the arm?
-	compensation = ones(1),
+	-- Transform: quaternion, pos
+	tflarm = {1,0,0,0, 0,0,0},
+	tfrarm = {1,0,0,0, 0,0,0},
+	-- Weights for the shoulder search
+	lweights = zeros(3),
+	rweights = zeros(3),
 	-- Gripper has some modes it can use: 0 is torque, 1 is position
 	lgrip_mode = zeros(1),
 	rgrip_mode = zeros(1),
@@ -40,8 +41,8 @@ shared_data.teleop = {
 	rgrip_torque = zeros(3),
 	lgrip_position = zeros(3),
 	rgrip_position = zeros(3),
-	-- Walk bias
-	walkbias = zeros(3)
+	-- Waypoint
+	waypoint = zeros(3)
 }
 
 shared_data.demo = {
@@ -77,7 +78,7 @@ shared_data.ball = ball
 
 
 shared_data.state={}
-shared_data.state.proceed = vector.zeros(0)
+shared_data.state.proceed = vector.zeros(1)
 
 --Now we use TWO sets of params (both are INCREMENTS)
 
@@ -147,6 +148,9 @@ shared_data.motion.headangle = vector.zeros(2)
 
 --Body height Target
 shared_data.motion.bodyHeightTarget = vector.zeros(1)
+
+--waist yaw target
+shared_data.motion.waistTarget = vector.zeros(1)
 
 
 -- Waypoints
@@ -309,7 +313,7 @@ shared_data.move.target=vector.zeros(3) --relative pos, x y a
 shared_data.step={}
 shared_data.step.supportLeg=vector.zeros(1)
 shared_data.step.relpos = vector.zeros(3)      --x y a
-shared_data.step.zpr = vector.zeros(2)         --z p r
+shared_data.step.zpr = vector.zeros(3)         --z p r
 shared_data.step.nosolution = vector.zeros(1)         --z p r
 
 shared_data.step.dir = vector.zeros(1)         --temporary

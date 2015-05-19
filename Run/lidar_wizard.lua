@@ -14,6 +14,7 @@ local pose_global = require'util'.pose_global
 local color = require'util'.color
 local si = require'simple_ipc'
 local Body = require'Body'
+local T = require'Transform'
 require'wcm'
 require'mcm'
 
@@ -23,8 +24,8 @@ local hokuyos = {}
 -- Initialize the Hokuyos
 --local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
 --local h0 = libHokuyo.new_hokuyo('/dev/cu.usbmodem1411',nil,9600)
-local h0 = libHokuyo.new_hokuyo(11)
---local h0 = libHokuyo.new_hokuyo(10)
+--local h0 = libHokuyo.new_hokuyo(11)
+local h0 = libHokuyo.new_hokuyo(10) -- chest on mk2
 h0.name = 'chest'
 h0.ch = si.new_publisher'lidar0'
 
@@ -35,7 +36,9 @@ if ENABLE_LOG then
 	nlog = 0
 end
 
-local metadata = {}
+local metadata = {
+id='lidar0'
+}
 
 local cb = function(self, data)
 	metadata.t = get_time()
@@ -51,6 +54,8 @@ local cb = function(self, data)
 
 	metadata.tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
 	metadata.tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+	metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
+	metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))
 	metadata.n = self.n
 	metadata.res = self.res
 	metadata.rsz = #data

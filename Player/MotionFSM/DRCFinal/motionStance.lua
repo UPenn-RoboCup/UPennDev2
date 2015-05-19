@@ -25,6 +25,11 @@ local angleShift = vector.new{0,0,0,0}
 local uLeft,uRight,uTorso
 local zLeft,zRight = 0,0
 
+
+
+
+
+
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -53,11 +58,23 @@ function state.entry()
   local zLeg = mcm.get_status_zLeg()
   print("zLeg:",unpack(zLeg))
 
+--[[
+  print("uLeft:",unpack(uLeft))
+  print("uRight:",unpack(uRight))
+  print("uTorso:",unpack(uTorso))
+--]]
+
   hcm.set_legdebug_left({uLeft[1],uLeft[2],uLeft[3],zLeg[1]})
   hcm.set_legdebug_right({uRight[1],uRight[2],uRight[3],zLeg[2]})
   hcm.set_legdebug_torso({uTorso[1],uTorso[2]})
   hcm.set_legdebug_torso_angle({0,0}) 
 
+
+
+--Waist control
+  if Config.waist_testing then
+    Body.set_waist_command_velocity({500,500})
+  end
 end
 
 function state.update()
@@ -66,6 +83,11 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
+  
+  if Config.waist_testing then
+    waist_target=hcm.get_motion_waistTarget()
+    Body.set_waist_command_position({waist_target,0})
+  end
 
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()

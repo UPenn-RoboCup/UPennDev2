@@ -54,7 +54,9 @@ local function entry(self)
 end
 
 local function exit(self)
-	return self.sm:exit()
+	local ret = self.sm:exit()
+	self.evts = nil
+	return ret
 end
 
 local function wrap_fsm(fsm, name)

@@ -159,7 +159,7 @@ end
 function util.clamp_vector(values,min_values,max_values)
 	local clamped = vector.new()
 	for i,v in ipairs(values) do
-		clamped[i] = math.max(math.min(v,max_values[i]),min_values[i])
+		clamped[i] = max(min(v,max_values[i]),min_values[i])
 	end
 	return clamped
 end

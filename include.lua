@@ -71,6 +71,9 @@ unix = require'unix.ffi'
 
 -- Save the hostname
 HOSTNAME = unix.gethostname()
+
+--print("HOSTNAME:",HOSTNAME)
+
 OPERATING_SYSTEM = unix.uname():lower()
 
 -- Some other directories
@@ -78,12 +81,18 @@ KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs"
 
 -- Use functional idioms
-require "fun" ()
+--require "fun" ()
 
 -- include platform specific modules
 require'Config'
 PLATFORM_NAME = Config.PLATFORM_NAME
-ROBOT_HOME = HOME..'/Robots/'..PLATFORM_NAME
+--SJ: teddy uses Robots/THOROP15 folder while having platform_name THOR2
+
+if HOSTNAME=="teddy2" then
+  ROBOT_HOME = HOME..'/Robots/THOROP15'
+else
+  ROBOT_HOME = HOME..'/Robots/'..PLATFORM_NAME
+end
 package.path  = ROBOT_HOME..'/?.lua;'..package.path
 package.cpath = ROBOT_HOME..'/?.so;'..package.cpath
 

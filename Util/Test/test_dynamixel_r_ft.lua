@@ -26,18 +26,18 @@ end
 --
 local ffi = require'ffi'
 local right_ft = {
-  id = Config.right_ft.id,
-  --m_ids = Config.right_ft.m_ids,
+  id = Config.right_foot_ft.id,
+  m_ids = Config.right_foot_ft.m_ids,
   --m_ids = {23, 25},
-  m_ids = {25, 23},
+  --m_ids = {25, 23},
   raw16 = ffi.new'int16_t[4]',
   raw = ffi.new'uint8_t[8]',
   readings = ffi.new'double[6]',
   component = ffi.new'double[6]',
 	--unloaded = ffi.new('double[6]', vector.zeros(6)),
-  unloaded = ffi.new('double[6]', Config.right_ft.unloaded),
-  calibration_mat = ffi.new('double[6][6]', Config.right_ft.matrix),
-  calibration_gain = Config.right_ft.gain,
+  unloaded = ffi.new('double[6]', Config.right_foot_ft.unloaded),
+  calibration_mat = ffi.new('double[6][6]', Config.right_foot_ft.matrix),
+  calibration_gain = Config.right_foot_ft.gain,
 }
 
 local function parse_ft(ft, raw_str, m_id)

@@ -29,8 +29,6 @@ Body.set_rgrip_mode('torque')
 
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()
-
-  mcm.set_arm_handoffset(Config.arm.handoffset.gripper)
 end
 
 function state.update()

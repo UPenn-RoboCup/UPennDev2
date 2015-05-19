@@ -9,6 +9,7 @@ lua_webots.c: lua_webots.i
 	$(V)swig -lua -o $@ -I$(WEBOTS_HOME)/include/controller/c $^
 
 WEBOTS_HOME=/usr/local/webots
+#WEBOTS_HOME=/home/thor/Downloads/webots
 ifeq ($(OSTYPE),darwin)
 WEBOTS_HOME=/Applications/Webots
 endif

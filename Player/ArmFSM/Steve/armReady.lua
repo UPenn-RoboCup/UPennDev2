@@ -1,93 +1,102 @@
+--------------------------------
+-- Humanoid arm state
+-- (c) 2013 Stephen McGill, Seung-Joon Yi
+--------------------------------
 local state = {}
 state._NAME = ...
-local Body = require'Body'
+
+local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
-local t_entry, t_update, t_finish, t_command
+
+local t_entry, t_update, t_finish
 local timeout = 30.0
 
-local piterators
-local lPathIter, rPathIter
-local qLD, qRD
-local uTorsoComp, uTorso0
-local qLGoalFiltered, qRGoalFiltered
+local lco, rco, uComp
+local okL, qLWaypoint
+local okR, qRWaypoint
+
+local sequence, s, stage = Config.arm.ready
 
 function state.entry()
-  print(state._NAME..' Entry')
+  io.write(state._NAME, ' Entry\n')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
 
-	-- TODO: Autodetect which stges to use, based on our initial position
-	piterators = movearm.path_iterators(Config.arm.readyFromInitStages)
+	s = 1
+	stage = sequence[s]
+	lco, rco = movearm.goto(stage.left, stage.right)
 
-	-- Close range mesh
-	vcm.set_mesh0_dynrange({.1,1})
+	okL = false
+	okR = false
+	if uComp then print('uComp', unpack(uComp)) end
+
 end
 
 function state.update()
---  print(state._NAME..' Update' )
+	--  io.write(state._NAME,' Update\n')
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
   if t-t_entry > timeout then return'timeout' end
+	if not stage then return'done' end
 
-	if not lPathIter or not rPathIter then
-		local it
-		it, uTorsoComp, uTorso0 = piterators()
-		uTorso0 = mcm.get_stance_uTorsoComp()
-		uTorso0[3] = 0
-		-- We are done if the coroutine emits nothing
-		if not it then return'done' end
-		lPathIter, rPathIter, qLGoalFiltered, qRGoalFiltered, qLD, qRD = unpack(it)
-		hcm.set_teleop_loptions({qLGoalFiltered[3], 0})
-		hcm.set_teleop_roptions({qRGoalFiltered[3], 0})
+	local lStatus = type(lco)=='thread' and coroutine.status(lco)
+	local rStatus = type(rco)=='thread' and coroutine.status(rco)
+
+	local qLArm = Body.get_larm_position()
+	local qRArm = Body.get_rarm_position()
+	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
+	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
+
+	if not okL or not okR then
+		print(state._NAME, 'L', okL, qLWaypoint)
+		print(state._NAME, 'R', okR, qRWaypoint)
+		-- Safety
+		Body.set_larm_command_position(qLArm)
+		Body.set_rarm_command_position(qRArm)
+		return'teleopraw'
 	end
 
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
-	--local qLArm = Body.get_larm_position()
-	--local qRArm = Body.get_rarm_position()
+	if type(qLWaypoint)=='table' then
+		Body.set_larm_command_position(qLWaypoint)
+	end
+	if type(qRWaypoint)=='table' then
+		Body.set_rarm_command_position(qRWaypoint)
+	end
 
-	-- Find the next arm position
-	local moreL, q_lWaypoint = lPathIter(qcLArm, dt)
-	local moreR, q_rWaypoint = rPathIter(qcRArm, dt)
-	local qLNext = moreL and q_lWaypoint or qLGoalFiltered
-	local qRNext = moreR and q_rWaypoint or qRGoalFiltered
-	--print(moreL, q_lWaypoint, qLGoalFiltered)
+	-- Check if done
+	if lStatus=='dead' and rStatus=='dead' then
+		-- Goto the nextitem in the sequnce
+		s = s + 1
+		stage = sequence[s]
+		if stage then
+			print('Next sequence:', s, stage)
+			lco, rco = movearm.goto(stage.left, stage.right)
+		end
+	end
 
-	-- Find the torso compensation position
-	local phaseL = moreL and moreL/qLD or 0
-	local phaseR = moreR and moreR/qRD or 0
-	local phase = math.max(phaseL, phaseR)
+	-- Set the compensation: Not needed
+	--mcm.set_stance_uTorsoComp(uComp)
 
-	local uTorsoNow = util.se2_interpolate(phase, uTorsoComp, uTorso0)
-
-	--[[
-	print(state._NAME..' | uTorso0', uTorso0)
-	print(state._NAME..' | uTorsoComp', uTorsoComp)
-	print(state._NAME..' | uTorsoNow', uTorsoNow)
-	--]]
-
-	-- Set the arm and torso commands
-	mcm.set_stance_uTorsoComp(uTorsoNow)
-	Body.set_larm_command_position(qLNext)
-	Body.set_rarm_command_position(qRNext)
-	t_command = t
-
-	-- Check if done and reset the iterators
-	if not moreL and not moreR then lPathIter, rPathIter = nil, nil end
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
-	-- For teleop if called next
-	--hcm.set_teleop_compensation(2)
-	local qcLArm = Body.get_larm_command_position()
-	local qcRArm = Body.get_rarm_command_position()
-	hcm.set_teleop_larm(qcLArm)
-  hcm.set_teleop_rarm(qcRArm)
-	hcm.set_teleop_compensation(1)
+	io.write(state._NAME, ' Exit\n')
+
+	if not okL or not okR then
+		local qLArm = Body.get_larm_position()
+		local qRArm = Body.get_rarm_position()
+		hcm.set_teleop_larm(qLArm)
+		hcm.set_teleop_rarm(qRArm)
+	else
+		local qcLArm = Body.get_larm_command_position()
+		local qcRArm = Body.get_rarm_command_position()
+		hcm.set_teleop_larm(qcLArm)
+		hcm.set_teleop_rarm(qcRArm)
+	end
+
 end
 
 return state

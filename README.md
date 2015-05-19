@@ -130,6 +130,14 @@ make
 make install
 ```
 
+### Beignet
+
+This is for OpenCL for the kinect2
+
+```
+http://www.freedesktop.org/wiki/Software/Beignet/
+```
+
 ### Ag Search
 ```
 cd ~/src

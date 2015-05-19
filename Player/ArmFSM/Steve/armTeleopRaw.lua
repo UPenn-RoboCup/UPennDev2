@@ -63,7 +63,7 @@ function state.update()
 		lco = lco1
 	end
 	if teleopRArm~=teleopRArm1 then
-		teleopLArm = teleopLArm1
+		teleopRArm = teleopRArm1
 		print(state._NAME,'R target', teleopRArm)
 		local lco1, rco1 = movearm.goto(false, {
 			q = teleopRArm, timeout = 5, via='joint_preplan'

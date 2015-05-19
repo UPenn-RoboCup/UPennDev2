@@ -46,7 +46,7 @@ LDFLAGS+=-lusb-1.0
 
 ifdef USE_OPENCL
 INCLUDES+=-DGLEW_MX -DGLEW_STATIC -DUSE_OPENCL -DLIBFREENECT2_WITH_OPENCL_SUPPORT
-LDFLAGS+=-lglfw3 -lGLEW -lGLEWmx
+LDFLAGS+=-lglfw -lGLEW -lGLEWmx
 endif
 
 ifeq ($(shell uname),Darwin)

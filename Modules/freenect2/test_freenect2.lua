@@ -9,8 +9,11 @@ local meta = {
 }
 
 -- Log data with libLog
-for i=1,120 do
-	print(i)
+--for i=1,120 do
+i = 0
+while true do
+if i%10==0 then print(i) end
+i = i + 1
 	rgb, depth, ir = freenect2.update()
 end
 

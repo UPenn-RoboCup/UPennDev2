@@ -111,9 +111,11 @@ end
 -- Load Paths and Configurations --
 -----------------------------------
 -- Custom Config files
+local pname = {HOME, '/Config/THOROP0/?.lua;', package.path}
+package.path = table.concat(pname)
 if Config.demo then table.insert(exo, 'Demo') end
 for _,v in ipairs(exo) do
-	local fname = {'Config_', Config.PLATFORM_NAME, '_', v}
+	local fname = {'Config_THOROP0_', v}
 	local filename = table.concat(fname)
   assert(pcall(require, filename))
 end

@@ -1,20 +1,19 @@
 -- Global Config
 Config = {}
 
-
---IS_STEVE = true
-IS_STEVE = false
-
+IS_STEVE = true
+--IS_STEVE = false
 
 -- General parameters
-Config.PLATFORM_NAME = 'THOROP'
+Config.PLATFORM_NAME = 'THOROP1'
+
 Config.nJoint = 37
 Config.IS_COMPETING = false
 Config.demo = true
 
 -- Printing of debug messages
 Config.debug = {
-	webots_wizard = false,
+  webots_wizard = false,
   obstacle = false,
   follow = false,
   approach = false,
@@ -44,8 +43,24 @@ if IS_WEBOTS then
   -- Config.kinect_timestep = 30
 end
 
+Config.toeheel_lift = true
 Config.enable_touchdown = false
 Config.raise_body = true
+
+Config.waist_testing = true
+
+
+Config.use_jacobian_arm_planning = true
+--Config.use_jacobian_arm_planning = false
+
+Config.piecewise_step = true
+--Config.piecewise_step = false
+
+--birdwalk TODO : IMU and FT values swap
+--Config.birdwalk = 1 --testing birdwalk
+
+Config.enable_jacobian_test = false 
+
 
 ----------------------------------
 -- Application specific Configs --
@@ -68,7 +83,8 @@ if IS_STEVE then
 	end
 else
 	--Config.testfile = 'test_balance'
---  Config.testfile = 'test_testbed'
+  --Config.testfile = 'test_testbed'
+ -- Config.testfile = 'test_walkstuff'
     Config.testfile = 'test_teleop2'
 	exo = {
 		'Robot','Walk','Net','Manipulation',
@@ -79,17 +95,27 @@ else
 	end
 end
 
-Config.use_jacobian_arm_planning = true
---Config.use_jacobian_arm_planning = false
+if HOSTNAME=="teddy2" then
+  exo[1]='Robot_teddy2'
+end
+
+if IS_WEBOTS then
+	--Config.birdwalk = 1 --testing birdwalk
+end
+
+
+
 
 
 -----------------------------------
 -- Load Paths and Configurations --
 -----------------------------------
 -- Custom Config files
+local pname = {HOME, '/Config/THOROP0/?.lua;', package.path}
+package.path = table.concat(pname)
 if Config.demo then table.insert(exo, 'Demo') end
 for _,v in ipairs(exo) do
-	local fname = {'Config_', Config.PLATFORM_NAME, '_', v}
+	local fname = {'Config_THOROP0_', v}
 	local filename = table.concat(fname)
   assert(pcall(require, filename))
 end

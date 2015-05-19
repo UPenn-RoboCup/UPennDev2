@@ -41,8 +41,8 @@ sudo usermod -a -G dialout thor
 sudo usermod -a -G video thor
 sudo apt-get install git htop build-essential automake gfortran pkg-config \
 libtool libudev-dev zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev \
-libpng12-dev libjpeg-dev libncurses5-dev uvcdynctrl \
-libglfw3-dev libglew-dev
+libpng12-dev libjpeg-dev libncurses5-dev uvcdynctrl
+#libglfw3-dev libglew-dev libglewmx-dev
 ```
 
 ### Speaker

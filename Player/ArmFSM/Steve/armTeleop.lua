@@ -32,6 +32,7 @@ function state.entry()
 	local qcWaist = Body.get_waist_command_position()
 	local trL = movearm.lPlanner.forward(qcLArm, qcWaist)
 	local trR = movearm.rPlanner.forward(qcRArm, qcWaist)
+	--[[
 	print('debugL')
 	print(require'Transform'.tostring(trL))
 	print()
@@ -39,8 +40,7 @@ function state.entry()
 	print('debugR')
 	print(require'Transform'.tostring(trR))
 	print()
-	--print(require'Transform'.tostring(trRnohand))
-	local trR = movearm.rPlanner.forward(qcRArm, qcWaist)
+	--]]
 	quatpL = toQ(trL)
 	quatpR = toQ(trR)
 	hcm.set_teleop_tflarm(quatpL)
@@ -63,6 +63,8 @@ function state.entry()
 	okL = lco==false
 	okR = rco==false
 
+	--print('Entry', lco, rco)
+
 end
 
 function state.update()
@@ -75,6 +77,7 @@ function state.update()
 	-- Grab the transform
 	local quatpL1 = hcm.get_teleop_tflarm()
 	local quatpR1 = hcm.get_teleop_tfrarm()
+	--[[
 	if quatpL1~=quatpL then
 		print(state._NAME,'L target')
 		local tfL = fromQ(quatpL1)
@@ -95,6 +98,7 @@ function state.update()
 		lco = lco1
 		quatpR = quatpR1
 	end
+	--]]
 	
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)

@@ -114,7 +114,7 @@ fsm.Arm = {
 	--]]
 
 	-- Ready pose (for manipulating)
-	{'armReady', 'timeout', 'armReady'},
+	--{'armReady', 'timeout', 'armReady'},
 	{'armReady', 'teleop', 'armTeleop'},
 	{'armReady', 'teleopraw', 'armTeleopRaw'},
 	{'armReady', 'init', 'armInit'},

@@ -13,7 +13,7 @@ local tinsert = require'table'.insert
 local fabs = require'math'.abs
 local min, max = require'math'.min, require'math'.max
 local INFINITY = require'math'.huge
-local EPSILON = 1e-3 * DEG_TO_RAD
+local EPSILON = 1e-2 * DEG_TO_RAD
 
 local function qDiff(iq, q0)
 	local diff_use = {}

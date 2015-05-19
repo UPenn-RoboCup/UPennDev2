@@ -78,12 +78,14 @@ local char_to_rfinger = {
 
 local function print_override()
   print( util.color('Override:','yellow'), 
-      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      string.format("%.2f %.2f %.2f / %.1f %.1f %.1f",
       override_target[1],
       override_target[2],
       override_target[3],
       override_target[4]*180/math.pi,
-      override_target[5]*180/math.pi))
+      override_target[5]*180/math.pi,
+      override_target[6]*180/math.pi
+      ))
 
 end
 

@@ -572,7 +572,7 @@ function state.update()
 
   --if t-t_entry > timeout then return'timeout' end
   if enable_force_control then forcecontrol(dt) end
---  jacobian_control(dt)
+  if Config.enable_jacobian_test then jacobian_control(dt) end
 
   
 end

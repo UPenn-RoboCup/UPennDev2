@@ -6,10 +6,14 @@ cal[HOSTNAME] = {}
 cal["asus"] = {}
 cal["alvin"]={}
 cal["teddy"]={}
+cal["teddy2"]={}
 cal["chipette"]={}
 cal["teddy2"]={}
 
 cal["alvin"].legBias=vector.new({
+   0,0,0,0,0,0, 0,0,0,0,0,0})
+
+cal["asus"].legBias=vector.new({
    0,0,0,0,0,0, 0,0,0,0,0,0})
 
 -- Updated date: Tue Sep 23 00:00:50 2014

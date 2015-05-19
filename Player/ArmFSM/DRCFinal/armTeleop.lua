@@ -8,24 +8,10 @@ local libArmPlan
 if Config.use_jacobian_arm_planning then
   libArmPlan = require 'libArmPlanJacobian'
   print("Jacobian arm planning loaded")
-else
-  libArmPlan = require 'libArmPlan'
-end
+else libArmPlan = require 'libArmPlan' end
 local arm_planner = libArmPlan.new_planner()
-
-local handle_clearance = vector.new({0,0,-0.05})
-local lhand_rpy0 = Config.armfsm.teleop.lhand_rpy0 or {0,0,45*DEG_TO_RAD}
-local rhand_rpy0 = Config.armfsm.teleop.rhand_rpy0 or {0,0,45*DEG_TO_RAD}
-
-local trLArm0, trRArm0, trLArm1, trRArm1, qLArm0, qRarm0
-local trLArmLast, trRArmLast
 local stage
-
-local qLArmInit0,qRArmInit0
 local plan_valid = true
-
-
-
 
 
 function check_override()
@@ -41,7 +27,7 @@ local function update_override()
   tool_model[1] + override[1],
   tool_model[2] + override[2],
   tool_model[3] + override[3],
-  tool_model[4] + override[6]*5*DEG_TO_RAD, --yaw
+  tool_model[4] + override[6], --yaw
   hcm.get_tool_model()
   hcm.set_tool_model(tool_model)
   print( util.color('Tool model:','yellow'), string.format("%.2f %.2f %.2f / %.1f",
@@ -57,7 +43,7 @@ local function revert_override()
   tool_model[1] - override[1],
   tool_model[2] - override[2],
   tool_model[3] - override[3],
-  tool_model[4] - override[6]*5*DEG_TO_RAD, --yaw
+  tool_model[4] - override[6], --yaw
   hcm.get_tool_model()
   hcm.set_tool_model(tool_model)
   print( util.color('Tool model:','yellow'), string.format("%.2f %.2f %.2f / %.1f",
@@ -67,96 +53,46 @@ local function revert_override()
 end
 local function confirm_override() hcm.set_state_override({0,0,0,0,0,0,0}) end
 
-local function get_tool_tr()
-  local handrpy = rhand_rpy0
+local function get_tool_tr()  
   local tool_model = hcm.get_tool_model()
   local hand_pos = vector.slice(tool_model,1,3)  
-  local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], handrpy[1],handrpy[2],handrpy[3]}
---  print("hand transform:",util.print_transform(tool_tr))                    
+  local tool_tr = {hand_pos[1],hand_pos[2],hand_pos[3], 0,0,tool_model[4]}
   return tool_tr
 end
 
-
-
 function state.entry()
   print(state._NAME..' Entry' )
-  -- Update the time of entry
-  local t_entry_prev = t_entry
+  local t_entry_prev = t_entry   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
-
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-
-  qLArm0 = qLArm
-  qRArm0 = qRArm
-  
-  trLArm0 = Body.get_forward_larm(qLArm0)
-  trRArm0 = Body.get_forward_rarm(qRArm0)  
-
-  trLArmLast, trRArmLast = Body.get_forward_larm(qLArm0), Body.get_forward_rarm(qRArm0)  
-
   arm_planner:set_hand_mass(0,0)
   mcm.set_arm_endpoint_compensation({0,1}) -- compensate for torso movement for only right hand (left arm fixed)
-  arm_planner:set_shoulder_yaw_target(nil,nil)
-  
-  arm_planner:reset_torso_comp(qLArm0,qRArm0)
-  
---[[  
-  hcm.set_hands_left_tr(trLArm1)
-  hcm.set_hands_right_tr(trRArm1)
-  hcm.set_hands_left_tr_target(trLArm1)
-  hcm.set_hands_right_tr_target(trRArm1)
-  
-  --local wrist_seq = {{'wrist',trLArm1, trRArm1}}
- hcm.set_tool_model({trRArm1[1],trRArm1[2],trRArm1[3],0})
---]]
-
-  plan_valid,stage = arm_planner:plan_arm_sequence(Config.armfsm.teleop.arminit,stage,"wristturn")  
+--  arm_planner:set_shoulder_yaw_target(nil,nil)
+--  arm_planner:reset_torso_comp(qLArm0,qRArm0)
+  plan_valid,stage = arm_planner:plan_arm_sequence(Config.armfsm.teleop.arminit,stage,"arminit")  
 end
 
 
 function state.update()
 --  print(state._NAME..' Update' )
-  -- Get the time of update
-  if not plan_valid then 
+  if not plan_valid then  
     print("PLANNING ERROR!!!!")
     return "done" end
   local t  = Body.get_time()
-  local dt = t - t_update
-  -- Save this at the last update time
-  t_update = t
-  --if t-t_entry > timeout then return'timeout' end
+  local dt = t - t_update  
+  t_update = t  
 
   local trLArm,trRArm=arm_planner:load_current_condition()
+  --DESIRED WRIST ANGLE: L 90,-90 R -90, 90
 
-
-
-  local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()
-
-  local Lwrist1 = qLArm[5]-math.pi/2
-  local Lwrist2 = qLArm[7]+math.pi/2
-
-  local Rwrist1 = qRArm[5]+math.pi/2
-  local Rwrist2 = qRArm[7]-math.pi/2
-
---print("Wrist:",Rwrist1*180/math.pi,Rwrist2*180/math.pi)
-
-  if math.abs(Rwrist1)>math.pi*1.5 
-    or math.abs(Rwrist1)>math.pi*1.5 then
-  --  print("wrist1 out of range!!!")
-  end
-
-  if stage=="wristturn" then --Turn yaw angles first
+  if stage=="arminit" then --Turn yaw angles first
     if arm_planner:play_arm_sequence(t) then 
       hcm.set_tool_model({trRArm[1],trRArm[2],trRArm[3],trRArm[6]})
       stage="teleopwait" 
     end
   elseif stage=="teleopwait" then          
     if hcm.get_state_proceed(0)== -1 then       
-      plan_valid,stage = arm_planner:plan_arm_sequence(
-        Config.armfsm.teleop.armuninit,stage,"armposreset")        
+      plan_valid,stage = arm_planner:plan_arm_sequence(Config.armfsm.teleop.armuninit,stage,"armuninit")        
       if not plan_valid then
         print("cannot return to initial pose!")
         plan_valid=true
@@ -178,28 +114,21 @@ function state.update()
         update_override()
         local arm_seq = {{'move',nil,get_tool_tr()}}
         plan_valid,stage = arm_planner:plan_arm_sequence(arm_seq,stage,"teleopmove")
-        if plan_valid then
-          confirm_override()
+        if plan_valid then confirm_override()
         else revert_override()
           plan_valid,stage=true,"teleopwait"
         end
       end
     end
 
-
   elseif stage=="teleopmove" then 
     if arm_planner:play_arm_sequence(t) then 
       print("Current rarm:",util.print_transform(trRArm,3))
       stage="teleopwait" 
     end
-  elseif stage=="armposreset" then 
-    if arm_planner:play_arm_sequence(t) then 
-      local wrist_seq = {{'wrist',trLArm0, trRArm0}}
-      arm_planner:set_shoulder_yaw_target(nil, Config.arm.ShoulderYaw0[2])   
-      plan_valid,stage = arm_planner:plan_arm_sequence(wrist_seq,stage,"wristreset")      
-    end
-  elseif stage=="wristreset" then 
-    if arm_planner:play_arm_sequence(t) then return "done" end
+  elseif stage=="armuninit" then 
+    --TODO: arm is not going back exactly to the initial position (due to the body movement)    
+    if arm_planner:play_arm_sequence(t) then return "done" end    
   end
   hcm.set_state_proceed(0)
 end

@@ -207,6 +207,11 @@ function state.exit()
   end
   
   print(state._NAME..' Exit' )
+
+--SJ: now we store the COM offset for default arm posture
+--needed for arm returning
+  local COMoffset = mcm.get_stance_COMoffset()
+  mcm.set_stance_COMoffsetPose1(COMoffset)
 end
 
 return state

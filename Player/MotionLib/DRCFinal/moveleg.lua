@@ -475,6 +475,12 @@ end
   qLegs[6]=qLegs[6]+aShiftX[1]
   qLegs[12]=qLegs[12]+aShiftX[2]
 
+  if Config.walk.anklePitchLimit then
+    qLegs[5]=math.max(qLegs[5],Config.walk.anklePitchLimit[1])
+    qLegs[11]=math.max(qLegs[11],Config.walk.anklePitchLimit[1])
+    qLegs[5]=math.min(qLegs[5],Config.walk.anklePitchLimit[2])
+    qLegs[11]=math.min(qLegs[11],Config.walk.anklePitchLimit[2])
+  end
 
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))

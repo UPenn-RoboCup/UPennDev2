@@ -175,8 +175,12 @@ if HOSTNAME=="teddy2" then
   walk.footY = 0.115 --teddy, even wider
   walk.supportY = -0.01 
 
-
+  walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
 end
+
+--testing
+walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD
+
 
 ------------------------------------
 -- Associate with the table

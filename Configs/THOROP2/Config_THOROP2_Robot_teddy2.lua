@@ -314,7 +314,8 @@ servo.direction = vector.new({
 	1,1,-1, 1, 1,1,1, --LArm, mk2
 	-1, -1,-1, -1,  1,1, --LLeg, mk1
 	-1, -1,1,   1,  -1,1, --RLeg, mk1
-	-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
+--	-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
+	-1,1,1, -1, 1,1,1, --RArm, teddy2, tested, rshoulder yaw fix
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)

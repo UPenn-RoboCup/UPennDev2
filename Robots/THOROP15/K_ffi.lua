@@ -100,12 +100,14 @@ K.forward_arm = fk_arm
 -- Forward with respect to the torso
 -- Use waist yaw only for now
 local function forward_larm(qLArm, qWaist)
-	qWaist = qWaist or {0,0}
-	return Ttranslate(fk_arm({qWaist[1], unpack(qLArm)}, true), handOffsetX, handOffsetY, handOffsetZ), {qLArm[3]}
+	qWaist = qWaist or {0, 0}
+	local nohand = Tnew(fk_arm({qWaist[1], unpack(qLArm)}, true))
+	return Ttranslate(nohand, handOffsetX, handOffsetY, handOffsetZ), {qLArm[3]}
 end
 local function forward_rarm(qRArm, qWaist)
-	qWaist = qWaist or {0,0}
-	return Ttranslate(fk_arm({qWaist[1], unpack(qRArm)}, false), handOffsetX, handOffsetY, handOffsetZ), {qRArm[3]}
+	qWaist = qWaist or {0, 0}
+	local nohand = Tnew(fk_arm({qWaist[1], unpack(qRArm)}, false))
+	return Ttranslate(nohand, handOffsetX, handOffsetY, handOffsetZ), {qRArm[3]}
 end
 K.forward_larm = forward_larm
 K.forward_rarm = forward_rarm

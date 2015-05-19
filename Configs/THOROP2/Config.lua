@@ -59,6 +59,7 @@ Config.piecewise_step = true
 --birdwalk TODO : IMU and FT values swap
 --Config.birdwalk = 1 --testing birdwalk
 
+Config.enable_jacobian_test = false 
 
 
 ----------------------------------

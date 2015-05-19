@@ -238,11 +238,15 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
   local trArmNext = Body.get_forward_rarm(qArmTarget)
   local trArmDiffActual = util.diff_transform(trArmNext,trArm)
   local linearDistActual = util.norm(trArmDiffActual,3)
-  local linearVelActual = linearDistActual/dt_step
+  local angularDistActual = 
+    math.abs(trArmDiffActual[4])+math.abs(trArmDiffActual[5])+math.abs(trArmDiffActual[6])
 
-  if linearVelActual<0.001 then
-    print("ARM STUCK!!!!")
-    return 
+  local linearVelActual = linearDistActual/dt_step
+  local angularVelActual = angularDistActual/dt_step
+
+  if linearVelActual<0.001 and angularVelActual<1*DEG_TO_RAD then
+    print("Movement stuck")
+    return
   end
 
 --  if debug and isLeft==0 then
@@ -354,8 +358,11 @@ local function plan_unified(self, plantype, init_cond, init_param, target_param)
 
   while not done and not failed  do --we were skipping the last frame
     local t01 = unix.time()    
-    if t01-t00>3 then
-      print("PLANNING TOOK TOO LONG!!!!!")
+
+    local plan_timeout = 1.0
+
+    if t01-t00>plan_timeout then
+      print("Arm planning stuck")
       return
     end
     local new_cond, dt_step_current, torsoCompDone, t10, t11

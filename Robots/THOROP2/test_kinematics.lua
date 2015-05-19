@@ -196,6 +196,6 @@ for i,q in ipairs(qs) do
 	local J2 = torch.Tensor(K2.jacobian_larm(q))
 	local d = (J2 - J):sum()
 	--print(d)
-	assert( d < 1e-10, string.format('BAD %d: %f',i,d)
+	assert( d < 1e-10, string.format('BAD %d: %f',i,d))
 end
 print('Jacobian OK!')

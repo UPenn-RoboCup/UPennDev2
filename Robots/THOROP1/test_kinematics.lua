@@ -57,8 +57,10 @@ for i, q in ipairs(qs) do
 	fL2 = vector.new(T.position6D(K2.forward_larm(q, qWaist)))
 	fR2 = vector.new(T.position6D(K2.forward_rarm(q, qWaist)))
 	t2 = unix.time()
-	assert(vector.norm(fL2-fL)<0.001)
-	assert(vector.norm(fR2-fR)<0.001)
+	assert(vector.norm(fL2-fL)<0.001, 
+		string.format('%s => %s', tostring(fL), tostring(fL2)))
+	assert(vector.norm(fR2-fR)<0.001,
+		string.format('%s => %s', tostring(fR), tostring(fR2)))
 	dt = vector.new{t1-t0, t2-t1}
 	dt_all = dt_all + dt
 	fkLs[i] = K2.forward_larm(q, qWaist)
@@ -139,13 +141,13 @@ print()
 util.ptorch(J, 5, 3)
 print()
 
-local J2 = torch.Tensor(K2.jacobian(qArm))
+local J2 = torch.Tensor(K2.jacobian_rarm(qArm))
 print('Jacobian 2')
 util.ptorch(J2, 5, 3)
 print()
 
 print('Jacobian Waist')
-local J3 = torch.Tensor(K2.jacobian_waist({qWaist[1], unpack(qArm)}))
+local J3 = torch.Tensor(K2.jacobian_larm({qWaist[1], unpack(qArm)}))
 util.ptorch(J3, 5, 3)
 
 local t0 = unix.time()
@@ -191,9 +193,9 @@ for i,q in ipairs(qs) do
 	local J = torch.Tensor(JacArm):resize(6,7)
 	-- Invert this... SJ *may* have an error. I doubt it, of course :D
 	J:sub(4,6,1,7):mul(-1)
-	local J2 = torch.Tensor(K2.jacobian(q))
+	local J2 = torch.Tensor(K2.jacobian_larm(q))
 	local d = (J2 - J):sum()
 	--print(d)
-	assert( d < 1e-10, 'BAD '..d)
+	assert( d < 1e-10, string.format('BAD %d: %f',i,d))
 end
 print('Jacobian OK!')

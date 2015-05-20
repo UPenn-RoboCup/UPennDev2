@@ -13,20 +13,24 @@ local function get_armplan(plan)
 	local wpath = {}
 	--
 	local lpath = {}
-	if lco then
+	if type(lco)=='coroutine' then
 		while coroutine.status(lco)~='dead' do
 			local okL, qLWaypoint, qWaistpoint = coroutine.resume(lco)
 			table.insert(lpath, qLWaypoint)
 			if qWaistpoint then table.insert(wpath, qWaistpoint) end
 		end
+	else
+		print('lco', lco)
 	end
 	local rpath = {}
-	if rco then
+	if type(rco)=='coroutine' then
 		while coroutine.status(rco)~='dead' do
 			local okR, qRWaypoint, qWaistpoint = coroutine.resume(rco)
 			table.insert(rpath, qRWaypoint)
 			if qWaistpoint then table.insert(wpath, qWaistpoint) end
 		end
+	else
+		print('rco', rco)
 	end
 	-- TODO: Check that the waist was not twice populated
 	return {lpath, rpath, wpath}

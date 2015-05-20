@@ -49,22 +49,12 @@ fsm.Arm = {
 	{'armIdle', 'timeout', 'armIdle'},
 	{'armIdle', 'init', 'armInit'},
 	-- Init
-	--{'armInit', 'timeout', 'armInit'},
-	--{'armInit', 'done', 'armInit'},
 	{'armInit', 'ready', 'armReady'},
 	{'armInit', 'teleopraw', 'armTeleopRaw'},
-	-- Test the jacobian
-	--[[
-	{'armInit', 'jacobian', 'armJacobian'},
-	{'armJacobian', 'done', 'armTeleop'},
-	--]]
-
 	-- Ready pose (for manipulating)
-	--{'armReady', 'timeout', 'armReady'},
 	{'armReady', 'teleop', 'armTeleop'},
 	{'armReady', 'teleopraw', 'armTeleopRaw'},
 	{'armReady', 'init', 'armInit'},
-	{'armReady', 'jacobian', 'armJacobian'},
 	{'armReady', 'pulldoor', 'armPullDoor'},
 	-- Teleop
 	{'armTeleop', 'init', 'armInit'},
@@ -78,11 +68,16 @@ fsm.Arm = {
 	{'armTeleopRaw', 'ready', 'armReady'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
 	-- armJacobian is for testing purposes only!
+	--[[
+	{'armInit', 'jacobian', 'armJacobian'},
+	{'armJacobian', 'done', 'armTeleop'},
+	{'armReady', 'jacobian', 'armJacobian'},
 	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
 	{'armJacobian', 'timeout', 'armJacobian'},
 	{'armJacobian', 'done', 'armTeleop'},
 	{'armJacobian', 'ready', 'armReady'},
 	{'armJacobian', 'pulldoor', 'armPullDoor'},
+	--]]
 	-- armPullDoor
 	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
 	{'armPullDoor', 'done', 'armTeleop'},

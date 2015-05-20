@@ -51,7 +51,8 @@ local tNeck = trans(unpack(Config.head.neckOffset))
 local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
 
 local function get_tf()
-        local rpy = Body.get_rpy()
+        print('get_tf')
+	local rpy = Body.get_rpy()
 	local pose = wcm.get_robot_pose()
 	local bh = mcm.get_walk_bodyHeight()
 	local bo = mcm.get_status_bodyOffset()
@@ -98,7 +99,6 @@ local function update(rgb, depth)
 	t_send = t
 	local tfL, tfG = get_tf()
 	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
-	local head_angles = Body.get_head_position()
 	
 	-- Form color
 	rgb.t = t
@@ -106,7 +106,6 @@ local function update(rgb, depth)
 	rgb.c = 'jpeg'
 	rgb.tfL16 = tfL_flat
 	rgb.tfG16 = tfG_flat
-	rgb.head_angles = head_angles
 	
 	local j_rgb = rgb.data
 	if IS_WEBOTS then j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height) end
@@ -122,7 +121,6 @@ local function update(rgb, depth)
 	depth.c = 'raw'
 	depth.tfL16 = tfL_flat
 	depth.tfG16 = tfG_flat
-	depth.head_angles = head_angles
 	
 	local ranges = depth.data
 	depth.data = nil
@@ -208,8 +206,11 @@ local t_debug = 0
 --print('Before entry()')
 entry()
 --print('After entry()')
+local i=1
 while running do
 	local rgb, depth, ir = freenect2.update()
+	print(i)
+	i = i+1
 	local t = get_time()
 	rgb.t = t
 	depth.t = t

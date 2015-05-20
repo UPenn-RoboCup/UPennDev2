@@ -48,10 +48,14 @@ local function check_send_mesh()
 			--mesh0_ch:send{mpack(metadata), c_mesh}
 		end
 		if mesh0_udp_ch then
-			metadata.c = 'png'
+--print('SENDING!!!')
+			--metadata.c = 'png'
+			--local meta = mpack(metadata)
+			--local ret, err = mesh0_udp_ch:send(meta..c_mesh)
+			metadata.c = 'raw'
 			local meta = mpack(metadata)
-			local ret, err = mesh0_udp_ch:send(meta..c_mesh)
-			--print('Mesh0 | Sent UDP', unpack(ret))
+			local ret, err = mesh0_udp_ch:send(meta..mesh0:get_raw_string())
+--			print('Mesh0 | Sent UDP', unpack(ret))
 		end
 		io.write('Mesh0 | Sending\n')
 	end

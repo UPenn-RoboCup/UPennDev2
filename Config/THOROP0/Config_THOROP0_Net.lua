@@ -4,7 +4,7 @@ assert(Config, 'Need a pre-existing Config table!')
 local IP = {
 	STEVE = 23,
 	SJ = 200,
-	BHORAM = 54,
+	BHORAM = 57,
 	JQ = 150,
 	--
 	CHIP = 245,
@@ -13,7 +13,7 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.STEVE
+local WHO = IP.BHORAM
 local ROBOT_IP = IP.DALE
 local TEAM_NUMBER = 8
 
@@ -36,7 +36,7 @@ local net = {
 	}
 }
 
-if Config.IS_COMPETING then
+if IS_COMPETING then
 	net.field_computer = '10.'..TEAM_NUMBER..'.3.'..IP.FIELD
 	--
 	net.robot.wired = '10.'..TEAM_NUMBER..'.3.'..ROBOT_IP
@@ -47,14 +47,15 @@ if Config.IS_COMPETING then
 	-- Broadcast from the robot to the operator(s)
 	net.broadcast.wired = '10.'..TEAM_NUMBER..'.2.'..ROBOT_IP
 	net.broadcast.wireless = net.broadcast.wired
-end
 
-net.ping = {
-	udp = 17000,
-	tcp = 2000,
-	pub = 'ping',
-	sub = 'go',
-}
+	net.ping = {
+		udp = 17000,
+		tcp = 2000,
+		pub = 'ping',
+		sub = 'go',
+	}
+
+end
 
 local streams = {}
 net.streams = streams

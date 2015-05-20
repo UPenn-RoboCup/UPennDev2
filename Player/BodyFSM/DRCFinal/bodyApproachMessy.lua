@@ -1,4 +1,4 @@
---Messier but hopefully better approach code using foot step planning 
+--Messier but hopefully better approach code using foot step planning
 
 
 
@@ -66,7 +66,7 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   local uLeftGlobal = util.pose_global(util.pose_relative(uLeft,uTorsoCurrent),pose)
   local uRightGlobal = util.pose_global(util.pose_relative(uRight,uTorsoCurrent),pose)
 
---[[  
+--[[
   print("-----------")
   print("uTorso:",unpack(uTorso))
   print("pose:",unpack(pose))
@@ -92,20 +92,20 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   local vStepTarget
 
 --  if dist > 0.30 then --robot away from traget, aim for the center position
-  if false then    
+  if false then
     local angleTurn
     angleTurn = math.atan2(uTargetCenter[2],uTargetCenter[1])
-    if dist>0.50 then 
+    if dist>0.50 then
       vStepTarget={uTargetCenter[1],uTargetCenter[2],angleTurn}
     else
       vStepTarget={uTargetCenter[1],uTargetCenter[2],uTargetCenter[3]}
     end
 
 
-  else  
-    local supportStr 
+  else
+    local supportStr
     if last_step==1 then
-      if supportLeg==0 then 
+      if supportLeg==0 then
         uRightTargetFromTorso = util.pose_global({0, -2*Config.walk.footY,0},uLeftFromTorso)
         uLSupportNext = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftFromTorso)
         uRSupportNext = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTargetFromTorso)
@@ -116,15 +116,15 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
         uRSupportNext = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTargetFromTorso)
         uTorsoNext = util.se2_interpolate(0.5, uLSupportNext, uRSupportNext)
       end
-      local vStep = {uTorsoNext[1],uTorsoNext[2],uTorsoNext[3]}    
+      local vStep = {uTorsoNext[1],uTorsoNext[2],uTorsoNext[3]}
       last_step=2
       print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*180/math.pi))
       return vStep,true
     elseif last_step==2 then
-      return {0,0,0},true      
+      return {0,0,0},true
     end
 
-    if supportLeg==0 then 
+    if supportLeg==0 then
       --Last step was left support step (right foot movement)
       --Next step should be left foot movement
       supportStr='Left foot move next'
@@ -141,15 +141,15 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
       uTorsoNext = util.se2_interpolate(0.5, uLSupportNext, uRSupportNext)
       vStepTarget = {uTorsoNext[1],uTorsoNext[2],uTorsoNext[3]}
     end
-    
+
 --      print("uLeftSN:",unpack(uLSupportNext))
 --      print("uRightSN:",unpack(uRSupportNext))
 
 
   end
-  
+
   --local vStepTarget = {uTorsoNext[1],uTorsoNext[2],0}
-  
+
 
   local maxStep = 0.06
   if Config.maxStepApproach1 then
@@ -192,8 +192,8 @@ print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*18
 
   print("uSLeftGlobal:",unpack(uLSupportNextGlobal))
   print("uSRightGlobal:",unpack(uRSupportNextGlobal))
-  print("uTNGlobal:",unpack(uTorsoNextGlobal))  
-  
+  print("uTNGlobal:",unpack(uTorsoNextGlobal))
+
   print("vStep:",unpack(vStep))
   print("uTorsoTargetActual:",unpack(uTorsoTargetActual))
   --]]
@@ -220,10 +220,10 @@ print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*18
       math.abs(util.mod_angle(uRNextGlobal[3]-uRightGlobalTarget[3]))<3*math.pi/180 then
 --print("APPROACHED")
 --      print("uRTarget:",unpack(uRightGlobalTarget))
-      last_step = 1        
+      last_step = 1
     end
 
-  
+
 
   else --current left support, left foot movement next
     local uLSupportNext = {2*uTorsoTargetActual[1]-uRSupport[1],2*uTorsoTargetActual[2]-uRSupport[2],2*uTorsoTargetActual[3]-uRSupport[3]}
@@ -246,7 +246,7 @@ print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*18
       math.abs(uLNextGlobal[2]-uLeftGlobalTarget[2])<0.01 and
       math.abs(util.mod_angle(uLNextGlobal[3]-uLeftGlobalTarget[3]))<3*math.pi/180 then
 --      print("uLTarget:",unpack(uLeftGlobalTarget))
-      last_step = 1        
+      last_step = 1
     end
   end
 
@@ -256,7 +256,7 @@ end
 
 
 local function update_target()
---[[  
+--[[
 
   local pose = wcm.get_robot_pose()
   local pose_0 = {0,0,0}
@@ -265,7 +265,7 @@ local function update_target()
   local ballx, bally = 0,0 --This should be the relative position of the blocks
   local approachTargetX, approachTargetY = 0.03,0
 
-  
+
 
   uLeftGlobalTarget = util.pose_global({
     ballx - approachTargetX - Config.walk.supportX,
@@ -277,7 +277,7 @@ local function update_target()
     0},pose_0)
 --]]
 
---Stationary target case  
+--Stationary target case
   uLeftGlobalTarget = util.pose_global({-Config.walk.supportX,Config.walk.footY,0},wcm.get_step_pose() )
   uRightGlobalTarget = util.pose_global({-Config.walk.supportX,-Config.walk.footY,0},wcm.get_step_pose() )
 end
@@ -285,11 +285,11 @@ end
 
 local finished=false
 
-local function update_velocity()    
+local function update_velocity()
   update_target()
   local vStep,arrived = step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   mcm.set_walk_vel(vStep)
-  if arrived then    
+  if arrived then
     mcm.set_walk_stoprequest(1)
     finished=true
     return 'done'
@@ -307,8 +307,8 @@ function state.entry()
 
   t_entry = Body.get_time()
   t_update = t_entry
-  
-  last_ph = 0  
+
+  last_ph = 0
   last_step = 0
   wcm.set_robot_etastep(-1) --we're in approach
   finished=false
@@ -318,7 +318,7 @@ function state.entry()
     finished = true --don't need to walk, just exit
     pose0 = wcm.get_robot_pose()
   else
-    print('bodyApproach2 | Waypoint', move_target)  
+    print('bodyApproach2 | Waypoint', move_target)
     local pose = wcm.get_robot_pose()
     local global_target_pose = util.pose_global(move_target,pose)
 
@@ -327,14 +327,14 @@ function state.entry()
     --print("Target pose:",unpack(global_target_pose))
     local movement = util.pose_relative(global_target_pose,pose)
     print(string.format("Target movement: %.3f %.3f %.1f",movement[1],movement[2],movement[3]*180/math.pi))
-    
+
     wcm.set_step_pose(global_target_pose)
-    motion_ch:send'hybridwalk'    
+    motion_ch:send'hybridwalk'
   end
   first_step=0
 end
 
-function state.update()  
+function state.update()
   if finished then
     if mcm.get_walk_ismoving()==0 then return "done" end
     return
@@ -347,12 +347,12 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  --2 3 4 5 for stance init walk end 
+  --2 3 4 5 for stance init walk end
   if mcm.get_motion_state()==4 then
     local check_ph = 0.95
     local ph = mcm.get_status_ph()
     if last_ph<check_ph and ph>=check_ph then update_velocity() end
-    last_ph = ph  
+    last_ph = ph
   end
 end
 

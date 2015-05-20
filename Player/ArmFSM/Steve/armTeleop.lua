@@ -18,7 +18,7 @@ local lco, rco
 local okL, qLWaypoint
 local okR, qRWaypoint
 local quatpL, quatpR
-local default_weights = {0,1,0}
+local default_weights = {1,1,0}
 
 function state.entry()
   print(state._NAME..' Entry')

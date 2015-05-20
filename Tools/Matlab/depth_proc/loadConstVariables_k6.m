@@ -24,24 +24,12 @@ Yind_ = (Yind/IMCY-1);
 Xind_c = (reshape(Xind,DEPTH_H,DEPTH_W)-IMCX)/IMCX; % index in 2D array representation
 Yind_c = (reshape(Yind,DEPTH_H,DEPTH_W)-IMCY)/IMCY; 
 
-
 % kinect default pose info
 %angles__ = [10 0 0];
 %T_kh = eye(4);% kinect to head joint 
 tr_kinect2head = zeros(3,1); % [-0.03; 0.06; -0.08];
-load('MASK2.mat')
-MASK = double(bw);
-clear bw;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
-% parameters 
-param_normalComputation = [21 5]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  
-thre_sValue = 0.07; % The smaller it is, the flatter the plane fit is 
-thre_clusterSize = 500; % number of clusters
-thre_memberSize = 200; % number of connected members (in the image domain)
-param_meanShiftResol = 0.55;% 0.6;         % mean shift resolution
-param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
 
-prevNormals = [];
-manualModel = [];
+
+
 
 

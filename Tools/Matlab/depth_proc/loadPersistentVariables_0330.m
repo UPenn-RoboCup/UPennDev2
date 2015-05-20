@@ -30,8 +30,8 @@ Yind_c = (reshape(Yind,DEPTH_H,DEPTH_W)-IMCY)/IMCY;
 %T_kh = eye(4);% kinect to head joint 
 tr_kinect2head = zeros(3,1); % [-0.03; 0.06; -0.08];
 load('MASK2.mat')
-MASK = double(bw);
-clear bw;
+%MASK = double(bw);
+%clear bw;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % parameters 
 param_normalComputation = [13 3]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  

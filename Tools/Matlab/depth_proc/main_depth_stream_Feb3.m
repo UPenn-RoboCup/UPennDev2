@@ -7,15 +7,11 @@ DEPTH_H = 424;
 DEPTH_MAX = 2000;%8000;
 DEPTH_MIN = 200;
 
-figure(1);
-h_depth = imagesc(zeros(DEPTH_H, DEPTH_W));
-caxis([DEPTH_MIN DEPTH_MAX]);
 %
 RGB_W = 1920;
 RGB_H = 1080;
 rgb_img = uint8(zeros([RGB_H, RGB_W, 3]));
-figure(2);
-h_rgb = image(rgb_img);
+
 
 % 1 second timeout
 s_depth = zmq('subscribe', 'tcp', '*', 43346);
@@ -52,7 +48,7 @@ while 1
             end
         elseif strcmp(char(metadata.id), 'k2_rgb') %%%%%%%%%%%%%%%%%%%%%%%%% RGB
             rgb_img = djpeg(raw);
-            set(h_rgb, 'CData', rgb_img);            
+            %set(h_rgb, 'CData', rgb_img);            
          
         else
             disp(char(metadata.id));

@@ -31,7 +31,7 @@ if isempty(p1) || (nargin == 3 && reset == 1)
     a2 = [0;0]; b2 = 0;
     theta_x = 0;
     inters = [0 0]';
-    prev_odo = metad.odom;
+  %  prev_odo = metad.odom;
     orig = prev_odo;
     Fx = BayesianFilter1D; %Fx = Fx.initialize(0, 4);
     Fy = BayesianFilter1D; %Fy = Fy.initialize(0, 4);

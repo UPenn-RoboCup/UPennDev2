@@ -1,6 +1,6 @@
 DEPTH_W = 512;
 DEPTH_H = 424;
-DEPTH_MAX = 2400; %8000;
+DEPTH_MAX = 3000; %8000;
 DEPTH_MIN = 400;
 IMCX = 255.8;%422487561914693 ;% DEPTH_W/2;
 IMCY = 203.7; %.487139940005989;% DEPTH_H/2;
@@ -30,8 +30,8 @@ Yind_c = (reshape(Yind,DEPTH_H,DEPTH_W)-IMCY)/IMCY;
 %T_kh = eye(4);% kinect to head joint 
 tr_kinect2head = zeros(3,1); % [-0.03; 0.06; -0.08];
 load('MASK2.mat')
-MASK = double(bw);
-clear bw;
+%MASK = double(bw);
+%clear bw;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % parameters 
 param_normalComputation = [7 2]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  

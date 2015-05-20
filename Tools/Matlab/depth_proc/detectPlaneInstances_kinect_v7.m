@@ -39,7 +39,7 @@ if nargin < 4
 end
 
 if 1 %isempty(DEPTH_W) || ui.reset == 1
-    loadPersistentVariables_7_0401;
+    loadPersistentVariables_k7;
 end
 
 Ccb = Rot;
@@ -361,7 +361,7 @@ if  ui.figures(3) > 0
             figure(3),% subplot(2,1,2);        
             ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
             showPointCloud([ALL(1,:)' ALL(2,:)' ALL(3,:)'], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
-            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
+            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*100];
             plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', 'k', 'LineWidth',2);
             
 %             figure(12),

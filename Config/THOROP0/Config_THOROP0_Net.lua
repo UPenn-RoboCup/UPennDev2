@@ -47,14 +47,15 @@ if IS_COMPETING then
 	-- Broadcast from the robot to the operator(s)
 	net.broadcast.wired = '10.'..TEAM_NUMBER..'.2.'..ROBOT_IP
 	net.broadcast.wireless = net.broadcast.wired
-end
 
-net.ping = {
-	udp = 17000,
-	tcp = 2000,
-	pub = 'ping',
-	sub = 'go',
-}
+	net.ping = {
+		udp = 17000,
+		tcp = 2000,
+		pub = 'ping',
+		sub = 'go',
+	}
+
+end
 
 local streams = {}
 net.streams = streams

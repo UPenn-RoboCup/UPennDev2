@@ -23,7 +23,7 @@ end
 local depth_net_ch, color_net_ch
 local depth_udp_ch, color_udp_ch
 if IS_COMPETING then
-        depth_udp_ch = require'simple_ipc'.new_sender(operator, Config.net.streams['kinect2_depth'].udp)
+	depth_udp_ch = require'simple_ipc'.new_sender(operator, Config.net.streams['kinect2_depth'].udp)
 	color_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_color'].udp, operator)
 else	
 	depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
@@ -51,14 +51,14 @@ local tNeck = trans(unpack(Config.head.neckOffset))
 local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
 
 local function get_tf()
-        local rpy = Body.get_rpy()
+	local rpy = Body.get_rpy()
 	local pose = wcm.get_robot_pose()
 	local bh = mcm.get_walk_bodyHeight()
 	local bo = mcm.get_status_bodyOffset()
 	local qHead = Body.get_head_position()
 	local uComp = mcm.get_stance_uTorsoComp()
 	uComp[3] = 0
-	
+
 	-- Poses with the compensation
 	local torsoL = util.pose_global(uComp, bo)
 	local torsoG = util.pose_global(torsoL, pose)
@@ -69,7 +69,7 @@ local function get_tf()
 	local tfTorsoGlobal = transform6D{torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
 	-- Transform relative to the center of mass
 	local tfCom = tNeck * rotZ(qHead[1]) * rotY(qHead[2]) * tKinect
-	
+
 	return tfTorsoLocal * tfCom, tfTorsoGlobal * tfCom
 end
 
@@ -93,13 +93,15 @@ local function update(rgb, depth)
 		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
 	end
 	-- Timing
-	if IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
+	if IS_COMPETING and t - hcm.get_network_topen() > 1 then
+		return t
+	end
 	if t - t_send < 1 then return t end
 	t_send = t
 	local tfL, tfG = get_tf()
 	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
 	local head_angles = Body.get_head_position()
-	
+
 	-- Form color
 	rgb.t = t
 	rgb.id = 'k2_rgb'
@@ -107,14 +109,14 @@ local function update(rgb, depth)
 	rgb.tfL16 = tfL_flat
 	rgb.tfG16 = tfG_flat
 	rgb.head_angles = head_angles
-	
+
 	local j_rgb = rgb.data
 	if IS_WEBOTS then j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height) end
 	rgb.data = nil
 	rgb.sz = #j_rgb
 	rgb.rsz = #j_rgb
 	local m_rgb = mpack(rgb)
-	
+
 
 	-- Form depth (TODO: zlib)
 	depth.t = t
@@ -123,7 +125,7 @@ local function update(rgb, depth)
 	depth.tfL16 = tfL_flat
 	depth.tfG16 = tfG_flat
 	depth.head_angles = head_angles
-	
+
 	local ranges = depth.data
 	depth.data = nil
 	depth.sz = #ranges
@@ -154,7 +156,7 @@ local function update(rgb, depth)
 
 
 	-- Log at 4Hz
---	if t - t_send < 0.25 then return t end
+	--	if t - t_send < 0.25 then return t end
 	if ENABLE_LOG then
 		log_rgb:record(m_rgb, j_rgb)
 		log_depth:record(m_depth, ranges)

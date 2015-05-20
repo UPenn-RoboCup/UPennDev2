@@ -4,21 +4,6 @@ local Config = require'Config'
 local si = require'simple_ipc'
 local util = require'util'
 
-if HOSTNAME=='alvin' or HOSTNAME=='teddy' then
-	
-	local s = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
-	s.callback = function(skt)
-		local data = skt:recv_all()
-		for _, tping in ipairs(data) do vcm.set_network_tgood(tping) end
-	end
-	poller = si.wait_on_channels{s}
-	lut = poller.lut
-	poller:start()
-	
-	-- Don't forward if a robot
-	os.exit()
-end
-
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
 local function procMP(data)
@@ -37,6 +22,9 @@ local function procRaw(data)
 	return data
 end
 
+local function procZlib(data)
+	error('Not implemented yet')
+end
 
 local nsz = 0
 local poller, lut

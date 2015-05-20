@@ -34,7 +34,7 @@ local min, max = require'math'.min, require'math'.max
 local shoulderOffsetX = 0;
 local shoulderOffsetY = 0.234
 local shoulderOffsetZ = 0.165
-local elbowOffsetX = 0.03175
+local elbowOffsetX = 0.030
 
 -- Arm meassurements from Dale
 -- Regular arm
@@ -89,13 +89,15 @@ local function fk_arm(q, is_left)
 	local c7, s7 = cos(q[7]), sin(q[7])
 	local c8, s8 = cos(q[8]), sin(q[8])
 	local shoulderOffsetY0 = is_left and shoulderOffsetY or -shoulderOffsetY
+	local lowerArmLength0 = is_left and lowerArmLength or lowerArmLengthExtended
+	local upperArmLength0 = is_left and upperArmLength or upperArmLengthExtended
 	return
 	{
-	{(((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*s6 + ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*c6)*s7 + (-(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*s5 + (-s1*s3 + c1*c2*c3)*c5)*c7, ((((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*s6 + ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*c6)*c7 - (-(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*s5 + (-s1*s3 + c1*c2*c3)*c5)*s7)*c8 + (((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*c6 - ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*s6)*s8, -((((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*s6 + ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*c6)*c7 - (-(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*s5 + (-s1*s3 + c1*c2*c3)*c5)*s7)*s8 + (((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*c6 - ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*s6)*c8, -elbowOffsetX*((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5) + elbowOffsetX*(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4) + lowerArmLength*(-(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*s5 + (-s1*s3 + c1*c2*c3)*c5) - shoulderOffsetY0*s1 - upperArmLength*(s1*s3 - c1*c2*c3)
+	{(((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*s6 + ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*c6)*s7 + (-(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*s5 + (-s1*s3 + c1*c2*c3)*c5)*c7, ((((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*s6 + ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*c6)*c7 - (-(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*s5 + (-s1*s3 + c1*c2*c3)*c5)*s7)*c8 + (((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*c6 - ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*s6)*s8, -((((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*s6 + ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*c6)*c7 - (-(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*s5 + (-s1*s3 + c1*c2*c3)*c5)*s7)*s8 + (((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5)*c6 - ((-s1*c3 - s3*c1*c2)*c4 + s2*s4*c1)*s6)*c8, -elbowOffsetX*((-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*c5 + (-s1*s3 + c1*c2*c3)*s5) + elbowOffsetX*(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4) + lowerArmLength*(-(-(-s1*c3 - s3*c1*c2)*s4 + s2*c1*c4)*s5 + (-s1*s3 + c1*c2*c3)*c5) - shoulderOffsetY0*s1 - upperArmLength0*(s1*s3 - c1*c2*c3)
 	},
-	{(((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*s6 + ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*c6)*s7 + (-(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*s5 + (s1*c2*c3 + s3*c1)*c5)*c7, ((((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*s6 + ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*c6)*c7 - (-(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*s5 + (s1*c2*c3 + s3*c1)*c5)*s7)*c8 + (((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*c6 - ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*s6)*s8, -((((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*s6 + ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*c6)*c7 - (-(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*s5 + (s1*c2*c3 + s3*c1)*c5)*s7)*s8 + (((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*c6 - ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*s6)*c8, -elbowOffsetX*((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5) + elbowOffsetX*(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4) + lowerArmLength*(-(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*s5 + (s1*c2*c3 + s3*c1)*c5) + shoulderOffsetY0*c1 - upperArmLength*(-s1*c2*c3 - s3*c1)
+	{(((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*s6 + ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*c6)*s7 + (-(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*s5 + (s1*c2*c3 + s3*c1)*c5)*c7, ((((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*s6 + ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*c6)*c7 - (-(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*s5 + (s1*c2*c3 + s3*c1)*c5)*s7)*c8 + (((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*c6 - ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*s6)*s8, -((((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*s6 + ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*c6)*c7 - (-(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*s5 + (s1*c2*c3 + s3*c1)*c5)*s7)*s8 + (((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5)*c6 - ((-s1*s3*c2 + c1*c3)*c4 + s1*s2*s4)*s6)*c8, -elbowOffsetX*((-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*c5 + (s1*c2*c3 + s3*c1)*s5) + elbowOffsetX*(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4) + lowerArmLength*(-(-(-s1*s3*c2 + c1*c3)*s4 + s1*s2*c4)*s5 + (s1*c2*c3 + s3*c1)*c5) + shoulderOffsetY0*c1 - upperArmLength0*(-s1*c2*c3 - s3*c1)
 	},
-	{(((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*s6 + (s2*s3*c4 + s4*c2)*c6)*s7 + (-(-s2*s3*s4 + c2*c4)*s5 - s2*c3*c5)*c7, ((((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*s6 + (s2*s3*c4 + s4*c2)*c6)*c7 - (-(-s2*s3*s4 + c2*c4)*s5 - s2*c3*c5)*s7)*c8 + (((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*c6 - (s2*s3*c4 + s4*c2)*s6)*s8, -((((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*s6 + (s2*s3*c4 + s4*c2)*c6)*c7 - (-(-s2*s3*s4 + c2*c4)*s5 - s2*c3*c5)*s7)*s8 + (((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*c6 - (s2*s3*c4 + s4*c2)*s6)*c8, -elbowOffsetX*((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3) + elbowOffsetX*(-s2*s3*s4 + c2*c4) + lowerArmLength*(-(-s2*s3*s4 + c2*c4)*s5 - s2*c3*c5) + shoulderOffsetZ - upperArmLength*s2*c3
+	{(((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*s6 + (s2*s3*c4 + s4*c2)*c6)*s7 + (-(-s2*s3*s4 + c2*c4)*s5 - s2*c3*c5)*c7, ((((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*s6 + (s2*s3*c4 + s4*c2)*c6)*c7 - (-(-s2*s3*s4 + c2*c4)*s5 - s2*c3*c5)*s7)*c8 + (((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*c6 - (s2*s3*c4 + s4*c2)*s6)*s8, -((((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*s6 + (s2*s3*c4 + s4*c2)*c6)*c7 - (-(-s2*s3*s4 + c2*c4)*s5 - s2*c3*c5)*s7)*s8 + (((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3)*c6 - (s2*s3*c4 + s4*c2)*s6)*c8, -elbowOffsetX*((-s2*s3*s4 + c2*c4)*c5 - s2*s5*c3) + elbowOffsetX*(-s2*s3*s4 + c2*c4) + lowerArmLength0*(-(-s2*s3*s4 + c2*c4)*s5 - s2*c3*c5) + shoulderOffsetZ - upperArmLength0*s2*c3
 	},
 	{0, 0, 0, 1
 	}
@@ -118,17 +120,18 @@ end
 K.forward_larm = forward_larm
 K.forward_rarm = forward_rarm
 
--- Precalculate some stuff
---local trans_upper = Ttrans(upperArmLength, 0, elbowOffsetX)
---local trans_lower = Ttrans(lowerArmLength, 0, -elbowOffsetX)
-local dUpperArm = sqrt(upperArmLength^2 + elbowOffsetX^2)
-local dLowerArm = sqrt(lowerArmLength^2 + elbowOffsetX^2)
-local aUpperArm = atan(elbowOffsetX / upperArmLength)
-local aLowerArm = atan(elbowOffsetX / lowerArmLength)
-local aElbowMax = -1*(aUpperArm + aLowerArm)
--- Assume left arm
-local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
+local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
+
 	local xWrist1, xWrist2, xWrist3 = trArm[1][4], trArm[2][4], trArm[3][4]
+
+	local lowerArmLength0 = is_left and lowerArmLength or lowerArmLengthExtended
+	local upperArmLength0 = is_left and upperArmLength or upperArmLengthExtended
+
+	local dUpperArm = sqrt(upperArmLength0^2 + elbowOffsetX^2)
+	local dLowerArm = sqrt(lowerArmLength0^2 + elbowOffsetX^2)
+	local aUpperArm = atan(elbowOffsetX / upperArmLength0)
+	local aLowerArm = atan(elbowOffsetX / lowerArmLength0)
+	local aElbowMax = -1*(aUpperArm + aLowerArm)
 
   -- SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
   -- We are only using the smaller one (arm more bent)
@@ -140,16 +143,13 @@ local function ik_arm(trArm, qOrg, shoulderYaw, FLIP_SHOULDER_ROLL)
   local elbowPitch = -acos(cElbow) - aUpperArm - aLowerArm
 
   -- From shoulder yaw to wrist
-  --local m = TrotX(shoulderYaw) * trans_upper * TrotY(elbowPitch) * trans_lower
-	----[[
 	local m = Ttranslate(
 		TrotateY(
 			Ttranslate(
 				TrotX(shoulderYaw),
-				upperArmLength,0, elbowOffsetX),
+				upperArmLength0,0, elbowOffsetX),
 			elbowPitch),
-		lowerArmLength, 0, -elbowOffsetX)
-	--]]
+		lowerArmLength0, 0, -elbowOffsetX)
 
   local a = m[1][4]^2 + m[2][4]^2
   local b = -m[1][4] * xWrist2
@@ -246,6 +246,7 @@ function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll, qWaist)
 	return ik_arm(
 		trL0,
 		qLArm or {0,0,0, 0, 0,0,0},
+		true,
 		shoulderYaw or qLArm[3],
 		flipRoll==1 and PI
 	)
@@ -263,6 +264,7 @@ function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll, qWaist)
 		* Ttranslate(Tcopy(trR), -handOffsetX, -handOffsetY, -handOffsetZ)
 	return ik_arm(trR0,
 		qRArm or {0,0,0, 0, 0,0,0},
+		false,
 		shoulderYaw or qLArm[3],
 		flipRoll==1 and PI)
 end

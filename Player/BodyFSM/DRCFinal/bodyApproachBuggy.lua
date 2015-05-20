@@ -94,13 +94,13 @@ function state.update()
 	local pose = vector.pose(wcm.get_robot_pose())
 	local status, velocity = coroutine.resume(wp_thread, pose)
 	--print('state._NAME | velocity', status, velocity)
-	
+
 	-- Exit if the coroutine has no more waypoints left to follow
-	if not status then 
+	if not status then
 		mcm.set_walk_stoprequest(1)
-		finished=true		
+		finished=true
 	end
-	
+
 	-- Set the walking velocity
 	mcm.set_walk_vel(velocity)
 
@@ -109,7 +109,7 @@ end
 function state.exit()
 	local movement = util.pose_relative(wcm.get_robot_pose(),pose0)
   print(string.format("Final movement: %.3f %.3f %.1f",movement[1],movement[2],movement[3]*180/math.pi))
-  
+
   print(state._NAME..' Exit' )
 	mcm.set_walk_vel({0,0,0})
 end

@@ -47,8 +47,8 @@ function state.entry()
 	stage = sequence[s]
 	lco, rco = movearm.goto(stage.left, stage.right)
 
-	okL = false
-	okR = false
+	okL = type(lco)=='thread'
+	okR = type(rco)=='thread'
 
 end
 
@@ -76,8 +76,8 @@ function state.update()
 
 	-- Check if errors in either
 	if not okL or not okR then
-		print(state._NAME, 'L', okL, qLWaypoint, lco)
-		print(state._NAME, 'R', okR, qRWaypoint, rco)
+		print(state._NAME, 'L', okL, qLWaypoint, lco, lStatus)
+		print(state._NAME, 'R', okR, qRWaypoint, rco, rStatus)
 		-- Safety
 		Body.set_larm_command_position(qLArm)
 		Body.set_rarm_command_position(qRArm)

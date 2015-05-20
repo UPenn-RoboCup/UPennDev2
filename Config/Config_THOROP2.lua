@@ -1,19 +1,26 @@
--- Global Config
-Config = {}
-
 IS_STEVE = true
 --IS_STEVE = false
 
--- General parameters
-Config.PLATFORM_NAME = 'THOROP2'
+-- Global Config
+Config = {
+	PLATFORM_NAME = 'THOROP2',
+	IS_COMPETING = false,
+	demo = false,
+}
 
-Config.nJoint = 37
-Config.IS_COMPETING = false
-Config.demo = true
+Config.toeheel_lift = true
+Config.enable_touchdown = false
+Config.raise_body = true
+Config.waist_testing = true
+Config.use_jacobian_arm_planning = true
+Config.piecewise_step = true
+Config.enable_jacobian_test = false
+--birdwalk TODO : IMU and FT values swap
+--Config.birdwalk = 1 --testing birdwalk
 
 -- Printing of debug messages
 Config.debug = {
-	webots_wizard = false,
+  webots_wizard = false,
   obstacle = false,
   follow = false,
   approach = false,
@@ -25,8 +32,11 @@ Config.debug = {
 
 -- Tune for Webots
 if IS_WEBOTS then
-  Config.use_localhost = true
-  -- Default Webots sensors
+	--Config.testfile = 'test_balance'
+  --Config.testfile = 'test_testbed'
+ -- Config.testfile = 'test_walkstuff'
+   Config.testfile = 'test_teleop2'
+	--
   Config.sensors = {
 		ft = true,
 		feedback = 'feedback_wizard',
@@ -35,6 +45,7 @@ if IS_WEBOTS then
     --chest_lidar = true,
     --head_lidar = true,
     --kinect = 'kinect2_wizard',
+		mesh = 'mesh_wizard',
 	 	world = 'world_wizard',
   }
   -- Adjust the timesteps if desired
@@ -43,69 +54,14 @@ if IS_WEBOTS then
   -- Config.kinect_timestep = 30
 end
 
-Config.toeheel_lift = true
-Config.enable_touchdown = false
-Config.raise_body = true
-
-Config.waist_testing = true
-
-
-Config.use_jacobian_arm_planning = true
---Config.use_jacobian_arm_planning = false
-
-Config.piecewise_step = true
---Config.piecewise_step = false
-
---birdwalk TODO : IMU and FT values swap
---Config.birdwalk = 1 --testing birdwalk
-
-Config.enable_jacobian_test = false 
-
-
 ----------------------------------
 -- Application specific Configs --
 ----------------------------------
-local exo
-if IS_STEVE then
-	Config.testfile = 'test_teleop'
-	exo = {
-		'Robot', 'Walk', 'Net',
-		'FSM_Steve', 'Arm_Steve', 'Vision_Steve', 'World_Steve'
-	}
-	if IS_WEBOTS then
-		Config.sensors.mesh = 'mesh_wizard2'
-		--Config.sensors.chest_lidar = true
-		--Config.sensors.head_lidar = true
-		--[[
-		Config.sensors.kinect = 'kinect2_wizard'
-		Config.kinect_timestep = 50
-		--]]
-	end
-else
-	--Config.testfile = 'test_balance'
-  --Config.testfile = 'test_testbed'
- -- Config.testfile = 'test_walkstuff'
-    Config.testfile = 'test_teleop2'
-	exo = {
-		'Robot','Walk','Net','Manipulation',
-		'FSM_DRCFinal','World_DRCFinal','Vision_DRCFinal'
-	}
-	if IS_WEBOTS then
---		Config.kinect_timestep = 50
-	end
-end
-
-if HOSTNAME=="teddy2" then
-  exo[1]='Robot_teddy2'
-end
-
-if IS_WEBOTS then
-	--Config.birdwalk = 1 --testing birdwalk
-end
-
-
-
-
+local exo = {
+	'Walk','Net','FSM','World','Vision',
+	(HOSTNAME=="teddy2" and 'Robot_teddy2' or 'Robot'),
+	(IS_STEVE and 'Arm_Steve' or 'Arm_DRCFinal'),
+}
 
 -----------------------------------
 -- Load Paths and Configurations --

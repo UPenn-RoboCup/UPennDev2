@@ -1,7 +1,7 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
-print("TEDDY2 TEDDY2 TEDDY2")
+Config.nJoint = 37
 
 ---------
 -- IMU --

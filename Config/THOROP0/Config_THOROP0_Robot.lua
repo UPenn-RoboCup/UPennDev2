@@ -1,8 +1,7 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
-
-print("ROBOT HOSTNAME:",HOSTNAME)
+Config.nJoint = 37
 
 ---------
 -- IMU --

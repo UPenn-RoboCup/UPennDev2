@@ -6,6 +6,7 @@ Config.torque_legs = true
 
 -- Update rate in Hz
 fsm.update_rate = 120
+-- TODO: Grab from Webots, too...
 
 -- Which FSMs should be enabled?
 fsm.enabled = {
@@ -51,6 +52,27 @@ fsm.Body = {
   {'bodyStep', 'done', 'bodyStop'},
 }
 
+--[[
+-- From SJ
+fsm.Body = {
+  {'bodyIdle', 'init', 'bodyInit'},
+  {'bodyInit', 'done', 'bodyStop'},
+
+  {'bodyStop', 'uninit', 'bodyUnInit'},
+  {'bodyUnInit', 'done', 'bodyIdle'},
+
+  {'bodyStop', 'approach', 'bodyApproach'},
+  {'bodyApproach', 'done', 'bodyStop'},
+
+  {'bodyStop', 'stepinplace', 'bodyStepPlace'},
+  {'bodyStepPlace',   'done', 'bodyStop'},
+
+  {'bodyStop', 'stepover1', 'bodyStep'},
+  {'bodyStep', 'nextstep', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},
+}
+--]]
+
 fsm.Head = {
 	{'headIdle', 'init', 'headCenter'},
 	--
@@ -71,15 +93,15 @@ fsm.Head = {
 fsm.Gripper = {
 	{'gripperIdle', 'init', 'gripperCenter'},
 	{'gripperIdle', 'teleop', 'gripperTeleop'},
-	{'gripperIdle', 'dean', 'gripperDeanOpen'},
+	--{'gripperIdle', 'dean', 'gripperDeanOpen'},
 	--
 	{'gripperCenter', 'idle', 'gripperIdle'},
 	{'gripperCenter', 'teleop', 'gripperTeleop'},
-	{'gripperCenter', 'dean', 'gripperDeanOpen'},
+	--{'gripperCenter', 'dean', 'gripperDeanOpen'},
 	--
 	{'gripperTeleop', 'idle', 'gripperIdle'},
 	{'gripperTeleop', 'init', 'gripperCenter'},
-	--
+	--[[
 	{'gripperDeanOpen', 'init', 'gripperCenter'},
 	{'gripperDeanOpen', 'idle', 'gripperIdle'},
 	{'gripperDeanOpen', 'teleop', 'gripperTeleop'},
@@ -89,6 +111,7 @@ fsm.Gripper = {
 	{'gripperDeanClose', 'idle', 'gripperIdle'},
 	{'gripperDeanClose', 'teleop', 'gripperTeleop'},
 	{'gripperDeanClose', 'open', 'gripperDeanOpen'},
+	--]]
 }
 
 fsm.Lidar = {
@@ -143,6 +166,31 @@ fsm.Arm = {
 	{'armPullDoor', 'ready', 'armReady'},
 	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 }
+
+if fsm.libraries.ArmLib == 'DRCFinal' then
+	fsm.select.Arm = 'DRCFinal'
+	fsm.Arm = {
+		{'armIdle', 'timeout', 'armIdle'},
+		{'armIdle', 'init', 'armInit'},
+		{'armInit', 'done', 'armPose1'},
+
+		{'armPose1', 'teleop', 'armTeleop'},
+	--  {'armPose1', 'toolgrab', 'armToolGrip'},
+	--  {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
+	--  {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
+
+	--  {'armToolGrip', 'done', 'armPose1'},
+	--  {'armToolGrip', 'hold', 'armToolHold'},
+		{'armTeleop', 'done', 'armPose1'},
+
+
+		{'armPose1', 'uninit', 'armUnInit'},
+	--  {'armToolGrip', 'uninit', 'armUnInit'},
+		{'armTeleop', 'uninit', 'armUnInit'},
+
+		{'armUnInit', 'done', 'armIdle'},
+	}
+end
 
 fsm.Motion = {
 	-- Idle
@@ -228,29 +276,28 @@ if fsm.libraries.MotionLib == 'RoboCup' then
 elseif fsm.libraries.MotionLib == 'DRCFinal' then
 	fsm.select.Motion = 'DRCFinal'
 	fsm.Motion = {
-  {'motionIdle', 'timeout', 'motionIdle'},
-  {'motionIdle', 'stand', 'motionInit'},
-  {'motionInit', 'done', 'motionStance'},
+		{'motionIdle', 'timeout', 'motionIdle'},
+		{'motionIdle', 'stand', 'motionInit'},
+		{'motionInit', 'done', 'motionStance'},
 
-  {'motionIdle', 'bias', 'motionBiasInit'},
-  {'motionStance', 'bias', 'motionBiasInit'},
-  {'motionBiasInit', 'done', 'motionBiasIdle'},
-  {'motionBiasIdle', 'stand', 'motionInit'},
+		{'motionIdle', 'bias', 'motionBiasInit'},
+		{'motionStance', 'bias', 'motionBiasInit'},
+		{'motionBiasInit', 'done', 'motionBiasIdle'},
+		{'motionBiasIdle', 'stand', 'motionInit'},
 
+		{'motionStance', 'preview', 'motionStepPreview'},
+		{'motionStepPreview', 'done', 'motionStance'},
 
-  {'motionStance', 'preview', 'motionStepPreview'},
-  {'motionStepPreview', 'done', 'motionStance'},
+		{'motionStance', 'stair', 'motionStepPreviewStair'},
+		{'motionStepPreviewStair', 'done', 'motionStance'},
 
-  {'motionStance', 'stair', 'motionStepPreviewStair'},
-  {'motionStepPreviewStair', 'done', 'motionStance'},
+		{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+		{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+		{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+		{'motionHybridWalkEnd', 'done', 'motionStance'},
 
-  {'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-  {'motionHybridWalkInit', 'done', 'motionHybridWalk'},
-  {'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
-  {'motionHybridWalkEnd', 'done', 'motionStance'},
-
-  {'motionStance', 'uninit', 'motionUnInit'},
-  {'motionUnInit', 'done', 'motionIdle'},
+		{'motionStance', 'uninit', 'motionUnInit'},
+		{'motionUnInit', 'done', 'motionIdle'},
 	}
 end
 

@@ -69,11 +69,13 @@ function state.update()
 	local quatpR1 = hcm.get_teleop_tfrarm()
 
 	if quatpL1~=quatpL then
+		-- TODO: Also check the weights...
 		print(state._NAME, 'L target update')
 		local tfL = fromQ(quatpL1)
 		--print(tfL)
 		local lco1, rco1 = movearm.goto({
-			tr = tfL, timeout = 30, via='jacobian_preplan'
+			tr = tfL, timeout = 30, via='jacobian_preplan',
+			weights = hcm.get_teleop_lweights()
 		}, false)
 		lco = lco1
 		quatpL = quatpL1
@@ -83,7 +85,8 @@ function state.update()
 		local tfR = fromQ(quatpR1)
 		--print(tfR)
 		local lco1, rco1 = movearm.goto(false, {
-			tr = tfR, timeout = 30, via='jacobian_preplan'
+			tr = tfR, timeout = 30, via='jacobian_preplan',
+			weights = hcm.get_teleop_rweights()
 		})
 		rco = rco1
 		quatpR = quatpR1

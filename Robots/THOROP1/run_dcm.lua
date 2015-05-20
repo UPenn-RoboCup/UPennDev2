@@ -2,7 +2,7 @@
 
 -- Communication with multiple dynamixel chains --
 local CTX, metadata = ...
-dofile'include.lua'
+dofile'../../include.lua'
 
 -- Required Modules
 require'dcm'

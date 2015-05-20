@@ -28,7 +28,7 @@ local function check_send_mesh()
 	local t_open
 	if n_open==1 then
 		t_open = hcm.get_network_topen()
-		if t_open - t_send_mesh > 0.5 then
+		if t_open - t_send_mesh0 > 0.5 or t_open - t_send_mesh1 > 0.5 then
 			request = true
 		end
 	end

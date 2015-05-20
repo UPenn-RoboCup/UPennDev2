@@ -1,15 +1,23 @@
-local Body = require'Body'
-local util = require'util'
-local vector = require'vector'
-local t_entry, t_update
+
 local state = {}
 state._NAME = ...
 
+local Body = require'Body'
+local util = require'util'
+local vector = require'vector'
+
+local K = require'K_ffi'
+local T = require'Transform'
+local HT = require'libHeadTransform'
+
+local t_entry, t_update
+
 -- TODO: need to compensate the torso pose
-local headSpeed = {15 * DEG_TO_RAD, 15 * DEG_TO_RAD}
+local headSpeed = 5 * DEG_TO_RAD * vector.ones(2)
+local headThresh = 1 * DEG_TO_RAD * vector.ones(2)
 
 function state.entry()
-  print(state._NAME..' Entry' )
+  print(state._NAME..' Entry' ) 
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -25,16 +33,20 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-	local centerAngles = {0, 0*DEG_TO_RAD-Body.get_rpy()[2]}
+	-- bodyHeight
+	-- TODO: Should be in the torso reference, so ground stuff actually requires the correct transform
+	local trChopsticks = T.trans(0,0,1) * K.forward_larm(Body.get_larm_position())
+	local headAngles = vector.new{HT.ikineCam(unpack(T.position(trChopsticks)))}
 	local headNow = Body.get_head_command_position()
-  local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt, 1*DEG_TO_RAD)
+  local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
+	
 	Body.set_head_command_position(apprAng)
 
   return doneHead and 'done'
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+  print(state._NAME..' Exit')
 end
 
 return state

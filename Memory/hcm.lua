@@ -300,14 +300,7 @@ shared_data.legdebug.enable_gyro=vector.zeros(1) --imu based orientation stabili
 shared_data.legdebug.enable_imu=vector.zeros(1) --imu based orientation stabilization
 shared_data.legdebug.enable_z_compliance=vector.zeros(1) 
 shared_data.legdebug.enable_a_compliance=vector.zeros(1) 
-
 shared_data.legdebug.torso_angle=vector.zeros(2) --pitch roll
-
-
-
-shared_data.move={}
-shared_data.move.target=vector.zeros(3) --relative pos, x y a
-
 
 
 shared_data.step={}

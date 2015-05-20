@@ -20,113 +20,29 @@ fsm.enabled = {
 
 --SJ: now we can have multiple FSM options
 fsm.select = {
-	Arm = 'Steve',
-	Body = 'Steve',
-	Gripper = 'Steve',
-	Head = 'Steve',
-	Motion = 'Steve'
+	Arm = 'DRCFinal',
+	Body = 'DRCFinal', 
+	Gripper = 'DRCFinal',
+	Head = 'DRCFinal', 
+	Motion = 'DRCFinal'
 }
 
 -- Custom libraries
 fsm.libraries = {
 	MotionLib = 'DRCFinal',
 	ArmLib = 'DRCFinal',
-	World = 'Steve'
+	World = 'DRCFinal'
 }
 
 if IS_STEVE then
 	--fsm.libraries.MotionLib = 'Steve'
 	fsm.libraries.ArmLib = 'Steve'
+	fsm.select.Arm = 'Steve'
 	if IS_WEBOTS then
 		Config.testfile = 'test_teleop'
 	end
 end
 
-fsm.Body = {
-	{'bodyIdle', 'init', 'bodyInit'},
-	--
-	{'bodyInit', 'done', 'bodyStop'},
-	--
-	{'bodyStop', 'init', 'bodyInit'},
-	{'bodyStop', 'approach', 'bodyApproach'},
-	{'bodyStop', 'stepover1', 'bodyStep'},
-	--
-	{'bodyApproach', 'done', 'bodyStop'},
-	{'bodyApproach', 'stop', 'bodyStop'},
-	{'bodyApproach', 'init', 'bodyStop'},
-	--
-	{'bodyStep', 'nextstep', 'bodyStep'},
-  {'bodyStep', 'done', 'bodyStop'},
-}
-
---[[
--- From SJ
-fsm.Body = {
-  {'bodyIdle', 'init', 'bodyInit'},
-  {'bodyInit', 'done', 'bodyStop'},
-
-  {'bodyStop', 'uninit', 'bodyUnInit'},
-  {'bodyUnInit', 'done', 'bodyIdle'},
-
-  {'bodyStop', 'approach', 'bodyApproach'},
-  {'bodyApproach', 'done', 'bodyStop'},
-
-  {'bodyStop', 'stepinplace', 'bodyStepPlace'},
-  {'bodyStepPlace',   'done', 'bodyStop'},
-
-  {'bodyStop', 'stepover1', 'bodyStep'},
-  {'bodyStep', 'nextstep', 'bodyStep'},
-  {'bodyStep', 'done', 'bodyStop'},
-}
---]]
-
-fsm.Head = {
-	{'headIdle', 'init', 'headCenter'},
-	--
-	{'headCenter', 'teleop', 'headTeleop'},
-	{'headCenter', 'trackhand', 'headTrackHand'},
-	{'headCenter', 'mesh', 'headMesh'},
-	--
-	{'headTeleop', 'init', 'headCenter'},
-	{'headTeleop', 'trackhand', 'headTrackHand'},
-	--
-	{'headTrackHand', 'init', 'headCenter'},
-	{'headTrackHand', 'teleop', 'headTeleop'},
-	--
-	{'headMesh', 'init', 'headCenter'},
-	{'headMesh', 'done', 'headCenter'},
-}
-
-fsm.Gripper = {
-	{'gripperIdle', 'init', 'gripperCenter'},
-	{'gripperIdle', 'teleop', 'gripperTeleop'},
-	--{'gripperIdle', 'dean', 'gripperDeanOpen'},
-	--
-	{'gripperCenter', 'idle', 'gripperIdle'},
-	{'gripperCenter', 'teleop', 'gripperTeleop'},
-	--{'gripperCenter', 'dean', 'gripperDeanOpen'},
-	--
-	{'gripperTeleop', 'idle', 'gripperIdle'},
-	{'gripperTeleop', 'init', 'gripperCenter'},
-	--[[
-	{'gripperDeanOpen', 'init', 'gripperCenter'},
-	{'gripperDeanOpen', 'idle', 'gripperIdle'},
-	{'gripperDeanOpen', 'teleop', 'gripperTeleop'},
-	{'gripperDeanOpen', 'close', 'gripperDeanClose'},
-	--
-	{'gripperDeanClose', 'init', 'gripperCenter'},
-	{'gripperDeanClose', 'idle', 'gripperIdle'},
-	{'gripperDeanClose', 'teleop', 'gripperTeleop'},
-	{'gripperDeanClose', 'open', 'gripperDeanOpen'},
-	--]]
-}
-
-fsm.Lidar = {
-	{'lidarIdle', 'pan', 'lidarPan'},
-	--
-	{'lidarPan', 'switch', 'lidarPan'},
-	{'lidarPan', 'stop', 'lidarIdle'},
-}
 
 fsm.Arm = {
 	-- Idle
@@ -177,136 +93,90 @@ fsm.Arm = {
 if fsm.libraries.ArmLib == 'DRCFinal' then
 	fsm.select.Arm = 'DRCFinal'
 	fsm.Arm = {
-		{'armIdle', 'timeout', 'armIdle'},
 		{'armIdle', 'init', 'armInit'},
 		{'armInit', 'done', 'armPose1'},
 
-		{'armPose1', 'teleop', 'armTeleop'},
-	--  {'armPose1', 'toolgrab', 'armToolGrip'},
-	--  {'armPose1', 'pushdoorgrab', 'armPushDoorSideGrip'},
-	--  {'armPose1', 'doorgrab', 'armPullDoorSideGrip'},
-
-	--  {'armToolGrip', 'done', 'armPose1'},
-	--  {'armToolGrip', 'hold', 'armToolHold'},
-		{'armTeleop', 'done', 'armPose1'},
-
-
-		{'armPose1', 'uninit', 'armUnInit'},
-	--  {'armToolGrip', 'uninit', 'armUnInit'},
-		{'armTeleop', 'uninit', 'armUnInit'},
-
-		{'armUnInit', 'done', 'armIdle'},
+		{'armPose1', 'teleop', 'armTeleop'},	
+		{'armTeleop', 'done', 'armPose1'},	
 	}
 end
 
-fsm.Motion = {
-	-- Idle
-	{'motionIdle', 'timeout', 'motionIdle'},
-	{'motionIdle', 'stand', 'motionInit'},
-	-- Init
-	{'motionInit', 'done', 'motionStance'},
-	{'motionInit', 'timeout', 'motionInit'},
-	--
-	{'motionStance', 'sway', 'motionSway'},
-	{'motionStance', 'lean', 'motionLean'},
-	--
-	{'motionSway', 'lean', 'motionLean'},
-	{'motionSway', 'switch', 'motionSway'},
-	{'motionSway', 'timeout', 'motionSway'},
-	{'motionSway', 'stand', 'motionStance'},
-	--
-	{'motionLean', 'stepup', 'motionLift'},
-	{'motionLean', 'stepdown', 'motionStepDown'},
-	{'motionLean', 'stand', 'motionInit'},
-	--
-	{'motionLift', 'lean', 'motionLean'},
-	{'motionLift', 'timeout', 'motionLower'},
-	{'motionLift', 'quit', 'motionLower'},
-	--{'motionLift', 'done', 'motionLower'},
-	{'motionLift', 'done', 'motionHold'},
-	--
-	{'motionHold', 'done', 'motionLower'},
-	--
-	{'motionLower', 'flat', 'motionStance'},
-	{'motionLower', 'uneven', 'motionCaptainMorgan'},
-	--
-	{'motionCaptainMorgan', 'stepup', 'motionStepUp'},
-	{'motionCaptainMorgan', 'stepdown', 'motionJoin'},
-	--
-	{'motionStepUp', 'done', 'motionHold'},
-	--
-	{'motionStepDown', 'done', 'motionLower'},
-	--
-	{'motionJoin', 'done', 'motionLower'},
+
+fsm.Body = {
+  {'bodyIdle', 'init', 'bodyInit'},
+  --
+  {'bodyInit', 'done', 'bodyStop'},  
+  --
+  {'bodyStop', 'approach', 'bodyApproach2'},
+  {'bodyApproach2', 'done', 'bodyStop'},
+  --
+  {'bodyStop', 'approach2', 'bodyApproach'}, --steve's approoach code
+  {'bodyApproach', 'done', 'bodyStop'},
+  --
+  {'bodyStop', 'stepover1', 'bodyStep'},
+  {'bodyStep', 'nextstep', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},
 }
 
-if fsm.libraries.MotionLib == 'RoboCup' then
-	fsm.select.Motion = 'RoboCup'
-	fsm.Motion = {
-		{'motionIdle', 'timeout', 'motionIdle'},
-		{'motionIdle', 'stand', 'motionInit'},
-		{'motionIdle', 'bias', 'motionBiasInit'},
 
-		{'motionBiasInit', 'done', 'motionBiasIdle'},
-		{'motionBiasIdle', 'stand', 'motionInit'},
+fsm.Head = {
+	{'headIdle', 'init', 'headCenter'},
+	--
+	{'headCenter', 'teleop', 'headTeleop'},
+	{'headCenter', 'trackhand', 'headTrackHand'},
+	{'headCenter', 'mesh', 'headMesh'},
+	--
+	{'headTeleop', 'init', 'headCenter'},
+	{'headTeleop', 'trackhand', 'headTrackHand'},
+	--
+	{'headTrackHand', 'init', 'headCenter'},
+	{'headTrackHand', 'teleop', 'headTeleop'},
+	--
+	{'headMesh', 'init', 'headCenter'},
+	{'headMesh', 'done', 'headCenter'},
+}
 
-		{'motionInit', 'done', 'motionStance'},
+fsm.Gripper = {
+	{'gripperIdle', 'init', 'gripperCenter'},
+	{'gripperIdle', 'teleop', 'gripperTeleop'},	
+	--
+	{'gripperCenter', 'idle', 'gripperIdle'},
+	{'gripperCenter', 'teleop', 'gripperTeleop'},
+	--
+	{'gripperTeleop', 'idle', 'gripperIdle'},
+	{'gripperTeleop', 'init', 'gripperCenter'},
+}
 
-		{'motionStance', 'bias', 'motionBiasInit'},
-		{'motionStance', 'preview', 'motionStepPreview'},
-		{'motionStance', 'kick', 'motionKick'},
-		{'motionStance', 'done_step', 'motionHybridWalkKick'},
+fsm.Lidar = {
+	{'lidarIdle', 'pan', 'lidarPan'},
+	{'lidarPan', 'switch', 'lidarPan'},
+	{'lidarPan', 'stop', 'lidarIdle'},
+}
 
-		{'motionStance', 'sit', 'motionSit'},
-		{'motionSit', 'stand', 'motionStandup'},
-		{'motionStandup', 'done', 'motionStance'},
+fsm.Motion = {
+	{'motionIdle', 'timeout', 'motionIdle'},
+	{'motionIdle', 'stand', 'motionInit'},
+	{'motionInit', 'done', 'motionStance'},
 
-		{'motionStepPreview', 'done', 'motionStance'},
-		{'motionKick', 'done', 'motionStance'},
+	{'motionIdle', 'bias', 'motionBiasInit'},
+	{'motionStance', 'bias', 'motionBiasInit'},
+	{'motionBiasInit', 'done', 'motionBiasIdle'},
+	{'motionBiasIdle', 'stand', 'motionInit'},
 
-		--For new hybrid walk
-		{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-		{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+	{'motionStance', 'preview', 'motionStepPreview'},
+	{'motionStepPreview', 'done', 'motionStance'},
 
-		{'motionHybridWalk', 'done', 'motionStance'},
-		{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+	{'motionStance', 'stair', 'motionStepPreviewStair'},
+	{'motionStepPreviewStair', 'done', 'motionStance'},
 
-		{'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
-		{'motionHybridWalkKick', 'done', 'motionStance'},
-		{'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
+	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
+	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+	{'motionHybridWalkEnd', 'done', 'motionStance'},
 
-		--  {'motionHybridWalk', 'done_step', 'motionStepNonstop'},
-		--  {'motionStepNonstop', 'done', 'motionStance'},
-
-		{'motionHybridWalkEnd', 'done', 'motionStance'},
-	}
-elseif fsm.libraries.MotionLib == 'DRCFinal' then
-	fsm.select.Motion = 'DRCFinal'
-	fsm.Motion = {
-		{'motionIdle', 'timeout', 'motionIdle'},
-		{'motionIdle', 'stand', 'motionInit'},
-		{'motionInit', 'done', 'motionStance'},
-
-		{'motionIdle', 'bias', 'motionBiasInit'},
-		{'motionStance', 'bias', 'motionBiasInit'},
-		{'motionBiasInit', 'done', 'motionBiasIdle'},
-		{'motionBiasIdle', 'stand', 'motionInit'},
-
-		{'motionStance', 'preview', 'motionStepPreview'},
-		{'motionStepPreview', 'done', 'motionStance'},
-
-		{'motionStance', 'stair', 'motionStepPreviewStair'},
-		{'motionStepPreviewStair', 'done', 'motionStance'},
-
-		{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-		{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
-		{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
-		{'motionHybridWalkEnd', 'done', 'motionStance'},
-
-		{'motionStance', 'uninit', 'motionUnInit'},
-		{'motionUnInit', 'done', 'motionIdle'},
-	}
-end
+	{'motionStance', 'uninit', 'motionUnInit'},
+	{'motionUnInit', 'done', 'motionIdle'},
+}
 
 Config.fsm = fsm
 

@@ -1,5 +1,5 @@
 function  [Planes, metadata] = detectPlanes7(data, meta, ui)
-% v6: rough terrain (cinder blocks) 
+% v7: rough terrain (cinder blocks) 
 
 if ~isempty(meta) && isfield(meta,'tr')    
     [Rot, tr] = TransKinectToBody(meta);

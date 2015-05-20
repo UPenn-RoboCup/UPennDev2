@@ -43,16 +43,21 @@ while 1
                  
                 % res = depth_proc(raw, metadata, ui);
                  
-                % TASK: localization at the corner 
-                ui.taskMode = 11 ;
-                ui.figures(3) = 2;
-                % average 
-                [res, meta] = detectPlanes6(raw, metadata, ui);   
-                
-                
-                res{1}
-                pose = localizeCorner_v4(res,metadata)
-                % TASK: localization at the corner 
+                if 0 % TASK: localization at the corner 
+                    ui.taskMode = 11 ;
+                    ui.figures(3) = 2;
+                    % average 
+                    [res, meta] = detectPlanes6(raw, metadata, ui);                     
+                    res{1}
+                    pose = localizeCorner_v4(res,metadata)
+                    % TASK: localization at the corner 
+                else
+                    % TASK: rough terrain
+                    ui.taskMode = 4;
+                    ui.figures(3) = 2;
+                    % average 
+                    [res, meta] = detectPlanes7(raw, metadata, ui);                     
+                end
                 
                 figure(1), imagesc(raw');            
              % end
@@ -60,7 +65,7 @@ while 1
             % rgb_img = djpeg(raw);
             % set(h_rgb, 'CData', rgb_img);            
          
-        elseif strcmp(char(metadata.id), 'mesh0')
+        elseif 0 %strcmp(char(metadata.id), 'mesh0')
           
             if (mod(count,3) == 0) 
                 

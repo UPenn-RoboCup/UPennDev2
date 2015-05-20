@@ -1,5 +1,5 @@
 function [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v7( depthRaw, Rot, tr, ui )
-% v6: merging similar planes 
+% v7: rough terrain?
 
 persistent DEPTH_W       % Width
 persistent DEPTH_H       % Height
@@ -269,7 +269,7 @@ elseif ui.taskMode == 2
         Planes{candidates(idx)}.Type = 'wall';
         PlaneOfInterest = candidates(idx);
     end
-elseif ui.taskMode == 11 % || ui.taskMode == 4
+elseif ui.taskMode == 11 || ui.taskMode == 4
      
     [Planes,PlaneID,PlaneOfInterest,Points3D] = mergePlanes(Planes,PlaneID,PlaneOfInterest,Points3D,30);
   

@@ -17,12 +17,8 @@ rgb_img = uint8(zeros([RGB_H, RGB_W, 3]));
 s_depth = zmq('subscribe', 'tcp', '192.168.123.246', 43346);
 s_color = zmq('subscribe', 'tcp', '192.168.123.246', 43347);
 %s_mesh = zmq('subscribe', 'tcp', '192.168.123.246', 43344);
-s_mesh = zmq( 'subscribe', 'ipc', 'mesh0' );
+%s_mesh = zmq( 'subscribe', 'ipc', 'mesh0' );
 
-log = 1;
-fig_id = 0;
-folder_id = 1;
-CLICK = [];
 count = 0;
 while 1
     idx = zmq('poll',1000);  % assume only one channel
@@ -37,7 +33,7 @@ while 1
         [metadata,offset] = msgpack('unpack', data);
         if has_more, [raw, has_more] = zmq('receive', s_idx); end
         char(metadata.id)
-        if 0 %strcmp(char(metadata.id), 'k2_depth') %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% depth 
+        if strcmp(char(metadata.id), 'k2_depth') %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% depth 
                 raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
                 uisetting; % See uisetting.m       size(D)
                  
@@ -65,23 +61,7 @@ while 1
              % end
         elseif strcmp(char(metadata.id), 'k2_rgb') %%%%%%%%%%%%%%%%%%%%%%%%% RGB
             % rgb_img = djpeg(raw);
-            % set(h_rgb, 'CData', rgb_img);            
-         
-        elseif strcmp(char(metadata.id), 'mesh0')
-          
-            if (mod(count,3) == 0) 
-                
-                metadata.dims = metadata.dim;
-                metadata.flag = 1;
-                raw = reshape(typecast(raw, 'single'), [metadata.dim(2), metadata.dim(1)]);
-
-                 figure(3), imagesc(raw);
-    %              disp(metadata)
-                  size(raw)
-
-             %  [ Planes ] = detectPlaneInstances_lidar_v5( raw', 4, metadata);    
-            end
-           count = count + 1;
+            % set(h_rgb, 'CData', rgb_img);   
         end
     end
     drawnow;

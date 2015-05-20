@@ -22,7 +22,7 @@ end
 
 local depth_net_ch, color_net_ch
 local depth_udp_ch, color_udp_ch
-if Config.IS_COMPETING then
+if IS_COMPETING then
         depth_udp_ch = require'simple_ipc'.new_sender(operator, Config.net.streams['kinect2_depth'].udp)
 	color_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_color'].udp, operator)
 else	
@@ -93,7 +93,7 @@ local function update(rgb, depth)
 		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
 	end
 	-- Timing
-	if Config.IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
+	if IS_COMPETING and t - vcm.get_network_tgood() > 1 then return t end
 	if t - t_send < 1 then return t end
 	t_send = t
 	local tfL, tfG = get_tf()

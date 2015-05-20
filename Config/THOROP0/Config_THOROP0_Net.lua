@@ -36,7 +36,7 @@ local net = {
 	}
 }
 
-if Config.IS_COMPETING then
+if IS_COMPETING then
 	net.field_computer = '10.'..TEAM_NUMBER..'.3.'..IP.FIELD
 	--
 	net.robot.wired = '10.'..TEAM_NUMBER..'.3.'..ROBOT_IP

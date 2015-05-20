@@ -30,10 +30,17 @@ fsm.select = {
 -- Custom libraries
 fsm.libraries = {
 	MotionLib = 'DRCFinal',
-	--MotionLib = 'Steve',
-	ArmLib = 'Steve',
+	ArmLib = 'DRCFinal',
 	World = 'Steve'
 }
+
+if IS_STEVE then
+	--fsm.libraries.MotionLib = 'Steve'
+	fsm.libraries.ArmLib = 'Steve'
+	if IS_WEBOTS then
+		Config.testfile = 'test_teleop'
+	end
+end
 
 fsm.Body = {
 	{'bodyIdle', 'init', 'bodyInit'},

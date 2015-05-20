@@ -356,7 +356,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
 		--print('dist_components', unpack(dist_components))
 
-		sanitize0(qArm, qArmOld)
+		--sanitize0(qArm, qArmOld)
 
 		table.insert(path, qArm)
 

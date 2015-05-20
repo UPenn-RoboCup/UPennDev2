@@ -7,13 +7,14 @@ local IP = {
 	BHORAM = 54,
 	JQ = 150,
 	--
-	ALVIN = 232,
+	CHIP = 245,
+	DALE = 246,
 	FIELD = 242,
 }
 
 -- Who do we use?
 local WHO = IP.STEVE
-local ROBOT_IP = IP.ALVIN
+local ROBOT_IP = IP.DALE
 local TEAM_NUMBER = 8
 
 local wired_subnet = '192.168.123.'

@@ -69,7 +69,7 @@ local pname = {HOME, '/Config/THOROP0/?.lua;', package.path}
 package.path = table.concat(pname)
 if Config.demo then table.insert(exo, 'Demo') end
 for _,v in ipairs(exo) do
-	print('Loading', v)
+	--print('Loading', v)
 	local fname = {'Config_THOROP0_', v}
 	local filename = table.concat(fname)
   assert(pcall(require, filename))

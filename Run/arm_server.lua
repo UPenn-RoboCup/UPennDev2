@@ -13,7 +13,7 @@ local function get_armplan(plan)
 	local wpath = {}
 	--
 	local lpath = {}
-	if type(lco)=='coroutine' then
+	if type(lco)=='thread' then
 		while coroutine.status(lco)~='dead' do
 			local okL, qLWaypoint, qWaistpoint = coroutine.resume(lco)
 			table.insert(lpath, qLWaypoint)
@@ -23,7 +23,7 @@ local function get_armplan(plan)
 		print('lco', lco)
 	end
 	local rpath = {}
-	if type(rco)=='coroutine' then
+	if type(rco)=='thread' then
 		while coroutine.status(rco)~='dead' do
 			local okR, qRWaypoint, qWaistpoint = coroutine.resume(rco)
 			table.insert(rpath, qRWaypoint)

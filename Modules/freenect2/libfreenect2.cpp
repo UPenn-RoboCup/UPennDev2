@@ -70,19 +70,6 @@ private:
   CommandTransaction command_tx_;
   int command_seq_;
 
-/*
-  //TurboJpegRgbPacketProcessor rgb_packet_processor_;
-  DumpRgbPacketProcessor rgb_packet_processor_;
-#ifdef USE_OPENCL
-  OpenCLDepthPacketProcessor depth_packet_processor_;
-#else
-  CpuDepthPacketProcessor depth_packet_processor_;
-#endif
-
-  RgbPacketStreamParser rgb_packet_parser_;
-  DepthPacketStreamParser depth_packet_parser_;
-*/
-
   const PacketPipeline *pipeline_;
 
   std::string serial_, firmware_;

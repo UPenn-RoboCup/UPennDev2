@@ -42,6 +42,7 @@ sudo usermod -a -G video thor
 sudo apt-get install git htop build-essential automake gfortran pkg-config \
 libtool libudev-dev zlib1g-dev libpcre3-dev liblzma-dev libreadline-dev \
 libpng12-dev libjpeg-dev libncurses5-dev uvcdynctrl
+#libglfw3-dev libglew-dev libglewmx-dev
 ```
 
 ### Speaker
@@ -127,6 +128,14 @@ git checkout build-fixes
 make prep
 make
 make install
+```
+
+### Beignet
+
+This is for OpenCL for the kinect2
+
+```
+http://www.freedesktop.org/wiki/Software/Beignet/
 ```
 
 ### Ag Search

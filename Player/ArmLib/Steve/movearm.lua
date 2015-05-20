@@ -108,7 +108,8 @@ function movearm.goto(l, r)
 		l.qWaist0 = l.qWaist0 or Body.get_waist_command_position()
 		local ok, msg = coroutine.resume(lco, lPlanner, l)
 		if not ok then
-			print('Error goto l |', msg)
+			--print('Error goto l |', msg)
+			lco = msg
 		end
 	end
 	local rplan = type(r)=='table' and P[r.via]
@@ -128,7 +129,8 @@ function movearm.goto(l, r)
 		r.qWaist0 = r.qWaist0 or Body.get_waist_command_position()
 		local ok, msg = coroutine.resume(rco, rPlanner, r)
 		if not ok then
-			print('Error goto r |', msg)
+			--print('Error goto r |', msg)
+			rco = msg
 		end
 	end
 

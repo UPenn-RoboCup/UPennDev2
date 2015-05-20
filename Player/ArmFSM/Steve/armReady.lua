@@ -13,8 +13,8 @@ local t_entry, t_update, t_finish
 local timeout = 30.0
 
 local lco, rco, uComp
-local okL, qLWaypoint
-local okR, qRWaypoint
+local okL, qLWaypoint, qLWaist
+local okR, qRWaypoint, qRWaist
 
 local sequence, s, stage = Config.arm.ready
 
@@ -28,9 +28,9 @@ function state.entry()
 	stage = sequence[s]
 	lco, rco = movearm.goto(stage.left, stage.right)
 
-	okL = false
-	okR = false
-	if uComp then print('uComp', unpack(uComp)) end
+	-- Check for no motion
+	okL = type(lco)=='thread' or lco==false
+	okR = type(rco)=='thread' or rco==false
 
 end
 
@@ -39,7 +39,7 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
 	if not stage then return'done' end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
@@ -47,8 +47,12 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
-	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
+	if lStatus=='suspended' then
+		okL, qLWaypoint, qLWaist = coroutine.resume(lco, qLArm, qWaist)
+	end
+	if rStatus=='suspended' then
+		okR, qRWaypoint, qRWaist = coroutine.resume(rco, qRArm, qWaist)
+	end
 
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint)
@@ -64,6 +68,13 @@ function state.update()
 	end
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
+	end
+	if qLWaist and qRWaist then
+		print('Conflicting Waist')
+	elseif qLWaist then
+		Body.set_waist_command_position(qLWaist)
+	elseif qRWaist then
+		Body.set_waist_command_position(qRWaist)
 	end
 
 	-- Check if done

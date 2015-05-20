@@ -33,17 +33,12 @@ function state.entry()
 		roll = -math.pi/2,
 		hand = 'right'
 	}
-	okL = false
-	okR = false
+
 	pco, lco, rco = plugins.gen('pulldoor', model)
-	if lco == false then
-		-- No motion
-		okL = true
-	end
-	if rco == false then
-		-- No motion
-		okR = true
-	end
+
+	-- Check for no motion
+	okL = type(lco)=='thread' or lco==false
+	okR = type(rco)=='thread' or rco==false
 
 end
 

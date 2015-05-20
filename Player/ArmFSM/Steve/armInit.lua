@@ -47,8 +47,9 @@ function state.entry()
 	stage = sequence[s]
 	lco, rco = movearm.goto(stage.left, stage.right)
 
-	okL = false
-	okR = false
+	-- Check for no motion
+	okL = type(lco)=='thread' or lco==false
+	okR = type(rco)=='thread' or rco==false
 
 end
 
@@ -57,7 +58,7 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   t_update = t
-  if t-t_entry > timeout then return'timeout' end
+  --if t-t_entry > timeout then return'timeout' end
 
 	if not stage then return'done' end
 
@@ -76,8 +77,8 @@ function state.update()
 
 	-- Check if errors in either
 	if not okL or not okR then
-		print(state._NAME, 'L', okL, qLWaypoint, lco)
-		print(state._NAME, 'R', okR, qRWaypoint, rco)
+		print(state._NAME, 'L', okL, qLWaypoint, lco, lStatus)
+		print(state._NAME, 'R', okR, qRWaypoint, rco, rStatus)
 		-- Safety
 		Body.set_larm_command_position(qLArm)
 		Body.set_rarm_command_position(qRArm)

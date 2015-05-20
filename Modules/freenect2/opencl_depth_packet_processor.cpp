@@ -28,10 +28,12 @@
 #include <libfreenect2/resource.h>
 #include <libfreenect2/protocol/response.h>
 
-//#include <opencv2/opencv.hpp>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <sys/time.h>
+#include <time.h>
+#include <math.h>
 
 #if defined(WIN32)
 #define _USE_MATH_DEFINES
@@ -39,10 +41,13 @@
 #endif
 
 #define __CL_ENABLE_EXCEPTIONS
-#if defined(__APPLE__) || defined(__MACOSX)
-#include "cl.hpp"
+#ifdef __APPLE__
 //#include <OpenCL/cl.hpp>
+#include "cl.hpp"
 #else
+#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
+#include <CL/cl.h>
+#undef CL_VERSION_1_2
 #include <CL/cl.hpp>
 #endif
 
@@ -533,7 +538,7 @@ public:
 
   bool readProgram(std::string &source) const
   {
-    source = loadCLSource("src/opencl_depth_packet_processor.cl");
+    source = loadCLSource("opencl_depth_packet_processor.cl");
     return !source.empty();
   }
 

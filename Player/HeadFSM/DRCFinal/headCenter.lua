@@ -1,29 +1,36 @@
 local Body = require'Body'
+local util = require'util'
+local vector = require'vector'
 local t_entry, t_update
 local state = {}
 state._NAME = ...
 
+-- TODO: need to compensate the torso pose
+local headSpeed = {15 * DEG_TO_RAD, 15 * DEG_TO_RAD}
+
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  print(state._NAME..' Entry' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
-  --TODO: need to compensate the torso pose
-  Body.set_head_command_position( {0,-Config.walk.bodyTilt-0.05} )
-  --Body.set_head_command_position( {0,-Config.walk.bodyTilt} )
 end
 
 function state.update()
 --  print(_NAME..' Update' )
   -- Get the time of update
   local t = Body.get_time()
-  local t_diff = t - t_update
+  local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  print(unpack(Body.get_head_command_position()))
-  return 'done'
+
+	local centerAngles = {0, 0*DEG_TO_RAD-Body.get_rpy()[2]}
+	local headNow = Body.get_head_command_position()
+  local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt, 1*DEG_TO_RAD)
+	Body.set_head_command_position(apprAng)
+
+  return doneHead and 'done'
 end
 
 function state.exit()

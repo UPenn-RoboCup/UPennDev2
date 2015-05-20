@@ -13,6 +13,7 @@ local timeout = 30.0
 local lPathIter, rPathIter
 local qLGoal, qRGoal
 local qLD, qRD
+local okL, okR
 
 local teleopLArm
 local teleopRArm
@@ -40,6 +41,9 @@ function state.entry()
 		q = teleopRArm, timeout = 5, via='joint_preplan'
 	})
 
+	okL = type(lco)=='thread'
+	okR = type(rco)=='thread'
+
 end
 
 function state.update()
@@ -58,15 +62,15 @@ function state.update()
 		teleopLArm = teleopLArm1
 		print(state._NAME,'L target', teleopLArm)
 		local lco1, rco1 = movearm.goto({
-			q = teleopLArm, timeout = 5, via='joint_preplan'
+			q = teleopLArm, timeout = 30, via='joint_preplan'
 		}, false)
 		lco = lco1
 	end
 	if teleopRArm~=teleopRArm1 then
-		teleopLArm = teleopLArm1
+		teleopRArm = teleopRArm1
 		print(state._NAME,'R target', teleopRArm)
 		local lco1, rco1 = movearm.goto(false, {
-			q = teleopRArm, timeout = 5, via='joint_preplan'
+			q = teleopRArm, timeout = 30, via='joint_preplan'
 		})
 		rco = rco1
 	end

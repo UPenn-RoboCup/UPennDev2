@@ -4,7 +4,6 @@ local util   = require'util'
 
 
 local Body = require'Body'
-local robocupplanner = require'robocupplanner'
 local timeout = 10.0
 local t_entry, t_update, t_exit, t_plan
 require'gcm'
@@ -28,12 +27,6 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
-
-
-
-    
-
-
   if hcm.get_step_dir()~=0 then
     return 'stepover1'   
   end

@@ -32,20 +32,19 @@ local FIVE_PI = 5 * PI
 local min, max = require'math'.min, require'math'.max
 -- Arm constants
 local shoulderOffsetX = 0;
-local shoulderOffsetY = 0.234;
-local shoulderOffsetZ = 0.165;
-local upperArmLength = 0.246;
-local elbowOffsetX = 0.030;
---local lowerArmLength = 0.186; -- Default 7DOF arm
-local lowerArmLength = 0.250; -- LONGARM model
+local shoulderOffsetY = 0.234
+local shoulderOffsetZ = 0.165
+local upperArmLength = 0.246
+local elbowOffsetX = 0.030
+local lowerArmLength = 0.252
 -- Gripper of no appendage - just the plate
-local handOffsetX = 0.125;--0.245;
-local handOffsetY = 0;--0.035;
-local handOffsetZ = 0;
+local handOffsetX = 0.125
+local handOffsetY = 0
+local handOffsetZ = 0
 -- Leg constants
 local hipOffsetX = 0
 local hipOffsetY = 0.072
-local hipOffsetZ = 0.282;
+local hipOffsetZ = 0.282
 local thighLength = 0.30
 local tibiaLength = 0.30
 local kneeOffsetX = 0.03
@@ -100,12 +99,14 @@ K.forward_arm = fk_arm
 -- Forward with respect to the torso
 -- Use waist yaw only for now
 local function forward_larm(qLArm, qWaist)
-	qWaist = qWaist or {0,0}
-	return Ttranslate(fk_arm({qWaist[1], unpack(qLArm)}, true), handOffsetX, handOffsetY, handOffsetZ), {qLArm[3]}
+	qWaist = qWaist or {0, 0}
+	local nohand = Tnew(fk_arm({qWaist[1], unpack(qLArm)}, true))
+	return Ttranslate(nohand, handOffsetX, handOffsetY, handOffsetZ), {qLArm[3]}
 end
 local function forward_rarm(qRArm, qWaist)
-	qWaist = qWaist or {0,0}
-	return Ttranslate(fk_arm({qWaist[1], unpack(qRArm)}, false), handOffsetX, handOffsetY, handOffsetZ), {qRArm[3]}
+	qWaist = qWaist or {0, 0}
+	local nohand = Tnew(fk_arm({qWaist[1], unpack(qRArm)}, false))
+	return Ttranslate(nohand, handOffsetX, handOffsetY, handOffsetZ), {qRArm[3]}
 end
 K.forward_larm = forward_larm
 K.forward_rarm = forward_rarm

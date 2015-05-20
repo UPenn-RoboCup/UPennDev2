@@ -78,12 +78,14 @@ local char_to_rfinger = {
 
 local function print_override()
   print( util.color('Override:','yellow'), 
-      string.format("%.2f %.2f %.2f / %.1f %.1f",
+      string.format("%.2f %.2f %.2f / %.1f %.1f %.1f",
       override_target[1],
       override_target[2],
       override_target[3],
       override_target[4]*180/math.pi,
-      override_target[5]*180/math.pi))
+      override_target[5]*180/math.pi,
+      override_target[6]*180/math.pi
+      ))
 
 end
 
@@ -121,7 +123,8 @@ local function update(key_code)
   elseif key_char_lower==("k") then  override_target=vector.new({0,0,0,  0,0,0,0})
   elseif key_char_lower==(" ") then
     hcm.set_state_override(override_target)    
-    hcm.set_move_target(movement_target)
+--    hcm.set_move_target(movement_target)
+    hcm.set_teleop_waypoint(movement_target)
 		body_ch:send'approach' --todo
     override_target = vector.zeros(6)
     movement_target = vector.zeros(3)

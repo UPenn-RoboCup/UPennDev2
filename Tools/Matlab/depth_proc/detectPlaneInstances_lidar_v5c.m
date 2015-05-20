@@ -16,7 +16,7 @@ persistent param_meanShiftResol
 persistent param_meanShiftWeights 
 
 if isempty(ONESCAN_) || resetParam.flag 
-    loadPersistentVariablesL_0424;
+    loadPersistentVariablesL_Terrain;
 end
 
 if isempty(ONESCAN_),

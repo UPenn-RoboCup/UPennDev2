@@ -114,7 +114,7 @@ local function update()
 	if feedback_udp_ch then
 		local c_msg = zlib(msg)
 		--print('msg', #msg, 'c_msg', #c_msg)
-		ret, err = feedback_udp_ch:send(c_msg)
+		ret, err = feedback_udp_ch:send(msg)
 	end
 	if type(ret)=='string' then
 		io.write('Feedback | UDP error: ', ret, '\n')

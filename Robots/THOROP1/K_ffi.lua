@@ -32,16 +32,22 @@ local FIVE_PI = 5 * PI
 local min, max = require'math'.min, require'math'.max
 -- Arm constants
 local shoulderOffsetX = 0;
-local shoulderOffsetY = 0.234;
-local shoulderOffsetZ = 0.165;
-local upperArmLength = 0.246;
+local shoulderOffsetY = 0.234
+local shoulderOffsetZ = 0.165
 local elbowOffsetX = 0.030;
---local lowerArmLength = 0.186; -- Default 7DOF arm
-local lowerArmLength = 0.250; -- LONGARM model
+
+-- Arm meassurements from Dale
+-- Regular arm
+local upperArmLength = 0.254 -- shoulderpad
+local lowerArmLength = 0.260 -- yellow noextend
+-- Extended Arm
+local upperArmLengthExtended = 0.3175 -- silver
+local lowerArmLengthExtended = 0.330 -- yellow extended
+
 -- Gripper of no appendage - just the plate
-local handOffsetX = 0.125;--0.245;
-local handOffsetY = 0;--0.035;
-local handOffsetZ = 0;
+local handOffsetX = 0.125
+local handOffsetY = 0
+local handOffsetZ = 0
 -- Leg constants
 local hipOffsetX = 0
 local hipOffsetY = 0.072

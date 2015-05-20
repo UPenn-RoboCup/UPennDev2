@@ -34,7 +34,7 @@ local min, max = require'math'.min, require'math'.max
 local shoulderOffsetX = 0;
 local shoulderOffsetY = 0.234
 local shoulderOffsetZ = 0.165
-local elbowOffsetX = 0.030;
+local elbowOffsetX = 0.03175
 
 -- Arm meassurements from Dale
 -- Regular arm

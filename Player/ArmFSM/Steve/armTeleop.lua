@@ -52,8 +52,8 @@ function state.entry()
 
 	lco, rco, uComp = movearm.goto(configL, configR)
 	-- Check for no motion
-	okL = lco==false
-	okR = rco==false
+	okL = type(lco)=='thread' or lco==false
+	okR = type(rco)=='thread' or rco==false
 
 end
 

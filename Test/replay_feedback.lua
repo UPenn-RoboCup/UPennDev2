@@ -51,5 +51,5 @@ for i, metadata_joint in logged_joint do
 		if t_sleep>0 then usleep(1e6 * t_sleep) end
 		feedback_ch:send(mpack(metadata_joint))
 	end
-  
+
 end

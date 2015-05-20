@@ -14,6 +14,7 @@ local t_entry = get_time()
 require'wcm'
 require'mcm'
 require'hcm'
+local zlib = require'zlib.ffi'.compress
 
 local feedback_udp_ch
 local feedback_ch
@@ -39,21 +40,22 @@ local function get_torso()
 end
 
 local function entry()
-t_entry = get_time()
+	t_entry = get_time()
 	if IS_WEBOTS then
 		feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
-		ping_ch = si.new_subscriber(Config.net.ping.sub)
-		go_ch = si.new_publisher(Config.net.ping.pub)
+		if IS_COMPETING then
+			ping_ch = si.new_subscriber(Config.net.ping.sub)
+			go_ch = si.new_publisher(Config.net.ping.pub)
+		end
 	else
 		feedback_ch = si.new_sender(
-			Config.net.operator.wired,
-			Config.net.streams.feedback.udp
+		Config.net.operator.wired,
+		Config.net.streams.feedback.udp
 		)
-		ping_ch = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
-		go_ch = si.new_sender(
-			Config.net.operator.wired,
-			Config.net.ping.udp
-		)
+		if IS_COMPETING then
+			ping_ch = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
+			go_ch = si.new_sender(Config.net.operator.wired, Config.net.ping.udp)
+		end
 	end
 end
 
@@ -62,19 +64,23 @@ local e = {}
 local count = 0
 local function update()
 	local t_update = get_time()
-	go_ch:send(mpack(t_update))
-	local data = ping_ch:receive(true)
-local is_open = hcm.get_network_open()==1
-	if (not is_open) and data then
-		hcm.set_network_open(1)
-		hcm.set_network_topen(t_update)
-		t_open = t_update
-		print('net open', t_open-t_entry)
 
-	elseif is_open and t_update - t_open > 1 then
-		print('net closed', t_update-t_entry)
-		hcm.set_network_open(0)
+	-- Only send the pings when competing
+	if go_ch and ping_ch then
+		go_ch:send(mpack(t_update))
+		local data = ping_ch:receive(true)
+		local is_open = hcm.get_network_open()==1
+		if (not is_open) and data then
+			hcm.set_network_open(1)
+			hcm.set_network_topen(t_update)
+			t_open = t_update
+			print('net open', t_open-t_entry)
+		elseif is_open and t_update - t_open > 1 then
+			print('net closed', t_update-t_entry)
+			hcm.set_network_open(0)
+		end
 	end
+
 	if not IS_WEBOTS and t_update - t_feedback < feedback_interval then return end
 
 	count = count + 1
@@ -85,6 +91,8 @@ local is_open = hcm.get_network_open()==1
 	e.cp = Body.get_command_position()
 	e.fL = Body.get_lfoot()
 	e.fR = Body.get_rfoot()
+	-- FSM?
+
 	--[[
 	e.n = count
 	e.b = Body.get_battery()
@@ -95,17 +103,25 @@ local is_open = hcm.get_network_open()==1
 	e.acc = Body.get_accelerometer()
 	e.rpy = Body.get_rpy()
 	e.pose = wcm.get_robot_pose()
-  --]]
+	--]]
 
-  msg = mpack(e)
-	if feedback_ch then feedback_ch:send(msg) end
-	if feedback_udp_ch then ret, err = feedback_udp_ch:send(msg) end
+	msg = mpack(e)
+
+	if feedback_ch then
+		-- Webots is uncompressed
+		feedback_ch:send(msg)
+	end
+	if feedback_udp_ch then
+		local c_msg = zlib(msg)
+		--print('msg', #msg, 'c_msg', #c_msg)
+		ret, err = feedback_udp_ch:send(c_msg)
+	end
 	if type(ret)=='string' then
 		io.write('Feedback | UDP error: ', ret, '\n')
 	else
 		nBytes = nBytes + #msg
 	end
-  t_feedback = t_update
+	t_feedback = t_update
 end
 
 -- If required from Webots, return the table
@@ -126,15 +142,15 @@ while running do
 	update()
 	local t = get_time()
 	-- If time for debug
-  if t-t_debug>debug_interval then
-    t_debug = t
-    local kb = collectgarbage('count')
-    io.write(string.format(
-			'FB | %d sec, %d kB, %d bytes\n',
-			t-t0, kb, nBytes, nBytesPing)
+	if t-t_debug>debug_interval then
+		t_debug = t
+		local kb = collectgarbage('count')
+		io.write(string.format(
+		'FB | %d sec, %d kB, %d bytes\n',
+		t-t0, kb, nBytes, nBytesPing)
 		)
-  end
-  -- Sleep a bit
-  collectgarbage('step')
-  usleep(t_sleep)
+	end
+	-- Sleep a bit
+	collectgarbage('step')
+	usleep(t_sleep)
 end

@@ -1,10 +1,11 @@
 IS_STEVE = true
 --IS_STEVE = false
 
+IS_COMPETING = false
+
 -- Global Config
 Config = {
 	PLATFORM_NAME = 'THOROP2',
-	IS_COMPETING = false,
 	demo = false,
 }
 

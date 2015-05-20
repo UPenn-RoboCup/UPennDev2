@@ -107,11 +107,11 @@ fsm.Body = {
   --
   {'bodyInit', 'done', 'bodyStop'},  
   --
-  {'bodyStop', 'approach', 'bodyApproach2'},
-  {'bodyApproach2', 'done', 'bodyStop'},
+  {'bodyStop', 'approach', 'bodyApproachMessy'},
+  {'bodyApproachMessy', 'done', 'bodyStop'},
   --
-  {'bodyStop', 'approach2', 'bodyApproach'}, --steve's approoach code
-  {'bodyApproach', 'done', 'bodyStop'},
+  {'bodyStop', 'approachbuggy', 'bodyApproachBuggy'}, --steve's approoach code
+  {'bodyApproachBuggy', 'done', 'bodyStop'},
   --
   {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'nextstep', 'bodyStep'},

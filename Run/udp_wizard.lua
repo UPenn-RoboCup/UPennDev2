@@ -3,6 +3,7 @@ dofile'../include.lua'
 local Config = require'Config'
 local si = require'simple_ipc'
 local util = require'util'
+local unzlib = require'zlib'.uncompress
 
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
@@ -22,8 +23,9 @@ local function procRaw(data)
 	return data
 end
 
-local function procZlib(data)
-	error('Not implemented yet')
+local function procZlib(c_data)
+	local data = unzlib(c_data)
+	return procMP(data)
 end
 
 local nsz = 0
@@ -47,6 +49,7 @@ local function cb(skt)
 	end
 end
 
+
 for key,stream in pairs(Config.net.streams) do
 	if type(stream.udp)=='number' then
 		io.write('Forwarding ', key, ': ', stream.udp, ' -> ', stream.sub, '\n')
@@ -55,7 +58,11 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(in_channels, r)
 		local s = si.new_publisher(stream.sub)
 		table.insert(out_channels, s)
-		table.insert(ch_processing, procMP)
+		if key=='feedback' then
+			table.insert(ch_processing, procZlib)
+		else
+			table.insert(ch_processing, procMP)
+		end
 	end
 end
 

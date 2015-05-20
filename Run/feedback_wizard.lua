@@ -14,6 +14,7 @@ local t_entry = get_time()
 require'wcm'
 require'mcm'
 require'hcm'
+local zlib = require'zlib.ffi'.compress
 
 local feedback_udp_ch
 local feedback_ch
@@ -90,6 +91,8 @@ local function update()
 	e.cp = Body.get_command_position()
 	e.fL = Body.get_lfoot()
 	e.fR = Body.get_rfoot()
+	-- FSM?
+
 	--[[
 	e.n = count
 	e.b = Body.get_battery()
@@ -103,8 +106,16 @@ local function update()
 	--]]
 
 	msg = mpack(e)
-	if feedback_ch then feedback_ch:send(msg) end
-	if feedback_udp_ch then ret, err = feedback_udp_ch:send(msg) end
+
+	if feedback_ch then
+		-- Webots is uncompressed
+		feedback_ch:send(msg)
+	end
+	if feedback_udp_ch then
+		local c_msg = zlib(msg)
+		--print('msg', #msg, 'c_msg', #c_msg)
+		ret, err = feedback_udp_ch:send(c_msg)
+	end
 	if type(ret)=='string' then
 		io.write('Feedback | UDP error: ', ret, '\n')
 	else

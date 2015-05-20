@@ -107,6 +107,8 @@ function state.update()
 		if stage then
 			print('Next sequence:', s, stage)
 			lco, rco = movearm.goto(stage.left, stage.right)
+			okL = type(lco)=='thread' or lco==false
+			okR = type(rco)=='thread' or rco==false
 		end
 	end
 

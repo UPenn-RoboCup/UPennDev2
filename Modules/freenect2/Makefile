@@ -1,4 +1,5 @@
 LIBNAME=freenect2
+USE_OPENCL = 1
 
 EXTRA_OBJ=\
 command_transaction.o \

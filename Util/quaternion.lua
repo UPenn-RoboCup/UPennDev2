@@ -9,7 +9,7 @@ local util=require'util'
 local quaternion = {}
 
 local sin = require'math'.sin
-local cos = require'math'.acos
+local cos = require'math'.cos
 local acos = require'math'.acos
 local atan2 = require'math'.atan2
 local abs = require'math'.abs
@@ -119,7 +119,7 @@ function quaternion.angle_axis(q)
   local angle = 2*acos(q[1])
   -- Avoid the divide by zero scenario
 	if angle < 1e-6 then return 0, {1,0,0} end
-	return angle, {unpack(q,2,4)}/sin(angle/2)
+	return angle, vector.new{unpack(q,2,4)}/sin(angle/2)
 end
 
 -- Get the angle between two quaternions

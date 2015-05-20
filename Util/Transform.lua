@@ -442,7 +442,7 @@ function Transform.tostring(tr)
   for i=1,4 do
     local row = {}
     for j=1,4 do
-      table.insert(row,string.format('%6.3f',tr[i][j]))
+      table.insert(row,string.format('%6.3f',tr[i][j] or math.huge))
     end
     local c = table.concat(row,', ')
     table.insert(pr,string.format('[%s]',c))

@@ -47,8 +47,9 @@ function state.entry()
 	stage = sequence[s]
 	lco, rco = movearm.goto(stage.left, stage.right)
 
-	okL = type(lco)=='thread'
-	okR = type(rco)=='thread'
+	-- Check for no motion
+	okL = type(lco)=='thread' or lco==false
+	okR = type(rco)=='thread' or rco==false
 
 end
 

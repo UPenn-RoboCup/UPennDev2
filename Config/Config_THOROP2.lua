@@ -8,6 +8,12 @@ Config = {
 	demo = false,
 }
 
+local exo = {
+	'Walk','Net','FSM','World','Vision',
+	'Robot_Chipette',
+	(IS_STEVE and 'Arm_Steve' or 'Arm_DRCFinal'),
+}
+
 Config.toeheel_lift = true
 Config.enable_touchdown = false
 Config.raise_body = true
@@ -53,15 +59,6 @@ if IS_WEBOTS then
   -- Config.lidar_timestep = 200 --slower
   -- Config.kinect_timestep = 30
 end
-
-----------------------------------
--- Application specific Configs --
-----------------------------------
-local exo = {
-	'Walk','Net','FSM','World','Vision',
-	(HOSTNAME=="teddy2" and 'Robot_teddy2' or 'Robot'),
-	(IS_STEVE and 'Arm_Steve' or 'Arm_DRCFinal'),
-}
 
 -----------------------------------
 -- Load Paths and Configurations --

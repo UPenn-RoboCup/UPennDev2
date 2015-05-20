@@ -163,7 +163,7 @@ local left_leg = {
 --------------------------------------------
 --for birdwalk, swap chain names too
 --------------------------------------------
-if Config.birdwalk then  
+if Config.birdwalk then
   left_leg = {
 	name = 'lleg',
 	ttyname = '/dev/ttyUSB2',
@@ -401,7 +401,7 @@ if Config.birdwalk then
 	-- -1,-1, 1, 1,-1, 1, --RLeg, mk1
 		 -1, 1,-1,-1, 1,-1, --LLeg, mk1, flipped
 		 -1, 1, 1, 1,-1,-1, --RLeg, mk1, flipped
-		 
+
 		-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
 		1, 1, -- Waist, mk2
 		-1,1,-1, -- left gripper TODO

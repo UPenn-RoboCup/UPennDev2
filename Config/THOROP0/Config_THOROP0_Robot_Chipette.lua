@@ -163,7 +163,7 @@ local left_leg = {
 --for birdwalk, swap chain names too
 --------------------------------------------
 if Config.birdwalk then
-  
+
   left_leg = {
 	name = 'lleg',
 	ttyname = '/dev/ttyUSB2',
@@ -285,7 +285,7 @@ if Config.birdwalk then
 	"ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
 	-- Left leg (with waist flipped)
 	"PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
-	-- Right leg (with waist flipped)	
+	-- Right leg (with waist flipped)
 	"PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
 	--Right arm
 	"ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",

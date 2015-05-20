@@ -16,7 +16,7 @@ rgb_img = uint8(zeros([RGB_H, RGB_W, 3]));
 % 1 second timeout
 s_depth = zmq('subscribe', 'tcp', '192.168.123.246', 43346);
 s_color = zmq('subscribe', 'tcp', '192.168.123.246', 43347);
-%s_mesh = zmq('subscribe', 'tcp', '192.168.123.232', 43344);
+%s_mesh = zmq('subscribe', 'tcp', '192.168.123.246', 43344);
 s_mesh = zmq( 'subscribe', 'ipc', 'mesh0' );
 
 log = 1;
@@ -37,22 +37,29 @@ while 1
         [metadata,offset] = msgpack('unpack', data);
         if has_more, [raw, has_more] = zmq('receive', s_idx); end
         char(metadata.id)
-        if strcmp(char(metadata.id), 'k2_depth') %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% depth 
+        if 0 %strcmp(char(metadata.id), 'k2_depth') %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% depth 
                 raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
                 uisetting; % See uisetting.m       size(D)
                  
                 % res = depth_proc(raw, metadata, ui);
                  
-                % TASK: localization at the corner 
+%                 % TASK: localization at the corner 
+%                 ui.taskMode = 11 ;
+%                 ui.figures(3) = 2;
+%                 % average 
+%                 [res, meta] = detectPlanes6(raw, metadata, ui);                  
+%                 res{1}
+%                 pose = localizeCorner_v4(res,metadata)
+%                 % TASK: localization at the corner 
+                
+                 % TASK: localization at the corner 
                 ui.taskMode = 11 ;
                 ui.figures(3) = 2;
                 % average 
-                [res, meta] = detectPlanes6(raw, metadata, ui);   
-                
-                
-                res{1}
-                pose = localizeCorner_v4(res,metadata)
+                [res, meta, outOfWall] = removeBackgroundPlane(raw, metadata, ui);   
+                %pose = localizeCorner_v4(res,metadata)
                 % TASK: localization at the corner 
+                % raw(outOfWall);               
                 
                 figure(1), imagesc(raw');            
              % end
@@ -68,11 +75,11 @@ while 1
                 metadata.flag = 1;
                 raw = reshape(typecast(raw, 'single'), [metadata.dim(2), metadata.dim(1)]);
 
-    %             figure(3), imagesc(raw);
+                 figure(3), imagesc(raw);
     %              disp(metadata)
-    %              size(raw)
+                  size(raw)
 
-               [ Planes ] = detectPlaneInstances_lidar_v5c( raw', 3, metadata);  
+             %  [ Planes ] = detectPlaneInstances_lidar_v5( raw', 4, metadata);    
             end
            count = count + 1;
         end

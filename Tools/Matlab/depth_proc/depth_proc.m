@@ -19,7 +19,8 @@ switch ui.runningMode
     case 1, % logging 
         logDepthData(data, meta);
     case 2, 
-        [res, meta] = detectPlanes4(data, meta, ui);
+     %   [res, meta] = detectPlanes6(data, meta, ui); % large plane settings
+        [res, meta] = detectPlanes7(data, meta, ui); % rough terrain settings
 end
     
 end

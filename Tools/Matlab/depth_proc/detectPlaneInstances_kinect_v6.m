@@ -1,6 +1,10 @@
 function [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v6( depthRaw, Rot, tr, ui )
 % v6: merging similar planes 
-
+%
+% << note >>
+% wall detection settings
+% 
+% 
 persistent DEPTH_W       % Width
 persistent DEPTH_H       % Height
 persistent DEPTH_MAX     % Maximum valid depth value
@@ -17,7 +21,6 @@ persistent Xind_
 persistent Yind_
 persistent Xind_c
 persistent Yind_c 
-persistent MASK
 
 persistent Ccb_prev
 persistent Tcb_prev
@@ -38,9 +41,12 @@ if nargin < 4
     error('The number of input arguments must be 4');
 end
 
+if isempty(DEPTH_W) 
+    loadConstVariables_k6;
+end
+
 if 1 %isempty(DEPTH_W) || ui.reset == 1
-    loadPersistentVariables_0320;
-    loadPersistentVariables_0330;
+    loadPersistentVariables_k6;
 end
 
 Ccb = Rot;
@@ -60,11 +66,8 @@ PlaneOfInterest = [];
 clickxy = [];
 
 %% Filtering     
-depth = flip(double(depthRaw)',2);%-20;
-depth(depth(:) <= DEPTH_MIN) = 0;
-depth(depth(:) >= DEPTH_MAX) = 0;   
+depth = depthRaw;%-20;
 depth = medfilt2(depth,[7 7]);
-depth = MASK.*depth;
 validInd = find(depth>0);
 mask = zeros(size(depth));
 mask(validInd) = 1;
@@ -106,7 +109,7 @@ blankConnImg = zeros(floor(DEPTH_H/param_normalComputation(2)),floor(DEPTH_W /pa
 for tt = 1: size(finalMean,2)      
     if nMembers(tt) > thre_clusterSize  % if cluster size is big enough 
                  
-        if plane_dist(ui.taskMode,Ccb*finalMean(3:5,tt)) == true % if the normal is close to our models
+        if 1 %plane_dist(ui.taskMode,Ccb*finalMean(3:5,tt)) == true % if the normal is close to our models
             connImg = blankConnImg;
             index = validNormal(clusterXYcell{tt}); 
             [index_y, index_x] = ind2sub([DEPTH_H DEPTH_W],index);
@@ -262,7 +265,7 @@ if ui.taskMode == 1 % ground
     end
 elseif ui.taskMode == 2
     n_inner = abs([0 0 1]*Ns);
-    flag = (n_inner < 0.1);
+    flag = ones( size(n_inner));%(n_inner < 0.3);
      % pick the largest
     candidates = find(flag>0);
     if ~isempty(candidates)
@@ -354,24 +357,29 @@ if  ui.figures(3) > 0
 %         figure(3),
 %         plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', randcolor, 'LineWidth',2);
 %     end
-    
+end
+
    if 1 %~isempty(PlaneOfInterest)
        for t_=1:length(PlaneOfInterest);
             t = PlaneOfInterest(t_);
-            randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
-            figure(3),% subplot(2,1,2);        
+            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];          
             ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
-            showPointCloud([ALL(1,:)' ALL(2,:)' ALL(3,:)'], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
-            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
-            plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', 'k', 'LineWidth',2);
             
+            
+            
+            if ui.figures(3) > 0
+                randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
+                figure(3),     
+                showPointCloud([ALL(1,:)' ALL(2,:)' ALL(3,:)'], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
+                plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', 'k', 'LineWidth',2);
+            end
 %             figure(12),
 %             showPointCloud([-ALL(2,:)' -ALL(3,:)' ALL(1,:)' ], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
 %             nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
 %             plot3(-nvec(2,:), -nvec(3,:), nvec(1,:), '-', 'Color', 'k', 'LineWidth',2);
        end
     end
-end
+
     
 % save previous pose
 Ccb_prev = Ccb;

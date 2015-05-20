@@ -1,4 +1,4 @@
-function [ Planes ] = detectPlaneInstances_lidar_v2( meshRaw, visflag, resetParam )
+function [ Planes ] = detectPlaneInstances_lidar_v3( meshRaw, visflag, resetParam )
 
 persistent ONESCAN_         % single scan resolution 
 persistent NUMSCAN_      % number of scans (in horizontal direction)
@@ -15,8 +15,8 @@ persistent thre_memberSize
 persistent param_meanShiftResol 
 persistent param_meanShiftWeights 
 
-if resetParam.flag 
-    loadPersistentVariablesL_0324;
+if isempty(ONESCAN_) || resetParam.flag 
+    loadPersistentVariablesL_0421;
 end
 
 if isempty(ONESCAN_),
@@ -39,20 +39,15 @@ end
 Planes = [];
 Points3D = [];
 PlaneID = 0;
-    
-% % parameters 
-% normalComp_param = [3 1]; %  (w^2 + 1) half-window size
-% thre_svalue = 0.1; % The smaller it is, the flatter the plane fit is 
-% thre_clusterSize = 500; % number of clusters
-% thre_memberSize = 100; % number of connected members (in the image domain)
-% param_meanShiftResol = 0.5;% 0.6;         % mean shift resolution
-% param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
-% 
+
 % %%
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
-meshRaw(meshRaw>5) = 0;             % clamp on ranges
-meshRaw(meshRaw<0.8) = 0;
-[mesh_, s_, v_] = scan2DepthImg_spherical( meshRaw, s_angles, v_angles); % remove repeated measure   
+meshRaw(meshRaw>3) = 0;             % clamp on ranges
+meshRaw(meshRaw<0.5) = 0;
+[mesh_, s_, v_] = scan2DepthImg_spherical0( meshRaw', s_angles, v_angles); % remove repeated measure   
+
+mesh_ = medfilt2(mesh_,[3 3]);
+
 NUMS_ = size(mesh_,1);
 NUMV_ = size(mesh_,2);
 Xind = repmat([1:NUMS_]',1,NUMV_); 
@@ -71,7 +66,7 @@ Y0 = ss_.*cv_.*mesh_;
 Z0  = -sv_.*mesh_ ;
 
 figure(visflag), hold off;
-showPointCloud(X0(:),Y0(:),Z0(:),[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
+showPointCloud([X0(:)'; Y0(:)'; Z0(:)']','VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
 hold on;
 %% Normal Computation
 [N, S] = computeNormal_lidarB(X0, Y0, Z0, mask, normalComp_param(1), normalComp_param(2));
@@ -155,6 +150,7 @@ for tt = 1: size(finalMean,2)
                                 n_ = -n_;
                             end
  
+                            if n_(3) > 0.9 
                             
                             PlaneID = PlaneID + 1;
                             Planes{PlaneID} = struct('Center', Center,...
@@ -163,7 +159,8 @@ for tt = 1: size(finalMean,2)
                                                      'Size',numel(ins));      
                                                  
                             
-                            Points3D{PlaneID} = [ X0(index(whichcell)); Y0(index(whichcell)); Z0(index(whichcell)) ];    
+                            Points3D{PlaneID} = [ X0(index(whichcell)); Y0(index(whichcell)); Z0(index(whichcell)) ];
+                            end
                         end
                     end
                 end
@@ -182,8 +179,8 @@ if 1 %~isempty(params)
         Planes{t}.Points = Ccb*Planes{t}.Points + repmat(Tcb,1,size(Planes{t}.Points,2)) ;
         Planes{t}.Normal = Ccb*Planes{t}.Normal;
         
-        ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
         if visflag
+            ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
             randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
             figure(visflag), 
             showPointCloud(ALL(1,:), ALL(2,:),ALL(3,:),...
@@ -191,6 +188,7 @@ if 1 %~isempty(params)
             nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.15];
             figure(visflag),
             plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', [0 0 0], 'LineWidth',2);
+            plot3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),'.', 'Color', [0 0 0]);
         end
     end
 end

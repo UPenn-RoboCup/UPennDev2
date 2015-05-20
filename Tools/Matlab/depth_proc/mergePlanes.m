@@ -9,6 +9,11 @@ end
 if nargin < 6
     params = [0.95 0.05];
 end
+
+mergedPlanes = Planes;
+mergedNumPlanes = numPlanes;
+mergedPoi = Poi;
+mergedP3d = P3d;
     
 if numPlanes < nlimit
     

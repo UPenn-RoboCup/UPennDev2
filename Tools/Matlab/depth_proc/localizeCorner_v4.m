@@ -1,4 +1,4 @@
-function pose = localizeCorner_v3(Planes,metad,reset)
+function pose = localizeCorner_v4(Planes,metad,reset)
 
 persistent p1
 persistent p2
@@ -22,6 +22,14 @@ vis=1;
 visinit = 0;
 MAX_DIST = 2.0; % meter
 MIN_SIZE = 3000;
+
+odoflag = 0;
+if isfield(metad,'tfG16')
+    odoflag = 1;
+    T = reshape(metad.tfG16,4,4)'
+    elr = dcm2eulr(T(1:3,1:3));    
+    metad.odom = [T(1,4) T(2,4) elr(3)];
+end
           
 if isempty(p1) || (nargin == 3 && reset == 1)
     p1.init = false;     p1.sign = 0;     
@@ -31,10 +39,12 @@ if isempty(p1) || (nargin == 3 && reset == 1)
     a2 = [0;0]; b2 = 0;
     theta_x = 0;
     inters = [0 0]';
-  %  prev_odo = metad.odom;
-    orig = prev_odo;
-    Fx = BayesianFilter1D; %Fx = Fx.initialize(0, 4);
-    Fy = BayesianFilter1D; %Fy = Fy.initialize(0, 4);
+    if odoflag
+        prev_odo = metad.odom;
+        orig = prev_odo;
+        Fx = BayesianFilter1D; %Fx = Fx.initialize(0, 4);
+        Fy = BayesianFilter1D; %Fy = Fy.initialize(0, 4);
+    end
     visinit = 1;
     meas_x = 0;
     meas_y = 0;
@@ -84,7 +94,9 @@ if p1.init == false
             b1 = Planes{ref_}.Normal'*Planes{ref_}.Center;
             meas_x = -b1;
             pose.x = -b1;
-            Fx = Fx.initialize(pose.x, 1);
+             if odoflag
+                Fx = Fx.initialize(pose.x, 1);
+             end
             % Compute "theta"s here 
             theta_body = theta_x;
             theta_head = theta_body - metad.head_angles(1);
@@ -100,7 +112,9 @@ if p1.init == false
                 b2 = Planes{2}.Normal'*Planes{2}.Center;
                 pose.y = -b2;
                 meas_y = -b2;
-                Fy = Fy.initialize(pose.y, 1);
+                 if odoflag
+                     Fy = Fy.initialize(pose.y, 1);
+                 end
 
                 % compute intersect point
                 inters = [a1'; a2']\[b1; b2];
@@ -115,20 +129,25 @@ else % p1 initialized
     update_p2 = 0;
     cr = [];
     
-    % consider yaw
-    % u = [metad.odom(1:2) metad.imu_rpy(3)]  - prev_odo;
-    u = metad.odom  - prev_odo;
-    dl = norm(u(1:2));
-    ang = theta_body;
-           
-    % update according to motion
-    ux = cos(theta_x)*dl;
-    [Fx, x, ~] = Fx.propagate(ux); 
-    pose.x = x;
-    if p2.init == true
-        uy = sin(theta_x)*dl;
-        [Fy, y, ~] = Fy.propagate(uy);
-        pose.y = y;
+    if odoflag  
+    
+        % consider yaw
+        % u = [metad.odom(1:2) metad.imu_rpy(3)]  - prev_odo;
+        u = metad.odom  - prev_odo;
+        dl = norm(u(1:2));
+        ang = theta_body;
+
+        % update according to motion
+        ux = cos(theta_x)*dl;
+
+        [Fx, x, ~] = Fx.propagate(ux); 
+        pose.x = x;
+       
+        if p2.init == true
+            uy = sin(theta_x)*dl;
+            [Fy, y, ~] = Fy.propagate(uy);
+            pose.y = y;
+        end
     end
     
     % if new measurements available, identify them first 
@@ -169,10 +188,14 @@ else % p1 initialized
     % update the filter   
     if update_p1 > 0
         x_meas = -Planes{update_p1}.Normal'*Planes{update_p1}.Center;
-        meas.value = x_meas;
-        meas.param = 0;
-        [Fx, x, Px] = Fx.update(meas); 
-        pose.x = x;
+        if odoflag
+            meas.value = x_meas;
+            meas.param = 0;
+            [Fx, x, Px] = Fx.update(meas); 
+            pose.x = x;
+        else
+            pose.x = x_meas;
+        end
         meas_x = x_meas;
         
         theta_body = atan2(Planes{update_p1}.Normal(2), Planes{update_p1}.Normal(1)) ; 
@@ -189,7 +212,9 @@ else % p1 initialized
                 a2 = Planes{update_p2}.Normal(1:2); a2 = a2/norm(a2);
                 b2 = Planes{update_p2}.Normal'*Planes{update_p2}.Center;
                 pose.y = -b2;
-                Fy = Fy.initialize(pose.y, 1);
+                if odoflag
+                    Fy = Fy.initialize(pose.y, 1);
+                end
                  % compute intersect point            
                 inters = [a1'; a2']\[b1; b2];
                 meas_y = pose.y;
@@ -197,10 +222,14 @@ else % p1 initialized
         else
             % update the filter 
             y_meas = -Planes{update_p2}.Normal'*Planes{update_p2}.Center;
-            meas.value = y_meas;
-            meas.param = 0;
-            [Fy, y, Py] = Fy.update(meas);    
-            pose.y = y;
+            if odoflag
+                meas.value = y_meas;
+                meas.param = 0;
+                [Fy, y, Py] = Fy.update(meas);    
+                pose.y = y;
+            else
+                pose.y = y_meas;
+            end
             meas_y = y_meas;     
             
             if update_p1 == 0
@@ -216,8 +245,10 @@ pose.isValid2 = p2.init;
 pose.theta_body = -theta_body;
 pose.theta_head = -theta_head;
 
-prev_odo = [metad.odom(1:2) metad.imu_rpy(3)];
-prev_odo = metad.odom;
+ if odoflag
+   % prev_odo = [metad.odom(1:2) metad.imu_rpy(3)];
+    prev_odo = metad.odom;
+ end
 
 if vis && pose.isValid1
 
@@ -279,11 +310,12 @@ if vis && pose.isValid1
     
     w1_ = b1*a1;           
     plot([curpos(2) curpos(2)+w1_(2)], [curpos(1) curpos(1)+w1_(1)], '-','Color',[0.7 1 0.7]);  
-    text(curpos(2)+0.5*w1_(2), curpos(1)+0.5*w1_(1),sprintf('%0.2f',pose.x));
+    
+    text(double(curpos(2)+0.5*w1_(2)), double(curpos(1)+0.5*w1_(1)),sprintf('%0.2f',pose.x));
     if p2.init
         w2_ = b2*a2;   
         plot([curpos(2) curpos(2)+w2_(2)], [curpos(1) curpos(1)+w2_(1)], '-','Color',[0.7 0.7 1]);  
-        text(curpos(2)+0.5*w2_(2), curpos(1)+0.5*w2_(1),sprintf('%0.2f',pose.y));
+        text(double(curpos(2)+0.5*w2_(2)), double(curpos(1)+0.5*w2_(1)),sprintf('%0.2f',pose.y));
     end
 end
    

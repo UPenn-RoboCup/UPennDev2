@@ -198,7 +198,7 @@ if ui.figures(1) > 0
 end
 
 if ui.figures(3) 
-    figure(3), subplot(2,1,2);  
+    figure(3), %subplot(2,1,2);  
     Ztemp = depth(validInd(10:10:end))*0.001;
     Ytemp = Yind_c(validInd(10:10:end))*Sy.*Ztemp;
     Xtemp = -Xind_c(validInd(10:10:end))*Sx.*Ztemp;
@@ -268,6 +268,8 @@ elseif ui.taskMode == 11
         end
         PlaneOfInterest = idx;
     end
+else
+    PlaneOfInterest = 1:PlaneID;
 end
 
 % elseif strcmp(params{3}.mode, 'manual_2d')
@@ -318,7 +320,7 @@ if  ui.figures(3) > 0
        for t_=1:length(PlaneOfInterest);
         t = PlaneOfInterest(t_);
         randcolor = [1 0 0];%rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
-        figure(3), subplot(2,1,2);        
+        figure(3),% subplot(2,1,2);        
         ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
         scatter3(ALL(1,:), ALL(2,:), ALL(3,:),5,randcolor,'filled');
         scatter3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),15,'k','filled');

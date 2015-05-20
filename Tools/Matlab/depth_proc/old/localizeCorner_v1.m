@@ -1,10 +1,9 @@
-function pose = localizeCorner_v3(Planes,metad,reset)
+function pose = localizeCorner_v1(Planes,metad,reset)
 
 persistent p1
 persistent p2
 persistent a1
 persistent b1
-persistent a1_orth
 persistent a2
 persistent b2
 persistent theta_x
@@ -20,18 +19,15 @@ persistent Fy  % filter for y location (distance)
 
 vis=1;
 visinit = 0;
-MAX_DIST = 2.0; % meter
-MIN_SIZE = 3000;
           
 if isempty(p1) || (nargin == 3 && reset == 1)
     p1.init = false;     p1.sign = 0;     
     p2.init = false;     p2.sign = 0;    
     a1 = [0;0]; b1 = 0;
-    a1_orth = [0;0];
     a2 = [0;0]; b2 = 0;
     theta_x = 0;
     inters = [0 0]';
-  %  prev_odo = metad.odom;
+    prev_odo = metad.odom;
     orig = prev_odo;
     Fx = BayesianFilter1D; %Fx = Fx.initialize(0, 4);
     Fy = BayesianFilter1D; %Fy = Fy.initialize(0, 4);
@@ -48,65 +44,35 @@ pose = struct('x',0,'y',0,'isValid1',p1.init,'isValid2',p2.init,...
 if p1.init == false
     
     if ~isempty(Planes) % first observation        
-       ref_ = 0; 
-       d1 = abs(Planes{1}.Normal'*Planes{1}.Center);
-       if d1 < MAX_DIST &&  abs(Planes{1}.Normal(3)) < 0.1 % set maximum distance 
-            ref_ = 1;
-       end
-       
-       if numel(Planes) > 1  % two planes if lucky 
-           
-           d2 = abs(Planes{2}.Normal'*Planes{2}.Center);
-           if d2 > MAX_DIST || abs(Planes{2}.Normal(3)) > 0.1
-               Planes{2} = [];
-           elseif ref_ == 0 
-                ref_ = 2;
-           else
-               % If they look too similar, choose one
-               if abs(Planes{1}.Normal'*Planes{2}.Normal) > 0.9
-                if (abs(Planes{1}.Normal'*Planes{1}.Center) > abs(Planes{2}.Normal'*Planes{2}.Center))
-                    ref_ = 2;
-                else
-                    Planes{2} = [];
-                end
-               end
-           end
-       end       
         
-        if ref_ > 0
-            % the largest plane normal becomes the x 
-            p1.init = true;
-            % Let the normal of this plane be the x-axis
-            theta_x = atan2(Planes{ref_}.Normal(2),Planes{ref_}.Normal(1));  
-            a1 = Planes{ref_}.Normal(1:2); a1 = a1/norm(a1);
-            a1_orth = Rot2d(pi/2)*a1; 
-            p1.sign = 1;% sign(theta_x); 
-            b1 = Planes{ref_}.Normal'*Planes{ref_}.Center;
-            meas_x = -b1;
-            pose.x = -b1;
-            Fx = Fx.initialize(pose.x, 1);
-            % Compute "theta"s here 
-            theta_body = theta_x;
-            theta_head = theta_body - metad.head_angles(1);
-            inters = -Rot2d(theta_x)*[ pose.x; 0];
-
-             if numel(Planes) > 1 && ~isempty(Planes{2}) && (ref_+1 < 3)
-                 
-                 
-
-                p2.init = true;
-                p2.sign = sign(Planes{1}.Normal(1).*Planes{2}.Normal(2) - Planes{1}.Normal(2).*Planes{2}.Normal(1)) ;
-                a2 = Planes{2}.Normal(1:2); a2 = a2/norm(a2);
-                b2 = Planes{2}.Normal'*Planes{2}.Center;
-                pose.y = -b2;
-                meas_y = -b2;
-                Fy = Fy.initialize(pose.y, 1);
-
-                % compute intersect point
-                inters = [a1'; a2']\[b1; b2];
-             end
-        end
-     
+        % the largest plane normal becomes the x 
+        p1.init = true;
+        % Let the normal of this plane be the x-axis
+        theta_x = atan2(Planes{1}.Normal(2),Planes{1}.Normal(1));  
+        a1 = Planes{1}.Normal(1:2); a1 = a1/norm(a1);
+        p1.sign = 1;% sign(theta_x); 
+        b1 = Planes{1}.Normal'*Planes{1}.Center;
+        meas_x = -b1;
+        pose.x = -b1;
+        Fx = Fx.initialize(pose.x, 1);
+        % Compute "theta"s here 
+        theta_body = theta_x;
+        theta_head = theta_body - metad.head_angles(1);
+        inters = -Rot2d(theta_x)*[ pose.x; 0];
+        
+        if numel(Planes) > 1  % two planes if lucky 
+            
+            p2.init = true;
+            p2.sign = sign(Planes{1}.Normal(1).*Planes{2}.Normal(2) - Planes{1}.Normal(2).*Planes{2}.Normal(1)) ;
+            a2 = Rot2d(p2.sign*pi/2)*a1;  a2 = a2/norm(a2);
+            b2 = Planes{2}.Normal'*Planes{2}.Center;
+            pose.y = -b2;
+            meas_y = -b2;
+            Fy = Fy.initialize(pose.y, 1);
+            
+            % compute intersect point
+            inters = [a1'; a2']\[b1; b2];
+        end       
     end
     
 else % p1 initialized 
@@ -133,35 +99,25 @@ else % p1 initialized
     
     % if new measurements available, identify them first 
     if ~isempty(Planes)         
-        
-        d1 = abs(Planes{1}.Normal'*Planes{1}.Center);
-        if d1  < MAX_DIST && abs(Planes{1}.Normal(3)) < 0.1% set maximum distance 
-            % is the first plane p1 or not? 
-            n1_ = Planes{1}.Normal(1:2); n1_ = n1_/norm(n1_);
-            cr(1) = cos(ang)*n1_(2) - sin(ang)*n1_(1);
-            if abs(cr(1)) > 0.9 % cross product with x-axis_wall large           
-               update_p2 = 1;   % the second plane 
-            else 
-               update_p1 = 1;
-            end  
-        end
-                    
+        % is the first plane p1 or not? 
+        n1_ = Planes{1}.Normal(1:2); n1_ = n1_/norm(n1_);
+        cr(1) = cos(ang)*n1_(2) - sin(ang)*n1_(1);
+        if abs(cr(1)) > 0.9 % cross product with x-axis_wall large           
+           update_p2 = 1;   % the second plane 
+        else 
+           update_p1 = 1;
+        end                  
         
         % if another measurement available, identify it too 
         if numel(Planes) > 1 
-                                 
-            d2 = abs(Planes{2}.Normal'*Planes{2}.Center);
-            if d2  < MAX_DIST &&  abs(Planes{2}.Normal(3)) < 0.1 % set maximum distance 
-                
-                % is this p1 or not?             
-                n2_ = Planes{2}.Normal(1:2); n2_ = n2_/norm(n2_);
-                cr(2) =  cos(ang)*n2_(2) - sin(ang)*n2_(1);
-                if abs(cr(2)) > 0.9
-                   update_p2 = 2;
-                else
-                   update_p1 = 2;
-                end     
-            end
+            % is this p1 or not?             
+            n2_ = Planes{2}.Normal(1:2); n2_ = n2_/norm(n2_);
+            cr(2) =  cos(ang)*n2_(2) - sin(ang)*n2_(1);
+            if abs(cr(2)) > 0.9
+               update_p2 = 2;
+            else
+               update_p1 = 2;
+            end            
         end
         
     end
@@ -182,18 +138,16 @@ else % p1 initialized
     
      if update_p2 > 0
          
-        if p2.init == false 
-            if Planes{update_p2}.Size > MIN_SIZE % if first time the plane #2 is observed 
-                p2.init = true;
-                p2.sign = sign(cr(update_p2)); 
-                a2 = Planes{update_p2}.Normal(1:2); a2 = a2/norm(a2);
-                b2 = Planes{update_p2}.Normal'*Planes{update_p2}.Center;
-                pose.y = -b2;
-                Fy = Fy.initialize(pose.y, 1);
-                 % compute intersect point            
-                inters = [a1'; a2']\[b1; b2];
-                meas_y = pose.y;
-            end
+        if p2.init == false % if first time the plane #2 is observed 
+            p2.init = true;
+            p2.sign = sign(cr(update_p2)); 
+            a2 = Rot2d(p2.sign*pi/2)*a1;
+            b2 = Planes{update_p2}.Normal'*Planes{update_p2}.Center;
+            pose.y = -b2;
+            Fy = Fy.initialize(pose.y, 1);
+             % compute intersect point            
+            inters = [a1'; a2']\[b1; b2];
+            meas_y = pose.y;
         else
             % update the filter 
             y_meas = -Planes{update_p2}.Normal'*Planes{update_p2}.Center;

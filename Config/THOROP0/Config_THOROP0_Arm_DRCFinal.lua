@@ -33,25 +33,13 @@ arm.torque.grip_drill_trigger1 = 40
 arm.torque.grip_drill_trigger2 = 40
 
 
---Old Arm planner variables
 arm.plan={}
-arm.plan.max_margin = math.pi/6
-arm.plan.dt_step0 = 0.1
-arm.plan.dt_step = 0.2
-arm.plan.dt_step_min = 0.02
-arm.plan.dt_step_min = 0.2 --no speedup
-arm.plan.search_step = 0.25
-
-
---for SJ's jacobian stuff------------------------------
-arm.plan.dt_step0_jacobian = 0.05
-arm.plan.dt_step_jacobian = 0.1
-arm.plan.dt_step_min_jacobian = 0.02
-arm.plan.scale_limit={0.05,2}
-
 arm.plan.dt_step0_jacobian = 0.1
 arm.plan.dt_step_jacobian = 0.2
-
+--arm.plan.dt_step0_jacobian = 0.05
+--arm.plan.dt_step_jacobian = 0.1
+arm.plan.dt_step_min_jacobian = 0.02
+arm.plan.scale_limit={0.05,2}
 
 -- Arm speed limits
 arm.torso_comp_limit = vector.new({0.02,0.01})
@@ -74,7 +62,7 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 --SJ: now arm ready poses are hand-invariant (to handle asymmetric hands and stuff)
 arm.trLArm0 = {0.0, 0.25,-0.25,0,0,0}
 arm.trRArm0 = {0.0, -0.25,-0.25,0,0,0}
-arm.ShoulderYaw0=vector.new({0.1,-0.1})*DEG_TO_RAD
+arm.ShoulderYaw0=vector.new({-1,1})*DEG_TO_RAD
 
 --Arm State specific infos
 armfsm = {}
@@ -118,14 +106,7 @@ armfsm.teleop.armuninit={
 
 
 
---FOR LONGARM VER.
-arm.trLArm0 = {0.15, 0.25,-0.25,0,0,0}
-arm.trRArm0 = {0.15, -0.25,-0.25,0,0,0}
-
---arm.trLArm0 = {0.10, 0.25,-0.45,0,0,0}
---arm.trRArm0 = {0.10, -0.25,-0.45,0,0,0}
-
-
+--FOR LONGARM
 armfsm.teleop.arminit={
   {'move0',nil,{0.25,-0.25,-0.15,0,0,0}},
   {'move0',nil,{0.30,-0.25,0.24,0,0,0}},
@@ -138,15 +119,12 @@ armfsm.teleop.armuninit={
   {'move0',nil,arm.trRArm0},
 }
 
---[[
---vertical raise
+--vertical raise test
 armfsm.teleop.arminit={
   {'move0',nil,{0.25,-0.25,-0.15,0,-40*DEG_TO_RAD,0}},
   {'move0',nil,{0.30,-0.25,0.24,0,-80*DEG_TO_RAD,0}},
   {'move0',nil,{0.54,-0.15,0.24,0,0,0}},
 }
---]]
-
 
 ------------------------------------
 -- Associate with the table

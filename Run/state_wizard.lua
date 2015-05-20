@@ -93,7 +93,7 @@ repeat
 
 	-- If time for debug
 	local dt_debug = t_start - t_debug
-	if dt_debug>debug_interval then
+	if dt_debug>debug_interval and not IS_WEBOTS then
 		local times_str = {}
 		local total = 0
 		for name,time in pairs(state_times) do

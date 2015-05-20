@@ -6,7 +6,8 @@ local state = {}
 state._NAME = ...
 
 -- TODO: need to compensate the torso pose
-local headSpeed = {15 * DEG_TO_RAD, 15 * DEG_TO_RAD}
+local headSpeed = {5 * DEG_TO_RAD, 5 * DEG_TO_RAD}
+local lowAngle = {0, 45*DEG_TO_RAD}
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -25,9 +26,8 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-	local centerAngles = {0, 0*DEG_TO_RAD-Body.get_rpy()[2]}
 	local headNow = Body.get_head_command_position()
-  local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt, 1*DEG_TO_RAD)
+  local apprAng, doneHead = util.approachTol(headNow, lowAngle, headSpeed, dt)
 	Body.set_head_command_position(apprAng)
 
   return doneHead and 'done'

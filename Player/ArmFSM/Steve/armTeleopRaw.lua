@@ -13,6 +13,7 @@ local timeout = 30.0
 local lPathIter, rPathIter
 local qLGoal, qRGoal
 local qLD, qRD
+local okL, okR
 
 local teleopLArm
 local teleopRArm
@@ -39,6 +40,9 @@ function state.entry()
 	}, {
 		q = teleopRArm, timeout = 5, via='joint_preplan'
 	})
+
+	okL = type(lco)=='thread'
+	okR = type(rco)=='thread'
 
 end
 

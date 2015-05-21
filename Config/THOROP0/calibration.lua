@@ -6,9 +6,9 @@ cal[HOSTNAME] = {}
 cal["asus"] = {}
 cal["alvin"]={}
 cal["teddy"]={}
-cal["teddy2"]={}
 cal["chipette"]={}
 cal["teddy2"]={}
+cal["dale"]={}
 
 cal["alvin"].legBias=vector.new({
    0,0,0,0,0,0, 0,0,0,0,0,0})
@@ -73,6 +73,12 @@ cal["teddy2"].legBias=vector.new({
 
 -- Updated date: Mon May 18 16:18:03 2015
 cal["teddy2"].legBias=vector.new({
+   -1.417500,0.000000,0.000000,0.000000,-2.295000,0.472500,
+   0.000000,0.000000,0.000000,0.000000,-1.485000,-0.945000,
+   })*math.pi/180
+
+-- Updated date: Mon May 18 16:18:03 2015
+cal["dale"].legBias=vector.new({
    -1.417500,0.000000,0.000000,0.000000,-2.295000,0.472500,
    0.000000,0.000000,0.000000,0.000000,-1.485000,-0.945000,
    })*math.pi/180

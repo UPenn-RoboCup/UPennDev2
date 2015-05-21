@@ -65,10 +65,6 @@ Body.set_rgrip_command_torque({0,0,0})
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0},true)
 
-  
---  qLArmTarget = Body.get_inverse_arm_given_wrist(qLWrist, Config.arm.lrpy0)
---  qRArmTarget = Body.get_inverse_arm_given_wrist(qRWrist, Config.arm.rrpy0)
-
   print("QLArmTarget:", util.print_jangle(qLArmTarget))
   print("QRArmTarget:", util.print_jangle(qRArmTarget))  
 

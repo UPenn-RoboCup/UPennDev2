@@ -11,7 +11,7 @@ Config = {
 
 local exo = {
 	'Walk','Net','FSM','World','Vision',
-	'Robot_Teddy', 'Arm'
+	'Robot_Dale', 'Arm'
 }
 
 Config.toeheel_lift = true

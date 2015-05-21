@@ -73,19 +73,7 @@ while 1
          
         elseif 0 %strcmp(char(metadata.id), 'mesh0')
           
-            if (mod(count,3) == 0) 
-                
-                metadata.dims = metadata.dim;
-                metadata.flag = 1;
-                raw = reshape(typecast(raw, 'single'), [metadata.dim(2), metadata.dim(1)]);
-
-    %             figure(3), imagesc(raw);
-    %              disp(metadata)
-    %              size(raw)
-
-               [ Planes ] = detectPlaneInstances_lidar_v5c( raw', 3, metadata);  
-            end
-           count = count + 1;
+         
         end
     end
     drawnow;

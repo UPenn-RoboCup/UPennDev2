@@ -761,7 +761,7 @@ local function output_co(bus)
 			if bus.use_alt~=nil then
 				bus.use_alt = bus.use_alt + 1
 			end
-			if bus.use_alt>5 then
+			if bus.use_alt and bus.use_alt>5 then
 				bus.use_alt = 0
 				bus:send_instruction(bus.read_loop_cmd_alt_str)
 				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_alt_n

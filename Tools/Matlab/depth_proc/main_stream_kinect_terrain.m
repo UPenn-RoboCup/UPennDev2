@@ -7,11 +7,7 @@ DEPTH_H = 424;
 DEPTH_MAX = 2000;%8000;
 DEPTH_MIN = 200;
 
-datetime.setDefaultFormats('defaultdate','yyyy-MM-dd');
-%
-RGB_W = 1920;
-RGB_H = 1080;
-rgb_img = uint8(zeros([RGB_H, RGB_W, 3]));
+run('../startup.m');
 
 % 1 second timeout
 s_depth = zmq('subscribe', 'tcp', '192.168.123.246', 43346);
@@ -36,16 +32,13 @@ while 1
         if strcmp(char(metadata.id), 'k2_depth') %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% depth 
                 raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
                 uisetting; % See uisetting.m       size(D)
-                 
-                % res = depth_proc(raw, metadata, ui);
-                 
                
                     % TASK: rough terrain
                     ui.taskMode = 4;
                     ui.figures(3) = 2;
                     % average 
                     [res, meta] = detectPlanes7(raw, metadata, ui);  
-                    
+                    res
 %                     if numel(distance)> 0
 %                         %distance
 %                         %yaw

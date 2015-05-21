@@ -1,4 +1,4 @@
-function  [Planes, metadata] = detectPlanes7(data, meta, ui)
+function  [Planes, outdata] = detectPlanes7(data, meta, ui)
 % v7: rough terrain (cinder blocks) 
 
 if ~isempty(meta)   
@@ -20,10 +20,31 @@ end
 
 % if strcmp(char(meta.name),'depth')
 [ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v7(data,Rot,tr,ui);
-metadata = struct('PlaneOfInterest',PlaneOfInterest,'numPlanes',nPlanes);
+outdata = [];
 
-% elseif strcmp(char(meta.name),'lidar') % handles lidar here?? 
-% Planes = detectPlaneInstances_lidar(data,param,3);
-% end
+% test if planes are within expected values
+if nPlanes > 0
+    if nPlanes == 1
+        if norm(Planes{1}.Center(1:2)) < 1 && abs(Planes{1}.Normal(3)) > 0.9 && Planes{1}.Size > 500 % ? 
+            outdata = struct('cen',Planes{1}.Center,'bnd',Planes{1}.Points,'n',Planes{1}.Normal);
+        end
+    else
+        D = zeros(1,nPlanes);
+        for k=1:nPlanes
+           D(k) = norm(Planes{k}.Center(1:2));         
+        end
+        [~,idx] = sort(D,'ascend'); % two closest ones
+        if Planes{idx(1)}.Center(1) < Planes{idx(2)}.Center        
+            outdata.cen = [Planes{idx(1)}.Center Planes{idx(2)}.Center]; 
+            outdata.bnd = [Planes{idx(1)}.Points Planes{idx(2)}.Points]; 
+            outdata.n = [Planes{idx(1)}.Normal Planes{idx(2)}.Normal];        
+        else
+            outdata.cen = [Planes{idx(2)}.Center Planes{idx(1)}.Center]; 
+            outdata.bnd = [Planes{idx(2)}.Points Planes{idx(1)}.Points]; 
+            outdata.n = [Planes{idx(2)}.Normal Planes{idx(1)}.Normal];   
+        end
+    end
+    
+end
 
 end

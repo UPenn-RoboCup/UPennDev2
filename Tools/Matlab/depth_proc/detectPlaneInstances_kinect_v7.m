@@ -99,10 +99,10 @@ end
 
 stPoint = zeros(5,5);
 stPoint(3:5,1) = Ccb*[1; 0; 0];   
-stPoint(3:5,2) = Ccb*[0 0 1;]eulr2dcm([ 15;  0; 0]*pi/180)*[0; 0; 1];   
-stPoint(3:5,3) = Ccb*eulr2dcm([-15;  0; 0]*pi/180)*[0; 0; 1];    
-stPoint(3:5,4) = Ccb*eulr2dcm([ 0;  15; 0]*pi/180)*[0; 0; 1];  
-stPoint(3:5,5) = Ccb*eulr2dcm([ 0; -15; 0]*pi/180)*[0; 0; 1];  
+stPoint(3:5,2) = Ccb*[0 0 1;-1 0 0; 0 -1 0]*eulr2dcm([ 15;  0; 0]*pi/180)*[0; 0; 1];   
+stPoint(3:5,3) = Ccb*[0 0 1;-1 0 0; 0 -1 0]*eulr2dcm([-15;  0; 0]*pi/180)*[0; 0; 1];    
+stPoint(3:5,4) = Ccb*[0 0 1;-1 0 0; 0 -1 0]*eulr2dcm([ 0;  15; 0]*pi/180)*[0; 0; 1];  
+stPoint(3:5,5) = Ccb*[0 0 1;-1 0 0; 0 -1 0]*eulr2dcm([ 0; -15; 0]*pi/180)*[0; 0; 1];  
 % compute Closest Point And Normal;
 [finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,A(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 

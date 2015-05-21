@@ -408,7 +408,7 @@ local function form_arm_read_cmd2(bus)
 	end
 	bus.read_loop_cmd_alt_n = #rd_addrs
 	bus.read_loop_cmd_alt = 'arm2'
-	bus.use_alt = true
+	bus.use_alt = 0
 end
 
 local function parse_read_arm2(pkt, bus)
@@ -758,8 +758,11 @@ local function output_co(bus)
 		-- Copy the command positions if reading is not enabled,
 		-- otherwise, send a read instruction
 		if bus.enable_read then
-			if bus.use_alt~=nil then bus.use_alt = not bus.use_alt end
-			if bus.use_alt then
+			if bus.use_alt~=nil then
+				bus.use_alt = bus.use_alt + 1
+			end
+			if bus.use_alt>5 then
+				bus.use_alt = 0
 				bus:send_instruction(bus.read_loop_cmd_alt_str)
 				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_alt_n
 				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_alt_n

@@ -78,9 +78,6 @@ function state.update()
 	local lChange = quatpL1~=quatpL
 	local rChange = quatpR1~=quatpR
 	local wChange = qWaistDesired1~=qWaistDesired
-	quatpL = quatpL1
-	quatpR = quatpR1
-	qWaistDesired = qWaistDesired1
 
 	-- Cannot do all. Need an indicator
 	if lChange and rChange and wChange then
@@ -89,6 +86,8 @@ function state.update()
 	end
 
 	if lChange then
+		quatpL = quatpL1
+		qWaistDesired = qWaistDesired1
 		print(state._NAME, 'L target update')
 		local tfL = fromQ(quatpL)
 		local via = wChange and 'jacobian_waist_preplan' or 'jacobian_preplan'
@@ -102,7 +101,9 @@ function state.update()
 		}, false)
 		lco = lco1
 	end
-	if quatpR1~=quatpR then
+	if rChange then
+		quatpR = quatpR1
+		qWaistDesired = qWaistDesired1
 		print(state._NAME, 'R target update')
 		local tfR = fromQ(quatpR)
 		local via = wChange and 'jacobian_waist_preplan' or 'jacobian_preplan'

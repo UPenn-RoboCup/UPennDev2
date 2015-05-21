@@ -1,11 +1,12 @@
 function  [Planes, metadata] = detectPlanes7(data, meta, ui)
-% v6: rough terrain (cinder blocks) 
+% v7: rough terrain (cinder blocks) 
 
-if ~isempty(meta) && isfield(meta,'tr')    
-    [Rot, tr] = TransKinectToBody(meta);
-   % T = reshape(meta.tr,4,4)';
-   % Rot = T(1:3,1:3);
-   % tr = T(1:3,4);
+if ~isempty(meta)   
+     if isfield(meta,'tr')    
+        [Rot, tr] = TransKinectToBody(meta);
+    elseif isfield(meta,'tfL16')
+       [Rot, tr] = TransKinectToBody_dale(meta);
+    end
 else
     Rot = eye(3);
     tr = zeros(3,1);

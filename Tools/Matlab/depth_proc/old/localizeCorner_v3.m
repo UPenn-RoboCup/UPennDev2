@@ -1,4 +1,4 @@
-function pose = localizeCorner_v4(Planes,metad,reset)
+function pose = localizeCorner_v3(Planes,metad,reset)
 
 persistent p1
 persistent p2
@@ -18,23 +18,10 @@ persistent prev_odo
 persistent Fx  % filter for x location (distance)
 persistent Fy  % filter for y location (distance)
 
-vis=0;
+vis=1;
 visinit = 0;
 MAX_DIST = 2.0; % meter
 MIN_SIZE = 3000;
-
-odoflag = 0;
-if isfield(metad,'tfG16')
-    odoflag = 1;
-    if iscell(metad.tfG16) 
-        T = reshape(metad.tfL16{2},4,4)';
-        metad.head_angles = zeros(1,2);
-    else
-        T = reshape(metad.tfG16,4,4)';
-    end
-    elr = dcm2eulr(T(1:3,1:3));    
-    metad.odom = [T(1,4) T(2,4) elr(3)];
-end
           
 if isempty(p1) || (nargin == 3 && reset == 1)
     p1.init = false;     p1.sign = 0;     
@@ -44,12 +31,10 @@ if isempty(p1) || (nargin == 3 && reset == 1)
     a2 = [0;0]; b2 = 0;
     theta_x = 0;
     inters = [0 0]';
-    if odoflag
-        prev_odo = metad.odom;
-        orig = prev_odo;
-        Fx = BayesianFilter1D; %Fx = Fx.initialize(0, 4);
-        Fy = BayesianFilter1D; %Fy = Fy.initialize(0, 4);
-    end
+  %  prev_odo = metad.odom;
+    orig = prev_odo;
+    Fx = BayesianFilter1D; %Fx = Fx.initialize(0, 4);
+    Fy = BayesianFilter1D; %Fy = Fy.initialize(0, 4);
     visinit = 1;
     meas_x = 0;
     meas_y = 0;
@@ -99,9 +84,7 @@ if p1.init == false
             b1 = Planes{ref_}.Normal'*Planes{ref_}.Center;
             meas_x = -b1;
             pose.x = -b1;
-             if odoflag
-                Fx = Fx.initialize(pose.x, 1);
-             end
+            Fx = Fx.initialize(pose.x, 1);
             % Compute "theta"s here 
             theta_body = theta_x;
             theta_head = theta_body - metad.head_angles(1);
@@ -117,9 +100,7 @@ if p1.init == false
                 b2 = Planes{2}.Normal'*Planes{2}.Center;
                 pose.y = -b2;
                 meas_y = -b2;
-                 if odoflag
-                     Fy = Fy.initialize(pose.y, 1);
-                 end
+                Fy = Fy.initialize(pose.y, 1);
 
                 % compute intersect point
                 inters = [a1'; a2']\[b1; b2];
@@ -134,25 +115,20 @@ else % p1 initialized
     update_p2 = 0;
     cr = [];
     
-    if odoflag  
-    
-        % consider yaw
-        % u = [metad.odom(1:2) metad.imu_rpy(3)]  - prev_odo;
-        u = metad.odom  - prev_odo;
-        dl = norm(u(1:2));
-        ang = theta_body;
-
-        % update according to motion
-        ux = cos(theta_x)*dl;
-
-        [Fx, x, ~] = Fx.propagate(ux); 
-        pose.x = x;
-       
-        if p2.init == true
-            uy = sin(theta_x)*dl;
-            [Fy, y, ~] = Fy.propagate(uy);
-            pose.y = y;
-        end
+    % consider yaw
+    % u = [metad.odom(1:2) metad.imu_rpy(3)]  - prev_odo;
+    u = metad.odom  - prev_odo;
+    dl = norm(u(1:2));
+    ang = theta_body;
+           
+    % update according to motion
+    ux = cos(theta_x)*dl;
+    [Fx, x, ~] = Fx.propagate(ux); 
+    pose.x = x;
+    if p2.init == true
+        uy = sin(theta_x)*dl;
+        [Fy, y, ~] = Fy.propagate(uy);
+        pose.y = y;
     end
     
     % if new measurements available, identify them first 
@@ -193,14 +169,10 @@ else % p1 initialized
     % update the filter   
     if update_p1 > 0
         x_meas = -Planes{update_p1}.Normal'*Planes{update_p1}.Center;
-        if odoflag
-            meas.value = x_meas;
-            meas.param = 0;
-            [Fx, x, Px] = Fx.update(meas); 
-            pose.x = x;
-        else
-            pose.x = x_meas;
-        end
+        meas.value = x_meas;
+        meas.param = 0;
+        [Fx, x, Px] = Fx.update(meas); 
+        pose.x = x;
         meas_x = x_meas;
         
         theta_body = atan2(Planes{update_p1}.Normal(2), Planes{update_p1}.Normal(1)) ; 
@@ -217,9 +189,7 @@ else % p1 initialized
                 a2 = Planes{update_p2}.Normal(1:2); a2 = a2/norm(a2);
                 b2 = Planes{update_p2}.Normal'*Planes{update_p2}.Center;
                 pose.y = -b2;
-                if odoflag
-                    Fy = Fy.initialize(pose.y, 1);
-                end
+                Fy = Fy.initialize(pose.y, 1);
                  % compute intersect point            
                 inters = [a1'; a2']\[b1; b2];
                 meas_y = pose.y;
@@ -227,14 +197,10 @@ else % p1 initialized
         else
             % update the filter 
             y_meas = -Planes{update_p2}.Normal'*Planes{update_p2}.Center;
-            if odoflag
-                meas.value = y_meas;
-                meas.param = 0;
-                [Fy, y, Py] = Fy.update(meas);    
-                pose.y = y;
-            else
-                pose.y = y_meas;
-            end
+            meas.value = y_meas;
+            meas.param = 0;
+            [Fy, y, Py] = Fy.update(meas);    
+            pose.y = y;
             meas_y = y_meas;     
             
             if update_p1 == 0
@@ -250,10 +216,8 @@ pose.isValid2 = p2.init;
 pose.theta_body = -theta_body;
 pose.theta_head = -theta_head;
 
- if odoflag
-   % prev_odo = [metad.odom(1:2) metad.imu_rpy(3)];
-    prev_odo = metad.odom;
- end
+prev_odo = [metad.odom(1:2) metad.imu_rpy(3)];
+prev_odo = metad.odom;
 
 if vis && pose.isValid1
 
@@ -271,7 +235,7 @@ if vis && pose.isValid1
                 px =  (b1 - a1(2)*py)/a1(1) ;
             end        
             plot(py,px,'Color',[0.7 1 0.7], 'LineWidth',4);    hold on;   
-            text(double(-sign(a1(2))*1), double(1.5),'Wall 1');
+            text(-sign(a1(2))*1, 1.5,'Wall 1');
         end
 
         if p2.init == true
@@ -283,7 +247,7 @@ if vis && pose.isValid1
                 px =  (b2 - a2(2)*py)/a2(1) ;
             end    
             plot(py,px,'Color',[0.7 0.7 1], 'LineWidth',4);
-            text(double(-sign(a2(2))*1), double(1.5),'Wall 2');
+            text(-sign(a2(2))*1, 1.5,'Wall 2');
             plot(inters(2), inters(1),'ko','MarkerSize',7,'MarkerFaceColor','k');
         end        
         
@@ -315,12 +279,11 @@ if vis && pose.isValid1
     
     w1_ = b1*a1;           
     plot([curpos(2) curpos(2)+w1_(2)], [curpos(1) curpos(1)+w1_(1)], '-','Color',[0.7 1 0.7]);  
-    
-    text(double(curpos(2)+0.5*w1_(2)), double(curpos(1)+0.5*w1_(1)),sprintf('%0.2f',pose.x));
+    text(curpos(2)+0.5*w1_(2), curpos(1)+0.5*w1_(1),sprintf('%0.2f',pose.x));
     if p2.init
         w2_ = b2*a2;   
         plot([curpos(2) curpos(2)+w2_(2)], [curpos(1) curpos(1)+w2_(1)], '-','Color',[0.7 0.7 1]);  
-        text(double(curpos(2)+0.5*w2_(2)), double(curpos(1)+0.5*w2_(1)),sprintf('%0.2f',pose.y));
+        text(curpos(2)+0.5*w2_(2), curpos(1)+0.5*w2_(1),sprintf('%0.2f',pose.y));
     end
 end
    

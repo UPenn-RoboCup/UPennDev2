@@ -12,11 +12,11 @@ end
 s_angles = resetParam.a;
 
 % for rought terrain setting 
-normalComp_param = 7; %  (w^2 + 1) half-window size
+normalComp_param = 5; %  (w^2 + 1) half-window size
 thre_svalue = 0.1; % The smaller it is, the flatter the plane fit is 
-thre_clusterSize = 100; % number of clusters
-thre_memberSize = 100; % number of connected members (in the image domain)
-param_meanShiftResol = 0.3;% 0.1;% 0.6;         % mean shift resolution
+thre_clusterSize = 1000; % number of clusters
+thre_memberSize = 1000; % number of connected members (in the image domain)
+param_meanShiftResol = 0.5;% 0.1;% 0.6;         % mean shift resolution
 param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
 
 

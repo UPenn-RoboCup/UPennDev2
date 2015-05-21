@@ -1,4 +1,4 @@
-function [ Planes ] = detectPlaneInstances_lidar_v5c( meshRaw, visflag, resetParam )
+function [ Planes ] = detectPlaneInstances_lidar_loc( meshRaw, visflag, resetParam )
 
 persistent ONESCAN_         % single scan resolution 
 persistent NUMSCAN_      % number of scans (in horizontal direction)
@@ -16,7 +16,7 @@ persistent param_meanShiftResol
 persistent param_meanShiftWeights 
 
 if isempty(ONESCAN_) || resetParam.flag 
-    loadPersistentVariablesL_Terrain;
+    loadPersistentVariablesL_loc;
 end
 
 if isempty(ONESCAN_),
@@ -43,7 +43,7 @@ se = strel('disk',7,4);
 % %%
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
 meshRaw(meshRaw>3) = 0;             % clamp on ranges
-meshRaw(meshRaw<0.7) = 0;
+meshRaw(meshRaw<0.5) = 0;
 [mesh_, s_, v_, nzcols] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
 
 if isempty(nzcols) 
@@ -83,7 +83,7 @@ end
 %% Normal Computation
 [N, S] = computeNormal_lidarB(X0, Y0, Z0, mask, normalComp_param, 1);
 validNormal = (find( sum(S,1) > 0)); 
-validNormal = validNormal(find(S(4,validNormal)./(Z0(validNormal).^2)<thre_svalue));
+validNormal = validNormal(find(S(4,validNormal)<thre_svalue));
 
 
 %% Clustering  
@@ -162,6 +162,7 @@ end
 
 NumPlane = PlaneID;
 PlaneID = 0;
+Sz = [];
 if NumPlane > 0 
      
     for t = 1:NumPlane  
@@ -202,37 +203,54 @@ if NumPlane > 0
             
             % Coordinate Transformation
             Center = Ccb*Center + Tcb;
-            Pts = Ccb*Pts + repmat(Tcb,1,size(Pts,2)) ;
+            if ~isempty(Pts)    
+                Pts = Ccb*Pts + repmat(Tcb,1,size(Pts,2)) ;
+            end
             Bbox = Ccb*Bbox + repmat(Tcb,1,size(Bbox,2)) ;
             n_ = Ccb*n_;
 
-            if n_(3) > 0.9                             
+            if abs(n_(3)) < 0.2   
+                sz = numel(Indices{t});
                 PlaneID = PlaneID + 1;
                 Planes{PlaneID} = struct('Center', Center,...
                                          'Normal', n_ ,...
                                          'Points', [Pts Bbox],...
-                                         'Size',numel(Indices{t}));      
-
-                if visflag 
-                    Points3D{PlaneID} = [ X0(Indices{t})'; Y0(Indices{t})'; Z0(Indices{t})' ];
-                    ALL = Ccb*Points3D{PlaneID} + repmat(Tcb,1,length(Points3D{PlaneID}));
-                    randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
-                    figure(visflag), 
-                    showPointCloud(ALL(1,:), ALL(2,:),ALL(3,:),...
-                      randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',5);
-                    nvec = [Planes{PlaneID}.Center  Planes{PlaneID}.Center+Planes{PlaneID}.Normal*0.15];
-                    figure(visflag),
-                    plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', [0 0 0], 'LineWidth',2);
-                    plot3(Planes{PlaneID}.Points(1,:), Planes{PlaneID}.Points(2,:), Planes{PlaneID}.Points(3,:),'.', 'Color', [0 0 0],'MarkerSize',7);
-                end
+                                         'Size',sz);     
+                Sz = [Sz sz];
+                Points3D{PlaneID} = [ X0(Indices{t})'; Y0(Indices{t})'; Z0(Indices{t})' ];
             end      
 
         end
     end
 end
 
-PlaneOfInterest = [];
+% order of size
+if ~isempty(Sz)
+    [Sz_, Szorder] = sort(Sz,'descend');    
+    Planes_ = Planes;
+    for t = 1:PlaneID 
+        Planes{t} = Planes_{Szorder(t)};
+    end
+end
 
+%PlaneOfInterest = 1:PlaneID;
+%[Planes,PlaneID,PlaneOfInterest,Points3D] = mergePlanes(Planes,PlaneID,PlaneOfInterest,Points3D,30);
+  
+
+
+if visflag 
+    for t = 1:PlaneID 
+        ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
+        randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
+        figure(visflag), 
+        showPointCloud(ALL(1,:), ALL(2,:),ALL(3,:),...
+          randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',5);
+        nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.15];
+        figure(visflag),
+        plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', [0 0 0], 'LineWidth',2);
+        plot3(Planes{t}.Points(1,:), Planes{t}.Points(2,:), Planes{t}.Points(3,:),'.', 'Color', [0 0 0],'MarkerSize',7);
+    end
+end
 % if~isempty(Planes)
 %     idx = find(cellfun(@(x) x.Size, Planes(:)) > 100);    7
 %     if ~isempty(idx)

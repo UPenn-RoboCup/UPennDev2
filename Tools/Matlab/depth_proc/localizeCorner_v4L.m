@@ -1,4 +1,4 @@
-function pose = localizeCorner_v4(Planes,metad,reset)
+function pose = localizeCorner_v4L(Planes,metad,reset)
 
 persistent p1
 persistent p2
@@ -18,7 +18,7 @@ persistent prev_odo
 persistent Fx  % filter for x location (distance)
 persistent Fy  % filter for y location (distance)
 
-vis=0;
+vis=1;
 visinit = 0;
 MAX_DIST = 2.0; % meter
 MIN_SIZE = 3000;
@@ -26,11 +26,11 @@ MIN_SIZE = 3000;
 odoflag = 0;
 if isfield(metad,'tfG16')
     odoflag = 1;
-    if iscell(metad.tfG16) 
+    if 1 %numel(metad.tfG16) > 1
         T = reshape(metad.tfL16{2},4,4)';
         metad.head_angles = zeros(1,2);
-    else
-        T = reshape(metad.tfG16,4,4)';
+    %else
+    %    T = reshape(metad.tfG16,4,4)';
     end
     elr = dcm2eulr(T(1:3,1:3));    
     metad.odom = [T(1,4) T(2,4) elr(3)];
@@ -103,8 +103,8 @@ if p1.init == false
                 Fx = Fx.initialize(pose.x, 1);
              end
             % Compute "theta"s here 
-            theta_body = theta_x;
-            theta_head = theta_body - metad.head_angles(1);
+            theta_body = theta_x
+            theta_head = theta_body - metad.head_angles(1)
             inters = -Rot2d(theta_x)*[ pose.x; 0];
 
              if numel(Planes) > 1 && ~isempty(Planes{2}) && (ref_+1 < 3)
@@ -202,9 +202,8 @@ else % p1 initialized
             pose.x = x_meas;
         end
         meas_x = x_meas;
-        
-        theta_body = atan2(Planes{update_p1}.Normal(2), Planes{update_p1}.Normal(1)) ; 
-        theta_head = theta_body - metad.head_angles(1) ;
+        theta_body = atan2(Planes{update_p1}.Normal(2), Planes{update_p1}.Normal(1)) 
+        theta_head = theta_body - metad.head_angles(1) 
 
     end
     
@@ -238,11 +237,19 @@ else % p1 initialized
             meas_y = y_meas;     
             
             if update_p1 == 0
-                 theta_body = atan2(Planes{update_p2}.Normal(2), Planes{update_p2}.Normal(1)) - p2.sign*pi/2; 
-                 theta_head = pose.theta_body - metad.head_angles(1) ;
+                 theta_body = atan2(Planes{update_p2}.Normal(2), Planes{update_p2}.Normal(1)) - p2.sign*pi/2
+                 theta_head = theta_body - metad.head_angles(1) 
             end
         end       
      end    
+end
+
+if theta_body < -pi
+    theta_body = 2*pi + thetabody;
+end
+
+if theta_head < -pi
+    theta_head = 2*pi + thetabody;
 end
 
 pose.isValid1 = p1.init;

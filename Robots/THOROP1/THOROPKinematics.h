@@ -73,8 +73,8 @@ const double hipOffsetZ = hipOffsetZ2+originOffsetZ;  //mk2 virtual hipoffset (p
 
 const double thighLength = 0.30;
 const double tibiaLength = 0.30;
-const double kneeOffsetX = 0.00;  //chip has new legs with zero knee offset
-//const double kneeOffsetX = 0.03;  //dale has old legs with knee offset
+//const double kneeOffsetX = 0.00;  //chip has new legs with zero knee offset
+const double kneeOffsetX = 0.03;  //dale has old legs with knee offset
 
 const double footHeight = 0.100;    //mk2 feet height
 const double footToeX = 0.130; //from ankle to toe, mk2 stock feet

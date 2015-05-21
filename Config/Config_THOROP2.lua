@@ -11,7 +11,7 @@ Config = {
 
 local exo = {
 	'Walk','Net','FSM','World','Vision',
-	'Robot_Chipette',
+	'Robot_Chip',
 	(IS_STEVE and 'Arm_Steve' or 'Arm_DRCFinal'),
 }
 

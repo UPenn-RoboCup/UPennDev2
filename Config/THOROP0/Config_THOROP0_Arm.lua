@@ -60,7 +60,48 @@ arm.handoffset.chopstick = {0.440,0,0} --Two rod (for valve)
 arm.handoffset.gripper3 = {0.28,-0.05,0}
 
 
+
+
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+
+arm.handoffset={}
+local offset_ucla_hand = {0.15,0,0}
+local offset_chipsticks = {0.30,0,0}
+local offset_wrist = {0,0,0}
+arm.handoffset.left = offset_wrist
+arm.handoffset.right = offset_wrist
+
+--Walk arm pose and shoulder angle
+arm.trLArm0 = {0.0, 0.25,-0.25,0,0,0}
+arm.trRArm0 = {0.0, -0.25,-0.25,0,0,0}
+arm.ShoulderYaw0=vector.new({-1,1})*DEG_TO_RAD
+
+arm.vel_angular_limit = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD
+arm.vel_angular_limit_init = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD
+arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD})
+arm.vel_waist_limit = vector.new({3,3})*DEG_TO_RAD
+arm.shoulder_yaw_limit = 30*DEG_TO_RAD
+arm.torso_comp_limit = vector.new({0.06,0.03})
+
+--Old teleop init/uninit sequence
+armfsm = {}
+armfsm.teleop = {}
+armfsm.teleop.arminit={
+  {'move0',nil,{0.25,-0.25,-0.15,0,0,0}},
+  {'move0',nil,{0.30,-0.25,0.24,0,0,0}},
+  {'move0',nil,{0.54,-0.15,0.24,0,0,0}},
+}
+armfsm.teleop.armuninit={
+  {'move0',nil,{0.30,-0.25, 0.24  ,0,0,0}},
+  {'move0',nil,{0.25,-0.25,-0.15  ,0,0,0}},
+  {'move0',nil,arm.trRArm0},
+  {'move0',nil,arm.trRArm0},
+}
+
+
 -- Export
 Config.arm = arm
+Config.armfsm  = armfsm
 
 return Config

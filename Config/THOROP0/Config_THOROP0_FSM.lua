@@ -35,7 +35,7 @@ fsm.libraries = {
 }
 
 if IS_STEVE then	
-	fsm.select.Arm = 'Steve'
+--	fsm.select.Arm = 'Steve'
 	if IS_WEBOTS then
 		Config.testfile = 'test_teleop'
 	end
@@ -45,26 +45,35 @@ end
 fsm.Arm = {
 	-- Idle
 	{'armIdle', 'timeout', 'armIdle'},
-	{'armIdle', 'init', 'armInit'},
-	-- Init
-	{'armInit', 'ready', 'armReady'},
-	{'armInit', 'teleopraw', 'armTeleopRaw'},
+
+	-- Init pose (for locomotion)
+	{'armIdle', 'init', 'armInitWalk'},  
+	{'armInitWalk', 'done', 'armWalk'},
+
+	-- Init pose (for manipulation)
+	{'armIdle', 'ready', 'armInitManipulation'},
+	{'armWalk', 'ready', 'armInitManipulation'},
+	{'armInitManipulation', 'ready', 'armReady'},
+	{'armInitManipulation', 'teleopraw', 'armTeleopRaw'},
+
 	-- Ready pose (for manipulating)
 	{'armReady', 'teleop', 'armTeleop'},
 	{'armReady', 'teleopraw', 'armTeleopRaw'},
-	{'armReady', 'init', 'armInit'},
+	{'armReady', 'init', 'armInitManipulation'},
 	{'armReady', 'pulldoor', 'armPullDoor'},
 	-- Teleop
-	{'armTeleop', 'init', 'armInit'},
+
+	{'armTeleop', 'init', 'armInitManipulation'},
 	--{'armTeleop', 'done', 'armTeleop'},
 	{'armTeleop', 'teleop', 'armTeleop'},
 	{'armTeleop', 'ready', 'armReady'},
 	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
 	-- Teleop Raw
-	{'armTeleopRaw', 'init', 'armInit'},
+	{'armTeleopRaw', 'init', 'armInitManipulation'},
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
 	{'armTeleopRaw', 'ready', 'armReady'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
+
 	-- armJacobian is for testing purposes only!
 	--[[
 	{'armInit', 'jacobian', 'armJacobian'},
@@ -81,20 +90,13 @@ fsm.Arm = {
 	{'armPullDoor', 'done', 'armTeleop'},
 	{'armPullDoor', 'ready', 'armReady'},
 	{'armPullDoor', 'pulldoor', 'armPullDoor'},
+
+
+	--Old teleop code 
+	{'armWalk', 'teleop', 'armTeleopSJOLD'},	
+	{'armTeleopSJOLD', 'done', 'armWalk'},		
 }
 
-
-if not IS_STEVE then
-	fsm.select.Arm = 'DRCFinal'
-	fsm.Arm = {
-		{'armIdle', 'init', 'armInit'},
-		{'armInit', 'done', 'armPose1'},
-
-		{'armPose1', 'teleop', 'armTeleop'},	
-		{'armTeleop', 'done', 'armPose1'},	
-	}
-end
---]]
 
 
 fsm.Body = {

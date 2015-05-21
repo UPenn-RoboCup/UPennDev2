@@ -16,6 +16,13 @@ debug_on_2 = false
 debugmsg = true
 
 
+Config.arm.plan={}
+Config.arm.plan.dt_step0_jacobian = 0.1
+Config.arm.plan.dt_step_jacobian = 0.2
+Config.arm.plan.dt_step_min_jacobian = 0.02
+Config.arm.plan.scale_limit={0.05,2}
+
+
 --print(unpack(Config.arm.iklookup.x))
 
 local function tr_dist(trA,trB)
@@ -49,6 +56,30 @@ local function print_arm_plan(arm_plan)
   --  local arm_plan = {LAP = LAPs, RAP = RAPs,  uTP =uTPs, WP=WPs}
 end
 
+local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()  
+
+  local dqVelLeft = mcm.get_arm_dqVelLeft()
+  local dqVelRight = mcm.get_arm_dqVelRight()
+
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
+  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
+
+  if not absolute then  
+    for i=1,7 do
+      local qL_increment = util.mod_angle(qL_approach[i]-qLArm[i])
+      local qR_increment = util.mod_angle(qR_approach[i]-qRArm[i])
+      qL_approach[i] = qLArm[i] + qL_increment
+      qR_approach[i] = qRArm[i] + qR_increment
+    end
+  end
+
+  Body.set_larm_command_position( qL_approach )
+  Body.set_rarm_command_position( qR_approach )
+  if doneL2 and doneR2 then return 1 end
+end
+
 
 local function get_admissible_dt_vel(qMovement, velLimit)
   local dt_min = -math.huge
@@ -62,7 +93,7 @@ local function filter_arm_plan(plan)
   local velLimit = dqArmMax
   local t0 =unix.time()
   
-  local velLimit0 = Config.arm.vel_angular_limit
+  local velLimit0 = Config.arm.vel_angular_limit 
   local accLimit0 = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD --accelleration value
   local accMax = vector.new({60,60,60,60,90,90,90})
 
@@ -574,7 +605,7 @@ local function play_arm_sequence(self,t)
     hcm.set_hands_right_tr_target(trRArm)
 
     --Move joints
-    movearm.setArmJoints(qLArm,qRArm,dt)
+    setArmJoints(qLArm,qRArm,dt)
     mcm.set_stance_uTorsoComp(uTorsoComp)    
 
     if self.waistQueue then

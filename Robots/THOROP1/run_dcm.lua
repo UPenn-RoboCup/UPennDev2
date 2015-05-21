@@ -297,7 +297,7 @@ local function form_arm_read_cmd(bus)
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
-			--[[
+			----[[
 			-- Position through temperature (NOTE: No current)
 			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
 			table.insert(used_ids, m_id)
@@ -384,7 +384,7 @@ local function form_arm_read_cmd2(bus)
 			--table.insert(rd_addrs, lD.mx_registers.current)
 			table.insert(used_ids, m_id)
 			has_mx = true
---[[
+----[[
 		else
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
@@ -408,7 +408,7 @@ local function form_arm_read_cmd2(bus)
 	end
 	bus.read_loop_cmd_alt_n = #rd_addrs
 	bus.read_loop_cmd_alt = 'arm2'
-	bus.use_alt = 0
+	bus.use_alt = true
 end
 
 local function parse_read_arm2(pkt, bus)
@@ -759,7 +759,7 @@ local function output_co(bus)
 		-- otherwise, send a read instruction
 		if bus.enable_read then
 			if bus.use_alt then
-				bus.use_alt = false
+				--bus.use_alt = false
 				bus:send_instruction(bus.read_loop_cmd_alt_str)
 				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_alt_n
 				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_alt_n

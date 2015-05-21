@@ -1,67 +1,6 @@
 #include "THOROPKinematics.h"
 //For THOR mk2
 
-void THOROP_kinematics_calculate_arm_com(const double* rpyangle,  
-   const double *qArm, int index,double *comxyz, double*comrpy){  
-
-
-//TODOTODOTODOTODO
-//Fix waist transform for mk2
-
-
-  Transform torso, COM;
-  torso.rotateX(rpyangle[0]).rotateY(rpyangle[1]);
-
-  switch (index){
-  case 0:
-    COM = trcopy(torso).rotateY(qArm[0]).translate(armCom[0]);
-    break;
-  case 1:
-    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
-         .rotateZ(qArm[1]).translate(armCom[1]);
-    break;
-  case 2:
-    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armCom[2]);
-    break;
-  case 3:
-    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armCom[3]);      
-    break;        
-  case 4:
-    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armCom[4]);
-    break;        
-  case 5:
-    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armCom[5]);
-    break;        
-  case 6:
-    COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])
-        .rotateZ(qArm[1]).translate(armLink[2])
-        .rotateX(qArm[2]).translate(armLink[3])
-        .rotateY(qArm[3]).translate(armLink[4])
-        .rotateX(qArm[4]).translate(armLink[5])
-        .rotateZ(qArm[5]).translate(armLink[6])
-        .rotateX(qArm[6]).translate(armCom[6]);
-    break;
-  }  
-  COM.getXYZ(&comxyz[0]);
-  Transform COMinv = inv(COM);
-  getAngularVelocityTensor(COM,COMinv,&comrpy[0]);
-}
-
-
 
 std::vector<double>
 THOROP_kinematics_calculate_com_positions(

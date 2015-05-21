@@ -256,20 +256,29 @@ static int inverse_r_wrist(lua_State *L) {
 	return 1;
 }
 
-static int inverse_arm_given_wrist(lua_State *L) {
+static int inverse_larm_given_wrist(lua_State *L) {
 	std::vector<double> qArm;
 	std::vector<double> pArm = lua_checkvector(L, 1);
 	std::vector<double> qArmOrg = lua_checkvector(L, 2);
 	double bodyPitch = luaL_optnumber(L, 3,0.0);
 	std::vector<double> qWaist = lua_checkvector(L, 4);
-
-
 	Transform trArm = transform6D(&pArm[0]);	
-	qArm = THOROP_kinematics_inverse_arm_given_wrist(trArm,&qArmOrg[0],bodyPitch,&qWaist[0]);
+	qArm = THOROP_kinematics_inverse_larm_given_wrist(trArm,&qArmOrg[0],bodyPitch,&qWaist[0]);
 	lua_pushvector(L, qArm);
 	return 1;
 }
 
+static int inverse_rarm_given_wrist(lua_State *L) {
+	std::vector<double> qArm;
+	std::vector<double> pArm = lua_checkvector(L, 1);
+	std::vector<double> qArmOrg = lua_checkvector(L, 2);
+	double bodyPitch = luaL_optnumber(L, 3,0.0);
+	std::vector<double> qWaist = lua_checkvector(L, 4);
+	Transform trArm = transform6D(&pArm[0]);	
+	qArm = THOROP_kinematics_inverse_rarm_given_wrist(trArm,&qArmOrg[0],bodyPitch,&qWaist[0]);
+	lua_pushvector(L, qArm);
+	return 1;
+}
 
 
 
@@ -352,9 +361,11 @@ static int calculate_arm_torque(lua_State *L) {
 	double b_matrix[49];
 	std::vector<double> rpy = lua_checkvector(L, 1);
 	std::vector<double> qArm = lua_checkvector(L, 2);
+	int is_left = luaL_optnumber(L, 3,0);
+
 	THOROP_kinematics_calculate_arm_torque(
 	  	&stall_torque[0],&b_matrix[0],
-	  	&rpy[0],&qArm[0]);
+	  	&rpy[0],&qArm[0],is_left);
 	lua_createtable(L, 0, 2);
   	lua_pushstring(L, "stall");  	
 	lua_pushdarray(L, stall_torque,7);
@@ -376,10 +387,11 @@ static int calculate_arm_torque_adv(lua_State *L) {
 	std::vector<double> qArmVel = lua_checkvector(L, 3);
 	std::vector<double> qArmAcc = lua_checkvector(L, 4);
 	double dq = luaL_optnumber(L, 5 , 0.1*3.1415/180);
+  int is_left = luaL_optnumber(L, 6,0);
 	
 	THOROP_kinematics_calculate_arm_torque_adv(
 	  	&stall_torque[0],&acc_torque[0],&acc_torque2[0],&rpy[0],
-	  	&qArm[0],&qArmVel[0],&qArmAcc[0],dq);
+	  	&qArm[0],&qArmVel[0],&qArmAcc[0],dq,is_left);
 
 
 	lua_createtable(L, 0, 3);
@@ -653,7 +665,8 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"r_wrist_torso", r_wrist_torso},
 	{"inverse_l_wrist", inverse_l_wrist},
 	{"inverse_r_wrist", inverse_r_wrist},
-	{"inverse_arm_given_wrist", inverse_arm_given_wrist},
+	{"inverse_larm_given_wrist", inverse_larm_given_wrist},
+	{"inverse_rarm_given_wrist", inverse_rarm_given_wrist},
 
  /* COM calculation */
 	{"calculate_com_pos", calculate_com_pos},
@@ -677,8 +690,10 @@ static const def_info kinematics_constants[] = {
   {"shoulderOffsetX", shoulderOffsetX},
   {"shoulderOffsetY", shoulderOffsetY},
   {"shoulderOffsetZ", shoulderOffsetZ},
-  {"upperArmLength", upperArmLength},
-  {"lowerArmLength", lowerArmLength},
+  {"upperArmLengthL", upperArmLengthL},
+  {"lowerArmLengthL", lowerArmLengthL},
+  {"upperArmLengthR", upperArmLengthR},
+  {"lowerArmLengthR", lowerArmLengthR},
   {"elbowOffsetX", elbowOffsetX},
   {"handOffsetX", handOffsetX},
   {"handOffsetY", handOffsetY},

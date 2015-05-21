@@ -28,7 +28,7 @@ else
     if Np == 2
         distance = D;
         yaw = Yaw;
-    elseif Np > 2
+    elseif Np > 2 % take the two closest ones
         [~,idx] = sort(L,'descend');    
         distance = D(idx(1:2));
         yaw = Yaw(idx(1:2));

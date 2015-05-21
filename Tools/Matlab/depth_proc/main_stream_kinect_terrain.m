@@ -20,12 +20,6 @@ s_color = zmq('subscribe', 'tcp', '192.168.123.246', 43347);
 %s_mesh = zmq( 'subscribe', 'ipc', 'mesh0' );
 s_field = zmq('publish', 'tcp', 1999);
 
-
-log = 1;
-fig_id = 0;
-folder_id = 1;
-CLICK = [];
-count = 0;
 while 1
     idx = zmq('poll',1000);  % assume only one channel
     if isempty(idx)

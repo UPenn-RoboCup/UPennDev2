@@ -92,12 +92,12 @@ local FT16390 = {
 	--Robotis: 1.634692383	2.378320313	1.600854492	1.700756836	1.520288086	1.979516602
 	unloaded = {1.64, 2.34, 1.6, 1.67, 1.55, 1.98},
 	matrix = {
-{2.794322236, -0.9222704694, 9.966766489, -551.0586614, 10.42278336, 540.9036387},
-{-0.4292623116, 633.7833909, -2.281245747, -317.6652813, -7.196761641, -313.5569844},
-{892.9603907, -51.7800059, 899.4666346, -36.15147671, 890.2589678, -6.153909368},
-{-1.397285, 9.01001264, -18.60247505, -3.732307941, 19.96151081, -4.608539693},
-{22.31925586, -1.259330382, -12.49663622, 8.357565453, -10.32328044, -7.486074628},
-{0.1269012243, -9.334903262, 0.1334557736, -9.390952799, -0.3282695074, -9.150568141},
+		{2.794322236, -0.9222704694, 9.966766489, -551.0586614, 10.42278336, 540.9036387},
+		{-0.4292623116, 633.7833909, -2.281245747, -317.6652813, -7.196761641, -313.5569844},
+		{892.9603907, -51.7800059, 899.4666346, -36.15147671, 890.2589678, -6.153909368},
+		{-1.397285, 9.01001264, -18.60247505, -3.732307941, 19.96151081, -4.608539693},
+		{22.31925586, -1.259330382, -12.49663622, 8.357565453, -10.32328044, -7.486074628},
+		{0.1269012243, -9.334903262, 0.1334557736, -9.390952799, -0.3282695074, -9.150568141},
 	},
 	gain = 1,
 }
@@ -118,13 +118,13 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-	1,3,5,7,9,11,13,
+		1,3,5,7,9,11,13,
 		-- waist
-	28,
-	--head
-	29, 30,
+		28,
+		--head
+		29, 30,
 		-- gripper
---	63, 65, 67
+		63, 65, 67
 	},
 	enable_read = true,
 }
@@ -133,13 +133,13 @@ local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
---	2,4,6,8,10,12,14,
-	2,4,6,8,10,
-	12,
-	-- lidar
-	37,
-	-- gripper
---	64, 66, 68
+		--	2,4,6,8,10,12,14,
+		2,4,6,8,10,
+		12,
+		-- lidar
+		37,
+		-- gripper
+		--	64, 66, 68
 	},
 	enable_read = true
 }
@@ -164,19 +164,19 @@ local left_leg = {
 --for birdwalk, swap chain names too
 --------------------------------------------
 if Config.birdwalk then
-  left_leg = {
-	name = 'lleg',
-	ttyname = '/dev/ttyUSB2',
-	-- waist pitch
-	m_ids = {15,17,19, 21, 23,25, 27},
-	enable_read = true,
-  }
-  right_leg = {
-	name = 'rleg',
-	ttyname = '/dev/ttyUSB3',
-	m_ids = {16,18,20, 22, 24,26},
-	enable_read = true,
-  }
+	left_leg = {
+		name = 'lleg',
+		ttyname = '/dev/ttyUSB2',
+		-- waist pitch
+		m_ids = {15,17,19, 21, 23,25, 27},
+		enable_read = true,
+	}
+	right_leg = {
+		name = 'rleg',
+		ttyname = '/dev/ttyUSB3',
+		m_ids = {16,18,20, 22, 24,26},
+		enable_read = true,
+	}
 end
 
 
@@ -209,16 +209,16 @@ if ONE_CHAIN then
 	left_leg  = nil
 else
 	-- Both keys and indices
-	Config.chain[right_leg.name] = right_leg
-	Config.chain[left_leg.name] = left_leg
-	table.insert(Config.chain, right_leg)
-	table.insert(Config.chain, left_leg)
---
+	--Config.chain[right_leg.name] = right_leg
+	--table.insert(Config.chain, right_leg)
+	--Config.chain[left_leg.name] = left_leg
+	--table.insert(Config.chain, left_leg)
+	--
 	table.insert(Config.chain, right_arm)
-	table.insert(Config.chain, left_arm)
 	Config.chain[right_arm.name] = right_arm
-	Config.chain[left_arm.name] = left_arm
---
+	--table.insert(Config.chain, left_arm)
+	--Config.chain[left_arm.name] = left_arm
+	--
 	one_chain = nil
 end
 
@@ -311,11 +311,11 @@ servo.steps = 2 * vector.new({
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head, mk2
---	1,1,-1, 1, 1,1,1, --LArm, mk2
+	--	1,1,-1, 1, 1,1,1, --LArm, mk2
 	1,1,1, 1, 1,1,1, --LArm, mk2, lshoulder yaw fix
 	-1, -1,-1, -1,  1,1, --LLeg, mk1
 	-1, -1,1,   1,  -1,1, --RLeg, mk1
---	-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
+	--	-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
 	-1,1,1, -1, 1,1,1, --RArm, teddy2, tested, rshoulder yaw fix
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
@@ -332,7 +332,8 @@ servo.rad_offset = vector.new({
 	90,  90,  90,-45,  90,0,0, --RArm, teddy, wristYaw fix
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
-	70, -125, 0, -- right gripper/trigger (UCLA verified)
+	0, 45, 0, -- right gripper/trigger (UCLA rev2 verified)
+	--70, -125, 0, -- right gripper/trigger (UCLA rev1 verified)
 	0, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -345,7 +346,8 @@ servo.min_rad = vector.new({
 	-90,-87,-90,    -160,   -180,-87,-180, --RArm
 	-90,-45, -- Waist
 	-60, -55, -60,
-	-60, -35, -60, -- right gripper/trigger (UCLA verified)
+	-90, -120, -55, -- right gripper/trigger (UCLA rev2 verified)
+	-- -60, -35, -60, -- right gripper/trigger (UCLA rev1 verified)
 	-60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -358,7 +360,8 @@ servo.max_rad = vector.new({
 	160,-0,90,   0,     180,87,180, --RArm
 	90,45, -- Waist
 	65,65,55, -- lgrip
-	80,40,55, -- right gripper/trigger (UCLA verified)
+	105,110,105, -- right gripper/trigger (UCLA rev2 verified)
+	-- 80,40,55, -- right gripper/trigger (UCLA rev1 verified)
 	60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -371,7 +374,7 @@ if Config.birdwalk then
 	servo.rad_offset = vector.new({
 		0,0, -- Head
 		-90,  -90,  -90,45,  90,0,0, --LArm
-	--leg swapped
+		--leg swapped
 		0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
 		0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
 
@@ -397,10 +400,10 @@ if Config.birdwalk then
 	servo.direction = vector.new({
 		1,1, -- Head, mk2
 		1,1,-1, 1, 1,1,1, --LArm, mk2
-	-- -1,-1,-1,-1, 1, 1, --LLeg, mk1
-	-- -1,-1, 1, 1,-1, 1, --RLeg, mk1
-		 -1, 1,-1,-1, 1,-1, --LLeg, mk1, flipped
-		 -1, 1, 1, 1,-1,-1, --RLeg, mk1, flipped
+		-- -1,-1,-1,-1, 1, 1, --LLeg, mk1
+		-- -1,-1, 1, 1,-1, 1, --RLeg, mk1
+		-1, 1,-1,-1, 1,-1, --LLeg, mk1, flipped
+		-1, 1, 1, 1,-1,-1, --RLeg, mk1, flipped
 
 		-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
 		1, 1, -- Waist, mk2
@@ -600,11 +603,11 @@ end
 --[[
 print("Robot config loading")
 print(#jointNames,
-			#servo.rad_offset, --
-			#servo.min_rad,    --
-			#servo.steps,
-			#servo.direction,  --
-			#servo.joint_to_motor)
+#servo.rad_offset, --
+#servo.min_rad,    --
+#servo.steps,
+#servo.direction,  --
+#servo.joint_to_motor)
 print(nJoint)
 --]]
 

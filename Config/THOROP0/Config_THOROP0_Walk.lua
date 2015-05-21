@@ -168,7 +168,7 @@ else
 
 end
 
-if HOSTNAME=="teddy2" then
+if HOSTNAME=="teddy2" or HOSTNAME=="dale" then
   walk.hipRollCompensation = 1.5*DEG_TO_RAD
   walk.tZMP = 0.33 
   walk.supportX = 0.02 

@@ -18,7 +18,7 @@ local head = {
 	pitchBias = 0,
 	yawBias = 0,
 	-- From CoM to neck joint: {neckX, neckY, neckZ}
-	neckOffset = {0, 0, 0.32}
+	neckOffset = {0, 0, 0.285}
 }
 
 local colors = {
@@ -156,8 +156,8 @@ camera[2] = {
 local kinect = {
 	name = 'kinect2',
 	mountOffset = {
-		{3*DEG_TO_RAD,2*DEG_TO_RAD,0}, -- RPY
-		{0.03,0,0.08} -- translation
+		{0*DEG_TO_RAD,0*DEG_TO_RAD,0}, -- RPY
+		{0.08,0,0.08} -- translation
 	},
 	w = 512,
 	h = 424,

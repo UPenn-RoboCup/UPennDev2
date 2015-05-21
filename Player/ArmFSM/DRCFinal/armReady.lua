@@ -12,36 +12,17 @@ local movearm = require'movearm'
 local t_entry, t_update, t_finish
 local timeout = 30.0
 
--- left and right will both request waist positions potentially
-local lco, rco
+local lco, rco, uComp
 local okL, qLWaypoint, qLWaist
 local okR, qRWaypoint, qRWaist
-local sequence, s, stage
+
+local sequence, s, stage = Config.arm.ready
 
 function state.entry()
   io.write(state._NAME, ' Entry\n')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry
-
-	sequence = {unpack(Config.arm.init)}
-
-	-- Avoid self collisions.
-	-- NOTE: Cannot place into the config, since require reading
-	local qL = Body.get_larm_position()
-	local qR = Body.get_rarm_position()
-	qL[3] = -20*DEG_TO_RAD
-	qR[3] = 20*DEG_TO_RAD
-	table.insert(sequence, 1, {
-		left = {
-			q = qL, duration = 5, timeout = 7,
-			via='joint_preplan'
-		},
-		right = {
-			q = qR, duration = 5, timeout = 7,
-			via='joint_preplan'
-		}
-	})
 
 	s = 1
 	stage = sequence[s]
@@ -59,7 +40,6 @@ function state.update()
   local dt = t - t_update
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
-
 	if not stage then return'done' end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
@@ -67,7 +47,6 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	local qWaist = Body.get_waist_position()
 	if lStatus=='suspended' then
 		okL, qLWaypoint, qLWaist = coroutine.resume(lco, qLArm, qWaist)
 	end
@@ -75,10 +54,9 @@ function state.update()
 		okR, qRWaypoint, qRWaist = coroutine.resume(rco, qRArm, qWaist)
 	end
 
-	-- Check if errors in either
 	if not okL or not okR then
-		print(state._NAME, 'L', okL, qLWaypoint, lco, lStatus)
-		print(state._NAME, 'R', okR, qRWaypoint, rco, rStatus)
+		print(state._NAME, 'L', okL, qLWaypoint)
+		print(state._NAME, 'R', okR, qRWaypoint)
 		-- Safety
 		Body.set_larm_command_position(qLArm)
 		Body.set_rarm_command_position(qRArm)
@@ -107,15 +85,28 @@ function state.update()
 		if stage then
 			print('Next sequence:', s, stage)
 			lco, rco = movearm.goto(stage.left, stage.right)
-			okL = type(lco)=='thread' or lco==false
-			okR = type(rco)=='thread' or rco==false
 		end
 	end
+
+	-- Set the compensation: Not needed
+	--mcm.set_stance_uTorsoComp(uComp)
 
 end
 
 function state.exit()
-	print(state._NAME..' Exit')
+	io.write(state._NAME, ' Exit\n')
+
+	if not okL or not okR then
+		local qLArm = Body.get_larm_position()
+		local qRArm = Body.get_rarm_position()
+		hcm.set_teleop_larm(qLArm)
+		hcm.set_teleop_rarm(qRArm)
+	else
+		local qcLArm = Body.get_larm_command_position()
+		local qcRArm = Body.get_rarm_command_position()
+		hcm.set_teleop_larm(qcLArm)
+		hcm.set_teleop_rarm(qcRArm)
+	end
 
 end
 

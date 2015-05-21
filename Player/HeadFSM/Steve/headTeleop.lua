@@ -9,6 +9,7 @@ local t_entry, t_update
 -- Neck limits
 local headSpeed = 5 * DEG_TO_RAD * vector.ones(2)
 local headThresh = 1 * DEG_TO_RAD * vector.ones(2)
+local head_angles
 
 function state.entry()
   print(state._NAME..' Entry' ) 
@@ -18,7 +19,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   -- Reset the human position
-  hcm.set_teleop_head(Body.get_head_position())
+	head_angles = Body.get_head_position()
+  hcm.set_teleop_head(head_angles)
 end
 
 function state.update()
@@ -30,9 +32,13 @@ function state.update()
   t_update = t 
 
   -- Grab the target
-  local headAngles = hcm.get_teleop_head()
+  local headAngles1 = hcm.get_teleop_head()
+	if head_angles1~=head_angles then
+		print(state._NAME, 'head target update')
+		head_angles = head_angles1
+	end
 	local headNow = Body.get_head_command_position()
-  local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
+	local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
 	
   -- Update the motors
 	Body.set_head_command_position(doneHead and headAngles or apprAng)

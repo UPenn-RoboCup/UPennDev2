@@ -637,7 +637,6 @@ local function reset_torso_comp(self,qLArmComp,qRArmComp)
   local qWaist = Body.get_waist_command_position()
   local uTorsoComp = get_torso_compensation(qLArmComp,qRArmComp,qWaist, 0,0)
   self.torsoCompBias = uTorsoComp
-  mcm.set_stance_uTorsoCompBias(self.torsoCompBias)  
 
   local vec_comp = vector.new({uTorsoComp[1],uTorsoComp[2],0,0,0,0})
   local trLArmComp = Body.get_forward_larm(qLArmComp)

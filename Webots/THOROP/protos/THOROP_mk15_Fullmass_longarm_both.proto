@@ -762,12 +762,11 @@ Robot {
 		            		}
 				#############################################################
                     children [
-                    	EXTENDER {translation 0 -0.06 0}
+                    	EXTENDER {translation 0 -0.08 0}
 									  										RIGHT_ARM{
 									  											#translation 0 -0.027 0
 									  											#translation 0 -0.042 0 #mk2 
-									  											#translation 0 -0.122 0 #mk2 longarm (8cm extension)
-									  											translation 0 -0.102 0 #mk2 longarm (6cm extension)
+									  											translation 0 -0.122 0 #mk2 longarm (8cm extension)
 									  											rotation 0 1 0 3.14159
 									  											scale 0.001 0.001 0.001
 									  											diffuseColor 0.9 0.1 0
@@ -782,14 +781,12 @@ Robot {
                         jointParameters HingeJointParameters {
                           axis -1 0 0
                           #anchor 0 -0.261 0.030 #default mk2 length
-                          #anchor 0 -0.341 0.030 #8cm extension
-                          anchor 0 -0.320 0.030 #6cm extension
+                          anchor 0 -0.341 0.030 #8cm extension
                           dampingConstant IS damping_constant                                                    
                         }
                         endPoint Solid {
                           #translation 0 -0.261 0.030
-                          #translation 0 -0.341 0.030 #8cm extended
-                          translation 0 -0.320 0.030 #6cm extended
+                          translation 0 -0.341 0.030 #8cm extended
                           ##############################################################		                    
                           boundingObject Transform {
         							      						rotation 1 0 0 0.7854
@@ -817,12 +814,12 @@ Robot {
                              jointParameters HingeJointParameters {                              
                                axis 0 1 0
 																															#anchor 0 -0.252 -0.03 #default mk2 
-																															anchor 0 -0.312 -0.03 #6cm extended
+																															anchor 0 -0.332 -0.03 #8cm extended
                                dampingConstant IS damping_constant																			
                              } # End of the RightWristYaw HingeJointParameters
                               endPoint Solid {
                                 #translation 0 -0.252 -0.03
-                                translation 0 -0.312 -0.03 #6cm extended
+                                translation 0 -0.332 -0.03
                                 #############################################################	                                                   
 																																boundingObject Transform {
 												          											translation 0 0.065 0
@@ -1010,11 +1007,14 @@ Robot {
                   }  
                   ##############################################################
                   children [
-                  		RIGHT_ARM{									  											
-									  											translation 0 -0.042 0 #mk2 									  											
+                  	EXTENDER {translation 0 -0.08 0}
+								  										RIGHT_ARM{
+									  											#translation 0 -0.027 0
+									  											#translation 0 -0.042 0 #mk2 
+									  											translation 0 -0.122 0 #mk2 longarm (8cm extension)
 									  											rotation 0 1 0 3.14159
 									  											scale 0.001 0.001 0.001
-									  											diffuseColor 0.3 0.3 0.3
+									  											diffuseColor 0.9 0.1 0
 									  										}
 	                  DEF Left_elbow_pitch HingeJoint {
 	                    device RotationalMotor {
@@ -1026,14 +1026,17 @@ Robot {
 	                    jointParameters HingeJointParameters {
 	                      axis 1 0 0
 	                      #Arm length: default mk2 (261mm)
-	                      anchor 0 -0.261 0.030	                      
+	                      #anchor 0 -0.261 0.030
+	                      anchor 0 -0.341 0.030 #8cm extension
 	                      dampingConstant IS damping_constant                          
 	 					          						staticFriction 0                          
 	                    }
-	                    endPoint Solid {	                    
+	                    endPoint Solid {
+	                    #############HERE HERE HERE HERE
 	                    #Arm length: default mk2 (261mm)
-	                      translation 0 -0.261 0.030	                      
-	                      ##############################################################		                  
+	                      #translation 0 -0.261 0.030
+	                      translation 0 -0.341 0.030 #8cm extended
+	                      ##############################################################		                    
 	                      boundingObject Transform {
         							      			rotation 1 0 0 0.7854
                         children [Box {size 0.13 0.065 0.065}]
@@ -1043,10 +1046,12 @@ Robot {
                   						centerOfMass [0 -0.1239 -0.0301] #mk2, arm low and elbow front
                        }
                        ##############################################################		
-                       children [                       	
+                       children [
+                       	EXTENDER {translation 0 -0.04 -0.03}
 																								RIGHT_ELBOW_mk2 {
-																									translation 0 -0.115 -0.03																									
-																									diffuseColor 0.3 0.3 0.3
+																									#translation 0 -0.115 -0.03
+																									translation 0 -0.195 -0.03 #8cm lower
+																									diffuseColor 0.9 0.1 0
 																								}
                         DEF Left_wrist_yaw HingeJoint {
                           device RotationalMotor {
@@ -1056,11 +1061,13 @@ Robot {
                           } # End of the LeftWristYaw RotationalMotor
                           jointParameters HingeJointParameters {
                             axis 0 1 0
-																												anchor 0 -0.252 -0.03 #mk2 default																												
+																												#anchor 0 -0.252 -0.03 #mk2 default
+																												anchor 0 -0.332 -0.03 #8cm extended
                             dampingConstant IS damping_constant																
                           } # End of the LeftWristYaw HingeJointParameters
                           endPoint Solid {                                
-                            translation 0 -0.252 -0.03                            
+                            #translation 0 -0.252 -0.03
+                            translation 0 -0.332 -0.03
 				#############################################################	                                                  
                              boundingObject Transform {
 	          																			translation 0 0.065 0

@@ -94,7 +94,6 @@ function movearm.goto(l, r)
 	local lplan = type(l)=='table' and P[l.via]
 	if type(lplan)=='function' then
 		lco = coroutine.create(lplan)
-
 		-- Check the various formats
 		if l.tr then
 			if #l.tr==6 then
@@ -103,9 +102,14 @@ function movearm.goto(l, r)
 				l.tr = T.from_quatp(l.tr)
 			end
 		end
+		if l.weights then vector.new(l.weights) end
+		l.qArm0 = vector.new(l.qLArm0 or Body.get_larm_command_position())
+		l.qWaist0 = vector.new(l.qWaist0 or Body.get_waist_command_position())
 
-		l.qArm0 = l.qLArm0 or Body.get_larm_command_position()
-		l.qWaist0 = l.qWaist0 or Body.get_waist_command_position()
+		print('L Plan')
+		util.ptable(l)
+		print()
+
 		local ok, msg = coroutine.resume(lco, lPlanner, l)
 		if not ok then
 			--print('Error goto l |', msg)
@@ -115,7 +119,6 @@ function movearm.goto(l, r)
 	local rplan = type(r)=='table' and P[r.via]
 	if type(rplan)=='function' then
 		rco = coroutine.create(rplan)
-
 		-- Check the various formats
 		if r.tr then
 			if #r.tr==6 then
@@ -124,9 +127,14 @@ function movearm.goto(l, r)
 				r.tr = T.from_quatp(r.tr)
 			end
 		end
+		if r.weights then vector.new(r.weights) end
+		r.qArm0 = vector.new(r.qRArm0 or Body.get_rarm_command_position())
+		r.qWaist0 = vector.new(r.qWaist0 or Body.get_waist_command_position())
 
-		r.qArm0 = r.qRArm0 or Body.get_rarm_command_position()
-		r.qWaist0 = r.qWaist0 or Body.get_waist_command_position()
+		print('\nR Plan')
+		util.ptable(r)
+		print()
+
 		local ok, msg = coroutine.resume(rco, rPlanner, r)
 		if not ok then
 			--print('Error goto r |', msg)

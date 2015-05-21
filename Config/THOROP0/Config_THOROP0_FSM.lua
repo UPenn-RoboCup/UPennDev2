@@ -30,14 +30,12 @@ fsm.select = {
 -- Custom libraries
 fsm.libraries = {
 	MotionLib = 'DRCFinal',
-	ArmLib = 'DRCFinal',
+	ArmLib = 'DRCFinal', --Now steve's libs are merged into one 
 	World = 'DRCFinal'
 }
 
-if IS_STEVE then
-	--fsm.libraries.MotionLib = 'Steve'
-	fsm.libraries.ArmLib = 'Steve'
-	fsm.select.Arm = 'Steve'
+if IS_STEVE then	
+--	fsm.select.Arm = 'Steve'
 	if IS_WEBOTS then
 		Config.testfile = 'test_teleop'
 	end
@@ -47,59 +45,58 @@ end
 fsm.Arm = {
 	-- Idle
 	{'armIdle', 'timeout', 'armIdle'},
-	{'armIdle', 'init', 'armInit'},
-	-- Init
-	--{'armInit', 'timeout', 'armInit'},
-	--{'armInit', 'done', 'armInit'},
-	{'armInit', 'ready', 'armReady'},
-	{'armInit', 'teleopraw', 'armTeleopRaw'},
-	-- Test the jacobian
-	--[[
-	{'armInit', 'jacobian', 'armJacobian'},
-	{'armJacobian', 'done', 'armTeleop'},
-	--]]
+
+	-- Init pose (for locomotion)
+	{'armIdle', 'init', 'armInitWalk'},  
+	{'armInitWalk', 'done', 'armWalk'},
+
+	-- Init pose (for manipulation)
+	{'armIdle', 'ready', 'armInitManipulation'},
+	{'armWalk', 'ready', 'armInitManipulation'},
+	{'armInitManipulation', 'ready', 'armReady'},
+	{'armInitManipulation', 'teleopraw', 'armTeleopRaw'},
 
 	-- Ready pose (for manipulating)
-	--{'armReady', 'timeout', 'armReady'},
 	{'armReady', 'teleop', 'armTeleop'},
 	{'armReady', 'teleopraw', 'armTeleopRaw'},
-	{'armReady', 'init', 'armInit'},
-	{'armReady', 'jacobian', 'armJacobian'},
+	{'armReady', 'init', 'armInitManipulation'},
 	{'armReady', 'pulldoor', 'armPullDoor'},
 	-- Teleop
-	{'armTeleop', 'init', 'armInit'},
+
+	{'armTeleop', 'init', 'armInitManipulation'},
 	--{'armTeleop', 'done', 'armTeleop'},
 	{'armTeleop', 'teleop', 'armTeleop'},
 	{'armTeleop', 'ready', 'armReady'},
 	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
 	-- Teleop Raw
-	{'armTeleopRaw', 'init', 'armInit'},
+	{'armTeleopRaw', 'init', 'armInitManipulation'},
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
 	{'armTeleopRaw', 'ready', 'armReady'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
+
 	-- armJacobian is for testing purposes only!
+	--[[
+	{'armInit', 'jacobian', 'armJacobian'},
+	{'armJacobian', 'done', 'armTeleop'},
+	{'armReady', 'jacobian', 'armJacobian'},
 	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
 	{'armJacobian', 'timeout', 'armJacobian'},
 	{'armJacobian', 'done', 'armTeleop'},
 	{'armJacobian', 'ready', 'armReady'},
 	{'armJacobian', 'pulldoor', 'armPullDoor'},
+	--]]
 	-- armPullDoor
 	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
 	{'armPullDoor', 'done', 'armTeleop'},
 	{'armPullDoor', 'ready', 'armReady'},
 	{'armPullDoor', 'pulldoor', 'armPullDoor'},
+
+
+	--Old teleop code 
+	{'armWalk', 'teleop', 'armTeleopSJOLD'},	
+	{'armTeleopSJOLD', 'done', 'armWalk'},		
 }
 
-if fsm.libraries.ArmLib == 'DRCFinal' then
-	fsm.select.Arm = 'DRCFinal'
-	fsm.Arm = {
-		{'armIdle', 'init', 'armInit'},
-		{'armInit', 'done', 'armPose1'},
-
-		{'armPose1', 'teleop', 'armTeleop'},	
-		{'armTeleop', 'done', 'armPose1'},	
-	}
-end
 
 
 fsm.Body = {

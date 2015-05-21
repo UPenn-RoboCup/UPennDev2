@@ -3,7 +3,7 @@ dofile'../include.lua'
 local Config = require'Config'
 local si = require'simple_ipc'
 local util = require'util'
-local unzlib = require'zlib'.uncompress
+local unzlib = require'zlib'.inflate()
 
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
@@ -58,7 +58,7 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(in_channels, r)
 		local s = si.new_publisher(stream.sub)
 		table.insert(out_channels, s)
-		if key=='feedback' then
+		if false and key=='feedback' then
 			table.insert(ch_processing, procZlib)
 		else
 			table.insert(ch_processing, procMP)

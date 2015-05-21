@@ -26,7 +26,7 @@ if ui.undistortDepth == 1
 end
 
 % pre-processing of depth image
-data = flip(double(data)',2);
+data = flip(double(data)',2) - 20;
 data(data(:) <= DEPTH_MIN) = 0;
 data(data(:) >= DEPTH_MAX) = 0;   
 data = MASK.*data;

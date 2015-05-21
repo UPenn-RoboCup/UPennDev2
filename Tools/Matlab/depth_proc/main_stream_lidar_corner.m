@@ -1,6 +1,10 @@
 clear all;
 close all;
 
+addpath(genpath(pwd));
+addpath(genpath(strrep(pwd, 'Tools/Matlab/depth_proc', 'Modules')));
+
+
 % 1 second timeout
 %s_depth = zmq('subscribe', 'tcp', '192.168.123.246', 43346);
 %s_color = zmq('subscribe', 'tcp', '192.168.123.246', 43347);

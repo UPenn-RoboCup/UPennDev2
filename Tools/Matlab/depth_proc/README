@@ -5,13 +5,14 @@ Last Update: 2015. May. 20
 
 Run main_stream_<Sensor Type>_<Task>.m (This is matlab code)
  
-   ******************************
-   If you don't want plots, 
-   * [Sensor Type: lidar]set the second input argument of detectPlaneInstances_lidar function to 0. 
-   (in the 69th line). 
-   example >> detectPlaneInstances_lidar_v5( ~ , 0, ~); 
 
-   * [Sensor Type: kinect] set  ui.figures(3) = 0;
+   ******************************
+   If you want plots, 
+   * [Sensor Type: lidar]set the second input argument of detectPlaneInstances_lidar function to a positive integer. 
+   (in the 69th line). 
+   example >> detectPlaneInstances_lidar_v5( ~ , 1 , ~); 
+
+   * [Sensor Type: kinect] set  ui.figures(3) = 1;
 
    ****************************************
    Output

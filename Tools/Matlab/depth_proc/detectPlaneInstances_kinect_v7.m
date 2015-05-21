@@ -97,6 +97,12 @@ elseif ui.clickType > 0 && isempty(manualModel)
     ui.clickxy = getClickPoint( ui, depth );
 end
 
+stPoint = zeros(5,5);
+stPoint(3:5,1) = Ccb*[1; 0; 0];   
+stPoint(3:5,2) = Ccb*[0 0 1;]eulr2dcm([ 15;  0; 0]*pi/180)*[0; 0; 1];   
+stPoint(3:5,3) = Ccb*eulr2dcm([-15;  0; 0]*pi/180)*[0; 0; 1];    
+stPoint(3:5,4) = Ccb*eulr2dcm([ 0;  15; 0]*pi/180)*[0; 0; 1];  
+stPoint(3:5,5) = Ccb*eulr2dcm([ 0; -15; 0]*pi/180)*[0; 0; 1];  
 % compute Closest Point And Normal;
 [finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,A(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 
@@ -104,8 +110,8 @@ end
 blankConnImg = zeros(floor(DEPTH_H/param_normalComputation(2)),floor(DEPTH_W /param_normalComputation(2)));
 for tt = 1: size(finalMean,2)      
     if nMembers(tt) > thre_clusterSize  % if cluster size is big enough 
-                 
-        if plane_dist(-1,Ccb*finalMean(3:5,tt)) == true % if the normal is close to our models
+        mean_robot = [finalMean(5,tt) -finalMean(3,tt) -finalMean(4,tt)]';    
+        if plane_dist(ui.taskMode,Ccb*mean_robot) == true % if the normal is close to our models
             connImg = blankConnImg;
             index = validNormal(clusterXYcell{tt}); 
             [index_y, index_x] = ind2sub([DEPTH_H DEPTH_W],index);
@@ -361,7 +367,7 @@ if  ui.figures(3) > 0
             figure(3),% subplot(2,1,2);        
             ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
             showPointCloud([ALL(1,:)' ALL(2,:)' ALL(3,:)'], randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up');
-            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*100];
+            nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.1];
             plot3(nvec(1,:), nvec(2,:), nvec(3,:),'-', 'Color', 'k', 'LineWidth',2);
             
 %             figure(12),

@@ -14,22 +14,24 @@ elseif Np == 1
    
     end
 else
-    D = zeros(1,Np);
-    L = zeros(1,Np);
-    Yaw = zeros(1,Np);
+    D = [];
+    L = [];
+    Yaw = [];
+    n = 0;
     for k=1:Np
         if abs(Planes{k}.Normal(3)) < 0.3 && (abs(Planes{k}.Normal(1)) > abs(Planes{k}.Normal(2))) 
-            D(k) = abs(Planes{k}.Center'*Planes{k}.Normal);
-            Yaw(k) = -atan2(Planes{k}.Normal(2),-Planes{k}.Normal(1));
-            L(k) = norm(Planes{k}.Center(1:2));
+            n = n +1;
+            D(n) = abs(Planes{k}.Center'*Planes{k}.Normal);
+            Yaw(n) = -atan2(Planes{k}.Normal(2),-Planes{k}.Normal(1));
+            L(n) = norm(Planes{k}.Center(1:2));
         end
     end  
     
-    if Np == 2
+    if n == 1
         distance = D;
         yaw = Yaw;
-    elseif Np > 2 % take the two closest ones
-        [~,idx] = sort(L,'descend');    
+    elseif n > 1 % take the two closest ones
+        [~,idx] = sort(L,'ascend');    
         distance = D(idx(1:2));
         yaw = Yaw(idx(1:2));
     end

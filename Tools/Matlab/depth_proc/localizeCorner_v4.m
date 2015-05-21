@@ -18,7 +18,7 @@ persistent prev_odo
 persistent Fx  % filter for x location (distance)
 persistent Fy  % filter for y location (distance)
 
-vis=1;
+vis=0;
 visinit = 0;
 MAX_DIST = 2.0; % meter
 MIN_SIZE = 3000;
@@ -26,7 +26,7 @@ MIN_SIZE = 3000;
 odoflag = 0;
 if isfield(metad,'tfG16')
     odoflag = 1;
-    if numel(metad.tfG16) > 1
+    if iscell(metad.tfG16) 
         T = reshape(metad.tfL16{2},4,4)';
         metad.head_angles = zeros(1,2);
     else

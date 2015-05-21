@@ -7,7 +7,7 @@ DEPTH_H = 424;
 DEPTH_MAX = 2000;%8000;
 DEPTH_MIN = 200;
 
-datetime.setDefaultFormats('defaultdate','yyyy-MM-dd');
+run('../startup.m');
 %
 RGB_W = 1920;
 RGB_H = 1080;
@@ -39,10 +39,10 @@ while 1
                  
                 % TASK: localization at the corner 
                 ui.taskMode = 11 ;
-                ui.figures(3) = 2;
+                ui.figures(3) = 0;
                 % TODO: moving average? 
                 [res, meta] = detectPlanes6(raw, metadata, ui);  
-                pose = localizeCorner_v4(res,metadata)
+                pose = localizeCorner_v4(res,metadata);
                 % TASK: localization at the corner 
                 if (pose.isValid1 + pose.isValid2) > 0
                     if pose.isValid1 == 1 && pose.isValid2 == 0
@@ -54,7 +54,13 @@ while 1
                             distance = [pose.y pose.x];                            
                         end
                     end
-                    yaw = pi-pose.theta_body;
+                    yaw = pi - pose.theta_body;
+                    if yaw  > pi
+                        yaw = -2*pi + yaw;
+                    end                  
+                    
+                    distance
+                    yaw
                     
                     data = struct('dist',distance, 'yaw',yaw); % yaw degree
                     packed_data=msgpack('pack',data);                    

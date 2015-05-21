@@ -36,12 +36,12 @@ arm.ready[1] = {
 }
 arm.ready[2] = {
 	left = {
-		tr=tr6D{0.24, 0.25, 0.2,  0,0,-60*DEG_TO_RAD}, timeout=15,
-		via='jacobian_preplan', weights = {0,0,1}
+		tr=tr6D{0.275, 0.275, 0.2,  0,0,0*-60*DEG_TO_RAD}, timeout=15,
+		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
-		tr=tr6D{0.24, -0.25, 0.2, 0,0,60*DEG_TO_RAD}, timeout=15,
-		via='jacobian_preplan', weights = {0,0,1}
+		tr=tr6D{0.275, -0.275, 0.2, 0,0,0*60*DEG_TO_RAD}, timeout=15,
+		via='jacobian_preplan', weights = {1,0,0}
 	},
 }
 

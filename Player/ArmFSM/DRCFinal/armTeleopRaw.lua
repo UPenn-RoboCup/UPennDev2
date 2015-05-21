@@ -3,20 +3,16 @@ state._NAME = ...
 local Body = require'Body'
 local movearm = require'movearm'
 
--- Compensation
--- 1: Use the compensation, but search for the shoulder
--- 2: Use the compenstation, and use the teleop shoulder options
-local USE_COMPENSATION = 1
-
 local t_entry, t_update, t_finish
 local timeout = 30.0
 local lPathIter, rPathIter
 local qLGoal, qRGoal
 local qLD, qRD
-local okL, okR
 
-local teleopLArm
-local teleopRArm
+local okL, qLWaypoint, qLWaistpoint
+local okR, qRWaypoint, qRWaistpoint
+
+local teleopLArm, teleopRArm, teleopWaist
 
 function state.entry()
   print(state._NAME..' Entry')
@@ -31,18 +27,20 @@ function state.entry()
 	local qWaist = Body.get_waist_position()
 	teleopLArm = qLArm
 	teleopRArm = qRArm
+	teleopWaist = qWaist
 	hcm.set_teleop_larm(teleopLArm)
 	hcm.set_teleop_rarm(teleopRArm)
+	hcm.set_teleop_waist(teleopWaist)
 
 	lco, rco = movearm.goto({
 		q = teleopLArm, timeout = 5, via='joint_preplan'
-
 	}, {
 		q = teleopRArm, timeout = 5, via='joint_preplan'
 	})
 
-	okL = type(lco)=='thread'
-	okR = type(rco)=='thread'
+	-- Check for no motion
+	okL = type(lco)=='thread' or lco==false
+	okR = type(rco)=='thread' or rco==false
 
 end
 
@@ -80,8 +78,13 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	if lStatus=='suspended' then okL, qLWaypoint = coroutine.resume(lco, qLArm) end
-	if rStatus=='suspended' then okR, qRWaypoint = coroutine.resume(rco, qRArm) end
+	local qWaist = Body.get_waist_position()
+	if lStatus=='suspended' then
+		okL, qLWaypoint, qLWaistpoint = coroutine.resume(lco, qLArm, qWaist)
+	end
+	if rStatus=='suspended' then
+		okR, qRWaypoint, qRWaistpoint = coroutine.resume(rco, qRArm, qWaist)
+	end
 
 	if not okL or not okR then
 		print(state._NAME, 'L', okL, qLWaypoint)
@@ -89,6 +92,7 @@ function state.update()
 		-- Safety
 		Body.set_larm_command_position(qLArm)
 		Body.set_rarm_command_position(qRArm)
+		Body.set_waist_command_position(qWaist)
 		return'teleopraw'
 	end
 
@@ -97,6 +101,14 @@ function state.update()
 	end
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
+	end
+	-- Add the waist movement ability
+	if qLWaistpoint and qRWaistpoint then
+		print('Conflicting waists')
+	elseif type(qLWaistpoint)=='table' then
+		Body.set_waist_command_position(qLWaistpoint)
+	elseif type(qRWaistpoint)=='table' then
+		Body.set_waist_command_position(qRWaistpoint)
 	end
 
 	-- Check if done

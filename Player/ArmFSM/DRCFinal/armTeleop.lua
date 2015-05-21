@@ -85,6 +85,7 @@ function state.update()
 		return
 	end
 
+	-- TODO: If *any* change, we should replan all...
 	if lChange then
 		quatpL = quatpL1
 		qWaistDesired = qWaistDesired1
@@ -148,7 +149,6 @@ function state.update()
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
 	end
-
 	-- Add the waist movement ability
 	if qLWaistpoint and qRWaistpoint then
 		print('Conflicting waists')

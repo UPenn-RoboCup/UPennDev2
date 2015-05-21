@@ -34,13 +34,15 @@ while 1
         if has_more, [raw, has_more] = zmq('receive', s_idx); end
         %char(metadata.id)
         if strcmp(char(metadata.id), 'k2_depth') %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% depth 
+                tic,
                 raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
                 uisetting; % See uisetting.m       size(D)
                  
                 % TASK: localization at the corner 
                 ui.taskMode = 11 ;
-                ui.figures(3) = 0;
+                ui.figures(3) = 5;
                 % TODO: moving average? 
+                
                 [res, meta] = detectPlanes6(raw, metadata, ui);  
                 pose = localizeCorner_v4(res,metadata);
                 % TASK: localization at the corner 
@@ -65,7 +67,8 @@ while 1
                     data = struct('dist',distance, 'yaw',yaw); % yaw degree
                     packed_data=msgpack('pack',data);                    
                     zmq('send',s_field,packed_data);
-                 end
+                end
+                 toc,
                
         elseif strcmp(char(metadata.id), 'k2_rgb') %%%%%%%%%%%%%%%%%%%%%%%%% RGB
             % rgb_img = djpeg(raw);

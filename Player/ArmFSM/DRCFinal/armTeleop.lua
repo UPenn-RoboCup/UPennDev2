@@ -4,11 +4,7 @@ require'hcm'
 local vector = require'vector'
 local util   = require'util'
 local movearm = require'movearm'
-local libArmPlan
-if Config.use_jacobian_arm_planning then
-  libArmPlan = require 'libArmPlanJacobian'
-  print("Jacobian arm planning loaded")
-else libArmPlan = require 'libArmPlan' end
+local libArmPlan = require 'libArmPlan'  
 local arm_planner = libArmPlan.new_planner()
 local stage
 local plan_valid = true

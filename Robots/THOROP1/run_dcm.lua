@@ -586,12 +586,15 @@ local function do_external(request, bus)
 				tq_val = m_vals[i]
 				if is_mx then
 					status = lD.set_mx_torque_enable(m_id, tq_val, bus)[1]
+					status = lD.get_mx_torque_enable(m_id, bus)[1]
 				else
 					status = lD.set_nx_torque_enable(m_id, tq_val, bus)[1]
+					status = lD.get_nx_torque_enable(m_id, bus)[1]
 				end
 				--if status and status.error==0 then
 				if status then
 					--ptable(status)
+					print(unpack(status.parameter))
 					-- Set the CP and the P
 					if tq_val==1 then
 						if is_mx then
@@ -1030,7 +1033,7 @@ while is_running do
 
 		debug_str = table.concat(debug_str, '\n')
 		--os.execute('clear')
-		io.write(debug_str)
+		io.write(debug_str,'\n')
 
 	end
 end

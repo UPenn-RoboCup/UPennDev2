@@ -5,6 +5,8 @@ state._NAME = ...
 local Body = require'Body'
 local t_entry, t_update, qH
 
+local mp = require'msgpack'.MessagePack
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- When entry was previously called
@@ -24,6 +26,13 @@ function state.entry()
 		Body.set_rgrip_mode('torque')
 		--if not IS_WEBOTS then unix.usleep(1e5) end
 	end
+-- read once
+	dcm_ch:send(mp.pack{
+		bus = 'larm',
+		key = 'use_alt',
+		val = true
+	})
+
 end
 
 function state.update()

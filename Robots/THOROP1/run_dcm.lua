@@ -21,8 +21,8 @@ local sformat = string.format
 local WRITE_TIMEOUT = 1 / 250
 local READ_TIMEOUT = 1 / 250
 if OPERATING_SYSTEM=='darwin' then
-  WRITE_TIMEOUT = 1 / 60
-  READ_TIMEOUT = 1 / 60
+	WRITE_TIMEOUT = 1 / 60
+	READ_TIMEOUT = 1 / 60
 end
 
 -- Setup the channels
@@ -165,7 +165,7 @@ local function parse_ft(ft, raw_str, m_id)
 		for i=0,6,2 do
 			raw16_as_8[i] = ft.raw[i]
 			raw16_as_8[i+1] = ft.raw[i+1]
---			if i==6 then print(ft.raw[i], ft.raw[i+1]) end
+			--			if i==6 then print(ft.raw[i], ft.raw[i+1]) end
 		end
 		--print('V1', m_id)
 		--print(3.3 * tonumber(ft.raw16[0]) / 4095.0)
@@ -196,21 +196,21 @@ local function parse_ft(ft, raw_str, m_id)
 	-- Lower ID has the 2 components
 	--[[
 	if m_id==ft.m_ids[1] then
-		ffi.copy(ft.raw, raw_str, 8)
-		ft.component[0] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[0]
-		ft.component[1] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[1]
-		ft.component[2] = 3.3 * ft.raw[2] / 4095 - ft.unloaded[2]
-		ft.component[3] = 3.3 * ft.raw[3] / 4095 - ft.unloaded[3]
+	ffi.copy(ft.raw, raw_str, 8)
+	ft.component[0] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[0]
+	ft.component[1] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[1]
+	ft.component[2] = 3.3 * ft.raw[2] / 4095 - ft.unloaded[2]
+	ft.component[3] = 3.3 * ft.raw[3] / 4095 - ft.unloaded[3]
 	elseif m_id==ft.m_ids[2] then
-		ffi.copy(ft.raw, raw_str, 4)
-		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw)
-		ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
-		ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
+	ffi.copy(ft.raw, raw_str, 4)
+	local raw16_as_8 = ffi.cast('uint8_t*', ft.raw)
+	ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
+	ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
 	else
-		return
+	return
 	end
 	--]]
-	
+
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
@@ -218,7 +218,7 @@ local function parse_ft(ft, raw_str, m_id)
 			ft.readings[i] = ft.readings[i]
 			+ ft.calibration_mat[i][j]
 			* ft.component[j]
---			* ft.calibration_gain
+			--			* ft.calibration_gain
 		end
 	end
 	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
@@ -263,9 +263,9 @@ local function parse_read_leg(pkt, bus)
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
 
---	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
---	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
-	
+	--	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
+	--	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
+
 	parse_ft(left_ft, raw_str, m_id)
 	parse_ft(right_ft, raw_str, m_id)
 	return read_j_id
@@ -293,32 +293,37 @@ for i,v in ipairs(arm_packet_reg_mx) do
 end
 local function form_arm_read_cmd(bus)
 	local rd_addrs, has_mx, has_nx = {}, false, false
+	local used_ids = {}
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
+			--[[
 			-- Position through temperature (NOTE: No current)
 			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
+			table.insert(used_ids, m_id)
 			has_mx = true
+			--]]
 		else
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
 			'Bad Indirect addresses for the arm chain ID '..m_id
 			)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
+			table.insert(used_ids, m_id)
 			has_nx = true
 		end
 	end
 	-- Set the default reading command for the bus
 	if has_mx and has_nx then
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
-		bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, arm_packet_reg)
+		bus.read_loop_cmd_str = lD.get_indirect_data(used_ids, arm_packet_reg)
 	else
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	end
-	bus.read_loop_cmd_n = #bus.m_ids
+	bus.read_loop_cmd_n = #used_ids
 	bus.read_loop_cmd = 'arm'
 end
 local function parse_read_arm(pkt, bus)
@@ -342,7 +347,7 @@ local function parse_read_arm(pkt, bus)
 		end
 		return read_j_id
 	end
-	
+
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
@@ -354,11 +359,11 @@ local function parse_read_arm(pkt, bus)
 	c_ptr[read_j_id - 1] = read_cur
 	c_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
---	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
+	--	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
 	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
---	parse_ft(left_ft, raw_str, m_id)
---	parse_ft(right_ft, raw_str, m_id)
+	--	parse_ft(left_ft, raw_str, m_id)
+	--	parse_ft(right_ft, raw_str, m_id)
 	--
 	return read_j_id
 end
@@ -369,34 +374,41 @@ end
 ------------------------
 local function form_arm_read_cmd2(bus)
 	local rd_addrs, has_mx, has_nx = {}, false, false
+	local used_ids = {}
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
 			-- Position through temperature (NOTE: No current)
-			table.insert(rd_addrs, lD.mx_registers.current)
+			-- Position through temperature (NOTE: No current)
+			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
+			--table.insert(rd_addrs, lD.mx_registers.current)
+			table.insert(used_ids, m_id)
 			has_mx = true
+--[[
 		else
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
 			'Bad Indirect addresses for the arm chain ID '..m_id
 			)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
+			table.insert(used_ids, m_id)
 			has_nx = true
+--]]
 		end
 	end
 	-- Set the default reading command for the bus
 	if has_mx and has_nx then
-		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
-		bus.read_loop_cmd_alt_str = lD.get_indirect_data(bus.m_ids, arm_packet_reg)
+		bus.read_loop_cmd_alt_str = lD.get_indirect_data(used_ids, arm_packet_reg)
 	else
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
-		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	end
-	bus.read_loop_cmd_alt_n = #bus.m_ids
+	bus.read_loop_cmd_alt_n = #rd_addrs
 	bus.read_loop_cmd_alt = 'arm2'
-	bus.use_alt = true
+	bus.use_alt = 0
 end
 
 local function parse_read_arm2(pkt, bus)
@@ -407,7 +419,17 @@ local function parse_read_arm2(pkt, bus)
 	local read_j_id = m_to_j[m_id]
 	if bus.has_mx_id[m_id] then
 		-- Check if MX
-		if #pkt.parameter==2 then
+		if #pkt.parameter==8 then
+			-- Set Position in SHM
+			local read_val = p_parse_mx(unpack(pkt.parameter, 1, arm_packet_offsets_mx[1]))
+			local read_rad = step_to_radian(read_j_id, read_val)
+			--print(m_id, 'Read val', read_val, unpack(pkt.parameter))
+			p_ptr[read_j_id - 1] = read_rad
+			p_ptr_t[read_j_id - 1] = t_read
+			-- Set temperature (Celsius)
+			dcm.sensorPtr.temperature[read_j_id - 1] = pkt.parameter[8]
+			dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
+		elseif #pkt.parameter==2 then
 			-- Set Current in SHM
 			local read_cur = c_parse_mx(unpack(pkt.parameter))
 			--print(m_id, 'Read cur mx', read_cur, unpack(pkt.parameter))
@@ -421,9 +443,9 @@ local function parse_read_arm2(pkt, bus)
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
 	if not read_val then
-print('bad val', read_j_id)
-return read_j_id
-end
+		print('bad val', read_j_id)
+		return read_j_id
+	end
 	local read_rad = step_to_radian(read_j_id, read_val)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
@@ -736,8 +758,8 @@ local function output_co(bus)
 		-- Copy the command positions if reading is not enabled,
 		-- otherwise, send a read instruction
 		if bus.enable_read then
-			if bus.use_alt~=nil then bus.use_alt = not bus.use_alt end
 			if bus.use_alt then
+				bus.use_alt = false
 				bus:send_instruction(bus.read_loop_cmd_alt_str)
 				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_alt_n
 				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_alt_n
@@ -973,42 +995,42 @@ while is_running do
 			bus.n_read_timeouts = 0
 		end
 
-	local rpy = dcm.get_sensor_rpy()
-	local acc = dcm.get_sensor_accelerometer()
-	local gyro = dcm.get_sensor_gyro()
-	table.insert(debug_str, sformat('Acc  : X%.2f Y%.2f Z%.2f (g)', unpack(acc)))
-	table.insert(debug_str, sformat('Gyro : R%.2f P%.2f Y%.2f (deg/s)', unpack(RAD_TO_DEG*gyro)))
-	table.insert(debug_str, sformat('Angle: R%.2f P%.2f Y%.2f (deg)', unpack(RAD_TO_DEG * rpy)))
+		local rpy = dcm.get_sensor_rpy()
+		local acc = dcm.get_sensor_accelerometer()
+		local gyro = dcm.get_sensor_gyro()
+		table.insert(debug_str, sformat('Acc  : X%.2f Y%.2f Z%.2f (g)', unpack(acc)))
+		table.insert(debug_str, sformat('Gyro : R%.2f P%.2f Y%.2f (deg/s)', unpack(RAD_TO_DEG*gyro)))
+		table.insert(debug_str, sformat('Angle: R%.2f P%.2f Y%.2f (deg)', unpack(RAD_TO_DEG * rpy)))
 
-	local pos = dcm.get_sensor_position()
-	local cmd_pos = dcm.get_actuator_command_position()
-	table.insert(debug_str, sformat('LLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
+		local pos = dcm.get_sensor_position()
+		local cmd_pos = dcm.get_actuator_command_position()
+		table.insert(debug_str, sformat('LLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
 		unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,10,15)) ))
-	table.insert(debug_str, sformat('RLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
+		table.insert(debug_str, sformat('RLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
 		unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,16,21)) ))
 
-	local lfoot = dcm.get_sensor_lfoot()
-	local rfoot = dcm.get_sensor_rfoot()
-	table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f',
+		local lfoot = dcm.get_sensor_lfoot()
+		local rfoot = dcm.get_sensor_rfoot()
+		table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f',
 		lfoot[3], -lfoot[4],lfoot[5] ))
-	table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f',
+		table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f',
 		rfoot[3], -rfoot[4],rfoot[5] ))
 
-	if lfoot[3]>20 then
-		local rel_zmp_left = {-lfoot[5]/lfoot[3], lfoot[4]/lfoot[3], 0}
-		table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)',
-		rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
-	end
+		if lfoot[3]>20 then
+			local rel_zmp_left = {-lfoot[5]/lfoot[3], lfoot[4]/lfoot[3], 0}
+			table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)',
+			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
+		end
 
-	if rfoot[3]>20 then
-		local rel_zmp_right = {-rfoot[5]/rfoot[3], rfoot[4]/rfoot[3], 0}
-		table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)',
-		rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
-	end
+		if rfoot[3]>20 then
+			local rel_zmp_right = {-rfoot[5]/rfoot[3], rfoot[4]/rfoot[3], 0}
+			table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)',
+			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
+		end
 
-	debug_str = table.concat(debug_str, '\n')
-	--os.execute('clear')
-	io.write(debug_str)
+		debug_str = table.concat(debug_str, '\n')
+		--os.execute('clear')
+		io.write(debug_str)
 
 	end
 end

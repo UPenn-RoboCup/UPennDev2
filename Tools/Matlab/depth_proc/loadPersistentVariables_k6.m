@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % parameters 
-param_normalComputation = [11 3]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  
+param_normalComputation = [7 5]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  
 thre_sValue = 0.07; % The smaller it is, the flatter the plane fit is 
 thre_clusterSize = 1000; % number of clusters
 thre_memberSize = 500; % number of connected members (in the image domain)

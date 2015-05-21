@@ -32,7 +32,7 @@ while 1
             raw = reshape(typecast(raw, 'single'), [DEPTH_W, DEPTH_H]);
             uisetting; % See uisetting.m       size(D)
             ui.taskMode = 11 ;
-            ui.figures(3) = 0;
+            ui.figures(3) = 0; % 
                     
             [Planes, meta] = detectPlanes6(raw, metadata, ui);  
             [distance, yaw, id] = localizeDoor_v1L(Planes);

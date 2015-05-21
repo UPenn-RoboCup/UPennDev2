@@ -493,5 +493,49 @@ Body.jointNames = jointNames
 Body.parts = Config.parts
 Body.Kinematics = Kinematics
 
+--SJ: I have moved this function to body as it is commonly used in many locations
+--Reads current leg and torso position from SHM
+
+Body.get_torso_compensation= function (qLArm, qRArm, qWaist,massL, massR)
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()
+  local zLeg = mcm.get_status_zLeg()
+  local zSag = mcm.get_walk_zSag()
+  local zLegComp = mcm.get_status_zLegComp()
+  local zLeft,zRight = zLeg[1]+zSag[1]+zLegComp[1],zLeg[2]+zSag[2]+zLegComp[2]
+  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})  
+  local aShiftX = mcm.get_walk_aShiftX()
+  local aShiftY = mcm.get_walk_aShiftY()
+  local count,revise_max = 1,4
+  local adapt_factor = 1.0
+
+ --Initial guess 
+  local uTorsoAdapt = util.pose_global(vector.new({-Config.walk.torsoX,0,0}),uTorso)
+  local pTorso = vector.new({
+    uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
+    0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
+  local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
+  
+  -------------------Incremental COM filtering
+  while count<=revise_max do
+    local qLLeg = vector.slice(qLegs,1,6)
+    local qRLeg = vector.slice(qLegs,7,12)
+    com = Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0,Config.birdwalk or 0)
+    local uCOM = util.pose_global(
+      vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
+
+   uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
+   uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
+   local pTorso = vector.new({
+            uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
+            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
+   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
+   count = count+1
+  end
+  local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
+  return {uTorsoOffset[1],uTorsoOffset[2]}
+end
 
 return Body

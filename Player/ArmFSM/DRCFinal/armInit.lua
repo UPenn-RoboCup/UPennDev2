@@ -25,33 +25,23 @@ function state.entry()
   t_update = t_entry
   t_finish = t
 
--- Close rgrip
-Body.set_rgrip_command_torque({-10,-10,10})
--- Open rgrip
-Body.set_rgrip_command_torque({10,10,-10})
--- No torque rgrip
-Body.set_rgrip_command_torque({0,0,0})
+  -- Close rgrip
+  Body.set_rgrip_command_torque({-10,-10,10})
+  -- Open rgrip
+  Body.set_rgrip_command_torque({10,10,-10})
+  -- No torque rgrip
+  Body.set_rgrip_command_torque({0,0,0})
 
-  
-
- if not IS_WEBOTS then
-	local vel = 1000
+  if not IS_WEBOTS then
+  	local vel = 1000
     print('INIT setting params')
     for i=1,10 do
       Body.set_larm_command_velocity(vector.ones(7)*vel)
       unix.usleep(1e6*0.01);
       Body.set_rarm_command_velocity(vector.ones(7)*vel)
       unix.usleep(1e6*0.01);
-    end
+     end
   end
-
-  --Slowly close all fingers
-	--[[
-  Body.move_lgrip1(Config.arm.torque.movement)
-  Body.move_lgrip2(Config.arm.torque.movement)
-  Body.move_rgrip1(Config.arm.torque.movement)
-  Body.move_rgrip2(Config.arm.torque.movement)
-	--]]
 
   qLArmTarget = Body.get_inverse_larm(
     vector.zeros(7),
@@ -67,23 +57,6 @@ Body.set_rgrip_command_torque({0,0,0})
 
   print("QLArmTarget:", util.print_jangle(qLArmTarget))
   print("QRArmTarget:", util.print_jangle(qRArmTarget))  
-
-
---[[
-  -- Default qLArmTarget: 131 3 0  -81 87 49 -90
-  -- Default qRArmTarget: 131 -3 0 -81 -87 -49 90
-  qLArmTarget=vector.new({90, 0, 0, -150, 90,   29, -90})*DEG_TO_RAD
-  qRArmTarget=vector.new({90, 0, 0, -150, -90, -29, 90})*DEG_TO_RAD
-
-
-
-  local trLArm = Body.get_forward_larm(qLArmTarget,0,{0,0},true)
-  local trRArm = Body.get_forward_rarm(qRArmTarget,0,{0,0},true)  
-
-  print("TRL:",util.print_transform(trLArm))
-  print("TRR:",util.print_transform(trRArm))
---]]
-
 
   mcm.set_stance_enable_torso_track(0)
   mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit_init)
@@ -105,14 +78,7 @@ function state.update()
   local ret
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
 
---print('qL init',unpack(qLArm))
---print('qR init',unpack(qRArm))
-
-
-
-
-  if stage==1 then
-    --straighten shoulder yaw
+  if stage==1 then --straighten shoulder yaw first
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
   elseif stage==2 then
     if math.abs(qLArmTargetC[3]-qLArmTarget[3])<math.pi/2 and
@@ -122,18 +88,19 @@ function state.update()
     else 
       stage=3 
       return
-    end --unscrew wrist yaw
+    end 
   elseif stage==3 then
-    --unscrew wrist yaw. First straighten wrist roll
+    --Straighten wrist roll
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
   elseif stage==4 then
-    --unscrew wrist yaw. after straighten wrist roll
+    --Zero both wrist yaws
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
   elseif stage==5 then
+    --Now go to the initial arm position
     qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
   elseif stage==6 then
     return "done"
@@ -151,11 +118,7 @@ function state.update()
   local dqArmLim = vector.new({10,10,10,10,45,30,45}) *DEG_TO_RAD
   if IS_WEBOTS then dqArmLim = dqArmLim*10 end
 
-
-
   local ret = movearm.setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
---  if ret==1 then return "done" end
-
   local qLArmActual = Body.get_larm_position()
   local qRArmActual = Body.get_rarm_position()
   local qLArmCommand = Body.get_larm_command_position()
@@ -169,11 +132,9 @@ function state.update()
 
   if t>t_last_debug+0.2 then
     t_last_debug=t
-    if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then 
+    if ret==1 and math.abs(last_error-err)<1*math.pi/180 then 
       stage = stage+1
       print("Total joint reading err:",err*180/math.pi)
-    else
-     --print('armInit',ret,stage,err)
     end
     last_error = err
   end    
@@ -185,12 +146,6 @@ function state.exit()
   local libArmPlan = require 'libArmPlan'
   local arm_planner = libArmPlan.new_planner()
   arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
---[[
-  Body.move_lgrip1(0)
-  Body.move_lgrip2(0)
-  Body.move_rgrip1(0)
-  Body.move_rgrip2(0)
---]]
 
 
   if not IS_WEBOTS then

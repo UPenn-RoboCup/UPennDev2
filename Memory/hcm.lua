@@ -25,6 +25,11 @@ shared_data.network = {
 shared_data.teleop = {
 	-- Head angles
   head = zeros(2),
+	-- Waist angles
+	waist = zeros(2),
+	-- Leg angles
+	lleg = zeros(6),
+  rleg = zeros(6),
   -- Joint space: Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),

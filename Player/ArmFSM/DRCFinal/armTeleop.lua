@@ -13,11 +13,13 @@ local toQ = require'Transform'.to_quatp
 
 local t_entry, t_update, t_finish
 local timeout = 10.0
+local default_plan_timeout = 30
 
 local lco, rco
-local okL, qLWaypoint
-local okR, qRWaypoint
+local okL, qLWaypoint, qLWaistpoint
+local okR, qRWaypoint, qRWaistpoint
 local quatpL, quatpR
+local qWaistDesired
 local default_weights = {1,1,0}
 
 function state.entry()
@@ -40,6 +42,9 @@ function state.entry()
 	-- TODO: Find the appropriate weights from the position we are in...
 	hcm.set_teleop_lweights(default_weights)
 	hcm.set_teleop_rweights(default_weights)
+	-- Reset the waist
+	qWaistDesired = qcWaist
+	hcm.set_teleop_waist(qWaistDesired)
 	
 	local configL = {
 		tr = trL, timeout=5,
@@ -67,29 +72,49 @@ function state.update()
 	-- Grab the transform
 	local quatpL1 = hcm.get_teleop_tflarm()
 	local quatpR1 = hcm.get_teleop_tfrarm()
+	local qWaistDesired1 = hcm.get_teleop_waist()
 
-	if quatpL1~=quatpL then
-		-- TODO: Also check the weights...
+	-- Check for changes
+	local lChange = quatpL1~=quatpL
+	local rChange = quatpR1~=quatpR
+	local wChange = qWaistDesired1~=qWaistDesired
+	quatpL = quatpL1
+	quatpR = quatpR1
+	qWaistDesired = qWaistDesired1
+
+	-- Cannot do all. Need an indicator
+	if lChange and rChange and wChange then
+		print('Too many changes!')
+		return
+	end
+
+	if lChange then
 		print(state._NAME, 'L target update')
-		local tfL = fromQ(quatpL1)
-		--print(tfL)
+		local tfL = fromQ(quatpL)
+		local via = wChange and 'jacobian_waist_preplan' or 'jacobian_preplan'
+		local weights = hcm.get_teleop_lweights()
 		local lco1, rco1 = movearm.goto({
-			tr = tfL, timeout = 30, via='jacobian_preplan',
-			weights = hcm.get_teleop_lweights()
+			tr = tfL,
+			via = via,
+			weights = weights,
+			qWaistGuess = wChange and qWaistDesired,
+			timeout = default_plan_timeout,
 		}, false)
 		lco = lco1
-		quatpL = quatpL1
 	end
 	if quatpR1~=quatpR then
 		print(state._NAME, 'R target update')
-		local tfR = fromQ(quatpR1)
-		--print(tfR)
-		local lco1, rco1 = movearm.goto(false, {
-			tr = tfR, timeout = 30, via='jacobian_preplan',
-			weights = hcm.get_teleop_rweights()
-		})
+		local tfR = fromQ(quatpR)
+		local via = wChange and 'jacobian_waist_preplan' or 'jacobian_preplan'
+		local weights = hcm.get_teleop_rweights()
+		local lco1, rco1 = movearm.goto({
+			tr = tfR,
+			via = via,
+			weights = weights,
+			qWaistGuess = wChange and qWaistDesired,
+			timeout = default_plan_timeout,
+		}, false)
 		rco = rco1
-		quatpR = quatpR1
 	end
 	
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
@@ -97,11 +122,12 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
+	local qWaist = Body.get_waist_position()
 	if lStatus=='suspended' then
-		okL, qLWaypoint = coroutine.resume(lco, qLArm)
+		okL, qLWaypoint, qLWaistpoint = coroutine.resume(lco, qLArm, qWaist)
 	end
 	if rStatus=='suspended' then
-		okR, qRWaypoint = coroutine.resume(rco, qRArm)
+		okR, qRWaypoint, qRWaistpoint = coroutine.resume(rco, qRArm, qWaist)
 	end
 
 	if not okL or not okR then
@@ -120,6 +146,15 @@ function state.update()
 	end
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
+	end
+
+	-- Add the waist movement ability
+	if qLWaistpoint and qRWaistpoint then
+		print('Conflicting waists')
+	elseif type(qLWaistpoint)=='table' then
+		Body.set_waist_command_position(qLWaistpoint)
+	elseif type(qRWaistpoint)=='table' then
+			Body.set_waist_command_position(qRWaistpoint)
 	end
 
 	-- Check if done

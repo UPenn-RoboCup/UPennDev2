@@ -3,7 +3,7 @@
 -- DCM is a thread or standalone
 local CTX, metadata = ...
 -- Still need our library paths set
-dofile'include.lua'
+dofile'../../include.lua'
 --assert(ffi, 'IMU | Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'

@@ -1,18 +1,19 @@
 function  [Planes, metadata] = detectPlanes6(data, meta, ui)
 % v6: corner of walls 
 persistent MASK 
-DEPTH_MAX = 4500; %8000;
+DEPTH_MAX = 2500; %8000;
 DEPTH_MIN = 400;
 
 if isempty(MASK)
     load('MASK2.mat')
 end
 
-if ~isempty(meta) && isfield(meta,'tr')    
-    [Rot, tr] = TransKinectToBody(meta);
-   % T = reshape(meta.tr,4,4)';
-   % Rot = T(1:3,1:3);
-   % tr = T(1:3,4);
+if ~isempty(meta) 
+    if isfield(meta,'tr')    
+        [Rot, tr] = TransKinectToBody(meta);
+    elseif isfield(meta,'tfL16')
+       [Rot, tr] = TransKinectToBody_dale(meta);
+    end
 else
     Rot = eye(3);
     tr = zeros(3,1);

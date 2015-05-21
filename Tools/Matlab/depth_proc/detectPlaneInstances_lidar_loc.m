@@ -83,7 +83,7 @@ end
 %% Normal Computation
 [N, S] = computeNormal_lidarB(X0, Y0, Z0, mask, normalComp_param, 1);
 validNormal = (find( sum(S,1) > 0)); 
-validNormal = validNormal(find(S(4,validNormal)./(Z0(validNormal).^2)<thre_svalue));
+validNormal = validNormal(find(S(4,validNormal)<thre_svalue));
 
 
 %% Clustering  
@@ -160,11 +160,9 @@ for tt = 1: size(finalMean,2)
     end % end of for each cluster
 end
 
-
-
-
 NumPlane = PlaneID;
 PlaneID = 0;
+Sz = [];
 if NumPlane > 0 
      
     for t = 1:NumPlane  
@@ -205,17 +203,20 @@ if NumPlane > 0
             
             % Coordinate Transformation
             Center = Ccb*Center + Tcb;
-            Pts = Ccb*Pts + repmat(Tcb,1,size(Pts,2)) ;
+            if ~isempty(Pts)    
+                Pts = Ccb*Pts + repmat(Tcb,1,size(Pts,2)) ;
+            end
             Bbox = Ccb*Bbox + repmat(Tcb,1,size(Bbox,2)) ;
             n_ = Ccb*n_;
 
-            if abs(n_(3)) < 0.2                             
+            if abs(n_(3)) < 0.2   
+                sz = numel(Indices{t});
                 PlaneID = PlaneID + 1;
                 Planes{PlaneID} = struct('Center', Center,...
                                          'Normal', n_ ,...
                                          'Points', [Pts Bbox],...
-                                         'Size',numel(Indices{t}));     
-                
+                                         'Size',sz);     
+                Sz = [Sz sz];
                 Points3D{PlaneID} = [ X0(Indices{t})'; Y0(Indices{t})'; Z0(Indices{t})' ];
             end      
 
@@ -223,9 +224,19 @@ if NumPlane > 0
     end
 end
 
-PlaneOfInterest = 1:PlaneID;
-[Planes,PlaneID,PlaneOfInterest,Points3D] = mergePlanes(Planes,PlaneID,PlaneOfInterest,Points3D,30);
+% order of size
+if ~isempty(Sz)
+    [Sz_, Szorder] = sort(Sz,'descend');    
+    Planes_ = Planes;
+    for t = 1:PlaneID 
+        Planes{t} = Planes_{Szorder(t)};
+    end
+end
+
+%PlaneOfInterest = 1:PlaneID;
+%[Planes,PlaneID,PlaneOfInterest,Points3D] = mergePlanes(Planes,PlaneID,PlaneOfInterest,Points3D,30);
   
+
 
 if visflag 
     for t = 1:PlaneID 
@@ -251,7 +262,7 @@ end
 % end
        
  % Coordinate Transformation
-if 1 %~isempty(params)
+if 0 %~isempty(params)
     for t = 1:PlaneID  
         
         Planes{t}.Center = Ccb*Planes{t}.Center + Tcb;

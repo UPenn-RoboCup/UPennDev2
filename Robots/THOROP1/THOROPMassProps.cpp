@@ -374,11 +374,12 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left){
   
   Transform tWrist = trcopy(tElbow)
     .translateZ(-elbowOffsetX)
+    .translateX(lowerArmLength)          
     .rotateX(qArm[4]);         
 
 /*  
   Transform tLHand = trcopy(tLWrist)
-    .translateX(lowerArmLength)          
+
     .rotateZ(qLArm[5])
     .rotateX(qLArm[6]);
 */

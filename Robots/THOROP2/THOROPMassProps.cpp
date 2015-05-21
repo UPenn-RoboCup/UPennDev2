@@ -1,6 +1,4 @@
 #include "THOROPKinematics.h"
-//For THOR mk2
-
 
 std::vector<double>
 THOROP_kinematics_calculate_com_positions(
@@ -44,86 +42,86 @@ THOROP_kinematics_calculate_com_positions(
   .rotateZ(qWaist[0]); //for mk2 body, fixed
  
 
-  tLArm0= trcopy(tTorso).translate(armLink[0])
+  tLArm0= trcopy(tTorso).translate(armLinkL[0])
           .rotateY(qLArm[0]);
 
-  tLArm1= trcopy(tTorso).translate(armLink[0])
+  tLArm1= trcopy(tTorso).translate(armLinkL[0])
           .rotateY(qLArm[0]).rotateZ(qLArm[1])
-          .translate(armCom[1]);
+          .translate(armComL[1]);
 
-  tLArm2= trcopy(tTorso).translate(armLink[0])
+  tLArm2= trcopy(tTorso).translate(armLinkL[0])
           .rotateY(qLArm[0]).rotateZ(qLArm[1])
-          .translate(armLink[2]).rotateX(qLArm[2])
-          .translate(armCom[2]);
+          .translate(armLinkL[2]).rotateX(qLArm[2])
+          .translate(armComL[2]);
 
-  tLArm3= trcopy(tTorso).translate(armLink[0])
+  tLArm3= trcopy(tTorso).translate(armLinkL[0])
           .rotateY(qLArm[0]).rotateZ(qLArm[1])
-          .translate(armLink[2]).rotateX(qLArm[2])
-          .translate(armLink[3]).rotateY(qLArm[3])
-          .translate(armCom[3]);
+          .translate(armLinkL[2]).rotateX(qLArm[2])
+          .translate(armLinkL[3]).rotateY(qLArm[3])
+          .translate(armComL[3]);
 
-  tLArm4= trcopy(tTorso).translate(armLink[0])
+  tLArm4= trcopy(tTorso).translate(armLinkL[0])
           .rotateY(qLArm[0]).rotateZ(qLArm[1])
-          .translate(armLink[2]).rotateX(qLArm[2])
-          .translate(armLink[3]).rotateY(qLArm[3])
-          .translate(armLink[4]).rotateX(qLArm[4])
-          .translate(armCom[4]);
+          .translate(armLinkL[2]).rotateX(qLArm[2])
+          .translate(armLinkL[3]).rotateY(qLArm[3])
+          .translate(armLinkL[4]).rotateX(qLArm[4])
+          .translate(armComL[4]);
 
-  tLArm5= trcopy(tTorso).translate(armLink[0])
+  tLArm5= trcopy(tTorso).translate(armLinkL[0])
           .rotateY(qLArm[0]).rotateZ(qLArm[1])
-          .translate(armLink[2]).rotateX(qLArm[2])
-          .translate(armLink[3]).rotateY(qLArm[3])
-          .translate(armLink[4]).rotateX(qLArm[4])
-          .rotateZ(qLArm[5]).translate(armCom[5]);
+          .translate(armLinkL[2]).rotateX(qLArm[2])
+          .translate(armLinkL[3]).rotateY(qLArm[3])
+          .translate(armLinkL[4]).rotateX(qLArm[4])
+          .rotateZ(qLArm[5]).translate(armComL[5]);
 
-  tLArm6= trcopy(tTorso).translate(armLink[0])
+  tLArm6= trcopy(tTorso).translate(armLinkL[0])
           .rotateY(qLArm[0]).rotateZ(qLArm[1])
-          .translate(armLink[2]).rotateX(qLArm[2])
-          .translate(armLink[3]).rotateY(qLArm[3])
-          .translate(armLink[4]).rotateX(qLArm[4])
+          .translate(armLinkL[2]).rotateX(qLArm[2])
+          .translate(armLinkL[3]).rotateY(qLArm[3])
+          .translate(armLinkL[4]).rotateX(qLArm[4])
           .rotateZ(qLArm[5]).rotateX(qLArm[6])
-          .translate(armCom[6]);
+          .translate(armComL[6]);
 
 
-  tRArm0= trcopy(tTorso).translate(rarmLink0)
+  tRArm0= trcopy(tTorso).translate(armLinkR[0])
           .rotateY(qRArm[0]);          
 
-  tRArm1= trcopy(tTorso).translate(rarmLink0)
+  tRArm1= trcopy(tTorso).translate(armLinkR[0])
           .rotateY(qRArm[0]).rotateZ(qRArm[1])
-          .translate(armCom[1]);
+          .translate(armComR[1]);
 
-  tRArm2= trcopy(tTorso).translate(rarmLink0)
+  tRArm2= trcopy(tTorso).translate(armLinkR[0])
           .rotateY(qRArm[0]).rotateZ(qRArm[1])
-          .translate(armLink[2]).rotateX(qRArm[2])
-          .translate(armCom[2]);
+          .translate(armLinkR[2]).rotateX(qRArm[2])
+          .translate(armComR[2]);
 
-  tRArm3= trcopy(tTorso).translate(rarmLink0)
+  tRArm3= trcopy(tTorso).translate(armLinkR[0])
           .rotateY(qRArm[0]).rotateZ(qRArm[1])
-          .translate(armLink[2]).rotateX(qRArm[2])
-          .translate(armLink[3]).rotateY(qRArm[3])
-          .translate(armCom[3]);
+          .translate(armLinkR[2]).rotateX(qRArm[2])
+          .translate(armLinkR[3]).rotateY(qRArm[3])
+          .translate(armComR[3]);
 
-  tRArm4= trcopy(tTorso).translate(rarmLink0)
+  tRArm4= trcopy(tTorso).translate(armLinkR[0])
           .rotateY(qRArm[0]).rotateZ(qRArm[1])
-          .translate(armLink[2]).rotateX(qRArm[2])
-          .translate(armLink[3]).rotateY(qRArm[3])
-          .translate(armLink[4]).rotateX(qRArm[4])
-          .translate(armCom[4]);          
+          .translate(armLinkR[2]).rotateX(qRArm[2])
+          .translate(armLinkR[3]).rotateY(qRArm[3])
+          .translate(armLinkR[4]).rotateX(qRArm[4])
+          .translate(armComR[4]);          
 
-  tRArm5= trcopy(tTorso).translate(rarmLink0)
+  tRArm5= trcopy(tTorso).translate(armLinkR[0])
           .rotateY(qRArm[0]).rotateZ(qRArm[1])
-          .translate(armLink[2]).rotateX(qRArm[2])
-          .translate(armLink[3]).rotateY(qRArm[3])
-          .translate(armLink[4]).rotateX(qRArm[4])
-          .rotateZ(qRArm[5]).translate(armCom[5]);
+          .translate(armLinkR[2]).rotateX(qRArm[2])
+          .translate(armLinkR[3]).rotateY(qRArm[3])
+          .translate(armLinkR[4]).rotateX(qRArm[4])
+          .rotateZ(qRArm[5]).translate(armComR[5]);
 
-  tRArm6= trcopy(tTorso).translate(rarmLink0)
+  tRArm6= trcopy(tTorso).translate(armLinkR[0])
           .rotateY(qRArm[0]).rotateZ(qRArm[1])
-          .translate(armLink[2]).rotateX(qRArm[2])
-          .translate(armLink[3]).rotateY(qRArm[3])
-          .translate(armLink[4]).rotateX(qRArm[4])
+          .translate(armLinkR[2]).rotateX(qRArm[2])
+          .translate(armLinkR[3]).rotateY(qRArm[3])
+          .translate(armLinkR[4]).rotateX(qRArm[4])
           .rotateZ(qRArm[5]).rotateX(qRArm[6])
-          .translate(armCom[6]);
+          .translate(armComR[6]);
 
   tLLeg0 = trcopy(tPelvis).translate(llegLink0)
           .rotateZ(qLLeg[0])
@@ -285,7 +283,7 @@ int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm){
     .rotateX(qLArm[2]);
 
   Transform tLElbow = trcopy(tLShoulder)
-    .translateX(upperArmLength)
+    .translateX(upperArmLengthL)
     .translateZ(elbowOffsetX)
     .rotateY(qLArm[3]);
   
@@ -294,7 +292,7 @@ int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm){
     .rotateX(qLArm[4]);         
   
   Transform tLHand = trcopy(tLWrist)
-    .translateX(lowerArmLength)          
+    .translateX(lowerArmLengthL)          
     .rotateZ(qLArm[5])
     .rotateX(qLArm[6]);
 
@@ -306,7 +304,7 @@ int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm){
     .rotateX(qRArm[2]);
 
   Transform tRElbow = trcopy(tRShoulder)
-    .translateX(upperArmLength)
+    .translateX(upperArmLengthR)
     .translateZ(elbowOffsetX)
     .rotateY(qRArm[3]);    
 
@@ -315,7 +313,7 @@ int THOROP_kinematics_check_collision(const double *qLArm,const double *qRArm){
     .rotateX(qRArm[4]);            
 
   Transform tRHand = trcopy(tRWrist)
-    .translateX(lowerArmLength)          
+    .translateX(lowerArmLengthR)          
     .rotateZ(qRArm[5])
     .rotateX(qRArm[6]);
 
@@ -336,24 +334,38 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left){
   std::vector<double> r(4);
 
   Transform tTorso;
-
   Transform tShoulder;
 
-  if (is_left>0)
+
+
+  double upperArmLength, lowerArmLength;
+
+  //TODOTODOTODOTODO
+
+  //Getting rid of hand, shoulder offsets
+
+    
+
+  if (is_left>0){
+    upperArmLength = upperArmLengthL;
+    lowerArmLength = lowerArmLengthL;
     tShoulder = trcopy(tTorso)
       .translateY(shoulderOffsetY)
       .translateZ(shoulderOffsetZ)        
       .rotateY(qArm[0])
       .rotateZ(qArm[1])
       .rotateX(qArm[2]);
-  else
+  }
+  else{
+    upperArmLength = upperArmLengthR;
+    lowerArmLength = lowerArmLengthR;
     tShoulder = trcopy(tTorso)
       .translateY(-shoulderOffsetY)
       .translateZ(shoulderOffsetZ)        
       .rotateY(qArm[0])
       .rotateZ(qArm[1])
       .rotateX(qArm[2]);
-
+  }
 
   Transform tElbow = trcopy(tShoulder)
     .translateX(upperArmLength)
@@ -362,11 +374,12 @@ int THOROP_kinematics_check_collision_single(const double *qArm,int is_left){
   
   Transform tWrist = trcopy(tElbow)
     .translateZ(-elbowOffsetX)
+    .translateX(lowerArmLength)          
     .rotateX(qArm[4]);         
 
 /*  
   Transform tLHand = trcopy(tLWrist)
-    .translateX(lowerArmLength)          
+
     .rotateZ(qLArm[5])
     .rotateX(qLArm[6]);
 */
@@ -431,7 +444,7 @@ THOROP_kinematics_calculate_zmp(
 
 void THOROP_kinematics_calculate_arm_torque_adv(
   double* stall_torque,double* acc_torque,double* acc_torque2,const double *rpyangle,
-  const double *qArm,const double *qArmVel,const double *qArmAcc,double dq){
+  const double *qArm,const double *qArmVel,const double *qArmAcc,double dq, int is_left){
 
   double dummy[7];
   double qArmDq[7];
@@ -446,7 +459,7 @@ void THOROP_kinematics_calculate_arm_torque_adv(
     acc_torque2[i]=0;
   }
 
-  THOROP_kinematics_calculate_arm_torque(stall_torque, b_matrix0, rpyangle,qArm);    
+  THOROP_kinematics_calculate_arm_torque(stall_torque, b_matrix0, rpyangle,qArm , is_left);    
 
 /*
   printf("B matrix:\n");
@@ -459,25 +472,25 @@ void THOROP_kinematics_calculate_arm_torque_adv(
 */
 
   qArmDq[0]=qArm[0]+dq;  
-  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[0], rpyangle,qArmDq);
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[0], rpyangle,qArmDq, is_left);
   qArmDq[0]=qArm[0];  
   qArmDq[1]=qArm[1]+dq;  
-  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[1], rpyangle,qArmDq);
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[1], rpyangle,qArmDq, is_left);
   qArmDq[1]=qArm[1];  
   qArmDq[2]=qArm[2]+dq;  
-  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[2], rpyangle,qArmDq);
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[2], rpyangle,qArmDq, is_left);
   qArmDq[2]=qArm[2];  
   qArmDq[3]=qArm[3]+dq;  
-  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[3], rpyangle,qArmDq);
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[3], rpyangle,qArmDq, is_left);
   qArmDq[3]=qArm[3];  
   qArmDq[4]=qArm[4]+dq;  
-  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[4], rpyangle,qArmDq);
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[4], rpyangle,qArmDq, is_left);
   qArmDq[4]=qArm[4];  
   qArmDq[5]=qArm[5]+dq;  
-  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[5], rpyangle,qArmDq);
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[5], rpyangle,qArmDq, is_left);
   qArmDq[5]=qArm[5];  
   qArmDq[6]=qArm[6]+dq;  
-  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[6], rpyangle,qArmDq);
+  THOROP_kinematics_calculate_arm_torque(dummy, b_matrix[6], rpyangle,qArmDq, is_left);
   qArmDq[6]=qArm[6];  
 
   for(i=0;i<7;i++) for (j=0;j<49;j++)
@@ -519,7 +532,8 @@ void THOROP_kinematics_calculate_arm_torque_adv(
 
 void THOROP_kinematics_calculate_arm_torque(
   double* stall_torque, double* b_matrix,
-  const double *rpyangle,const double *qArm
+  const double *rpyangle,const double *qArm,
+  int is_left
   ){
 
   Transform 
@@ -535,6 +549,20 @@ void THOROP_kinematics_calculate_arm_torque(
   int i;
   for (i=0;i<7;i++) stall_torque[i]=0;
   for (i=0;i<49;i++) b_matrix[i]=0;
+
+  const double* armLink[7];
+  const double* armCom[7];
+  
+  for(i=0;i<7;i++){
+    if (is_left==1){
+      armLink[i]=armLinkL[i];
+      armCom[i]=armComL[i];
+    }else{
+      armLink[i]=armLinkR[i];
+      armCom[i]=armComR[i];
+    }
+  }
+
 
   Transform torso;
   torso.rotateX(rpyangle[0]).rotateY(rpyangle[1]);
@@ -1140,10 +1168,18 @@ void THOROP_kinematics_calculate_arm_jacobian(
     COM,Jac0,Jac1,Jac2,Jac3,Jac4,Jac5,Jac6;
 
 
+  const double* armLink[7];
+  if (is_left==1){
+    for(int i=0;i<7;i++) armLink[i]=armLinkL[i];
+  }else{
+    for(int i=0;i<7;i++) armLink[i]=armLinkR[i];
+  }  
+
+
+
   Transform torso;
   torso.rotateX(rpyangle[0]).rotateY(rpyangle[1])
       .rotateZ(qWaist[0]).rotateY(qWaist[1]);
-
     
 
   COM= trcopy(torso).rotateY(qArm[0]).translate(armLink[1])

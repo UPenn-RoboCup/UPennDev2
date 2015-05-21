@@ -49,7 +49,7 @@ const double lowerArmLengthR = .312; //mk2, 6cm extended
 const double upperArmLengthL = .261; //mk2 stock
 const double lowerArmLengthL = .252; //mk2 stock
 
-const double handOffsetX = 0.310; //mk2 value
+const double handOffsetX = 0.150; //ucla value
 const double handOffsetY = 0;
 const double handOffsetZ = 0; 
 
@@ -57,8 +57,10 @@ const double handOffsetZ = 0;
 //const double hipOffsetZ = 0.282; 	//mk1 value
 const double hipOffsetX = 0;
 const double hipOffsetY = 0.105;	//mk2 value
-//const double hipOffsetZ2 = 0.180; //mk2 real hipoffset (hip to waist), for reference
-const double hipOffsetZ2 = 0.160; //mk15 real hipoffset (hip to waist), for reference
+//const double hipOffsetZ2 = 0.180; //chip real hipoffset (hip to waist), mk2 stock, for reference
+const double hipOffsetZ2 = 0.160; //dale real hipoffset (hip to waist), for reference
+
+
 const double hipOffsetZ = hipOffsetZ2+originOffsetZ;  //mk2 virtual hipoffset (pelvis to mk1 origin)
 
 //Total torso height (hip to shoulder)
@@ -71,7 +73,9 @@ const double hipOffsetZ = hipOffsetZ2+originOffsetZ;  //mk2 virtual hipoffset (p
 
 const double thighLength = 0.30;
 const double tibiaLength = 0.30;
-const double kneeOffsetX = 0.03; //teddy custom knee (recycled)
+const double kneeOffsetX = 0.00;  //chip has new legs with zero knee offset
+//const double kneeOffsetX = 0.03;  //dale has old legs with knee offset
+
 const double footHeight = 0.100;    //mk2 feet height
 const double footToeX = 0.130; //from ankle to toe, mk2 stock feet
 const double footHeelX = 0.130; //from ankle to heel, mk2 stock feet

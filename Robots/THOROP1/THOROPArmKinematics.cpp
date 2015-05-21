@@ -173,7 +173,7 @@ std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, 
     shoulderRoll = 0;
   }
   else {
-    double c21,c22,s21,s22;
+    double s21,s22;
     s21= (-b+sqrt(b*b-a*c))/a;
     s22= (-b-sqrt(b*b-a*c))/a;
     if (s21 > 1) s21 = 1;
@@ -382,7 +382,7 @@ THOROP_kinematics_inverse_arm_7(Transform trArm, int arm, const double *qOrg, do
     shoulderRoll = 0;
   }
   else {
-    double c21,c22,s21,s22;
+    double s21,s22;
     s21= (-b+sqrt(b*b-a*c))/a;
     s22= (-b-sqrt(b*b-a*c))/a;
     if (s21 > 1) s21 = 1;
@@ -504,21 +504,9 @@ THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, int arm, const double
 {
   //Calculate the wrist angle given the wrist position and the target transform 
 
-
-//printf("qWaist: %f %f\n",qWaist[0],qWaist[1]);
-//printf("bodyPitch: %f \n",bodyPitch);
-
   Transform trArmRot; //Only the rotation part of trArm
-  double upperArmLength, lowerArmLength;
-
-  if (arm==ARM_LEFT){
-    upperArmLength = upperArmLengthL;
-    lowerArmLength = lowerArmLengthL;
-  }else{
-    upperArmLength = upperArmLengthR;
-    lowerArmLength = lowerArmLengthR;
-  }
-
+  //printf("qWaist: %f %f\n",qWaist[0],qWaist[1]);
+  //printf("bodyPitch: %f \n",bodyPitch);
 
   trArmRot = trArmRot
       .rotateY(-qWaist[1])

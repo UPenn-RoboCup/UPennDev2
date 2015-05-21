@@ -124,9 +124,9 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   double vecx0 = cos(aShiftY);
   double vecx1 = 0;
   double vecx2 = sin(aShiftY);
-  double vecy0 = sin(aShiftY)*cos(aShiftX);
-  double vecy1 = cos(aShiftX);
-  double vecy2 = cos(aShiftY)*sin(aShiftX);
+//  double vecy0 = sin(aShiftY)*cos(aShiftX);
+//  double vecy1 = cos(aShiftX);
+//  double vecy2 = cos(aShiftY)*sin(aShiftX);
   double vecz0 = sin(aShiftY)*cos(aShiftX);
   double vecz1 = -sin(aShiftX);
   double vecz2 = cos(aShiftY)*cos(aShiftX);
@@ -281,9 +281,9 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   double vecx0 = cos(aShiftY);
   double vecx1 = 0;
   double vecx2 = sin(aShiftY);
-  double vecy0 = sin(aShiftY)*cos(aShiftX);
-  double vecy1 = cos(aShiftX);
-  double vecy2 = cos(aShiftY)*sin(aShiftX);
+//  double vecy0 = sin(aShiftY)*cos(aShiftX);
+//  double vecy1 = cos(aShiftX);
+//  double vecy2 = cos(aShiftY)*sin(aShiftX);
   double vecz0 = sin(aShiftY)*cos(aShiftX);
   double vecz1 = -sin(aShiftX);
   double vecz2 = cos(aShiftY)*cos(aShiftX);
@@ -426,6 +426,4 @@ std::vector<double>THOROP_kinematics_inverse_l_leg(Transform trLeg, double aShif
   return THOROP_kinematics_inverse_leg(trLeg, LEG_LEFT,aShiftX,  aShiftY);}
 
 std::vector<double>THOROP_kinematics_inverse_r_leg(Transform trLeg, double aShiftX, double aShiftY){
-  return THOROP_kinematics_inverse_leg(trLeg, LEG_RIGHT, aShiftX,  aShiftY);
-}
-
+  return THOROP_kinematics_inverse_leg(trLeg, LEG_RIGHT, aShiftX,  aShiftY);}

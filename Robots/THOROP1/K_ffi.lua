@@ -42,12 +42,12 @@ local shoulderOffsetZ = 0.165
 local elbowOffsetX = 0.030
 
 -- Arm meassurements from Dale
--- Regular arm
+-- Regular arm (on left)
 local upperArmLength = 0.261 -- shoulderpad
 local lowerArmLength = 0.252 -- yellow noextend
--- Extended Arm
-local upperArmLengthExtended = 0.320 -- silver
-local lowerArmLengthExtended = 0.312 -- yellow extended
+-- Extended Arm (on right)
+local upperArmLengthExtended = 0.320
+local lowerArmLengthExtended = 0.312
 
 -- Gripper of no appendage - just the plate
 local handOffsetX = 0.125

@@ -155,7 +155,7 @@ function state.update()
 	elseif type(qLWaistpoint)=='table' then
 		Body.set_waist_command_position(qLWaistpoint)
 	elseif type(qRWaistpoint)=='table' then
-			Body.set_waist_command_position(qRWaistpoint)
+		Body.set_waist_command_position(qRWaistpoint)
 	end
 
 	-- Check if done

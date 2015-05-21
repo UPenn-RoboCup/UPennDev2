@@ -38,6 +38,16 @@ const double upperArmLength = .246; //mk1 longarm
 const double lowerArmLength = .252; //mk2 longarm (2mm shorter, but we will use the same value for convenience)
 */
 
+const double upperArmLengthR = .320; //mk2 modded longarm
+const double lowerArmLengthR = .312; //mk2, 6cm extended
+const double upperArmLengthL = .261; //mk2 stock
+const double lowerArmLengthL = .252; //mk2 stock
+
+
+
+
+
+
 const double handOffsetX = 0.310; //mk2 value
 const double handOffsetY = 0;
 const double handOffsetZ = 0; 

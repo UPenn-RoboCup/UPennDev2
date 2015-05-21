@@ -10,7 +10,7 @@ elseif Np == 1
     if abs(Planes{1}.Normal(3)) < 0.3
         distance = abs(Planes{1}.Center'*Planes{1}.Normal);
         idx = 1;
-        yaw = -atan2(Planes{1}.Normal(2),-Planes{1}.Normal(1))*180/pi
+        yaw = -atan2(Planes{1}.Normal(2),-Planes{1}.Normal(1))
    
     end
 else
@@ -20,7 +20,7 @@ else
     for k=1:Np
         if abs(Planes{k}.Normal(3)) < 0.3 && (abs(Planes{k}.Normal(1)) > abs(Planes{k}.Normal(2))) 
             D(k) = abs(Planes{k}.Center'*Planes{k}.Normal);
-            Yaw(k) = -atan2(Planes{k}.Normal(2),-Planes{k}.Normal(1))*180/pi;
+            Yaw(k) = -atan2(Planes{k}.Normal(2),-Planes{k}.Normal(1));
             L(k) = norm(Planes{k}.Center(1:2));
         end
     end  

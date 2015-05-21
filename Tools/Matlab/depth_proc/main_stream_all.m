@@ -77,7 +77,7 @@ while 1
     %              disp(metadata)
     %              size(raw)
 
-               [ Planes ] = detectPlaneInstances_lidar_v5c( raw', 3, metadata);  
+               [ Planes ] = detectPlaneInstances_lidar_v5c( raw', 3, metadata);  % terrain
             end
            count = count + 1;
         end

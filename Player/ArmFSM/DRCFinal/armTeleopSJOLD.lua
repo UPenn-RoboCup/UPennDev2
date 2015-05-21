@@ -1,10 +1,13 @@
+-- Teleop code using old jacobian arm planner
+
+
 local state = {}
 state._NAME = ...
 require'hcm'
 local vector = require'vector'
 local util   = require'util'
 local movearm = require'movearm'
-local libArmPlan = require 'libArmPlan'  
+local libArmPlan = require 'libArmPlanSJOLD'  
 local arm_planner = libArmPlan.new_planner()
 local stage
 local plan_valid = true

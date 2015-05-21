@@ -30,13 +30,11 @@ fsm.select = {
 -- Custom libraries
 fsm.libraries = {
 	MotionLib = 'DRCFinal',
-	ArmLib = 'DRCFinal',
+	ArmLib = 'DRCFinal', --Now steve's libs are merged into one 
 	World = 'DRCFinal'
 }
 
-if IS_STEVE then
-	--fsm.libraries.MotionLib = 'Steve'
-	fsm.libraries.ArmLib = 'Steve'
+if IS_STEVE then	
 	fsm.select.Arm = 'Steve'
 	if IS_WEBOTS then
 		Config.testfile = 'test_teleop'
@@ -85,7 +83,8 @@ fsm.Arm = {
 	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 }
 
-if fsm.libraries.ArmLib == 'DRCFinal' then
+
+if not IS_STEVE then
 	fsm.select.Arm = 'DRCFinal'
 	fsm.Arm = {
 		{'armIdle', 'init', 'armInit'},
@@ -95,6 +94,7 @@ if fsm.libraries.ArmLib == 'DRCFinal' then
 		{'armTeleop', 'done', 'armPose1'},	
 	}
 end
+--]]
 
 
 fsm.Body = {

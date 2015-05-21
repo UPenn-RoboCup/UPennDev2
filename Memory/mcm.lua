@@ -33,8 +33,6 @@ shared.stance.bodyHeight = vector.zeros(1)
 shared.stance.bodyHeightTarget = vector.zeros(1)
 shared.stance.uTorsoComp = vector.zeros(2) --For quasi-static balancing
 
-shared.stance.uTorsoCompBias = vector.zeros(2)
-
 shared.stance.waistPitchBias = vector.zeros(1) --To cancel out body sag
 shared.stance.waistPitchBiasTarget = vector.zeros(1) --To cancel out body sag
 

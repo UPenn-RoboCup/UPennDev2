@@ -8,13 +8,38 @@ state._NAME = ...
 local Body   = require'Body'
 local util   = require'util'
 local vector = require'vector'
-local movearm = require'movearm'
 local t_entry, t_update, t_finish, t_last_debug
 local timeout = 15.0
 
 -- Goal position is arm Init, with hands in front, ready to manipulate
 local qLArmTarget, qRArmTarget
 local last_error
+
+
+local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()  
+
+  local dqVelLeft = mcm.get_arm_dqVelLeft()
+  local dqVelRight = mcm.get_arm_dqVelRight()
+
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
+  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
+
+  if not absolute then  
+    for i=1,7 do
+      local qL_increment = util.mod_angle(qL_approach[i]-qLArm[i])
+      local qR_increment = util.mod_angle(qR_approach[i]-qRArm[i])
+      qL_approach[i] = qLArm[i] + qL_increment
+      qR_approach[i] = qRArm[i] + qR_increment
+    end
+  end
+
+  Body.set_larm_command_position( qL_approach )
+  Body.set_rarm_command_position( qR_approach )
+  if doneL2 and doneR2 then return 1 end
+end
+
 
 --SJ: now SLOWLY move joint one by one
 function state.entry()
@@ -118,7 +143,7 @@ function state.update()
   local dqArmLim = vector.new({10,10,10,10,45,30,45}) *DEG_TO_RAD
   if IS_WEBOTS then dqArmLim = dqArmLim*10 end
 
-  local ret = movearm.setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
+  local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
   local qLArmActual = Body.get_larm_position()
   local qRArmActual = Body.get_rarm_position()
   local qLArmCommand = Body.get_larm_command_position()
@@ -143,10 +168,23 @@ function state.update()
 end
 
 function state.exit()
-  local libArmPlan = require 'libArmPlan'
-  local arm_planner = libArmPlan.new_planner()
-  arm_planner:reset_torso_comp(qLArmTarget,qRArmTarget)
 
+  --Our arm joint angles are (qLArmTarget, qRArmTarget)
+  --but as the torso moves to compensate. the actual arm end positions are slightly different
+  --we calculated the arm transforms (sans compensation) and stores them as current intiial conditions for planner
+
+  local qWaist = Body.get_waist_command_position()
+  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist,0,0)  
+  local vec_comp = vector.new({uTorsoComp[1],uTorsoComp[2],0, 0,0,0})
+  local trLArmComp = Body.get_forward_larm(qLArmTarget)
+  local trRArmComp = Body.get_forward_rarm(qRArmTarget)
+  local trLArm = vector.new(trLArmComp) + vec_comp
+  local trRArm = vector.new(trRArmComp) + vec_comp 
+  mcm.set_arm_trlarm(trLArm)
+  mcm.set_arm_trrarm(trRArm)
+  mcm.set_arm_qlarmcomp(qLArmTarget)
+  mcm.set_arm_qrarmcomp(qRArmTarget)
+  mcm.set_stance_uTorsoComp(uTorsoComp)  
 
   if not IS_WEBOTS then
     for i=1,10 do
@@ -156,13 +194,16 @@ function state.exit()
       unix.usleep(1e6*0.01);
     end
   end
-  
-  print(state._NAME..' Exit' )
 
 --SJ: now we store the COM offset for default arm posture
 --needed for arm returning
   local COMoffset = mcm.get_stance_COMoffset()
   mcm.set_stance_COMoffsetPose1(COMoffset)
+
+
+  print("COMoffset:",unpack(COMoffset))
+  --print("uTorsoComp",unpack(uTorsoComp))
+  print(state._NAME..' Exit' )
 end
 
 return state

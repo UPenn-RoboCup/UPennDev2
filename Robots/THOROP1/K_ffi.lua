@@ -30,8 +30,13 @@ local PI = require'math'.pi
 local TWO_PI = 2 * PI
 local FIVE_PI = 5 * PI
 local min, max = require'math'.min, require'math'.max
+
+----------------
 -- Arm constants
-local shoulderOffsetX = 0;
+----------------
+
+-- Offset from the root
+local shoulderOffsetX = 0
 local shoulderOffsetY = 0.234
 local shoulderOffsetZ = 0.165
 local elbowOffsetX = 0.030
@@ -48,10 +53,15 @@ local lowerArmLengthExtended = 0.330 -- yellow extended
 local handOffsetX = 0.125
 local handOffsetY = 0
 local handOffsetZ = 0
+
+----------------
 -- Leg constants
+----------------
+-- Offset from the root
 local hipOffsetX = 0
 local hipOffsetY = 0.072
-local hipOffsetZ = 0.282;
+local hipOffsetZ = 0.291
+--
 local thighLength = 0.30
 local tibiaLength = 0.30
 local kneeOffsetX = 0.03

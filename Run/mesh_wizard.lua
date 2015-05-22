@@ -13,6 +13,7 @@ require'vcm'
 require'hcm'
 
 local mesh0_udp_ch, mesh1_udp_ch
+local mesh0_tcp_ch, mesh1_tcp_ch
 local mesh0_ch, mesh1_ch
 local t_send_mesh0 = -math.huge
 local t_send_mesh1 = -math.huge
@@ -47,6 +48,12 @@ local function check_send_mesh()
 			--metadata.c = 'png'
 			--mesh0_ch:send{mpack(metadata), c_mesh}
 		end
+		if mesh0_tcp_ch then
+			metadata.c = 'raw'
+			mesh0_tcp_ch:send{mpack(metadata), mesh0:get_raw_string()}
+			--metadata.c = 'png'
+			--mesh0_ch:send{mpack(metadata), c_mesh}
+		end
 		if mesh0_udp_ch then
 --print('SENDING!!!')
 			--metadata.c = 'png'
@@ -73,6 +80,12 @@ local function check_send_mesh()
 			mesh1_ch:send{mpack(metadata), mesh1:get_raw_string()}
 			--metadata.c = 'png'
 			--mesh1_ch:send{mpack(metadata), c_mesh}
+		end
+		if mesh1_tcp_ch then
+			metadata.c = 'raw'
+			mesh1_tcp_ch:send{mpack(metadata), mesh1:get_raw_string()}
+			--metadata.c = 'png'
+			--mesh0_ch:send{mpack(metadata), c_mesh}
 		end
 		if mesh1_udp_ch then
 			metadata.c = 'png'
@@ -109,16 +122,24 @@ local function check_send_mesh()
 
 end
 
+local depth_net_ch =
+	require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
+local color_net_ch =
+	require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
+
 local function entry()
 	local stream0 = Config.net.streams.mesh0
 	local stream1 = Config.net.streams.mesh1
-	local operator = Config.net.use_wireless and Config.net.operator.wireless or Config.net.operator.wired
+	local operator = Config.net.operator.wired
+	--
 	mesh0_udp_ch = stream0.udp and si.new_sender(operator, stream0.udp)
-require'util'.ptable(stream0)
-print('operator', operator, stream0.udp)
 	mesh0_ch = stream0.sub and si.new_publisher(stream0.sub)
+	mesh0_tcp_ch = stream0.tcp and si.new_publisher(stream0.tcp)
+	--
 	mesh1_udp_ch = stream1.udp and si.new_sender(operator, stream1.udp)
 	mesh1_ch = stream1.sub and si.new_publisher(stream1.sub)
+	mesh1_tcp_ch = stream1.tcp and si.new_publisher(stream1.tcp)
+	--
 	if ENABLE_LOG then
 		libLog = require'libLog'
 		logger0 = libLog.new('mesh0', true)

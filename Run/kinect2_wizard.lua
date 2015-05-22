@@ -20,15 +20,12 @@ else
 	operator = Config.net.operator.wired
 end
 
-local depth_net_ch, color_net_ch
-local depth_udp_ch, color_udp_ch
-if IS_COMPETING then
-	depth_udp_ch = require'simple_ipc'.new_sender(operator, Config.net.streams['kinect2_depth'].udp)
-	color_udp_ch = require'simple_ipc'.new_sender(Config.net.streams['kinect2_color'].udp, operator)
-else	
-	depth_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
-	color_net_ch = require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
-end
+local si = require'simple_ipc'
+
+local depth_udp_ch = si.new_sender(operator, Config.net.streams['kinect2_depth'].udp)
+local color_udp_ch = si.new_sender(Config.net.streams['kinect2_color'].udp, operator)
+local depth_net_ch = si.new_publisher(Config.net.streams['kinect2_depth'].tcp)
+local color_net_ch = si.new_publisher(Config.net.streams['kinect2_color'].tcp)
 
 local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
 local color_ch = require'simple_ipc'.new_publisher'kinect2_color'

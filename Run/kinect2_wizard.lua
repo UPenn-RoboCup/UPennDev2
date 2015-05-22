@@ -22,14 +22,17 @@ end
 
 local si = require'simple_ipc'
 
-local depth_udp_ch = si.new_sender(operator, Config.net.streams['kinect2_depth'].udp)
-local color_udp_ch = si.new_sender(operator, Config.net.streams['kinect2_color'].udp)
---
-local depth_net_ch = si.new_publisher(Config.net.streams['kinect2_depth'].tcp)
-local color_net_ch = si.new_publisher(Config.net.streams['kinect2_color'].tcp)
+local depth_streams = Config.net.streams['kinect2_depth']
+local color_streams = Config.net.streams['kinect2_color']
 
-local depth_ch = require'simple_ipc'.new_publisher'kinect2_depth'
-local color_ch = require'simple_ipc'.new_publisher'kinect2_color'
+local depth_udp_ch = si.new_sender(operator, depth_streams.udp)
+local color_udp_ch = si.new_sender(operator, color_streams.udp)
+--
+local depth_net_ch = si.new_publisher(depth_streams.tcp)
+local color_net_ch = si.new_publisher(color_streams.tcp)
+--
+local depth_ch = si.new_publisher(depth_streams.sub)
+local color_ch = si.new_publisher(color_streams.sub)
 
 
 local c_rgb

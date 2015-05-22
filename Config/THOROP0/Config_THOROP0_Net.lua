@@ -13,7 +13,7 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.FIELD
+local WHO = IP.STEVE
 local ROBOT_IP = IP.DALE
 local TEAM_NUMBER = 8
 
@@ -74,11 +74,13 @@ streams.feedback = {
 streams.mesh0 = {
 	ws = 9001,
 	udp = 17001,
+	tcp = 43300,
 	sub = 'mesh0'
 }
 streams.mesh1 = {
 	ws = 9002,
 	udp = 17002,
+	tcp = 43301,
 	sub = 'mesh1'
 }
 streams.camera0 = {

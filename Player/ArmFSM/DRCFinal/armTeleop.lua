@@ -109,13 +109,13 @@ function state.update()
 		local tfR = fromQ(quatpR)
 		local via = wChange and 'jacobian_waist_preplan' or 'jacobian_preplan'
 		local weights = hcm.get_teleop_rweights()
-		local lco1, rco1 = movearm.goto({
+		local lco1, rco1 = movearm.goto(false, {
 			tr = tfR,
 			via = via,
 			weights = weights,
 			qWaistGuess = wChange and qWaistDesired,
 			timeout = default_plan_timeout,
-		}, false)
+		})
 		rco = rco1
 	end
 	

@@ -22,7 +22,7 @@ end
 
 
 function state.entry()
-  io.write(state._NAME..' Entry\n')
+  print(state._NAME..' Entry')
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -53,13 +53,8 @@ function state.update()
 end
 
 function state.exit()
-  io.write(state._NAME..' Exit\n')
+  print(state._NAME..' Exit')
 	-- Save our settings
-	-- Try to retain the position of 0
-	hcm.set_teleop_lgrip_position({0,0,0})
-  hcm.set_teleop_rgrip_position({0,0,0})
-	hcm.set_teleop_lgrip_mode(1)
-  hcm.set_teleop_rgrip_mode(1)
 end
 
 return state

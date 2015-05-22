@@ -353,7 +353,7 @@ function libArmPlan.joint_waist_preplan(self, plan)
 			local usage, rescale = {}, false
 			for i, limit in ipairs(dq_limit) do
 				-- half speed?
-				local use = fabs(dqArmF[i]) / limit
+				local use = fabs(dqWaistArmF[i]) / limit
 				rescale = rescale or use > 1
 				table.insert(usage, use)
 			end
@@ -369,9 +369,9 @@ function libArmPlan.joint_waist_preplan(self, plan)
 		if (not dqAverage) and (dist < 0.5*DEG_TO_RAD) then break end
 	until n > nStepsTimeout
 
-	print(n, 'joint_preplan steps')
+	print('joint_waist_preplan | Steps:', n)
 	assert(dqAverage or (n <= nStepsTimeout),
-		'joint_preplan | Timeout: '..nStepsTimeout)
+		'joint_waist_preplan | Timeout: '..nStepsTimeout)
 
 	-- Start the sensing
 	local qArmSensed, qWaistSensed = coroutine.yield()

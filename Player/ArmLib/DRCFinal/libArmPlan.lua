@@ -511,20 +511,23 @@ function libArmPlan.jacobian_preplan(self, plan)
 	until n > nStepsTimeout
 	local t1 = unix.time()
 
-	if Config.debug.armplan then
-		if(n > nStepsTimeout) then print('jacobian_preplan | Timeout') end
-	  print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
-	end
 	-- Goto the final arm position as quickly as possible
 	-- NOTE: We assume the find_shoulder yields a valid final configuration
 	-- Use the last known max_usage to finalize
 	if Config.debug.armplan then
-	  print('max_usage final', max_usage)
+	  print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
+		print('jacobian_preplan | max_usage final', max_usage)
 	end
 
 	-- Goto the final
-	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0)
-	qArmF = qArmF or qArm
+	local qArmF = qArm
+	if(n > nStepsTimeout) then
+		if Config.debug.armplan then
+			print('jacobian_preplan | Timeout')
+		end
+	else
+		qArmF = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0) or qArm
+	end
 
 	n = 0
 	nStepsTimeout = 5 * hz -- 3 second timeout to finish
@@ -556,7 +559,6 @@ function libArmPlan.jacobian_preplan(self, plan)
 		print('jacobian_preplan | Final steps', n)
 		if(n > nStepsTimeout) then print('jacobian_preplan | Final timeout') end
 	end
-
 
 	-- Play the plan
 	local qArmSensed, qWaistSensed = coroutine.yield()

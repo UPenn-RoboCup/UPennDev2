@@ -13,7 +13,7 @@ local toQ = require'Transform'.to_quatp
 
 local t_entry, t_update, t_finish
 local timeout = 10.0
-local default_plan_timeout = 30
+local default_plan_timeout = 20
 
 local lco, rco
 local okL, qLWaypoint, qLWaistpoint

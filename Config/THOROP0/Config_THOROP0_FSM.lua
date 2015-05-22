@@ -137,14 +137,48 @@ fsm.Head = {
 }
 
 fsm.Gripper = {
-	{'gripperIdle', 'init', 'gripperCenter'},
-	{'gripperIdle', 'teleop', 'gripperTeleop'},	
+	{'gripperIdle', 'init', 'gripperClose'},
+	{'gripperIdle', 'open', 'gripperOpen'},
+	{'gripperIdle', 'teleop', 'gripperTeleopTorque'},
+	{'gripperIdle', 'teleoppos', 'gripperTeleopPosition'},
+	--
+	{'gripperClose', 'idle', 'gripperIdle'},
+	{'gripperClose', 'center', 'gripperCenter'},
+	{'gripperClose', 'clench', 'gripperClench'},
+	{'gripperClose', 'open', 'gripperOpen'},
+	{'gripperClose', 'teleop', 'gripperTeleopTorque'},
+	{'gripperClose', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperCenter', 'idle', 'gripperIdle'},
-	{'gripperCenter', 'teleop', 'gripperTeleop'},
+	{'gripperCenter', 'init', 'gripperClose'},
+	{'gripperCenter', 'clench', 'gripperClench'},
+	{'gripperCenter', 'open', 'gripperOpen'},
+	{'gripperCenter', 'teleop', 'gripperTeleopTorque'},
+	{'gripperCenter', 'teleoppos', 'gripperTeleopPosition'},
 	--
-	{'gripperTeleop', 'idle', 'gripperIdle'},
-	{'gripperTeleop', 'init', 'gripperCenter'},
+	{'gripperClench', 'idle', 'gripperIdle'},
+	{'gripperClench', 'init', 'gripperClose'},
+	{'gripperClench', 'center', 'gripperCenter'},
+	{'gripperClench', 'open', 'gripperOpen'},
+	{'gripperClench', 'teleop', 'gripperTeleopTorque'},
+	{'gripperClench', 'teleoppos', 'gripperTeleopPosition'},
+	--
+	{'gripperOpen', 'idle', 'gripperIdle'},
+	{'gripperOpen', 'init', 'gripperClose'},
+	{'gripperOpen', 'clench', 'gripperClench'},
+	{'gripperOpen', 'center', 'gripperCenter'},
+	{'gripperOpen', 'teleop', 'gripperTeleopTorque'},
+	{'gripperOpen', 'teleoppos', 'gripperTeleopPosition'},
+	--
+	{'gripperTeleopTorque', 'idle', 'gripperIdle'},
+	{'gripperTeleopTorque', 'init', 'gripperClose'},
+	{'gripperTeleopTorque', 'clench', 'gripperClench'},
+	{'gripperTeleopTorque', 'teleoppos', 'gripperTeleopPosition'},
+	--
+	{'gripperTeleopPosition', 'idle', 'gripperIdle'},
+	{'gripperTeleopPosition', 'init', 'gripperClose'},
+	{'gripperTeleopPosition', 'clench', 'gripperClench'},
+	{'gripperTeleopPosition', 'teleop', 'gripperTeleopTorque'},
 }
 
 fsm.Lidar = {

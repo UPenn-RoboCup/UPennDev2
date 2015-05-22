@@ -23,6 +23,8 @@ shared_data.network = {
 }
 
 shared_data.teleop = {
+	-- Waypoint
+	waypoint = zeros(3)
 	-- Head angles
   head = zeros(2),
 	-- Waist angles
@@ -39,16 +41,12 @@ shared_data.teleop = {
 	-- Weights for the shoulder search
 	lweights = zeros(3),
 	rweights = zeros(3),
-	-- Gripper has some modes it can use: 0 is torque, 1 is position
-	lgrip_mode = zeros(1),
-	rgrip_mode = zeros(1),
 	-- We have three fingers
 	lgrip_torque = zeros(3),
 	rgrip_torque = zeros(3),
+	--
 	lgrip_position = zeros(3),
 	rgrip_position = zeros(3),
-	-- Waypoint
-	waypoint = zeros(3)
 }
 
 shared_data.demo = {

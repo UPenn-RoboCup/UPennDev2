@@ -1,18 +1,21 @@
-
 local state = {}
 state._NAME = ...
 
 local Body = require'Body'
-
 local t_entry, t_update
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  print(state._NAME..' Entry')
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
+
+	-- Write the torque
+	Body.set_lgrip_command_torque{25,25,25}
+	Body.set_rgrip_command_torque{25,25,25}
+
 end
 
 function state.update()
@@ -23,16 +26,11 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-	-- gripper, trigger, extra
-	Body.set_lgrip_command_torque{5,10,5}
-	Body.set_rgrip_command_torque{5,10,5}
-
-	-- TODO: Add a check to see if the trigger worked or not
-
 end
 
 function state.exit()
   print(state._NAME..' Exit')
+	-- Save our settings
 end
 
 return state

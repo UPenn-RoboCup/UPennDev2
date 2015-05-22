@@ -2,9 +2,10 @@ local state = {}
 state._NAME = ...
 
 local Body = require'Body'
-local util = require'util'
 local vector = require'vector'
 local t_entry, t_update
+
+local teleopLGrip, teleopRGrip
 
 local procFunc = require'util'.procFunc
 local deadPosition = 5*DEG_TO_RAD
@@ -21,16 +22,22 @@ local function get_torque_requirement(qGrip, qDesired)
 	return tq
 end
 
-local qLGrip0 = Config.demo.arms.dean.qLGrip
-local qRGrip0 = Config.demo.arms.dean.qRGrip
-
 function state.entry()
-  io.write(state._NAME, ' Entry\n')
+  print(state._NAME..' Entry\n' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
+
+	-- Set where we are
+	local tqLGrip = Body.get_lgrip_command_torque()
+	local tqRGrip = Body.get_rgrip_command_torque()
+	teleopLGrip = tqLGrip
+	teleopRGrip = tqRGrip
+	hcm.set_teleop_lgrip_torque(teleopLGrip)
+  hcm.set_teleop_rgrip_torque(teleopRGrip)
+
 end
 
 function state.update()
@@ -41,21 +48,26 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  -- Grab our current position
-	local qLGrip = Body.get_lgrip_position()
-	local qRGrip = Body.get_rgrip_position()
+	-- Check for changes
+	local teleopLGrip1 = hcm.get_teleop_lgrip_torque()
+	local teleopRGrip1 = hcm.get_teleop_rgrip_torque()
+	local lChange = teleopLGrip1~=teleopLGrip
+	local rChange = teleopRGrip1~=teleopRGrip
 
-	local tqL = get_torque_requirement(qLGrip, qLGrip0)
-	local tqR = get_torque_requirement(qRGrip, qRGrip0)
+		if lChange then
+		teleopLGrip = teleopLGrip1
+		Body.set_lgrip_command_torque(teleopLGrip)
+	end
 
-	-- Set the torques
-	Body.set_lgrip_command_torque(tqL)
-	Body.set_rgrip_command_torque(tqR)
+	if rChange then
+		teleopRGrip = teleopRGrip1
+		Body.set_rgrip_command_torque(teleopRGrip)
+	end
 
 end
 
 function state.exit()
-  io.write(state._NAME, ' Exit\n')
+  print(state._NAME..' Exit\n' )
 end
 
 return state

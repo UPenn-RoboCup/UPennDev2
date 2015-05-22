@@ -109,8 +109,9 @@ fsm.Arm = {
   --armInitManipulation raises the arms to the manipulation configuration
   --should always transition from walk configuration
 	{'armWalk', 'ready', 'armInitManipulation'},
-	{'armInitManipulation', 'done', 'armReady'},
-	{'armReady', 'done', 'armManipulation'},
+	{'armInitManipulation', 'done', 'armManipulation'},
+	--{'armInitManipulation', 'done', 'armReady'},
+	--{'armReady', 'done', 'armManipulation'},
 
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'teleop', 'armTeleop'},
@@ -122,16 +123,16 @@ fsm.Arm = {
 
 	--when teleop is done, arm should transition back to Armmanipulation
 	{'armTeleop', 'teleop', 'armTeleop'},
-	{'armTeleop', 'done', 'armManipulation'},
---	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
+	--{'armTeleop', 'done', 'armManipulation'},
+	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
 --  {'armTeleop', 'ready', 'armReady'},
 --	{'armTeleop', 'init', 'armInitManipulation'},
 
 -- Teleop Raw
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
-	{'armTeleopRaw', 'done', 'armManipulation'},	
+	{'armTeleopRaw', 'teleop', 'armTeleop'},
+	--{'armTeleopRaw', 'done', 'armManipulation'},
 --	{'armTeleopRaw', 'ready', 'armReady'},
----	{'armTeleopRaw', 'teleop', 'armTeleop'},
 --	{'armTeleopRaw', 'init', 'armInitManipulation'},
 
 	-- armJacobian is for testing purposes only!
@@ -148,7 +149,7 @@ fsm.Arm = {
 	-- armPullDoor
 	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
 	{'armPullDoor', 'done', 'armTeleop'},
-	{'armPullDoor', 'ready', 'armReady'},
+	--{'armPullDoor', 'ready', 'armReady'},
 	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 
 

@@ -113,6 +113,8 @@ function state.update()
 			lco, rco = movearm.goto(stage.left, stage.right)
 			okL = type(lco)=='thread' or lco==false
 			okR = type(rco)=='thread' or rco==false
+		else
+			return 'done'
 		end
 	end
 

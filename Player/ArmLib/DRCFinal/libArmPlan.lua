@@ -119,15 +119,17 @@ local function find_shoulder_sj(self, tr, qArm)
 	return qBest
 end
 
-local IK_POS_ERROR_THRESH = 0.0254
--- Weights: cusage, cdiff, ctight
-local defaultWeights = {1, 0, 0}
+
+-- Weights: cusage, cdiff, ctight, cshoulder, cwrist
+local defaultWeights = {0, 0, 0, 0, 2}
+--
 local function valid_cost(iq, minArm, maxArm)
 	for i, q in ipairs(iq) do
 		if q<minArm[i] or q>maxArm[i] then return INFINITY end
 	end
 	return 0
 end
+local IK_POS_ERROR_THRESH = 0.0254
 -- TODO: Fix the find_shoulder api
 local function find_shoulder(self, tr, qArm, weights, qWaist)
 	weights = weights or defaultWeights
@@ -166,7 +168,7 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 		tinsert(cdiff, vnorm(qDiff(iq, qArm)))
 	end
 	-- Cost for being tight (Percentage)
-	local ctight = {}
+	local ctight, wtight = {}, weights[3] or 0
 	-- The margin from zero degrees away from the body
 	local margin, ppi = 5*DEG_TO_RAD, math.pi
 	for _, iq in ipairs(iqArms) do tinsert(ctight, fabs((iq[2]-margin))/ppi) end
@@ -175,7 +177,7 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	local cusage, dRelative = {}
 	for _, iq in ipairs(iqArms) do
 		dRelative = ((iq - minArm) / rangeArm) - halfway
-		-- Don't use the infinite yaw ones
+		-- Don't use the infinite yaw ones.  Treated later
 		--tremove(dRelative, 7)
 		--tremove(dRelative, 5)
 		-- Don't use a cost based on the shoulderAngle
@@ -207,7 +209,7 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 		tinsert(cost, valid + cfk[ic]
 			+ weights[1]*cusage[ic]
 			+ weights[2]*cdiff[ic]
-			+ weights[3]*ctight[ic]
+			+ wtight*ctight[ic]
 			+ wshoulder*cshoulder[ic]
 		)
 	end
@@ -429,11 +431,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local weights = plan.weights
 	-- Find a guess of the final arm position
 	local qWaistFGuess = plan.qWaistGuess or qWaist0
-	local qArmFGuess = plan.qArmGuess
-	if not qArmFGuess then
-		qArmFGuess = self:find_shoulder(trGoal, qArm0, weights, qWaistFGuess)
-		assert(qArmFGuess, 'jacobian_preplan | No guess found for the final!')
-	end
+	local qArmGuess = plan.qArmGuess or qArm0
+	local qArmFGuess = self:find_shoulder(trGoal, qArmGuess, weights, qWaistFGuess)
+	assert(qArmFGuess, 'jacobian_preplan | No guess found for the final!')
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax

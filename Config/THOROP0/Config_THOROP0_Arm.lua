@@ -10,6 +10,7 @@ local arm = {}
 
 -- This comes after the walkInit
 arm.init = {}
+-- Pitch up
 arm.init[1] = {
 	left = {
 		tr=tr6D{0.2, 0.25, 0.15, 0, -60*DEG_TO_RAD,0},
@@ -25,42 +26,37 @@ arm.init[1] = {
 	}
 }
 
+-- Now go to yaw
 arm.init[2] = {
 	left = {
 		tr=tr6D{0.25, 0.25, 0.2,    0, 0, -45*DEG_TO_RAD},
-		qArmFGuess = {-45*DEG_TO_RAD,0,90*DEG_TO_RAD, 0, 0,0,0},
+		qArmGuess = vector.new{70,25,-28, -150, 10,-80,-90}*DEG_TO_RAD,
 		timeout=20,
-		via='jacobian_preplan', weights = {1,0,0,1}
+		via='jacobian_preplan', weights = {0,0,0,1}
 	},
 	right = {
 		tr=tr6D{0.2, -0.25, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
-		--q = {0,0,0, 0, 0,0,0},
+		timeout=20,
+		via='jacobian_preplan',
+		weights = {0,0,0,1},
+	}
+}
+
+-- From some random manipulation point
+arm.ready = {}
+arm.ready[1] = {
+	left = {
+		tr=tr6D{0.35, 0.25, 0.2,    0, 0, -30*DEG_TO_RAD},
+		qArmGuess = {0*DEG_TO_RAD,-90*DEG_TO_RAD,0*DEG_TO_RAD, 0, 0,0,0},
+		timeout=20,
+		via='jacobian_preplan', weights = {0,1,0,1}
+	},
+	right = {
+		tr=tr6D{0.2, -0.25, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
 		timeout=20,
 		via='jacobian_preplan',
 		weights = {1,0,0,1},
 	}
-}
-
-arm.ready = {}
-arm.ready[1] = {
-	left = {
-		tr=tr6D{0.2, 0.2, -0.1,  0,0*DEG_TO_RAD,-90*DEG_TO_RAD}, timeout=15,
-		via='joint_preplan', weights = {1,0,1}
-	},
-	right = {
-		tr=tr6D{0.2, -0.2, -0.1, 0,0*DEG_TO_RAD,90*DEG_TO_RAD}, timeout=15,
-		via='joint_preplan', weights = {1,0,1}
-	},
-}
-arm.ready[2] = {
-	left = {
-		tr=tr6D{0.275, 0.275, 0.2,  0,0,0*-60*DEG_TO_RAD}, timeout=15,
-		via='jacobian_preplan', weights = {1,0,0}
-	},
-	right = {
-		tr=tr6D{0.275, -0.275, 0.2, 0,0,0*60*DEG_TO_RAD}, timeout=15,
-		via='jacobian_preplan', weights = {1,0,0}
-	},
 }
 
 --Gripper end position offsets (Y is inside)

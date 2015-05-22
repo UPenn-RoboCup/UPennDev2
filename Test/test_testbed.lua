@@ -101,8 +101,20 @@ local function update(key_code)
   local key_char_lower = string.lower(key_char)
 
 
-  if key_char_lower==("1") then      body_ch:send'init'
+  if key_char_lower==("1") then      
+    body_ch:send'init'
+    arm_ch:send'init'  --initialize arm to walk position 
+
 	elseif key_char_lower==("0") then      body_ch:send'uninit'
+
+  elseif key_char_lower==("2") then  arm_ch:send'teleopold'  
+
+  elseif key_char_lower==("3") then  arm_ch:send'ready'  
+
+
+
+
+
 	elseif key_char_lower==("8") then  
 --[[		
 		motion_ch:send'stand'
@@ -117,9 +129,10 @@ local function update(key_code)
 	elseif key_char_lower==("9") then  
 		motion_ch:send'hybridwalk'
 --
+--
+  
 
---  elseif key_char_lower==("2") then  arm_ch:send'toolgrab'  
-  elseif key_char_lower==("3") then  arm_ch:send'teleopold'  
+
   elseif key_char_lower==("k") then  override_target=vector.new({0,0,0,  0,0,0,0})
   elseif key_char_lower==(" ") then
     hcm.set_state_override(override_target)    
@@ -138,23 +151,6 @@ local function update(key_code)
     print_override()   
     return
   end
-
---[[
-  local lf = char_to_lfinger[key_char_lower]
-  if lf then
-    Body.move_lgrip1(lf[1])
-    Body.move_lgrip2(lf[2])
-    return
-  end
-
-  local rf = char_to_rfinger[key_char_lower]
-  if rf then
-    Body.move_rgrip1(rf[1])
-    Body.move_rgrip2(rf[2])
-    return
-  end
---]]
-
 
   local state_adj = char_to_state[key_char_lower]
   if state_adj then

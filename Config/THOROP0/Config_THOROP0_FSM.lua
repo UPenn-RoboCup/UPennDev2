@@ -34,14 +34,10 @@ fsm.libraries = {
 	World = 'DRCFinal'
 }
 
-if IS_STEVE then	
---	fsm.select.Arm = 'Steve'
-	if IS_WEBOTS then
-		Config.testfile = 'test_teleop'
-	end
-end
 
 
+--------------OLD ARM FSM
+--[[
 fsm.Arm = {
 	-- Idle
 	{'armIdle', 'timeout', 'armIdle'},
@@ -77,6 +73,68 @@ fsm.Arm = {
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
 
 	-- armJacobian is for testing purposes only!
+	
+--	{'armInit', 'jacobian', 'armJacobian'},
+--	{'armJacobian', 'done', 'armTeleop'},
+--	{'armReady', 'jacobian', 'armJacobian'},
+--	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
+--	{'armJacobian', 'timeout', 'armJacobian'},
+--	{'armJacobian', 'done', 'armTeleop'},
+--	{'armJacobian', 'ready', 'armReady'},
+--	{'armJacobian', 'pulldoor', 'armPullDoor'},
+	
+	-- armPullDoor
+	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
+	{'armPullDoor', 'done', 'armTeleop'},
+	{'armPullDoor', 'ready', 'armReady'},
+	{'armPullDoor', 'pulldoor', 'armPullDoor'},
+
+
+	--Old teleop code 
+	{'armWalk', 'teleopold', 'armTeleopSJOLD'},	
+	{'armTeleopSJOLD', 'done', 'armWalk'},		
+}
+--]]
+fsm.Arm = {
+	-- Idle
+	{'armIdle', 'timeout', 'armIdle'},
+
+	--armInitWalk initializes the arms to walk configuration
+	--This is done in joint-level, and (hopefully) should work with any initial arm configurations
+	{'armIdle', 'init', 'armInitWalk'},
+
+	--armWalk does nothing (the arm should be in walk configuration)
+	{'armInitWalk', 'done', 'armWalk'},
+
+  --armInitManipulation raises the arms to the manipulation configuration
+  --should always transition from walk configuration
+	{'armWalk', 'ready', 'armInitManipulation'},
+	{'armInitManipulation', 'done', 'armReady'},
+	{'armReady', 'done', 'armManipulation'},
+
+	--When raising is done, arm state remains in armManipulation	
+	{'armManipulation', 'teleop', 'armTeleop'},
+	{'armManipulation', 'teleop', 'armTeleop'},
+	{'armManipulation', 'teleopraw', 'armTeleopRaw'},
+	{'armManipulation', 'pulldoor', 'armPullDoor'},
+	{'armManipulation', 'init', 'armInitWalk'}, --we need better arm lowering state....
+
+
+	--when teleop is done, arm should transition back to Armmanipulation
+	{'armTeleop', 'teleop', 'armTeleop'},
+	{'armTeleop', 'done', 'armManipulation'},
+--	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
+--  {'armTeleop', 'ready', 'armReady'},
+--	{'armTeleop', 'init', 'armInitManipulation'},
+
+-- Teleop Raw
+	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
+	{'armTeleopRaw', 'done', 'armManipulation'},	
+--	{'armTeleopRaw', 'ready', 'armReady'},
+---	{'armTeleopRaw', 'teleop', 'armTeleop'},
+--	{'armTeleopRaw', 'init', 'armInitManipulation'},
+
+	-- armJacobian is for testing purposes only!
 	--[[
 	{'armInit', 'jacobian', 'armJacobian'},
 	{'armJacobian', 'done', 'armTeleop'},
@@ -98,6 +156,10 @@ fsm.Arm = {
 	{'armWalk', 'teleopold', 'armTeleopSJOLD'},	
 	{'armTeleopSJOLD', 'done', 'armWalk'},		
 }
+
+
+
+
 
 
 

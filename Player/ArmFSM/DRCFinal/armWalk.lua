@@ -446,9 +446,9 @@ t0=unix.time()
 
   local trRArmVelTarget={
     0,0,0,
-    util.procFunc(-trRArmDiff[4],0,30*math.pi/180),
-    util.procFunc(-trRArmDiff[5],0,30*math.pi/180),
-    util.procFunc(-trRArmDiff[6],0,30*math.pi/180),
+    util.procFunc(-trRArmDiff[4],0,10*math.pi/180),
+    util.procFunc(-trRArmDiff[5],0,10*math.pi/180),
+    util.procFunc(-trRArmDiff[6],0,10*math.pi/180),
   }  
 
   if linear_dist>0 then

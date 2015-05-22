@@ -58,6 +58,7 @@ arm.ready[1] = {
 		weights = {1,0,0,1},
 	}
 }
+arm.ready[1] = {left=false, right=false}
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset = {}

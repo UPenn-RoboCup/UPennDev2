@@ -430,10 +430,16 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local timeout = assert(plan.timeout, 'jacobian_preplan | No timeout')
 	local weights = plan.weights
 	-- Find a guess of the final arm position
-	local qWaistFGuess = plan.qWaistGuess or qWaist0
-	local qArmGuess = plan.qArmGuess or qArm0
-	local qArmFGuess = self:find_shoulder(trGoal, qArmGuess, weights, qWaistFGuess)
-	assert(qArmFGuess, 'jacobian_preplan | No guess found for the final!')
+	local qWaistFGuess = vector.new(plan.qWaistGuess or qWaist0)
+	local qArmGuess = plan.qArmGuess
+	local qArmFGuess = qArmGuess or self:find_shoulder(trGoal, qArm0, weights, qWaistFGuess)
+	vector.new(qArmFGuess)
+	print('qWaistFGuess', qWaistFGuess)
+  print('qArmGuess', qArmGuess)
+  print('qArmFGuess', qArmFGuess)
+	--assert(qArmFGuess, 'jacobian_preplan | No guess found for the final!')
+	if not qArmFGuess then print('jacobian_preplan | No guess found for the final!') end
+
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax
@@ -453,11 +459,14 @@ function libArmPlan.jacobian_preplan(self, plan)
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
 		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qArm)
+		local dqdtCombo
 		-- Grab the null space velocities toward our guessed configuration
-		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
-		-- Linear combination of the two
-		--local dqdtCombo = dqdtArm:mul(1-alpha_n) - dqdtNull:mul(alpha_n)
-		local dqdtCombo = dqdtArm - dqdtNull
+		if qArmFGuess then 
+			local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+			dqdtCombo = dqdtArm - dqdtNull
+		else
+			dqdtCombo = dqdtArm
+		end
 		-- Respect the update rate, place as a lua table
 		local dqCombo = vector.new(dqdtCombo:mul(dt))
 		-- Check the speed limit usage
@@ -497,13 +506,14 @@ function libArmPlan.jacobian_preplan(self, plan)
 	until n > nStepsTimeout
 	local t1 = unix.time()
 	print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
-	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
+	--assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 
 	-- Goto the final arm position as quickly as possible
 	-- NOTE: We assume the find_shoulder yields a valid final configuration
 	-- Use the last known max_usage to finalize
 	print('max_usage final', max_usage)
 
+	-- Goto the final
 	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0)
 	qArmF = qArmF or qArm
 

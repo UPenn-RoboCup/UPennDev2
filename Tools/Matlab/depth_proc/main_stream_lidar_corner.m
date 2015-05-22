@@ -1,15 +1,12 @@
 clear all;
 close all;
 
-addpath(genpath(pwd));
-addpath(genpath(strrep(pwd, 'Tools/Matlab/depth_proc', 'Modules')));
-
-
+run('../startup.m');
 % 1 second timeout
 %s_depth = zmq('subscribe', 'tcp', '192.168.123.246', 43346);
 %s_color = zmq('subscribe', 'tcp', '192.168.123.246', 43347);
-%s_mesh = zmq('subscribe', 'tcp', '192.168.123.246', 43344);
-s_mesh = zmq( 'subscribe', 'ipc', 'mesh0' );
+s_mesh = zmq('subscribe', 'tcp', '192.168.123.246', 43300);
+%s_mesh = zmq( 'subscribe', 'ipc', 'mesh0' );
 
 count = 0;
 while 1

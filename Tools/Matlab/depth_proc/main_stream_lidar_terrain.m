@@ -1,9 +1,7 @@
 clear all;
 close all;
 
-
 run('../startup.m');
-
 % 1 second timeout
 %s_depth = zmq('subscribe', 'tcp', '192.168.123.246', 43346);
 %s_color = zmq('subscribe', 'tcp', '192.168.123.246', 43347);
@@ -31,16 +29,14 @@ while 1
                 metadata.flag = 1;
                 raw = reshape(typecast(raw, 'single'), [metadata.dim(2), metadata.dim(1)]);
 
-                [ Planes ] = detectPlaneInstances_lidar_loc( raw, 4, metadata);  
-                % [ Planes ] = detectPlaneInstances_lidar_loc2( raw, 4, metadata);  
-                % pose = localizeCorner_v4L(Planes,metadata)
-                [distance, yaw, id] = localizeDoor_v1L(Planes);
-                if numel(distance) > 0
-                    data = struct('dist',distance, 'yaw',yaw);
-                    packed_data=msgpack('pack',data)
-                    distance
-                    yaw
-                    zmq('send',s_field,packed_data)
+                [ Planes ] = detectPlaneInstances_lidar_v5c( raw, 3, metadata);  % terrain
+               
+                if numel(Planes) > 0
+%                     data = struct('dist',distance, 'yaw',yaw);
+%                     packed_data=msgpack('pack',data)
+%                     distance
+%                     yaw
+%                     zmq('send',s_field,packed_data)
                 end
             end
            count = count + 1;

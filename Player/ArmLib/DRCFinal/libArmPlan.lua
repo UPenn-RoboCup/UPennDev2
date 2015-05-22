@@ -129,7 +129,7 @@ local function valid_cost(iq, minArm, maxArm)
 	end
 	return 0
 end
-local IK_POS_ERROR_THRESH = 0.0254
+local IK_POS_ERROR_THRESH = 0.03
 -- TODO: Fix the find_shoulder api
 local function find_shoulder(self, tr, qArm, weights, qWaist)
 	weights = weights or defaultWeights
@@ -433,6 +433,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local qWaistFGuess = plan.qWaistGuess or qWaist0
 	local qArmGuess = plan.qArmGuess or qArm0
 	local qArmFGuess = self:find_shoulder(trGoal, qArmGuess, weights, qWaistFGuess)
+	print('qWaistFGuess', qWaistFGuess)
+	print('qArmGuess', qArmGuess)
+	print('qArmFGuess', qArmFGuess)
 	assert(qArmFGuess, 'jacobian_preplan | No guess found for the final!')
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit

@@ -23,8 +23,8 @@ local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
   local dqVelLeft = mcm.get_arm_dqVelLeft()
   local dqVelRight = mcm.get_arm_dqVelRight()
 
-  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
-  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt ,nil,absolute)  
+  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt ,nil,absolute)
 
   if not absolute then  
     for i=1,7 do
@@ -144,6 +144,7 @@ function state.update()
   if IS_WEBOTS then dqArmLim = dqArmLim*10 end
 
   local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
+--  local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,false) --should use absolute position (for jacobian)
   local qLArmActual = Body.get_larm_position()
   local qRArmActual = Body.get_rarm_position()
   local qLArmCommand = Body.get_larm_command_position()

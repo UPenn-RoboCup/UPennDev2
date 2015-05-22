@@ -156,12 +156,24 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
   local trArmDiff = util.diff_transform(trArmTarget,trArm)  
 
 --Calculate target velocity
+--[[
   local trArmVelTarget={
     0,0,0,
     util.procFunc(-trArmDiff[4],0,15*math.pi/180),
     util.procFunc(-trArmDiff[5],0,15*math.pi/180),
     util.procFunc(-trArmDiff[6],0,15*math.pi/180),
   }  
+--]]
+
+  local trArmVelTarget={
+    0,0,0,
+    util.procFunc(-trArmDiff[4],0,5*math.pi/180),
+    util.procFunc(-trArmDiff[5],0,5*math.pi/180),
+    util.procFunc(-trArmDiff[6],0,5*math.pi/180),
+  }  
+
+
+
   local linear_dist = util.norm(trArmDiff,3)
   local total_angular_vel = 
      math.abs(trArmVelTarget[4])+math.abs(trArmVelTarget[5])+math.abs(trArmVelTarget[6])
@@ -172,11 +184,7 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
     trArmDiff[2]/linear_dist *linear_vel,
     trArmDiff[3]/linear_dist *linear_vel    
   end
-    
-  if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then 
-    return qArm,true,1
-  end --reached
-
+  
   local J= torch.Tensor(JacArm):resize(6,7)  
   local JT = torch.Tensor(J):transpose(1,2)
   local e = torch.Tensor(trArmVelTarget)
@@ -242,6 +250,10 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
         linearVelActual, linearVelActual/linear_vel*100 )
       )
   end
+
+  if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then 
+    return qArmTarget,true,1
+  end --reached
 
   return qArmTarget,false, linearVelActual/linear_vel
 end

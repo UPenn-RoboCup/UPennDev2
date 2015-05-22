@@ -1,5 +1,5 @@
 IS_STEVE = true
---IS_STEVE = false
+IS_STEVE = false
 
 IS_COMPETING = false
 
@@ -21,6 +21,8 @@ Config.waist_testing = true
 Config.use_jacobian_arm_planning = true
 Config.piecewise_step = true
 Config.enable_jacobian_test = false
+Config.enable_jacobian_test = true
+
 --birdwalk TODO : IMU and FT values swap
 --Config.birdwalk = 1 --testing birdwalk
 
@@ -39,9 +41,9 @@ Config.debug = {
 -- Tune for Webots
 if IS_WEBOTS then
 	--Config.testfile = 'test_balance'
-  --Config.testfile = 'test_testbed'
+  Config.testfile = 'test_testbed'
  -- Config.testfile = 'test_walkstuff'
-   Config.testfile = 'test_teleop2'
+--   Config.testfile = 'test_teleop2'
 	--
   Config.sensors = {
 		ft = true,

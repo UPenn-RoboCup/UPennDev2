@@ -79,6 +79,7 @@ local offset_chipsticks = {0.30,0,0}
 local offset_wrist = {0,0,0}
 arm.handoffset.left = offset_wrist
 arm.handoffset.right = offset_wrist
+--arm.handoffset.right = offset_ucla_hand
 
 --Walk arm pose and shoulder angle
 arm.trLArm0 = {0.0, 0.25,-0.25,0,0,0}
@@ -96,9 +97,18 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 armfsm = {}
 armfsm.teleop = {}
 armfsm.teleop.arminit={
-  {'move0',nil,{0.25,-0.25,-0.15,0,0,0}},
+--[[
+  {'move0',nil,{0.20,-0.25,-0.05,0,0,0}},
+  {'move0',nil,{0.25,-0.25,-0.05,0,-85*DEG_TO_RAD,0}},
+	{'move0',nil,{0.25,-0.25,0.24,0,-85*DEG_TO_RAD,0}},
+--]]
+
+
+--		
+ 	{'move0',nil,{0.25,-0.25,-0.15  ,0,0,0}},
   {'move0',nil,{0.30,-0.25,0.24,0,0,0}},
-  {'move0',nil,{0.54,-0.15,0.24,0,0,0}},
+  {'move0',nil,{0.30,-0.10,0.24,0,0,0}},  
+--
 }
 armfsm.teleop.armuninit={
   {'move0',nil,{0.30,-0.25, 0.24  ,0,0,0}},

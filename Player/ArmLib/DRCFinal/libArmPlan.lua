@@ -254,7 +254,9 @@ function libArmPlan.joint_preplan(self, plan)
 	local dqAverage
 	local duration = plan.duration
 	if type(duration)=='number' then
-		print('joint_preplan | Using duration')
+		if Config.debug.armplan then
+			print('joint_preplan | Using duration')
+		end
 		assert(timeout>=duration,
 			string.format('joint_preplan | Timeout %g < Duration %g', timeout, duration))
 		local dqTotal = qArmF - qArm0
@@ -298,7 +300,9 @@ function libArmPlan.joint_preplan(self, plan)
 		if (not dqAverage) and (dist < 0.5*DEG_TO_RAD) then break end
 	until n > nStepsTimeout
 
-	print('joint_preplan | Steps:', n)
+	if Config.debug.armplan then
+	  print('joint_preplan | Steps:', n)
+	end
 	assert(dqAverage or (n <= nStepsTimeout),
 		'joint_preplan | Timeout: '..nStepsTimeout)
 
@@ -353,7 +357,9 @@ function libArmPlan.joint_waist_preplan(self, plan)
 	local dqAverage
 	local duration = plan.duration
 	if type(duration)=='number' then
-		print('joint_waist_preplan | Using duration')
+		if Config.debug.armplan then
+		  print('joint_waist_preplan | Using duration')
+		end
 		assert(timeout>=duration,
 			string.format('joint_waist_preplan | Timeout %g < Duration %g', timeout, duration))
 		local dqTotal = qWaistArmF - qWaistArm0
@@ -396,8 +402,9 @@ function libArmPlan.joint_waist_preplan(self, plan)
 		table.insert(path, qWaistArm)
 		if (not dqAverage) and (dist < 0.5*DEG_TO_RAD) then break end
 	until n > nStepsTimeout
-
-	print('joint_waist_preplan | Steps:', n)
+	if Config.debug.armplan then
+		print('joint_waist_preplan | Steps:', n)
+	end
 	assert(dqAverage or (n <= nStepsTimeout),
 		'joint_waist_preplan | Timeout: '..nStepsTimeout)
 
@@ -433,9 +440,12 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local qWaistFGuess = plan.qWaistGuess or qWaist0
 	local qArmGuess = plan.qArmGuess or qArm0
 	local qArmFGuess = self:find_shoulder(trGoal, qArmGuess, weights, qWaistFGuess)
-	print('qWaistFGuess', qWaistFGuess)
-	print('qArmGuess', qArmGuess)
-	print('qArmFGuess', qArmFGuess)
+	--SJ: added debug message disabling
+	if Config.debug.armplan then
+  	print('qWaistFGuess', qWaistFGuess)
+  	print('qArmGuess', qArmGuess)
+  	print('qArmFGuess', qArmFGuess)
+  end
 	assert(qArmFGuess, 'jacobian_preplan | No guess found for the final!')
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
@@ -499,13 +509,17 @@ function libArmPlan.jacobian_preplan(self, plan)
 		end
 	until n > nStepsTimeout
 	local t1 = unix.time()
-	print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
+	if Config.debug.armplan then
+	  print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
+	end
 	assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
 
 	-- Goto the final arm position as quickly as possible
 	-- NOTE: We assume the find_shoulder yields a valid final configuration
 	-- Use the last known max_usage to finalize
-	print('max_usage final', max_usage)
+	if Config.debug.armplan then
+	  print('max_usage final', max_usage)
+	end
 
 	local qArmF = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0)
 	qArmF = qArmF or qArm
@@ -536,7 +550,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 		qArm = qArm + dqArmF
 		table.insert(path, qArm)
 	until n > nStepsTimeout
-	print(n, 'final steps')
+	if Config.debug.armplan then
+		print(n, 'final steps')
+	end
 	assert(n <= nStepsTimeout, 'jacobian_preplan | Final timeout')
 
 	-- Play the plan
@@ -635,7 +651,9 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 		end
 	until n > nStepsTimeout
 	local t1 = unix.time()
-	print(n, 'jacobian_waist_preplan steps planned in: ', t1-t0)
+	if Config.debug.armplan then
+		print(n, 'jacobian_waist_preplan steps planned in: ', t1-t0)
+	end
 	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Timeout')
 
 	local qWaistArmF = self:find_shoulder(
@@ -646,7 +664,9 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	-- Goto the final arm position as quickly as possible
 	-- NOTE: We assume the find_shoulder yields a valid final configuration
 	-- Use the last known max_usage to finalize
-	print('jacobian_waist_preplan | max_usage final', max_usage)
+	if Config.debug.armplan then
+		print('jacobian_waist_preplan | max_usage final', max_usage)
+	end
 	n = 0
 	nStepsTimeout = 5 * hz -- 3 second timeout to finish
 	repeat
@@ -673,7 +693,9 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 		table.insert(path, qWaistArm)
 		if dist < 0.5*DEG_TO_RAD then break end
 	until n > nStepsTimeout
-	print('jacobian_waist_preplan | Final Steps:', n)
+	if Config.debug.armplan then
+		print('jacobian_waist_preplan | Final Steps:', n)
+	end
 	assert(n <= nStepsTimeout, 'jacobian_waist_preplan | Final timeout')
 
 	-- This gives our guessed final configuration.

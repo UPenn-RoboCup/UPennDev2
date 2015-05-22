@@ -131,30 +131,47 @@ fsm.Head = {
 
 fsm.Gripper = {
 	{'gripperIdle', 'init', 'gripperClose'},
-	{'gripperIdle', 'close', 'gripperClose'},
-	{'gripperIdle', 'center', 'gripperCenter'},
+	{'gripperIdle', 'open', 'gripperOpen'},
 	{'gripperIdle', 'teleop', 'gripperTeleopTorque'},
 	{'gripperIdle', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperClose', 'idle', 'gripperIdle'},
 	{'gripperClose', 'center', 'gripperCenter'},
-	{'gripperClose', 'teleop', 'gripperTeleoTorque'},
+	{'gripperClose', 'clench', 'gripperClench'},
+	{'gripperClose', 'open', 'gripperOpen'},
+	{'gripperClose', 'teleop', 'gripperTeleopTorque'},
 	{'gripperClose', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperCenter', 'idle', 'gripperIdle'},
-	{'gripperCenter', 'close', 'gripperClose'},
-	{'gripperCenter', 'teleop', 'gripperTeleoTorque'},
+	{'gripperCenter', 'init', 'gripperClose'},
+	{'gripperCenter', 'clench', 'gripperClench'},
+	{'gripperCenter', 'open', 'gripperOpen'},
+	{'gripperCenter', 'teleop', 'gripperTeleopTorque'},
 	{'gripperCenter', 'teleoppos', 'gripperTeleopPosition'},
 	--
-	{'gripperTeleoTorque', 'idle', 'gripperIdle'},
-	{'gripperTeleoTorque', 'init', 'gripperClose'},
-	{'gripperTeleoTorque', 'close', 'gripperClose'},
-	{'gripperTeleoTorque', 'teleoppos', 'gripperTeleopPosition'},
+	{'gripperClench', 'idle', 'gripperIdle'},
+	{'gripperClench', 'init', 'gripperClose'},
+	{'gripperClench', 'center', 'gripperCenter'},
+	{'gripperClench', 'open', 'gripperOpen'},
+	{'gripperClench', 'teleop', 'gripperTeleopTorque'},
+	{'gripperClench', 'teleoppos', 'gripperTeleopPosition'},
+	--
+	{'gripperOpen', 'idle', 'gripperIdle'},
+	{'gripperOpen', 'init', 'gripperClose'},
+	{'gripperOpen', 'clench', 'gripperClench'},
+	{'gripperOpen', 'center', 'gripperCenter'},
+	{'gripperOpen', 'teleop', 'gripperTeleopTorque'},
+	{'gripperOpen', 'teleoppos', 'gripperTeleopPosition'},
+	--
+	{'gripperTeleopTorque', 'idle', 'gripperIdle'},
+	{'gripperTeleopTorque', 'init', 'gripperClose'},
+	{'gripperTeleopTorque', 'clench', 'gripperClench'},
+	{'gripperTeleopTorque', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperTeleopPosition', 'idle', 'gripperIdle'},
 	{'gripperTeleopPosition', 'init', 'gripperClose'},
-	{'gripperTeleopPosition', 'close', 'gripperClose'},
-	{'gripperTeleopPosition', 'teleop', 'gripperTeleoTorque'},
+	{'gripperTeleopPosition', 'clench', 'gripperClench'},
+	{'gripperTeleopPosition', 'teleop', 'gripperTeleopTorque'},
 }
 
 fsm.Lidar = {

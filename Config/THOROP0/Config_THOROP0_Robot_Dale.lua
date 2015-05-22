@@ -133,9 +133,7 @@ local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
-		--	2,4,6,8,10,12,14,
-		2,4,6,8,10,
-		12,
+		2,4,6,8,10,12,14,
 		-- lidar
 		37,
 		-- gripper
@@ -216,8 +214,8 @@ else
 	--
 	table.insert(Config.chain, right_arm)
 	Config.chain[right_arm.name] = right_arm
-	--table.insert(Config.chain, left_arm)
-	--Config.chain[left_arm.name] = left_arm
+	table.insert(Config.chain, left_arm)
+	Config.chain[left_arm.name] = left_arm
 	--
 	one_chain = nil
 end

@@ -78,6 +78,7 @@ function state.update()
 		local lco1, rco1 = movearm.goto({
 			q = teleopLArm,
 			via = via,
+			qWaistGuess = wChange and teleopWaist,
 			timeout = default_plan_timeout
 		}, false)
 		lco = lco1
@@ -90,6 +91,7 @@ function state.update()
 		local lco1, rco1 = movearm.goto(false, {
 			q = teleopRArm,
 			via = via,
+			qWaistGuess = wChange and teleopWaist,
 			timeout = default_plan_timeout
 		})
 		rco = rco1

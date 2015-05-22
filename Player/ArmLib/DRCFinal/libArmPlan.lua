@@ -212,10 +212,13 @@ function libArmPlan.joint_preplan(self, plan)
 	-- Check joint limit compliance
 	for i, q in ipairs(qArmF) do
 		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+			----[[
 			assert(q+EPSILON>=qMin[i],
 				string.format('joint_preplan | Below qMax[%d] %g < %g', i, q, qMin[i]))
 			assert(q-EPSILON<=qMax[i],
 				string.format('joint_preplan | Above qMin[%d] %g > %g', i, q, qMax[i]))
+			--]]
+			--qArmF[i] = min(max(qMin[i], q), qMax[i])
 		end
 	end
 	-- Set the timeout
@@ -318,7 +321,7 @@ function libArmPlan.joint_waist_preplan(self, plan)
 			assert(q-EPSILON<=qMax[i],
 				string.format('joint_preplan | Above qMax[%d] %g > %g', i, q, qMax[i]))
 			--]]
-			--qArmF[i] = min(max(qMin[i], q), qMax[i])
+			--qWaistArmF[i] = min(max(qMin[i], q), qMax[i])
 		end
 	end
 	-- If given a duration, then check speed limit compliance

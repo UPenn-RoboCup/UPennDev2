@@ -34,6 +34,67 @@ fsm.libraries = {
 	World = 'DRCFinal'
 }
 
+
+
+--------------OLD ARM FSM
+--[[
+fsm.Arm = {
+	-- Idle
+	{'armIdle', 'timeout', 'armIdle'},
+
+	-- Init pose (for locomotion)
+	{'armIdle', 'init', 'armInitWalk'},  
+	{'armInitWalk', 'done', 'armWalk'},
+
+	-- Init pose (for manipulation)
+	--{'armIdle', 'ready', 'armInitManipulation'},
+	{'armWalk', 'ready', 'armInitManipulation'},
+	{'armInitManipulation', 'done', 'armReady'},
+	--{'armInitManipulation', 'ready', 'armReady'},
+	{'armInitManipulation', 'teleop', 'armTeleop'},
+	{'armInitManipulation', 'teleopraw', 'armTeleopRaw'},
+
+	-- Ready pose (for manipulating)
+	{'armReady', 'teleop', 'armTeleop'},
+	{'armReady', 'teleopraw', 'armTeleopRaw'},
+	{'armReady', 'init', 'armInitManipulation'},
+	{'armReady', 'pulldoor', 'armPullDoor'},
+	-- Teleop
+
+	{'armTeleop', 'init', 'armInitManipulation'},
+	--{'armTeleop', 'done', 'armTeleop'},
+	{'armTeleop', 'teleop', 'armTeleop'},
+	{'armTeleop', 'ready', 'armReady'},
+	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
+	-- Teleop Raw
+	{'armTeleopRaw', 'init', 'armInitManipulation'},
+	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
+	{'armTeleopRaw', 'ready', 'armReady'},
+	{'armTeleopRaw', 'teleop', 'armTeleop'},
+
+	-- armJacobian is for testing purposes only!
+	
+--	{'armInit', 'jacobian', 'armJacobian'},
+--	{'armJacobian', 'done', 'armTeleop'},
+--	{'armReady', 'jacobian', 'armJacobian'},
+--	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
+--	{'armJacobian', 'timeout', 'armJacobian'},
+--	{'armJacobian', 'done', 'armTeleop'},
+--	{'armJacobian', 'ready', 'armReady'},
+--	{'armJacobian', 'pulldoor', 'armPullDoor'},
+	
+	-- armPullDoor
+	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
+	{'armPullDoor', 'done', 'armTeleop'},
+	{'armPullDoor', 'ready', 'armReady'},
+	{'armPullDoor', 'pulldoor', 'armPullDoor'},
+
+
+	--Old teleop code 
+	{'armWalk', 'teleopold', 'armTeleopSJOLD'},	
+	{'armTeleopSJOLD', 'done', 'armWalk'},		
+}
+--]]
 fsm.Arm = {
 	-- Idle
 	{'armIdle', 'timeout', 'armIdle'},

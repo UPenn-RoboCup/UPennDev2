@@ -74,7 +74,7 @@ function state.update()
 		teleopLArm = teleopLArm1
 		teleopWaist = teleopWaist1
 		print(state._NAME,'L target', teleopLArm)
-		local via = wChange and 'joint_preplan' or 'jacobian_waist_preplan'
+		local via = wChange and 'joint_waist_preplan' or 'joint_preplan'
 		local lco1, rco1 = movearm.goto({
 			q = teleopLArm,
 			via = via,
@@ -86,7 +86,7 @@ function state.update()
 		teleopRArm = teleopRArm1
 		teleopWaist = teleopWaist1
 		print(state._NAME, 'R target', teleopRArm)
-		local via = wChange and 'joint_preplan' or 'jacobian_waist_preplan'
+		local via = wChange and 'joint_waist_preplan' or 'joint_preplan'
 		local lco1, rco1 = movearm.goto(false, {
 			q = teleopRArm,
 			via = via,

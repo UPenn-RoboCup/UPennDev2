@@ -50,9 +50,13 @@ local upperArmLengthExtended = 0.320
 local lowerArmLengthExtended = 0.312
 
 -- Gripper of no appendage - just the plate
-local handOffsetX = 0.125
-local handOffsetY = 0
-local handOffsetZ = 0
+local handOffsetX_L = 0.125
+local handOffsetY_L = 0
+local handOffsetZ_L = 0
+
+local handOffsetX_R = 0.230
+local handOffsetY_R = 0
+local handOffsetZ_R = 0
 
 ----------------
 -- Leg constants
@@ -120,12 +124,12 @@ K.forward_arm = fk_arm
 local function forward_larm(qLArm, qWaist)
 	qWaist = qWaist or {0, 0}
 	local nohand = Tnew(fk_arm({qWaist[1], unpack(qLArm)}, true))
-	return Ttranslate(nohand, handOffsetX, handOffsetY, handOffsetZ), {qLArm[3]}
+	return Ttranslate(nohand, handOffsetX_L, handOffsetY_L, handOffsetZ_L), {qLArm[3]}
 end
 local function forward_rarm(qRArm, qWaist)
 	qWaist = qWaist or {0, 0}
 	local nohand = Tnew( fk_arm({qWaist[1], unpack(qRArm)}, false) )
-	return Ttranslate(nohand, handOffsetX, handOffsetY, handOffsetZ), {qRArm[3]}
+	return Ttranslate(nohand, handOffsetX_R, handOffsetY_R, handOffsetZ_R), {qRArm[3]}
 end
 K.forward_larm = forward_larm
 K.forward_rarm = forward_rarm
@@ -252,7 +256,7 @@ function K.inverse_larm(trL, qLArm, shoulderYaw, flipRoll, qWaist)
 		Ttrans(-shoulderOffsetX, -shoulderOffsetY, -shoulderOffsetZ),
 		-qWaist[2]),
 		-qWaist[1])
-		* Ttranslate(Tcopy(trL), -handOffsetX, -handOffsetY, -handOffsetZ)
+		* Ttranslate(Tcopy(trL), -handOffsetX_L, -handOffsetY_L, -handOffsetZ_L)
 	-- Call the generic IK routine
 	return ik_arm(
 		trL0,
@@ -272,7 +276,7 @@ function K.inverse_rarm(trR, qRArm, shoulderYaw, flipRoll, qWaist)
 		Ttrans(-shoulderOffsetX, shoulderOffsetY, -shoulderOffsetZ),
 		-qWaist[2]),
 		-qWaist[1])
-		* Ttranslate(Tcopy(trR), -handOffsetX, -handOffsetY, -handOffsetZ)
+		* Ttranslate(Tcopy(trR), -handOffsetX_R, -handOffsetY_R, -handOffsetZ_R)
 	return ik_arm(trR0,
 		qRArm or {0,0,0, 0, 0,0,0},
 		false,
@@ -354,7 +358,9 @@ local function jacobian(q, is_left)
 	local c5, s5 = cos(q[5]), sin(q[5])
 	local c6, s6 = cos(q[6]), sin(q[6])
 	local c7, s7 = cos(q[7]), sin(q[7])
-	local l_7x, l_7y, l_7z = 0, 0, handOffsetX
+	local l_7x = 0
+	local l_7y = 0
+	local l_7z = is_left and handOffsetX_L or handOffsetX_R
 	local lowerArmLength0 = is_left and lowerArmLength or lowerArmLengthExtended
 	local upperArmLength0 = is_left and upperArmLength or upperArmLengthExtended
 return
@@ -436,7 +442,9 @@ local function jacobian_waist(q, is_left)
 	local c6, s6 = cos(q[6]), sin(q[6])
 	local c7, s7 = cos(q[7]), sin(q[7])
 	local c8, s8 = cos(q[8]), sin(q[8])
-	local l_8x, l_8y, l_8z = 0, 0, handOffsetX
+	local l_8x = 0
+	local l_8y = 0
+	local l_8z = is_left and handOffsetX_L or handOffsetX_R
 	local shoulderOffsetY0 = is_left and shoulderOffsetY or -shoulderOffsetY
 	local lowerArmLength0 = is_left and lowerArmLength or lowerArmLengthExtended
 	local upperArmLength0 = is_left and upperArmLength or upperArmLengthExtended

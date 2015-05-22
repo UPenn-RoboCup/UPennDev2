@@ -555,9 +555,16 @@ function libArmPlan.jacobian_preplan(self, plan)
 		qArm = qArm + dqArmF
 		table.insert(path, qArm)
 	until n > nStepsTimeout
+
+	local qArmFinal = qArm
+	if(n >= nStepsTimeout) then
+		if Config.debug.armplan then print('jacobian_preplan | Final timeout') end
+	else
+		qArmFinal = qArmF
+	end
+
 	if Config.debug.armplan then
 		print('jacobian_preplan | Final steps', n)
-		if(n > nStepsTimeout) then print('jacobian_preplan | Final timeout') end
 	end
 
 	-- Play the plan
@@ -570,7 +577,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		qWaistSensed = qWaistSensedNew or qWaistSensed
 	end
 
-	return qArmF
+	return qArmFinal
 end
 
 function libArmPlan.jacobian_waist_preplan(self, plan)

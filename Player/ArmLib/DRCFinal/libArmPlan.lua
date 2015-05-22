@@ -198,8 +198,8 @@ end
 function libArmPlan.joint_preplan(self, plan)
 	assert(type(plan)=='table', 'joint_preplan | Bad plan')
 	local timeout = assert(plan.timeout, 'joint_preplan | No timeout')
-	local qArm0 = assert(plan.qArm0, 'Need initial arm')
-	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
+	local qArm0 = assert(plan.qArm0, 'joint_preplan | Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'joint_preplan | Need initial waist')
 	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
 
 	local weights = plan.weights
@@ -226,7 +226,7 @@ function libArmPlan.joint_preplan(self, plan)
 	local dqAverage
 	local duration = plan.duration
 	if type(duration)=='number' then
-		print('Using duration')
+		print('joint_preplan | Using duration')
 		assert(timeout>=duration,
 			string.format('joint_preplan | Timeout %g < Duration %g', timeout, duration))
 		local dqTotal = qArmF - qArm0
@@ -270,7 +270,7 @@ function libArmPlan.joint_preplan(self, plan)
 		if (not dqAverage) and (dist < 0.5*DEG_TO_RAD) then break end
 	until n > nStepsTimeout
 
-	print(n, 'joint_preplan steps')
+	print('joint_preplan | Steps:', n)
 	assert(dqAverage or (n <= nStepsTimeout),
 		'joint_preplan | Timeout: '..nStepsTimeout)
 
@@ -310,15 +310,15 @@ function libArmPlan.joint_waist_preplan(self, plan)
 	local qMax = {math.pi, unpack(self.qMax)}
 	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
 	-- Check *soft* joint limit compliance
-	for i, q in ipairs(qArmF) do
+	for i, q in ipairs(qWaistArmF) do
 		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
-			--[[
+			----[[
 			assert(q+EPSILON>=qMin[i],
-				string.format('joint_preplan | Below qMax[%d] %g < %g', i, q, qMin[i]))
+				string.format('joint_preplan | Below qMin[%d] %g < %g', i, q, qMin[i]))
 			assert(q-EPSILON<=qMax[i],
-				string.format('joint_preplan | Above qMin[%d] %g > %g', i, q, qMax[i]))
+				string.format('joint_preplan | Above qMax[%d] %g > %g', i, q, qMax[i]))
 			--]]
-			qArmF[i] = min(max(qMin[i], q), qMax[i])
+			--qArmF[i] = min(max(qMin[i], q), qMax[i])
 		end
 	end
 	-- If given a duration, then check speed limit compliance

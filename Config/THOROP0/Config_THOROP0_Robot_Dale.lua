@@ -310,7 +310,7 @@ servo.steps = 2 * vector.new({
 servo.direction = vector.new({
 	1,1, -- Head, mk2
 	--	1,1,-1, 1, 1,1,1, --LArm, mk2
-	1,1,1, 1, 1,1,1, --LArm, mk2, lshoulder yaw fix
+	1,1,1, 1, 1,-1,1, --LArm, mk2, lshoulder yaw fix
 	-1, -1,-1, -1,  1,1, --LLeg, mk1
 	-1, -1,1,   1,  -1,1, --RLeg, mk1
 	--	-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
@@ -338,10 +338,10 @@ servo.rad_offset = vector.new({
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
 	-135,-80, -- Head
-	-90, 0, -90,    -160,   -180,-87,-180, --LArm
+	-160, 0, -100,    -160,   -180,-87,-180, --LArm
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
-	-90,-87,-90,    -160,   -180,-87,-180, --RArm
+	-160,-87,-100,    -160,   -180,-87,-180, --RArm
 	-90,-45, -- Waist
 	-60, -55, -60,
 	-90, -120, -55, -- right gripper/trigger (UCLA rev2 verified)
@@ -352,10 +352,10 @@ servo.min_rad = vector.new({
 servo.max_rad = vector.new({
 	--90,80, -- Head
 	135,80, -- Head
-	160,87,90,   0,     180,87,180, --LArm
+	160,87,100,   0,     180,87,180, --LArm
 	175,25,175,175,175,175, --LLeg
 	175,175,175,175,175,175, --RLeg
-	160,-0,90,   0,     180,87,180, --RArm
+	160,-0,100,   0,     180,87,180, --RArm
 	90,45, -- Waist
 	65,65,55, -- lgrip
 	105,110,105, -- right gripper/trigger (UCLA rev2 verified)
@@ -571,10 +571,10 @@ if IS_WEBOTS then
 
 	servo.min_rad = vector.new({
 		-135,-80, -- Head
-		-90, 0, -90, -160,      -180,-87,-180, --LArm
+		-160, 0, -100, -160,      -180,-87,-180, --LArm
 		-175,-175,-175,-175,-175,-175, --LLeg
 		-175,-175,-175,-175,-175,-175, --RLeg
-		-90,-180,-90,-160,       -180,-87,-180, --RArm
+		-160,-180,-100,-160,       -180,-87,-180, --RArm
 		-90,-45, -- Waist
 		120,80,60, --lhand
 		120,60,60,--rhand
@@ -584,10 +584,10 @@ if IS_WEBOTS then
 
 	servo.max_rad = vector.new({
 		135, 80, -- Head
-		160,180,90,0,     180,87,180, --LArm
+		160,180,100,0,     180,87,180, --LArm
 		175,175,175,175,175,175, --LLeg
 		175,175,175,175,175,175, --RLeg
-		160,0,90,0,     180,87,180, --RArm
+		160,0,100,0,     180,87,180, --RArm
 		90,79, -- Waist
 		0,45,45,  --lhand
 		0,45,45,    --rhand

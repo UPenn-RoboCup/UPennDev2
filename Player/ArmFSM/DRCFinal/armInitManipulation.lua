@@ -5,6 +5,8 @@
 local state = {}
 state._NAME = ...
 
+local USE_SAFE_YAW = false
+
 local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
@@ -26,22 +28,24 @@ function state.entry()
 
 	sequence = {unpack(Config.arm.init)}
 
-	-- Avoid self collisions.
-	-- NOTE: Cannot place into the config, since require reading
-	local qL = Body.get_larm_position()
-	local qR = Body.get_rarm_position()
-	qL[3] = -20*DEG_TO_RAD
-	qR[3] = 20*DEG_TO_RAD
-	table.insert(sequence, 1, {
-		left = {
-			q = qL, duration = 5, timeout = 7,
-			via='joint_preplan'
-		},
-		right = {
-			q = qR, duration = 5, timeout = 7,
-			via='joint_preplan'
-		}
-	})
+	if USE_SAFE_YAW then
+		-- Avoid self collisions.
+		-- NOTE: Cannot place into the config, since require reading
+		local qL = Body.get_larm_position()
+		local qR = Body.get_rarm_position()
+		qL[3] = -20*DEG_TO_RAD
+		qR[3] = 20*DEG_TO_RAD
+		table.insert(sequence, 1, {
+			left = {
+				q = qL, duration = 5, timeout = 7,
+				via='joint_preplan'
+			},
+			right = {
+				q = qR, duration = 5, timeout = 7,
+				via='joint_preplan'
+			}
+		})
+	end
 
 	s = 1
 	stage = sequence[s]
@@ -109,6 +113,8 @@ function state.update()
 			lco, rco = movearm.goto(stage.left, stage.right)
 			okL = type(lco)=='thread' or lco==false
 			okR = type(rco)=='thread' or rco==false
+		else
+			return 'done'
 		end
 	end
 

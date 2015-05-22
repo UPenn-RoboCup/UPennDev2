@@ -51,9 +51,11 @@ fsm.Arm = {
 	{'armInitWalk', 'done', 'armWalk'},
 
 	-- Init pose (for manipulation)
-	{'armIdle', 'ready', 'armInitManipulation'},
+	--{'armIdle', 'ready', 'armInitManipulation'},
 	{'armWalk', 'ready', 'armInitManipulation'},
-	{'armInitManipulation', 'ready', 'armReady'},
+	{'armInitManipulation', 'done', 'armReady'},
+	--{'armInitManipulation', 'ready', 'armReady'},
+	{'armInitManipulation', 'teleop', 'armTeleop'},
 	{'armInitManipulation', 'teleopraw', 'armTeleopRaw'},
 
 	-- Ready pose (for manipulating)

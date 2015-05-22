@@ -36,6 +36,7 @@ h0.metadata = {
 	id='lidar0'
 }
 h0.angle = Body.get_lidar_position
+--[[
 local h1 = libHokuyo.new_hokuyo(11) -- head on mk2
 h1.name = 'head'
 h1.ch = si.new_publisher(streams.lidar1.sub)
@@ -44,6 +45,7 @@ h1.metadata = {
 	id='lidar1'
 }
 h1.angle = Body.get_head_position
+--]]
 
 local libLog, logger, nlog
 if ENABLE_LOG then

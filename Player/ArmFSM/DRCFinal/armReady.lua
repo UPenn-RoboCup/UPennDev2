@@ -85,6 +85,8 @@ function state.update()
 		if stage then
 			print('Next sequence:', s, stage)
 			lco, rco = movearm.goto(stage.left, stage.right)
+		else
+			return'done'
 		end
 	end
 

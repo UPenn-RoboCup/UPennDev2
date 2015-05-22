@@ -4,6 +4,8 @@
 -- (c) Stephen McGill 2013, 2014
 dofile'../include.lua'
 
+--local LIDAR_ID = assert(tonumber(arg[1]), 'Need to give an id (0 or 1)')
+
 local ENABLE_LOG = false
 
 local libHokuyo  = require'libHokuyo'
@@ -28,21 +30,30 @@ local hokuyos = {}
 local h0 = libHokuyo.new_hokuyo(10) -- chest on mk2
 h0.name = 'chest'
 h0.ch = si.new_publisher'lidar0'
+h0.metadata = {
+	id='lidar0'
+}
+h0.angle = Body.get_lidar_position
+local h1 = libHokuyo.new_hokuyo(11) -- head on mk2
+h1.name = 'head'
+h1.ch = si.new_publisher'lidar1'
+h1.metadata = {
+	id='lidar1'
+}
+h1.angle = Body.get_head_position
 
 local libLog, logger, nlog
 if ENABLE_LOG then
 	libLog = require'libLog'
-	logger = libLog.new('lidar', true)
+	h0.logger = libLog.new(h0.name, true)
+	h1.logger = libLog.new(h1.name, true)
 	nlog = 0
 end
 
-local metadata = {
-id='lidar0'
-}
-
 local cb = function(self, data)
+	local metadata = self.metadata
 	metadata.t = get_time()
-	metadata.angle = Body.get_lidar_position()
+	metadata.angle = self.angle()
 
 	local rpy = Body.get_rpy()
 	local uComp = mcm.get_stance_uTorsoComp()
@@ -63,12 +74,12 @@ local cb = function(self, data)
 	local ret = self.ch:send({mpack(metadata), data})
 
 	if ENABLE_LOG then
-		logger:record(metadata, data)
+		self.logger:record(metadata, data)
 		nlog = nlog + 1
 		if nlog % 400 == 0 then
-			logger:stop()
-			logger = libLog.new('lidar', true)
-			print('Open new log!')
+			self.logger:stop()
+			self.logger = libLog.new(self.name, true)
+			print('Open new log!', self.name)
 		end
 	end
 
@@ -91,8 +102,14 @@ end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
+if h0 then
 h0.callback = cb
 table.insert(hokuyos, h0)
+end
+if h1 then
+h1.callback = cb
+table.insert(hokuyos, h1)
+end
 
 -- Begin to service
 os.execute('clear')

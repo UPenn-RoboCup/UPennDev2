@@ -122,11 +122,6 @@ local function check_send_mesh()
 
 end
 
-local depth_net_ch =
-	require'simple_ipc'.new_publisher(Config.net.streams['kinect2_depth'].tcp)
-local color_net_ch =
-	require'simple_ipc'.new_publisher(Config.net.streams['kinect2_color'].tcp)
-
 local function entry()
 	local stream0 = Config.net.streams.mesh0
 	local stream1 = Config.net.streams.mesh1

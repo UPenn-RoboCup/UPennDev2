@@ -93,7 +93,7 @@ fsm.Arm = {
 
 
 	--Old teleop code 
-	{'armWalk', 'teleop', 'armTeleopSJOLD'},	
+	{'armWalk', 'teleopold', 'armTeleopSJOLD'},	
 	{'armTeleopSJOLD', 'done', 'armWalk'},		
 }
 

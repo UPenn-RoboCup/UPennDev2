@@ -55,7 +55,8 @@ function state.entry()
 		via='jacobian_preplan', weights = default_weights
 	}
 
-	lco, rco, uComp = movearm.goto(configL, configR)
+	--lco, rco, uComp = movearm.goto(configL, configR)
+	lco, rco, uComp = movearm.goto(false, false)
 	-- Check for no motion
 	okL = type(lco)=='thread' or lco==false
 	okR = type(rco)=='thread' or rco==false

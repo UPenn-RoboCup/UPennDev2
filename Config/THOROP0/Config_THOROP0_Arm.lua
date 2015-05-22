@@ -48,14 +48,16 @@ arm.ready[1] = {
 	left = {
 		tr=tr6D{0.35, 0.25, 0.2,    0, 0, -30*DEG_TO_RAD},
 		qArmGuess = {0*DEG_TO_RAD,-90*DEG_TO_RAD,0*DEG_TO_RAD, 0, 0,0,0},
+		weights = {0,1,0,1},
+		via='jacobian_preplan',
 		timeout=20,
-		via='jacobian_preplan', weights = {0,1,0,1}
 	},
 	right = {
 		tr=tr6D{0.2, -0.25, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
-		timeout=20,
+		qArmGuess = {0*DEG_TO_RAD,90*DEG_TO_RAD,0*DEG_TO_RAD, 0, 0,0,0},
+		weights = {0,1,0,1},
 		via='jacobian_preplan',
-		weights = {1,0,0,1},
+		timeout=20,
 	}
 }
 arm.ready[1] = {left=false, right=false}

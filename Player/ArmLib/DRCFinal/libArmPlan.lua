@@ -430,8 +430,8 @@ end
 -- res_ang: resolution in radians
 function libArmPlan.jacobian_preplan(self, plan)
 	assert(type(plan)=='table', 'jacobian_preplan | Bad plan')
-	local qArm0 = assert(plan.qArm0, 'Need initial arm')
-	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
+	local qArm0 = assert(plan.qArm0, 'jacobian_preplan | Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'jacobian_preplan | Need initial waist')
 	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
 	local trGoal = plan.tr or self.forward(plan.q)
 	local timeout = assert(plan.timeout, 'jacobian_preplan | No timeout')
@@ -441,7 +441,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local qArmGuess = plan.qArmGuess
 	local qArmFGuess = qArmGuess or self:find_shoulder(trGoal, qArm0, weights, qWaistFGuess)
 	vector.new(qArmFGuess)
-	if not qArmFGuess then print('jacobian_preplan | No guess found for the final!') end
+	if Config.debug.armplan then
+		if not qArmFGuess then print('jacobian_preplan | No guess found for the final!') end
+	end
 
 	local hz, dt = self.hz, self.dt
 	local dq_limit = self.dq_limit
@@ -508,13 +510,11 @@ function libArmPlan.jacobian_preplan(self, plan)
 		end
 	until n > nStepsTimeout
 	local t1 = unix.time()
-	print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
-	--assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
+
 	if Config.debug.armplan then
+		if(n > nStepsTimeout) then print('jacobian_preplan | Timeout') end
 	  print('jacobian_preplan '..self.id, n, 'steps planned: ', (t1-t0)..'s')
 	end
-	--assert(n <= nStepsTimeout, 'jacobian_preplan | Timeout')
-
 	-- Goto the final arm position as quickly as possible
 	-- NOTE: We assume the find_shoulder yields a valid final configuration
 	-- Use the last known max_usage to finalize
@@ -553,9 +553,10 @@ function libArmPlan.jacobian_preplan(self, plan)
 		table.insert(path, qArm)
 	until n > nStepsTimeout
 	if Config.debug.armplan then
-		print(n, 'final steps')
+		print('jacobian_preplan | Final steps', n)
+		if(n > nStepsTimeout) then print('jacobian_preplan | Final timeout') end
 	end
-	assert(n <= nStepsTimeout, 'jacobian_preplan | Final timeout')
+
 
 	-- Play the plan
 	local qArmSensed, qWaistSensed = coroutine.yield()

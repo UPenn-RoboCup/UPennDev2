@@ -36,7 +36,7 @@ Config.debug = {
   goalpost = false,
   world = false,
   feedback = false,
-  armplan = false,
+  armplan = true,
 }
 
 -- Tune for Webots

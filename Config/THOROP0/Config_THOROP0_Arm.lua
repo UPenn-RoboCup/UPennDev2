@@ -8,18 +8,36 @@ local tr6D = require'Transform'.transform6D
 -- Weights: cusage, cdiff, ctight
 local arm = {}
 
+-- This comes after the walkInit
 arm.init = {}
 arm.init[1] = {
 	left = {
-		tr=tr6D{0.05, 0.35, -0.25, 0,0,0}, timeout=20,
-		via='jacobian_preplan', weights = {1,0,0}
+		tr=tr6D{0.2, 0.25, 0.15, 0, -60*DEG_TO_RAD,0},
+		timeout=20,
+		via='jacobian_preplan', weights = {0,1,0}
 	},
 	right = {
-		tr=tr6D{0.05, -0.35, -0.3, 0,0,0},
+		tr=tr6D{0.2, -0.25, 0.2, 0, -60*DEG_TO_RAD, 0},
 		--q = {0,0,0, 0, 0,0,0},
 		timeout=20,
 		via='jacobian_preplan',
-		weights = {1,0,0},
+		weights = {0,1,0},
+	}
+}
+
+arm.init[2] = {
+	left = {
+		tr=tr6D{0.25, 0.25, 0.2,    0, 0, -45*DEG_TO_RAD},
+		qArmFGuess = {-45*DEG_TO_RAD,0,90*DEG_TO_RAD, 0, 0,0,0},
+		timeout=20,
+		via='jacobian_preplan', weights = {1,0,0,1}
+	},
+	right = {
+		tr=tr6D{0.2, -0.25, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
+		--q = {0,0,0, 0, 0,0,0},
+		timeout=20,
+		via='jacobian_preplan',
+		weights = {1,0,0,1},
 	}
 }
 

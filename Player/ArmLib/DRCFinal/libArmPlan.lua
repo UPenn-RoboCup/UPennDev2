@@ -171,22 +171,45 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	local margin, ppi = 5*DEG_TO_RAD, math.pi
 	for _, iq in ipairs(iqArms) do tinsert(ctight, fabs((iq[2]-margin))/ppi) end
 	-- Usage cost (Worst Percentage)
+	----[[
 	local cusage, dRelative = {}
 	for _, iq in ipairs(iqArms) do
 		dRelative = ((iq - minArm) / rangeArm) - halfway
 		-- Don't use the infinite yaw ones
-		tremove(dRelative, 7)
-		tremove(dRelative, 5)
+		--tremove(dRelative, 7)
+		--tremove(dRelative, 5)
 		-- Don't use a cost based on the shoulderAngle
 		tremove(dRelative, 3)
 		tinsert(cusage, max(fabs(min(unpack(dRelative))), fabs(max(unpack(dRelative)))))
 	end
+	--]]
+	-- Away from zero
+	--[[
+	local cusage, dRelative = {}
+	for _, iq in ipairs(iqArms) do
+		tinsert(cusage, max(fabs(min(unpack(iq))), fabs(max(unpack(iq)))))
+	end
+	--]]
+	local cshoulder, wshoulder = {}, weights[4] or 0
+	for _, iq in ipairs(iqArms) do
+		tinsert(cshoulder, fabs(iq[3] - qArm[3]))
+	end
+	local cwrist, wwrist = {}, weights[5] or 2
+	for _, iq in ipairs(iqArms) do
+		tinsert(cwrist, fabs(iq[5]) + fabs(iq[7]))
+	end
+
+
 	-- Combined cost
 	-- TODO: Tune the weights on a per-task basis (some tight, but not door)
 	local cost = {}
 	for ic, valid in ipairs(cvalid) do
 		tinsert(cost, valid + cfk[ic]
-			+ weights[1]*cusage[ic] + weights[2]*cdiff[ic] + weights[3]*ctight[ic])
+			+ weights[1]*cusage[ic]
+			+ weights[2]*cdiff[ic]
+			+ weights[3]*ctight[ic]
+			+ wshoulder*cshoulder[ic]
+		)
 	end
 	-- Find the smallest cost
 	local ibest, cbest = 0, INFINITY

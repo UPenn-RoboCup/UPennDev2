@@ -76,14 +76,8 @@ function state.entry()
     Config.arm.trRArm0,
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0},true)
-
-  print("QLArmTarget:", util.print_jangle(qLArmTarget))
-  print("QRArmTarget:", util.print_jangle(qRArmTarget))  
-
-  mcm.set_stance_enable_torso_track(0)
-  mcm.set_arm_dqVelLeft()
-  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit_init)
-
+--  print("QLArmTarget:", util.print_jangle(qLArmTarget))
+--  print("QRArmTarget:", util.print_jangle(qRArmTarget))  
   t_last_debug=t_entry
   last_error = 999
   stage = 1
@@ -143,7 +137,7 @@ function state.update()
 
   if t>t_last_debug+0.2 then
     t_last_debug=t
-    if ret==1 and math.abs(last_error-err)<1*math.pi/180 then 
+    if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then 
       stage = stage+1
       print("Total joint reading err:",err*180/math.pi)
     end

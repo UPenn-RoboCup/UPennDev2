@@ -32,30 +32,14 @@ shared.stance.bodyTilt   = vector.zeros(1)
 shared.stance.bodyHeight = vector.zeros(1)
 shared.stance.bodyHeightTarget = vector.zeros(1)
 shared.stance.uTorsoComp = vector.zeros(2) --For quasi-static balancing
-
 shared.stance.waistPitchBias = vector.zeros(1) --To cancel out body sag
 shared.stance.waistPitchBiasTarget = vector.zeros(1) --To cancel out body sag
-
 shared.stance.singlesupport = vector.zeros(1) --we are doing quasi-static motion, so need more roll compensation
-
-
 shared.stance.last_support = vector.zeros(3) --We keep last support point here
-
 shared.stance.COMoffset = vector.zeros(3)--relative COM position from waist joint
 shared.stance.COMoffsetPose1 = vector.zeros(3) --com offset for 'default' arm pose
 
 
-
-
---Used for drilling task
---Torso compensation is used to follow arm position, not for balancing
---0: compensation
---1: follow the arm
---2: stop compensation (keep current value)
-shared.stance.enable_torso_track = vector.zeros(1)
-shared.stance.track_hand_isleft = vector.zeros(1)
-shared.stance.track_hand_y0 =  vector.zeros(1)
-shared.stance.track_torso_y0 =  vector.zeros(1)
 
 --Arm info
 
@@ -73,31 +57,12 @@ shared.arm.trrarm = vector.zeros(7)
 shared.arm.qlarmcomp = vector.zeros(7)
 shared.arm.qrarmcomp = vector.zeros(7)
 
---Current arm velocity limit
-shared.arm.dqVelLeft = vector.zeros(7) 
-shared.arm.dqVelRight = vector.zeros(7)
-
-shared.arm.dpVelLeft = vector.zeros(6) --transform vel
-shared.arm.dpVelRight = vector.zeros(6)
-
---hand offset X and Y (for hook)
-if Config.arm then
-  shared.arm.handoffset = vector.zeros(3)
-  shared.arm.lhandoffset = vector.zeros(3)
-  shared.arm.rhandoffset = vector.zeros(3)
-end
-
-
---SJ: I will move to shared memory (from function arguments)
-
+--left and right hand offsets
+shared.arm.lhandoffset = vector.zeros(3)
+shared.arm.rhandoffset = vector.zeros(3)
 shared.arm.handmass = vector.zeros(2) --Hand weight 
 shared.arm.holdmass = vector.zeros(2) --Additional holding mass weight
 shared.arm.endpoint_compensation = vector.zeros(2) --should we apply ik-based endpoint compensation?
-
-
-
-
-
 
 -- Walk Parameters (for tuning on the fly)
 shared.walk = {}

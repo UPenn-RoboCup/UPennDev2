@@ -60,11 +60,11 @@ local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()  
 
-  local dqVelLeft = mcm.get_arm_dqVelLeft()
-  local dqVelRight = mcm.get_arm_dqVelRight()
+  local dqVelLeft = Config.arm.vel_angular_limit
+  local dqVelRight = Config.arm.vel_angular_limit
 
-  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
-  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt,nil,false )  
+  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt,nil,false )
 
   if not absolute then  
     for i=1,7 do
@@ -262,7 +262,7 @@ end
 local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch, velL, velR)
 
   local default_hand_mass = Config.arm.default_hand_mass or 0
-  local dqVelLeft,dqVelRight = mcm.get_arm_dqVelLeft(),mcm.get_arm_dqVelRight()    
+  local dqVelLeft,dqVelRight = Config.arm.vel_angular_limit,Config.arm.vel_angular_limit
   local massL, massR = self.mLeftHand + default_hand_mass, self.mRightHand + default_hand_mass
 
   local trLArm, trRArm, qLArmComp, qRArmComp, uTorsoComp = unpack(init_cond)
@@ -306,8 +306,8 @@ end
 
 
 local function plan_unified(self, plantype, init_cond, init_param, target_param)
-  local dpVelLeft = mcm.get_arm_dpVelLeft()
-  local dpVelRight = mcm.get_arm_dpVelRight()
+  local dpVelLeft = Config.arm.vel_linear_limit
+  local dpVelRight =  Config.arm.vel_linear_limit
   local t00 = unix.time()
   if not init_cond then return end
 

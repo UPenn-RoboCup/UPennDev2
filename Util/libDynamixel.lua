@@ -838,45 +838,45 @@ local function ping_verify(self, m_ids, protocol, twait)
 		local status = send_ping(self, id, protocol, twait)
 		--status = assert(status[1], 'NOT FOUND: '..id)
 		status = status[1]
-if not status then print('NOT FOUND:', id) end
+		if not status then print('NOT FOUND:', id) end
 		if status and status.error~=0 then
 			--      ptable(status)
 			print("ERROR PING PACKET ID ", id, status.error)
 		end
-if status then
-		local id = status.id
-		table.insert(found_ids, id)
-		local lsb, msb = unpack(status.parameter)
-		print(string.format('\nFound %d.0 Motor: %d, Model (%d, %d)', protocol, id, msb, lsb))
-		if msb>2 then
-			-- NX
-			table.insert(nx_ids, id)
-			has_nx_id[id] = true
-			print("NX Motor")
-			-- Check the firmware
-			status = lD.get_nx_firmware(id, self)
-			status = status[1]
-			local firmware = parse_firmware(unpack(status.parameter))
-			print('\tFirmware: '..firmware)
-			-- Check the Operating Mode
-			status = lD.get_nx_mode(id, self)
-			status = status[1]
-      assert(status, 'bad read mode')
-			local mode = parse_delay(unpack(status.parameter))
-			print('\tOperating Mode: '..mode)
-			-- Return Delay
-			status = lD.get_nx_return_delay_time(status.id, self)
-			status = status[1]
-			local delay = parse_delay(unpack(status.parameter))
-			print('\tReturn Delay: '..delay)
-		else
-			-- MX
-			table.insert(mx_ids, id)
-			has_mx_id[id] = true
-			print("MX Motor")
-		end
+		if status then
+			local id = status.id
+			table.insert(found_ids, id)
+			local lsb, msb = unpack(status.parameter)
+			print(string.format('\nFound %d.0 Motor: %d, Model (%d, %d)', protocol, id, msb, lsb))
+			if msb>2 then
+				-- NX
+				table.insert(nx_ids, id)
+				has_nx_id[id] = true
+				print("NX Motor")
+				-- Check the firmware
+				status = lD.get_nx_firmware(id, self)
+				status = status[1]
+				local firmware = parse_firmware(unpack(status.parameter))
+				print('\tFirmware: '..firmware)
+				-- Check the Operating Mode
+				status = lD.get_nx_mode(id, self)
+				status = status[1]
+				assert(status, 'bad read mode')
+				local mode = parse_delay(unpack(status.parameter))
+				print('\tOperating Mode: '..mode)
+				-- Return Delay
+				status = lD.get_nx_return_delay_time(status.id, self)
+				status = status[1]
+				local delay = parse_delay(unpack(status.parameter))
+				print('\tReturn Delay: '..delay)
+			else
+				-- MX
+				table.insert(mx_ids, id)
+				has_mx_id[id] = true
+				print("MX Motor")
+			end
 
-end
+		end
 		-- Wait .1 ms
 		unix.usleep(READ_TIMEOUT * 1e6)
 	end

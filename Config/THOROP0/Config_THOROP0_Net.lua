@@ -13,7 +13,7 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.STEVE
+local WHO = IP.FIELD
 local ROBOT_IP = IP.DALE
 local TEAM_NUMBER = 8
 

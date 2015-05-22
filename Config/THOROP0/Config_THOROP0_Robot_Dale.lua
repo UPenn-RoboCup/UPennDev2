@@ -209,10 +209,10 @@ if ONE_CHAIN then
 	left_leg  = nil
 else
 	-- Both keys and indices
-	--Config.chain[right_leg.name] = right_leg
-	--table.insert(Config.chain, right_leg)
-	--Config.chain[left_leg.name] = left_leg
-	--table.insert(Config.chain, left_leg)
+	Config.chain[right_leg.name] = right_leg
+	table.insert(Config.chain, right_leg)
+	Config.chain[left_leg.name] = left_leg
+	table.insert(Config.chain, left_leg)
 	--
 	table.insert(Config.chain, right_arm)
 	Config.chain[right_arm.name] = right_arm
@@ -329,7 +329,7 @@ servo.rad_offset = vector.new({
 	-90,  -90,  -90,45,  90,0,0, --LArm
 	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
 	0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
-	90,  90,  90,-45,  90,0,0, --RArm, teddy, wristYaw fix
+	90,  90,  90,-45,  90,0,90, --RArm, teddy, wristYaw fix
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
 	0, 45, 0, -- right gripper/trigger (UCLA rev2 verified)

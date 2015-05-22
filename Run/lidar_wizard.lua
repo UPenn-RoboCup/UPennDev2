@@ -22,6 +22,7 @@ require'mcm'
 
 -- Setup the Hokuyos array
 local hokuyos = {}
+local streams = Config.net.streams
 
 -- Initialize the Hokuyos
 --local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
@@ -29,14 +30,16 @@ local hokuyos = {}
 --local h0 = libHokuyo.new_hokuyo(11)
 local h0 = libHokuyo.new_hokuyo(10) -- chest on mk2
 h0.name = 'chest'
-h0.ch = si.new_publisher'lidar0'
+h0.ch = si.new_publisher(streams.lidar0.sub)
+h0.tcp_ch = si.new_publisher(streams.lidar0.tcp)
 h0.metadata = {
 	id='lidar0'
 }
 h0.angle = Body.get_lidar_position
 local h1 = libHokuyo.new_hokuyo(11) -- head on mk2
 h1.name = 'head'
-h1.ch = si.new_publisher'lidar1'
+h1.ch = si.new_publisher(streams.lidar1.sub)
+h1.tcp_ch = si.new_publisher(streams.lidar1.tcp)
 h1.metadata = {
 	id='lidar1'
 }
@@ -71,7 +74,9 @@ local cb = function(self, data)
 	metadata.res = self.res
 	metadata.rsz = #data
 
-	local ret = self.ch:send({mpack(metadata), data})
+	local send_data = {mpack(metadata), data}
+	local ret = self.ch:send(send_data)
+	local ret = self.tcp_ch:send(send_data)
 
 	if ENABLE_LOG then
 		self.logger:record(metadata, data)

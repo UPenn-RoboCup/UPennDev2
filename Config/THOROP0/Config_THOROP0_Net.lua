@@ -72,36 +72,50 @@ streams.feedback = {
 }
 -- Lossy Link
 streams.mesh0 = {
-	ws = 9001,
-	udp = 17001,
+	ws = 9000,
+	udp = 17000,
 	tcp = 43300,
 	sub = 'mesh0'
 }
 streams.mesh1 = {
-	ws = 9002,
-	udp = 17002,
+	ws = 9001,
+	udp = 17001,
 	tcp = 43301,
 	sub = 'mesh1'
 }
 streams.camera0 = {
 	ws = 9003,
 	udp = 17003,
+	tcp = 43303,
 	sub = 'camera0',
 }
 streams.camera1 = {
 	ws = 9004,
 	udp = 17004,
+	tcp = 43304,
 	sub = 'camera1',
 }
-streams.kinect2_depth = {
+streams.lidar0 = {
 	ws = 9010,
 	udp = 17010,
+	tcp = 43310,
+	sub = 'lidar0'
+}
+streams.lidar1 = {
+	ws = 9011,
+	udp = 17011,
+	tcp = 43311,
+	sub = 'lidar1'
+}
+streams.kinect2_depth = {
+	ws = 9046,
+	udp = 17046,
 	tcp = 43346,
 	sub = 'kinect2_depth'
 }
 streams.kinect2_color = {
-	ws = 9011,
-	udp = 17011,
+	ws = 9047,
+	udp = 17047,
 	tcp = 43347,
 	sub = 'kinect2_color'
 }
@@ -109,12 +123,6 @@ streams.kinect2_color = {
 streams.audio = {
 ws = 9014,
 tcp= 55557,
-}
---]]
---[[
-streams.lidar0 = {
-ws = 9015,
-sub = 'lidar0',
 }
 --]]
 

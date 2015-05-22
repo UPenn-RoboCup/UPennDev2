@@ -71,10 +71,6 @@ function state.entry()
 
 
 
---Waist control
-  if Config.waist_testing then
-    Body.set_waist_command_velocity({500,500})
-  end
 end
 
 function state.update()
@@ -83,11 +79,14 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-  
+ 
+	--[[
+	-- Let the Arm FSM handle the waist
   if Config.waist_testing then
     waist_target=hcm.get_motion_waistTarget()
     Body.set_waist_command_position({waist_target,0})
   end
+	--]]
 
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()

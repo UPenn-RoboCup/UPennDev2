@@ -240,7 +240,6 @@ function libArmPlan.joint_preplan(self, plan)
 	end
 
 	local path = {}
-	local qArmSensed, qWaistSensed
 	local qArm = vector.new(qArm0)
 	n = 0
 	repeat
@@ -276,7 +275,9 @@ function libArmPlan.joint_preplan(self, plan)
 		'joint_preplan | Timeout: '..nStepsTimeout)
 
 	-- Start the sensing
-	qArmSensed, qWaistSensed = coroutine.yield(qArmFGuess)
+	local qArmSensed, qWaistSensed = coroutine.yield()
+	qArmSensed = qArmSensedNew or qArm0
+	qWaistSensed = qWaistSensedNew or qWaist0
 	-- Progress is different, now, since in joint space
 	for i, qArmPlanned in ipairs(path) do
 		local qArmSensedNew, qWaistSensedNew = coroutine.yield(qArmPlanned)
@@ -284,6 +285,109 @@ function libArmPlan.joint_preplan(self, plan)
 		qWaistSensed = qWaistSensedNew or qWaistSensed
 	end
 	return qArmF
+end
+
+function libArmPlan.joint_waist_preplan(self, plan)
+	assert(type(plan)=='table', 'joint_waist_preplan | Bad plan')
+	local timeout = assert(plan.timeout, 'joint_waist_preplan | No timeout')
+	local qArm0 = assert(plan.qArm0, 'joint_waist_preplan | Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, 'joint_waist_preplan | Need initial waist')
+	assert(plan.tr or plan.q, 'joint_waist_preplan | Need tr or q')
+	local qArmFGuess = plan.qArmGuess or qArm0
+	local qWaistF = plan.qWaistGuess or qWaist0
+	local qArmF = plan.q
+	if plan.tr then
+		qArmF = self:find_shoulder(plan.tr, qArmFGuess, weights, qWaistF)
+	end
+	assert(type(qArmF)=='table', 'joint_waist_preplan | No target shoulder solution')
+	local qWaistArmF = vector.new({qWaistF[1], unpack(qArmF)})
+	local qWaistArm0 = vector.new({qWaist0[1], unpack(qArm0)})
+	-- Set the soft requirements
+	local weights = plan.weights
+	local hz, dt = self.hz, self.dt
+	local nStepsTimeout = math.ceil(timeout * hz)
+	local qMin = {-math.pi, unpack(self.qMin)}
+	local qMax = {math.pi, unpack(self.qMax)}
+	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
+	-- Check *soft* joint limit compliance
+	for i, q in ipairs(qArmF) do
+		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+			--[[
+			assert(q+EPSILON>=qMin[i],
+				string.format('joint_preplan | Below qMax[%d] %g < %g', i, q, qMin[i]))
+			assert(q-EPSILON<=qMax[i],
+				string.format('joint_preplan | Above qMin[%d] %g > %g', i, q, qMax[i]))
+			--]]
+			qArmF[i] = min(max(qMin[i], q), qMax[i])
+		end
+	end
+	-- If given a duration, then check speed limit compliance
+	local dqAverage
+	local duration = plan.duration
+	if type(duration)=='number' then
+		print('joint_waist_preplan | Using duration')
+		assert(timeout>=duration,
+			string.format('joint_waist_preplan | Timeout %g < Duration %g', timeout, duration))
+		local dqTotal = qWaistArmF - qWaistArm0
+		local dqdtAverage = dqTotal / duration
+		dqAverage = dqdtAverage * dt
+		for i, lim in ipairs(dq_limit) do
+			assert(fabs(dqAverage[i]) <= lim,
+				string.format("joint_waist_preplan | dq[%d] |%g| > %g", i, dqAverage[i], lim))
+		end
+		nStepsTimeout = duration * hz
+	end
+
+	local path = {}
+	local qWaistArm = qWaistArm0
+	n = 0
+	repeat
+		n = n + 1
+		local dqWaistArmF = qWaistArmF - qWaistArm
+		local dist = vnorm(dqWaistArmF)
+		local dqUsed
+		if dqAverage then
+			dqUsed = dqAverage
+		else
+			-- Check the speed limit usage
+			local usage, rescale = {}, false
+			for i, limit in ipairs(dq_limit) do
+				-- half speed?
+				local use = fabs(dqArmF[i]) / limit
+				rescale = rescale or use > 1
+				table.insert(usage, use)
+			end
+			if rescale then
+				local max_usage2 = max(unpack(usage))
+				for i, qF in ipairs(dqWaistArmF) do dqWaistArmF[i] = qF / max_usage2 end
+			end
+			dqUsed = dqWaistArmF
+		end
+		-- Apply the joint change
+		qWaistArm = qWaistArm + dqUsed
+		table.insert(path, qWaistArm)
+		if (not dqAverage) and (dist < 0.5*DEG_TO_RAD) then break end
+	until n > nStepsTimeout
+
+	print(n, 'joint_preplan steps')
+	assert(dqAverage or (n <= nStepsTimeout),
+		'joint_preplan | Timeout: '..nStepsTimeout)
+
+	-- Start the sensing
+	local qArmSensed, qWaistSensed = coroutine.yield()
+	qArmSensed = qArmSensedNew or qArm0
+	qWaistSensed = qWaistSensedNew or qWaist0
+	-- Now replay
+	for i, qWaistArmPlanned in ipairs(path) do
+		local qArmSensedNew, qWaistSensedNew = coroutine.yield(
+			{unpack(qWaistArmPlanned,2,#qWaistArmPlanned)},
+			{qWaistArmPlanned[1], 0}
+		)
+		qArmSensed = qArmSensedNew or qArmSensed
+		qWaistSensed = qWaistSensedNew or qWaistSensed
+	end
+
+	return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
 end
 
 -- Plan a direct path using a straight line via Jacobian
@@ -436,8 +540,8 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	table.insert(qWaistArmFGuess, 1, qWaistFGuess[1])
 	local hz, dt = self.hz, self.dt
 	local nStepsTimeout = math.ceil(timeout * hz)
-	local qMin = {-math.pi,unpack(self.qMin)}
-	local qMax = {math.pi,unpack(self.qMax)}
+	local qMin = {-math.pi, unpack(self.qMin)}
+	local qMax = {math.pi, unpack(self.qMax)}
 	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
 	-- Starting qWaistArm
 	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}

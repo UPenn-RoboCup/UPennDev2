@@ -11,6 +11,7 @@ local qLD, qRD
 
 local okL, qLWaypoint, qLWaistpoint
 local okR, qRWaypoint, qRWaistpoint
+local default_plan_timeout = 30
 
 local teleopLArm, teleopRArm, teleopWaist
 
@@ -55,20 +56,41 @@ function state.update()
 
 	local teleopLArm1 = hcm.get_teleop_larm()
 	local teleopRArm1 = hcm.get_teleop_rarm()
+	local teleopWaist1 = hcm.get_teleop_waist()
 
-	if teleopLArm~=teleopLArm1 then
+	-- Check for changes
+	local lChange = teleopLArm1~=teleopLArm
+	local rChange = teleopRArm1~=teleopRArm
+	local wChange = teleopWaist1~=teleopWaist
+
+	-- Cannot do all. Need an indicator
+	if lChange and rChange and wChange then
+		print('Too many changes!')
+		return
+	end
+
+	-- TODO: If *any* change, we should replan all...
+	if lChange then
 		teleopLArm = teleopLArm1
+		teleopWaist = teleopWaist1
 		print(state._NAME,'L target', teleopLArm)
+		local via = wChange and 'joint_waist_preplan' or 'joint_preplan'
 		local lco1, rco1 = movearm.goto({
-			q = teleopLArm, timeout = 30, via='joint_preplan'
+			q = teleopLArm,
+			via = via,
+			timeout = default_plan_timeout
 		}, false)
 		lco = lco1
 	end
-	if teleopRArm~=teleopRArm1 then
+	if rChange then
 		teleopRArm = teleopRArm1
-		print(state._NAME,'R target', teleopRArm)
+		teleopWaist = teleopWaist1
+		print(state._NAME, 'R target', teleopRArm)
+		local via = wChange and 'joint_waist_preplan' or 'joint_preplan'
 		local lco1, rco1 = movearm.goto(false, {
-			q = teleopRArm, timeout = 30, via='joint_preplan'
+			q = teleopRArm,
+			via = via,
+			timeout = default_plan_timeout
 		})
 		rco = rco1
 	end
@@ -120,19 +142,6 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
-
-	if not okL or not okR then
-		local qLArm = Body.get_larm_position()
-		local qRArm = Body.get_rarm_position()
-		hcm.set_teleop_larm(qLArm)
-		hcm.set_teleop_rarm(qRArm)
-	else
-		local qcLArm = Body.get_larm_command_position()
-		local qcRArm = Body.get_rarm_command_position()
-		hcm.set_teleop_larm(qcLArm)
-		hcm.set_teleop_rarm(qcRArm)
-	end
-
 end
 
 return state

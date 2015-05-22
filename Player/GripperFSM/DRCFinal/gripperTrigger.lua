@@ -3,18 +3,8 @@ local state = {}
 state._NAME = ...
 
 local Body = require'Body'
-local util = require'util'
-local vector = require'vector'
-
-local K = require'K_ffi'
-local T = require'Transform'
-local HT = require'libHeadTransform'
 
 local t_entry, t_update
-
--- TODO: need to compensate the torso pose
-local headSpeed = 5 * DEG_TO_RAD * vector.ones(2)
-local headThresh = 1 * DEG_TO_RAD * vector.ones(2)
 
 function state.entry()
   print(state._NAME..' Entry' ) 
@@ -33,16 +23,12 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-	-- bodyHeight
-	-- TODO: Should be in the torso reference, so ground stuff actually requires the correct transform
-	local trChopsticks = T.trans(0,0,1) * K.forward_larm(Body.get_larm_position())
-	local headAngles = vector.new{HT.ikineCam(unpack(T.position(trChopsticks)))}
-	local headNow = Body.get_head_command_position()
-  local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
-	
-	Body.set_head_command_position(apprAng)
+	-- gripper, trigger, extra
+	Body.set_lgrip_command_torque{5,10,5}
+	Body.set_rgrip_command_torque{5,10,5}
 
-  return doneHead and 'done'
+	-- TODO: Add a check to see if the trigger worked or not
+
 end
 
 function state.exit()

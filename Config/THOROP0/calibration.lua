@@ -8,6 +8,8 @@ cal["alvin"]={}
 cal["teddy"]={}
 cal["chipette"]={}
 cal["teddy2"]={}
+
+cal["chip"]={}
 cal["dale"]={}
 
 cal["alvin"].legBias=vector.new({
@@ -44,7 +46,7 @@ cal["chipette"].legBias=vector.new({
 
 
 -- Updated date: Sun May 17 19:28:15 2015
-cal["chipette"].legBias=vector.new({
+cal["chip"].legBias=vector.new({
    0.000000,0.537500,0.000000,0.000000,-1.417500,0.000000,
    0.000000,0.337500,1.750000,0.000000,-1.485000,-0.945000,
    })*math.pi/180

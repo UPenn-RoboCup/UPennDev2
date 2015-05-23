@@ -19,10 +19,16 @@ PROTO GRIPPER_UCLA_v2 [
 	    children [Box {size 0.03 0.08 0.04 }]
 	  }
 		physics Physics {
-			density -1 mass 1.0  #GUESSWORK!
+			density -1 mass 1.2  #GUESSWORK, need correct weight w/servo
 			centerOfMass [0 -0.07 0] #from wrist, with lowered pose			
 		}
 		children [
+			WRIST {
+				translation 0 -0.07 0
+				scale 0.001 0.001 0.001
+				rotation 1 0 0 1.5708
+			}
+
 			Transform{
 				translation 0.035 -0.14 0
 				children[

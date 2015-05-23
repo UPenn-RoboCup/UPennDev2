@@ -238,19 +238,20 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 end
 
 function libArmPlan.joint_preplan(self, plan)
-	assert(type(plan)=='table', 'joint_preplan | Bad plan')
-	local qArm0 = assert(plan.qArm0, 'joint_preplan | Need initial arm')
-	local qWaist0 = assert(plan.qWaist0, 'joint_preplan | Need initial waist')
-	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
+		local prefix = string.format('joint_preplan (%s) | ', self.id)
+	assert(type(plan)=='table', prefix..'Bad plan')
+	local qArm0 = assert(plan.qArm0, prefix..'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, prefix..'Need initial waist')
+	assert(plan.tr or plan.q, prefix..'Need tr or q')
 	local weights = plan.weights
 	local qArmF
 	if type(plan.q)=='table' then
 		qArmF = plan.q
 	elseif plan.tr then
 		qArmF = self:find_shoulder(plan.tr, qArm0, weights, qWaist0)
-		assert(type(qArmF)=='table', 'joint_preplan | No target shoulder solution')
+		assert(type(qArmF)=='table', prefix..'No target shoulder solution')
 	else
-		error('jacobian_preplan | Need tr or q')
+		error(prefix..'Need tr or q')
 	end
 	local qMin, qMax = self.qMin, self.qMax
 	-- Check joint limit compliance
@@ -273,13 +274,13 @@ function libArmPlan.joint_preplan(self, plan)
 
 	-- If given a duration, then check speed limit compliance
 	if type(plan.duration)=='number' then
-		if Config.debug.armplan then print('joint_preplan | Using duration:', plan.duration) end
+		if Config.debug.armplan then print(prefix..'Using duration:', plan.duration) end
 		local dqTotal = qArmF - qArm0
 		local dqdtAverage = dqTotal / plan.duration
 		local dqAverage = dqdtAverage * dt
 		for i, lim in ipairs(dq_limit) do
 			assert(fabs(dqAverage[i]) <= lim,
-				string.format("joint_preplan | dq[%d] |%g| > %g", i, dqAverage[i], lim))
+				string.format(prefix.."dq[%d] |%g| > %g", i, dqAverage[i], lim))
 		end
 		-- Form the plan
 		local nsteps = plan.duration * hz
@@ -291,7 +292,7 @@ function libArmPlan.joint_preplan(self, plan)
 	end
 
 	-- Timeout
-	local timeout = assert(plan.timeout, 'joint_preplan | No timeout')
+	local timeout = assert(plan.timeout, prefix..'No timeout')
 	local nStepsTimeout = timeout * hz
 	repeat
 		local dqArmF = qArmF - qArm
@@ -314,8 +315,8 @@ function libArmPlan.joint_preplan(self, plan)
 	until #path > nStepsTimeout
 
 	if Config.debug.armplan then
-		print('joint_preplan | Steps:', n)
-		if n > nStepsTimeout then print('joint_preplan | Timeout: ', nStepsTimeout) end
+		print(prefix..'Steps:', n)
+		if n > nStepsTimeout then print(prefix..'Timeout: ', nStepsTimeout) end
 	end
 
 	return co_play(plan)
@@ -431,12 +432,13 @@ end
 -- res_pos: resolution in meters
 -- res_ang: resolution in radians
 function libArmPlan.jacobian_preplan(self, plan)
-	assert(type(plan)=='table', 'jacobian_preplan | Bad plan')
-	local qArm0 = assert(plan.qArm0, 'jacobian_preplan | Need initial arm')
-	local qWaist0 = assert(plan.qWaist0, 'jacobian_preplan | Need initial waist')
-	assert(plan.tr or plan.q, 'jacobian_preplan | Need tr or q')
+	local prefix = string.format('jacobian_preplan (%s) | ', self.id)
+	assert(type(plan)=='table', prefix..'Bad plan')
+	local qArm0 = assert(plan.qArm0, prefix..'Need initial arm')
+	local qWaist0 = assert(plan.qWaist0, prefix..'Need initial waist')
+	assert(plan.tr or plan.q, prefix..'Need tr or q')
 	local trGoal = plan.tr or self.forward(plan.q)
-	local timeout = assert(plan.timeout, 'jacobian_preplan | No timeout')
+	local timeout = assert(plan.timeout, prefix..'No timeout')
 	local weights = plan.weights
 	-- Find a guess of the final arm position
 	local qArmFGuess = plan.qArmGuess or self:find_shoulder(trGoal, qArm0, weights, qWaist0)
@@ -444,7 +446,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		vector.new(qArmFGuess)
 	else
 		if Config.debug.armplan then
-			print('jacobian_preplan | No guess found for the final!')
+			print(prefix..'No guess found for the final!')
 		end
 	end
 
@@ -505,8 +507,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	-- NOTE: We assume the find_shoulder yields a valid final configuration
 	-- Use the last known max_usage to finalize
 	if Config.debug.armplan then
-	  print(string.format('jacobian_preplan | %s: %d steps (%d ms)',self.id, #path, (t1-t0)*1e3))
-		print('jacobian_preplan | max_usage final', max_usage)
+	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
 	end
 
 	-- Play the plan
@@ -514,14 +515,14 @@ function libArmPlan.jacobian_preplan(self, plan)
 
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
-		if Config.debug.armplan then print('jacobian_preplan | Timeout!', #path) end
+		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end
 		return qArmF
 	end
 
 	-- Goto the final
 	local qArmF1 = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0) or qArm
 	if not qArmF1 then
-		if Config.debug.armplan then print('jacobian_preplan | No final solution found') end
+		if Config.debug.armplan then print(prefix..'No final solution found') end
 		return qArmF
 	end
 	local pathF = libArmPlan.joint_preplan(self, {
@@ -531,9 +532,10 @@ function libArmPlan.jacobian_preplan(self, plan)
 		duration = 2
 	})
 	if not pathF then
-		if Config.debug.armplan then print('jacobian_preplan | No final path') end
+		if Config.debug.armplan then print(prefix..'No final path') end
 		return qArmF
 	end
+	if Config.debug.armplan then print(prefix..'Done') end
 
 	return co_play(pathF)
 end

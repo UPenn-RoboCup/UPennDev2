@@ -13,16 +13,16 @@ arm.init = {}
 -- Pitch up
 arm.init[1] = {
 	left = {
-		tr=tr6D{0.2, 0.25, 0.15, 0, -60*DEG_TO_RAD,0},
+		tr=tr6D{0.25, 0.25, 0.15, 0, -45*DEG_TO_RAD,0},
 		timeout=12,
-		via='jacobian_preplan', weights = {0,1,0}
+		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
-		tr=tr6D{0.2, -0.25, 0.2, 0, -60*DEG_TO_RAD, 0},
+		tr=tr6D{0.25, -0.25, 0.15, 0, -45*DEG_TO_RAD, 0},
 		--q = {0,0,0, 0, 0,0,0},
 		timeout=12,
 		via='jacobian_preplan',
-		weights = {0,1,0},
+		weights = {1,0,0},
 	}
 }
 

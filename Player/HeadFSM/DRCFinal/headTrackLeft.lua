@@ -9,7 +9,6 @@ local HT = require'libHeadTransform'
 local T = require'Transform'
 local movearm = require'movearm'
 local forwardL = movearm.lPlanner.forward
-local forwardR = movearm.rPlanner.forward
 
 local t_entry, t_update
 
@@ -18,7 +17,7 @@ local headSpeed = 5 * DEG_TO_RAD * vector.ones(2)
 local headThresh = 1 * DEG_TO_RAD * vector.ones(2)
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  print(state._NAME..' Entry' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -51,7 +50,7 @@ function state.update()
 
 	local headAngles = vector.new{HT.ikineCam(unpack(T.position(tfHand)))}
   local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
-	
+
 	Body.set_head_command_position(apprAng)
 
   return doneHead and 'done'

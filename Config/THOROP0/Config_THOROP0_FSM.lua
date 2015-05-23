@@ -122,19 +122,28 @@ fsm.Head = {
 	{'headIdle', 'teleop', 'headTeleop'},
 	--
 	{'headCenter', 'done', 'headMesh'},
-	{'headCenter', 'trackhand', 'headTrackHand'},
+	{'headCenter', 'trackleft', 'headTrackLeft'},
+	{'headCenter', 'trackright', 'headTrackRight'},
 	{'headCenter', 'teleop', 'headTeleop'},
 	-- Overrides
 	{'headTeleop', 'init', 'headCenter'},
-	{'headTeleop', 'trackhand', 'headTrackHand'},
+	{'headTeleop', 'trackleft', 'headTrackLeft'},
+	{'headTeleop', 'trackright', 'headTrackRight'},
 	{'headTeleop', 'mesh', 'headMesh'},
 	--
-	{'headTrackHand', 'init', 'headCenter'},
-	{'headTrackHand', 'mesh', 'headMesh'},
-	{'headTrackHand', 'teleop', 'headTeleop'},
+	{'headTrackLeft', 'init', 'headCenter'},
+	{'headTrackLeft', 'mesh', 'headMesh'},
+	{'headTrackLeft', 'trackright', 'headTrackRight'},
+	{'headTrackLeft', 'teleop', 'headTeleop'},
+	--
+	{'headTrackRight', 'init', 'headCenter'},
+	{'headTrackRight', 'mesh', 'headMesh'},
+	{'headTrackRight', 'trackleft', 'headTrackLeft'},
+	{'headTrackRight', 'teleop', 'headTeleop'},
 	--
 	{'headMesh', 'done', 'headCenter'},
-	{'headMesh', 'trackhand', 'headTrackHand'},
+	{'headMesh', 'trackleft', 'headTrackLeft'},
+	{'headMesh', 'trackright', 'headTrackRight'},
 	{'headMesh', 'init', 'headCenter'},
 }
 

@@ -50,7 +50,7 @@ function state.update()
       if not plan_valid then plan_valid,stage=true,"teleopwait" end      
     else 
       if check_override() then --Model modification
-        local trRArmTarget = vector.new(hcm.get_hands_right_tr_target_old())
+        local trRArmTarget = vector.new(hcm.get_hands_right_tr_target())
                             +vector.new(hcm.get_state_override())
         hcm.set_state_override({0,0,0,0,0,0,0})
         local arm_seq = {{'move',nil,trRArmTarget}}

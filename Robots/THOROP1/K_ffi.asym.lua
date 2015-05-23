@@ -50,7 +50,14 @@ local upperArmLengthExtended = 0.320
 local lowerArmLengthExtended = 0.312
 
 -- Gripper of no appendage - just the plate
+--[[
 local handOffsetX_L = 0.125
+local handOffsetY_L = 0
+local handOffsetZ_L = 0
+--]]
+
+-- Chopsticks
+local handOffsetX_L = 0.38
 local handOffsetY_L = 0
 local handOffsetZ_L = 0
 

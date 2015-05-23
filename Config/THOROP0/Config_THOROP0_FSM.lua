@@ -111,31 +111,40 @@ fsm.Body = {
   {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'nextstep', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
-  --
-
-  --take a single, low step (for flat terrain)
+  -- Take a single, low step (for flat terrain)
 	{'bodyStop', 'stepflat', 'bodyStep2'},
   {'bodyStep2', 'done', 'bodyStop'},
-
-
 }
 
 
 fsm.Head = {
 	{'headIdle', 'init', 'headCenter'},
+	{'headIdle', 'teleop', 'headTeleop'},
 	--
+	{'headCenter', 'done', 'headMesh'},
+	{'headCenter', 'trackleft', 'headTrackLeft'},
+	{'headCenter', 'trackright', 'headTrackRight'},
 	{'headCenter', 'teleop', 'headTeleop'},
-	{'headCenter', 'trackhand', 'headTrackHand'},
-	{'headCenter', 'mesh', 'headMesh'},
-	--
+	-- Overrides
 	{'headTeleop', 'init', 'headCenter'},
-	{'headTeleop', 'trackhand', 'headTrackHand'},
+	{'headTeleop', 'trackleft', 'headTrackLeft'},
+	{'headTeleop', 'trackright', 'headTrackRight'},
+	{'headTeleop', 'mesh', 'headMesh'},
 	--
-	{'headTrackHand', 'init', 'headCenter'},
-	{'headTrackHand', 'teleop', 'headTeleop'},
+	{'headTrackLeft', 'init', 'headCenter'},
+	{'headTrackLeft', 'mesh', 'headMesh'},
+	{'headTrackLeft', 'trackright', 'headTrackRight'},
+	{'headTrackLeft', 'teleop', 'headTeleop'},
 	--
-	{'headMesh', 'init', 'headCenter'},
+	{'headTrackRight', 'init', 'headCenter'},
+	{'headTrackRight', 'mesh', 'headMesh'},
+	{'headTrackRight', 'trackleft', 'headTrackLeft'},
+	{'headTrackRight', 'teleop', 'headTeleop'},
+	--
 	{'headMesh', 'done', 'headCenter'},
+	{'headMesh', 'trackleft', 'headTrackLeft'},
+	{'headMesh', 'trackright', 'headTrackRight'},
+	{'headMesh', 'init', 'headCenter'},
 }
 
 fsm.Gripper = {

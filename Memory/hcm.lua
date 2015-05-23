@@ -24,7 +24,7 @@ shared_data.network = {
 
 shared_data.teleop = {
 	-- Waypoint
-	waypoint = zeros(3)
+	waypoint = zeros(3),
 	-- Head angles
   head = zeros(2),
 	-- Waist angles

@@ -100,19 +100,23 @@ fsm.Arm = {
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   --
-  {'bodyInit', 'done', 'bodyStop'},  
+  {'bodyInit', 'done', 'bodyStop'},
+	--
+	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
+	{'bodyStop', 'approach', 'bodyApproachMessy'},
+	{'bodyStop', 'stepover1', 'bodyStep'},
+	{'bodyStop', 'stepflat', 'bodyStep2'},
+	{'bodyStop', 'stop', 'bodyStop'},
   --
-  {'bodyStop', 'approach', 'bodyApproachMessy'},
-  {'bodyApproachMessy', 'done', 'bodyStop'},
+  {'bodyApproachMessy', 'stop', 'bodyStop'},
+	{'bodyApproachMessy', 'done', 'bodyStop'},
   --
-  {'bodyStop', 'approachbuggy', 'bodyApproachBuggy'}, --steve's approoach code
-  {'bodyApproachBuggy', 'done', 'bodyStop'},
+  {'bodyApproachBuggy', 'stop', 'bodyStop'},
+	{'bodyApproachBuggy', 'done', 'bodyStop'},
   --
-  {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'nextstep', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
   -- Take a single, low step (for flat terrain)
-	{'bodyStop', 'stepflat', 'bodyStep2'},
   {'bodyStep2', 'done', 'bodyStop'},
 }
 
@@ -201,30 +205,32 @@ fsm.Lidar = {
 fsm.Motion = {
 	{'motionIdle', 'timeout', 'motionIdle'},
 	{'motionIdle', 'stand', 'motionInit'},
-	{'motionInit', 'done', 'motionStance'},
-
 	{'motionIdle', 'bias', 'motionBiasInit'},
-	{'motionStance', 'bias', 'motionBiasInit'},
+	--
 	{'motionBiasInit', 'done', 'motionBiasIdle'},
 	{'motionBiasIdle', 'stand', 'motionInit'},
-
-	{'motionStance', 'preview', 'motionStepPreview'},
-	{'motionStepPreview', 'done', 'motionStance'},
-
-	{'motionStance', 'stair', 'motionStepPreviewStair'},
-	{'motionStepPreviewStair', 'done', 'motionStance'},
-
-	{'motionStance', 'slowstep', 'motionSlowStep'},
-	{'motionSlowStep', 'done', 'motionStance'},
-
-
+	--
+	{'motionInit', 'done', 'motionStance'},
+	--
+	{'motionUnInit', 'done', 'motionIdle'},
+	--
+	{'motionStance', 'bias', 'motionBiasInit'},
+	{'motionStance', 'uninit', 'motionUnInit'},
 	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+	{'motionStance', 'preview', 'motionStepPreview'},
+	{'motionStance', 'slowstep', 'motionSlowStep'},
+	{'motionStance', 'stair', 'motionStepPreviewStair'},
+	--
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
-
-	{'motionStance', 'uninit', 'motionUnInit'},
-	{'motionUnInit', 'done', 'motionIdle'},
+	{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
+	--
+	{'motionStepPreview', 'done', 'motionStance'},
+	--
+	{'motionStepPreviewStair', 'done', 'motionStance'},
+	--
+	{'motionSlowStep', 'done', 'motionStance'},
 }
 
 Config.fsm = fsm

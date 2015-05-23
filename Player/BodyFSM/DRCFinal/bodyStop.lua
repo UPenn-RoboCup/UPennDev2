@@ -17,7 +17,12 @@ function state.entry()
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
-  t_update = t_entry    
+  t_update = t_entry
+
+	-- Stop other state machines
+	motion_ch:send'stand'
+	head_ch:send'teleop'
+	arm_ch:send'teleopraw'
 
 end
 

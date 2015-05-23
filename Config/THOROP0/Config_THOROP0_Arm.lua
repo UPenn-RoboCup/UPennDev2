@@ -14,32 +14,33 @@ arm.init = {}
 arm.init[1] = {
 	left = {
 		tr=tr6D{0.25, 0.25, 0.15, 0, -45*DEG_TO_RAD,0},
-		timeout=12,
+		timeout=8,
 		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
 		tr=tr6D{0.25, -0.25, 0.15, 0, -45*DEG_TO_RAD, 0},
 		--q = {0,0,0, 0, 0,0,0},
-		timeout=12,
+		timeout=8,
 		via='jacobian_preplan',
 		weights = {1,0,0},
 	}
 }
 
 -- Now go to yaw
---[[
+----[[
 arm.init[2] = {
 	left = {
-		tr=tr6D{0.25, 0.25, 0.2,    0, 0, -45*DEG_TO_RAD},
+		tr=tr6D{0.25, 0.25, 0.18,    0, 0, -45*DEG_TO_RAD},
 		qArmGuess = vector.new{70,25,-28, -150, 10,-80,-90}*DEG_TO_RAD,
 		timeout=15,
-		via='jacobian_preplan', weights = {0,0,0,1}
+		via='jacobian_preplan', weights = {0,1,0,1}
 	},
 	right = {
-		tr=tr6D{0.2, -0.25, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
+		tr=tr6D{0.2, -0.25, 0.18, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
+		--qArmGuess = vector.new{70,-25,28, -150, 10,-80,-90}*DEG_TO_RAD,
 		timeout=15,
 		via='jacobian_preplan',
-		weights = {0,0,0,1},
+		weights = {0,1,0,1},
 	}
 }
 --]]

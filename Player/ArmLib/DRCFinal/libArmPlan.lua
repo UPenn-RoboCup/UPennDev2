@@ -99,6 +99,7 @@ local function co_play(path, callback)
 		callback(qArmSensed, qWaistSensed)
 	end
 	for i, qArmPlanned in ipairs(path) do
+		print(i, qArmPlanned)
 		local qArmSensed, qWaistSensed
 		if #qArmPlanned>7 then -- TODO: use self
 			qArmSensed, qWaistSensed = coroutine.yield(
@@ -293,6 +294,7 @@ function libArmPlan.joint_preplan(self, plan)
 			qArm = qArm + dqAverage
 			table.insert(path, qArm)
 		end
+		print(prefix..'#path', #path)
 		return co_play(path)
 	end
 	-- Timeout based
@@ -319,11 +321,11 @@ function libArmPlan.joint_preplan(self, plan)
 	if Config.debug.armplan then
 		print(prefix..'Steps:', #path)
 		if #path > nStepsTimeout then print(prefix..'Timeout: ', #path) end
-	en
+	end
 	return co_play(plan)
 end
 
-	function libArmPlan.joint_waist_preplan(self, plan)
+function libArmPlan.joint_waist_preplan(self, plan)
 	local prefix = string.format('joint_waist_preplan (%s) | ', self.id)
 	assert(type(plan)=='table', prefix..'Bad plan')
 	local qArm0 = assert(plan.qArm0, prefix..'Need initial arm')

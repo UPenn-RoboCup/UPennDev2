@@ -485,7 +485,6 @@ function libArmPlan.jacobian_preplan(self, plan)
 				qArm[i] = min(max(qMin[i], q), qMax[i])
 			end
 		end
-
 		-- Add to the path
 		table.insert(path, qArm)
 	until #path > nStepsTimeout
@@ -651,107 +650,49 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	return co_play(pathF)
 end
 
--- resume with: qArmSensed, vwTargetNew, weightsNew
+-- Resume with an updated plan or empty table if no updates
 function libArmPlan.jacobian_velocity(self, plan)
-	assert(type(plan)=='table',
-		'jacobian_velocity | Bad plan')
-	local vwTarget = plan.vw
-	assert(type(vwTarget)=='table' and #vwTarget==6,
-		'jacobian_velocity | Bad vw')
-	local qArm0 = assert(plan.qArm0, 'Need initial arm')
-	local qWaist0 = assert(plan.qWaist0, 'Need initial waist')
-
-	local weights = plan.weights
-	local hz, dt = self.hz, self.dt
-	local dq_limit = self.dq_limit
+	local prefix = string.format('jacobian_preplan (%s) | ', self.id)
+	-- Set the limits and check compliance
 	local qMin, qMax = self.qMin, self.qMax
-	local forward = self.forward
-
-	-- Find a guess of the final arm position
-	local qArmFGuess = plan.qArmGuess or qArm0
-	local qWaistFGuess = plan.qWaistGuess or qWaist0
-
-	local qArm = qArm0
-
-	local qArmSensed, qWaistSensed, vwTargetNew, weightsNew, qArmFGuessNew =
-		coroutine.yield()
-	vwTarget = vwTargetNew or vwTarget
-	weights = weightsNew or weights
-	qArmFGuess = qArmFGuessNew or qArmFGuess
-
-	local done = false
-	local n = 0
-	local max_usage
-	repeat
-		n = n + 1
+	local dq_limit = self.dq_limit
+	-- While we have a plan, run the calculations
+	local qArmSensed, qWaistSensed
+	while type(plan)=='table' do
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace =
-			get_delta_qwaistarm(self, vwTarget, qArmSensed)
-		-- Grab the null space velocities toward our guessed configuration
-		local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
-		-- Linear combination of the two
-		local dqdtCombo = dqdtArm - dqdtNull
+		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qArm)
+		-- Grab the velocities toward our guessed configuration, w/ or w/o null
+		local dqdtCombo
+		if qArmFGuess then
+			local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+			dqdtCombo = dqdtArm - dqdtNull
+		else
+			dqdtCombo = dqdtArm
+		end
 		-- Respect the update rate, place as a lua table
 		local dqCombo = vector.new(dqdtCombo:mul(dt))
 		-- Check the speed limit usage
-		local usage, rescale = {}, false
+		local usage = {}
 		for i, limit in ipairs(dq_limit) do
-			local use = fabs(dqCombo[i]) / limit
-			rescale = rescale or use > 1
-			table.insert(usage, use)
+			table.insert(usage, fabs(dqCombo[i]) / limit)
 		end
-		max_usage = max(unpack(usage))
-		if rescale then
-			for i = 1, #dqCombo do dqCombo[i] = dqCombo[i] / max_usage end
+		local max_usage = max(unpack(usage))
+		if max_usage > 1 then
+			for i, dq in ipairs(dqCombo) do
+				dqCombo[i] = dq / max_usage
+			end
 		end
-		-- Apply the joint change
-
-		local qArmOld = qArm
-		qArm = qArmOld + dqCombo
-
+		-- Apply the joint change (Creates a new table)
+		qArm = qArm + dqCombo
 		-- Check joint limit compliance
 		for i, q in ipairs(qArm) do
 			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
 				qArm[i] = min(max(qMin[i], q), qMax[i])
 			end
 		end
-		-- Yield the progress
-		--print('Next yield',qArmOld, dqCombo, qArm)
-		qArmSensed, qWaistSensed, vwTargetNew, weightsNew, qArmFGuessNew =
-			coroutine.yield(qArm)
-		-- Smart adaptation
-		vwTarget = vwTargetNew or vwTarget
-		weights = weightsNew or weights
-		qArmFGuess = qArmFGuessNew or qArmFGuess
-		--print('qArmFGuessNew', qArmFGuessNew, qArmFGuess)
-		if weightsNew then
-			local fkArmSensed = forward(qArmSensed)
-			local qArmFGuessNew = self:find_shoulder(fkArmSensed, qArmSensed, weights)
-			if not qArmFGuessNew then
-				print('jacobian_velocity | Bad velocity guess')
-			else
-				qArmFGuess = qArmFGuessNew
-			end
-			--assert(qArmFGuess, 'Bad guess!')
-			----or qArmFGuess
-			--print('qArmFGuess', vector.new(qArmFGuess))
-			--print('qArmSensed', qArmSensed)
-			--print(vector.norm(qArmFGuess-qArmSensed)*RAD_TO_DEG, 'diff', (qArmFGuess-qArmSensed)*RAD_TO_DEG)
-			if(math.abs(qArmFGuess[3]-qArmSensed[3])>10*DEG_TO_RAD) then
-				print('jacobian_velocity | wait!')
-				vwTarget = {0,0,0, 0,0,0}
-			end
-		end
-		-- If we are lagging badly, then there may be a collision
-		local dqLag = qArm - qArmSensed
-		local imax_lag, max_lag = 0, 0
-		-- Use a higher tolerance here, since using position feedback
-		for i, dq in ipairs(dqLag) do
-			--assert(fabs(dq-dqCombo[i])<5*DEG_TO_RAD, 'jacobian_preplan | Bad Lag')
-		end
-	until vwTargetNew==false
-
-	return qArm
+		-- Yield a command
+		qArmSensed, qWaistSensed, plan = coroutine.yield()
+	end
 end
 
 -- resume with: qArmSensed, vwTargetNew, weightsNew

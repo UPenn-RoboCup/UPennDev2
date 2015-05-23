@@ -57,8 +57,7 @@ if IS_WEBOTS then
 	else
 		Config.testfile = 'test_testbed'		
 		Config.debug.armplan = false
-
-		Config.testfile = 'test_walkstuff'		
+		--Config.testfile = 'test_walkstuff'		
 
 	end
 

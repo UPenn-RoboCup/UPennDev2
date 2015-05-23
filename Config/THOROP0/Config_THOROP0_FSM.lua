@@ -78,8 +78,10 @@ fsm.Arm = {
 
 	--Old teleop code
 	----[[
-	{'armWalk', 'teleopold', 'armTeleopSJOLD'},
-	{'armTeleopSJOLD', 'done', 'armWalk'},
+	{'armWalk', 'teleopoldl', 'armTeleopSJOLDL'},
+	{'armWalk', 'teleopoldr', 'armTeleopSJOLDR'},
+	{'armTeleopSJOLDL', 'done', 'armWalk'},
+	{'armTeleopSJOLDR', 'done', 'armWalk'},
 	--]]
 
 	-- armJacobian is for testing purposes only!

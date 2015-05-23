@@ -19,7 +19,11 @@ debugmsg = true
 Config.arm.plan={}
 Config.arm.plan.dt_step0_jacobian = 0.1
 Config.arm.plan.dt_step_jacobian = 0.2
-Config.arm.plan.dt_step_min_jacobian = 0.02
+
+
+Config.arm.plan.dt_step_min_jacobian = 0.02 --how fast we can speed up the joint
+Config.arm.plan.dt_step_min_jacobian = 0.015 --how fast we can speed up the joint
+
 Config.arm.plan.scale_limit={0.05,2}
 
 
@@ -198,6 +202,7 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
   local lambda=torch.eye(7)
   local c, p = 2,10  
 
+--[[
   local joint_limits={
     {-math.pi/2*100/180, math.pi*200/180},
     {0,math.pi/2},
@@ -207,16 +212,34 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
     {-math.pi/2, math.pi/2},
     {-math.pi, math.pi}
   }
+  --]]
+  local joint_limits={
+    {-math.pi/2*100/180, math.pi*200/180},
+    {0,math.pi/2},
+    {-math.pi/4, math.pi/2},    
+    {-math.pi, -0.2}, --temp value    
+    {-math.pi*1.5, math.pi*1.5},
+    {-math.pi/2, math.pi/2},
+    {-math.pi, math.pi}
+  }
+
   if isLeft==0 then
     joint_limits[2]={-math.pi/2,0}
---    joint_limits[2]={-math.pi/180*135,0}
+    joint_limits[3]={-math.pi/2, math.pi/4}
     joint_limits[5]={-math.pi*1.5, math.pi*1.5}
   end
 
+
+
+
+
+
+
   for i=1,7 do
-    lambda[i][i]=0.1*0.1 + c*
+     lambda[i][i]=0.1*0.1 + c*
       ((2*qArm[i]-joint_limits[i][1]-joint_limits[i][2])/
-       (joint_limits[i][2]-joint_limits[i][1]))^p
+      (joint_limits[i][2]-joint_limits[i][1]))^p
+  
   end
 
   I:addmm(JT,J):add(1,lambda)

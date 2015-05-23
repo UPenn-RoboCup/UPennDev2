@@ -94,26 +94,27 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 
 --Old teleop init/uninit sequence
 armfsm = {}
-armfsm.teleop = {}
-armfsm.teleop.arminit={
---[[
-  {'move0',nil,{0.20,-0.25,-0.05,0,0,0}},
-  {'move0',nil,{0.25,-0.25,-0.05,0,-85*DEG_TO_RAD,0}},
-	{'move0',nil,{0.25,-0.25,0.24,0,-85*DEG_TO_RAD,0}},
---]]
-
-
---		
+armfsm.teleopr = {}
+armfsm.teleopr.arminit={
  	{'move0',nil,{0.25,-0.25,-0.15  ,0,0,0}},
   {'move0',nil,{0.30,-0.25,0.24,0,0,0}},
   {'move0',nil,{0.30,-0.10,0.24,0,0,0}},  
---
 }
-armfsm.teleop.armuninit={
+armfsm.teleopr.armuninit={
   {'move0',nil,{0.30,-0.25, 0.24  ,0,0,0}},
   {'move0',nil,{0.25,-0.25,-0.15  ,0,0,0}},
   {'move0',nil,arm.trRArm0},
-  {'move0',nil,arm.trRArm0},
+}
+armfsm.teleopl = {}
+armfsm.teleopl.arminit={
+ 	{'move0',{0.25,0.25,-0.15  ,0,0,0},nil},
+--  {'move0',{0.30,0.25,0.24,0,0,0},nil},
+--  {'move0',{0.30,0.10,0.24,0,0,0},nil},  
+}
+armfsm.teleopl.armuninit={
+--  {'move0',{0.30,0.25, 0.24  ,0,0,0},nil},
+--  {'move0',{0.25,0.25,-0.15  ,0,0,0},nil},
+  {'move0',arm.trLArm0,nil},
 }
 
 

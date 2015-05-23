@@ -99,7 +99,7 @@ local function co_play(path, callback)
 		callback(qArmSensed, qWaistSensed)
 	end
 	for i, qArmPlanned in ipairs(path) do
-		print(i, qArmPlanned)
+		--print(i, qArmPlanned)
 		local qArmSensed, qWaistSensed
 		if #qArmPlanned>7 then -- TODO: use self
 			qArmSensed, qWaistSensed = coroutine.yield(
@@ -107,7 +107,6 @@ local function co_play(path, callback)
 		else
 			qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
 		end
-
 		if type(callback)=='function' then
 			callback(qArmSensed, qWaistSensed)
 		end
@@ -322,6 +321,7 @@ function libArmPlan.joint_preplan(self, plan)
 		print(prefix..'Steps:', #path)
 		if #path > nStepsTimeout then print(prefix..'Timeout: ', #path) end
 	end
+	if Config.debug.armplan then print(prefix..'Done') end
 	return co_play(plan)
 end
 
@@ -509,19 +509,13 @@ function libArmPlan.jacobian_preplan(self, plan)
 		return qArmF
 	end
 	-- Use the pre-existing planner
-	local pathF = libArmPlan.joint_preplan(self, {
+	if Config.debug.armplan then print(prefix..'Done') end
+	return libArmPlan.joint_preplan(self, {
 		q = qArmF1,
 		qArm0 = qArmF,
 		qWaist0 = qWaist0,
 		duration = 2
 	})
-	if not pathF then
-		if Config.debug.armplan then print(prefix..'No final path') end
-		return qArmF
-	end
-	-- Finish
-	if Config.debug.armplan then print(prefix..'Done') end
-	return co_play(pathF)
 end
 
 -- Plan via Jacobian for waist and arm

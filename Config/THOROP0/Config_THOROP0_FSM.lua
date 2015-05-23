@@ -111,31 +111,31 @@ fsm.Body = {
   {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'nextstep', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
-  --
-
-  --take a single, low step (for flat terrain)
+  -- Take a single, low step (for flat terrain)
 	{'bodyStop', 'stepflat', 'bodyStep2'},
   {'bodyStep2', 'done', 'bodyStop'},
-
-
 }
 
 
 fsm.Head = {
 	{'headIdle', 'init', 'headCenter'},
+	{'headIdle', 'teleop', 'headTeleop'},
 	--
-	{'headCenter', 'teleop', 'headTeleop'},
+	{'headCenter', 'done', 'headMesh'},
 	{'headCenter', 'trackhand', 'headTrackHand'},
-	{'headCenter', 'mesh', 'headMesh'},
-	--
+	{'headCenter', 'teleop', 'headTeleop'},
+	-- Overrides
 	{'headTeleop', 'init', 'headCenter'},
 	{'headTeleop', 'trackhand', 'headTrackHand'},
+	{'headTeleop', 'mesh', 'headMesh'},
 	--
 	{'headTrackHand', 'init', 'headCenter'},
+	{'headTrackHand', 'mesh', 'headMesh'},
 	{'headTrackHand', 'teleop', 'headTeleop'},
 	--
-	{'headMesh', 'init', 'headCenter'},
 	{'headMesh', 'done', 'headCenter'},
+	{'headMesh', 'trackhand', 'headTrackHand'},
+	{'headMesh', 'init', 'headCenter'},
 }
 
 fsm.Gripper = {

@@ -109,6 +109,13 @@ fsm.Body = {
   {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'nextstep', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
+  --
+
+  --take a single, low step (for flat terrain)
+	{'bodyStop', 'stepflat', 'bodyStep2'},
+  {'bodyStep2', 'done', 'bodyStop'},
+
+
 }
 
 
@@ -195,6 +202,10 @@ fsm.Motion = {
 
 	{'motionStance', 'stair', 'motionStepPreviewStair'},
 	{'motionStepPreviewStair', 'done', 'motionStance'},
+
+	{'motionStance', 'slowstep', 'motionSlowStep'},
+	{'motionSlowStep', 'done', 'motionStance'},
+
 
 	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},

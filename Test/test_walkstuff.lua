@@ -86,16 +86,16 @@ elseif key_char_lower==("4") then
 
 	elseif key_char_lower==("5") then      
 		hcm.set_step_supportLeg(1)
-		hcm.set_step_relpos({-0.32,0,0})
+		hcm.set_step_relpos({0.16,0,0})
 --		hcm.set_step_relpos({-0.28,0,0})
 		hcm.set_step_zpr({0.00,0,0})
-		body_ch:send'stepover1'		
+		body_ch:send'stepflat'		
 
 	elseif key_char_lower==("6") then      
 		hcm.set_step_supportLeg(0)
-		hcm.set_step_relpos({-0.32,0,0})
+		hcm.set_step_relpos({0.16,0,0})
 		hcm.set_step_zpr({0.00,0,0})
-		body_ch:send'stepover1'
+		body_ch:send'stepflat'
 
 
 

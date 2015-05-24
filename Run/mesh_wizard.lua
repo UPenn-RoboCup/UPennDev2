@@ -27,7 +27,6 @@ local function check_send_mesh(is_open)
 	local t = Body.get_time()
 	local dt_send0 = t - t_send
 	if dt_send0 < dt_send then return end
-	-- Webots at 1 hz
 	if (not IS_COMPETING) and dt_send0 < 2 then return end
 	t_send = t
 	print('Mesh | Sending', is_open, dt_send0)
@@ -83,7 +82,6 @@ local function check_send_mesh(is_open)
 			local ret, err = mesh1_udp_ch:send(table.concat(raw_msg))
 			--print('Mesh1 | Sent UDP', unpack(ret))
 		end
-		print('Mesh1 | Sending')
 	end
 
 	-- Log
@@ -188,10 +186,10 @@ local function update(meta, ranges)
 end
 
 local function exit()
-if ENABLE_LOG then
-	logger0:stop()
-	logger1:stop()
-end
+	if ENABLE_LOG then
+		logger0:stop()
+		logger1:stop()
+	end
 end
 
 -- If required from Webots, return the table

@@ -42,9 +42,11 @@ else
 	end
 end
 
-local t_send, t_log = 0, 0
+local t_send, t_log = -math.huge, -math.huge
 local LOG_INTERVAL = 1/5
-local SEND_INTERVAL = .5
+
+local hz_send = 4
+local dt_send = 1/hz_send
 
 
 local libLog, logger
@@ -95,11 +97,15 @@ local function update(img, sz, cnt, t)
 	c_meta.t = t
 	c_meta.n = cnt
 
-	local do_send = t-t_send > (1 / hcm.get_monitor_fps())
-	t_send = do_send and t or t_send
+	--local do_send = t-t_send > (1 / hcm.get_monitor_fps())
+	local dt_send0 = t - t_send
+	local do_send = ENABLE_NET
+	if dt_send0 < dt_send then do_send = false end
+	if (not IS_COMPETING) and dt_send0 < 0.5 then do_send = false end
 
-	-- Check if we are sending to the operator
-	if ENABLE_NET and do_send then		
+	if do_send then
+		print('Camera | Sending')
+		t_send = t
 		local c_img = c_yuyv:compress(img, w, h)
 		c_meta.sz = #c_img
 		if camera_ch then

@@ -34,7 +34,7 @@ if IS_WEBOTS then
 			ft = true,
 			feedback = 'feedback_wizard',
 			--slam = true,
-	    --head_camera = 'camera_wizard',
+	    head_camera = 'camera_wizard',
 	    chest_lidar = true,
 	    head_lidar = true,
 	    --kinect = 'kinect2_wizard',

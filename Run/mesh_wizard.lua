@@ -22,14 +22,16 @@ local mag_sweep0, t_sweep0, ranges_fov0
 local mag_sweep1, t_sweep1, ranges_fov1
 local hz_send = 4
 local dt_send = 1/hz_send
+local hz_test_send = 0.5
+local dt_test_send = 1/hz_test_send
 
 local function check_send_mesh(is_open)
 	local t = Body.get_time()
 	local dt_send0 = t - t_send
 	if dt_send0 < dt_send then return end
-	if (not IS_COMPETING) and dt_send0 < 2 then return end
+	if (not IS_COMPETING) and dt_send0 < dt_test_send then return end
 	t_send = t
-	print('Mesh | Sending', is_open, dt_send0)
+	print('Mesh | Sending', dt_send0, is_open)
 	if mesh0 then
 		local metadata = mesh0.metadata
 		metadata.t = t
@@ -181,7 +183,7 @@ local function update(meta, ranges)
 	end
 	if IS_WEBOTS then
 		local is_open = hcm.get_network_open()
-		check_send_mesh(is_open)
+		check_send_mesh(is_open==1)
 	end
 end
 

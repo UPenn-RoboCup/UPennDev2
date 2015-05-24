@@ -47,7 +47,10 @@ local LOG_INTERVAL = 1/5
 
 local hz_send = 4
 local dt_send = 1/hz_send
-
+local hz_test_send = 1
+local dt_test_send = 1/hz_test_send
+local hz_buffer = 5
+local dt_buffer = 1/hz_test_send
 
 local libLog, logger
 
@@ -92,28 +95,45 @@ local udp_ret, udp_err, udp_data
 local t0 = get_time()
 local t_debug = 0
 
+local buffer = {}
 local function update(img, sz, cnt, t)
 	-- Update metadata
 	c_meta.t = t
 	c_meta.n = cnt
+	local c_img = c_yuyv:compress(img, w, h)
+	c_meta.sz = #c_img
+	local msg = {mp.pack(c_meta), c_img}
 
 	--local do_send = t-t_send > (1 / hcm.get_monitor_fps())
 	local dt_send0 = t - t_send
 	local do_send = ENABLE_NET
 	if dt_send0 < dt_send then do_send = false end
-	if (not IS_COMPETING) and dt_send0 < 0.5 then do_send = false end
+	if (not IS_COMPETING) and dt_send0 < dt_test_send then do_send = false end
 
 	if do_send then
-		print('Camera | Sending')
+		print('Camera | Sending', dt_send0, #buffer)
 		t_send = t
-		local c_img = c_yuyv:compress(img, w, h)
-		c_meta.sz = #c_img
 		if camera_ch then
-			camera_ch:send({mp.pack(c_meta), c_img})
+			camera_ch:send(msg)
 		end
 		if udp_ch then
-			udp_data = mp.pack(c_meta)..c_img
-			udp_ret, udp_err = udp_ch:send(udp_data)
+			udp_ret, udp_err = udp_ch:send(table.concat(msg))
+		end
+	end
+
+	-- TODO: Work with the buffer
+	table.insert(buffer, 1, msg)
+	if #buffer>5 then
+		table.remove(buffer)
+	end
+	if IS_COMPETING then
+		local is_open = hcm.get_network_open()==1
+		if is_open then
+			-- Clear the buffer
+			for i,m in ipairs(buffer) do
+				udp_ret, udp_err = udp_ch:send(table.concat(m))
+			end
+			buffer = {}
 		end
 	end
 

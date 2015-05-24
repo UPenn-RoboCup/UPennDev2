@@ -61,7 +61,7 @@ local handOffsetX_L = 0.38
 local handOffsetY_L = 0
 local handOffsetZ_L = 0
 
-local handOffsetX_Gripper = 0.230
+local handOffsetX_Gripper = 0.18
 local handOffsetY_Gripper = 0
 local handOffsetZ_Gripper = 0
 

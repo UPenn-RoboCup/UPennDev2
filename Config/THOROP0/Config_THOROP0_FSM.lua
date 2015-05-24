@@ -189,11 +189,13 @@ fsm.Gripper = {
 	{'gripperTeleopTorque', 'idle', 'gripperIdle'},
 	{'gripperTeleopTorque', 'init', 'gripperClose'},
 	{'gripperTeleopTorque', 'clench', 'gripperClench'},
+	{'gripperTeleopTorque', 'center', 'gripperCenter'},
 	{'gripperTeleopTorque', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperTeleopPosition', 'idle', 'gripperIdle'},
 	{'gripperTeleopPosition', 'init', 'gripperClose'},
 	{'gripperTeleopPosition', 'clench', 'gripperClench'},
+	{'gripperTeleopPosition', 'center', 'gripperCenter'},
 	{'gripperTeleopPosition', 'teleop', 'gripperTeleopTorque'},
 }
 

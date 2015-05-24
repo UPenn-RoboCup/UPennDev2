@@ -54,21 +54,20 @@ function state.update()
 	local lChange = teleopLGrip1~=teleopLGrip
 	local rChange = teleopRGrip1~=teleopRGrip
 
-  -- Grab our current position
-	local qLGrip = Body.get_lgrip_position()
-	local qRGrip = Body.get_rgrip_position()
-
 	if lChange then
 		teleopLGrip = teleopLGrip1
-		local tqL = get_torque_requirement(qLGrip, teleopLGrip)
-		Body.set_lgrip_command_torque(tqL)
 	end
-
 	if rChange then
 		teleopRGrip = teleopRGrip1
-		local tqR = get_torque_requirement(qRGrip, teleopRGrip)
-		Body.set_rgrip_command_torque(tqR)
 	end
+
+	-- Grab our current position
+	local qLGrip = Body.get_lgrip_position()
+	local qRGrip = Body.get_rgrip_position()
+	local tqL = get_torque_requirement(qLGrip, teleopLGrip)
+	local tqR = get_torque_requirement(qRGrip, teleopRGrip)
+	Body.set_lgrip_command_torque(tqL)
+	Body.set_rgrip_command_torque(tqR)
 
 end
 

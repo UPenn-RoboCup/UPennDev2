@@ -35,8 +35,8 @@ function state.entry()
 	local qRGrip = Body.get_rgrip_position()
 	teleopLGrip = qLGrip
 	teleopRGrip = qRGrip
-	hcm.set_teleop_lgrip_position(teleopLArm)
-  hcm.set_teleop_rgrip_position(teleopRArm)
+	hcm.set_teleop_lgrip_position(teleopLGrip)
+  hcm.set_teleop_rgrip_position(teleopRGrip)
 
 end
 

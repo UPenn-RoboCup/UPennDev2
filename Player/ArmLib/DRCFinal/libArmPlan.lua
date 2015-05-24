@@ -503,7 +503,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		return qArmF
 	end
 	-- Goto the final
-	local qArmF1 = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0) or qArm
+	local qArmF1 = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0)
 	if not qArmF1 then
 		if Config.debug.armplan then print(prefix..'No final solution found') end
 		return qArmF
@@ -624,7 +624,6 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	-- Goto the final
 	local qWaistArmF1 =
 		self:find_shoulder(trGoal, {unpack(qWaistArmF,2,#qWaistArmF)}, {0,1,0}, {qWaistArmF[1], 0})
-		or qWaistArmF
 	if not qWaistArmF1 then
 		if Config.debug.armplan then print(prefix..'No final solution found') end
 		return qWaistArmF

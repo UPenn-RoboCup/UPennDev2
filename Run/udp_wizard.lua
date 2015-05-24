@@ -66,17 +66,25 @@ for key,stream in pairs(Config.net.streams) do
 	end
 end
 
--- Forward the ping test packets back to the robot
---[[
-do
-	local r = si.new_receiver(Config.net.test.udp)
-	r.callback = cb
-	table.insert(in_channels, r)
-	local s = si.new_publisher(Config.net.test.tcp)
-	table.insert(out_channels, s)
-	table.insert(ch_processing, procRaw)
+local ping_ch, go_ch
+if IS_COMPETING then
+	local NET_OPEN = false
+	ping_ch = si.new_publisher(Config.net.ping.tcp)
+	go_ch = si.new_receiver(Config.net.ping.udp)
+	table.insert(out_channels, ping_ch)
+	table.insert(in_channels, go_ch)
+	go_ch.callback = function(skt)
+		local ch_id = lut[skt]
+		local in_ch = in_channels[ch_id]
+		local out_ch = out_channels[ch_id]
+		local sz = in_ch:size()
+		while sz > 0 do
+			local data = in_ch:receive()
+			out_ch:send('ok')
+			sz = in_ch:size()
+		end
+	end
 end
---]]
 
 local function shutdown()
   poller:stop()

@@ -103,6 +103,8 @@ function movearm.goto(l, r)
 			end
 		end
 		if l.weights then vector.new(l.weights) end
+		if l.qWaistGuess then vector.new(l.qWaistGuess) end
+		if l.qArmFGuess then vector.new(l.qArmFGuess) end
 		l.qArm0 = vector.new(l.qLArm0 or Body.get_larm_command_position())
 		l.qWaist0 = vector.new(l.qWaist0 or Body.get_waist_command_position())
 
@@ -128,6 +130,8 @@ function movearm.goto(l, r)
 			end
 		end
 		if r.weights then vector.new(r.weights) end
+		if r.qWaistGuess then vector.new(r.qWaistGuess) end
+		if r.qArmFGuess then vector.new(r.qArmFGuess) end
 		r.qArm0 = vector.new(r.qRArm0 or Body.get_rarm_command_position())
 		r.qWaist0 = vector.new(r.qWaist0 or Body.get_waist_command_position())
 

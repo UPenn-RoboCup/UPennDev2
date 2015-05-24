@@ -391,7 +391,7 @@ function libArmPlan.joint_waist_preplan(self, plan)
 			table.insert(path, qWaistArm)
 		end
 		print(prefix..'Steps:', #path)
-		return co_play(path)
+		return co_play_waist(path)
 	end
 	-- Timeout based
 	local timeout = assert(plan.timeout, prefix..'No timeout')
@@ -418,7 +418,7 @@ function libArmPlan.joint_waist_preplan(self, plan)
 		print(prefix..'Steps:', #path)
 		if #path > nStepsTimeout then print(prefix..'Timeout: ', #path) end
 	end
-	return co_play(plan)
+	return co_play_waist(plan)
 end
 -- Plan via Jacobian for just the arm
 function libArmPlan.jacobian_preplan(self, plan)
@@ -626,7 +626,7 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
 	end
 	-- Play the plan
-	local qWaistArmF = co_play(path)
+	local qWaistArmF = co_play_waist(path)
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
 		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end

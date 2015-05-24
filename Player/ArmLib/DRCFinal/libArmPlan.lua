@@ -112,7 +112,7 @@ local function co_play(path, callback)
 		end
 	end
 	local qEnd = path[#path]
-	if #qArmPlanned>7 then -- TODO: use self
+	if #qEnd>7 then -- TODO: use self
 			return {unpack(qEnd, 2, #qEnd)}, {qEnd[1], 0}
 		else
 			return qEnd

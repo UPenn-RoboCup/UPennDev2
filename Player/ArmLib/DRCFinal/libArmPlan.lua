@@ -235,7 +235,6 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 		tinsert(cwrist, fabs(iq[5]) + fabs(iq[7]))
 	end
 
-
 	-- Combined cost
 	-- TODO: Tune the weights on a per-task basis (some tight, but not door)
 	local cost = {}
@@ -303,7 +302,7 @@ function libArmPlan.joint_preplan(self, plan)
 			qArm = qArm + dqAverage
 			table.insert(path, qArm)
 		end
-		print(prefix..'Steps:', #path)
+		print(prefix..'Duration Steps:', #path)
 		return co_play(path)
 	end
 	-- Timeout based
@@ -328,10 +327,10 @@ function libArmPlan.joint_preplan(self, plan)
 	until #path > nStepsTimeout
 	-- Finish
 	if Config.debug.armplan then
-		print(prefix..'Steps:', #path)
+		print(prefix..'Timeout Steps:', #path)
 		if #path > nStepsTimeout then print(prefix..'Timeout: ', #path) end
 	end
-	return co_play(plan)
+	return co_play(path)
 end
 
 function libArmPlan.joint_waist_preplan(self, plan)

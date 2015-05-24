@@ -102,6 +102,7 @@ function movearm.goto(l, r)
 				l.tr = T.from_quatp(l.tr)
 			end
 		end
+		if l.q then vector.new(l.q) end
 		if l.weights then vector.new(l.weights) end
 		if l.qWaistGuess then vector.new(l.qWaistGuess) end
 		if l.qArmFGuess then vector.new(l.qArmFGuess) end

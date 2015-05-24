@@ -20,7 +20,7 @@ function state.entry()
   t_update = t_entry
 
 	-- Stop other state machines
-	motion_ch:send'stand'
+	--motion_ch:send'stand'
 	head_ch:send'teleop'
 	arm_ch:send'teleopraw'
 

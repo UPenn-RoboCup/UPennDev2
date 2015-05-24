@@ -99,19 +99,29 @@ local function co_play(path, callback)
 		callback(qArmSensed, qWaistSensed)
 	end
 	for i, qArmPlanned in ipairs(path) do
-		--print(i, qArmPlanned)
-		local qArmSensed, qWaistSensed
-		if #qArmPlanned>7 then -- TODO: use self
-			qArmSensed, qWaistSensed = coroutine.yield(
-				{unpack(qArmPlanned, 2, #qArmPlanned)}, {qArmPlanned[1], 0})
-		else
-			qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
-		end
+		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
 		if type(callback)=='function' then
 			callback(qArmSensed, qWaistSensed)
 		end
 	end
-	return path[#path]
+	local qEnd = path[#path]
+	return qEnd
+end
+
+local function co_play_waist(path, callback)
+	local qArmSensed, qWaistSensed = coroutine.yield()
+	if type(callback)=='function' then
+		callback(qArmSensed, qWaistSensed)
+	end
+	for i, qArmPlanned in ipairs(path) do
+		qArmSensed, qWaistSensed = coroutine.yield(
+				{unpack(qArmPlanned, 2, #qArmPlanned)}, {qArmPlanned[1], 0})
+		if type(callback)=='function' then
+			callback(qArmSensed, qWaistSensed)
+		end
+	end
+	local qEnd = path[#path]
+	return {unpack(qEnd, 2, #qEnd)}, {qEnd[1], 0}
 end
 
 -- Similar to SJ's method for the margin
@@ -329,12 +339,13 @@ function libArmPlan.joint_waist_preplan(self, plan)
 	assert(type(plan)=='table', prefix..'Bad plan')
 	local qArm0 = assert(plan.qArm0, prefix..'Need initial arm')
 	local qWaist0 = assert(plan.qWaist0, prefix..'Need initial waist')
+	-- If calling joint_waist, then should always have a final waist...
+	local qWaistF = assert(plan.qWaistGuess, prefix..'Need final waist')
 	local qArmF
 	if type(plan.q)=='table' then
 		qArmF = plan.q
 	elseif plan.tr then
 		local qArmFGuess = plan.qArmGuess or qArm0
-		local qWaistF = plan.qWaistGuess or qWaist0
 		qArmF = self:find_shoulder(plan.tr, qArmFGuess, plan.weights, qWaistF)
 		assert(type(qArmF)=='table', prefix..'No target shoulder solution')
 	else
@@ -371,7 +382,7 @@ function libArmPlan.joint_waist_preplan(self, plan)
 		local dqAverage = dqdtAverage * dt
 		for i, lim in ipairs(dq_limit) do
 			assert(fabs(dqAverage[i]) <= lim,
-				string.format("joint_waist_preplan | dq[%d] |%g| > %g", i, dqAverage[i], lim))
+				string.format("%s dq[%d] |%g| > %g", prefix, i, dqAverage[i], lim))
 		end
 		-- Form the plan
 		local nsteps = plan.duration * hz
@@ -503,7 +514,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		return qArmF
 	end
 	-- Goto the final
-	local qArmF1 = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0) or qArm
+	local qArmF1 = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0)
 	if not qArmF1 then
 		if Config.debug.armplan then print(prefix..'No final solution found') end
 		return qArmF
@@ -619,19 +630,19 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
 		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end
-		return qWaistArmF
+		return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
 	end
 	-- Goto the final
 	local qWaistArmF1 =
 		self:find_shoulder(trGoal, {unpack(qWaistArmF,2,#qWaistArmF)}, {0,1,0}, {qWaistArmF[1], 0})
-		or qWaistArmF
 	if not qWaistArmF1 then
 		if Config.debug.armplan then print(prefix..'No final solution found') end
-		return qWaistArmF
+		return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
 	end
 	-- Use the pre-existing planner
 	return libArmPlan.joint_waist_preplan(self, {
-		q = qWaistArmF1,
+		q = {unpack(qWaistArmF1,2,#qWaistArmF)},
+		qWaistGuess = qWaistArmF1[1],
 		qArm0 = {unpack(qWaistArmF,2,#qWaistArmF)},
 		qWaist0 = {qWaistArmF[1], 0},
 		duration = 2

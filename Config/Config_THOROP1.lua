@@ -49,7 +49,7 @@ if IS_WEBOTS then
 		--slam = true,
     --head_camera = 'camera_wizard',
     chest_lidar = true,
-    --head_lidar = true,
+    head_lidar = true,
     --kinect = 'kinect2_wizard',
 		mesh = 'mesh_wizard',
 	 	world = 'world_wizard',

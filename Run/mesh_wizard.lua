@@ -64,36 +64,32 @@ local function check_send_mesh()
 			local ret, err = mesh0_udp_ch:send(meta..mesh0:get_raw_string())
 --			print('Mesh0 | Sent UDP', unpack(ret))
 		end
-		io.write('Mesh0 | Sending\n')
+		print('Mesh0 | Sending')
 	end
 
 	if mesh1 and (t-t_send_mesh1>t_sweep1 or request) then
 		t_send_mesh1 = t
 		local metadata = mesh1.metadata
 		metadata.t = t
-		mesh1:dynamic_range(vcm.get_mesh1_dynrange())
-		local c_mesh = mesh1:get_png_string2()
+		metadata.c = 'raw'
+		local raw_msg = {mpack(metadata), mesh1:get_raw_string()}
+		--mesh1:dynamic_range(vcm.get_mesh1_dynrange())
+		--local c_mesh = mesh1:get_png_string2()
+		--metadata.c = 'png'
+		--local png_msg = {mpack(metadata), c_mesh}
 
 		-- Send away
 		if mesh1_ch then
-			metadata.c = 'raw'
-			mesh1_ch:send{mpack(metadata), mesh1:get_raw_string()}
-			--metadata.c = 'png'
-			--mesh1_ch:send{mpack(metadata), c_mesh}
+			mesh1_ch:send(raw_msg)
 		end
 		if mesh1_tcp_ch then
-			metadata.c = 'raw'
-			mesh1_tcp_ch:send{mpack(metadata), mesh1:get_raw_string()}
-			--metadata.c = 'png'
-			--mesh0_ch:send{mpack(metadata), c_mesh}
+			mesh1_tcp_ch:send(raw_msg)
 		end
 		if mesh1_udp_ch then
-			metadata.c = 'png'
-			local meta = mpack(metadata)
-			local ret, err = mesh1_udp_ch:send(meta..c_mesh)
+			local ret, err = mesh1_udp_ch:send(table.concat(raw_msg))
 			--print('Mesh1 | Sent UDP', unpack(ret))
 		end
-		print('Mesh1')
+		print('Mesh1 | Sending')
 	end
 
 	-- Log

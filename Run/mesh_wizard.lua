@@ -15,26 +15,23 @@ require'hcm'
 local mesh0_udp_ch, mesh1_udp_ch
 local mesh0_tcp_ch, mesh1_tcp_ch
 local mesh0_ch, mesh1_ch
-local t_send_mesh0 = -math.huge
-local t_send_mesh1 = -math.huge
+local t_send = -math.huge
 local libLog, logger
 local mesh0, mesh1
 local mag_sweep0, t_sweep0, ranges_fov0
 local mag_sweep1, t_sweep1, ranges_fov1
+local hz_send = 4
+local dt_send = 1/hz_send
 
-local function check_send_mesh()
-	local request = false
+local function check_send_mesh(is_open)
 	local t = Body.get_time()
-	local n_open = hcm.get_network_open()
-	local t_open
-	if n_open==1 then
-		t_open = hcm.get_network_topen()
-		if t_open - t_send_mesh0 > 0.5 or t_open - t_send_mesh1 > 0.5 then
-			request = true
-		end
-	end
-	if mesh0 and (t-t_send_mesh0>t_sweep0 or request) then
-		t_send_mesh0 = t
+	local dt_send0 = t - t_send
+	if dt_send0 < dt_send then return end
+	-- Webots at 1 hz
+	if (not IS_COMPETING) and dt_send0 < 2 then return end
+	t_send = t
+	print('Mesh | Sending', is_open, dt_send0)
+	if mesh0 then
 		local metadata = mesh0.metadata
 		metadata.t = t
 
@@ -55,7 +52,6 @@ local function check_send_mesh()
 			--mesh0_ch:send{mpack(metadata), c_mesh}
 		end
 		if mesh0_udp_ch then
---print('SENDING!!!')
 			--metadata.c = 'png'
 			--local meta = mpack(metadata)
 			--local ret, err = mesh0_udp_ch:send(meta..c_mesh)
@@ -64,11 +60,9 @@ local function check_send_mesh()
 			local ret, err = mesh0_udp_ch:send(meta..mesh0:get_raw_string())
 --			print('Mesh0 | Sent UDP', unpack(ret))
 		end
-		print('Mesh0 | Sending')
 	end
 
-	if mesh1 and (t-t_send_mesh1>t_sweep1 or request) then
-		t_send_mesh1 = t
+	if mesh1 then
 		local metadata = mesh1.metadata
 		metadata.t = t
 		metadata.c = 'raw'
@@ -187,11 +181,10 @@ local function update(meta, ranges)
 		end
 		mesh1:add_scan(meta.angle[2], ranges, meta)
 	end
-
-	-- Check for sending out on the wire
-	-- TODO: This *should* be from another ZeroMQ event, in case the lidar dies
-	check_send_mesh()
-
+	if IS_WEBOTS then
+		local is_open = hcm.get_network_open()
+		check_send_mesh(is_open)
+	end
 end
 
 local function exit()
@@ -227,10 +220,19 @@ local running = true
 local function shutdown()
 	io.write('Shutdown!\n')
 	poller:stop()
+	running = false
 end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
+-- Timeout in milliseconds (8 Hz)
+local TIMEOUT = 1e3 / 8
 entry()
-poller:start()
+--poller:start()
+while running do
+	npoll = poller:poll(TIMEOUT)
+	local t = Body.get_time()
+	local is_open = hcm.get_network_open()
+	check_send_mesh(is_open==1)
+end
 exit()

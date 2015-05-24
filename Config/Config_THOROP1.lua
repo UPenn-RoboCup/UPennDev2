@@ -29,6 +29,22 @@ if IS_WEBOTS then
 	if IS_STEVE then
 		Config.testfile = 'test_teleop'
 		Config.debug.armplan = true
+
+	  Config.sensors = {
+			ft = true,
+			feedback = 'feedback_wizard',
+			--slam = true,
+	    --head_camera = 'camera_wizard',
+	    chest_lidar = true,
+	    head_lidar = true,
+	    --kinect = 'kinect2_wizard',
+			mesh = 'mesh_wizard',
+		 	world = 'world_wizard',
+	  }
+	  -- Adjust the timesteps if desired
+	  -- Config.camera_timestep = 33
+	  -- Config.lidar_timestep = 200 --slower
+	  -- Config.kinect_timestep = 30
 	else
 		--Config.testfile = 'test_testbed'		
 		Config.testfile = 'test_walkstuff'		
@@ -40,21 +56,6 @@ if IS_WEBOTS then
 		Config.raise_body = false
 		Config.piecewise_step = true
 		--Config.birdwalk = 1 --testing birdwalk		
-	end
-
-	if IS_STEVE then
-	  Config.sensors = {
-			ft = true,
-			feedback = 'feedback_wizard',
-			--slam = true,
-	    --head_camera = 'camera_wizard',
-	    --chest_lidar = true,
-	    head_lidar = true,
-	    --kinect = 'kinect2_wizard',
-			mesh = 'mesh_wizard',
-		 	world = 'world_wizard',
-	  }
-	else
 		Config.sensors = {
 			ft = true,
 			feedback = 'feedback_wizard',
@@ -68,13 +69,6 @@ if IS_WEBOTS then
 
 	end
 
-
-
-
-  -- Adjust the timesteps if desired
-  -- Config.camera_timestep = 33
-  -- Config.lidar_timestep = 200 --slower
-  -- Config.kinect_timestep = 30
 end
 
 -----------------------------------

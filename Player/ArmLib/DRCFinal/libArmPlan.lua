@@ -111,7 +111,12 @@ local function co_play(path, callback)
 			callback(qArmSensed, qWaistSensed)
 		end
 	end
-	return path[#path]
+	local qEnd = path[#path]
+	if #qArmPlanned>7 then -- TODO: use self
+			return {unpack(qEnd, 2, #qEnd)}, {qEnd[1], 0}
+		else
+			return qEnd
+		end
 end
 
 -- Similar to SJ's method for the margin
@@ -619,14 +624,14 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
 		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end
-		return qWaistArmF
+		return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
 	end
 	-- Goto the final
 	local qWaistArmF1 =
 		self:find_shoulder(trGoal, {unpack(qWaistArmF,2,#qWaistArmF)}, {0,1,0}, {qWaistArmF[1], 0})
 	if not qWaistArmF1 then
 		if Config.debug.armplan then print(prefix..'No final solution found') end
-		return qWaistArmF
+		return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
 	end
 	-- Use the pre-existing planner
 	return libArmPlan.joint_waist_preplan(self, {

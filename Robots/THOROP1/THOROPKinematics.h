@@ -118,8 +118,8 @@ const double MassArmL[7]={
 
 //extender mass 400g, gripper mass 1200gr (w/last servo)
 const double MassArmR[7]={
-//	0.940, 0.752, 1.806, 1.124, 0.441, 0.077,0.474 //should add hand mass 
-	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.200 
+//	0.940, 0.752, 1.806, 1.124,       0.441, 0.077,0.474 
+	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.200 //extender and hand mass added
 };
 
 

@@ -9,6 +9,7 @@ PROTO GRIPPER_UCLA_v2 [
 	field SFString trigger_name "trigger"
 	field SFString grip_name "grip"
   field SFString extra_name "extra"
+  field SFFloat mass 1.2 #guesswork (incliuding last yaw servo)
 ]
 {
 	Solid {
@@ -19,7 +20,7 @@ PROTO GRIPPER_UCLA_v2 [
 	    children [Box {size 0.03 0.08 0.04 }]
 	  }
 		physics Physics {
-			density -1 mass 1.2  #GUESSWORK, need correct weight w/servo
+			density -1 mass IS mass
 			centerOfMass [0 -0.07 0] #from wrist, with lowered pose			
 		}
 		children [

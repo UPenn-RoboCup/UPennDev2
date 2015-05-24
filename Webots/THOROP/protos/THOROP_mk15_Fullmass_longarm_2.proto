@@ -287,7 +287,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootR"
 																									maxVelocity 3.1520646292
-																									maxTorque IS max_torque_100w		
+																									maxTorque IS max_torque_200w		
 																									minPosition -2.92343 maxPosition 2.92343
 																								} # End of the LegLowerR RotationalMotor
 																								jointParameters HingeJointParameters {
@@ -501,7 +501,7 @@ Robot {
 																								device RotationalMotor {
 																									name "FootL"
 																									maxVelocity 3.1520646292
-																									maxTorque IS max_torque_100w
+																									maxTorque IS max_torque_200w
 																									minPosition -2.92343 maxPosition 2.92343
 																								}
 																								jointParameters HingeJointParameters {
@@ -892,6 +892,8 @@ Robot {
 																						trigger_name "r_trigger"
 																						grip_name "r_grip"
 																						extra_name "r_extra"
+																						#mass 1.2
+																						mass 0.474
 																					}
 
                                         } # End of the Wrist Yaw2 HingeJoint

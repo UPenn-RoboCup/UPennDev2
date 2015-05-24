@@ -51,6 +51,9 @@ function state.entry()
   mcm.set_walk_steprequest(0)
   mcm.set_motion_state(2)
 
+	-- Disable imu yaw
+	wcm.set_robot_use_imu_yaw(0)
+
 
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
@@ -147,6 +150,7 @@ end -- walk.update
 function state.exit()
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
+	wcm.set_robot_use_imu_yaw(1)
 end
 
 return state

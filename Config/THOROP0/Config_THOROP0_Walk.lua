@@ -168,10 +168,6 @@ else
 
 end
 
-print(Config.PLATFORM_NAME)
-
-
-
 if HOSTNAME=="teddy2" or HOSTNAME=="dale" then --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
   walk.hipRollCompensation = 1.5*DEG_TO_RAD
   walk.tZMP = 0.33 

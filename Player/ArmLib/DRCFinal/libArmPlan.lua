@@ -626,25 +626,25 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
 	end
 	-- Play the plan
-	local qWaistArmF = co_play_waist(path)
+	local qArmF, qWaistF = co_play_waist(path)
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
 		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end
-		return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
+		return qArmF, qWaistF
 	end
 	-- Goto the final
-	local qWaistArmF1 =
-		self:find_shoulder(trGoal, {unpack(qWaistArmF,2,#qWaistArmF)}, {0,1,0}, {qWaistArmF[1], 0})
+	local qArmF1 =
+		self:find_shoulder(trGoal, qArmF, {0,1,0}, qWaistFGuess)
 	if not qWaistArmF1 then
 		if Config.debug.armplan then print(prefix..'No final solution found') end
-		return {unpack(qWaistArmF,2,#qWaistArmF)}, {qWaistArmF[1], 0}
+		return qArmF, qWaistF
 	end
 	-- Use the pre-existing planner
 	return libArmPlan.joint_waist_preplan(self, {
-		q = {unpack(qWaistArmF1,2,#qWaistArmF)},
-		qWaistGuess = qWaistArmF1[1],
-		qArm0 = {unpack(qWaistArmF,2,#qWaistArmF)},
-		qWaist0 = {qWaistArmF[1], 0},
+		q = qArmF1,
+		qWaistGuess = qWaistFGuess,
+		qArm0 = qArmF,
+		qWaist0 = qWaistF,
 		duration = 2
 	})
 end

@@ -36,7 +36,7 @@ arm.init[2] = {
 		via='jacobian_preplan', weights = {0,1,0,1}
 	},
 	right = {
-		tr=tr6D{0.2, -0.25, 0.18, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
+		tr=tr6D{0.25, -0.25, 0.18, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
 		--qArmGuess = vector.new{70,-25,28, -150, 10,-80,-90}*DEG_TO_RAD,
 		timeout=15,
 		via='jacobian_preplan',

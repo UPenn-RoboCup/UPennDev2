@@ -224,7 +224,7 @@ fsm.Motion = {
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
-	{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
+	--{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
 	--
 	{'motionStepPreview', 'done', 'motionStance'},
 	--

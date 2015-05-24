@@ -9,7 +9,7 @@ local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
 local function procMP(data)
 	local tbl, offset = munpack(data)
-	--print('offset', offset)
+	if not offset then return end
 	if offset==#data then
 		return mpack(tbl)
 	else

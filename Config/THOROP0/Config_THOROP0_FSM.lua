@@ -149,6 +149,7 @@ fsm.Head = {
 	{'headMesh', 'trackleft', 'headTrackLeft'},
 	{'headMesh', 'trackright', 'headTrackRight'},
 	{'headMesh', 'init', 'headCenter'},
+	{'headMesh', 'teleop', 'headTeleop'},
 }
 
 fsm.Gripper = {

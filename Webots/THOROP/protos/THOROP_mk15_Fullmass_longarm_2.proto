@@ -629,6 +629,7 @@ Robot {
 									translation 0 -0.05 0.03
 									#rotation 0.707107 -0.707107 0 3.14159
 									#rotation 0 1 0 3.14159
+									rotation 0 0 1 3.14159
 								}
 							]
 							physics Physics {

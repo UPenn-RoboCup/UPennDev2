@@ -27,7 +27,8 @@ local narm = 7 -- TODO: Use the config to check...
 local selected_arm = 0 -- left to start
 --
 local LARM_DIRTY = false
-local qLtmp, qL0
+local qLtmp = vector.zeros(narm)
+local qL0 = vector.zeros(narm)
 local function get_larm(refresh)
 	if refresh then qLtmp = hcm.get_teleop_larm() end
 	return qLtmp, qL0
@@ -45,7 +46,8 @@ local function set_larm(q, do_now)
 end
 --
 local RARM_DIRTY = false
-local qRtmp, qR0
+local qRtmp = vector.zeros(narm)
+local qR0 = vector.zeros(narm)
 local function get_rarm(refresh)
 	if refresh then qRtmp = hcm.get_teleop_rarm() end
 	return qRtmp, qR0
@@ -63,7 +65,8 @@ local function set_rarm(q, do_now)
 end
 --
 local TFLARM_DIRTY = false
-local tfLtmp, tfL0
+local tfLtmp = T.eye()
+local tfL0 = T.eye()
 local function get_tflarm(refresh)
 	if refresh then
 		tfLtmp = fromQ(hcm.get_teleop_tflarm())
@@ -83,7 +86,8 @@ local function set_tflarm(tf, do_now)
 end
 --
 local TFRARM_DIRTY = false
-local tfRtmp, tfR0
+local tfRtmp = T.eye()
+local tfR0 = T.eye()
 local function get_tfrarm(refresh)
 	if refresh then
 		tfRtmp = fromQ(hcm.get_teleop_tfrarm())
@@ -103,8 +107,8 @@ local function set_tfrarm(tf, do_now)
 end
 --
 local HEAD_DIRTY = false
-local qHeadtmp -- tracking this
-local qHead0 -- last sent
+local qHeadtmp = vector.zeros(2)-- tracking this
+local qHead0 = vector.zeros(2) -- last sent
 local function get_head(refresh)
 	if refresh then qHeadtmp = hcm.get_teleop_head() end
 	return qHeadtmp, qHead0
@@ -128,13 +132,14 @@ char_lut["'"] = function()
 end
 
 -- Sync the delayed sending
-char_lut[' '] = function()
-	if LARM_DIRTY then set_larm(true) end
-	if RARM_DIRTY then set_rarm(true) end
-	if HEAD_DIRTY then set_head(true) end
-	if TFLARM_DIRTY then set_tflarm(true) end
-	if TFRARM_DIRTY then set_tfrarm(true) end
+function sync()
+	if LARM_DIRTY then set_larm(true) else vector.copy(get_larm(true), qL0) end
+	if RARM_DIRTY then set_rarm(true) else vector.copy(get_rarm(true), qR0) end
+	if HEAD_DIRTY then set_head(true) else vector.copy(get_head(true), qHead0) end
+	if TFLARM_DIRTY then set_tflarm(true) else T.copy(get_tflarm(true), tfL0) end
+	if TFRARM_DIRTY then set_tfrarm(true) else T.copy(get_tfrarm(true), tfR0) end
 end
+char_lut[' '] = sync
 
 -- Enter syncs the data
 local uComp
@@ -144,7 +149,7 @@ local arm_state
 local motion_state
 local gripper_state
 local walk_velocity
-local function sync()
+local function sync_other()
 	uComp = mcm.get_stance_uTorsoComp()
 	body_state = gcm.get_fsm_Body()
 	head_state = gcm.get_fsm_Head()
@@ -178,9 +183,15 @@ char_lut['5'] = function()
 end
 char_lut['6'] = function()
 	arm_ch:send'teleopraw'
+	unix.usleep(1e5)
+	vector.copy(get_larm(true), qL0)
+	vector.copy(get_rarm(true), qR0)
 end
 char_lut['7'] = function()
 	arm_ch:send'teleop'
+	unix.usleep(1e5)
+	T.copy(get_tflarm(true), tfL0)
+	T.copy(get_tfrarm(true), tfR0)
 end
 char_lut['8'] = function()
 	body_ch:send'stop'
@@ -405,13 +416,8 @@ function show_status()
 end
 
 -- Initial sync
+sync_other()
 sync()
--- Set initial arms in tmp and 0
-qL0 = vector.copy(get_larm(true))
-qR0 = vector.copy(get_rarm(true))
-qHead0 = vector.copy(get_head(true))
-tfL0 = vector.copy(get_tflarm(true))
-tfR0 = vector.copy(get_tfrarm(true))
 
 -- Run the generic keypress library
 return dofile(HOME..'/Test/test.lua')

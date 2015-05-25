@@ -505,9 +505,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 	if Config.debug.armplan then
 	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
 	end
-	if #path==0 then return qArm end
 	-- Play the plan
 	local qArmF = co_play(path)
+	if #path==0 then return qArm end
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
 		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end
@@ -627,6 +627,7 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	end
 	-- Play the plan
 	local qArmF, qWaistF = co_play_waist(path)
+	if #path==0 then return qArm0, qWaist0 end
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
 		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end

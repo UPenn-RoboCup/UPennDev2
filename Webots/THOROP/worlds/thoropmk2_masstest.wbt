@@ -46,11 +46,9 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-WoodBox {
-  translation 0.0108684 0.3 1.04426
-}
+#WoodBox {translation 0.0108684 0.3 1.04426}
 THOROP_mk2_Fullmass {
-  translation 0 1.17 -0.03
+  translation 0 1.17 0
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
@@ -60,8 +58,11 @@ THOROP_mk2_Fullmass {
   max_torque_400w 90 
   max_torque_200w 90 
   max_torque_100w 45
-#  max_torque_400w 40 
-#  max_torque_200w 40 
-#  max_torque_100w 22
+
+
+
+  max_torque_400w 180 
+  max_torque_200w 180 
+  max_torque_100w 180
   damping_constant 0
  }

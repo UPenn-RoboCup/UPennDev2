@@ -36,6 +36,9 @@ function state.entry()
   print(state._NAME..' Entry' )
   hcm.set_motion_waistTarget(0) --set target waist to zero
 
+  -- Reset the pose
+  wcm.set_robot_reset_pose(1)
+
   Body.enable_read'lleg'
   Body.enable_read'rleg'
 
@@ -168,8 +171,6 @@ function state.exit()
   -- now on feet
   mcm.set_walk_bipedal(1)
   
-  -- Update current pose
-  wcm.set_robot_reset_pose(1)
   
 
   local pg = Config.walk.leg_p_gain or 64

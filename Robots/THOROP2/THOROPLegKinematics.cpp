@@ -215,7 +215,15 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   
     //TODO: ankle location incorporiating surface angles
     xLeg[0] = xLeg[0] - (footToeX - footC*cos(ankle_tilt_angle+afootA));
-    xLeg[2] = xLeg[2] - footC*sin(ankle_tilt_angle+afootA);
+
+
+
+    //hack (to raise the ankle slightly higher)
+//    xLeg[2] = xLeg[2] - footC*sin(ankle_tilt_angle+afootA);
+    xLeg[2] = xLeg[2] - footC*sin(ankle_tilt_angle+afootA)*1.5;
+
+
+
     dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
     cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
   }else{    

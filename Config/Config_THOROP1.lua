@@ -2,7 +2,7 @@
 IS_STEVE = true
 IS_COMPETING = false
 
-if HOSTNAME=="thor-P770ZM" then	IS_STEVE = false end
+if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 -- Global Config
 Config = {PLATFORM_NAME = 'THOROP1',demo = false,}
 local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
@@ -39,7 +39,10 @@ if IS_WEBOTS then
 		Config.enable_touchdown = false
 		Config.raise_body = false
 		Config.piecewise_step = true
-		--Config.birdwalk = 1 --testing birdwalk		
+		--Config.birdwalk = 1 --testing birdwalk	
+		
+		Config.use_gps_pose=true
+--		Config.debug.world=true	
 	end
 
 

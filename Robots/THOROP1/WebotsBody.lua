@@ -409,7 +409,9 @@ function WebotsBody.update(Body)
     if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
-
+--      if Config.use_gps_pose and Config.debug.world then         
+--        print("raw gps:",unpack(gps))
+--      end
 			--local angle   = math.atan2( compass[3], compass[1] )
       --local pose    = vector.pose{gps[3], gps[1], angle}
 

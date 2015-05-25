@@ -378,102 +378,34 @@ end
 
 
 function moveleg.set_leg_positions()
-
-  local uLeft = mcm.get_status_uLeft()
+    local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorso = mcm.get_status_uTorso()
-  local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
-
-  uTorso = util.pose_global(uTorsoZMPComp,uTorso)
-
-  local zLeg = mcm.get_status_zLeg()
-  local zSag = mcm.get_walk_zSag()
-    
-	local zLegComp = mcm.get_status_zLegComp()
-
-  local zLeft,zRight = zLeg[1]+zSag[1]+zLegComp[1],zLeg[2]+zSag[2]+zLegComp[2]
-  local supportLeg = mcm.get_status_supportLeg()
-  local uTorsoComp = mcm.get_stance_uTorsoComp()
-  local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
-  
-  local delta_legs = mcm.get_walk_delta_legs()  
-
-  local aShiftX = mcm.get_walk_aShiftX()
-  local aShiftY = mcm.get_walk_aShiftY()
-
-  --Now inclined surface compensation is done in IK, not here
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
+  local uTorsoOffset,qLegs,comZ= Body.get_torso_compensation(qLArm,qRArm,qWaist)  
+  local delta_legs = mcm.get_walk_delta_legs()  
+  mcm.set_stance_COMoffset({-uTorsoOffset[1],-uTorsoOffset[2],comZ })
 
-  local count,revise_max = 1,4
-  local adapt_factor = 1.0
-
-
-revise_max=10 --temporary test
-
-
-  --Initial guess 
-  local uTorsoAdapt = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-  local pTorso = vector.new({
-    uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
-            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-
-  local qLegs
-
-  qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY, Config.birdwalk or 0)
-
-  -------------------Incremental COM filtering
-  local com_z = 0
-  while count<=revise_max do
-    local qLLeg = vector.slice(qLegs,1,6)
-    local qRLeg = vector.slice(qLegs,7,12)
-
-    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0, Config.birdwalk or 0)
-    local uCOM = util.pose_global(
-      vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
-
-   uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
-   uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
-   local pTorso = vector.new({
-            uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
-            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-
-   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0)
-   count = count+1
+  --Knee angle check
+  if Config.birdwalk then
+    --knee pitch should be neagitve
+    qLegs[4]= math.min(0,qLegs[4])
+    qLegs[10]= math.min(0,qLegs[10])
+  else
+    --knee pitch should be positive
+    qLegs[4]= math.max(0,qLegs[4])
+    qLegs[10]= math.max(0,qLegs[10])  
   end
-  local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
-  
-
---print("com:",com[1]/com[4])
---  print("uTorsoZ:",com[3]/com[4])
---  print("uTorso:",uTorso[1],uTorsoAdapt[1])
---  print("Torso offset:",uTorsoOffset[1],uTorsoOffset[2])
-  mcm.set_stance_COMoffset({
-    -uTorsoOffset[1],-uTorsoOffset[2],com[3]/com[4]
-    })
-
---Knee angle check
-if Config.birdwalk then
-  --knee pitch should be neagitve
-  qLegs[4]= math.min(0,qLegs[4])
-  qLegs[10]= math.min(0,qLegs[10])
-else
-  --knee pitch should be positive
-  qLegs[4]= math.max(0,qLegs[4])
-  qLegs[10]= math.max(0,qLegs[10])  
-end
 
   local legBias = vector.new(mcm.get_leg_bias())
   qLegs = qLegs + delta_legs + legBias
-  qLegs[5]=qLegs[5]+aShiftY[1]
-  qLegs[11]=qLegs[11]+aShiftY[2]
-  qLegs[6]=qLegs[6]+aShiftX[1]
-  qLegs[12]=qLegs[12]+aShiftX[2]
+  qLegs[5]=qLegs[5]
+  qLegs[11]=qLegs[11]
+  qLegs[6]=qLegs[6]
+  qLegs[12]=qLegs[12]
 
   if Config.walk.anklePitchLimit then
     qLegs[5]=math.max(qLegs[5],Config.walk.anklePitchLimit[1])

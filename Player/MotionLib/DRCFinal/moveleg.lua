@@ -425,6 +425,17 @@ function moveleg.set_leg_positions()
   local bodyOffset = util.pose_relative(uTorso, uFoot)
   mcm.set_status_bodyOffset( bodyOffset )
   ------------------------------------------
+
+
+  if IS_WEBOTS then
+    local llt = Body.get_lleg_current()
+    local rlt = Body.get_rleg_current() 
+
+    mcm.set_status_lleg_torque(llt)
+    mcm.set_status_rleg_torque(rlt)
+
+  end
+
 end
 
 

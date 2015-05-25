@@ -511,6 +511,19 @@ util.color = function(str,fg,bg,blink)
   return begin_fg..str..color_end
 end
 
+
+util.colorcode = function(val, max, c1, c2, str)
+  str= str or "%d"
+  c1 = c1 or 'green'
+  c2 = c2 or 'red'
+  if math.abs(val)<max then 
+    return util.color(string.format(str,val), c1)
+  else
+    return util.color(string.format(str,val), c2)
+  end
+end
+
+
 util.procFunc = procFunc
 util.p_feedback = p_feedback
 

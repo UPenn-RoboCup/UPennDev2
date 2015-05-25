@@ -193,6 +193,7 @@ char_lut['5'] = function()
   head_ch:send'trackright'
 end
 char_lut['6'] = function()
+	arm_ch:send'teleopraw'
 end
 
 char_lut['7'] = function()

@@ -46,19 +46,23 @@ local function entry()
 	hcm.set_network_topen(t_entry)
 	if IS_WEBOTS then
 		feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
+		--[[
 		if IS_COMPETING then
 			ping_ch = si.new_subscriber(Config.net.ping.sub)
 			go_ch = si.new_publisher(Config.net.ping.pub)
 		end
+		--]]
 	else
 		feedback_ch = si.new_sender(
 		Config.net.operator.wired,
 		Config.net.streams.feedback.udp
 		)
+		--[[
 		if IS_COMPETING then
 			ping_ch = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
 			go_ch = si.new_sender(Config.net.operator.wired, Config.net.ping.udp)
 		end
+		--]]
 	end
 end
 
@@ -69,6 +73,7 @@ local function update()
 	local t_update = get_time()
 
 	-- Only send the pings when competing
+	--[[
 	if go_ch and ping_ch then
 		go_ch:send(mpack(t_update))
 		local data = ping_ch:receive(true)
@@ -83,6 +88,7 @@ local function update()
 			hcm.set_network_open(0)
 		end
 	end
+	--]]
 
 	if not IS_WEBOTS and t_update - t_feedback < feedback_interval then return end
 

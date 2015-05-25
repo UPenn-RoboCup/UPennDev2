@@ -49,7 +49,7 @@ local function get_head_transform()
 	local uTorso = mcm.get_stance_uTorsoComp()
 	local trBody = T.trans(-uTorso[1]-Config.walk.footX, -uTorso[2], bH)
 	local qW = Body.get_waist_position()
-  local trNeck0 = trBody * T.rotY(rpy[2]) * T.rotY(qW) * trNeckOffset
+  local trNeck0 = trBody * T.rotY(rpy[2]) * T.rotZ(qW[1]) * trNeckOffset
 	local trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
 	
 	-- TODO: No head bias for now... seems out of order

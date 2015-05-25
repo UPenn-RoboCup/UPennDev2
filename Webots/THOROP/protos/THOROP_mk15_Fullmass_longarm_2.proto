@@ -610,7 +610,7 @@ Robot {
 							name "HeadCamera"
 							width 320
 							height 240
-							translation 0 0.15 0.03
+							translation 0 0.14 0.02
 							rotation 0 1 0 3.14159265
 							pixelSize 0
 							children [
@@ -626,7 +626,7 @@ Robot {
 									name "HeadLidar"
 									width IS lidarRays
 									fieldOfView IS lidarFov
-									translation 0 -0.05 0.03
+									translation 0 -0.05 0.02
 									#rotation 0.707107 -0.707107 0 3.14159
 									#rotation 0 1 0 3.14159
 									rotation 0 0 1 3.14159

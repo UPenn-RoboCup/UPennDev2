@@ -100,7 +100,7 @@ function net()
 end
 
 local function shutdown()
-	local f = io.open('udp.log', 'w')
+	local f = io.open('udp'..unix.time()..'.log', 'w')
 	f:write(mpack(ch_usage))
 	f:close()
 	net()

@@ -28,11 +28,11 @@ local selected_arm = 0 -- left to start
 local DO_IMMEDIATE = true
 local LARM_DIRTY, RARM_DIRTY = false, false
 local qLtmp, qL0
+
 local function get_larm(refresh)
 	if refresh then qLtmp = hcm.get_teleop_larm() end
 	return qLtmp
 end
-
 local function set_larm(q, do_now)
 	if type(q)=='table' and #q==#qLtmp then
 		vector.copy(q, qLtmp)
@@ -52,12 +52,12 @@ local function set_larm(q, do_now)
 		arm_ch:send'teleop'
 	end
 end
+
 local qRtmp, qR0
 local function get_rarm(refresh)
 	if refresh then qRtmp = hcm.get_teleop_rarm() end
 	return qRtmp
 end
-
 local function set_rarm(q, do_now)
 	if type(q)=='table' and #q==#qRtmp then
 		vector.copy(q, qRtmp)
@@ -77,6 +77,25 @@ local function set_rarm(q, do_now)
 		arm_ch:send'teleop'
 	end
 end
+local HEAD_DIRTY = false
+local qHeadtmp -- tracking this
+local qHead0 -- last sent
+local function get_head(refresh)
+	if refresh then qHeadtmp = hcm.get_teleop_head() end
+	return qHeadtmp, qHead0
+end
+local function set_head(q, do_now)
+	if type(q)=='table' and #q==#qHeadtmp then
+		vector.copy(q, qHeadtmp)
+		HEAD_DIRTY = true
+	end
+	if q==true or do_now==true then
+		hcm.set_teleop_head(qHeadtmp)
+		vector.copy(qHeadtmp, qHead0)
+		HEAD_DIRTY = false
+	end
+end
+
 -- Immediately write the changes?
 char_lut["'"] = function()
   DO_IMMEDIATE = not DO_IMMEDIATE
@@ -86,6 +105,7 @@ end
 char_lut[' '] = function()
 	if LARM_DIRTY then set_larm(true) end
 	if RARM_DIRTY then set_rarm(true) end
+	if HEAD_DIRTY then set_head(true) end
 end
 
 -- Enter syncs the data
@@ -138,13 +158,13 @@ char_lut['2'] = function()
 	arm_ch:send'ready'
 end
 char_lut['3'] = function()
-	head_ch:send'trackleft'
+	head_ch:send'teleop'
 end
 char_lut['4'] = function()
-	head_ch:send'trackright'
+	head_ch:send'trackleft'
 end
 char_lut['5'] = function()
-  body_ch:send'approach'
+  head_ch:send'trackright'
 end
 char_lut['6'] = function()
 end
@@ -342,9 +362,9 @@ local head = {
 }
 local function apply_head(dHead)
   if not dHead then return end
-  local goalBefore = hcm.get_teleop_head()
+  local goalBefore = get_head()
   local goalAfter = goalBefore + dHead
-  hcm.set_teleop_head(goalAfter)
+  set_head(goalAfter)
 end
 
 local dWalk = 0.05
@@ -417,10 +437,12 @@ local qrarm = Body.get_rarm_command_position()
     string.format('tr: %.2f, %.2f, %.2f | %.2f, %.2f, %.2f', unpack(fkR2)),
     'teleop: '..tostring(qRtmp*RAD_TO_DEG)
   )
-  local head_info = string.format('\n%s %s\n%s',
+	local qh, qh0 = get_head()
+  local head_info = string.format('\n%s %s\n%s\n%s',
     util.color('Head', 'yellow'),
     (not arm_mode) and '*' or '',
-    'q: '..tostring(Body.get_head_position()*RAD_TO_DEG)
+    'qOperator: '..tostring(qh*RAD_TO_DEG),
+		'qRobot: '..tostring(qh0*RAD_TO_DEG)
   )
   local walk_info = string.format('\n%s %s\n%s',
     util.color('Walk', 'yellow'),
@@ -450,6 +472,7 @@ sync()
 -- Set initial arms in tmp and 0
 qL0 = vector.copy(get_larm(true))
 qR0 = vector.copy(get_rarm(true))
+qHead0 = vector.copy(get_head(true))
 
 -- Run the generic keypress library
 return dofile(HOME..'/Test/test.lua')

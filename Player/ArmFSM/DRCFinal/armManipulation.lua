@@ -84,8 +84,14 @@ function state.update()
 		print(state._NAME, 'L', okL, qLWaypoint, lco, lStatus)
 		print(state._NAME, 'R', okR, qRWaypoint, rco, rStatus)
 		-- Safety
-		Body.set_larm_command_position(qLArm)
-		Body.set_rarm_command_position(qRArm)
+		local qcLArm = Body.get_larm_command_position()
+		local qcRArm = Body.get_rarm_command_position()
+		local qcWaist = Body.get_waist_command_position()
+		--
+		Body.set_larm_command_position(qcLArm)
+		Body.set_rarm_command_position(qcRArm)
+		Body.set_waist_command_position(qcWaist)
+		--
 		return'teleopraw'
 	end
 

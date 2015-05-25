@@ -23,21 +23,17 @@ function state.entry()
   t_update = t_entry
 
 	-- Set where we are
-	local qLArm = Body.get_larm_position()
-	local qRArm = Body.get_rarm_position()
-	local qWaist = Body.get_waist_position()
-	teleopLArm = qLArm
-	teleopRArm = qRArm
-	teleopWaist = qWaist
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+	local qcWaist = Body.get_waist_command_position()
+	teleopLArm = qcLArm
+	teleopRArm = qcRArm
+	teleopWaist = qcWaist
 	hcm.set_teleop_larm(teleopLArm)
 	hcm.set_teleop_rarm(teleopRArm)
 	hcm.set_teleop_waist(teleopWaist)
 
-	lco, rco = movearm.goto({
-		q = teleopLArm, timeout = 5, via='joint_preplan'
-	}, {
-		q = teleopRArm, timeout = 5, via='joint_preplan'
-	})
+	lco, rco = movearm.goto(false, false)
 
 	-- Check for no motion
 	okL = type(lco)=='thread' or lco==false
@@ -114,9 +110,18 @@ function state.update()
 		print(state._NAME, 'L', okL, qLWaypoint)
 		print(state._NAME, 'R', okR, qRWaypoint)
 		-- Safety
+		local qcLArm = Body.get_larm_command_position()
+		local qcRArm = Body.get_rarm_command_position()
+		local qcWaist = Body.get_waist_command_position()
+		--
+		Body.set_larm_command_position(qcLArm)
+		Body.set_rarm_command_position(qcRArm)
+		Body.set_waist_command_position(qcWaist)
+		--
 		Body.set_larm_command_position(qLArm)
 		Body.set_rarm_command_position(qRArm)
 		Body.set_waist_command_position(qWaist)
+		--
 		return'teleopraw'
 	end
 

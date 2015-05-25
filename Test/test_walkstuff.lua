@@ -63,8 +63,10 @@ elseif key_char_lower==("3") then
 --		hcm.set_step_relpos({0.35,0,0})
 		--hcm.set_step_relpos({0.0,0,0})
 		
-
+		hcm.set_step_zpr({0,0,0})
 		hcm.set_step_relpos({0.30,0,0})
+
+		
 		hcm.set_step_zpr({0.225,0,0})
 		
 		body_ch:send'stepover1'		
@@ -77,6 +79,7 @@ elseif key_char_lower==("4") then
 		hcm.set_step_zpr({0.00,0,0})
 
 		hcm.set_step_relpos({0.30,0,0})
+
 		hcm.set_step_zpr({0.225,0,0})
 		
 		body_ch:send'stepover1'		

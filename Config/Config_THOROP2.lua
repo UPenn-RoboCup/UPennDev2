@@ -54,7 +54,7 @@ if IS_WEBOTS then
 		Config.piecewise_step = true
 		Config.birdwalk = 1 --testing birdwalk		
 
-		Config.use_gps_pose=true
+--		Config.use_gps_pose=true
 --		Config.debug.world=true
 	  Config.sensors = {
 			ft = true,

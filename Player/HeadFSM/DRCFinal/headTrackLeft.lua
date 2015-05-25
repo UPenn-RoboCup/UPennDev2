@@ -44,7 +44,8 @@ function state.update()
 	local qWaist = Body.get_waist_position()
 	local headNow = Body.get_head_command_position()
 
-	local tfArm = forwardL(qLArm, qWaist)
+	--local tfArm = forwardL(qLArm, qWaist)
+	local tfArm = forwardL(qLArm)
 	local tfWorld = get_world_tf()
 	local tfHand = tfWorld * tfArm
 

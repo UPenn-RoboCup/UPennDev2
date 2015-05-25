@@ -647,7 +647,11 @@ if IS_WEBOTS then
 
 
 	if Config.birdwalk then
+print("BIRDWALK")
 
+print("BIRDWALK")
+
+print("BIRDWALK")
 		servo.direction = vector.new({
 			1,1, -- Head
 			1,-1,-1,  1,  -1,-1,1, --LArm

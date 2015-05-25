@@ -82,6 +82,7 @@ local function add_scan(self, angle, scan, lidar)
 		ffi.copy(scanline_fl, scan_fl, scan_sz)
 		-- Save the metadata
 		self.metadata.a[s + 1] = lidar.angle
+		self.metadata.qW[s + 1] = lidar.qWaist
 		self.metadata.tfL6[s + 1] = lidar.tfL6
 		self.metadata.tfG6[s + 1] = lidar.tfG6
 		self.metadata.tfL16[s + 1] = lidar.tfL16
@@ -128,7 +129,8 @@ function libMesh.new(id, meta)
 		tfG6 = {},
 		tfL16 = {},
 		tfG16 = {},
-		a = {}
+		a = {},
+		qW = {}, -- Waist
 	}
 	-- Initial population for the metadata
 	local zero_tf6 = {0,0,0, 0,0,0}
@@ -140,6 +142,7 @@ function libMesh.new(id, meta)
 	}
 	for i=1,n_scanlines do
 		o.metadata.a[i] = 0
+		o.metadata.qW[i] = {0,0}
 		o.metadata.tfL6[i] = zero_tf6
 		o.metadata.tfG6[i] = zero_tf6
 		o.metadata.tfL16[i] = zero_tf16

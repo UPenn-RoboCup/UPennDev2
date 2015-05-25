@@ -72,12 +72,12 @@ local function get_tflarm(refresh)
 end
 local function set_tflarm(tf, do_now)
 	if type(tf)~='boolean' then
-		Transform.copy(tf, tfLtmp)
+		T.copy(tf, tfLtmp)
 		TFLARM_DIRTY = true
 	end
 	if q==true or do_now==true then
 		hcm.set_teleop_tflarm(toQ(tfLtmp))
-		Transform.copy(tfLtmp, tfL0)
+		T.copy(tfLtmp, tfL0)
 		TFLARM_DIRTY = false
 	end
 end
@@ -132,6 +132,8 @@ char_lut[' '] = function()
 	if LARM_DIRTY then set_larm(true) end
 	if RARM_DIRTY then set_rarm(true) end
 	if HEAD_DIRTY then set_head(true) end
+	if TFLARM_DIRTY then set_tflarm(true) end
+	if TFRARM_DIRTY then set_tfrarm(true) end
 end
 
 -- Enter syncs the data
@@ -154,20 +156,6 @@ local function sync()
 	motion_state = gcm.get_fsm_Motion()
 	gripper_state = gcm.get_fsm_Gripper()
 	walk_velocity = mcm.get_walk_vel()
-end
-
--- Backspace (Win/Linux) / Delete (OSX)
-local USE_COMPENSATION
-code_lut[127] = function()
-	-- Disable the compensation
-	USE_COMPENSATION = hcm.get_teleop_compensation()
-	----[[
-	USE_COMPENSATION = USE_COMPENSATION + 1
-	USE_COMPENSATION = USE_COMPENSATION>2 and 0 or USE_COMPENSATION
-	--]]
-	USE_COMPENSATION = USE_COMPENSATION==1 and 2 or 1
-	hcm.set_teleop_compensation(USE_COMPENSATION)
-	arm_ch:send'teleop'
 end
 
 -- Switch to head teleop
@@ -195,8 +183,8 @@ end
 char_lut['6'] = function()
 	arm_ch:send'teleopraw'
 end
-
 char_lut['7'] = function()
+	arm_ch:send'teleop'
 end
 char_lut['8'] = function()
 	body_ch:send'stop'
@@ -250,43 +238,27 @@ char_lut['-'] = function()
   end
 end
 
---[[
-local zyz = T.to_zyz(desired_tr)
-print('des zyz:',zyz[1],zyz[2],zyz[3])
---]]
 local function apply_pre(d_tr)
 	if selected_arm==0 then --left
-		local qLArm = get_larm()
-		local fkL = K.forward_larm(qLArm)
-		local trLGoal = d_tr * fkL
-		local iqArm = vector.new(K.inverse_larm(trLGoal, qLArm))
-		sanitize(iqArm, qLArm)
-		set_larm(iqArm, DO_IMMEDIATE)
+		local tfLArm = get_tflarm()
+		local tfLGoal = d_tr * tfLArm
+		set_tflarm(tfLGoal, DO_IMMEDIATE)
 	else
-		local qRArm = get_rarm()
-		local fkR = K.forward_rarm(qRArm)
-		local trRGoal = d_tr * fkR
-		local iqArm = vector.new(K.inverse_rarm(trRGoal, qRArm))
-		sanitize(iqArm, qRArm)
-		set_rarm(iqArm, DO_IMMEDIATE)
+		local tfRArm = get_tfrarm()
+		local tfRGoal = d_tr * tfRArm
+		set_tfrarm(tfRGoal, DO_IMMEDIATE)
 	end
 end
 
 local function apply_post(d_tr)
 	if selected_arm==0 then --left
-		local qLArm = get_larm()
-		local fkL = K.forward_larm(qLArm)
-		local trLGoal = fkL * d_tr
-		local iqArm = vector.new(K.inverse_larm(trLGoal, qLArm))
-		sanitize(iqArm, qLArm)
-		set_larm(iqArm, DO_IMMEDIATE)
+		local tfLArm = get_tflarm()
+		local tfLGoal = tfLArm * d_tr
+		set_tflarm(tfLGoal, DO_IMMEDIATE)
 	else
-		local qRArm = get_rarm()
-		local fkR = K.forward_rarm(qRArm)
-		local trRGoal = fkR * d_tr
-		local iqArm = vector.new(K.inverse_rarm(trRGoal, qRArm))
-		sanitize(iqArm, qRArm)
-		set_rarm(iqArm, DO_IMMEDIATE)
+		local tfRArm = get_tfrarm()
+		local tfRGoal = tfRArm * d_tr
+		set_tfrarm(tfRGoal, DO_IMMEDIATE)
 	end
 end
 
@@ -423,7 +395,6 @@ function show_status()
     color('== Teleoperation ==', 'magenta'),
 		'1: init, 2: head teleop, 3: armReady, 4: armTeleop, 5: headTrack, 6: poke',
 		color(DO_IMMEDIATE and 'Immediate Send' or 'Delayed Send', DO_IMMEDIATE and 'red' or 'yellow'),
-		'Compensation: '..tostring(USE_COMPENSATION),
     'BodyFSM: '..color(body_state, 'green'),
     'ArmFSM: '..color(arm_state, 'green'),
     'HeadFSM: '..color(head_state, 'green'),

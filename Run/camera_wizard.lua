@@ -123,7 +123,6 @@ local function check_send(msg)
 		t_buffer = t
 		table.insert(buffer, 1, msg)
 		if #buffer>nbuffer then table.remove(buffer) end
-		print('Buffering...')
 	end
 	if is_outdoors then
 		buffer = {msg}

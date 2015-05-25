@@ -107,7 +107,7 @@ camera[1] = {
 		-- cameraRoll, cameraPitch, cameraYaw
 		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
 		-- Translation offset from the neck
-		{0.04,0,0.04}
+		{0.02,0,0.14}
 	},
 	cx_offset = 0,
 	cy_offset = 0,

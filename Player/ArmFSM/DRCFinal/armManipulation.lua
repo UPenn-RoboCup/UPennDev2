@@ -105,6 +105,8 @@ function state.update()
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
 	end
+
+	--[[
 	if qLWaistpoint and qRWaistpoint then
 		print('Conflicting Waist')
 	elseif qLWaist then
@@ -112,6 +114,11 @@ function state.update()
 	elseif qRWaist then
 		Body.set_waist_command_position(qRWaistpoint)
 	end
+	--]]
+	  -- Zero the waist
+  local qWaist = Body.get_waist_command_position()
+  local qWaist_approach, doneWaist = util.approachTol(qWaist, {0,0}, {2 * DEG_TO_RAD, 2 * DEG_TO_RAD}, 1/100, {1*DEG_TO_RAD, 1*DEG_TO_RAD})
+  Body.set_waist_command_position(qWaist_approach)
 
 	-- Check if done
 	if lStatus=='dead' and rStatus=='dead' then

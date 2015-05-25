@@ -40,7 +40,7 @@ local function check_send_mesh()
 	if is_outdoors and dt_send0 < dt_outdoor_send then return end
 	if is_indoors and dt_send0 < dt_indoor_send then return end
 	t_send = t
-	print('Mesh | Sending', dt_send0)
+	--print('Mesh | Sending', dt_send0)
 	if mesh0 then
 		local metadata = mesh0.metadata
 		metadata.t = t

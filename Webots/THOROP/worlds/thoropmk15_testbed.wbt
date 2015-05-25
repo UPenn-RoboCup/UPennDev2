@@ -21,8 +21,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.0787845 0.981102 0.176723 2.27868
-  position 7.11712 6.16408 -8.62257
+  orientation -0.154265 0.927041 0.341757 2.32925
+  position -0.29755 2.88606 -1.30039
 }
 Background {
   skyColor [

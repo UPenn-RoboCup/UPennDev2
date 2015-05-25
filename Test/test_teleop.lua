@@ -308,7 +308,7 @@ local function apply_head(dHead)
   if not dHead then return end
   local goalBefore = get_head()
   local goalAfter = goalBefore + dHead
-  set_head(goalAfter)
+  set_head(goalAfter, DO_IMMEDIATE)
 end
 
 local dWalk = 0.05

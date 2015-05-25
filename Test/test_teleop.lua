@@ -142,21 +142,17 @@ end
 char_lut[' '] = sync
 
 -- Enter syncs the data
-local uComp
 local body_state
 local head_state
 local arm_state
 local motion_state
 local gripper_state
-local walk_velocity
-local function sync_other()
-	uComp = mcm.get_stance_uTorsoComp()
+local function sync_fsm()
 	body_state = gcm.get_fsm_Body()
 	head_state = gcm.get_fsm_Head()
 	arm_state = gcm.get_fsm_Arm()
 	motion_state = gcm.get_fsm_Motion()
 	gripper_state = gcm.get_fsm_Gripper()
-	walk_velocity = mcm.get_walk_vel()
 end
 
 -- Switch to head teleop
@@ -311,6 +307,7 @@ local function apply_head(dHead)
   set_head(goalAfter, DO_IMMEDIATE)
 end
 
+--[[
 local dWalk = 0.05
 local daWalk = 5*DEG_TO_RAD
 local walk = {
@@ -329,6 +326,7 @@ local function apply_walk(dWalk)
   local goalAfter = goalBefore + dWalk
   mcm.set_walk_vel(goalAfter)
 end
+--]]
 
 -- Add the access to the transforms
 setmetatable(lower_lut, {
@@ -336,10 +334,12 @@ setmetatable(lower_lut, {
     if (not arm_mode) then
       if head[k] then
 				return function() apply_head(head[k]) end
+--[[
       elseif k=='k' then
         return function() mcm.set_walk_vel({0,0,0}) end
       else
         return function() apply_walk(walk[k]) end
+--]]
       end
     elseif pre_arm[k] then
 			return function() apply_pre(pre_arm[k]) end
@@ -392,15 +392,8 @@ function show_status()
     'qOperator: '..tostring(qh*RAD_TO_DEG)
   )
 	--
-  local walk_info = string.format('\n%s %s\n%s',
-    util.color('Walk', 'yellow'),
-    (not arm_mode) and '*' or '',
-    'Velocity: '..tostring(walk_velocity)
-  )
-	--
   local info = {
     color('== Teleoperation ==', 'magenta'),
-		'1: init, 2: head teleop, 3: armReady, 4: armTeleop, 5: headTrack, 6: poke',
 		color(DO_IMMEDIATE and 'Immediate Send' or 'Delayed Send', DO_IMMEDIATE and 'red' or 'yellow'),
     'BodyFSM: '..color(body_state, 'green'),
     'ArmFSM: '..color(arm_state, 'green'),
@@ -409,14 +402,13 @@ function show_status()
     larm_info,
     rarm_info,
     head_info,
-    walk_info,
     '\n'
   }
   if not IS_WEBOTS then io.write(table.concat(info,'\n')) end
 end
 
 -- Initial sync
-sync_other()
+sync_fsm()
 sync()
 
 -- Run the generic keypress library

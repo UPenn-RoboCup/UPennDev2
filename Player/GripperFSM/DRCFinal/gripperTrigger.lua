@@ -24,8 +24,8 @@ function state.update()
   t_update = t
 
 	-- gripper, trigger, extra
-	Body.set_lgrip_command_torque{5,10,5}
-	Body.set_rgrip_command_torque{5,10,5}
+	--Body.set_lgrip_command_torque{20,40,20}
+	Body.set_rgrip_command_torque{20,40,20}
 
 	-- TODO: Add a check to see if the trigger worked or not
 

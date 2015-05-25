@@ -38,8 +38,7 @@ local function update_odometry(uOdometry)
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
 
-  if wcm.get_robot_use_imu_yaw()==1 then
-
+  if Config.use_imu_yaw and mcm.get_walk_ismoving()>0 then  
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
       uOdometry[3] = gps_pose[3] - yaw0
@@ -48,8 +47,9 @@ local function update_odometry(uOdometry)
       local yaw = Body.get_rpy()[3]
       uOdometry[3] = yaw - yaw0
       yaw0 = yaw
-    end
+    end    
   end
+  yaw0 = Body.get_rpy()[3] --We need to keep update this (to use the increment only while walking)
 
   --Update pose using odometry info for now
   local pose = wcm.get_robot_pose()

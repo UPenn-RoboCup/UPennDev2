@@ -75,50 +75,19 @@ local function calculate_footsteps(stage)
   mcm.set_step_nfootholds(#step_queue)
 end
 
-function state.entry()
-  print(state._NAME..' Entry' )
-  -- Update the time of entry
-  local t_entry_prev = t_entry -- When entry was previously called
-  t_entry = Body.get_time()
-  t_update = t_entry
 
+local function initiate_step(supportLeg, step_relpos )
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
 
   --Which foot is ahead?
   local uLeftTorso = util.pose_relative(uLeft,uTorso)
-  local uRightTorso = util.pose_relative(uRight,uTorso)
-
-  local leg_move_factor = math.abs(uLeftTorso[1]-uRightTorso[1])/0.25
-  hcm.set_step_nosolution(0)
-  supportLeg=hcm.get_step_supportLeg()
+  local uRightTorso = util.pose_relative(uRight,uTorso) 
 
   local step_min = 0.05
-  local step_min = 0.10
-
-  
-  step_relpos = hcm.get_step_relpos() 
-  step_zpr = hcm.get_step_zpr()
-  if step_zpr[1]>0 then sh1,sh2 = step_zpr[1]+step_min, step_zpr[1]
-  else sh1,sh2 = step_min, step_zpr[1]
-  end
-
-  local st,wt = 1.0,3.0
---  if IS_WEBOTS then st,wt = 1.0,1.0 end
-  if IS_WEBOTS and not Config.enable_touchdown then 
-    st,wt = 0.3,1.0 
-    st,wt = 0.3,1.5 
---    st,wt = 0.1,0.5 
-  end
-
-  local aShiftY0=mcm.get_walk_aShiftY()
-  
-
-  local leg_move_dist = 
-    math.abs(step_relpos[1])+math.abs(step_relpos[2])+
-    math.abs(step_zpr[1])+step_min+step_min
-  local wt2 = wt *  math.max(1,  leg_move_dist / 0.20) 
+  local sh1,sh2 = 0.05, 0
+  local st,wt = 0.5,1.0
 
   if supportLeg == 1 then
     --Take right step
@@ -136,8 +105,8 @@ function state.entry()
     step_queues={
      {
       {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-      {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
-      {{0,0,0},2,        st*3, st, 0.1,   {0,0},{0,0,0} },  --move to center
+      {step_relpos,0,  0.1,wt,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+      {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
      },
     }
 
@@ -155,8 +124,8 @@ function state.entry()
      step_queues={
        {
         {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-        {{0,0,0},2,        st*3, st, 0.1,   {0,0},{0,0,0} },  --move to center
+        {step_relpos,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+        {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
        },
     }
   end
@@ -166,16 +135,37 @@ function state.entry()
   motion_ch:send'stair'  
   mcm.set_stance_singlesupport(1)
   is_started = true  
-  t_stage = t_entry
 end
 
 
+
+
+
+
+
+function state.entry()
+  print(state._NAME..' Entry' )
+  -- Update the time of entry
+  local t_entry_prev = t_entry -- When entry was previously called
+  t_entry = Body.get_time()
+  t_update = t_entry
+
+  local move_target = vector.pose(hcm.get_teleop_waypoint())
+  if move_target[1]==0 and move_target[2]==0 and move_target[3]==0 then
+    finished = true --don't need to walk, just exit
+    pose0 = wcm.get_robot_pose()
+    return
+  end
+  
+  t_stage = t_entry
+
+  supportLeg=hcm.get_step_supportLeg()
+  step_relpos = hcm.get_step_relpos() 
+  initiate_step(supportLeg, step_relpos )
+end
+
 function state.update()
   local t  = Body.get_time()
-
-  --print(state._NAME..' Update' ) 
-  -- Get the time of update
- 
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
@@ -210,10 +200,6 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
-  mcm.set_stance_singlesupport(0)
-  if hcm.get_step_auto()==0 then
-    hcm.set_step_dir(0)
-  end
 end
 
 return state

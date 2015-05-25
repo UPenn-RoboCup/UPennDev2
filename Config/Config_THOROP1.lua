@@ -53,9 +53,11 @@ if IS_WEBOTS then
 		Config.enable_touchdown = false
 		Config.raise_body = false
 		Config.piecewise_step = true
-		Config.birdwalk = 1 --testing birdwalk		
+--		Config.birdwalk = 1 --testing birdwalk		
+--		Config.use_gps_pose=true
 
-		Config.use_gps_pose=true
+
+
 --		Config.debug.world=true
 	  Config.sensors = {
 			ft = true,
@@ -65,6 +67,8 @@ if IS_WEBOTS then
 
 	end
 end
+
+Config.use_imu_yaw = false --use odometry for yaw
 
 -----------------------------------
 -- Load Paths and Configurations --

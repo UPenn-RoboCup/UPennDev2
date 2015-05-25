@@ -105,7 +105,7 @@ fsm.Body = {
 	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
 	{'bodyStop', 'approach', 'bodyApproachMessy'},
 	{'bodyStop', 'stepover1', 'bodyStep'},
-	{'bodyStop', 'stepflat', 'bodyStep2'},
+	{'bodyStop', 'stepflat', 'bodyStepAlign'},
 	{'bodyStop', 'stop', 'bodyStop'},
   --
   {'bodyApproachMessy', 'stop', 'bodyStop'},
@@ -116,8 +116,9 @@ fsm.Body = {
   --
   {'bodyStep', 'nextstep', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
-  -- Take a single, low step (for flat terrain)
-  {'bodyStep2', 'done', 'bodyStop'},
+
+  -- Take two slow stops (for precise alignment)
+  {'bodyStepAlign', 'done', 'bodyStop'},
 }
 
 

@@ -13,7 +13,7 @@ local forwardL = movearm.lPlanner.forward
 local t_entry, t_update
 
 -- TODO: need to compensate the torso pose
-local headSpeed = 5 * DEG_TO_RAD * vector.ones(2)
+local headSpeed = 30 * DEG_TO_RAD * vector.ones(2)
 local headThresh = 1 * DEG_TO_RAD * vector.ones(2)
 
 function state.entry()

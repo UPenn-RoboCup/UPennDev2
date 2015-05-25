@@ -5,8 +5,7 @@ local t_entry, t_update
 local state = {}
 state._NAME = ...
 
--- TODO: need to compensate the torso pose
-local headSpeed = {15 * DEG_TO_RAD, 15 * DEG_TO_RAD}
+local headSpeed = {30 * DEG_TO_RAD, 30 * DEG_TO_RAD}
 
 function state.entry()
   print(state._NAME..' Entry' )

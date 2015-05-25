@@ -117,7 +117,7 @@ function state.update()
 	--]]
 	  -- Zero the waist
   local qWaist = Body.get_waist_command_position()
-  local qWaist_approach, doneWaist = util.approachTol(qWaist, {0,0}, {2 * DEG_TO_RAD, 2 * DEG_TO_RAD}, 1/100, {1*DEG_TO_RAD, 1*DEG_TO_RAD})
+  local qWaist_approach, doneWaist = util.approachTol(qWaist, {0,0}, {2 * DEG_TO_RAD, 2 * DEG_TO_RAD}, dt, {1*DEG_TO_RAD, 1*DEG_TO_RAD})
   Body.set_waist_command_position(qWaist_approach)
 
 	-- Check if done
@@ -131,7 +131,7 @@ function state.update()
 			okL = type(lco)=='thread' or lco==false
 			okR = type(rco)=='thread' or rco==false
 		else
-			return 'done'
+			return doneWaist and 'done'
 		end
 	end
 

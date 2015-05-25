@@ -11,7 +11,7 @@ local headSpeed = 30 * DEG_TO_RAD * vector.ones(2)
 local headThresh = 1 * DEG_TO_RAD * vector.ones(2)
 
 function state.entry()
-  print(state._NAME..' Entry' ) 
+  print(state._NAME..' Entry' )
   -- When entry was previously called
   local t_entry_prev = t_entry
   -- Update the time of entry
@@ -27,19 +27,19 @@ function state.update()
   local t = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
-  t_update = t 
+  t_update = t
 
   -- Grab the target
   local headAngles = hcm.get_teleop_head()
 	local headNow = Body.get_head_command_position()
   local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
-	
+
   -- Update the motors
 	Body.set_head_command_position(doneHead and headAngles or apprAng)
-  
+
 end
 
-function state.exit()  
+function state.exit()
   print(state._NAME..' Exit' )
 end
 

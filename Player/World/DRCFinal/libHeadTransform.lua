@@ -17,7 +17,7 @@ local trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
 --]]
 
 -- Choose the camera to use
-local USE_KINECT = true
+--local USE_KINECT = true
 local cam_z
 local cameraPitch
 local trCameraOffset
@@ -26,9 +26,10 @@ if USE_KINECT then
 	cameraPitch = Config.kinect.mountOffset[1][2]
 	trCameraOffset = T.trans(unpack(Config.kinect.mountOffset[2]))
 else
-	cam_z = Config.head.cameraPos[3]
-	cameraPitch = Config.head.cameraPitch
-	trCameraOffset = T.trans(unpack(Config.head.cameraPos))
+	cam_z = Config.camera[1].mountOffset[2][3]
+	cameraPitch = Config.camera[1].mountOffset[1][2]
+	trCameraOffset = T.trans(unpack(Config.camera[1].mountOffset[2]))
+
 end
 
 -- Neck offset is always the same
@@ -41,24 +42,26 @@ hcm.set_camera_bias(Config.walk.headBias or {0,0,0})
 --]]
 
 -- Update the Head transform
-local function get_head_transform(head, rpy)  
-
+local function get_head_transform()
+	local head = Body.get_head_position()
+	local rpy = Body.get_rpy()
 	local bH = mcm.get_stance_bodyHeight()
 	local uTorso = mcm.get_stance_uTorsoComp()
 	local trBody = T.trans(-uTorso[1]-Config.walk.footX, -uTorso[2], bH)
-	--local trBody = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
-
-  local trNeck0 = trBody * T.rotY(rpy[2]) * trNeckOffset
+	local qW = Body.get_waist_position()
+  local trNeck0 = trBody * T.rotY(rpy[2]) * T.rotY(qW) * trNeckOffset
+	local trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
 	
 	-- TODO: No head bias for now... seems out of order
 	-- TODO: Add one routine to actually set the bias, rather then checking it each loop
-	local headBias = vector.zeros(4)
 	--[[
+	local headBias = vector.zeros(4)
+
 	local headBias = hcm.get_camera_bias()
 	local cameraPitch = headBias[2]
 	local cameraRoll = headBias[3]
 	local cameraYaw = headBias[4]
-	--]]
+
 	-- Apply the biases
 	head[1] = head[1] - headBias[1]
 	
@@ -66,10 +69,10 @@ local function get_head_transform(head, rpy)
   * T.rotY(headBias[2])
   * T.rotX(headBias[3])
   * T.rotZ(headBias[4])
+	local trHead = trNeck * dtrCamera
+	--]]
 	
-	local trNeck = trNeck0 * T.rotZ(head[1]) * T.rotY(head[2])
-  
-  local trHead = trNeck * dtrCamera
+  local trHead = trNeck * trCameraOffset
   return trHead
 end
 
@@ -79,9 +82,7 @@ v: vector of the position
 local function projectGround(v, target_height)
 	target_height = target_height or 0
   -- Grab head angles
-  local head = Body.get_head_position() 
-  local rpy = Body.get_rpy()
-  local trHead = get_head_transform(head, rpy)
+  local trHead = get_head_transform()
 	local vHead_homo = T.position4(trHead)
   
   -- Project to plane
@@ -95,29 +96,26 @@ local function projectGround(v, target_height)
 end
 
 function HeadTransform.project(v0)
-  local head = Body.get_head_position() 
-  local rpy = Body.get_rpy()
-	local trHead = get_head_transform(head, rpy)
+	local trHead = get_head_transform()
 	return (trHead * v0) / v0[4]
 end
 
 function HeadTransform.ikineCam(x0, y0, z0)
   -- Grab head angles
-  local head = Body.get_head_position() 
-  local rpy = Body.get_rpy()
-	
-  local trHead = get_head_transform(head, rpy)
+  local trHead = get_head_transform()
 	local vHead = T.position(trHead)
   x0 = x0 - vHead[1]
   -- Assume looking forward (for goal detection)
   z0 = (z0 or vHead[3]) - vHead[3]
 
+	local v = vector.new{x0, y0, z0, 1}
+
   -- Cancel out body tilt angle
 	-- TODO: Should not need this rpy, since the frame should be the torso. Maybe just the waist pitch...
   --local v = T.rotY(-Config.walk.bodyTilt) * {x0, y0, z0, 1}
-	local v = T.rotY(-rpy[2]) * {x0, y0, z0, 1}
-  v = v / v[4]
+	--local v = T.rotY(-rpy[2]) * {x0, y0, z0, 1}
 
+  v = v / v[4]
   local x, y, z = v[1], v[2], v[3]
   local yaw = atan2(y, x)
 

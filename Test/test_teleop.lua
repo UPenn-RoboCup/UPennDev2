@@ -138,23 +138,18 @@ char_lut['2'] = function()
 	arm_ch:send'ready'
 end
 char_lut['3'] = function()
-	arm_ch:send'jacobian'
+	head_ch:send'trackleft'
 end
 char_lut['4'] = function()
-	arm_ch:send'pulldoor'
+	head_ch:send'trackright'
 end
 char_lut['5'] = function()
   body_ch:send'approach'
 end
 char_lut['6'] = function()
-	arm_ch:send'teleop'
-	--gripper_ch:send'dean'
-	--head_ch:send'trackhand'
-  --arm_ch:send'poke'
 end
 
 char_lut['7'] = function()
-	arm_ch:send'init'
 end
 char_lut['8'] = function()
 	body_ch:send'stop'

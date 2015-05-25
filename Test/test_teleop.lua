@@ -16,6 +16,8 @@ end
 
 local vector = require'vector'
 local T = require'Transform'
+local fromQ = require'Transform'.from_quatp
+local toQ = require'Transform'.to_quatp
 local movearm = require'movearm'
 
 -- Look up tables for the test.lua script (NOTE: global)
@@ -23,7 +25,7 @@ code_lut, char_lut, lower_lut = {}, {}, {}
 
 local narm = 7 -- TODO: Use the config to check...
 local selected_arm = 0 -- left to start
-
+--
 local LARM_DIRTY = false
 local qLtmp, qL0
 local function get_larm(refresh)
@@ -41,7 +43,7 @@ local function set_larm(q, do_now)
 		LARM_DIRTY = false
 	end
 end
-
+--
 local RARM_DIRTY = false
 local qRtmp, qR0
 local function get_rarm(refresh)
@@ -56,9 +58,50 @@ local function set_rarm(q, do_now)
 	if q==true or do_now==true then
 		hcm.set_teleop_rarm(qRtmp)
 		vector.copy(qRtmp, qR0)
-		LARM_DIRTY = false
+		RARM_DIRTY = false
 	end
 end
+--
+local TFLARM_DIRTY = false
+local tfLtmp, tfL0
+local function get_tflarm(refresh)
+	if refresh then
+		tfLtmp = fromQ(hcm.get_teleop_tflarm())
+	end
+	return tfLtmp, tfL0
+end
+local function set_tflarm(tf, do_now)
+	if type(tf)~='boolean' then
+		Transform.copy(tf, tfLtmp)
+		TFLARM_DIRTY = true
+	end
+	if q==true or do_now==true then
+		hcm.set_teleop_tflarm(toQ(tfLtmp))
+		Transform.copy(tfLtmp, tfL0)
+		TFLARM_DIRTY = false
+	end
+end
+--
+local TFRARM_DIRTY = false
+local tfRtmp, tfR0
+local function get_tfrarm(refresh)
+	if refresh then
+		tfRtmp = fromQ(hcm.get_teleop_tfrarm())
+	end
+	return tfRtmp, tfR0
+end
+local function set_tfrarm(tf, do_now)
+	if type(tf)~='boolean' then
+		Transform.copy(tf, tfRtmp)
+		TFRARM_DIRTY = true
+	end
+	if q==true or do_now==true then
+		hcm.set_teleop_tfrarm(toQ(tfRtmp))
+		Transform.copy(tfRtmp, tfR0)
+		TFRARM_DIRTY = false
+	end
+end
+--
 local HEAD_DIRTY = false
 local qHeadtmp -- tracking this
 local qHead0 -- last sent
@@ -338,26 +381,28 @@ function show_status()
 	end
 	--
 	local qL, qL0 = get_rarm()
-  local larm_info = string.format('\n%s %s\t%s\n%s\n%s\n%s',
+	local tfL, tfL0 = get_tflarm()
+  local larm_info = table.concat({string.format('\n%s %s\t%s',
     util.color('Left Arm', 'yellow'),
     arm_mode and selected_arm==0 and '*' or ' ',
-		table.concat(l_indicator, ' '),
+		table.concat(l_indicator, ' ')),
     'qRobot: '..tostring(qL0*RAD_TO_DEG),
     'qOperator: '..tostring(qL*RAD_TO_DEG),
-		'tfRobot: '..tostring(tfL0),
-    'tfOperator: '..tostring(tfL)
-  )
+		'tfRobot: '..T.string6D(tfL0),
+    'tfOperator: '..T.string6D(tfL)
+  },'\n')
 	--
 	local qR, qR0 = get_rarm()
-  local rarm_info = string.format('\n%s %s\t%s\n%s\n%s\n%s',
+	local tfR, tfR0 = get_tfrarm()
+  local rarm_info = table.concat({string.format('%s %s\t%s',
     util.color('Right Arm', 'yellow'),
     arm_mode and selected_arm==1 and '*' or ' ',
-		table.concat(r_indicator, ' '),
-    'qRobot: '..tostring(qR0*RAD_TO_DEG),
+		table.concat(r_indicator, ' ')),
+		'qRobot: '..tostring(qR0*RAD_TO_DEG),
     'qOperator: '..tostring(qR*RAD_TO_DEG),
-		'tfRobot: '..tostring(tfR0),
-    'tfOperator: '..tostring(tfR)
-  )
+		'tfRobot: '..T.string6D(tfR0),
+    'tfOperator: '..T.string6D(tfR)
+  },'\n')
 	--
 	local qh, qh0 = get_head()
   local head_info = string.format('\n%s %s\n%s\n%s',
@@ -366,11 +411,13 @@ function show_status()
 		'qRobot: '..tostring(qh0*RAD_TO_DEG),
     'qOperator: '..tostring(qh*RAD_TO_DEG)
   )
+	--
   local walk_info = string.format('\n%s %s\n%s',
     util.color('Walk', 'yellow'),
     (not arm_mode) and '*' or '',
     'Velocity: '..tostring(walk_velocity)
   )
+	--
   local info = {
     color('== Teleoperation ==', 'magenta'),
 		'1: init, 2: head teleop, 3: armReady, 4: armTeleop, 5: headTrack, 6: poke',
@@ -395,6 +442,8 @@ sync()
 qL0 = vector.copy(get_larm(true))
 qR0 = vector.copy(get_rarm(true))
 qHead0 = vector.copy(get_head(true))
+tfL0 = vector.copy(get_tflarm(true))
+tfR0 = vector.copy(get_tfrarm(true))
 
 -- Run the generic keypress library
 return dofile(HOME..'/Test/test.lua')

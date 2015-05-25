@@ -45,13 +45,6 @@ end
 local t_log = -math.huge
 local LOG_INTERVAL = 1/5
 
-local hz_send = 4
-local dt_send = 1/hz_send
-local hz_test_send = 1
-local dt_test_send = 1/hz_test_send
-local hz_buffer = 5
-local dt_buffer = 1/hz_test_send
-
 local libLog, logger
 
 -- Extract metadata information
@@ -104,7 +97,7 @@ local nbuffer = 5
 local hz_open_send = 0.5
 local dt_open_send = 1/hz_open_send
 --
-local hz_outdoor_send = 1
+local hz_outdoor_send = 15
 local dt_outdoor_send = 1/hz_outdoor_send
 --
 local hz_indoor_send = 4

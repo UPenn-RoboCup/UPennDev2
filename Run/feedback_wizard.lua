@@ -8,7 +8,7 @@ local get_time = Body.get_time
 local usleep = require'unix'.usleep
 local pose_global = require'util'.pose_global
 local debug_interval = 5
-local feedback_interval = 1 / 2
+local feedback_interval = 1
 local t_sleep = 1 / 20
 local t_entry = get_time()
 require'wcm'

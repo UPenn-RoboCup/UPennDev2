@@ -15,7 +15,6 @@ local function procMP(data)
 	else
 		return {mpack(tbl), data:sub(offset+1)}
 	end
-	
 end
 
 local function procRaw(data)
@@ -28,27 +27,28 @@ local function procZlib(c_data)
 	return procMP(data)
 end
 
-local nsz = 0
 local poller, lut
 local in_channels = {}
 local out_channels = {}
 local ch_processing = {}
+local ch_usage = {}
+local ch_names = {}
 local function cb(skt)
 	local ch_id = lut[skt]
 	local in_ch = in_channels[ch_id]
 	local out_ch = out_channels[ch_id]
+	local usage = ch_usage[ch_id]
 	
 	local fn = ch_processing[ch_id]
 	local sz = in_ch:size()
 	local data
 	while sz > 0 do
-		nsz = nsz + sz
 		data = in_ch:receive()
+		table.insert(usage, {unix.time(), #data})
 		out_ch:send(fn(data))
 		sz = in_ch:size()
 	end
 end
-
 
 for key,stream in pairs(Config.net.streams) do
 	if type(stream.udp)=='number' then
@@ -63,6 +63,8 @@ for key,stream in pairs(Config.net.streams) do
 		else
 			table.insert(ch_processing, procMP)
 		end
+		table.insert(ch_usage, {})
+		table.insert(ch_names, key)
 	end
 end
 
@@ -86,7 +88,22 @@ if IS_COMPETING then
 	end
 end
 
+function net()
+	for ch_id, usage in ipairs(ch_usage) do
+		local sum = 0
+		for i, use in ipairs(usage) do
+			local t_use, bytes_used = unpack(use)
+			sum = sum + bytes_used
+		end
+		print(string.format('Received %d bytes from %s', sum, ch_names[ch_id]))
+	end
+end
+
 local function shutdown()
+	local f = io.open('udp.log', 'w')
+	f:write(mpack(ch_usage))
+	f:close()
+	net()
   poller:stop()
 end
 

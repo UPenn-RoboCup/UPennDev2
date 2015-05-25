@@ -511,6 +511,10 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
+
+--  local uZMP = mcm.get_status_uZMP()
+--  print("zmp:",unpack(uZMP))
+
   local massL,massR = 0,0
 
   local leftSupportRatio = mcm.get_status_leftSupportRatio()
@@ -520,7 +524,7 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local pTorso = vector.new({
     uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
     0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-  local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
+  local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0)
   
   -------------------Incremental COM filtering
   while count<=revise_max do
@@ -544,7 +548,7 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
    local pTorso = vector.new({
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
+   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0)
    count = count+1
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)

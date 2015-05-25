@@ -273,6 +273,34 @@ local jointNames = {
 	-- lidar movement
 	"ChestLidarPan",
 }
+
+
+--SJ: those joint names are only used for webots joint referencing
+--here I swap them to enable birdwalk without modifying the hardware
+
+if Config.birdwalk then
+  jointNames = {
+	"Neck","Head", -- Head (Yaw,pitch)
+	-- Left Arm
+	"ShoulderL", "ArmUpperL", "LeftShoulderYaw",
+	"ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
+	-- Left leg (with waist flipped)
+	"PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
+	-- Right leg (with waist flipped)
+	"PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
+	--Right arm
+	"ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
+	"RightWristYaw","RightWristRoll","RightWristYaw2",
+	-- Waist
+	"TorsoYaw","TorsoPitch",
+	-- Gripper
+	"l_grip", "l_trigger", "l_extra",
+	"r_grip", "r_trigger", "r_extra",
+	-- lidar movement
+	"ChestLidarPan",
+}
+end
+
 Config.jointNames = jointNames
 
 ----------------------
@@ -593,6 +621,42 @@ if IS_WEBOTS then
 		0,45,45,    --rhand
 		60, -- Lidar pan
 	})*DEG_TO_RAD
+
+
+
+	if Config.birdwalk then
+		servo.direction = vector.new({
+			1,1, -- Head
+			1,-1,-1,  1,  -1,-1,1, --LArm
+--			1, 1, --[[3 Pitch:]] 1,1, 1, 1, --LLeg
+--			1, 1, --[[3 Pitch:]] 1,1, 1, 1, --RLeg
+
+--flipped waist: roll and pitch direction flipped
+			1, -1, -1,-1, -1, -1, --LLeg
+			1, -1, -1,-1, -1, -1, --RLeg
+
+			1,-1,-1,  -1,  -1,-1,1, --RArm
+			-- TODO: Check the gripper
+		  -1,1, -- Waist
+		1,1,1, -- left gripper
+		-1,-1,-1, -- right gripper
+
+		1, -- Lidar pan
+	})
+
+	servo.rad_offset = vector.new({
+		0,0, -- head
+		-90,0,0,  0,  0,0,0,
+		0,0,0,0,0,0,
+		0,0,0,0,0,0,
+		-90,0,0,  0,  0,0,0,
+		-180,0, --flip waist
+		0,0,0,
+		0,0,0,
+		0,
+	})*DEG_TO_RAD
+
+	end
 
 end
 

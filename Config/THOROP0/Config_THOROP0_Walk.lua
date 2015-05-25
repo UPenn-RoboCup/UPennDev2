@@ -178,7 +178,7 @@ if HOSTNAME=="teddy2" or HOSTNAME=="dale" then --or Config.PLATFORM_NAME == "THO
 end
 
 --testing
-walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD
+--walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD
 
 
 walk.stanceLimitY = {0.20,0.30}

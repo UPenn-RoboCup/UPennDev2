@@ -42,10 +42,8 @@ else
 	end
 end
 
-local t_send, t_log = 0, 0
+local t_log = -math.huge
 local LOG_INTERVAL = 1/5
-local SEND_INTERVAL = .5
-
 
 local libLog, logger
 
@@ -90,26 +88,63 @@ local udp_ret, udp_err, udp_data
 local t0 = get_time()
 local t_debug = 0
 
+--
+local buffer = {}
+local hz_buffer = 1
+local dt_buffer = 1/hz_buffer
+local nbuffer = 5
+--
+local hz_open_send = 0.5
+local dt_open_send = 1/hz_open_send
+--
+local hz_outdoor_send = 15
+local dt_outdoor_send = 1/hz_outdoor_send
+--
+local hz_indoor_send = 4
+local dt_indoor_send = 1/hz_indoor_send
+--
+local t_buffer = -math.huge
+local t_send = -math.huge
+local function check_send(msg)
+	local is_indoors = hcm.get_network_indoors()==1
+	local is_outdoors = not is_indoors
+	local t = Body.get_time()
+
+	-- Check the buffer
+	local dt_buffer0 = t - t_buffer
+	if is_indoors and dt_buffer0 > dt_buffer then
+		t_buffer = t
+		table.insert(buffer, 1, msg)
+		if #buffer>nbuffer then table.remove(buffer) end
+	end
+	if is_outdoors then
+		buffer = {msg}
+	end
+
+	-- Check the sending
+	local dt_send0 = t - t_send
+	if is_outdoors and dt_send0 < dt_outdoor_send then return end
+	if is_indoors and dt_send0 < dt_indoor_send then return end
+	print('Camera | Sending', dt_send0, #buffer)
+	t_send = t
+
+	for i,m in ipairs(buffer) do
+		if camera_ch then camera_ch:send(m) end
+		if udp_ch then udp_ret, udp_err = udp_ch:send(table.concat(m)) end
+	end
+
+end
+
+
 local function update(img, sz, cnt, t)
 	-- Update metadata
 	c_meta.t = t
 	c_meta.n = cnt
+	local c_img = c_yuyv:compress(img, w, h)
+	c_meta.sz = #c_img
+	local msg = {mp.pack(c_meta), c_img}
 
-	local do_send = t-t_send > (1 / hcm.get_monitor_fps())
-	t_send = do_send and t or t_send
-
-	-- Check if we are sending to the operator
-	if ENABLE_NET and do_send then		
-		local c_img = c_yuyv:compress(img, w, h)
-		c_meta.sz = #c_img
-		if camera_ch then
-			camera_ch:send({mp.pack(c_meta), c_img})
-		end
-		if udp_ch then
-			udp_data = mp.pack(c_meta)..c_img
-			udp_ret, udp_err = udp_ch:send(udp_data)
-		end
-	end
+	check_send(msg)
 
 	-- Do the logging if we wish
 	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then

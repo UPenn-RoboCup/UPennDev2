@@ -41,6 +41,9 @@ end
 
 local function entry()
 	t_entry = get_time()
+	-- Assume open to start
+	hcm.set_network_open(1)
+	hcm.set_network_topen(t_entry)
 	if IS_WEBOTS then
 		feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
 		if IS_COMPETING then

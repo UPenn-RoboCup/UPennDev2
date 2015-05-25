@@ -1,0 +1,120 @@
+#VRML_SIM V7.4.3 utf8
+WorldInfo {
+  info [
+    "IROS 2015 World"
+  ]
+  title "THOR-OP In an obstacle course"
+  basicTimeStep 24
+  FPS 15
+  contactProperties [
+    ContactProperties {
+      material1 "feet"
+      material2 "floor"
+      coulombFriction 0.5
+      forceDependentSlip 0.0001
+    }
+    ContactProperties {
+      material1 "feet"
+      material2 "ramp"
+      coulombFriction 20
+    }
+  ]
+}
+Viewpoint {
+  orientation -0.0787845 0.981102 0.176723 2.27868
+  position 7.11712 6.16408 -8.62257
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+THOROP_mk15_Fullmass_longarm_2 {
+  translation -1.49409 1.14628 -0.00831604
+  rotation 0.00615966 0.99998 -0.00104589 -1.57002
+  controller "thorop"
+  controllerArgs "0 32"
+  lidarRays 360
+  max_torque_400w 90
+  max_torque_200w 90
+  max_torque_100w 45
+  damping_constant 0
+  footContactMaterial "feet"
+}
+DEF TASKFLOOR Floor {
+  translation -6 0 0
+  size 12 4
+  texture [
+    "textures/marble.png"
+  ]
+}
+simple_wall {
+  size 6 2 0.01
+  translation -5.5 1 -2
+}
+simple_wall {
+  size 1 2 0.01
+  translation -4 1 -1.56
+  rotation 0 1 0 0.785398
+}
+simple_wall {
+  size 1 2 0.01
+  translation -4.7 1 -1.56
+  rotation 0 1 0 -0.785398
+}
+simple_wall {
+  size 1 2 0.01
+  translation -5.4 1 -1.56
+  rotation 0 1 0 0.785398
+}
+simple_wall {
+  size 1 2 0.01
+  translation -6.1 1 -1.56
+  rotation 0 1 0 -0.785398
+}
+PushDoor {
+  hidden position_0_0 0.000328693
+  hidden translation_1 -0.425 1.00925 8.88178e-16
+  hidden rotation_1 5.56033e-10 2.2793e-07 1 -0.000328693
+  hidden position_1_0 -1.51768e-07
+  hidden translation_2 0.77 -0.0762006 0
+  hidden rotation_2 -3.00041e-10 -1.46831e-13 1 1.51768e-07
+  translation -2.5 0 0
+  rotation 0 1 0 -1.57
+}
+simple_wall {
+  size 0.05 2 1.7
+  translation -2.5 1 -1.25
+}
+simple_wall {
+  size 0.05 2 1.7
+  translation -2.5 1 1.25
+}
+DEF VALVE CircleValve {
+  hidden position_0_0 6.4387e-12
+  hidden translation_1 0 -1.39042e-08 0
+  hidden rotation_1 5.3783e-07 0 1 6.4387e-12
+  color 1 0 0
+  translation -4 1 -1.6
+  rotation 0 1 0 0.785398
+  scale 0.15 0.15 0.15
+}
+simple_wall {
+  size 0.44 0.1 0.26
+  translation -5.33 1.04 -1.55
+  rotation 0 1 0 0.785398
+}
+SimpleDrill {
+  translation -5.24924 1.20875 -1.44924
+  rotation 0.00208244 0.999985 0.00502746 -2.3562
+}

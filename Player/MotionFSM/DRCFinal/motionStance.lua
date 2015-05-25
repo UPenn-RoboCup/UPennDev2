@@ -51,6 +51,9 @@ function state.entry()
   mcm.set_walk_steprequest(0)
   mcm.set_motion_state(2)
 
+	-- Disable imu yaw
+	wcm.set_robot_use_imu_yaw(0)
+
 
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
@@ -79,14 +82,7 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
- 
-	--[[
-	-- Let the Arm FSM handle the waist
-  if Config.waist_testing then
-    waist_target=hcm.get_motion_waistTarget()
-    Body.set_waist_command_position({waist_target,0})
-  end
-	--]]
+ 	
 
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
@@ -154,6 +150,7 @@ end -- walk.update
 function state.exit()
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
+	wcm.set_robot_use_imu_yaw(1)
 end
 
 return state

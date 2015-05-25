@@ -19,7 +19,8 @@ local shared_data_sz = {}
 -- DRC network detection
 shared_data.network = {
 	open = zeros(1),
-	topen = zeros(1)
+	topen = zeros(1),
+	indoors = zeros(1), -- 0: outdoors, 1: indoors
 }
 
 shared_data.teleop = {

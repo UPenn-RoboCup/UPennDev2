@@ -13,7 +13,7 @@ local odomScale = Config.world.odomScale
 require'wcm'
 require'gcm'
 require'mcm'
-
+wcm.set_robot_use_imu_yaw(Config.world.use_imu_yaw and 1 or 0)
 
 -- Timestamps
 local t_entry
@@ -38,7 +38,7 @@ local function update_odometry(uOdometry)
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
 
-  if Config.world.use_imu_yaw then
+  if wcm.get_robot_use_imu_yaw()==1 then
 
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
@@ -76,7 +76,8 @@ function libWorld.pose_reset()
 end
 
 function libWorld.entry()
-  t_entry = unix.time()
+	wcm.set_robot_use_imu_yaw(Config.world.use_imu_yaw and 1 or 0)
+	t_entry = unix.time()
   -- Save this resampling time
   t_resample = t_entry
   -- Set the initial odometry

@@ -34,7 +34,7 @@ shared.robot.odometry = vector.zeros(3)
 shared.robot.odom_mode = vector.zeros(1)
 
 shared.robot.reset_pose = vector.ones(1) --this forces the pose to be resetted
-
+shared.robot.use_imu_yaw = vector.ones(1)
 
 
 

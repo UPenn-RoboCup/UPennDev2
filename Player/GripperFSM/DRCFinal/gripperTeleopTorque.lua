@@ -54,7 +54,7 @@ function state.update()
 	local lChange = teleopLGrip1~=teleopLGrip
 	local rChange = teleopRGrip1~=teleopRGrip
 
-		if lChange then
+	if lChange then
 		teleopLGrip = teleopLGrip1
 		Body.set_lgrip_command_torque(teleopLGrip)
 	end

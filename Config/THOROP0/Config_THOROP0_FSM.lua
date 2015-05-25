@@ -78,8 +78,10 @@ fsm.Arm = {
 
 	--Old teleop code
 	----[[
-	{'armWalk', 'teleopold', 'armTeleopSJOLD'},
-	{'armTeleopSJOLD', 'done', 'armWalk'},
+	{'armWalk', 'teleopoldl', 'armTeleopSJOLDL'},
+	{'armWalk', 'teleopoldr', 'armTeleopSJOLDR'},
+	{'armTeleopSJOLDL', 'done', 'armWalk'},
+	{'armTeleopSJOLDR', 'done', 'armWalk'},
 	--]]
 
 	-- armJacobian is for testing purposes only!
@@ -98,42 +100,56 @@ fsm.Arm = {
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   --
-  {'bodyInit', 'done', 'bodyStop'},  
+  {'bodyInit', 'done', 'bodyStop'},
+	--
+	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
+	{'bodyStop', 'approach', 'bodyApproachMessy'},
+	{'bodyStop', 'stepover1', 'bodyStep'},
+	{'bodyStop', 'stepflat', 'bodyStep2'},
+	{'bodyStop', 'stop', 'bodyStop'},
   --
-  {'bodyStop', 'approach', 'bodyApproachMessy'},
-  {'bodyApproachMessy', 'done', 'bodyStop'},
+  {'bodyApproachMessy', 'stop', 'bodyStop'},
+	{'bodyApproachMessy', 'done', 'bodyStop'},
   --
-  {'bodyStop', 'approachbuggy', 'bodyApproachBuggy'}, --steve's approoach code
-  {'bodyApproachBuggy', 'done', 'bodyStop'},
+  {'bodyApproachBuggy', 'stop', 'bodyStop'},
+	{'bodyApproachBuggy', 'done', 'bodyStop'},
   --
-  {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'nextstep', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
-  --
-
-  --take a single, low step (for flat terrain)
-	{'bodyStop', 'stepflat', 'bodyStep2'},
+  -- Take a single, low step (for flat terrain)
   {'bodyStep2', 'done', 'bodyStop'},
-
-
 }
 
 
 fsm.Head = {
 	{'headIdle', 'init', 'headCenter'},
+	{'headIdle', 'teleop', 'headTeleop'},
 	--
+	{'headCenter', 'done', 'headMesh'},
+	{'headCenter', 'trackleft', 'headTrackLeft'},
+	{'headCenter', 'trackright', 'headTrackRight'},
 	{'headCenter', 'teleop', 'headTeleop'},
-	{'headCenter', 'trackhand', 'headTrackHand'},
-	{'headCenter', 'mesh', 'headMesh'},
-	--
+	-- Overrides
 	{'headTeleop', 'init', 'headCenter'},
-	{'headTeleop', 'trackhand', 'headTrackHand'},
+	{'headTeleop', 'trackleft', 'headTrackLeft'},
+	{'headTeleop', 'trackright', 'headTrackRight'},
+	{'headTeleop', 'mesh', 'headMesh'},
 	--
-	{'headTrackHand', 'init', 'headCenter'},
-	{'headTrackHand', 'teleop', 'headTeleop'},
+	{'headTrackLeft', 'init', 'headCenter'},
+	{'headTrackLeft', 'mesh', 'headMesh'},
+	{'headTrackLeft', 'trackright', 'headTrackRight'},
+	{'headTrackLeft', 'teleop', 'headTeleop'},
 	--
-	{'headMesh', 'init', 'headCenter'},
+	{'headTrackRight', 'init', 'headCenter'},
+	{'headTrackRight', 'mesh', 'headMesh'},
+	{'headTrackRight', 'trackleft', 'headTrackLeft'},
+	{'headTrackRight', 'teleop', 'headTeleop'},
+	--
 	{'headMesh', 'done', 'headCenter'},
+	{'headMesh', 'trackleft', 'headTrackLeft'},
+	{'headMesh', 'trackright', 'headTrackRight'},
+	{'headMesh', 'init', 'headCenter'},
+	{'headMesh', 'teleop', 'headTeleop'},
 }
 
 fsm.Gripper = {
@@ -173,11 +189,13 @@ fsm.Gripper = {
 	{'gripperTeleopTorque', 'idle', 'gripperIdle'},
 	{'gripperTeleopTorque', 'init', 'gripperClose'},
 	{'gripperTeleopTorque', 'clench', 'gripperClench'},
+	{'gripperTeleopTorque', 'center', 'gripperCenter'},
 	{'gripperTeleopTorque', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperTeleopPosition', 'idle', 'gripperIdle'},
 	{'gripperTeleopPosition', 'init', 'gripperClose'},
 	{'gripperTeleopPosition', 'clench', 'gripperClench'},
+	{'gripperTeleopPosition', 'center', 'gripperCenter'},
 	{'gripperTeleopPosition', 'teleop', 'gripperTeleopTorque'},
 }
 
@@ -190,30 +208,32 @@ fsm.Lidar = {
 fsm.Motion = {
 	{'motionIdle', 'timeout', 'motionIdle'},
 	{'motionIdle', 'stand', 'motionInit'},
-	{'motionInit', 'done', 'motionStance'},
-
 	{'motionIdle', 'bias', 'motionBiasInit'},
-	{'motionStance', 'bias', 'motionBiasInit'},
+	--
 	{'motionBiasInit', 'done', 'motionBiasIdle'},
 	{'motionBiasIdle', 'stand', 'motionInit'},
-
-	{'motionStance', 'preview', 'motionStepPreview'},
-	{'motionStepPreview', 'done', 'motionStance'},
-
-	{'motionStance', 'stair', 'motionStepPreviewStair'},
-	{'motionStepPreviewStair', 'done', 'motionStance'},
-
-	{'motionStance', 'slowstep', 'motionSlowStep'},
-	{'motionSlowStep', 'done', 'motionStance'},
-
-
+	--
+	{'motionInit', 'done', 'motionStance'},
+	--
+	{'motionUnInit', 'done', 'motionIdle'},
+	--
+	{'motionStance', 'bias', 'motionBiasInit'},
+	{'motionStance', 'uninit', 'motionUnInit'},
 	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+	{'motionStance', 'preview', 'motionStepPreview'},
+	{'motionStance', 'slowstep', 'motionSlowStep'},
+	{'motionStance', 'stair', 'motionStepPreviewStair'},
+	--
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
-
-	{'motionStance', 'uninit', 'motionUnInit'},
-	{'motionUnInit', 'done', 'motionIdle'},
+	--{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
+	--
+	{'motionStepPreview', 'done', 'motionStance'},
+	--
+	{'motionStepPreviewStair', 'done', 'motionStance'},
+	--
+	{'motionSlowStep', 'done', 'motionStance'},
 }
 
 Config.fsm = fsm

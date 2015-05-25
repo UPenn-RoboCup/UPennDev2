@@ -4,7 +4,7 @@ WorldInfo {
     "Default world for the THOR-OP"
   ]
   title "THOR-OP Only"
-  basicTimeStep 20
+  basicTimeStep 4
   ERP 0.1
   CFM 1e-05
   gravity 0 -9.81 0
@@ -49,19 +49,19 @@ DEF FLOOR Floor {
 WoodBox {
   translation 0.0108684 0.3 1.04426
 }
-THOROP_mk15_Fullmass_longarm {
+THOROP_mk15_Fullmass_longarm_2 {
   translation 0 1.17 -0.03
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
   footContactMaterial "feet" 
-#double the torques
-  max_torque_400w 90 
-  max_torque_200w 90 
-  max_torque_100w 45
-#  max_torque_400w 40 
-#  max_torque_200w 40 
+#  max_torque_400w 90 
+#  max_torque_200w 45 
 #  max_torque_100w 22
+
+  max_torque_400w 180 
+  max_torque_200w 90 
+  max_torque_100w 22
   damping_constant 0
  }

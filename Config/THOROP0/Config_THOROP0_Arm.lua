@@ -13,54 +13,37 @@ arm.init = {}
 -- Pitch up
 arm.init[1] = {
 	left = {
-		tr=tr6D{0.2, 0.25, 0.15, 0, -60*DEG_TO_RAD,0},
-		timeout=12,
-		via='jacobian_preplan', weights = {0,1,0}
+		tr=tr6D{0.25, 0.25, 0.15, 0, -45*DEG_TO_RAD,0},
+		timeout=8,
+		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
-		tr=tr6D{0.2, -0.25, 0.2, 0, -60*DEG_TO_RAD, 0},
+		tr=tr6D{0.25, -0.25, 0.15, 0, -45*DEG_TO_RAD, 0},
 		--q = {0,0,0, 0, 0,0,0},
-		timeout=12,
+		timeout=8,
 		via='jacobian_preplan',
-		weights = {0,1,0},
+		weights = {1,0,0},
 	}
 }
 
 -- Now go to yaw
+----[[
 arm.init[2] = {
 	left = {
-		tr=tr6D{0.25, 0.25, 0.2,    0, 0, -45*DEG_TO_RAD},
+		tr=tr6D{0.25, 0.25, 0.18,    0, 0, -45*DEG_TO_RAD},
 		qArmGuess = vector.new{70,25,-28, -150, 10,-80,-90}*DEG_TO_RAD,
 		timeout=15,
-		via='jacobian_preplan', weights = {0,0,0,1}
+		via='jacobian_preplan', weights = {0,1,0,1}
 	},
 	right = {
-		tr=tr6D{0.2, -0.25, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
+		tr=tr6D{0.25, -0.25, 0.18, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
+		--qArmGuess = vector.new{70,-25,28, -150, 10,-80,-90}*DEG_TO_RAD,
 		timeout=15,
 		via='jacobian_preplan',
-		weights = {0,0,0,1},
+		weights = {0,1,0,1},
 	}
 }
-
--- From some random manipulation point
-arm.ready = {}
-arm.ready[1] = {
-	left = {
-		tr=tr6D{0.35, 0.25, 0.2,    0, 0, -30*DEG_TO_RAD},
-		qArmGuess = {0*DEG_TO_RAD,-90*DEG_TO_RAD,0*DEG_TO_RAD, 0, 0,0,0},
-		weights = {0,1,0,1},
-		via='jacobian_preplan',
-		timeout=20,
-	},
-	right = {
-		tr=tr6D{0.2, -0.25, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
-		qArmGuess = {0*DEG_TO_RAD,90*DEG_TO_RAD,0*DEG_TO_RAD, 0, 0,0,0},
-		weights = {0,1,0,1},
-		via='jacobian_preplan',
-		timeout=20,
-	}
-}
-arm.ready[1] = {left=false, right=false}
+--]]
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset = {}
@@ -112,26 +95,27 @@ arm.torso_comp_limit = vector.new({0.06,0.03})
 
 --Old teleop init/uninit sequence
 armfsm = {}
-armfsm.teleop = {}
-armfsm.teleop.arminit={
---[[
-  {'move0',nil,{0.20,-0.25,-0.05,0,0,0}},
-  {'move0',nil,{0.25,-0.25,-0.05,0,-85*DEG_TO_RAD,0}},
-	{'move0',nil,{0.25,-0.25,0.24,0,-85*DEG_TO_RAD,0}},
---]]
-
-
---		
+armfsm.teleopr = {}
+armfsm.teleopr.arminit={
  	{'move0',nil,{0.25,-0.25,-0.15  ,0,0,0}},
   {'move0',nil,{0.30,-0.25,0.24,0,0,0}},
   {'move0',nil,{0.30,-0.10,0.24,0,0,0}},  
---
 }
-armfsm.teleop.armuninit={
+armfsm.teleopr.armuninit={
   {'move0',nil,{0.30,-0.25, 0.24  ,0,0,0}},
   {'move0',nil,{0.25,-0.25,-0.15  ,0,0,0}},
   {'move0',nil,arm.trRArm0},
-  {'move0',nil,arm.trRArm0},
+}
+armfsm.teleopl = {}
+armfsm.teleopl.arminit={
+ 	{'move0',{0.25,0.25,-0.15  ,0,0,0},nil},
+--  {'move0',{0.30,0.25,0.24,0,0,0},nil},
+--  {'move0',{0.30,0.10,0.24,0,0,0},nil},  
+}
+armfsm.teleopl.armuninit={
+--  {'move0',{0.30,0.25, 0.24  ,0,0,0},nil},
+--  {'move0',{0.25,0.25,-0.15  ,0,0,0},nil},
+  {'move0',arm.trLArm0,nil},
 }
 
 

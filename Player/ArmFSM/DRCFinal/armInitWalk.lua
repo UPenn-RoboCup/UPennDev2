@@ -62,6 +62,8 @@ function state.entry()
       unix.usleep(1e6*0.01);
       Body.set_rarm_command_velocity(vector.ones(7)*vel)
       unix.usleep(1e6*0.01);
+      Body.set_waist_command_velocity({500,500})
+      unix.usleep(1e6*0.01);      
      end
   end
 
@@ -90,12 +92,13 @@ function state.update()
   t_update = t
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-
+    
   local ret
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
-  
+    
   if stage==1 then --Straighten wrist roll        
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
+
   elseif stage==2 then
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
@@ -123,13 +126,20 @@ function state.update()
   if IS_WEBOTS then dqArmLim = dqArmLim*2 end
 
   local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
+  Body.set_waist_command_position({0,0})
+
+
 --  local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,false) --should use absolute position (for jacobian)
   local qLArmActual = Body.get_larm_position()
   local qRArmActual = Body.get_rarm_position()
+  local qWaistActual = Body.get_waist_position()
   local qLArmCommand = Body.get_larm_command_position()
   local qRArmCommand = Body.get_rarm_command_position()
+  local qWaistCommand = Body.get_waist_command_position()
 
   local err=0
+  err=err+math.abs(qWaistActual[1]-qWaistCommand[1])
+  err=err+math.abs(qWaistActual[2]-qWaistCommand[2])
   for i=1,7 do
     err=err+math.abs(qLArmActual[i]-qLArmCommand[i])
     err=err+math.abs(qRArmActual[i]-qRArmCommand[i])
@@ -172,15 +182,14 @@ function state.exit()
       unix.usleep(1e6*0.01);
       Body.set_rarm_command_velocity({0,0,0,0,0,0,0})
       unix.usleep(1e6*0.01);
+      Body.set_waist_command_velocity({0,0})
+      unix.usleep(1e6*0.01);      
     end
   end
 
 --SJ: now we store the COM offset for default arm posture
---needed for arm returning
   local COMoffset = mcm.get_stance_COMoffset()
   mcm.set_stance_COMoffsetPose1(COMoffset)
-
-
   print("COMoffset:",unpack(COMoffset))
   --print("uTorsoComp",unpack(uTorsoComp))
   print(state._NAME..' Exit' )

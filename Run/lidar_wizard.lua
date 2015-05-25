@@ -36,7 +36,7 @@ h0.metadata = {
 	id='lidar0'
 }
 h0.angle = Body.get_lidar_position
---[[
+----[[
 local h1 = libHokuyo.new_hokuyo(11) -- head on mk2
 h1.name = 'head'
 h1.ch = si.new_publisher(streams.lidar1.sub)
@@ -67,6 +67,7 @@ local cb = function(self, data)
 	local pose = wcm.get_robot_pose()
 	local torsoG = pose_global(torso0, pose)
 	local bh = mcm.get_stance_bodyHeight()
+	-- TODO: Waist!!!
 
 	metadata.tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
 	metadata.tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}

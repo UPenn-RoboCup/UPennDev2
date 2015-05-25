@@ -168,18 +168,20 @@ else
 
 end
 
-if HOSTNAME=="teddy2" or HOSTNAME=="dale" then
+if HOSTNAME=="teddy2" or HOSTNAME=="dale" then --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
   walk.hipRollCompensation = 1.5*DEG_TO_RAD
   walk.tZMP = 0.33 
   walk.supportX = 0.02 
   walk.footY = 0.115 --teddy, even wider
   walk.supportY = -0.01 
-
   walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
 end
 
 --testing
 walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD
+
+
+walk.stanceLimitY = {0.20,0.30}
 
 
 ------------------------------------

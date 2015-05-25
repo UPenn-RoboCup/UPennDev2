@@ -12,6 +12,7 @@ local libs = {
   'util',
   'vector',
   'torch',
+	'unix'
 }
 -- Load the libraries
 for _,lib in ipairs(libs) do
@@ -23,14 +24,46 @@ for _,lib in ipairs(libs) do
   end
 end
 
+-- Track the network usage
+local sent_usage = {
+	fsm = {},
+	shm = {},
+}
+local recv_usage = {
+	fsm = {},
+	shm = {},
+}
+function net()
+	for name, usage in pairs(sent_usage) do
+		local sum = 0
+		for i, use in ipairs(usage) do
+			local t_use, bytes_used = unpack(use)
+			sum = sum + bytes_used
+		end
+		print(string.format('%s sent %d bytes', name, sum))
+	end
+	for name, usage in pairs(recv_usage) do
+		local sum = 0
+		for i, use in ipairs(usage) do
+			local t_use, bytes_used = unpack(use)
+			sum = sum + bytes_used
+		end
+		print(string.format('%s received %d bytes', name, sum))
+	end
+end
+
+
 local rpc_req = si.new_requester(Config.net.rpc.tcp_reply, Config.net.robot.wired)
 local rpc_udp = si.new_sender(Config.net.robot.wired, Config.net.rpc.udp)
 
 -- FSM communicationg
 fsm_chs = {}
 local fsm_send = function(t, evt)
-  rpc_req:send(mp.pack({fsm=t.fsm,evt=evt}))
+	local msg = mp.pack({fsm=t.fsm,evt=evt})
+	table.insert(sent_usage.fsm, {unix.time(), #msg})
+  rpc_req:send(msg)
   local data = unpack(rpc_req:receive())
+	table.insert(recv_usage.fsm, {unix.time(), #data})
   local result = mp.unpack(data)
   return result
 end
@@ -46,16 +79,18 @@ local shm_send = function(t, func)
   local tbl = {shm = t.shm, seg = seg, key = key}
   return function(val)
 		tbl.val = val
-		-- Use REQ/REP to get data
-		local ret = rpc_req:send(mp.pack(tbl))
+		local msg = mp.pack(tbl)
+		table.insert(sent_usage.shm, {unix.time(), #msg})
+		local ret = rpc_req:send(msg)
 		local data = unpack(rpc_req:receive())
+		table.insert(recv_usage.shm, {unix.time(), #data})
     local result = mp.unpack(data)
     return type(result)=='table' and vector.new(result) or result
   end
 end
 
 -- This should overwrite memory calls...
-local listing = require'unix'.readdir(HOME..'/Memory')
+local listing = unix.readdir(HOME..'/Memory')
 local shm_vars = {}
 for _,mem in ipairs(listing) do
   local found, found_end = mem:find'cm'

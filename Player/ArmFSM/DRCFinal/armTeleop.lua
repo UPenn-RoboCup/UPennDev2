@@ -39,24 +39,14 @@ function state.entry()
 	quatpR = vector.new(toQ(trR))
 	hcm.set_teleop_tflarm(quatpL)
 	hcm.set_teleop_tfrarm(quatpR)
-	-- TODO: Find the appropriate weights from the position we are in...
-	hcm.set_teleop_lweights(default_weights)
-	hcm.set_teleop_rweights(default_weights)
 	-- Reset the waist
 	qWaistDesired = qcWaist
 	hcm.set_teleop_waist(qWaistDesired)
+	-- TODO: Find the appropriate weights from the position we are in...
+	hcm.set_teleop_lweights(default_weights)
+	hcm.set_teleop_rweights(default_weights)
 	
-	local configL = {
-		tr = trL, timeout=5,
-		via='jacobian_preplan', weights = default_weights
-	}
-	local configR = {
-		tr=trR, timeout=5,
-		via='jacobian_preplan', weights = default_weights
-	}
-
-	--lco, rco, uComp = movearm.goto(configL, configR)
-	lco, rco, uComp = movearm.goto(false, false)
+	lco, rco = movearm.goto(false, false)
 	-- Check for no motion
 	okL = type(lco)=='thread' or lco==false
 	okR = type(rco)=='thread' or rco==false
@@ -137,10 +127,16 @@ function state.update()
 		print(state._NAME, 'L', okL, qLWaypoint)
 		print(state._NAME, 'R', okR, qRWaypoint)
 		-- Safety
-		Body.set_larm_command_position(qLArm)
-		Body.set_rarm_command_position(qRArm)
-		hcm.set_teleop_larm(qLArm)
-		hcm.set_teleop_rarm(qRArm)
+		local qcLArm = Body.get_larm_command_position()
+		local qcRArm = Body.get_rarm_command_position()
+		local qcWaist = Body.get_waist_command_position()
+		--
+		Body.set_larm_command_position(qcLArm)
+		Body.set_rarm_command_position(qcRArm)
+		Body.set_waist_command_position(qcWaist)
+		--
+		hcm.set_teleop_larm(qcLArm)
+		hcm.set_teleop_rarm(qcRArm)
 		return'teleopraw'
 	end
 

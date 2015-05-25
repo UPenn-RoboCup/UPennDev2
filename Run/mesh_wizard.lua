@@ -20,18 +20,27 @@ local libLog, logger
 local mesh0, mesh1
 local mag_sweep0, t_sweep0, ranges_fov0
 local mag_sweep1, t_sweep1, ranges_fov1
-local hz_send = 4
-local dt_send = 1/hz_send
-local hz_test_send = 0.5
-local dt_test_send = 1/hz_test_send
+--
+local hz_open_send = 0.5
+local dt_open_send = 1/hz_open_send
+--
+local hz_outdoor_send = 1
+local dt_outdoor_send = 1/hz_outdoor_send
+--
+local hz_indoor_send = 4
+local dt_indoor_send = 1/hz_indoor_send
 
-local function check_send_mesh(is_open)
+local function check_send_mesh()
+	local is_indoors = hcm.get_network_indoors()==1
+	local is_outdoors = not is_indoors
+	--
 	local t = Body.get_time()
 	local dt_send0 = t - t_send
-	if dt_send0 < dt_send then return end
-	if (not IS_COMPETING) and dt_send0 < dt_test_send then return end
+
+	if is_outdoors and dt_send0 < dt_outdoor_send then return end
+	if is_indoors and dt_send0 < dt_indoor_send then return end
 	t_send = t
-	print('Mesh | Sending', dt_send0, is_open)
+	print('Mesh | Sending', dt_send0)
 	if mesh0 then
 		local metadata = mesh0.metadata
 		metadata.t = t
@@ -182,8 +191,7 @@ local function update(meta, ranges)
 		mesh1:add_scan(meta.angle[2], ranges, meta)
 	end
 	if IS_WEBOTS then
-		local is_open = hcm.get_network_open()
-		check_send_mesh(is_open==1)
+		check_send_mesh()
 	end
 end
 
@@ -233,6 +241,7 @@ while running do
 	npoll = poller:poll(TIMEOUT)
 	local t = Body.get_time()
 	local is_open = hcm.get_network_open()
-	check_send_mesh(is_open==1)
+		local is_indoors = hcm.get_network_indoors()
+		check_send_mesh()
 end
 exit()

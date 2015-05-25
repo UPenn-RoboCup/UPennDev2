@@ -38,6 +38,10 @@ function state.entry()
 	-- Check for no motion
 	okL = type(lco)=='thread' or lco==false
 	okR = type(rco)=='thread' or rco==false
+	qLWaypoint = nil
+	qRWaypoint = nil
+	qLWaistpoint = nil
+	qRWaistpoint = nil
 
 end
 
@@ -117,11 +121,6 @@ function state.update()
 		Body.set_larm_command_position(qcLArm)
 		Body.set_rarm_command_position(qcRArm)
 		Body.set_waist_command_position(qcWaist)
-		--
-		Body.set_larm_command_position(qLArm)
-		Body.set_rarm_command_position(qRArm)
-		Body.set_waist_command_position(qWaist)
-		--
 		return'teleopraw'
 	end
 

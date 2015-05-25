@@ -23,10 +23,10 @@ local qWaistDesired
 local default_weights = {1,1,0}
 
 function state.entry()
-  print(state._NAME..' Entry')
-  local t_entry_prev = t_entry
-  t_entry = Body.get_time()
-  t_update = t_entry
+	print(state._NAME..' Entry')
+	local t_entry_prev = t_entry
+	t_entry = Body.get_time()
+	t_update = t_entry
 
 	-- Set where we are
 	local qcLArm = Body.get_larm_command_position()
@@ -45,20 +45,24 @@ function state.entry()
 	-- TODO: Find the appropriate weights from the position we are in...
 	hcm.set_teleop_lweights(default_weights)
 	hcm.set_teleop_rweights(default_weights)
-	
+
 	lco, rco = movearm.goto(false, false)
 	-- Check for no motion
 	okL = type(lco)=='thread' or lco==false
 	okR = type(rco)=='thread' or rco==false
+	qLWaypoint = nil
+	qRWaypoint = nil
+	qLWaistpoint = nil
+	qRWaistpoint = nil
 
 end
 
 function state.update()
 	--  io.write(state._NAME,' Update\n')
-  local t  = Body.get_time()
-  local dt = t - t_update
-  t_update = t
-  --if t-t_entry > timeout then return'timeout' end
+	local t  = Body.get_time()
+	local dt = t - t_update
+	t_update = t
+	--if t-t_entry > timeout then return'timeout' end
 
 	-- Grab the transform
 	local quatpL1 = hcm.get_teleop_tflarm()
@@ -109,7 +113,7 @@ function state.update()
 		})
 		rco = rco1
 	end
-	
+
 	local lStatus = type(lco)=='thread' and coroutine.status(lco)
 	local rStatus = type(rco)=='thread' and coroutine.status(rco)
 

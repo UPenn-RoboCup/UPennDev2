@@ -47,44 +47,6 @@ end
 movearm.lPlanner = lPlanner
 movearm.rPlanner = rPlanner
 
-local function get_compensation(qcLArm, qcRArm, qcWaist)
-	-- Legs are a bit different, since we are working in IK space
-	local bH = mcm.get_stance_bodyHeight()
-	local bT = mcm.get_stance_bodyTilt()
-	local uTorso = mcm.get_status_uTorso()
-	local aShiftX = mcm.get_walk_aShiftX()
-  local aShiftY = mcm.get_walk_aShiftY()
-	-- Current Foot Positions
-	local uLeft = mcm.get_status_uLeft()
-  local uRight = mcm.get_status_uRight()
-	local zLeg = mcm.get_status_zLeg()
-  local zSag = mcm.get_walk_zSag()
-	local zLegComp = mcm.get_status_zLegComp()
-	local zLeft, zRight = unpack(zLeg + zSag + zLegComp)
-	local pLLeg = {uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]}
-  local pRLeg = {uRight[1],uRight[2],zRight,0,0,uRight[3]}
-	qcWaist = qcWaist or {0, 0}
-
-	-- Initial guess is torso0, our default position.
-	-- See how far this guess is from our current torso position
-	local uTorsoAdapt = util.pose_global(torso0, uTorso)
-	local adapt_factor = 1.0
-	for i=1,4 do
-		-- Form the torso position now in the 6D space
-		local pTorso = {uTorsoAdapt[1], uTorsoAdapt[2], bH, 0, bT, uTorsoAdapt[3]}
-		local qLegs = K0.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
-		-- Grab the intended leg positions from this shift
-		local qLLeg = {unpack(qLegs, 1, 6)}
-		local qRLeg = {unpack(qLegs, 7, 12)}
-		-- Calculate the COM position
-		local com = K0.calculate_com_pos(qcWaist, qcLArm, qcRArm, qLLeg, qRLeg, 0, 0, 0)
-		local uCOM = util.pose_global({com[1]/com[4], com[2]/com[4], 0}, uTorsoAdapt)
-		uTorsoAdapt = uTorsoAdapt + adapt_factor * (uTorso - uCOM)
-	end
-	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso)
-	table.remove(uTorsoComp)
-	return uTorsoComp
-end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto(l, r)
@@ -148,6 +110,8 @@ function movearm.goto(l, r)
 	end
 
 	-- TODO: Add compensation again
+	--use Body.get_torso_compensation(qLArm, qRArm, qWaist) instead!!!
+
 	local uTorsoComp
 	--[[
 	if add_compensation then

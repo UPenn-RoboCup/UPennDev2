@@ -41,6 +41,7 @@ shared.stance.COMoffsetPose1 = vector.zeros(3) --com offset for 'default' arm po
 
 
 
+
 --Arm info
 
 shared.arm = {}
@@ -182,6 +183,17 @@ shared.status.LZMP = vector.zeros(3)
 shared.status.RZMP = vector.zeros(3)
 shared.status.IMU = vector.zeros(4) --r p vr vp
 
+
+--how much of the upper body weight is held by left leg?
+-- 0.5 for double support
+-- 1 for full left single support
+
+--Torso mass: 14.832lg, Arm mass: 5.714/6.74kg 
+--Total upper body mass: 27.286kg
+--Leg mass: 11.86kg for each leg
+--so if ratio is less than 11.86 / (11.86*2+27.286), the left leg is in mid-air
+--and we should compensate the COM position so that we can hold the left leg mass
+shared.status.leftSupportRatio = vector.ones(1)*0.5
 
 --If we are kneeling, we don't need quasistatic balancing
 shared.status.iskneeling    = vector.zeros(1)

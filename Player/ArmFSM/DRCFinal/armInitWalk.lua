@@ -164,7 +164,7 @@ function state.exit()
   --we calculated the arm transforms (sans compensation) and stores them as current intiial conditions for planner
 
   local qWaist = Body.get_waist_command_position()
-  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist,0,0)  
+  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist)  
   local vec_comp = vector.new({uTorsoComp[1],uTorsoComp[2],0, 0,0,0})
   local trLArmComp = Body.get_forward_larm(qLArmTarget)
   local trRArmComp = Body.get_forward_rarm(qRArmTarget)

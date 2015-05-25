@@ -48,40 +48,21 @@ THOROP_mk2_Fullmass{
   controllerArgs "0 32"
   lidarRays 360
   footContactMaterial "feet" 
-  max_torque_400w 90 
-  max_torque_200w 90 
-  max_torque_100w 20
+  max_torque_400w 180 
+  max_torque_200w 180 
+  max_torque_100w 120
   damping_constant 0
  }
 
 
-
-
-CinderRamp {
-  translation 0.2 0 0.43
+CinderBlock {
+  translation 0.2 -0.05 0.4
   rotation 0 1 0 0
-}
-CinderRamp {
-  translation -0.2 0 0.43
-  rotation 0 1 0 -1.57
-}
-CinderRamp {
-  translation -0.6 0 0.43
-  rotation 0 1 0 -3.14
+  diffuseColor 0.5 0.9 0.5
 }
 
-
-
-
-CinderRamp {
-  translation 0.2 0.15 0.8
-  rotation 0 1 0 1.57
-}
-CinderRamp {
-  translation -0.2 0 0.8
+CinderBlock {
+  translation -0.2 -0.05 0.4
   rotation 0 1 0 0
-}
-CinderRamp {
-  translation -0.6 0 0.8
-  rotation 0 1 0 -1.57
+  diffuseColor 0.9 0.5 0.5
 }

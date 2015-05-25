@@ -496,7 +496,7 @@ Body.Kinematics = Kinematics
 --SJ: I have moved this function to body as it is commonly used in many locations
 --Reads current leg and torso position from SHM
 
-Body.get_torso_compensation= function (qLArm, qRArm, qWaist,massL, massR)
+Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorso = mcm.get_status_uTorso()
@@ -511,6 +511,8 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist,massL, massR)
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
+  local leftSupportRatio = mcm.get_status_leftSupportRatio()
+
  --Initial guess 
   local uTorsoAdapt = util.pose_global(vector.new({-Config.walk.torsoX,0,0}),uTorso)
   local pTorso = vector.new({
@@ -518,11 +520,16 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist,massL, massR)
     0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
   local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
   
+  local massL,massR = 0,0 --for now
+
   -------------------Incremental COM filtering
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
-    com = Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0,Config.birdwalk or 0)
+
+    com = Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,
+          0,0,0,Config.birdwalk or 0, leftSupportRatio)
+
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
@@ -535,7 +542,7 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist,massL, massR)
    count = count+1
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
-  return {uTorsoOffset[1],uTorsoOffset[2]}
+  return {uTorsoOffset[1],uTorsoOffset[2]}, qLegs, com[3]/com[4]
 end
 
 return Body

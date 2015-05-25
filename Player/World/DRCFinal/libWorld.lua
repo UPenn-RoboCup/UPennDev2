@@ -92,11 +92,12 @@ local function print_pose()
   local gpspose1 = wcm.get_robot_pose_gps()
   local gpspose0 = wcm.get_robot_pose_gps0()
   local gpspose = util.pose_relative(gpspose1,gpspose0)
-
   print(string.format(
     "pose: %.3f %.3f %d gps: %.3f %.3f %d",
     pose[1],pose[2],pose[3]*180/math.pi,
     gpspose[1],gpspose[2],gpspose[3]*180/math.pi))
+  local uTorso = mcm.get_status_uTorso()
+  print("uTOrso:",unpack(uTorso))  
 end
 
 function libWorld.update(uOdom, detection)
@@ -110,7 +111,14 @@ function libWorld.update(uOdom, detection)
     local gpspose1 = wcm.get_robot_pose_gps()
     local gpspose0 = wcm.get_robot_pose_gps0()
     local gpspose = util.pose_relative(gpspose1,gpspose0)
+
+    --subtract automatic compensation
+    comoffset = mcm.get_stance_COMoffset()
+    comoffset[3]=0 
+    gpspose = util.pose_global(comoffset,gpspose)
     wcm.set_robot_pose(gpspose)
+    print_pose()
+
   else
     update_odometry(uOdom)
     print_pose()   

@@ -23,7 +23,10 @@ function state.entry()
 	--motion_ch:send'stand'
 	head_ch:send'teleop'
 	arm_ch:send'teleopraw'
-
+  if mcm.get_walk_ismoving()>0 then
+    print("requesting stop")
+    mcm.set_walk_stoprequest(1)
+  end
 end
 
 function state.update()

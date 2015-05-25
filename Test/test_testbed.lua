@@ -117,16 +117,7 @@ local function update(key_code)
 
 
 	elseif key_char_lower==("8") then  
---[[		
-		motion_ch:send'stand'
 		body_ch:send'stop'
-		head_ch:send'teleop'
-		hcm.set_motion_headangle({0,0*math.pi/180})
---]]		
-		if mcm.get_walk_ismoving()>0 then 
-			print("requesting stop")
-			mcm.set_walk_stoprequest(1) 
-		end
 	elseif key_char_lower==("9") then  
 		motion_ch:send'hybridwalk'
 --

@@ -75,7 +75,7 @@ local function set_tflarm(tf, do_now)
 		T.copy(tf, tfLtmp)
 		TFLARM_DIRTY = true
 	end
-	if q==true or do_now==true then
+	if tf==true or do_now==true then
 		hcm.set_teleop_tflarm(toQ(tfLtmp))
 		T.copy(tfLtmp, tfL0)
 		TFLARM_DIRTY = false
@@ -92,12 +92,12 @@ local function get_tfrarm(refresh)
 end
 local function set_tfrarm(tf, do_now)
 	if type(tf)~='boolean' then
-		Transform.copy(tf, tfRtmp)
+		T.copy(tf, tfRtmp)
 		TFRARM_DIRTY = true
 	end
-	if q==true or do_now==true then
+	if tf==true or do_now==true then
 		hcm.set_teleop_tfrarm(toQ(tfRtmp))
-		Transform.copy(tfRtmp, tfR0)
+		T.copy(tfRtmp, tfR0)
 		TFRARM_DIRTY = false
 	end
 end
@@ -137,8 +137,6 @@ char_lut[' '] = function()
 end
 
 -- Enter syncs the data
-local qlarm
-local qrarm
 local uComp
 local body_state
 local head_state
@@ -147,8 +145,6 @@ local motion_state
 local gripper_state
 local walk_velocity
 local function sync()
-	qlarm = Body.get_larm_position()
-	qrarm = Body.get_rarm_position()
 	uComp = mcm.get_stance_uTorsoComp()
 	body_state = gcm.get_fsm_Body()
 	head_state = gcm.get_fsm_Head()

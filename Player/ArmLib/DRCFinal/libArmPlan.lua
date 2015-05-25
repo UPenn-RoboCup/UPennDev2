@@ -505,6 +505,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	if Config.debug.armplan then
 	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
 	end
+	if #path==0 then return qArm end
 	-- Play the plan
 	local qArmF = co_play(path)
 	-- Hitting the timeout means we are done

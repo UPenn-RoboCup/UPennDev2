@@ -75,7 +75,7 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	local qWaist = Body.get_waist_position()
+	local qWaist = Body.get_safe_waist_position()
 	if lStatus=='suspended' then
 		okL, qLWaypoint, qLWaistpoint = coroutine.resume(lco, qLArm, qWaist)
 	end
@@ -90,11 +90,11 @@ function state.update()
 		-- Safety
 		local qcLArm = Body.get_larm_command_position()
 		local qcRArm = Body.get_rarm_command_position()
-		local qcWaist = Body.get_waist_command_position()
+		local qcWaist = Body.get_safe_waist_command_position()
 		--
 		Body.set_larm_command_position(qcLArm)
 		Body.set_rarm_command_position(qcRArm)
-		Body.set_waist_command_position(qcWaist)
+		Body.set_safe_waist_command_position(qcWaist)
 		--
 		return'teleopraw'
 	end
@@ -110,15 +110,15 @@ function state.update()
 	if qLWaistpoint and qRWaistpoint then
 		print('Conflicting Waist')
 	elseif qLWaist then
-		Body.set_waist_command_position(qLWaistpoint)
+		Body.set_safe_waist_command_position(qLWaistpoint)
 	elseif qRWaist then
-		Body.set_waist_command_position(qRWaistpoint)
+		Body.set_safe_waist_command_position(qRWaistpoint)
 	end
 	--]]
 	  -- Zero the waist
-  local qWaist = Body.get_waist_command_position()
+  local qWaist = Body.get_safe_waist_command_position()
   local qWaist_approach, doneWaist = util.approachTol(qWaist, {0,0}, {2 * DEG_TO_RAD, 2 * DEG_TO_RAD}, dt, {1*DEG_TO_RAD, 1*DEG_TO_RAD})
-  Body.set_waist_command_position(qWaist_approach)
+  Body.set_safe_waist_command_position(qWaist_approach)
 
 	-- Check if done
 	if lStatus=='dead' and rStatus=='dead' then

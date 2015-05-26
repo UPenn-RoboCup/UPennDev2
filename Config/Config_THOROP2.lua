@@ -25,7 +25,7 @@ Config.debug = {
 }
 
 --BIRDWALK DEFAULT FOR CHIP
-Config.birdwalk = 1 --testing birdwalk		
+--Config.birdwalk = 1 --testing birdwalk		
 
 
 

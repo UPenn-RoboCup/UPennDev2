@@ -59,7 +59,7 @@ function moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP,zLeft,zRi
 end
 
 function moveleg.get_ft()
-  local y_angle_zero = 3*math.pi/180
+  local y_angle_zero = 0*math.pi/180
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
   local ft= {
     lf_x=l_ft[1],rf_x=r_ft[1],
@@ -70,8 +70,8 @@ function moveleg.get_ft()
     lt_z=0, rt_z=0 --do we ever need yaw torque?
   }
   if IS_WEBOTS then
-    ft.lt_y, ft.rt_y = -l_ft[4],-r_ft[5]      
-    ft.lt_x,ft.rt_x = -l_ft[5],-r_ft[4] 
+    ft.lt_x,ft.rt_x = -l_ft[4],-r_ft[4] 
+    ft.lt_y, ft.rt_y = -l_ft[5],-r_ft[5]
   end
   local rpy = Body.get_rpy()
   local gyro, gyro_t = Body.get_gyro()
@@ -79,7 +79,6 @@ function moveleg.get_ft()
     roll_err = rpy[1], pitch_err = rpy[2]-y_angle_zero,  
     v_roll = gyro[1], v_pitch = gyro[2]
   }
-
 
   --moving window 
   lf_queue[queue_count] = math.sqrt(ft.lf_z^2+ft.lf_y^2+ft.lf_x^2)
@@ -101,14 +100,10 @@ function moveleg.get_ft()
     vector.sum(rty_queue)/queue_size
     })
 
-
   mcm.set_status_IMU({imu.roll_err, imu.pitch_err, v_roll,v_pitch})
 
   local zf_touchdown = 50
   if IS_WEBOTS then zf_touchdown = 1 end
-
-
-
 
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()

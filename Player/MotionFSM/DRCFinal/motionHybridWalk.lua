@@ -199,7 +199,7 @@ function walk.update()
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
 
-
+  moveleg.ft_compensate(t_diff)
 
   delta_legs, angleShift = moveleg.get_leg_compensation_new(
       supportLeg,

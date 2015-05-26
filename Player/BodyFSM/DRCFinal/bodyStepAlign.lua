@@ -3,22 +3,17 @@ state._NAME = ...
 local Body   = require'Body'
 local util   = require'util'
 local vector = require'vector'
-
--- Get the human guided approach
 require'hcm'
--- Get the robot guided approach
 require'wcm'
-
 require'mcm'
 
 local footstepplanner = require'footstepplanner'
-
 
 -- FSM coordination
 local simple_ipc = require'simple_ipc'
 local motion_ch = simple_ipc.new_publisher('MotionFSM!')
 
-local t_entry, t_update, t_exit, t_stage
+local t_entry, t_update, t_exit, t_stage, step_queues
 local nwaypoints, wp_id
 local waypoints = {}
 
@@ -76,7 +71,7 @@ local function calculate_footsteps(stage)
 end
 
 
-local function initiate_step(supportLeg, step_relpos )
+function initiate_step(supportLeg, step_relpos )
   local uTorso = mcm.get_status_uTorso()  
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
@@ -87,7 +82,8 @@ local function initiate_step(supportLeg, step_relpos )
 
   local step_min = 0.05
   local sh1,sh2 = 0.05, 0
-  local st,wt = 0.5,1.0
+
+  local st,wt = 1,2
 
   if supportLeg == 1 then
     --Take right step
@@ -130,6 +126,7 @@ local function initiate_step(supportLeg, step_relpos )
     }
   end
 
+
   stage = 1
   calculate_footsteps(stage)
   motion_ch:send'stair'  
@@ -146,17 +143,8 @@ end
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
-  local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-
-  local move_target = vector.pose(hcm.get_teleop_waypoint())
-  if move_target[1]==0 and move_target[2]==0 and move_target[3]==0 then
-    finished = true --don't need to walk, just exit
-    pose0 = wcm.get_robot_pose()
-    return
-  end
-  
   t_stage = t_entry
 
   supportLeg=hcm.get_step_supportLeg()

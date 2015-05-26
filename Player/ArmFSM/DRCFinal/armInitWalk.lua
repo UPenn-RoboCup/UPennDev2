@@ -55,7 +55,7 @@ function state.entry()
   Body.set_rgrip_command_torque({0,0,0})
 
   if not IS_WEBOTS then
-  	local vel = 1000
+    local vel = 2000
     print('INIT setting params')
     for i=1,10 do
       Body.set_larm_command_velocity(vector.ones(7)*vel)

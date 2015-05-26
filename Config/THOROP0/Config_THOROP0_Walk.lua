@@ -118,11 +118,14 @@ if IS_WEBOTS then
   walk.tZMP = 0.30 --has much lower com?
 
 
-  walk.tZMP = 0.35 --has much lower com?
+--  walk.tZMP = 0.35 --has much lower com?
 
-  walk.tStep = .75
+  walk.tStep = .80
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
+
+
+  walk.stepHeight = 0.06 --higher stepheight for webots
 
 else
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
@@ -140,8 +143,7 @@ else
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.delay_factor = {0.8,1.7}
 
-  walk.tZMP = 0.30 --has much lower com?
-  walk.tStep = .75
+  walk.tZMP = 0.30 --has much lower com?  
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
 

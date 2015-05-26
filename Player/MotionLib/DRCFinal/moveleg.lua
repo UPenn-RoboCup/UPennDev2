@@ -41,6 +41,18 @@ local rtx_queue = vector.zeros(queue_size)
 local lty_queue = vector.zeros(queue_size)
 local rty_queue = vector.zeros(queue_size)
 
+local function eval_spline(breaks,coefs,ph)
+  local x_offset, xf = 0,0
+  for i=1,#breaks do
+    if ph<=breaks[i] then
+      local x=ph - x_offset
+      xf = coefs[i][1]*x^3 + coefs[i][2]*x^2 + coefs[i][3]*x + coefs[i][4]
+      break;
+    end
+    x_offset = breaks[i]    
+  end
+  return xf
+end
 
 
 function moveleg.get_ph_single(ph,phase1,phase2) return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))end
@@ -321,9 +333,40 @@ function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight * zf
-
   return uFoot, zFoot
 end
+
+
+function moveleg.foot_trajectory_base2(phSingle,uStart,uEnd,stepHeight)
+  --smooth landing, earlierx stop
+local breaksTX={0.150000,0.350000,0.600000,0.800000,1.000000,}
+local breaksTY={0.300000,0.600000,0.700000,0.800000,0.900000,1.000000,}
+local coefsX={
+  {-4.743550,5.086061,-0.056179,0.000000,},
+  {-4.743550,2.951463,1.149449,0.090000,},
+  {-2.994272,0.105333,1.760809,0.400000,},
+  {0.650617,-2.140370,1.252049,0.800000,},
+  {0.650617,-1.750000,0.473975,0.970000,},
+}
+local coefsY={
+  {2.213176,-6.436303,4.731705,0.000000,},
+  {2.213176,-4.444444,1.467481,0.900000,},
+  {-15.311303,-2.452586,-0.601628,1.000000,},
+  {-24.391762,-7.045977,-1.551485,0.900000,},
+  {82.878352,-14.363506,-3.692433,0.650000,},
+  {82.878352,10.500000,-4.078784,0.220000,},
+}
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight
+  return uFoot, zFoot
+end
+
+
+
+
+
 
 function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkParam)
   local xf,zf,zFoot,aFoot, zHeight0, zHeight1= 0,0,0,0,0,0

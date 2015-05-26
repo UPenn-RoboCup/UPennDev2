@@ -33,8 +33,11 @@ local zmp_param_set = false
 
 -- What foot trajectory are we using?
 local foot_traj_func  
-if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
-else foot_traj_func = moveleg.foot_trajectory_square end
+local foot_traj_name = "foot_trajectory_base"
+if Config.walktraj and Config.walktraj.hybridwalk then
+  foot_traj_name = Config.walktraj.hybridwalk 
+end
+foot_traj_func = moveleg[foot_traj_name]
 
 local init_odometry = function(uTorso)
   wcm.set_robot_utorso0(uTorso)

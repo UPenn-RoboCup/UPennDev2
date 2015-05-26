@@ -77,6 +77,10 @@ if IS_WEBOTS then
   -- Config.kinect_timestep = 30
 end
 
+Config.walktraj={}
+Config.walktraj.hybridwalk = "foot_trajectory_base"
+
+
 -----------------------------------
 -- Load Paths and Configurations --
 -----------------------------------

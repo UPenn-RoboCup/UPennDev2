@@ -557,6 +557,18 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local pTorso = vector.new({
     uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
     0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
+  local bodyHeight0 = mcm.get_stance_bodyHeight()
+ 
+
+--[[
+  local dHeight = Kinematics.get_body_dh(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
+  if dHeight>0 then print("DH:",dHeight) end
+  local bodyHeight = bodyHeight0 - dHeight
+  pTorso[3]=bodyHeight
+--]]
+
+
+
   local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0)
   
   -------------------Incremental COM filtering
@@ -567,11 +579,6 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
     --Now we compensate for leg masses too (for single support cases)
     com = Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,
           massL, massR,0, Config.birdwalk or 0)
-
---TODO: variable support ratio support
---    com = Kinematics.calculate_com_pos_support(qWaist,qLArm,qRArm,qLLeg,qRLeg,
---          massL, massR,0,Config.birdwalk or 0, leftSupportRatio)
-
 
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)

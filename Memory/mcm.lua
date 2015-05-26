@@ -195,6 +195,11 @@ shared.status.IMU = vector.zeros(4) --r p vr vp
 --and we should compensate the COM position so that we can hold the left leg mass
 shared.status.leftSupportRatio = vector.ones(1)*0.5
 
+
+shared.status.lleg_torque = vector.zeros(6)
+shared.status.rleg_torque = vector.zeros(6)
+
+
 --If we are kneeling, we don't need quasistatic balancing
 shared.status.iskneeling    = vector.zeros(1)
 

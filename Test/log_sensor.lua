@@ -12,6 +12,7 @@ local RAD_TO_DEG= 180/math.pi
 
 
 local getch = require'getch'
+local util = require'util'
 local running = true
 local key_code
 
@@ -23,30 +24,33 @@ require'wcm'
 
 count = 0
 
+
+
 while running do
 	local lft = mcm.get_status_LFT()
 	local rft = mcm.get_status_RFT()
 	local imu = mcm.get_status_IMU()
-
 	local uZMP = mcm.get_status_uZMP()
 	local uZMPMeasured = mcm.get_status_uZMPMeasured()
-
 	local LZMP = mcm.get_status_LZMP()
 	local RZMP = mcm.get_status_RZMP()
 
 
 	local aShiftX = mcm.get_walk_aShiftX()
 	local aShiftY = mcm.get_walk_aShiftY()
-
 	local zLeg = mcm.get_status_zLeg()
 
-
-  	local enable_balance = hcm.get_legdebug_enable_balance()
-
-  	local angleShift = mcm.get_walk_angleShift()
+ 	local enable_balance = hcm.get_legdebug_enable_balance()
+ 	local angleShift = mcm.get_walk_angleShift()
 
 	local pose = wcm.get_robot_pose()
 
+
+	local llt =  mcm.get_status_lleg_torque()
+	local rlt =  mcm.get_status_rleg_torque()
+
+
+	local t_max = {45,45,45,90,45,45}
 
 	count = count + 1
 
@@ -77,6 +81,24 @@ while running do
 
 		print()
 		print(sformat("Pose: %.2f %.2f %d(deg)",pose[1],pose[2],pose[3]*180/math.pi))
+
+
+		print(string.format("LLeg Torque: %s %s %s %s %s %s",
+			util.colorcode(llt[1],t_max[1]),
+			util.colorcode(llt[2],t_max[2]),
+			util.colorcode(llt[3],t_max[3]),
+			util.colorcode(llt[4],t_max[4]),
+			util.colorcode(llt[5],t_max[5]),
+			util.colorcode(llt[6],t_max[6])))
+		print(string.format("RLeg Torque: %s %s %s %s %s %s",
+			util.colorcode(rlt[1],t_max[1]),
+			util.colorcode(rlt[2],t_max[2]),
+			util.colorcode(rlt[3],t_max[3]),
+			util.colorcode(rlt[4],t_max[4]),
+			util.colorcode(rlt[5],t_max[5]),
+			util.colorcode(rlt[6],t_max[6])))
+
+
 	end
 
 	unix.usleep(tDelay);

@@ -131,7 +131,7 @@ function state.update()
   --so we should be careful using it for jacobian
 
 
-  Body.set_waist_command_position({0,0})
+  Body.set_safe_waist_command_position({0,0})
 
 
 --  local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,false) --should use absolute position (for jacobian)

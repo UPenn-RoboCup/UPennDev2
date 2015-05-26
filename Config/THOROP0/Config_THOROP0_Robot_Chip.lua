@@ -388,6 +388,7 @@ servo.min_rad = vector.new({
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-90,-87,-90,    -160,   -180,-87,-180, --RArm
+--	-90,-45, -- Waist
 	-90,-45, -- Waist
 	-60, -55, -60,
 	-60, -35, -60, -- right gripper/trigger (UCLA verified)
@@ -401,6 +402,7 @@ servo.max_rad = vector.new({
 	175,25,175,175,175,175, --LLeg
 	175,175,175,175,175,175, --RLeg
 	160,-0,90,   0,     180,87,180, --RArm
+--	90,45, -- Waist
 	90,45, -- Waist
 	65,65,55, -- lgrip
 	80,40,55, -- right gripper/trigger (UCLA verified)
@@ -468,6 +470,32 @@ if Config.birdwalk then
 
 
 
+servo.min_rad = vector.new({
+	-135,-80, -- Head
+	-90, 0, -90,    -160,   -180,-87,-180, --LArm
+	-175,-25,-175,-175,-175,-175, --LLeg
+	-175,-175,-175,-175,-175,-175, --RLeg
+	-90,-87,-90,    -160,   -180,-87,-180, --RArm
+--	-90,-45, -- Waist
+	-540,-45, -- Waist
+	-60, -55, -60,
+	-60, -35, -60, -- right gripper/trigger (UCLA verified)
+	-60, -- Lidar pan
+})*DEG_TO_RAD
+
+servo.max_rad = vector.new({
+	--90,80, -- Head
+	135,80, -- Head
+	160,87,90,   0,     180,87,180, --LArm
+	175,25,175,175,175,175, --LLeg
+	175,175,175,175,175,175, --RLeg
+	160,-0,90,   0,     180,87,180, --RArm
+--	90,45, -- Waist
+	540,45, -- Waist
+	65,65,55, -- lgrip
+	80,40,55, -- right gripper/trigger (UCLA verified)
+	60, -- Lidar pan
+})*DEG_TO_RAD
 
 
 

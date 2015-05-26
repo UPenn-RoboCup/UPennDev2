@@ -114,10 +114,8 @@ function state.entry()
     return
   end
 
-
   local step_min = 0.05
-  local step_min = 0.10
-
+--  local step_min = 0.10
   
   step_relpos = hcm.get_step_relpos() 
   step_zpr = hcm.get_step_zpr()
@@ -130,18 +128,9 @@ function state.entry()
   if IS_WEBOTS and not Config.enable_touchdown then 
     st,wt = 0.3,1.0 
     st,wt = 0.3,1.5 
---    st,wt = 0.1,0.5 
   end
 
   local aShiftY0=mcm.get_walk_aShiftY()
-  
-  --[[
-  if aShiftY0[1]~=0 or aShiftY0[2]~=0 or step_zpr[2]~=0 then
-    print("ramp!")
-    st,wt = 2,2 
-  end
---]]
-
 
   local leg_move_dist = 
     math.abs(step_relpos[1])+math.abs(step_relpos[2])+
@@ -152,10 +141,6 @@ function state.entry()
 
 
   --[[
-
-
-
-
   --automatic detect
   supportLeg = 0 --right support
   if step_relpos[1]>0 then --walk forward
@@ -209,8 +194,8 @@ function state.entry()
         step_queues={
         {
           {{0,0,0},    2,  st*3, st, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-        },
-        {
+--        },
+--        {
           {step_relpos,0,  st,wt2,st ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
         },
         {
@@ -273,8 +258,8 @@ function state.entry()
         step_queues={
         {
           {{0,0,0},2,        st*3, st, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        },
-        {
+--        },
+--        {
           {step_relpos,1,   st,wt2,st ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
         },
         {

@@ -276,6 +276,8 @@ function WebotsBody.entry(Body)
 	if mw then mw.entry() end
 	if sw then sw.entry() end
   if kw and kw.entry then kw.entry() end
+
+  dcm.set_sensor_imu_t0(get_time())
 end
 
 
@@ -389,6 +391,7 @@ function WebotsBody.update(Body)
         dcm.sensorPtr.gyro[1] = (gyro[2]-512)/512*39.24
         dcm.sensorPtr.gyro[2] = (gyro[3]-512)/512*39.24
       end
+      dcm.set_sensor_imu_t(t)
     end
 
     -- FSR

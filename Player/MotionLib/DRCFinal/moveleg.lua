@@ -157,6 +157,109 @@ end
 
 
 
+
+
+
+function moveleg.update_sensory_feedback()
+  local y_angle_zero = 0*math.pi/180
+  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
+  local ft= {
+    lf_x=l_ft[1],rf_x=r_ft[1],
+    lf_y=l_ft[2],rf_y=r_ft[2],
+    lf_z=l_ft[3],rf_z=r_ft[3],
+    lt_x=-l_ft[4],rt_x=-r_ft[4],
+    lt_y=l_ft[5],rt_y=r_ft[5],
+    lt_z=0, rt_z=0 --do we ever need yaw torque?
+  }
+  if IS_WEBOTS then
+    ft.lt_x,ft.rt_x = -l_ft[4],-r_ft[4] 
+    ft.lt_y, ft.rt_y = -l_ft[5],-r_ft[5]
+  end
+
+  local t= Body.get_time()
+  local imu_t = Body.get_imu_t()
+  local imu_t0 = Body.get_imu_t0()
+
+  local rpy = Body.get_rpy()
+  local gyro, gyro_t = Body.get_gyro()
+  local imu={rpy[1],rpy[2],rpy[3], gyro[1],gyro[2],gyro[3]}
+  mcm.set_status_IMU(imu)
+
+  print(string.format("IMU T0:%f sec ago T:%f sec ago",
+    t-imu_t0, t-imu_t ))
+
+  --Filter FT sensor values with moving average
+  lf_queue[queue_count] = math.sqrt(ft.lf_z^2+ft.lf_y^2+ft.lf_x^2)
+  rf_queue[queue_count] = math.sqrt(ft.rf_z^2+ft.rf_y^2+ft.rf_x^2)
+  ltx_queue[queue_count] = ft.lt_x
+  rtx_queue[queue_count] = ft.rt_x
+  lty_queue[queue_count] = ft.lt_y
+  rty_queue[queue_count] = ft.rt_y
+  queue_count = queue_count+1
+  if queue_count>queue_size then queue_count=1 end
+  mcm.set_status_LFT({
+    vector.sum(lf_queue)/queue_size,    
+    vector.sum(ltx_queue)/queue_size,    
+    vector.sum(lty_queue)/queue_size
+    })
+  mcm.set_status_RFT({
+    vector.sum(rf_queue)/queue_size,    
+    vector.sum(rtx_queue)/queue_size,    
+    vector.sum(rty_queue)/queue_size
+    })
+
+
+  local zf_touchdown = 50
+  if IS_WEBOTS then zf_touchdown = 1 end
+
+  --Calculate total zmp position
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()  
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+
+  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
+  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)  
+  local uTorsoNeutral = util.se2_interpolate(0.5,uLeftSupport, uRightSupport)
+
+  local zmp_err_left = {0,0,0}
+  local zmp_err_right = {0,0,0}
+  local forceLeft, forceRight = 0,0
+
+  local uZMP = mcm.get_status_uZMP()  
+  local uZMPLeft=mcm.get_status_uLeft()
+  local uZMPRight=mcm.get_status_uRight()
+
+  if ft.lf_z>zf_touchdown then
+    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z, 0}
+    uZMPLeft = util.pose_global(zmp_err_left, uLeft)
+    forceLeft = ft.lf_z
+  end
+  if ft.rf_z>zf_touchdown then
+    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z, 0}
+    uZMPRight = util.pose_global(zmp_err_right, uRight)
+    forceRight = ft.rf_z
+  end
+  local uZMPMeasured= (forceLeft*uZMPLeft + forceRight*uZMPRight) / (forceLeft+forceRight)
+
+  mcm.set_status_LZMP({zmp_err_left[1],zmp_err_left[2],0})
+  mcm.set_status_RZMP({zmp_err_right[1],zmp_err_right[2],0})  
+  mcm.set_status_uZMPMeasured(uZMPMeasured) 
+  mcm.set_status_uTorsoNeutral(uTorsoNeutral)
+
+  --just return gyro rpy value (for simple feedback)
+  return {imu[4],imu[5],imu[6]}
+end
+
+
+
+
+
+
+
+
+
 function moveleg.get_gyro_feedback( uLeft, uRight, uTorsoActual, supportLeg )
   local body_yaw
   if supportLeg == 0 then  -- Left support

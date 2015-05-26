@@ -181,7 +181,7 @@ shared.status.LFT = vector.zeros(3) --fZ tx ty
 shared.status.RFT = vector.zeros(3) --fz tx ty
 shared.status.LZMP = vector.zeros(3)
 shared.status.RZMP = vector.zeros(3)
-shared.status.IMU = vector.zeros(4) --r p vr vp
+shared.status.IMU = vector.zeros(6) --rpy vr vp vy
 
 
 --how much of the upper body weight is held by left leg?

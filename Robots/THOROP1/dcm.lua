@@ -31,6 +31,8 @@ shared_data.sensor.rzmp = vector.zeros(2)
 shared_data.sensor.accelerometer = vector.zeros(3)
 shared_data.sensor.gyro          = vector.zeros(3)
 shared_data.sensor.magnetometer  = vector.zeros(3)
+shared_data.sensor.imu_t  = vector.zeros(1) --we timestamp IMU so that we can run IMU later than state wizard
+shared_data.sensor.imu_t0  = vector.zeros(1) --run_imu start time
 -- Filtered Roll/Pitch/Yaw
 shared_data.sensor.rpy           = vector.zeros(3)
 -- Battery level (in volts)

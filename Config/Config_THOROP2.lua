@@ -56,6 +56,10 @@ if IS_WEBOTS then
 		Config.enable_jacobian_test = true
 		Config.enable_touchdown = false
 		Config.raise_body = false
+
+		Config.raise_body = true
+
+
 		Config.piecewise_step = true
 
 --		Config.use_gps_pose=true

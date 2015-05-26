@@ -25,7 +25,7 @@ Config.debug = {
 }
 
 --BIRDWALK DEFAULT FOR CHIP
---Config.birdwalk = 1 --testing birdwalk		
+Config.birdwalk = 1 --testing birdwalk		
 
 
 
@@ -57,7 +57,6 @@ if IS_WEBOTS then
 		Config.enable_touchdown = false
 		Config.raise_body = false
 		Config.piecewise_step = true
-		Config.birdwalk = 1 --testing birdwalk		
 
 --		Config.use_gps_pose=true
 --		Config.debug.world=true

@@ -126,6 +126,13 @@ if IS_WEBOTS then
 
 
   walk.stepHeight = 0.06 --higher stepheight for webots
+--[[
+  --diable IMU feedback
+  walk.ankleImuParamX={0, 0.9*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+  walk.kneeImuParamX= {0, -0.3*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+  walk.ankleImuParamY={0, 1.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
+  walk.hipImuParamY  ={0, 0.5*gyroFactorY,  2*DEG_TO_RAD, 5*DEG_TO_RAD}
+--]]
 
 else
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}

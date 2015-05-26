@@ -46,7 +46,8 @@ THOROP_mk2_Fullmass_longarm_2 {
   controllerArgs "0 32"
   lidarRays 360
   max_torque_400w 135 #50% extra than catalogue value
-  max_torque_200w 67.5
+#  max_torque_200w 67.5
+  max_torque_200w 90 #hip roll requires LOTS of torque...
   max_torque_100w 20
   damping_constant 0
   footContactMaterial "feet"

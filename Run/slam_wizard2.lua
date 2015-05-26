@@ -9,6 +9,7 @@ local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
 local munpack = require('msgpack.MessagePack')['unpack']
 local Body = require'Body'
+local ffi = require'ffi'
 require'vcm'
 require'hcm'
 
@@ -26,10 +27,11 @@ local function find_pillars(xyz, polar)
 	local x
 	for i, a in ipairs(theta) do
 		if a<interval then
-			if (not x) or rho[i]<x[1] then
+			if (not x) or (rho[i]<x[1] and rho[i]>0.28) then
 				--x = {rho[i], a, interval-polar_interval, interval, xyz_com[i]}
 				-- Just need the xy
-				x = {unpack(xyz_com[i], 1, 2)}
+				local xyz = xyz_com[i]
+				x = {xyz_com[1], xyz_com[2]}
 			end
 		else
 			table.insert(pillars, x)
@@ -38,6 +40,7 @@ local function find_pillars(xyz, polar)
 		end
 	end
 	table.insert(pillars, x)
+	--print('Sending pillars')
 	pillar_ch:send(mpack(pillars))
 	--[[
 	for i,p in ipairs(pillars) do

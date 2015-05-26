@@ -512,12 +512,9 @@ Body.set_safe_waist_command_position = function(qWaist)
   local qWaistSafe={qWaist[1],qWaist[2]}
   qWaistSafe[1] = math.max(math.min(qWaistSafe[1],90*DEG_TO_RAD), -90*DEG_TO_RAD)
   qWaistSafe[2] = 0 --fix pitch angle here  
-
   local qWaistCommand = Body.get_waist_command_position()
   local qWaistDiff = util.mod_angle(qWaistSafe[1]-qWaistCommand[1])
   qWaistSafe[1] = qWaistCommand[1]+qWaistDiff
-
-print("Waist safe set:",qWaistSafe[1]*180/math.pi)
   Body.set_waist_command_position(qWaistSafe)
 end
 

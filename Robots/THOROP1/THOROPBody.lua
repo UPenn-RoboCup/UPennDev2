@@ -493,6 +493,32 @@ Body.jointNames = jointNames
 Body.parts = Config.parts
 Body.Kinematics = Kinematics
 
+
+--SJ: those function are added as the joint-level waist yaw position can be 360 degree off
+Body.get_safe_waist_position = function()
+  local qWaist = Body.get_waist_position()
+  qWaist[1] = util.mod_angle(qWaist[1])
+  return qWaist
+end
+
+Body.get_safe_waist_command_position = function()
+  local qWaist = Body.get_waist_command_position()
+  qWaist[1] = util.mod_angle(qWaist[1])
+  return qWaist
+end
+
+Body.set_safe_waist_command_position = function(qWaist)
+  local qWaistSafe={qWaist[1],qWaist[2]}
+  qWaistSafe[1] = math.max(math.min(qWaistSafe[1],90*DEG_TO_RAD), -90*DEG_TO_RAD)
+  qWaistSafe[2] = 0 --fix pitch angle here  
+  local qWaistCommand = Body.get_waist_command_position()
+  local qWaistDiff = util.mod_angle(qWaistSafe[1]-qWaistCommand[1])
+  qWaistSafe[1] = qWaistCommand[1]+qWaistDiff
+  Body.set_waist_command_position(qWaistSafe)
+end
+
+
+
 --SJ: I have moved this function to body as it is commonly used in many locations
 --Reads current leg and torso position from SHM
 

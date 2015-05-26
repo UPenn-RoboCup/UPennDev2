@@ -126,6 +126,11 @@ function state.update()
   if IS_WEBOTS then dqArmLim = dqArmLim*2 end
 
   local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
+
+  --SJ: initial waist position can be either +2 or -358
+  --so we should be careful using it for jacobian
+
+
   Body.set_waist_command_position({0,0})
 
 

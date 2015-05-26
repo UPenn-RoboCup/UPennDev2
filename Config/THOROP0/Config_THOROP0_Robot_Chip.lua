@@ -360,7 +360,6 @@ servo.direction = vector.new({
 	-1, 1,1,   1,  1,1, --LLeg
 	-1, 1,-1, -1,  -1,1, --RLeg
 	------
---	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
 	-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
@@ -418,15 +417,22 @@ if Config.birdwalk then
 
 	servo.rad_offset = vector.new({
 		0,0, -- Head
-		-90,  -90,  -90,45,  90,0,0, --LArm
+	--	-90,  -90,  -90,45,  90,0,0, --LArm
+		-90,  -90,  -90,45,  -90,0,0, --LArm
+
 		0,0,0,  0  ,0,0, --LLeg
 		0,0,0,  0  ,0,0, --RLeg
-		90,  90,  90,-45,  -90,0,0, --RArm
+--		90,  90,  90,-45,  -90,0,0, --RArm
+		90,  90,  90,-45,  90,0,0, --RArm
+
 		-180,0, -- Waist flip (for birdwalk)
 		0, 0, 0, -- left gripper/trigger
 		70, -125, 0, -- right gripper/trigger (UCLA verified)
 		0, -- Lidar pan
 	})*DEG_TO_RAD
+
+
+
 
 	servo.joint_to_motor={
 		29,30,  --Head yaw/pitch
@@ -444,7 +450,8 @@ if Config.birdwalk then
 
 	servo.direction = vector.new({
 		1,1, -- Head, mk2
-		1,-1,1, 1, 1,1,1, --LArm, mk1 retrofitted, tested
+
+		1,1,1, 1, 1,1,1, --LArm, mk2 reassembled 
 		------
 --  -1, 1, 1, 1, 1, 1, --LLeg
 --  -1, 1,-1,-1,-1, 1, --RLeg
@@ -452,12 +459,18 @@ if Config.birdwalk then
 		-1, -1,-1,-1,-1, -1, --RLeg, mk2, flipped
 
 		------
-		-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
+		-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
 		1, 1, -- Waist, mk2
 		-1,1,-1, -- left gripper TODO
 		1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
 		-1, -- Lidar pan
 	})
+
+
+
+
+
+
 
 end
 

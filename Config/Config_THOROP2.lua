@@ -24,6 +24,11 @@ Config.debug = {
   armplan = true,
 }
 
+--BIRDWALK DEFAULT FOR CHIP
+Config.birdwalk = 1 --testing birdwalk		
+
+
+
 -- Tune for Webots
 if IS_WEBOTS then
 	if IS_STEVE then

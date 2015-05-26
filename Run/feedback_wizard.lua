@@ -3,6 +3,7 @@
 dofile'../include.lua'
 local si = require'simple_ipc'
 local mpack = require'msgpack.MessagePack'.pack
+local munpack = require('msgpack.MessagePack')['unpack']
 local Body = require'Body'
 local get_time = Body.get_time
 local usleep = require'unix'.usleep
@@ -15,6 +16,8 @@ require'wcm'
 require'mcm'
 require'hcm'
 local zlib = require'zlib.ffi'.compress
+
+local pillar_ch = si.new_subscriber('pillars')
 
 local feedback_udp_ch
 local feedback_ch
@@ -72,6 +75,16 @@ local count = 0
 local function update()
 	local t_update = get_time()
 
+	local msg, pillars
+	repeat
+		msg = pillar_ch:receive(true)
+		if msg then
+			for i,v in ipairs(msg) do
+				pillars = munpack(v)
+			end
+		end
+	until not msg
+
 	-- Only send the pings when competing
 	--[[
 	if go_ch and ping_ch then
@@ -98,8 +111,9 @@ local function update()
 	e.u = get_torso()
 	e.p = Body.get_position()
 	e.cp = Body.get_command_position()
-	e.fL = Body.get_lfoot()
-	e.fR = Body.get_rfoot()
+	e.pillars = pillars
+	--e.fL = Body.get_lfoot()
+	--e.fR = Body.get_rfoot()
 	-- FSM?
 
 	--[[

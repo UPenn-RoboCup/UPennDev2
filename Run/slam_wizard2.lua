@@ -12,23 +12,79 @@ local Body = require'Body'
 require'vcm'
 require'hcm'
 
-local libSlam2 = require'libSlam2'
-local locale = libSlam2.new_locale()
 local sin, cos = require'math'.sin, require'math'.cos
-
 local T = require'Transform'
 
--- Just hard code for now
-local angles = {}
-for i=-540,540 do a[i] = i * 0.25 * DEG_TO_RA end
+local pillar_ch = si.new_publisher('pillars')
 
-local function head3d(meta, scan)
-	
-	return xyz
+local polar_interval = 30 * DEG_TO_RAD
+local function find_pillars(xyz, polar)
+	local xyz_com = xyz[1]
+	local rho, theta = unpack(polar)
+	local pillars = {}
+	local interval = polar_interval + theta[1]
+	local x
+	for i, a in ipairs(theta) do
+		if a<interval then
+			if (not x) or rho[i]<x[1] then
+				--x = {rho[i], a, interval-polar_interval, interval, xyz_com[i]}
+				-- Just need the xy
+				x = {unpack(xyz_com[i], 1, 2)}
+			end
+		else
+			table.insert(pillars, x)
+			x = nil
+			interval = interval + polar_interval
+		end
+	end
+	table.insert(pillars, x)
+	pillar_ch:send(mpack(pillars))
+	--[[
+	for i,p in ipairs(pillars) do
+		print(p[2]*RAD_TO_DEG, p[1], vector.new(p[5]))
+	end
+	--]]
 end
 
+local Thead = T.trans(0,0,0.282)
+local function head3d(meta, scan)
+	local scan_fl = ffi.cast('float*', scan)
+	local mid = meta.n / 2 * meta.res
+	local angles, rho = {}, {}
+	for i=1,meta.n do
+		table.insert(angles, i * meta.res - mid)
+		table.insert(rho, scan_fl[i-1])
+	end
+	local xyz = {}
+	for i,a in ipairs(angles) do
+		table.insert(xyz, {rho[i] * cos(a), rho[i] * sin(a), 0.1})
+	end
+	local xyz_actuated = {}
+	for i,p in ipairs(xyz) do
+		table.insert(xyz_actuated, T.rotZ(meta.angle[1]) * T.rotY(meta.angle[2]) * p)
+	end
+	local xyz_com = {}
+	local Tcom = Thead * T.rotZ(meta.qWaist[1])
+	for i, p in ipairs(xyz) do
+		table.insert(xyz_com, Tcom*p)
+	end
+	local rho_com = {}
+	local theta_com = {}
+	for i, p in ipairs(xyz_com) do
+		table.insert(theta_com, math.atan2(p[2], p[1]))
+		table.insert(rho_com, math.sqrt(math.pow(p[2],2), math.pow(p[1],2)))
+	end
 
-local Tchest = T.trans(0.05,0,0.09)
+	
+	local Tworld = T.from_flat(meta.tfG16)
+	local xyz_world = {}
+	for i, p in ipairs(xyz_com) do
+		table.insert(xyz_world, Tworld*p)
+	end
+	return {xyz_com, xyz_world}, {rho_com, theta_com}
+end
+
+local Tchest = T.trans(0.05, 0, 0.09)
 local function chest3d(meta, scan)
 	local scan_fl = ffi.cast('float*', scan)
 	local xyz = {}
@@ -44,25 +100,34 @@ local function chest3d(meta, scan)
 	local Tworld = T.from_flat(meta.tfG16)
 	local xyz_world = {}
 	for i, p in ipairs(xyz_com) do
-		table.insert(xyz_com, Tworld*p)
+		table.insert(xyz_world, Tworld*p)
 	end
-	return xyz_world
+	return xyz_world, xyz_com
 end
 
 local function entry()
 
 end
 
+local np = 0
 local function update(meta, scan)
 	local points
 	-- Form 3D coordinates
 	if meta.id=='lidar0' then
 		--points = chest3d(meta, scan)
 	elseif meta.id=='lidar1' then
-		points = head3d(meta, scan)
+		local xyz, polar = head3d(meta, scan)
+		find_pillars(xyz, polar)
 	end
-	if not poitns then return end
-	locale:add_scan(points)
+
+	--[[
+	if np<1 then
+		for i,p in ipairs(points) do
+			print(i, unpack(p))
+		end
+	end
+	--]]
+	np = np + 1
 end
 
 local function exit()
@@ -86,7 +151,7 @@ local lidar1_ch = si.new_subscriber'lidar1'
 
 lidar0_ch.callback = cb
 lidar1_ch.callback = cb
-poller = si.wait_on_channels({lidar_ch})
+poller = si.wait_on_channels({lidar1_ch})
 
 -- Cleanly exit on Ctrl-C
 local signal = require'signal'.signal

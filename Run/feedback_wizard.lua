@@ -72,18 +72,20 @@ end
 local msg
 local e = {}
 local count = 0
+local pillars
 local function update()
 	local t_update = get_time()
 
-	local msg, pillars
+	local msg, p
 	repeat
 		msg = pillar_ch:receive(true)
 		if msg then
 			for i,v in ipairs(msg) do
-				pillars = munpack(v)
+				p = munpack(v)
 			end
 		end
 	until not msg
+	if p then pillars = p end
 
 	-- Only send the pings when competing
 	--[[

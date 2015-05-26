@@ -39,7 +39,7 @@ DEF TASKFLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-THOROP_mk2_Fullmass {
+THOROP_mk15_Fullmass_longarm_2 {
   translation 0 1.17 0
   rotation 1 0 0 0
   controller "thorop"

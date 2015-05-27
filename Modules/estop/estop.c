@@ -42,7 +42,20 @@
 #include "VehicleInterface.h"
 
 /* File descriptor for VSC Interface */
+//VscInterfaceType* vscInterface;
+
+#include "estop.h"
+
+
+
+
+/* File descriptor for VSC Interface */
 VscInterfaceType* vscInterface;
+struct timespec lastSent, timeNow, lastReceived, timeDiff;
+struct timeval timeout;
+int max_fd, vsc_fd, retval;
+fd_set input;
+
 
 void signal_handler(int s) {
 	printf("Caught signal %d - Shutting down.\n", s);
@@ -155,24 +168,33 @@ void readFromVsc() {
 
 }
 
-int main(int argc, char *argv[]) {
-	struct timespec lastSent, timeNow, lastReceived, timeDiff;
-	struct timeval timeout;
-	int max_fd, vsc_fd, retval;
-	fd_set input;
 
+
+
+void estop_init(){
 	/* Verify Arguments */
+/*	
 	if (argc != 3) {
 		printf("Usage - program SerialPort BaudRate\n");
 		printf("\t%s /dev/ttyUSB0 115200\n", argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
-	/* Catch CTRL-C */
+	// Catch CTRL-C 
 	signal(SIGINT, signal_handler);
 
-	/* Open VSC Interface */
+	// Open VSC Interface 
 	vscInterface = vsc_initialize(argv[1], atoi(argv[2]));
+*/
+
+
+	// Catch CTRL-C 
+	signal(SIGINT, signal_handler);
+
+	// Open VSC Interface 
+	vscInterface = vsc_initialize("/dev/ttyACM0","115200");
+
+
 	if (vscInterface == NULL) {
 		printf("Opening VSC Interface failed.\n");
 		exit(EXIT_FAILURE);
@@ -190,10 +212,20 @@ int main(int argc, char *argv[]) {
 
 	/* Send Heartbeat Message to VSC */
 	vsc_send_heartbeat(vscInterface, ESTOP_STATUS_NOT_SET);
+}
 
-	/* Loop Forever */
-	while (1) {
-		/* Get current clock time */
+
+void estop_shutdown(){
+/* Clean up */
+	printf("Shutting down.\n");
+	vsc_cleanup(vscInterface);
+}
+
+
+
+int estop_update(){
+
+	/* Get current clock time */
 		clock_gettime(CLOCK_REALTIME, &timeNow);
 
 		/* Send Heartbeat messages every 50 Milliseconds (20 Hz) */
@@ -241,12 +273,6 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-	}
-
-	/* Clean up */
-	printf("Shutting down.\n");
-	vsc_cleanup(vscInterface);
-
-	return 0;
+		//we should return stuff here
+		return 0;
 }
-

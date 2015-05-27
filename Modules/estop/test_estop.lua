@@ -1,5 +1,13 @@
 --/usr/local/bin/luajit
 --package.path = package.path .. ';shm/shm.lua'
+
+local estop=require('estop')
+
+estop.init()
+estop.update()
+estop.close()
+
+--[[
 local unix = require'unix'
 local shm = require'shm'
 t = shm.new('estop')
@@ -20,16 +28,4 @@ while true do
 	--print(v)
 	unix.usleep(6e4)
 end
---[[
-print(x)
-x:setvbuf'no'
-unix.usleep(2e6)
-local v = x:read()
-print(v)
-
---while true do
-	print('count')
-	
---	unix.usleep(1)
---end
-]]--
+--]]

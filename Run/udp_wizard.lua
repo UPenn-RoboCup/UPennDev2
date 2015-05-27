@@ -27,7 +27,6 @@ local function procRaw(data)
 end
 
 local function procZlib(c_data)
-	print(#c_data)
 	local data = unzlib(c_data)
 	if not data then return end
 	return procMP(data)
@@ -64,7 +63,7 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(in_channels, r)
 		local s = si.new_publisher(stream.sub)
 		table.insert(out_channels, s)
-		if key=='feedback' then
+		if key=='feedback' and false then
 			table.insert(ch_processing, procZlib)
 		else
 			table.insert(ch_processing, procMP)

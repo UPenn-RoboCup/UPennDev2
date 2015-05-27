@@ -117,7 +117,7 @@ local dt_indoor_send = 1/hz_indoor_send
 local t_buffer = -math.huge
 local t_send = -math.huge
 local function check_send(msg)
-	local is_outdoor = hcm.get_network_indoors()==0
+	local is_outdoors = hcm.get_network_indoors()==0
 	local is_indoors = not is_outdoors
 	local t = Body.get_time()
 
@@ -205,6 +205,7 @@ if ... and type(...)=='string' and not tonumber(...) then
 end
 
 -- Open the camera
+print('Opening', metadata.dev)
 local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
 os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto 1"')
 -- Set the params

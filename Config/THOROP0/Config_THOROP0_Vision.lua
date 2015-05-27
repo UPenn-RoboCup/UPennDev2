@@ -107,11 +107,11 @@ local ucla_param = {
 local camera = {}
 camera[1] = {
 	name = 'head',
-	dev = '/dev/video-head',
+	dev = '/dev/video-headcamera',
 	format = 'yuyv',
 	w = 640,
 	h = 360,
-	fps = 30,
+	fps = 15,
 	jpeg_quality = 60,
 	mountOffset = {
 		-- cameraRoll, cameraPitch, cameraYaw
@@ -147,12 +147,12 @@ camera[1] = {
 
 camera[2] = {
 	name = 'wrist',
-	dev = '/dev/video-wrist',
+	dev = '/dev/video-wristcamera',
 	format = 'yuyv',
-	w = 640,
-	h = 480,
-	fps = 30,
-	jpeg_quality = 60,
+	w = 320,
+	h = 240,
+	fps = 15,
+	jpeg_quality = 50,
 	auto_param = {
 		{'Exposure, Auto', 1},
 		{'White Balance Temperature, Auto', 1},

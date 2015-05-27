@@ -23,7 +23,7 @@ end
 local hz_indoor_send = 1
 local dt_indoor_send = 1/hz_indoor_send
 local hz_outdoor_send = 4
-local dt_outdoor_send = 1/hz_indoor_send
+local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
 
@@ -95,12 +95,15 @@ local function update()
 	until not msg
 	if p then pillars = p end
 
+	--[[
 	local is_indoors = hcm.get_network_indoors()==1
 	local is_outdoors = not is_indoors
-
-	if IS_WEBOTS then is_outdoors = true end
-	if is_indoors and t_update - t_feedback < dt_indoor_send then return end
-	if is_outdoors and t_update - t_feedback < dt_outdoor_send then return end
+	if IS_WEBOTS then is_outdoors = true
+	elseif is_indoors and t_update - t_feedback < dt_indoor_send then return
+	elseif is_outdoors and t_update - t_feedback < dt_outdoor_send then return
+	else return end
+	--]]
+	if t_update - t_feedback < dt_indoor_send then return end
 
 	count = count + 1
 	e.id = 'fb'

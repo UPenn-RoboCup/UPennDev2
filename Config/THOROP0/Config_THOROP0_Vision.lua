@@ -85,7 +85,7 @@ local m308_param = {
 local grasp_afternoon_param = {
 	{'White Balance Temperature', 3300},
 	{'Exposure (Absolute)', 170},
-	{'Focus (absolute)', 0},
+	{'Focus', 0},
 	{'Brightness', 128},
 	{'Contrast', 128},
 	{'Saturation', 150},
@@ -105,7 +105,7 @@ local ucla_head_param = {
 local ucla_wrist_param = {
 	--{'White Balance Temperature', 2300},
 	--{'Exposure (Absolute)', 112},
-	{'Focus (absolute)', 120},
+	--{'Focus', 120},
 	{'Brightness', 128},
 	{'Contrast', 128},
 	{'Saturation', 128},
@@ -168,7 +168,7 @@ camera[2] = {
 		{'White Balance Temperature, Auto', 1},
 		{'Power Line Frequency', 0},
 		{'Exposure, Auto Priority', 1},
-		{'Focus, Auto', 0}
+		--{'Focus, Auto', 0}
 	},
 	param = ucla_wrist_param,
 }

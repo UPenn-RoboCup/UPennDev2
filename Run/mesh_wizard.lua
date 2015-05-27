@@ -21,9 +21,6 @@ local mesh0, mesh1
 local mag_sweep0, t_sweep0, ranges_fov0
 local mag_sweep1, t_sweep1, ranges_fov1
 --
-local hz_open_send = 0.5
-local dt_open_send = 1/hz_open_send
---
 local hz_outdoor_send = 1
 local dt_outdoor_send = 1/hz_outdoor_send
 --
@@ -44,31 +41,30 @@ local function check_send_mesh()
 	if mesh0 then
 		local metadata = mesh0.metadata
 		metadata.t = t
-
-		mesh0:dynamic_range(vcm.get_mesh0_dynrange())
-		local c_mesh = mesh0:get_png_string2()
+		local raw_msg = {mpack(metadata), mesh0:get_raw_string()}
+		metadata.c = 'raw'
 
 		-- Send away
 		if mesh0_ch then
-			metadata.c = 'raw'
-			mesh0_ch:send{mpack(metadata), mesh0:get_raw_string()}
+			--metadata.c = 'raw'
+			mesh0_ch:send(raw_msg)
 			--metadata.c = 'png'
 			--mesh0_ch:send{mpack(metadata), c_mesh}
 		end
 		if mesh0_tcp_ch then
-			metadata.c = 'raw'
-			mesh0_tcp_ch:send{mpack(metadata), mesh0:get_raw_string()}
+			--metadata.c = 'raw'
+			mesh0_tcp_ch:send(raw_msg)
 			--metadata.c = 'png'
 			--mesh0_ch:send{mpack(metadata), c_mesh}
 		end
 		if mesh0_udp_ch then
+			--mesh0:dynamic_range(vcm.get_mesh0_dynrange())
+			--local c_mesh = mesh0:get_png_string2()
 			--metadata.c = 'png'
 			--local meta = mpack(metadata)
 			--local ret, err = mesh0_udp_ch:send(meta..c_mesh)
-			metadata.c = 'raw'
-			local meta = mpack(metadata)
-			local ret, err = mesh0_udp_ch:send(meta..mesh0:get_raw_string())
---			print('Mesh0 | Sent UDP', unpack(ret))
+			local ret, err = mesh0_udp_ch:send(table.concat(raw_msg))
+			--print('Mesh0 | Sent UDP', unpack(ret))
 		end
 	end
 
@@ -157,14 +153,16 @@ local function update(meta, ranges)
 			mag_sweep0 = mag_sweep
 			t_sweep0 = t_sweep
 			ranges_fov0 = ranges_fov
-			mesh0 = libMesh.new('mesh0', {
+			local props0 = {
 				n_lidar_returns = meta.n,
 				lidar_resolution = meta.res,
 				rfov = ranges_fov0,
 				sfov = {-mag_sweep / 2, mag_sweep / 2},
 				n_scanlines = math.floor(t_sweep / t_scan + 0.5),
-			})
+			}
+			mesh0 = libMesh.new('mesh0', props0)
 			print('Mesh0 | Updated containers')
+			require'util'.ptable(props0)
 		end
 		mesh0:add_scan(meta.angle, ranges, meta)
 	elseif meta.id=='lidar1' then

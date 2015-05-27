@@ -4,12 +4,16 @@ local Config = require'Config'
 local si = require'simple_ipc'
 local util = require'util'
 local unzlib = require'zlib'.inflate()
+local unzlib = require'zlib.ffi'.uncompress
 
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
 local function procMP(data)
-	local tbl, offset = munpack(data)
-	if not offset then return end
+	if not type(data)=='table' then return end
+	local ok, tbl, offset = pcall(munpack, data)
+	if not ok then return end
+	if not type(tbl)=='table' then return end
+	if not type(offset)=='number' then return end
 	if offset==#data then
 		return mpack(tbl)
 	else
@@ -24,6 +28,7 @@ end
 
 local function procZlib(c_data)
 	local data = unzlib(c_data)
+	if not data then return end
 	return procMP(data)
 end
 
@@ -58,33 +63,13 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(in_channels, r)
 		local s = si.new_publisher(stream.sub)
 		table.insert(out_channels, s)
-		if false and key=='feedback' then
+		if key=='feedback' and false then
 			table.insert(ch_processing, procZlib)
 		else
 			table.insert(ch_processing, procMP)
 		end
 		table.insert(ch_usage, {})
 		table.insert(ch_names, key)
-	end
-end
-
-local ping_ch, go_ch
-if IS_COMPETING then
-	local NET_OPEN = false
-	ping_ch = si.new_publisher(Config.net.ping.tcp)
-	go_ch = si.new_receiver(Config.net.ping.udp)
-	table.insert(out_channels, ping_ch)
-	table.insert(in_channels, go_ch)
-	go_ch.callback = function(skt)
-		local ch_id = lut[skt]
-		local in_ch = in_channels[ch_id]
-		local out_ch = out_channels[ch_id]
-		local sz = in_ch:size()
-		while sz > 0 do
-			local data = in_ch:receive()
-			out_ch:send('ok')
-			sz = in_ch:size()
-		end
 	end
 end
 

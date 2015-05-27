@@ -1,7 +1,6 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 local T = require'Transform'
-local tr6D = require'Transform'.transform6D
 
 ------------------------------------
 -- For the arm FSM
@@ -10,40 +9,71 @@ local arm = {}
 
 -- This comes after the walkInit
 arm.init = {}
--- Pitch up
-arm.init[1] = {
+
+table.insert(arm.init,
+	-- Pitch up
+	{
 	left = {
-		tr=tr6D{0.25, 0.25, 0.15, 0, -45*DEG_TO_RAD,0},
+		tr={0.25, 0.25, 0.15, 0, -45*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		timeout=8,
 		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
-		tr=tr6D{0.25, -0.25, 0.15, 0, -45*DEG_TO_RAD, 0},
-		--q = {0,0,0, 0, 0,0,0},
+		tr={0.25, -0.25, 0.15, 0, -45*DEG_TO_RAD, 0},
+		timeout=8,
+		via='jacobian_preplan',
+		weights = {1,0,0},
+	}
+})
+
+-- Now go to yaw
+----[[
+table.insert(arm.init,
+	{
+	left = {
+		tr={0.25, 0.25, 0.18,    0, 0, -45*DEG_TO_RAD},
+		qArmGuess = vector.new{70,25,-28, -150, 10,-80,-90}*DEG_TO_RAD,
+		timeout=15,
+		via='jacobian_preplan', weights = {0,1,0,1}
+	},
+	right = {
+		tr={0.25, -0.25, 0.18, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
+		--qArmGuess = vector.new{70,-25,28, -150, 10,-80,-90}*DEG_TO_RAD,
+		timeout=15,
+		via='jacobian_preplan',
+		weights = {0,1,0,1},
+	}
+})
+--]]
+
+arm.door = {}
+
+arm.door[1] = {
+	left = {
+		tr={0.7, 0.25, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		timeout=8,
+		via='jacobian_preplan', weights = {1,0,0}
+	},
+	right = {
+		tr={0, -0.25, -0.12, 0, 0*DEG_TO_RAD, 0},
 		timeout=8,
 		via='jacobian_preplan',
 		weights = {1,0,0},
 	}
 }
 
--- Now go to yaw
-----[[
-arm.init[2] = {
-	left = {
-		tr=tr6D{0.25, 0.25, 0.18,    0, 0, -45*DEG_TO_RAD},
-		qArmGuess = vector.new{70,25,-28, -150, 10,-80,-90}*DEG_TO_RAD,
-		timeout=15,
-		via='jacobian_preplan', weights = {0,1,0,1}
-	},
-	right = {
-		tr=tr6D{0.25, -0.25, 0.18, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 45*DEG_TO_RAD},
-		--qArmGuess = vector.new{70,-25,28, -150, 10,-80,-90}*DEG_TO_RAD,
-		timeout=15,
-		via='jacobian_preplan',
-		weights = {0,1,0,1},
-	}
-}
---]]
+
+
+
+
+
+
+
+
+
+
+
+
 
 --Gripper end position offsets (Y is inside)
 arm.handoffset = {}

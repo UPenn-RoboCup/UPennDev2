@@ -7,6 +7,8 @@ ffi.cdef[[
 unsigned long compressBound(unsigned long sourceLen);
 int compress2(uint8_t *dest, unsigned long *destLen,
 	      const uint8_t *source, unsigned long sourceLen, int level);
+int uncompress(uint8_t *dest, unsigned long *destLen,
+	       const uint8_t *source, unsigned long sourceLen);
 ]]
 local z = ffi.load'z'
 
@@ -27,13 +29,23 @@ function zlib.compress(txt, len)
     buflen[0] = n
   end
   -- Just make fast, so use 1 for level
-  res = z.compress2(buf, buflen, txt, sz, 1)
+  res = z.compress2(buf, buflen, txt, sz, 6)
   if res~=0 then return end
   -- Reset the bounds
   n = buflen[0]
   buflen[0] = nBound
   -- Return a string
   return ffi.string(buf, n)
+end
+
+
+function zlib.uncompress(comp, n)
+	n = n or 1024
+  local buf = ffi.new("uint8_t[?]", n)
+  local buflen = ffi.new("unsigned long[1]", n)
+  local res = z.uncompress(buf, buflen, comp, #comp)
+  if res ~= 0 then return end
+  return ffi.string(buf, buflen[0])
 end
 
 return zlib

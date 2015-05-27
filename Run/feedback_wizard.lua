@@ -9,13 +9,21 @@ local get_time = Body.get_time
 local usleep = require'unix'.usleep
 local pose_global = require'util'.pose_global
 local debug_interval = 5
-local feedback_interval = 1
+
 local t_sleep = 1 / 20
 local t_entry = get_time()
 require'wcm'
 require'mcm'
 require'hcm'
-local zlib = require'zlib.ffi'.compress
+local czlib
+if USE_ZLIB then
+	czlib = require'zlib.ffi'.compress
+end
+
+local hz_indoor_send = 1
+local dt_indoor_send = 1/hz_indoor_send
+local hz_outdoor_send = 4
+local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
 
@@ -56,7 +64,7 @@ local function entry()
 		end
 		--]]
 	else
-		feedback_ch = si.new_sender(
+		feedback_udp_ch = si.new_sender(
 		Config.net.operator.wired,
 		Config.net.streams.feedback.udp
 		)
@@ -87,25 +95,15 @@ local function update()
 	until not msg
 	if p then pillars = p end
 
-	-- Only send the pings when competing
 	--[[
-	if go_ch and ping_ch then
-		go_ch:send(mpack(t_update))
-		local data = ping_ch:receive(true)
-		local is_open = hcm.get_network_open()==1
-		if (not is_open) and data then
-			hcm.set_network_open(1)
-			hcm.set_network_topen(t_update)
-			t_open = t_update
-			print('net open', t_open-t_entry)
-		elseif is_open and t_update - t_open > 1 then
-			print('net closed', t_update-t_entry)
-			hcm.set_network_open(0)
-		end
-	end
+	local is_indoors = hcm.get_network_indoors()==1
+	local is_outdoors = not is_indoors
+	if IS_WEBOTS then is_outdoors = true
+	elseif is_indoors and t_update - t_feedback < dt_indoor_send then return
+	elseif is_outdoors and t_update - t_feedback < dt_outdoor_send then return
+	else return end
 	--]]
-
-	if not IS_WEBOTS and t_update - t_feedback < feedback_interval then return end
+	if t_update - t_feedback < dt_indoor_send then return end
 
 	count = count + 1
 	e.id = 'fb'
@@ -137,8 +135,13 @@ local function update()
 		feedback_ch:send(msg)
 	end
 	if feedback_udp_ch then
-		local c_msg = zlib(msg)
-		--print('msg', #msg, 'c_msg', #c_msg)
+		--[[
+		local t00 = unix.time()
+		local c_msg = czlib(msg)
+		local t11 = unix.time()
+		print('msg', #msg, 'c_msg', #c_msg, t11-t00)
+		ret, err = feedback_udp_ch:send(c_msg)
+		--]]
 		ret, err = feedback_udp_ch:send(msg)
 	end
 	if type(ret)=='string' then

@@ -7,9 +7,19 @@ local mpack = require'msgpack'.pack
 local movearm = require'movearm'
 local T = require'Transform'
 
+local function get_config(path)
+	print(unpack(path))
+	local data = Config
+	for i, v in ipairs(path) do
+		data = data[v]
+		if not data then return end
+	end
+	return data
+end
+
 local function get_armplan(plan)
 	print('Received a plan')
-	local lco, rco = movearm.goto(unpack(plan))
+	local lco, rco = movearm.goto(plan.left, plan.right)
 	local wpath = {}
 	--
 	local lpath = {}
@@ -55,6 +65,11 @@ local plan_ch = si.new_replier('armplan')
 plan_ch.callback = cb
 plan_ch.process = get_armplan
 table.insert(channels, plan_ch)
+
+local config_ch = si.new_replier('config')
+config_ch.callback = cb
+config_ch.process = get_config
+table.insert(channels, config_ch)
 
 poller = si.wait_on_channels(channels)
 

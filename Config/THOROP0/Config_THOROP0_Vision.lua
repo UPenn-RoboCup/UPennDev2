@@ -96,21 +96,21 @@ local ucla_head_param = {
 	--{'White Balance Temperature', 2300},
 	--{'Exposure (Absolute)', 112},
 	--{'Focus (absolute)', 120},
-	{'Brightness', 128},
-	{'Contrast', 128},
-	{'Saturation', 128},
+	{'Brightness', 48},
+	{'Contrast', 32},
+	{'Saturation', 48},
 	{'Gain', 0},
-	{'Sharpness', 0},
+	{'Sharpness', 128},
 }
 local ucla_wrist_param = {
 	--{'White Balance Temperature', 2300},
 	--{'Exposure (Absolute)', 112},
 	--{'Focus', 120},
-	{'Brightness', 128},
-	{'Contrast', 128},
-	{'Saturation', 128},
+	{'Brightness', 48},
+	{'Contrast', 32},
+	{'Saturation', 48},
 	{'Gain', 0},
-	{'Sharpness', 0},
+	{'Sharpness', 128},
 }
 
 -- Cameras
@@ -162,7 +162,7 @@ camera[2] = {
 	w = 320,
 	h = 240,
 	fps = 15,
-	jpeg_quality = 50,
+	jpeg_quality = 75,
 	auto_param = {
 		{'Exposure, Auto', 1},
 		{'White Balance Temperature, Auto', 1},

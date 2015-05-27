@@ -16,6 +16,7 @@ local get_time = Body.get_time
 -- JPEG Compressor
 local c_grey = jpeg.compressor('y')
 local c_yuyv = jpeg.compressor('yuyv')
+local c_yuyv2 = jpeg.compressor('yuyv')
 -- TODO: Control the downsampling mode
 --c_yuyv:downsampling(2)
 --c_yuyv:downsampling(1)
@@ -155,18 +156,32 @@ local function update(img, sz, cnt, t)
 	local c_img = c_yuyv:compress(img, w, h)
 
 	local ittybitty_img
-	if true then
+	if false then
+		-- narrow fov
 		c_grey:quality(75)
 		c_grey:downsampling(1)
-		ittybitty_img= c_grey:compress_crop(img, w, h, w/2+1, h/2+1, w/4, h/4)
-	else
+		ittybitty_img= c_grey:compress_crop(img, w, h, w/2-w/8+1, h/2-h/8+1, w/4, h/4)
+	elseif false then
+		-- wide fov
+		--c_grey:quality(50)
+		--c_grey:downsampling(1)
 		c_grey:quality(75)
 		c_grey:downsampling(2)
 		ittybitty_img= c_grey:compress_crop(img, w, h, w/4+1, h/4+1, w/2, h/2)
+	else
+		--c_yuyv2:quality(40)
+		--c_yuyv2:quality(90)
+		--c_yuyv2:quality(20)
+		c_yuyv2:quality(50)
+		c_yuyv2:downsampling(1)
+		--ittybitty_img= c_yuyv2:compress_crop(img, w, h, w/4+1, h/4+1, w/2, h/2)
+		--ittybitty_img= c_yuyv2:compress_crop(img, w, h, w/4+w/4+1, h/4+h/8+1, w/2, h/2)
+		--ittybitty_img= c_yuyv2:compress_crop(img, w, h, w/4+w/4+1, h/4+h/4+1, w/2, h/2)
+		ittybitty_img= c_yuyv2:compress_crop(img, w, h, w/4+w/4+1, h/4+h/4+1, w/2, h/2)
 	end
 
 	ittybitty_ch:send(ittybitty_img)
-	--print('ittybitty_img', #ittybitty_img)
+	print('ittybitty_img', #ittybitty_img*8)
 	--[[
 	c_meta.sz = #ittybitty_img
 	local msg = {mp.pack(c_meta), ittybitty_img}
@@ -174,7 +189,7 @@ local function update(img, sz, cnt, t)
 	c_meta.sz = #c_img
 	local msg = {mp.pack(c_meta), c_img}
 
-	check_send(msg)
+	--check_send(msg)
 
 	-- Do the logging if we wish
 	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then

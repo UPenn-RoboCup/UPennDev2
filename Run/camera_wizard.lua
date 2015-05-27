@@ -69,7 +69,7 @@ local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
-local ittybitty_ch = si.new_publisher(streams.ittybitty.sub)
+local ittybitty_ch = si.new_publisher(Config.net.streams.ittybitty.sub)
 
 print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
@@ -206,7 +206,7 @@ end
 
 -- Open the camera
 local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
-os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto" '..metadata['Exposure, Auto'])
+os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto 1"')
 -- Set the params
 for i, param in ipairs(metadata.auto_param) do
 	local name, value = unpack(param)
@@ -234,7 +234,9 @@ for i, param in ipairs(metadata.param) do
 		count = count + 1
 		--now = camera:get_param(name)
 	end
-	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
+	if now~=value then
+		print(string.format('Failed to set %s: %d -> %d',name, value, now))
+	end
 end
 
 -- Cleanly exit on Ctrl-C

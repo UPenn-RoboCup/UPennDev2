@@ -162,7 +162,7 @@ end
 
 
 --hack to test invariance
-walk.supportY = 0.20
+--walk.supportY = 0.20
 
 --testing
 --walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD

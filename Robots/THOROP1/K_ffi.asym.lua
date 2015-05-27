@@ -57,7 +57,7 @@ local handOffsetZ_L = 0
 --]]
 
 -- Chopsticks
-local handOffsetX_L = 0.38
+local handOffsetX_L = 0.33
 local handOffsetY_L = 0
 local handOffsetZ_L = 0
 

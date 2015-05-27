@@ -49,15 +49,26 @@ local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 	local qMin, qMax, qRange =
 		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
 
+	-- infinte rotation
+	----[[
+	for i, v in ipairs(qRange) do
+		if v == math.pi*2 then
+			qMin[i] = -2 * math.pi
+			qMax[i] = 2 * math.pi
+			qRange[i] = 4 * math.pi
+		end
+	end
+	--]]
+
 	assert(type(qArm)=='table', 'get_delta_qwaistarm | Bad qArm')
 	assert(type(vwTarget)=='table', 'get_delta_qwaistarm | Bad vwTarget')
 
 	local qWaistArm = {unpack(qArm)}
 	if qWaist then
-		table.insert(qWaistArm, 1, qWaist[1])
-		table.insert(qMin, 1, -math.pi)
-		table.insert(qMax, 1, math.pi)
-		table.insert(qRange, 1, 2*math.pi)
+		tinsert(qWaistArm, 1, qWaist[1])
+		tinsert(qMin, 1, -45*DEG_TO_RAD)
+		tinsert(qMax, 1, 45*DEG_TO_RAD)
+		tinsert(qRange, 1, 90*DEG_TO_RAD)
 	end
 
 	local l = {}
@@ -460,7 +471,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	repeat
 		-- Check if we are close enough
 		local dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
-		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
+		if dist_components[1] < 0.02 and dist_components[2] < 3*RAD_TO_DEG then
 			break
 		end
 		-- Form our desired velocity
@@ -524,7 +535,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		q = qArmF1,
 		qArm0 = qArmF,
 		qWaist0 = qWaist0,
-		duration = 2
+		duration = 1
 	})
 end
 

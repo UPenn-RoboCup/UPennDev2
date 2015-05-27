@@ -32,7 +32,7 @@ shared.goal.t = vector.zeros(1)
 shared.mesh0 = {
 	-- Chest
 	sweep = {120 * DEG_TO_RAD, 4},
-	fov = {-30*DEG_TO_RAD, 90*DEG_TO_RAD},
+	fov = {-90*DEG_TO_RAD, 90*DEG_TO_RAD},
 	dynrange = {0.1, 2}
 }
 shared.mesh1 = {

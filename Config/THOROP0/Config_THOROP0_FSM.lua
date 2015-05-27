@@ -54,9 +54,9 @@ fsm.Arm = {
 
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
-	{'armManipulation', 'pulldoor', 'armPullDoor'},
 	{'armManipulation', 'teleop', 'armTeleop'},
 	{'armManipulation', 'teleopraw', 'armTeleopRaw'},
+	{'armManipulation', 'drill', 'armDrill'},
 
 	-- Teleop for manipulation if needed
 	{'armTeleop', 'init', 'armInitWalk'},
@@ -69,12 +69,21 @@ fsm.Arm = {
 	{'armTeleopRaw', 'ready', 'armManipulation'},
 	{'armTeleopRaw', 'init', 'armInitWalk'},
 
+	-- Drill positioning
+	{'armDrill', 'done', 'armTeleop'},
+	{'armDrill', 'ready', 'armManipulation'},
+	{'armDrill', 'drill', 'armDrill'},
+	{'armDrill', 'teleop', 'armTeleop'},
+	{'armDrill', 'teleopraw', 'armTeleopRaw'},
+
 	-- armPullDoor
+	--[[
 	{'armPullDoor', 'done', 'armTeleop'},
 	{'armPullDoor', 'ready', 'armManipulation'},
 	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 	{'armPullDoor', 'teleop', 'armTeleop'},
 	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
+	--]]
 
 	--Old teleop code
 	----[[
@@ -126,7 +135,7 @@ fsm.Head = {
 	{'headIdle', 'init', 'headCenter'},
 	{'headIdle', 'teleop', 'headTeleop'},
 	--
-	{'headCenter', 'done', 'headMesh'},
+	--{'headCenter', 'done', 'headMesh'},
 	{'headCenter', 'trackleft', 'headTrackLeft'},
 	{'headCenter', 'trackright', 'headTrackRight'},
 	{'headCenter', 'teleop', 'headTeleop'},
@@ -146,7 +155,7 @@ fsm.Head = {
 	{'headTrackRight', 'trackleft', 'headTrackLeft'},
 	{'headTrackRight', 'teleop', 'headTeleop'},
 	--
-	{'headMesh', 'done', 'headCenter'},
+	--{'headMesh', 'done', 'headCenter'},
 	{'headMesh', 'trackleft', 'headTrackLeft'},
 	{'headMesh', 'trackright', 'headTrackRight'},
 	{'headMesh', 'init', 'headCenter'},
@@ -154,8 +163,10 @@ fsm.Head = {
 }
 
 fsm.Gripper = {
-	{'gripperIdle', 'init', 'gripperClose'},
+	{'gripperIdle', 'close', 'gripperClose'},
 	{'gripperIdle', 'open', 'gripperOpen'},
+	{'gripperIdle', 'center', 'gripperCenter'},
+	{'gripperIdle', 'clench', 'gripperClench'},
 	{'gripperIdle', 'teleop', 'gripperTeleopTorque'},
 	{'gripperIdle', 'teleoppos', 'gripperTeleopPosition'},
 	--
@@ -167,35 +178,37 @@ fsm.Gripper = {
 	{'gripperClose', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperCenter', 'idle', 'gripperIdle'},
-	{'gripperCenter', 'init', 'gripperClose'},
+	{'gripperCenter', 'close', 'gripperClose'},
 	{'gripperCenter', 'clench', 'gripperClench'},
 	{'gripperCenter', 'open', 'gripperOpen'},
 	{'gripperCenter', 'teleop', 'gripperTeleopTorque'},
 	{'gripperCenter', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperClench', 'idle', 'gripperIdle'},
-	{'gripperClench', 'init', 'gripperClose'},
+	{'gripperClench', 'close', 'gripperClose'},
 	{'gripperClench', 'center', 'gripperCenter'},
 	{'gripperClench', 'open', 'gripperOpen'},
 	{'gripperClench', 'teleop', 'gripperTeleopTorque'},
 	{'gripperClench', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperOpen', 'idle', 'gripperIdle'},
-	{'gripperOpen', 'init', 'gripperClose'},
+	{'gripperOpen', 'close', 'gripperClose'},
 	{'gripperOpen', 'clench', 'gripperClench'},
 	{'gripperOpen', 'center', 'gripperCenter'},
 	{'gripperOpen', 'teleop', 'gripperTeleopTorque'},
 	{'gripperOpen', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperTeleopTorque', 'idle', 'gripperIdle'},
-	{'gripperTeleopTorque', 'init', 'gripperClose'},
+	{'gripperTeleopTorque', 'close', 'gripperClose'},
 	{'gripperTeleopTorque', 'clench', 'gripperClench'},
+	{'gripperTeleopTorque', 'open', 'gripperOpen'},
 	{'gripperTeleopTorque', 'center', 'gripperCenter'},
 	{'gripperTeleopTorque', 'teleoppos', 'gripperTeleopPosition'},
 	--
 	{'gripperTeleopPosition', 'idle', 'gripperIdle'},
-	{'gripperTeleopPosition', 'init', 'gripperClose'},
+	{'gripperTeleopPosition', 'close', 'gripperClose'},
 	{'gripperTeleopPosition', 'clench', 'gripperClench'},
+	{'gripperTeleopPosition', 'open', 'gripperOpen'},
 	{'gripperTeleopPosition', 'center', 'gripperCenter'},
 	{'gripperTeleopPosition', 'teleop', 'gripperTeleopTorque'},
 }

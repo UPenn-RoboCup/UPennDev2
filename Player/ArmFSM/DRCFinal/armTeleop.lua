@@ -31,7 +31,7 @@ function state.entry()
 	-- Set where we are
 	local qcLArm = Body.get_larm_command_position()
 	local qcRArm = Body.get_rarm_command_position()
-	local qcWaist = Body.get_waist_command_position()
+	local qcWaist = Body.get_safe_waist_command_position()
 	local trL = movearm.lPlanner.forward(qcLArm, qcWaist)
 	local trR = movearm.rPlanner.forward(qcRArm, qcWaist)
 
@@ -133,11 +133,11 @@ function state.update()
 		-- Safety
 		local qcLArm = Body.get_larm_command_position()
 		local qcRArm = Body.get_rarm_command_position()
-		local qcWaist = Body.get_waist_command_position()
+		local qcWaist = Body.get_safe_waist_command_position()
 		--
 		Body.set_larm_command_position(qcLArm)
 		Body.set_rarm_command_position(qcRArm)
-		Body.set_waist_command_position(qcWaist)
+		Body.set_safe_waist_command_position(qcWaist)
 		--
 		hcm.set_teleop_larm(qcLArm)
 		hcm.set_teleop_rarm(qcRArm)
@@ -154,9 +154,9 @@ function state.update()
 	if qLWaistpoint and qRWaistpoint then
 		print('Conflicting waists')
 	elseif type(qLWaistpoint)=='table' then
-		Body.set_waist_command_position(qLWaistpoint)
+		Body.set_safe_waist_command_position(qLWaistpoint)
 	elseif type(qRWaistpoint)=='table' then
-		Body.set_waist_command_position(qRWaistpoint)
+		Body.set_safe_waist_command_position(qRWaistpoint)
 	end
 
 	-- Check if done

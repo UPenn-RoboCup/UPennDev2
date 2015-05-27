@@ -92,13 +92,23 @@ local grasp_afternoon_param = {
 	{'Gain', 66},
 	{'Sharpness', 0},
 }
-local ucla_param = {
-	{'White Balance Temperature', 2300},
-	{'Exposure (Absolute)', 112},
---	{'Focus (absolute)', 0},
+local ucla_head_param = {
+	--{'White Balance Temperature', 2300},
+	--{'Exposure (Absolute)', 112},
+	--{'Focus (absolute)', 120},
 	{'Brightness', 128},
 	{'Contrast', 128},
-	{'Saturation', 220},
+	{'Saturation', 128},
+	{'Gain', 0},
+	{'Sharpness', 0},
+}
+local ucla_wrist_param = {
+	--{'White Balance Temperature', 2300},
+	--{'Exposure (Absolute)', 112},
+	{'Focus (absolute)', 120},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 128},
 	{'Gain', 0},
 	{'Sharpness', 0},
 }
@@ -142,7 +152,7 @@ camera[1] = {
 		{'Exposure, Auto Priority', 1},
 		--{'Focus, Auto', 0}
 	},
-	param = m308_param,
+	param = ucla_head_param,
 }
 
 camera[2] = {
@@ -158,9 +168,9 @@ camera[2] = {
 		{'White Balance Temperature, Auto', 1},
 		{'Power Line Frequency', 0},
 		{'Exposure, Auto Priority', 1},
-		--{'Focus, Auto', 0}
+		{'Focus, Auto', 0}
 	},
-	param = m308_param,
+	param = ucla_wrist_param,
 }
 
 local kinect = {

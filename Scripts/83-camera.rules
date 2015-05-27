@@ -1,3 +1,6 @@
+# sudo udevadm trigger -v /dev/video1
+# udevadm test /sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.4/1-2.4:1.0/video4linux/video1 2>/dev/null | ag -i seria
+
 # C920
 KERNEL=="video[0-9]*", SUBSYSTEM=="video4linux", ACTION=="add", ATTRS{serial}=="E27733EF", SYMLINK+="video-headcamera"
 # C905

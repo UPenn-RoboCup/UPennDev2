@@ -106,12 +106,14 @@ local function update()
 	if t_update - t_feedback < dt_indoor_send then return end
 
 	count = count + 1
-	e.id = 'fb'
-	e.t = t
+	--e.id = 'fb'
+	--e.t = t
 	e.u = get_torso()
 	e.p = Body.get_position()
 	e.cp = Body.get_command_position()
-	e.pillars = pillars
+	e.s = pillars
+	e.g = Body.get_rgrip_command_torque()
+	e.gt = Body.get_rgrip_temperature()
 	--e.fL = Body.get_lfoot()
 	--e.fR = Body.get_rfoot()
 	-- FSM?

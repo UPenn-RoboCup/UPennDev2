@@ -10,24 +10,24 @@ local arm = {}
 -- This comes after the walkInit
 arm.init = {}
 
-table.insert(arm.init,
+arm.init[1] =
 	-- Pitch up
 	{
 	left = {
-		tr={0.25, 0.25, 0.15, 0, -45*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		tr={0.25, 0.25, 0.15, 0, -60*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		timeout=8,
 		via='jacobian_preplan', weights = {1,0,0}
 	},
 	right = {
-		tr={0.25, -0.25, 0.15, 0, -45*DEG_TO_RAD, 0},
+		tr={0.25, -0.25, 0.15, 0, -64*DEG_TO_RAD, 0},
 		timeout=8,
 		via='jacobian_preplan',
-		weights = {1,0,0},
+		weights = {0,1,0},
 	}
-})
+}
 
 -- Now go to yaw
-----[[
+--[[
 table.insert(arm.init,
 	{
 	left = {
@@ -62,18 +62,16 @@ arm.door[1] = {
 	}
 }
 
+-- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.drill = {}
-
--- 13.13, -49.41, -45.92, -133.8, 110.6, -86.49, -30.18
-
 arm.drill[1] = {
 	left = false,
 	right = {
 		timeout=15,
 		via='jacobian_preplan',
-		tr={0.45, -0.2, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.25, -0.2, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		qArmGuess = vector.new{0, -45, -90, -90, 0, 45, 0}*DEG_TO_RAD,
-		weights = {0,1,-1,0,0},
+		weights = {1,1,-1,1},
 	}
 }
 
@@ -82,9 +80,9 @@ arm.drill[2] = {
 	right = {
 		timeout=15,
 		via='jacobian_preplan',
-		tr={0.55, -0.4, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.45, -0.4, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		qArmGuess = vector.new{0, -45, -90, -90, 0, 45, 0}*DEG_TO_RAD,
-		weights = {0,0,-1,1,0},
+		weights = {1,1,-1,1},
 	}
 }
 
@@ -93,9 +91,9 @@ arm.drill[3] = {
 	right = {
 		timeout=15,
 		via='jacobian_preplan',
-		tr={0.45, -0.4, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.35, -0.4, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		qArmGuess = vector.new{0, -45, -90, -90, 0, 45, 0}*DEG_TO_RAD,
-		weights = {0,0,-1,1,0},
+		weights = {1,1,-1,1},
 	}
 }
 

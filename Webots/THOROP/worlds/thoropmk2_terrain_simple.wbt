@@ -39,14 +39,15 @@ DEF TASKFLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-THOROP_mk2_Fullmass {
+THOROP_mk2_Fullmass_longarm_2 {
   translation 0 1.17 0
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
   max_torque_400w 135 #50% extra than catalogue value
-  max_torque_200w 67.5
+   #max_torque_200w 67.5
+  max_torque_200w 90 #hip roll requires LOTS of torque...
   max_torque_100w 20
   damping_constant 0
   footContactMaterial "feet"

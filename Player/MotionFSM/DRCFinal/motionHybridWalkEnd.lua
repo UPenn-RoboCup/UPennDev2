@@ -315,6 +315,7 @@ function walk.update()
       supportRatio,
       t_diff)
 
+    moveleg.ft_compensate(t_diff)
     moveleg.set_leg_positions()    
 
 

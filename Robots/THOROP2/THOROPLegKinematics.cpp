@@ -112,7 +112,7 @@ std::vector<double> THOROP_kinematics_inverse_leg(Transform trLeg, int leg, doub
 
 
 
-std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY, int birdwalk){
+std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY, int birdwalk, double anklePitchCurrent){
 
   std::vector<double> qLeg(6);
   Transform trInvLeg = inv(trLeg);
@@ -247,6 +247,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   Transform trAnkle =  trcopy (trLeg);
 
   //Body to Leg FK:
+  
   //Trans(HIP).Rz(q0).Rx(q1).Ry(q2).Trans(UL).Ry(q3).Trans(LL).Ry(q4).Rx(q5).Trans(Foot)
   
   //Genertae body to ankle transform 
@@ -289,8 +290,20 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   double err1 = tInv(0,3)-m(0,3)*cos(anklePitch1)+m(2,3)*sin(anklePitch1);
   double err2 = tInv(0,3)-m(0,3)*cos(anklePitch2)+m(2,3)*sin(anklePitch2);
   double anklePitchNew = anklePitch1;
-  if (err1*err1>err2*err2) anklePitchNew = anklePitch2;
-
+  
+  if (  (fabs(err1)<0.0001) && (fabs(err2)<0.0001) ) {
+    //printf("Two solutions for anklepitch\n");
+    double err_1 = fabs(anklePitchCurrent-anklePitch1);
+    double err_2 = fabs(anklePitchCurrent-anklePitch2);
+    if (err_2<err_1) {
+      anklePitchNew = anklePitch2;
+    }    
+  }else{
+    if (fabs(err1)>fabs(err2)){
+      anklePitchNew = anklePitch2;
+    }
+  }
+   
 
   //then now solve for ankle roll (q5)
   //tInv(1,3) = m0*sin(q4)* sin(q5) + m1*cos(q5) + m2*cos(q4)*sin(q5)
@@ -310,16 +323,20 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   if (s2>1) s2=1;
   double ankleRoll1 = asin(s1);
   double ankleRoll2 = asin(s2);
-  err1 = tInv(1,3)-m(2,3)*cos(ankleRoll1)-p1*sin(ankleRoll1);
-  err2 = tInv(1,3)-m(2,3)*cos(ankleRoll2)-p1*sin(ankleRoll2);
+  double err3 = tInv(1,3)-m(2,3)*cos(ankleRoll1)-p1*sin(ankleRoll1);
+  double err4 = tInv(1,3)-m(2,3)*cos(ankleRoll2)-p1*sin(ankleRoll2);
   double ankleRollNew = ankleRoll1;
-  if (err1*err1>err2*err2) ankleRollNew = ankleRoll2;
+
+  if ((fabs(err3)<0.0001) && (fabs(err3)<0.0001) ) {
+    printf("Two solutions for ankleroll\n");}
+
+  if (fabs(err3)>fabs(err4)){ankleRollNew = ankleRoll2;}
 
 
   //Now we have ankle roll and pitch
   //again, t = Rz(q0).Rx(q1).Ry(q2).Trans(UL).Ry(q3).Trans(LL).Ry(q4).Rx(q5)
   //lets get rid of knee and ankle rotations
-  t=t.rotateX(-ankleRollNew).rotateY(-anklePitchNew-kneePitchActual);
+  t=t.rotateX(-ankleRollNew).rotateY(-anklePitchNew-kneePitch);
 
   //now use ZXY euler angle equation to get q0,q1,q2
 
@@ -327,10 +344,24 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   double hipYawNew = atan2(-t(0,1),t(1,1));
   double hipPitchNew = atan2(-t(2,0),t(2,2));
 
-
-
-
-
+  if (leg == LEG_LEFT) {
+    if (fabs(hipPitchNew)>135*3.1415/180){
+      printf("\ntrLeg:\n");
+      printTransform(trLeg);
+      printf("Hip Roll:%f Pitch: %f Yaw:%f\n",
+      hipRollNew*180/3.1415, hipPitchNew*180/3.1415, hipYawNew*180/3.1415)    ;
+      printf("anklePitch: #1 %f (err %f) #2 %f (err %f) \n ",
+        anklePitch1*180/3.1415,err1,anklePitch2*180/3.1415,err2
+        );
+      printf("ankleRoll: #1 %f (err %f) #2 %f (err %f) \n ",
+        ankleRoll1*180/3.1415,err3,ankleRoll2*180/3.1415,err4
+        );
+      printf("Ankle Roll:%f Pitch: %f\n",
+      ankleRollNew*180/3.1415, anklePitchNew*180/3.1415)    ;
+      printTransform(t);
+      printf("\n");
+    }
+  }
 
   // Ankle pitch and roll
   double ankleRoll = atan2(xLeg[1], xLeg[2]);
@@ -361,7 +392,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
 
 
 //TODO: pitch sometimes screws up
-
+/*
   if (hipPitchNew<-1.57*1.2) {
    printf("Pitch:%f\n",hipPitchNew*180/3.1415);
    printf("val: %f %f\n",t(2,0),t(2,2));
@@ -373,7 +404,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
    printf("val: %f %f\n",t(2,0),t(2,2));
    hipPitchNew = qLeg[2];
   }
-
+*/
 
 //new IK
   qLeg[0] = hipYawNew;
@@ -404,7 +435,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
 
 
 
-std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int leg, double aShiftX, double aShiftY,int birdwalk){
+std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int leg, double aShiftX, double aShiftY,int birdwalk, double anklePitchCurrent){
 
   //TODOTODOTODOTODOTODO!!!!!!!!!!!!!!
   std::vector<double> qLeg(6);
@@ -584,7 +615,19 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   double err1 = tInv(0,3)-m(0,3)*cos(anklePitch1)+m(2,3)*sin(anklePitch1);
   double err2 = tInv(0,3)-m(0,3)*cos(anklePitch2)+m(2,3)*sin(anklePitch2);
   double anklePitchNew = anklePitch1;
-  if (err1*err1>err2*err2) anklePitchNew = anklePitch2;
+  if (  (fabs(err1)<0.0001) && (fabs(err2)<0.0001) ) {
+    //printf("Two solutions for anklepitch\n");
+    double err_1 = fabs(anklePitchCurrent-anklePitch1);
+    double err_2 = fabs(anklePitchCurrent-anklePitch2);
+    if (err_2<err_1) {
+      anklePitchNew = anklePitch2;
+    }    
+  }else{
+    if (fabs(err1)>fabs(err2)){
+      anklePitchNew = anklePitch2;
+    }
+  }
+  
 
 
   //then now solve for ankle roll (q5)

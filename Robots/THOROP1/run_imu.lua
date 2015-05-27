@@ -125,9 +125,9 @@ t0 = get_time()
 t_debug, t_last, t = t0, t0, t0
 t_last_read = t0
 
+local t0 = get_time()
+dcm.set_sensor_imu_t0(t0) --set run_imu start time to shm
 
---SJ: We need to add check to see whether the robot was not moving
---TODO
 
 if CALIBRATE_GYRO_BIAS then
   local n = 1
@@ -160,6 +160,7 @@ while running do
 	-- Read Values --
 	-----------------
 	t = do_read()
+  dcm.set_sensor_imu_t(t) --set last imu update time to shm
 	--------------------
 	-- Periodic Debug --
 	--------------------

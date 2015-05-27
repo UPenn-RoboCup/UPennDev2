@@ -522,7 +522,6 @@ end
 
 
 
-
 --SJ: I have moved this function to body as it is commonly used in many locations
 --Reads current leg and torso position from SHM
 
@@ -541,12 +540,6 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
-
---  local uZMP = mcm.get_status_uZMP()
---  print("zmp:",unpack(uZMP))
-
-  local massL,massR = 0,0
-
   local leftSupportRatio = mcm.get_status_leftSupportRatio()
 
  --Initial guess 
@@ -554,26 +547,22 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local pTorso = vector.new({
     uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
     0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-  local bodyHeight0 = mcm.get_stance_bodyHeight()
- 
-
---[[
-  local dHeight = Kinematics.get_body_dh(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
-  if dHeight>0 then print("DH:",dHeight) end
-  local bodyHeight = bodyHeight0 - dHeight
-  pTorso[3]=bodyHeight
---]]
 
 
+  local qLLegCurrent = Body.get_lleg_command_position()
+  local qRLegCurrent = Body.get_rleg_command_position()
 
-  local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0)
-  
+  local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0,
+    qLLegCurrent, qRLegCurrent)
+    
+  local massL,massR = 0,0 --for now
+
   -------------------Incremental COM filtering
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
 
-    --Now we compensate for leg masses too (for single support cases)
+  --Now we compensate for leg masses too (for single support cases)
     com = Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,
           massL, massR,0, Config.birdwalk or 0)
 
@@ -585,7 +574,9 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
    local pTorso = vector.new({
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0)
+      qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0,
+      qLLegCurrent, qRLegCurrent --TODO: do we need to update current angles too?
+        )
    count = count+1
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)

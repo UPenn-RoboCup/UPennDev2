@@ -81,11 +81,6 @@ local function do_read()
    		 g[1] + gyro_yaw_bias[1], g[2] + gyro_yaw_bias[2], -g[0] - gyro_yaw_bias[3]
 
 	end
-
-
-
-
-
 	yaw = yaw + 6 * gyro_ptr[2] / 1e3
   
   -- Overwrite the RPY value
@@ -121,8 +116,13 @@ t_debug, t_last, t = t0, t0, t0
 t_last_read = t0
 
 
---SJ: We need to add check to see whether the robot was not moving
---TODO
+
+
+
+
+
+local t0 = get_time()
+dcm.set_sensor_imu_t0(t0) --set run_imu start time to shm
 
 if CALIBRATE_GYRO_BIAS then
   local n = 1
@@ -149,12 +149,17 @@ if CALIBRATE_GYRO_BIAS then
   print("BIAS:", gyro_yaw_bias, gyro_accumulated)
 end
 
+
+
+
 -- Run the main loop
 while running do
 	-----------------
 	-- Read Values --
 	-----------------
 	t = do_read()
+  dcm.set_sensor_imu_t(t) --set last imu update time to shm
+
 	--------------------
 	-- Periodic Debug --
 	--------------------
@@ -168,6 +173,7 @@ while running do
     local gyro = dcm.get_sensor_gyro()
     local mag = dcm.get_sensor_magnetometer()
     local rpy = dcm.get_sensor_rpy()
+
 		local debug_str = {
 			sformat('\nIMU | Uptime %.2f sec, Mem: %d kB, %.1fHz', t-t0, kb, fps),
 			sformat('Acc (g): %.2f %.2f %.2f', unpack(acc)),

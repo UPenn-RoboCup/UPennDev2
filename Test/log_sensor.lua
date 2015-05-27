@@ -4,7 +4,7 @@ local ok = pcall(dofile,'../fiddle.lua')
 if not ok then dofile'fiddle.lua' end
 
 local t_last = Body.get_time()
-local tDelay = 0.1*1E6
+local tDelay = 0.05*1E6
 
 
 
@@ -20,6 +20,7 @@ local sformat = string.format
 
 require'mcm'
 require'hcm'
+require'dcm'
 require'wcm'
 
 count = 0
@@ -29,12 +30,16 @@ count = 0
 while running do
 	local lft = mcm.get_status_LFT()
 	local rft = mcm.get_status_RFT()
+
+
 	local imu = mcm.get_status_IMU()
 	local uZMP = mcm.get_status_uZMP()
 	local uZMPMeasured = mcm.get_status_uZMPMeasured()
 	local LZMP = mcm.get_status_LZMP()
 	local RZMP = mcm.get_status_RZMP()
 
+	local LZMPr = dcm.get_sensor_lzmp()
+	local RZMPr = dcm.get_sensor_rzmp()
 
 	local aShiftX = mcm.get_walk_aShiftX()
 	local aShiftY = mcm.get_walk_aShiftY()
@@ -67,7 +72,12 @@ while running do
 			uZMP[1]*100, uZMP[2]*100, uZMPMeasured[1]*100,	uZMPMeasured[2]*100
 
 			))
-		print(sformat("ZMP err: L %.1f %.1f R %.1f %.1f cm",
+
+		print(sformat("ZMP err(raw): L %.1f %.1f R %.1f %.1f cm",
+			LZMPr[1]*100, LZMPr[2]*100,RZMPr[1]*100, RZMPr[2]*100))
+
+
+		print(sformat("ZMP err(fil): L %.1f %.1f R %.1f %.1f cm",
 			LZMP[1]*100, LZMP[2]*100,RZMP[1]*100, RZMP[2]*100))
 
 		print(sformat("leg balancing: %d %d",enable_balance[1],enable_balance[2]))

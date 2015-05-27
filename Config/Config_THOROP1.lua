@@ -24,7 +24,6 @@ Config.debug = {
   armplan = true,
 }
 
-
 -- Tune for Webots
 if IS_WEBOTS then
 	if IS_STEVE then

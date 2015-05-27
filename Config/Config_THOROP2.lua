@@ -56,8 +56,11 @@ if IS_WEBOTS then
 		Config.enable_jacobian_test = true
 		Config.enable_touchdown = false
 		Config.raise_body = false
+
+		Config.raise_body = true
+
+
 		Config.piecewise_step = true
-		Config.birdwalk = 1 --testing birdwalk		
 
 --		Config.use_gps_pose=true
 --		Config.debug.world=true
@@ -76,6 +79,10 @@ if IS_WEBOTS then
   -- Config.lidar_timestep = 200 --slower
   -- Config.kinect_timestep = 30
 end
+
+Config.walktraj={}
+Config.walktraj.hybridwalk = "foot_trajectory_base"
+
 
 -----------------------------------
 -- Load Paths and Configurations --

@@ -102,7 +102,7 @@ function state.update()
   supportLeg = 2; --Double support
 
 
-  local gyro_rpy = Body.get_gyro()
+  local gyro_rpy = moveleg.update_sensory_feedback()
   local delta_legs
 
 ------------------------------------------------
@@ -132,13 +132,10 @@ function state.update()
   end
 
   moveleg.store_stance(t,0,uLeft,uTorso,uRight,2,uTorso, zLeg[1],zLeg[2])
-
   mcm.set_stance_bodyHeight(bodyHeight)  
-  moveleg.ft_compensate(t_diff)
 
   delta_legs, angleShift = moveleg.get_leg_compensation_new(supportLeg,0,gyro_rpy, angleShift,t_diff)
   moveleg.set_leg_positions(delta_legs)
-
 
   mcm.set_status_uTorsoVel({0,0,0})
 

@@ -73,26 +73,6 @@ for key,stream in pairs(Config.net.streams) do
 	end
 end
 
-local ping_ch, go_ch
-if IS_COMPETING then
-	local NET_OPEN = false
-	ping_ch = si.new_publisher(Config.net.ping.tcp)
-	go_ch = si.new_receiver(Config.net.ping.udp)
-	table.insert(out_channels, ping_ch)
-	table.insert(in_channels, go_ch)
-	go_ch.callback = function(skt)
-		local ch_id = lut[skt]
-		local in_ch = in_channels[ch_id]
-		local out_ch = out_channels[ch_id]
-		local sz = in_ch:size()
-		while sz > 0 do
-			local data = in_ch:receive()
-			out_ch:send('ok')
-			sz = in_ch:size()
-		end
-	end
-end
-
 function net()
 	for ch_id, usage in ipairs(ch_usage) do
 		local sum = 0

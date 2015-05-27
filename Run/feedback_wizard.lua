@@ -26,12 +26,12 @@ local hz_outdoor_send = 4
 local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
-local ittybitty_ch = si.new_subscriber(Config.streams.ittybitty.sub)
+local ittybitty0_ch = si.new_subscriber(Config.streams.ittybitty0.sub)
+local ittybitty1_ch = si.new_subscriber(Config.streams.ittybitty1.sub)
+local pillars, ittybitty0, ittybitty1
 
 local feedback_udp_ch
 local feedback_ch
-local ret, err
-local nBytes, nBytesPing = 0, 0
 local t_feedback = 0
 local t_open = -math.huge
 
@@ -69,9 +69,13 @@ local function entry()
 		Config.net.operator.wired,
 		Config.net.streams.feedback.udp
 		)
-		ittybitty_udp_ch = si.new_sender(
+		ittybitty0_udp_ch = si.new_sender(
 		Config.net.operator.wired,
-		Config.net.streams.ittybitty.udp
+		Config.net.streams.ittybitty0.udp
+		)
+		ittybitty1_udp_ch = si.new_sender(
+		Config.net.operator.wired,
+		Config.net.streams.ittybitty1.udp
 		)
 		--[[
 		if IS_COMPETING then
@@ -85,7 +89,6 @@ end
 local msg
 local e = {}
 local count = 0
-local pillars, ittybitty
 local function update()
 	local t_update = get_time()
 
@@ -102,67 +105,62 @@ local function update()
 
 	local y
 	repeat
-		msg = ittybitty_ch:receive(true)
+		msg = ittybitty0_ch:receive(true)
 		if msg then y = msg[#msg] end
 	until not msg
-	if y then ittybitty = y end
+	if y then ittybitty0 = y end
 
-	--[[
-	local is_indoors = hcm.get_network_indoors()==1
-	local is_outdoors = not is_indoors
-	if IS_WEBOTS then is_outdoors = true
-	elseif is_indoors and t_update - t_feedback < dt_indoor_send then return
-	elseif is_outdoors and t_update - t_feedback < dt_outdoor_send then return
-	else return end
-	--]]
+	local y1
+	repeat
+		msg = ittybitty1_ch:receive(true)
+		if msg then y1 = msg[#msg] end
+	until not msg
+	if y then ittybitty1 = y1 end
+
 	if t_update - t_feedback < dt_indoor_send then return end
 
-	count = count + 1
-	--e.id = 'fb'
-	--e.t = t
-	e.u = get_torso()
-	e.p = Body.get_position()
-	e.cp = Body.get_command_position()
-	e.s = pillars
-	e.g = Body.get_rgrip_command_torque()
-	e.gt = Body.get_rgrip_temperature()
-	--e.fL = Body.get_lfoot()
-	--e.fR = Body.get_rfoot()
-	-- FSM?
+	local ret, err
 
-	--[[
-	e.n = count
-	e.b = Body.get_battery()
-	e.i = Body.get_current()
-	e.cp, e.t_cp = Body.get_command_position()
-	e.p, e.t_p = Body.get_position()
-	e.gyro, e.t_imu = Body.get_gyro()
-	e.acc = Body.get_accelerometer()
-	e.rpy = Body.get_rpy()
-	e.pose = wcm.get_robot_pose()
-	--]]
-
-	msg = mpack(e)
-
-	if feedback_ch then
-		-- Webots is uncompressed
-		feedback_ch:send(msg)
-	end
-	if feedback_udp_ch then
-		--[[
-		local t00 = unix.time()
-		local c_msg = czlib(msg)
-		local t11 = unix.time()
-		print('msg', #msg, 'c_msg', #c_msg, t11-t00)
-		ret, err = feedback_udp_ch:send(c_msg)
-		--]]
-		ret, err = feedback_udp_ch:send(msg)
-	end
-	if type(ret)=='string' then
-		io.write('Feedback | UDP error: ', ret, '\n')
+	local is_indoors = hcm.get_network_indoors()
+	if is_indoors==2 and ittybitty0_udp_ch then
+		-- send the ittybitty0 (head)
+		ret, err = ittybitty0_udp_ch:send(ittybitty0)
+	elseif is_indoors==3 and ittybitty1_udp_ch then
+		-- send the ittybitty1 (wrist)
+		ret, err = ittybitty1_udp_ch:send(ittybitty1)
 	else
-		nBytes = nBytes + #msg
+		-- Default feedback
+		e.u = get_torso()
+		e.p = Body.get_position()
+		e.cp = Body.get_command_position()
+		e.s = pillars
+		e.g = Body.get_rgrip_command_torque()
+		e.gt = Body.get_rgrip_temperature()
+		--[[
+		e.id = 'fb'
+		e.t = t
+		e.n = count
+		e.fL = Body.get_lfoot()
+		e.fR = Body.get_rfoot()
+		e.b = Body.get_battery()
+		e.i = Body.get_current()
+		e.cp, e.t_cp = Body.get_command_position()
+		e.p, e.t_p = Body.get_position()
+		e.gyro, e.t_imu = Body.get_gyro()
+		e.acc = Body.get_accelerometer()
+		e.rpy = Body.get_rpy()
+		e.pose = wcm.get_robot_pose()
+		--]]
+		msg = mpack(e)
+
+		if feedback_ch then feedback_ch:send(msg) end
+		if feedback_udp_ch then
+			--ret, err = feedback_udp_ch:send(czlib(msg))
+			ret, err = feedback_udp_ch:send(msg)
+		end
 	end
+	if type(ret)=='string' then print('Feedback | UDP error: ', ret, '\n') end
+	count = count + 1
 	t_feedback = t_update
 end
 
@@ -188,8 +186,8 @@ while running do
 		t_debug = t
 		local kb = collectgarbage('count')
 		io.write(string.format(
-		'FB | %d sec, %d kB, %d bytes\n',
-		t-t0, kb, nBytes, nBytesPing)
+		'FB | %d sec, %d kB\n',
+		t-t0, kb)
 		)
 	end
 	-- Sleep a bit

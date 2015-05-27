@@ -68,7 +68,10 @@ local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
-local ittybitty_ch = si.new_publisher(Config.net.streams.ittybitty.sub)
+--
+local ittybitty_identifier = 'ittybitty'..(camera_id-1)
+local stream = Config.net.streams[ittybitty_identifier]
+local ittybitty_ch = si.new_publisher(stream.sub)
 
 print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 

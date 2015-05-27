@@ -1,0 +1,4 @@
+# C920
+KERNEL=="video[0-9]*", SUBSYSTEM=="video4linux", ACTION=="add", ATTRS{serial}=="E27733EF", SYMLINK+="video-headcamera"
+# C905
+KERNEL=="video[0-9]*", SUBSYSTEM=="video4linux", ACTION=="add", ATTRS{serial}=="08E070AD", SYMLINK+="video-wristcamera"

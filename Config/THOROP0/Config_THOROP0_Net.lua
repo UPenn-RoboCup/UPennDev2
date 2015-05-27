@@ -71,7 +71,7 @@ streams.feedback = {
 	sub = 'feedback'
 }
 streams.ittybitty = {
-	ws = 9003,
+	ws = 9073,
 	udp = 2032,
 	sub = 'ittybitty'
 }

@@ -15,8 +15,10 @@ local t_entry = get_time()
 require'wcm'
 require'mcm'
 require'hcm'
-local czlib = require'zlib.ffi'.compress
---local czlib = require'zlib'.deflate(9)
+local czlib
+if USE_ZLIB then
+	czlib = require'zlib.ffi'.compress
+end
 
 local hz_indoor_send = 1
 local dt_indoor_send = 1/hz_indoor_send
@@ -130,12 +132,14 @@ local function update()
 		feedback_ch:send(msg)
 	end
 	if feedback_udp_ch then
+		--[[
 		local t00 = unix.time()
-		--local c_msg = czlib(msg, 'sync')
 		local c_msg = czlib(msg)
 		local t11 = unix.time()
 		print('msg', #msg, 'c_msg', #c_msg, t11-t00)
 		ret, err = feedback_udp_ch:send(c_msg)
+		--]]
+		ret, err = feedback_udp_ch:send(msg)
 	end
 	if type(ret)=='string' then
 		io.write('Feedback | UDP error: ', ret, '\n')

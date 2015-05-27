@@ -56,8 +56,21 @@ jpg_file:close()
 
 -- Stays 1:1
 c_yuyv:downsampling(1)
+
+for q=5,95,5 do
+	c_yuyv:quality(q)
+	t0=unix.time()
+	yuyv_jpg_crop = c_yuyv:compress_crop(yuyv_str, 640, 480, 161, 121, 160, 120)
+	t1=unix.time()
+	print("Quality", q, t1-t0, #yuyv_jpg_crop, 8*#yuyv_jpg_crop)
+end
+
+
+-- Stays 1:1
+c_yuyv:downsampling(1)
 -- 240: w0, then div by 2 (downsample of 1) = w of 120 output
 -- 180: h0, then div by 2 (downsample of 1) = h of 90 output
+c_yuyv:quality(50)
 local yuyv_jpg_crop = c_yuyv:compress_crop(yuyv_str, 640, 480, 161, 121, 160, 120)
 
 print("ok2?",#yuyv_jpg_crop, 8*#yuyv_jpg_crop..' bits')

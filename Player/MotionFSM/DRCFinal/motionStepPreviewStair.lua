@@ -220,6 +220,14 @@ function walk.update()
     local leg_raise = 0
 
 
+
+    local lowerVelMax = 0.50
+    local lowerVelDS = 0.50
+
+
+
+
+
     if Config.raise_body then
       if zLeft<0 or zRight<0 then
          leg_raise = math.min(zLeft,zRight)

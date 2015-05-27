@@ -207,7 +207,7 @@ function state.entry()
       else
         step_queues={
          {
-          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+          {{0,0,0},    2,  st*3, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
           {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
           {{0,0,0},2,        st*3, st, 0.1,   {0,0},{0,0,0} },  --move to center
          },
@@ -270,7 +270,7 @@ function state.entry()
       else
        step_queues={
          {
-          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+          {{0,0,0},2,        st*3, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
           {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
           {{0,0,0},2,        st*3, st, 0.1,   {0,0},{0,0,0} },  --move to center
          },

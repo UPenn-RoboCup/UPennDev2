@@ -92,15 +92,25 @@ local grasp_afternoon_param = {
 	{'Gain', 66},
 	{'Sharpness', 0},
 }
+local ucla_param = {
+	{'White Balance Temperature', 2300},
+	{'Exposure (Absolute)', 112},
+--	{'Focus (absolute)', 0},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 220},
+	{'Gain', 0},
+	{'Sharpness', 0},
+}
 
 -- Cameras
 local camera = {}
 camera[1] = {
-	name = 'head',
+	name = 'wrist',
 	dev = '/dev/video0',
 	format = 'yuyv',
 	w = 640,
-	h = 360, --480,
+	h = 480,
 	fps = 30,
 	jpeg_quality = 60,
 	mountOffset = {
@@ -126,17 +136,17 @@ camera[1] = {
 	focal_length = 395.17,
 	focal_base = 640,
 	auto_param = {
-		--      {'Exposure, Auto', 1},
-		{'White Balance Temperature, Auto', 0},
+		{'Exposure, Auto', 1},
+		{'White Balance Temperature, Auto', 1},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 0},
---		{'Focus, Auto', 0}
+		{'Exposure, Auto Priority', 1},
+		--{'Focus, Auto', 0}
 	},
 	param = m308_param,
 }
 
 camera[2] = {
-	name = 'waist',
+	name = 'head',
 	dev = '/dev/video1',
 	format = 'yuyv',
 	w = 640,
@@ -144,11 +154,11 @@ camera[2] = {
 	fps = 30,
 	jpeg_quality = 60,
 	auto_param = {
-		-- {'Exposure, Auto', 1},
-		{'White Balance Temperature, Auto', 0},
+		{'Exposure, Auto', 1},
+		{'White Balance Temperature, Auto', 1},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 0},
-		{'Focus, Auto', 0}
+		{'Exposure, Auto Priority', 1},
+		--{'Focus, Auto', 0}
 	},
 	param = m308_param,
 }

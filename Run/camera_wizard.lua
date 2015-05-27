@@ -14,11 +14,20 @@ local Body = require'Body'
 require'hcm'
 local get_time = Body.get_time
 -- JPEG Compressor
-local c_grey = jpeg.compressor('gray')
+local c_grey = jpeg.compressor('y')
 local c_yuyv = jpeg.compressor('yuyv')
 -- TODO: Control the downsampling mode
 --c_yuyv:downsampling(2)
 --c_yuyv:downsampling(1)
+
+-- Stays 1:1
+c_grey:downsampling(1)
+-- 240: w0, then div by 2 (downsample of 1) = w of 120 output
+-- 180: h0, then div by 2 (downsample of 1) = h of 90 output
+c_grey:quality(50)
+--local yuyv_jpg_crop = c_grey:compress_crop(yuyv_str, 640, 480, 161, 121, 160, 120)
+
+
 
 -- Grab the metadata for this camera
 local metadata, camera_id
@@ -60,6 +69,8 @@ local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
+local ittybitty_ch = si.new_publisher(streams.ittybitty.sub)
+
 print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
 -- Metadata for the operator for compressed image data
@@ -143,6 +154,9 @@ local function update(img, sz, cnt, t)
 	c_meta.sz = #c_img
 	local msg = {mp.pack(c_meta), c_img}
 
+	local ittybitty_img = c_grey:compress_crop(img, w, h, w/2+1, h/2+1, w/4, h/4)
+	ittybitty_ch:send(ittybitty_img)
+
 	check_send(msg)
 
 	-- Do the logging if we wish
@@ -192,7 +206,7 @@ end
 
 -- Open the camera
 local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
-os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto" 1')
+os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto" '..metadata['Exposure, Auto'])
 -- Set the params
 for i, param in ipairs(metadata.auto_param) do
 	local name, value = unpack(param)
@@ -200,7 +214,9 @@ for i, param in ipairs(metadata.auto_param) do
 	local ok = camera:set_param(name, value)
 --	unix.usleep(1e5)
 --	local now = camera:get_param(name)
-	assert(ok, string.format('Failed to set %s: from %d to %d', name, before, value))
+	if not ok then
+		print(string.format('Failed to set %s: from %d to %d', name, before, value))
+	end
 end
 -- Set the params
 for i, param in ipairs(metadata.param) do

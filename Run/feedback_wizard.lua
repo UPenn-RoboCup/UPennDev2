@@ -26,6 +26,7 @@ local hz_outdoor_send = 4
 local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
+local ittybitty_ch = si.new_subscriber(Config.streams.ittybitty.sub)
 
 local feedback_udp_ch
 local feedback_ch
@@ -68,6 +69,10 @@ local function entry()
 		Config.net.operator.wired,
 		Config.net.streams.feedback.udp
 		)
+		ittybitty_udp_ch = si.new_sender(
+		Config.net.operator.wired,
+		Config.net.streams.ittybitty.udp
+		)
 		--[[
 		if IS_COMPETING then
 			ping_ch = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
@@ -80,11 +85,11 @@ end
 local msg
 local e = {}
 local count = 0
-local pillars
+local pillars, ittybitty
 local function update()
 	local t_update = get_time()
 
-	local msg, p
+	local p
 	repeat
 		msg = pillar_ch:receive(true)
 		if msg then
@@ -94,6 +99,13 @@ local function update()
 		end
 	until not msg
 	if p then pillars = p end
+
+	local y
+	repeat
+		msg = ittybitty_ch:receive(true)
+		if msg then y = msg[#msg] end
+	until not msg
+	if y then ittybitty = y end
 
 	--[[
 	local is_indoors = hcm.get_network_indoors()==1

@@ -9,11 +9,11 @@ local unzlib = require'zlib.ffi'.uncompress
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
 local function procMP(data)
-	if not type(data)=='table' then return end
+	if type(data)~='string' then return end
 	local ok, tbl, offset = pcall(munpack, data)
 	if not ok then return end
-	if not type(tbl)=='table' then return end
-	if not type(offset)=='number' then return end
+	if type(tbl)~='table' then return end
+	if type(offset)~='number' then return end
 	if offset==#data then
 		return mpack(tbl)
 	else

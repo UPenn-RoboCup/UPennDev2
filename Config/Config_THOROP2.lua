@@ -60,7 +60,7 @@ if IS_WEBOTS then
 		Config.raise_body = true
 
 
-		Config.piecewise_step = true
+--		Config.piecewise_step = true
 
 --		Config.use_gps_pose=true
 --		Config.debug.world=true

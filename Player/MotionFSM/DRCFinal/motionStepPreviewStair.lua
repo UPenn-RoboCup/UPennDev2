@@ -214,10 +214,10 @@ function walk.update()
     local lowerVelMax = 0.40
     local lowerVelDS = 0.40
 
+
+    local lowerVelMax = 0.80
+    local lowerVelDS = 0.80
     local leg_raise = 0
-    
-
-
 
 
     if Config.raise_body then

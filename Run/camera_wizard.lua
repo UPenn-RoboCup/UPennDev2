@@ -106,8 +106,8 @@ local dt_indoor_send = 1/hz_indoor_send
 local t_buffer = -math.huge
 local t_send = -math.huge
 local function check_send(msg)
-	local is_indoors = hcm.get_network_indoors()==1
-	local is_outdoors = not is_indoors
+	local is_outdoor = hcm.get_network_indoors()==0
+	local is_indoors = not is_outdoors
 	local t = Body.get_time()
 
 	-- Check the buffer

@@ -31,8 +31,8 @@ local hz_indoor_send = 4
 local dt_indoor_send = 1/hz_indoor_send
 
 local function check_send_mesh()
-	local is_indoors = hcm.get_network_indoors()==1
-	local is_outdoors = not is_indoors
+	local is_outdoors = hcm.get_network_indoors()==0
+	local is_indoors = not is_outdoors
 	--
 	local t = Body.get_time()
 	local dt_send0 = t - t_send
@@ -239,9 +239,6 @@ entry()
 --poller:start()
 while running do
 	npoll = poller:poll(TIMEOUT)
-	local t = Body.get_time()
-	local is_open = hcm.get_network_open()
-		local is_indoors = hcm.get_network_indoors()
-		check_send_mesh()
+	check_send_mesh()
 end
 exit()

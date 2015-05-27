@@ -158,7 +158,7 @@ while running do
 	-- Read Values --
 	-----------------
 	t = do_read()
-    dcm.set_sensor_imu_t(t) --set last imu update time to shm
+  dcm.set_sensor_imu_t(t) --set last imu update time to shm
 
 	--------------------
 	-- Periodic Debug --

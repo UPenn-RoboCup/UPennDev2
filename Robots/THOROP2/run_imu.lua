@@ -158,6 +158,8 @@ while running do
 	-- Read Values --
 	-----------------
 	t = do_read()
+    dcm.set_sensor_imu_t(t) --set last imu update time to shm
+
 	--------------------
 	-- Periodic Debug --
 	--------------------
@@ -171,7 +173,6 @@ while running do
     local gyro = dcm.get_sensor_gyro()
     local mag = dcm.get_sensor_magnetometer()
     local rpy = dcm.get_sensor_rpy()
-    dcm.set_sensor_imu_t(t) --set last imu update time to shm
 
 		local debug_str = {
 			sformat('\nIMU | Uptime %.2f sec, Mem: %d kB, %.1fHz', t-t0, kb, fps),

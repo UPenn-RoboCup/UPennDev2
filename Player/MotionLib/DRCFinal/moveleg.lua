@@ -183,10 +183,15 @@ function moveleg.update_sensory_feedback()
   local rpy = Body.get_rpy()
   local gyro, gyro_t = Body.get_gyro()
   local imu={rpy[1],rpy[2],rpy[3], gyro[1],gyro[2],gyro[3]}
+
+  if (t-imu_t)>1.0 or (t-imu_t0<2.0) then
+    --imu data is old or it is just initialized, ignore gyro data
+    imu[4],imu[5],imu[6]=0,0,0
+  end
   mcm.set_status_IMU(imu)
 
-  print(string.format("IMU T0:%f sec ago T:%f sec ago",
-    t-imu_t0, t-imu_t ))
+--  print(string.format("IMU T0:%f sec ago T:%f sec ago",
+--    t-imu_t0, t-imu_t ))
 
   --Filter FT sensor values with moving average
   lf_queue[queue_count] = math.sqrt(ft.lf_z^2+ft.lf_y^2+ft.lf_x^2)

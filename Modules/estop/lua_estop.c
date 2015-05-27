@@ -13,16 +13,27 @@
 
 #define MT_NAME "estop_mt"
 
-static int lua_estop_init(lua_State *L) {
 
+
+static int lua_estop_index(lua_State *L) {
+  /* Get index through metatable: */
+  if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} /* push metatable */
+  lua_pushvalue(L, 2); /* copy key */
+  lua_rawget(L, -2); /* get metatable function */
+  lua_remove(L, -2); /* delete metatable */
+  return 1;
+}
+
+static int lua_estop_delete(lua_State *L) { 
+  estop_shutdown();
+  return 1;
+}
+
+static int lua_estop_init(lua_State *L) {
   estop_init();
   return 1;
 }
 
-static int lua_estop_close(lua_State *L) { 
-  estop_shutdown();
-  return 1;
-}
 
 static int lua_estop_update(lua_State *L) {
   estop_update();
@@ -33,19 +44,16 @@ static int lua_estop_update(lua_State *L) {
 static const struct luaL_reg estop_functions [] = {
   {"init", lua_estop_init},
   {"update", lua_estop_update},
-  {"close", lua_estop_close},
   {NULL, NULL}
 };
 
 static const struct luaL_reg estop_methods [] = {
   //{"get_raw", lua_spnav_get_raw},
   //{"get", lua_spnav_get},
-  {"__gc", lua_estop_close},
+  {"__gc", lua_estop_delete},  
+  {"__index", lua_estop_index},
   {NULL, NULL}
 };
-
-
-
 
 int luaopen_estop(lua_State *L) {
   luaL_newmetatable(L, MT_NAME);

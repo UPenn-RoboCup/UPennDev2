@@ -26,6 +26,7 @@ Config.debug = {
 
 --BIRDWALK DEFAULT FOR CHIP
 Config.birdwalk = 1 --testing birdwalk		
+Config.raise_body = true
 
 
 
@@ -59,7 +60,6 @@ if IS_WEBOTS then
 		Config.enable_jacobian_test = false
 		Config.enable_jacobian_test = true
 		Config.enable_touchdown = false
-		Config.raise_body = false
 
 		Config.raise_body = true
 

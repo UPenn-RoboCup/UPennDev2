@@ -160,6 +160,9 @@ end
 
   leg_lowered=false
 
+zRightOld = 0
+zLeftOld = 0
+
 end
 
 function walk.update()
@@ -217,6 +220,14 @@ function walk.update()
     local leg_raise = 0
 
 
+
+    local lowerVelMax = 0.50
+    local lowerVelDS = 0.50
+
+
+
+
+
     if Config.raise_body then
       if zLeft<0 or zRight<0 then
          leg_raise = math.min(zLeft,zRight)
@@ -263,6 +274,18 @@ function walk.update()
       mcm.set_status_zLeg0(zLeg0)
       zLeft = zLeg0[1]      
       zRight = zRight +zLeg0[2]
+
+
+      local z_vel = ((zRight-zRightOld) - (zLeft-zLeftOld)) /t_diff
+
+--      print("foot z vel:",z_vel )
+-- Max  Z lowering speed: 0.53 (at the peak)
+
+
+
+      zLeftOld = zLeft
+      zRightOld = zRight
+
 
       local aShiftY = {aShiftY0[1],liftp*aShiftY0[2] + (landp)*zpr_target[2]}
       local aShiftX = {aShiftX0[1],liftp*aShiftX0[2] + (landp)*zpr_target[3]}

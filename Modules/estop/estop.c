@@ -191,27 +191,39 @@ void estop_init(){
 	// Catch CTRL-C 
 	signal(SIGINT, signal_handler);
 
-	// Open VSC Interface 
-	vscInterface = vsc_initialize("/dev/ttyACM0","115200");
 
+	// Open VSC Interface 
+	vscInterface = vsc_initialize("/dev/ttyACM0",115200);
 
 	if (vscInterface == NULL) {
 		printf("Opening VSC Interface failed.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	/* Initialize the input set */
+	printf("VSC Interface opened.\n");
+
+	// Initialize the input set 
 	vsc_fd = vsc_get_fd(vscInterface);
 	FD_ZERO(&input);
 	FD_SET(vsc_fd, &input);
 	max_fd = vsc_fd + 1;
 
-	/* Reset timing values to the current time */
+	// Reset timing values to the current time 
 	clock_gettime(CLOCK_REALTIME, &lastSent);
 	clock_gettime(CLOCK_REALTIME, &lastReceived);
 
-	/* Send Heartbeat Message to VSC */
+	// Send Heartbeat Message to VSC 
 	vsc_send_heartbeat(vscInterface, ESTOP_STATUS_NOT_SET);
+
+
+/*
+
+//TESTING CODE (as lua wrapping is still buggy)
+	while (1) {
+		estop_update();
+	}
+	estop_shutdown();
+	*/
 }
 
 

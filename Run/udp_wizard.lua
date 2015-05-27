@@ -4,6 +4,7 @@ local Config = require'Config'
 local si = require'simple_ipc'
 local util = require'util'
 local unzlib = require'zlib'.inflate()
+local unzlib = require'zlib.ffi'.uncompress
 
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
@@ -26,7 +27,9 @@ local function procRaw(data)
 end
 
 local function procZlib(c_data)
+	print(#c_data)
 	local data = unzlib(c_data)
+	if not data then return end
 	return procMP(data)
 end
 

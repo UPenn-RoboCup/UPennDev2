@@ -106,11 +106,11 @@ local ucla_param = {
 -- Cameras
 local camera = {}
 camera[1] = {
-	name = 'wrist',
-	dev = '/dev/video0',
+	name = 'head',
+	dev = '/dev/video-head',
 	format = 'yuyv',
 	w = 640,
-	h = 480,
+	h = 360,
 	fps = 30,
 	jpeg_quality = 60,
 	mountOffset = {
@@ -146,11 +146,11 @@ camera[1] = {
 }
 
 camera[2] = {
-	name = 'head',
-	dev = '/dev/video1',
+	name = 'wrist',
+	dev = '/dev/video-wrist',
 	format = 'yuyv',
 	w = 640,
-	h = 360,
+	h = 480,
 	fps = 30,
 	jpeg_quality = 60,
 	auto_param = {

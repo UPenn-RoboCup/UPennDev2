@@ -4,7 +4,7 @@ local T = require'Transform'
 
 ------------------------------------
 -- For the arm FSM
--- Weights: cusage, cdiff, ctight
+-- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 local arm = {}
 
 -- This comes after the walkInit
@@ -62,9 +62,37 @@ arm.door[1] = {
 	}
 }
 
+arm.drill = {}
 
+arm.drill[1] = {
+	left = false,
+	right = {
+		timeout=15,
+		via='jacobian_preplan',
+		tr={0.45, -0.2, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		weights = {0,1,-1,0,0},
+	}
+}
 
+arm.drill[2] = {
+	left = false,
+	right = {
+		timeout=15,
+		via='jacobian_preplan',
+		tr={0.55, -0.4, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		weights = {0,0,-1,1,0},
+	}
+}
 
+arm.drill[3] = {
+	left = false,
+	right = {
+		timeout=15,
+		via='jacobian_preplan',
+		tr={0.45, -0.4, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		weights = {0,0,-1,1,0},
+	}
+}
 
 
 

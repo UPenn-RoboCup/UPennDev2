@@ -49,15 +49,24 @@ local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 	local qMin, qMax, qRange =
 		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
 
+	for i, v in ipairs(qRange) do
+		-- infinte rotation
+		if v == math.pi*2 then
+			qMin[i] = -2 * math.pi
+			qMax[i] = 2 * math.pi
+			qRange[i] = 4 * math.pi
+		end
+	end
+
 	assert(type(qArm)=='table', 'get_delta_qwaistarm | Bad qArm')
 	assert(type(vwTarget)=='table', 'get_delta_qwaistarm | Bad vwTarget')
 
 	local qWaistArm = {unpack(qArm)}
 	if qWaist then
-		table.insert(qWaistArm, 1, qWaist[1])
-		table.insert(qMin, 1, -math.pi)
-		table.insert(qMax, 1, math.pi)
-		table.insert(qRange, 1, 2*math.pi)
+		tinsert(qWaistArm, 1, qWaist[1])
+		tinsert(qMin, 1, -45*DEG_TO_RAD)
+		tinsert(qMax, 1, 45*DEG_TO_RAD)
+		tinsert(qRange, 1, 90*DEG_TO_RAD)
 	end
 
 	local l = {}

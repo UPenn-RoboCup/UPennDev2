@@ -53,8 +53,8 @@ local function update(key_code)
 		lright[4]=0
 	elseif key_char_lower==("l") then  lright[2]=lright[2]-0.01
 	elseif key_char_lower==(",") then  lright[1]=lright[1]-0.01
-	elseif key_char_lower==("u") then  lright[4]=lright[4]+0.01
-	elseif key_char_lower==("m") then  lright[4]=lright[4]-0.01
+	elseif key_char_lower==("u") then  lright[4]=lright[4]+0.005
+	elseif key_char_lower==("m") then  lright[4]=lright[4]-0.005
 
 	elseif key_char_lower==("w") then  lleft[1]=lleft[1]+0.01
 	elseif key_char_lower==("a") then  lleft[2]=lleft[2]+0.01
@@ -62,8 +62,8 @@ local function update(key_code)
 		lleft[4]=0
 	elseif key_char_lower==("d") then  lleft[2]=lleft[2]-0.01
 	elseif key_char_lower==("x") then  lleft[1]=lleft[1]-0.01
-	elseif key_char_lower==("q") then  lleft[4]=lleft[4]+0.01
-	elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.01
+	elseif key_char_lower==("q") then  lleft[4]=lleft[4]+0.005
+	elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.005
 
 
 	elseif key_char_lower==("t") then  

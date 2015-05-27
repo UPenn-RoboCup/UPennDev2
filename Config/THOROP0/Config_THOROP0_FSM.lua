@@ -54,9 +54,9 @@ fsm.Arm = {
 
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
-	{'armManipulation', 'pulldoor', 'armPullDoor'},
 	{'armManipulation', 'teleop', 'armTeleop'},
 	{'armManipulation', 'teleopraw', 'armTeleopRaw'},
+	{'armManipulation', 'drill', 'armDrill'},
 
 	-- Teleop for manipulation if needed
 	{'armTeleop', 'init', 'armInitWalk'},
@@ -69,12 +69,21 @@ fsm.Arm = {
 	{'armTeleopRaw', 'ready', 'armManipulation'},
 	{'armTeleopRaw', 'init', 'armInitWalk'},
 
+	-- Drill positioning
+	{'armDrill', 'done', 'armTeleop'},
+	{'armDrill', 'ready', 'armManipulation'},
+	{'armDrill', 'drill', 'armDrill'},
+	{'armDrill', 'teleop', 'armTeleop'},
+	{'armDrill', 'teleopraw', 'armTeleopRaw'},
+
 	-- armPullDoor
+	--[[
 	{'armPullDoor', 'done', 'armTeleop'},
 	{'armPullDoor', 'ready', 'armManipulation'},
 	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 	{'armPullDoor', 'teleop', 'armTeleop'},
 	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
+	--]]
 
 	--Old teleop code
 	----[[

@@ -471,7 +471,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	repeat
 		-- Check if we are close enough
 		local dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
-		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
+		if dist_components[1] < 0.02 and dist_components[2] < 3*RAD_TO_DEG then
 			break
 		end
 		-- Form our desired velocity
@@ -535,7 +535,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		q = qArmF1,
 		qArm0 = qArmF,
 		qWaist0 = qWaist0,
-		duration = 2
+		duration = 1
 	})
 end
 

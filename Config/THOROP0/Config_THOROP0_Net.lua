@@ -66,9 +66,19 @@ net.rpc = {
 	uds = 'rpc',
 }
 streams.feedback = {
-	ws = 9013,
+	ws = 9002,
 	udp = 2002,
 	sub = 'feedback'
+}
+streams.ittybitty0 = {
+	ws = 9070,
+	udp = 2030,
+	sub = 'ittybitty0'
+}
+streams.ittybitty1 = {
+	ws = 9071,
+	udp = 2031,
+	sub = 'ittybitty1'
 }
 -- Lossy Link
 streams.camera0 = {

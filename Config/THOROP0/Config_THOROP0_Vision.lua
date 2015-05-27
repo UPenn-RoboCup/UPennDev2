@@ -85,11 +85,31 @@ local m308_param = {
 local grasp_afternoon_param = {
 	{'White Balance Temperature', 3300},
 	{'Exposure (Absolute)', 170},
-	{'Focus (absolute)', 0},
+	{'Focus', 0},
 	{'Brightness', 128},
 	{'Contrast', 128},
 	{'Saturation', 150},
 	{'Gain', 66},
+	{'Sharpness', 0},
+}
+local ucla_head_param = {
+	--{'White Balance Temperature', 2300},
+	--{'Exposure (Absolute)', 112},
+	--{'Focus (absolute)', 120},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 128},
+	{'Gain', 0},
+	{'Sharpness', 0},
+}
+local ucla_wrist_param = {
+	--{'White Balance Temperature', 2300},
+	--{'Exposure (Absolute)', 112},
+	--{'Focus', 120},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 128},
+	{'Gain', 0},
 	{'Sharpness', 0},
 }
 
@@ -97,11 +117,11 @@ local grasp_afternoon_param = {
 local camera = {}
 camera[1] = {
 	name = 'head',
-	dev = '/dev/video0',
+	dev = '/dev/video-headcamera',
 	format = 'yuyv',
 	w = 640,
-	h = 360, --480,
-	fps = 30,
+	h = 360,
+	fps = 15,
 	jpeg_quality = 60,
 	mountOffset = {
 		-- cameraRoll, cameraPitch, cameraYaw
@@ -126,31 +146,31 @@ camera[1] = {
 	focal_length = 395.17,
 	focal_base = 640,
 	auto_param = {
-		--      {'Exposure, Auto', 1},
-		{'White Balance Temperature, Auto', 0},
+		{'Exposure, Auto', 1},
+		{'White Balance Temperature, Auto', 1},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 0},
---		{'Focus, Auto', 0}
+		{'Exposure, Auto Priority', 1},
+		--{'Focus, Auto', 0}
 	},
-	param = m308_param,
+	param = ucla_head_param,
 }
 
 camera[2] = {
-	name = 'waist',
-	dev = '/dev/video1',
+	name = 'wrist',
+	dev = '/dev/video-wristcamera',
 	format = 'yuyv',
-	w = 640,
-	h = 360,
-	fps = 30,
-	jpeg_quality = 60,
+	w = 320,
+	h = 240,
+	fps = 15,
+	jpeg_quality = 50,
 	auto_param = {
-		-- {'Exposure, Auto', 1},
-		{'White Balance Temperature, Auto', 0},
+		{'Exposure, Auto', 1},
+		{'White Balance Temperature, Auto', 1},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 0},
-		{'Focus, Auto', 0}
+		{'Exposure, Auto Priority', 1},
+		--{'Focus, Auto', 0}
 	},
-	param = m308_param,
+	param = ucla_wrist_param,
 }
 
 local kinect = {

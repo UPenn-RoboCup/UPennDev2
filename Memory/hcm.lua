@@ -21,6 +21,7 @@ shared_data.network = {
 	open = zeros(1),
 	topen = zeros(1),
 	indoors = zeros(1), -- 0: outdoors, 1: indoors
+	baud = {9600}, -- 2400, 4800 are options
 }
 
 shared_data.teleop = {

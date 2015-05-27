@@ -9,11 +9,11 @@ local unzlib = require'zlib.ffi'.uncompress
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
 local function procMP(data)
-	if not type(data)=='table' then return end
+	if type(data)~='string' then return end
 	local ok, tbl, offset = pcall(munpack, data)
 	if not ok then return end
-	if not type(tbl)=='table' then return end
-	if not type(offset)=='number' then return end
+	if type(tbl)~='table' then return end
+	if type(offset)~='number' then return end
 	if offset==#data then
 		return mpack(tbl)
 	else
@@ -22,8 +22,9 @@ local function procMP(data)
 end
 
 local function procRaw(data)
-	--print('data',data, #data)
-	return data
+	--print('data', #data)
+	--return data
+	return {mpack({c='jpeg'}), data}
 end
 
 local function procZlib(c_data)
@@ -65,6 +66,8 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(out_channels, s)
 		if key=='feedback' and false then
 			table.insert(ch_processing, procZlib)
+		elseif key:find'ittybitty' then
+			table.insert(ch_processing, procRaw)
 		else
 			table.insert(ch_processing, procMP)
 		end

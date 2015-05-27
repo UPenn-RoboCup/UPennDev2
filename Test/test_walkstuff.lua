@@ -63,7 +63,7 @@ local stair_height = 0.225
 		body_ch:send'init'
 
 elseif key_char_lower==("3") then      
-		hcm.set_step_supportLeg(1)		
+		hcm.set_step_supportLeg(0)	--move lfoot
 --		hcm.set_step_relpos({0.35,0,0})
 		--hcm.set_step_relpos({0.0,0,0})
 		
@@ -76,7 +76,7 @@ elseif key_char_lower==("3") then
 		body_ch:send'stepover1'		
 
 elseif key_char_lower==("4") then      
-		hcm.set_step_supportLeg(0)
+		hcm.set_step_supportLeg(1) --move rfoot
 		
 --		hcm.set_step_relpos({0.35,0,0})
 		--hcm.set_step_relpos({0.0,0,0})
@@ -88,73 +88,55 @@ elseif key_char_lower==("4") then
 		
 		body_ch:send'stepover1'		
 
+elseif key_char_lower==("5") then 
+		hcm.set_step_supportLeg(0) --move lfoot
+		hcm.set_step_relpos({-0.30,0,0})
+		hcm.set_step_zpr({-stair_height,0,0}) --stair
+		body_ch:send'stepover1'		
+	elseif key_char_lower==("6") then 
+		hcm.set_step_supportLeg(1) --move rfoot
+		hcm.set_step_relpos({-0.30,0,0})
+		hcm.set_step_zpr({-stair_height,0,0}) --stair
+		body_ch:send'stepover1'		
 
-elseif key_char_lower==("t") then      
-		hcm.set_step_supportLeg(1)		
+
+elseif key_char_lower==("q") then      
+		hcm.set_step_supportLeg(0)		
 --		hcm.set_step_relpos({0.35,0,0})
 		--hcm.set_step_relpos({0.0,0,0})
 		
 		hcm.set_step_zpr({0,0,0})
-		hcm.set_step_relpos({0.40,0,0})
-
-		
-		hcm.set_step_zpr({stair_height,0,0}) --stair
-		
+		hcm.set_step_relpos({0.35,0,0})		
+		hcm.set_step_zpr({stair_height,0,0}) --stair		
 		body_ch:send'stepover1'		
 
-elseif key_char_lower==("y") then      
-		hcm.set_step_supportLeg(0)
+elseif key_char_lower==("w") then      
+		hcm.set_step_supportLeg(1)
 		
 --		hcm.set_step_relpos({0.35,0,0})
 		--hcm.set_step_relpos({0.0,0,0})
 		hcm.set_step_zpr({0.00,0,0})
-
-		hcm.set_step_relpos({0.40,0,0})
-
-		hcm.set_step_zpr({stair_height,0,0}) --stair
-		
+		hcm.set_step_relpos({0.35,0,0})
+		hcm.set_step_zpr({stair_height,0,0}) --stair		
 		body_ch:send'stepover1'		
 
 
 
-	elseif key_char_lower==("5") then 
-	--[[     
-		hcm.set_step_supportLeg(1)
+	elseif key_char_lower==("t") then 
+		hcm.set_step_supportLeg(0)
 		hcm.set_step_relpos({0.16,0,0})
---		hcm.set_step_relpos({-0.28,0,0})
 		hcm.set_step_zpr({0.00,0,0})
 		body_ch:send'stepflat'		
---]]
 
-		hcm.set_step_supportLeg(0)
-		
---		hcm.set_step_relpos({0.35,0,0})
-		--hcm.set_step_relpos({0.0,0,0})
-		hcm.set_step_zpr({0.00,0,0})
-		hcm.set_step_relpos({-0.30,0,0})
-		hcm.set_step_zpr({-stair_height,0,0}) --stair
-		body_ch:send'stepover1'		
-
-
-	elseif key_char_lower==("6") then      
---[[
-
-		hcm.set_step_supportLeg(0)
+	elseif key_char_lower==("y") then      
+		hcm.set_step_supportLeg(1)
 		hcm.set_step_relpos({0.16,0,0})
 		hcm.set_step_zpr({0.00,0,0})
 		body_ch:send'stepflat'
---]]
-
-		hcm.set_step_supportLeg(1)
-		
---		hcm.set_step_relpos({0.35,0,0})
-		--hcm.set_step_relpos({0.0,0,0})
-		hcm.set_step_zpr({0.00,0,0})
-		hcm.set_step_relpos({-0.30,0,0})
-		hcm.set_step_zpr({-stair_height,0,0}) --stair
-		body_ch:send'stepover1'		
 
 
+
+	
 
 	elseif key_char_lower==("=") then      
 		hcm.set_state_proceed(1)

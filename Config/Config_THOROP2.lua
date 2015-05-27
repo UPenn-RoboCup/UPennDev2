@@ -29,6 +29,10 @@ Config.birdwalk = 1 --testing birdwalk
 
 
 
+--Config.stepup_delay = true
+Config.use_exact_tZMP = true
+
+
 -- Tune for Webots
 if IS_WEBOTS then
 	if IS_STEVE then

@@ -64,6 +64,7 @@ end
 ---------------------------
 function walk.entry()
   print(walk._NAME..' Entry' )
+  mcm.set_status_stabilization_mode(0) --We're in single support
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()

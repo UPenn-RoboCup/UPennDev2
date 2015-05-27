@@ -199,12 +199,12 @@ shared.status.leftSupportRatio = vector.ones(1)*0.5
 shared.status.lleg_torque = vector.zeros(6)
 shared.status.rleg_torque = vector.zeros(6)
 
+--stabilization mode: SS (0) / DS (1) / Load (2)
+shared.status.stabilization_mode = vector.zeros(1)
+shared.status.temp_tZMP = vector.zeros(1)
 
---If we are kneeling, we don't need quasistatic balancing
-shared.status.iskneeling    = vector.zeros(1)
 
---If we are in wide stance, we don't use lateral quasistatic balancing 
-shared.status.iswidestance    = vector.zeros(1)
+
 
 --Current time
 shared.status.t = vector.zeros(1)

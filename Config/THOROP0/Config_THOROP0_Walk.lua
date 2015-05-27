@@ -114,67 +114,40 @@ if IS_WEBOTS then
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.delay_factor = {0.8,1.7}
   walk.velLimitX = {-.10,.20}
-
-  walk.tZMP = 0.30 --has much lower com?
-
-
---  walk.tZMP = 0.35 --has much lower com?
-
+  walk.tZMP = 0.32 
   walk.tStep = .80
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
-
-
   walk.stepHeight = 0.06 --higher stepheight for webots
---[[
-  --diable IMU feedback
-  walk.ankleImuParamX={0, 0.9*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
-  walk.kneeImuParamX= {0, -0.3*gyroFactorX,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
-  walk.ankleImuParamY={0, 1.0*gyroFactorY,  1*DEG_TO_RAD, 5*DEG_TO_RAD}
-  walk.hipImuParamY  ={0, 0.5*gyroFactorY,  2*DEG_TO_RAD, 5*DEG_TO_RAD}
---]]
-
 else
   walk.dShift = {30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD}
   walk.hipRollCompensation = 1.5*DEG_TO_RAD
   walk.ankleRollCompensation = 0*DEG_TO_RAD  
   walk.hipRollCompensation = 2*DEG_TO_RAD
   walk.footSagCompensation = {0.0,0.0}
-
   walk.kneePitchCompensation = 0*DEG_TO_RAD
 
-  walk.velLimitX = {-.10,.10}
+  walk.velLimitX = {-.10,.20}
   walk.velLimitY = {-.06,.06}
   walk.torsoX = 0.0     -- com-to-body-center offset
 --  walk.delay_threshold_angle = 2.5*math.pi/180
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.delay_factor = {0.8,1.7}
 
-  walk.tZMP = 0.30 --has much lower com?  
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
 
-
 --chipette
-  Config.supportY_preview = 0.02 --this smooths out first step a bit
-
---
   Config.supportY_preview = 0.01 --this smooths out first step a bit
   walk.supportY = 0.01
   walk.tZMP = 0.32 
+
 --mk2 pelvis width:0.210
   walk.stanceLimitY = {0.16,0.30}
   walk.stanceLimitY = {0.18,0.30}
-
-
-  walk.tStep = .80
-  Config.supportY_preview = 0.01 --this smooths out first step a bit
---  walk.stepHeight = 0.04 
-
---  walk.stepHeight = 0.05 
-  walk.velLimitX = {-.10,.20}
+  walk.tStep = .80  
+  
   Config.supportY_preview = 0.00 --this smooths out first step a bit
-
 end
 
 if HOSTNAME=="teddy2" or HOSTNAME=="dale" then --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
@@ -185,6 +158,11 @@ if HOSTNAME=="teddy2" or HOSTNAME=="dale" then --or Config.PLATFORM_NAME == "THO
   walk.supportY = -0.01 
   walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
 end
+
+
+
+--hack to test invariance
+walk.supportY = 0.20
 
 --testing
 --walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD

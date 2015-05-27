@@ -548,7 +548,6 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
     uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
     0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
-
   local qLLegCurrent = Body.get_lleg_command_position()
   local qRLegCurrent = Body.get_rleg_command_position()
 

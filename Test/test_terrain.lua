@@ -64,39 +64,28 @@ local stair_height = 0.225
 
 elseif key_char_lower==("3") then      
 		hcm.set_step_supportLeg(0)	--move lfoot
---		hcm.set_step_relpos({0.35,0,0})
-		--hcm.set_step_relpos({0.0,0,0})
-		
-		hcm.set_step_zpr({0,0,0})
-		hcm.set_step_relpos({0.30,0,0})
-
-		
-		hcm.set_step_zpr({stair_height,0,0}) --stair
-		
+		hcm.set_step_relpos({0.40,0.02,0})
+		hcm.set_step_zpr({0.20,-0.26179938779915 ,0})	
 		body_ch:send'stepover1'		
-
 elseif key_char_lower==("4") then      
 		hcm.set_step_supportLeg(1) --move rfoot
-		
---		hcm.set_step_relpos({0.35,0,0})
-		--hcm.set_step_relpos({0.0,0,0})
-		hcm.set_step_zpr({0.00,0,0})
-
-		hcm.set_step_relpos({0.30,0,0})
-
-		hcm.set_step_zpr({stair_height,0,0}) --stair
-		
+		hcm.set_step_relpos({0.40,-0.02,0})
+		hcm.set_step_zpr({0.18,0, -0.26179938779915})		
 		body_ch:send'stepover1'		
 
-elseif key_char_lower==("5") then 
-		hcm.set_step_supportLeg(0) --move lfoot
-		hcm.set_step_relpos({-0.30,0,0})
-		hcm.set_step_zpr({-stair_height,0,0}) --stair
+
+
+
+
+elseif key_char_lower==("5") then      
+		hcm.set_step_supportLeg(0)	--move lfoot
+		hcm.set_step_relpos({0.40,0,0})
+		hcm.set_step_zpr({0,0, 0.26179938779915})		
 		body_ch:send'stepover1'		
-	elseif key_char_lower==("6") then 
+elseif key_char_lower==("6") then      
 		hcm.set_step_supportLeg(1) --move rfoot
-		hcm.set_step_relpos({-0.30,0,0})
-		hcm.set_step_zpr({-stair_height,0,0}) --stair
+		hcm.set_step_relpos({0.40,0,0})
+		hcm.set_step_zpr({0.05,-0.26179938779915 ,0})	
 		body_ch:send'stepover1'		
 
 

@@ -80,45 +80,50 @@ local aShiftX0={0,0}
 -- State machine methods --
 ---------------------------
 function walk.entry()
+  mcm.set_status_stabilization_mode(1) --We're in double support
   print(walk._NAME..' Entry' )
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
- 
   mcm.set_walk_vel({0,0,0})--reset target speed
-
   tStep = Config.walk.tStep
 
+
+if Config.use_exact_tZMP then
   -- Initiate the ZMP solver
   zmp_solver = libZMP.new_solver({
     ['tStep'] = Config.walk.tStep,
-    ['tZMP']  = Config.walk.tZMP,    
+    ['tZMP']  = mcm.get_status_temp_tZMP(),
   })
-  zmp_solver:precompute()
-
-  step_planner = libStep.new_planner()
+else
+  zmp_solver = libZMP.new_solver({
+    ['tStep'] = Config.walk.tStep,
+    ['tZMP']  = Config.walk.tZMP,
+  })
+end
+  
 
   
+  zmp_solver:precompute()
+  step_planner = libStep.new_planner()  
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, zLeft, zRight =
       step_planner:init_stance()
-
   zLeft0,zRight0 = zLeft,zRight
-
-  zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)
-  
+  zmp_solver:init_preview_queue(uLeft_now,uRight_now, uTorso_now, Body.get_time(), step_planner)  
   iStep = 1   -- Initialize the step index  
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
   mcm.set_walk_ismoving(1) --We started moving
-  --Reset odometry varialbe
+  mcm.set_status_stabilization_mode(2) --we're climbing stairs!
+  --Reset odometry varialbe 
+  --WHY ????????
   init_odometry(uTorso_now)  
 
   roll_max = 0
   touched = false
 
 --print("Init Y:",uLeft_now[2],uTorso_now[2],uRight_now[2])
-
 
   --SHM BASED
   local nFootHolds = mcm.get_step_nfootholds()
@@ -192,46 +197,28 @@ function walk.update()
     local uTorso = {com_pos[1],com_pos[2],0}
     uTorso[3] = ph*(uLeft_next[3]+uRight_next[3])/2 + (1-ph)*(uLeft_now[3]+uRight_now[3])/2
 
-    --Calculate Leg poses 
-    local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
---    local uLeft, uRight = uLeft_now, uRight_now
+    --for square step with long duration, let traj function decide the initial/landing delay
+    local phSingle = ph
+    if Config.stepup_delay then
+      phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
+    end
+
     local uLeft, uRight = mcm.get_status_uLeft(), mcm.get_status_uRight()
-
     local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()
---    print("Z force:",l_ft[3],r_ft[3])    
-
     local zLeg0 = mcm.get_status_zLeg0()
     local zLeg = mcm.get_status_zLeg()
---    print('f:',l_ft[3],r_ft[3])
-
-
-
-    --local raiseVelMax = math.sin(phSingle*math.pi)*0.10
-
 
     local raiseVelMax = 0 --never raise body in SS
     local raiseVelDS = 0.10
     local lowerVelMax = 0.40
     local lowerVelDS = 0.40
-
-
     local lowerVelMax = 0.80
     local lowerVelDS = 0.80
     local leg_raise = 0
 
 
     if Config.raise_body then
-      if zLeft>0 and zRight>0 then
---[[        
-        --we are climbing, and left support foot is already on the block
-        leg_raise = math.min(zLeft,zRight)
-        if supportLeg == 2 or phSingle==1 then
-          leg_raise = math.min(leg_raise,raiseVelDS*t_diff)
-        else
-          leg_raise = math.min(leg_raise,raiseVelMax*t_diff)
-        end
---]]        
-      elseif zLeft<0 or zRight<0 then
+      if zLeft<0 or zRight<0 then
          leg_raise = math.min(zLeft,zRight)
          if supportLeg == 2 or phSingle==1 then
            leg_raise = math.max(leg_raise,-lowerVelDS*t_diff)
@@ -254,6 +241,9 @@ function walk.update()
       mcm.set_status_zLeg0({zLeft,zRight})
       aShiftY0=mcm.get_walk_aShiftY()
       aShiftX0=mcm.get_walk_aShiftX()
+
+
+
     elseif supportLeg == 0 then  -- Left support    
       local zpr_target = hcm.get_step_zpr()
       local wparam={walkParam[1],walkParam[2],walkParam[3]}
@@ -265,9 +255,6 @@ function walk.update()
         wparam[2] = wparam[2]+0.05
       end
 
-
-
-
       uRight,zRight,liftp, landp = foot_traj_func(
         phSingle,uRight_now,uRight_next,stepHeight,wparam, zLeg[2],r_ft[3],touched)
 
@@ -276,10 +263,13 @@ function walk.update()
       mcm.set_status_zLeg0(zLeg0)
       zLeft = zLeg0[1]      
       zRight = zRight +zLeg0[2]
+
       local aShiftY = {aShiftY0[1],liftp*aShiftY0[2] + (landp)*zpr_target[2]}
+      local aShiftX = {aShiftX0[1],liftp*aShiftX0[2] + (landp)*zpr_target[3]}
+  
+
+      mcm.set_walk_aShiftX(aShiftX)
       mcm.set_walk_aShiftY(aShiftY)
-
-
 
     elseif supportLeg==1 then    -- Right support    
       local zpr_target = hcm.get_step_zpr()
@@ -303,7 +293,11 @@ function walk.update()
       zRight = zLeg0[2]    
       zLeft = zLeft +zLeg0[1]
       local aShiftY = {liftp*aShiftY0[1] + landp*zpr_target[2],aShiftY0[2]}
+      local aShiftX = {liftp*aShiftX0[1] + landp*zpr_target[3],aShiftX0[2]}
+
+      mcm.set_walk_aShiftX(aShiftX)
       mcm.set_walk_aShiftY(aShiftY)
+
     end
 
     

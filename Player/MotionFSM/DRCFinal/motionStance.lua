@@ -120,6 +120,26 @@ function state.update()
   uTorso[1] = util.approachTol( uTorso[1],uTorsoTarget[1],vel_movement , t_diff )
   uTorso[2] = util.approachTol( uTorso[2],uTorsoTarget[2],vel_movement , t_diff )
 
+
+  --Raise body height when we are in double support
+  local z_min = math.min(zLeg[1],zLeg[2])
+  local lft = mcm.get_status_LFT()
+  local rft = mcm.get_status_RFT()
+  local support_threshold = 180
+  local raiseVelDS = 0.10
+  if z_min>0 and lft[1]>support_threshold and rft[1]>support_threshold then
+    leg_raise = math.min(z_min,raiseVelDS*t_diff)
+    zLeg[1] = zLeg[1] - leg_raise
+    zLeg[2] = zLeg[2] - leg_raise        
+  end  
+  mcm.set_status_zLeg(zLeg)
+  mcm.set_status_zLeg0(zLeg)
+
+  -------------------------------------------------------
+
+
+
+
   local enable_balance = hcm.get_legdebug_enable_balance()
   if enable_balance[1]+enable_balance[2]>0 then
     uLeftTarget[4] = zLeg[1]

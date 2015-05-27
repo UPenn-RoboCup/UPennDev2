@@ -205,30 +205,32 @@ function walk.update()
 --    print('f:',l_ft[3],r_ft[3])
 
 
-    local raiseVelMax = math.sin(phSingle*math.pi)*0.05
-    local raiseVelDS = 0.05
 
-    local raiseVelMax = math.sin(phSingle*math.pi)*0.10
+    --local raiseVelMax = math.sin(phSingle*math.pi)*0.10
+
+
+    local raiseVelMax = 0 --never raise body in SS
     local raiseVelDS = 0.10
-
     local lowerVelMax = 0.40
     local lowerVelDS = 0.40
 
-
-
-
-
     local leg_raise = 0
+    
+
+
+
+
     if Config.raise_body then
       if zLeft>0 and zRight>0 then
+--[[        
         --we are climbing, and left support foot is already on the block
-
         leg_raise = math.min(zLeft,zRight)
         if supportLeg == 2 or phSingle==1 then
           leg_raise = math.min(leg_raise,raiseVelDS*t_diff)
         else
           leg_raise = math.min(leg_raise,raiseVelMax*t_diff)
         end
+--]]        
       elseif zLeft<0 or zRight<0 then
          leg_raise = math.min(zLeft,zRight)
          if supportLeg == 2 or phSingle==1 then
@@ -239,10 +241,10 @@ function walk.update()
       end
     end
 
+
     if IS_WEBOTS then 
       if ended and math.abs(leg_raise)<0.001 then return "done" end        
     end
-
 
     if supportLeg == 2 or phSingle==1 then --Double support
       zLeg[1] = zLeg[1] - leg_raise

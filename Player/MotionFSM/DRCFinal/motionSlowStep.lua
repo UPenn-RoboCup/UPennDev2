@@ -204,13 +204,10 @@ function walk.update()
     local zLeg = mcm.get_status_zLeg()
 --    print('f:',l_ft[3],r_ft[3])
 
-
-    local raiseVelMax = math.sin(phSingle*math.pi)*0.05
-    local raiseVelDS = 0.05
-
     local raiseVelMax = math.sin(phSingle*math.pi)*0.10
-    local raiseVelDS = 0.10
 
+    local raiseVelMax = 0
+    local raiseVelDS = 0.10
     local lowerVelMax = 0.40
     local lowerVelDS = 0.40
 

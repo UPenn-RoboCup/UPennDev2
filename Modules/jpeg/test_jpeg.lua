@@ -4,6 +4,8 @@ local jpeg = require 'jpeg'
 local unix = require'unix'
 w = 320
 h = 240
+w = 128
+h = 128
 ch = 3;
 nbytes = w*h*ch;
 if webots then
@@ -43,7 +45,7 @@ c_rgb:quality(95)
 --os.exit()
 --print(jpeg.compress)
 --print(c_rgb.compress)
-for i=1,10 do
+--for i=1,10 do
 	t0=unix.time()
 	--img_jpeg = jpeg.compress( c_rgb,img:pointer(), w, h )
 	local ntimes = 100
@@ -54,7 +56,7 @@ for i=1,10 do
 	print(ntimes..' compressions average:', (t1-t0)/ntimes );
 	print(type(img_jpeg),'Compression Ratio:', #img_jpeg, #img_jpeg/nbytes )
 	unix.usleep(1e4)
-end
+--end
 
 unix.usleep(5e6)
 
@@ -64,10 +66,13 @@ n = f:write( img_jpeg )
 f:close()
 
 
-img_jpeg_crop = c_rgb:compress_crop( img:pointer(), w, h, 10, 20, 100, 100 )
+--img_jpeg_crop = c_rgb:compress_crop( img:pointer(), w, h, 10, 20, 100, 100 )
+--[[
+img_jpeg_crop = c_rgb:compress_crop( img:pointer(), w, h, w/4, w/4, 3/4*w, 3/4*h )
 f = io.open('img_crop.jpeg','w')
 n = f:write( img_jpeg_crop )
 f:close()
+--]]
 
 -- gray
 ch = 1;
@@ -83,11 +88,7 @@ print('Filling a '..w..' by '..h..' image',ch..' channels.')
 --end
 
 for k=1,nbytes,ch do
-  if k>nbytes/2 then
-    img[k] = 255;
-  else
-    img[k] = 0;
-  end
+	img[k] = 255*math.random();
 end
 
 print()
@@ -110,7 +111,10 @@ f = io.open('img_gray.jpeg','w')
 n = f:write( img_jpeg )
 f:close()
 
-img_jpeg_crop = c_gray:compress_crop( img:pointer(), w, h, 10, 20, 10, h )
+print('cropping...')
+
+
+img_jpeg_crop = c_gray:compress_crop( img:pointer(), w, h, w/4, h/4, 3/4*w, 3/4*h )
 f = io.open('img_gray_crop.jpeg','w')
 n = f:write( img_jpeg_crop )
 f:close()

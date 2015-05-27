@@ -237,8 +237,8 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 
 	// Start and stop for crop (put into C indices)
 	w0  = luaL_optint(L, 5, 1) - 1;
-  w_cropped  = luaL_checkint(L, 6);
-	h0  = luaL_optint(L, 7, 1) - 1;
+	h0  = luaL_optint(L, 6, 1) - 1;
+  w_cropped  = luaL_checkint(L, 7);
   h_cropped  = luaL_checkint(L, 8);
 	
 	if(h_cropped+h0>height||w_cropped+w0>width){
@@ -261,7 +261,7 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 	JSAMPLE* img_ptr = data;
 	
 	size_t remainder = 0;
-	if(ud->fmt==3){
+	if(ud->fmt==3 || ud->fmt==4){
 		// Safe cropping for YUYV (align to a pixel)
 		if (ud->subsample==2){
 			w0 -= (w0%4);
@@ -292,10 +292,15 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 	jpeg_start_compress(cinfo, TRUE);
 	
 	// YUYV is special
-	if(ud->fmt==3){
+	if(ud->fmt==3 || ud->fmt==4){
 		size_t img_stride = 2 * width * ud->subsample;
 		img_stride += remainder;
-		JSAMPLE* yuv_row = (JSAMPLE*)malloc( 3 * w * sizeof(JSAMPLE) );
+		JSAMPLE* yuv_row;
+		if(ud->fmt==3){
+			yuv_row = (JSAMPLE*)malloc( 3 * w * sizeof(JSAMPLE) );
+		} else {
+			yuv_row = (JSAMPLE*)malloc( w * sizeof(JSAMPLE) );
+		}
 		if(yuv_row==NULL){
 			return luaL_error(L,"Bad malloc of yuv_row");
 		}
@@ -320,10 +325,12 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 				//
 				*yuv_pixel = y0;
 				yuv_pixel++;
-				*yuv_pixel = u;
-				yuv_pixel++;
-				*yuv_pixel = v;
-				yuv_pixel++;
+				if(ud->fmt==3){
+					*yuv_pixel = u;
+					yuv_pixel++;
+					*yuv_pixel = v;
+					yuv_pixel++;
+				}
 				if (ud->subsample) {
 					// If subsampling, then we add only one pixel
 					i++;
@@ -331,10 +338,12 @@ static int lua_jpeg_compress_crop(lua_State *L) {
 					// Ignore this pixel if subsampling
 					*yuv_pixel = y1;
 					yuv_pixel++;
-					*yuv_pixel = u;
-					yuv_pixel++;
-					*yuv_pixel = v;
-					yuv_pixel++;
+					if(ud->fmt==3){
+						*yuv_pixel = u;
+						yuv_pixel++;
+						*yuv_pixel = v;
+						yuv_pixel++;
+					}
 					// 2 pixels
 					i+=2;
 				}
@@ -456,11 +465,16 @@ static int lua_jpeg_compress(lua_State *L) {
 	jpeg_start_compress(cinfo, TRUE);
 	
 	// YUYV is special
-	if(ud->fmt==3){
+	if(ud->fmt==3 || ud->fmt==4){
 		int w = cinfo->image_width;
 		int h = cinfo->image_height;
 		size_t img_stride = 2 * width * ud->subsample;
-		JSAMPLE* yuv_row = (JSAMPLE*)malloc( 3 * w * sizeof(JSAMPLE) );
+		JSAMPLE* yuv_row;
+		if(ud->fmt==3){
+			yuv_row = (JSAMPLE*)malloc( 3 * w * sizeof(JSAMPLE) );
+		} else {
+			yuv_row = (JSAMPLE*)malloc( w * sizeof(JSAMPLE) );
+		}
 		if(yuv_row==NULL){
 			return luaL_error(L,"Bad malloc of yuv_row");
 		}
@@ -485,23 +499,28 @@ static int lua_jpeg_compress(lua_State *L) {
 				//
 				*yuv_pixel = y0;
 				yuv_pixel++;
-				*yuv_pixel = u;
-				yuv_pixel++;
-				*yuv_pixel = v;
-				yuv_pixel++;
-				if (ud->subsample) {
-					// If subsampling, then we add only one pixel
-					i++;
-				} else {
-					// Ignore this pixel if subsampling
-					*yuv_pixel = y1;
-					yuv_pixel++;
+				if(ud->fmt==3){
 					*yuv_pixel = u;
 					yuv_pixel++;
 					*yuv_pixel = v;
 					yuv_pixel++;
+				}
+				if (ud->subsample) {
+					// If subsampling, then we add only one pixel
+					i++;
+				} else {
 					// 2 pixels
 					i+=2;
+					*yuv_pixel = y1;
+					yuv_pixel++;
+
+					if(ud->fmt==3){
+						*yuv_pixel = u;
+						yuv_pixel++;
+						*yuv_pixel = v;
+						yuv_pixel++;
+					}
+
 				}
 				
 #ifdef DEBUG
@@ -565,6 +584,11 @@ static int lua_jpeg_new_compressor(lua_State *L) {
 		cinfo->in_color_space = JCS_YCbCr;
 		cinfo->input_components = 3;
 		ud->fmt = 3;
+	} else if (strncmp(fmt, "y", 3) == 0){
+		// Use only the y channel
+		cinfo->in_color_space = JCS_GRAYSCALE;
+		cinfo->input_components = 1;
+		ud->fmt = 4;
 	} else {
 		return luaL_error(L, "Unsupported format.");
 	}
@@ -591,7 +615,7 @@ static int lua_jpeg_quality(lua_State *L) {
 
 static int lua_jpeg_downsampling(lua_State *L) {
   structJPEG *ud = lua_checkjpeg(L, 1);
-	if(ud->fmt!=3){
+	if(ud->fmt!=3 && ud->fmt!=4){
 		return luaL_error(L, "Only YUYV subsampling!");
 	}
   int dsample = luaL_checkint(L, 2);

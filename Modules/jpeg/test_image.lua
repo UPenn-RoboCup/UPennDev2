@@ -27,7 +27,8 @@ local yuyv_str = yuyv_file:read('*a')
 --	print(debug_rgb)
 --end
 ----[[
-local c_yuyv = jpeg.compressor('yuyv')
+--local c_yuyv = jpeg.compressor('yuyv')
+local c_yuyv = jpeg.compressor('y')
 c_yuyv:downsampling(0)
 t0=unix.time()
 for i=1,20 do c_yuyv:compress(yuyv_str, 640, 480) end
@@ -46,11 +47,20 @@ jpg_file:write(yuyv_jpg)
 jpg_file:close()
 
 
-c_yuyv:downsampling(0)
---c_yuyv:downsampling(1)
+
+--c_yuyv:downsampling(0)
+-- I have issues with this for some reason... in yuyv crop...
+
 --c_yuyv:downsampling(2)
-local yuyv_jpg_crop = c_yuyv:compress_crop(yuyv_str, 640, 480, 121, 321, 121, 240)
-print("ok2?",#yuyv_jpg_crop)
+--local yuyv_jpg_crop = c_yuyv:compress_crop(yuyv_str, 640, 480, 161, 121, 321, 240)
+
+-- Stays 1:1
+c_yuyv:downsampling(1)
+-- 240: w0, then div by 2 (downsample of 1) = w of 120 output
+-- 180: h0, then div by 2 (downsample of 1) = h of 90 output
+local yuyv_jpg_crop = c_yuyv:compress_crop(yuyv_str, 640, 480, 161, 121, 160, 120)
+
+print("ok2?",#yuyv_jpg_crop, 8*#yuyv_jpg_crop..' bits')
 local jpg_file = io.open('yuyv_crop.jpg', 'w');
 jpg_file:write(yuyv_jpg_crop)
 jpg_file:close()

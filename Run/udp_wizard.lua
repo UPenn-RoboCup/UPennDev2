@@ -8,8 +8,11 @@ local unzlib = require'zlib'.inflate()
 local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
 local function procMP(data)
-	local tbl, offset = munpack(data)
-	if not offset then return end
+	if not type(data)=='table' then return end
+	local ok, tbl, offset = pcall(munpack, data)
+	if not ok then return end
+	if not type(tbl)=='table' then return end
+	if not type(offset)=='number' then return end
 	if offset==#data then
 		return mpack(tbl)
 	else
@@ -58,7 +61,7 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(in_channels, r)
 		local s = si.new_publisher(stream.sub)
 		table.insert(out_channels, s)
-		if false and key=='feedback' then
+		if key=='feedback' then
 			table.insert(ch_processing, procZlib)
 		else
 			table.insert(ch_processing, procMP)

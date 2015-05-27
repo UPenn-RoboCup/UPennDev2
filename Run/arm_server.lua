@@ -9,7 +9,7 @@ local T = require'Transform'
 
 local function get_armplan(plan)
 	print('Received a plan')
-	local lco, rco = movearm.goto(unpack(plan))
+	local lco, rco = movearm.goto(plan.left, plan.right)
 	local wpath = {}
 	--
 	local lpath = {}

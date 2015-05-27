@@ -163,15 +163,13 @@ local function update(img, sz, cnt, t)
 	end
 
 	ittybitty_ch:send(ittybitty_img)
-	print('ittybitty_img', #ittybitty_img)
-
-
+	--print('ittybitty_img', #ittybitty_img)
+	--[[
 	c_meta.sz = #ittybitty_img
 	local msg = {mp.pack(c_meta), ittybitty_img}
---[[
+	--]]
 	c_meta.sz = #c_img
 	local msg = {mp.pack(c_meta), c_img}
-	--]]
 
 	check_send(msg)
 

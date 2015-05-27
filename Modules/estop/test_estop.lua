@@ -4,7 +4,10 @@
 local estop=require('estop')
 
 estop.init()
-estop.update()
+while true do
+  estop.update()  
+	unix.usleep(6e4)
+end
 estop.close()
 
 --[[

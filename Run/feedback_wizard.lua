@@ -26,9 +26,11 @@ local hz_outdoor_send = 4
 local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
-local ittybitty0_ch = si.new_subscriber(Config.streams.ittybitty0.sub)
-local ittybitty1_ch = si.new_subscriber(Config.streams.ittybitty1.sub)
-local pillars, ittybitty0, ittybitty1
+local ittybitty0_ch = si.new_subscriber(Config.net.streams.ittybitty0.sub)
+local ittybitty1_ch = si.new_subscriber(Config.net.streams.ittybitty1.sub)
+require'util'.ptable(ittybitty1_ch)
+local pillars
+local ittybitty0, ittybitty1
 
 local feedback_udp_ch
 local feedback_ch
@@ -103,19 +105,21 @@ local function update()
 	until not msg
 	if p then pillars = p end
 
-	local y
+	local y0
 	repeat
 		msg = ittybitty0_ch:receive(true)
-		if msg then y = msg[#msg] end
+		if msg then y0 = msg[#msg] end
 	until not msg
-	if y then ittybitty0 = y end
+	if y0 then ittybitty0 = y0 end
 
 	local y1
 	repeat
 		msg = ittybitty1_ch:receive(true)
-		if msg then y1 = msg[#msg] end
+		if msg then
+			y1 = msg[#msg]
+		end
 	until not msg
-	if y then ittybitty1 = y1 end
+	if y1 then ittybitty1 = y1 end
 
 	if t_update - t_feedback < dt_indoor_send then return end
 

@@ -218,17 +218,7 @@ function walk.update()
 
 
     if Config.raise_body then
-      if zLeft>0 and zRight>0 then
---[[        
-        --we are climbing, and left support foot is already on the block
-        leg_raise = math.min(zLeft,zRight)
-        if supportLeg == 2 or phSingle==1 then
-          leg_raise = math.min(leg_raise,raiseVelDS*t_diff)
-        else
-          leg_raise = math.min(leg_raise,raiseVelMax*t_diff)
-        end
---]]        
-      elseif zLeft<0 or zRight<0 then
+      if zLeft<0 or zRight<0 then
          leg_raise = math.min(zLeft,zRight)
          if supportLeg == 2 or phSingle==1 then
            leg_raise = math.max(leg_raise,-lowerVelDS*t_diff)
@@ -251,6 +241,9 @@ function walk.update()
       mcm.set_status_zLeg0({zLeft,zRight})
       aShiftY0=mcm.get_walk_aShiftY()
       aShiftX0=mcm.get_walk_aShiftX()
+
+
+
     elseif supportLeg == 0 then  -- Left support    
       local zpr_target = hcm.get_step_zpr()
       local wparam={walkParam[1],walkParam[2],walkParam[3]}
@@ -262,9 +255,6 @@ function walk.update()
         wparam[2] = wparam[2]+0.05
       end
 
-
-
-
       uRight,zRight,liftp, landp = foot_traj_func(
         phSingle,uRight_now,uRight_next,stepHeight,wparam, zLeg[2],r_ft[3],touched)
 
@@ -273,10 +263,13 @@ function walk.update()
       mcm.set_status_zLeg0(zLeg0)
       zLeft = zLeg0[1]      
       zRight = zRight +zLeg0[2]
+
       local aShiftY = {aShiftY0[1],liftp*aShiftY0[2] + (landp)*zpr_target[2]}
+      local aShiftX = {aShiftX0[1],liftp*aShiftX0[2] + (landp)*zpr_target[3]}
+  
+
+      mcm.set_walk_aShiftX(aShiftX)
       mcm.set_walk_aShiftY(aShiftY)
-
-
 
     elseif supportLeg==1 then    -- Right support    
       local zpr_target = hcm.get_step_zpr()
@@ -300,7 +293,11 @@ function walk.update()
       zRight = zLeg0[2]    
       zLeft = zLeft +zLeg0[1]
       local aShiftY = {liftp*aShiftY0[1] + landp*zpr_target[2],aShiftY0[2]}
+      local aShiftX = {liftp*aShiftX0[1] + landp*zpr_target[3],aShiftX0[2]}
+
+      mcm.set_walk_aShiftX(aShiftX)
       mcm.set_walk_aShiftY(aShiftY)
+
     end
 
     

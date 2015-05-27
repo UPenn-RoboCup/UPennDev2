@@ -115,6 +115,14 @@ std::vector<double> THOROP_kinematics_inverse_leg(Transform trLeg, int leg, doub
 std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY, int birdwalk, double anklePitchCurrent){
 
   std::vector<double> qLeg(6);
+
+
+
+//testing
+  trLeg.rotateX(aShiftX).rotateY(aShiftY);
+
+
+
   Transform trInvLeg = inv(trLeg);
 
   // Hip Offset vector in Torso frame
@@ -173,62 +181,65 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
     //    (vecx2 * toeX)    - vecx2*Fc*cos(b)+ vecz2*Fc*sin(b),
     // }
 
-  // Leg distant constraint    
-  // (xLeg[0]-ax)^2 + xLeg[1]^2 + (xLeg[2]-az)^2 = dLegMax^2
+    // Leg distant constraint    
+    // (xLeg[0]-ax)^2 + xLeg[1]^2 + (xLeg[2]-az)^2 = dLegMax^2
 
-  // xLeg0Mod, yLeg0Mod, zLeg0Mod = xLeg[0]-vecx0*toeX, xLeg[1]-vecx1*toeX,xLeg[2]-vecx2*toeX
-  // or 
-  //  (xLeg0Mod + vecx0*Fc*cos(b) - vecz0*Fc*sin(b))^2 + 
-  //  (xLeg1Mod + vecx1*Fc*cos(b) - vecz1*Fc*sin(b))^2 + 
-  //  (xLeg2Mod + vecx2*Fc*cos(b) - vecz2*Fc*sin(b))^2 = dLegMax^2 
-   
-  // = (xLeg0Mod^2+xLeg1Mod^2+xLeg2Mod^2) + Fc^2 (vecx0^2+vecx1^2+vecx2^2) +
-  //   2*Fc*cos(b) * (  xLeg0Mod*vecx0 + xLeg1Mod*vecx1 + xLeg2Mod*vecx2 ) +
-  //   - 2*Fc*sin(b) * (  xLeg0Mod*vecz0 + xLeg1Mod*vecz1 + xLeg2Mod*vecz2 ) +    
-  //   2*Fc*Fc*cos(b)sin(b)* (vecx0*vecz0 + vecx1*vecz1+ vecx2*vecz2)
+    // xLeg0Mod, yLeg0Mod, zLeg0Mod = xLeg[0]-vecx0*toeX, xLeg[1]-vecx1*toeX,xLeg[2]-vecx2*toeX
+    // or 
+    //  (xLeg0Mod + vecx0*Fc*cos(b) - vecz0*Fc*sin(b))^2 + 
+    //  (xLeg1Mod + vecx1*Fc*cos(b) - vecz1*Fc*sin(b))^2 + 
+    //  (xLeg2Mod + vecx2*Fc*cos(b) - vecz2*Fc*sin(b))^2 = dLegMax^2 
+     
+    // = (xLeg0Mod^2+xLeg1Mod^2+xLeg2Mod^2) + Fc^2 (vecx0^2+vecx1^2+vecx2^2) +
+    //   2*Fc*cos(b) * (  xLeg0Mod*vecx0 + xLeg1Mod*vecx1 + xLeg2Mod*vecx2 ) +
+    //   - 2*Fc*sin(b) * (  xLeg0Mod*vecz0 + xLeg1Mod*vecz1 + xLeg2Mod*vecz2 ) +    
+    //   2*Fc*Fc*cos(b)sin(b)* (vecx0*vecz0 + vecx1*vecz1+ vecx2*vecz2)
 
-  // eq: p*sinb + q*cosb + r* sinbcosb + s = 0
+    // eq: p*sinb + q*cosb + r* sinbcosb + s = 0
+    double xLM0 = xLeg[0]-vecx0*footToeX;
+    double xLM1 = xLeg[1]-vecx1*footToeX;
+    double xLM2 = xLeg[2]-vecx2*footToeX;
+    double s2 = (xLM0*xLM0+xLM1*xLM1+xLM2*xLM2) + footC*footC*(vecx0*vecx0+vecx1*vecx1+vecx2*vecx2)- dLegMax*dLegMax;
+    double p2 = -2*footC* (xLM0*vecz0 + xLM1*vecz1 + xLM2*vecz2);
+    double q2 = 2*footC* (xLM0*vecx0 + xLM1*vecx1 + xLM2*vecx2);
+    double r2 = 2*footC*footC*(vecx0*vecz0 + vecx1*vecz1+vecx2*vecz2);
 
-  double xLM0 = xLeg[0]-vecx0*footToeX;
-  double xLM1 = xLeg[1]-vecx1*footToeX;
-  double xLM2 = xLeg[2]-vecx2*footToeX;
-
-  double s2 = (xLM0*xLM0+xLM1*xLM1+xLM2*xLM2) + footC*footC*(vecx0*vecx0+vecx1*vecx1+vecx2*vecx2)- dLegMax*dLegMax;
-  double p2 = -2*footC* (xLM0*vecz0 + xLM1*vecz1 + xLM2*vecz2);
-  double q2 = 2*footC* (xLM0*vecx0 + xLM1*vecx1 + xLM2*vecx2);
-  double r2 = 2*footC*footC*(vecx0*vecz0 + vecx1*vecz1+vecx2*vecz2);
-
-//newton method to find the solution
-  double x0 = 0;
-  double ferr=0;
-  int iter_count=0;
-  bool not_done=true; 
-  while ((iter_count++<10) && not_done){
-    ferr = p2*sin(x0)+q2*cos(x0)+r2*sin(x0)*cos(x0)+s2;
-    double fdot = p2*cos(x0) - q2*sin(x0) + r2*cos(x0)*cos(x0) - r2*sin(x0)*sin(x0);
-    x0 = x0 - ferr/fdot;
-    if (fabs(ferr)<0.001) not_done=false;
-  }  
-  if (fabs(ferr)<0.01){ 
-    ankle_tilt_angle = x0-afootA;
+  //newton method to find the solution
+    double x0 = 0;
+    double ferr=0;
+    int iter_count=0;
+    bool not_done=true; 
+    while ((iter_count++<10) && not_done){
+      ferr = p2*sin(x0)+q2*cos(x0)+r2*sin(x0)*cos(x0)+s2;
+      double fdot = p2*cos(x0) - q2*sin(x0) + r2*cos(x0)*cos(x0) - r2*sin(x0)*sin(x0);
+      x0 = x0 - ferr/fdot;
+      if (fabs(ferr)<0.001) not_done=false;
+    }  
+    if (fabs(ferr)<0.01){ankle_tilt_angle = x0-afootA;}
+    else{ankle_tilt_angle = 0;}
   }
-  else{
-    ankle_tilt_angle = 0;
-  }
-    
-//    if (ankle_tilt_angle>45*3.1415/180)  ankle_tilt_angle=45*3.1415/180;
+  //now we eknow ankle tilt ankle
 
-///////////////////////TODOTODOTODO
-//TODO: ankle location incorporiating surface angles
-//Now let's just assume flat surface
+  //lets calculate correct ankle offset position
+  double dAnkle1Mod = vecx0*(footToeX - footC*cos(ankle_tilt_angle+afootA)) + vecz0*footC*sin(ankle_tilt_angle+afootA);
+  double dAnkle2Mod = vecx1*(footToeX - footC*cos(ankle_tilt_angle+afootA)) + vecz1*footC*sin(ankle_tilt_angle+afootA);
+  double dAnkle3Mod = vecx2*(footToeX - footC*cos(ankle_tilt_angle+afootA)) + vecz2*footC*sin(ankle_tilt_angle+afootA);
 
-    xLeg[0] = xLeg[0] - (footToeX - footC*cos(ankle_tilt_angle+afootA));
-    xLeg[2] = xLeg[2] - footC*sin(ankle_tilt_angle+afootA);
-    dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
-    cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
-  }else{    
-    xLeg[2]-= footHeight;
-  }
+//Find relative torso position from ankle position (in global frame)
+  xLeg[0] = xLeg[0] - dAnkle1Mod;
+  xLeg[1] = xLeg[1] - dAnkle2Mod;
+  xLeg[2] = xLeg[2] - dAnkle3Mod;
+
+/*
+  xLeg[0] = xLeg[0] - (footToeX - footC*cos(ankle_tilt_angle+afootA));
+  xLeg[2] = xLeg[2] - footC*sin(ankle_tilt_angle+afootA);
+*/
+
+  dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
+  cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
+
+
+
   if (cKnee > 1) cKnee = 1;
   if (cKnee < -1) cKnee = -1;
   double kneePitch = acos(cKnee);
@@ -240,14 +251,10 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   double kneePitchActual = kneePitch+aThigh*kneeOffsetA+aTibia*kneeOffsetA;
 
 
-
-
-
   //Now we know knee pitch and ankle tilt 
   Transform trAnkle =  trcopy (trLeg);
 
   //Body to Leg FK:
-  
   //Trans(HIP).Rz(q0).Rx(q1).Ry(q2).Trans(UL).Ry(q3).Trans(LL).Ry(q4).Rx(q5).Trans(Foot)
   
   //Genertae body to ankle transform 
@@ -289,8 +296,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   double anklePitch2 = asin(s2);
   double err1 = tInv(0,3)-m(0,3)*cos(anklePitch1)+m(2,3)*sin(anklePitch1);
   double err2 = tInv(0,3)-m(0,3)*cos(anklePitch2)+m(2,3)*sin(anklePitch2);
-  double anklePitchNew = anklePitch1;
-  
+  double anklePitchNew = anklePitch1;  
   if (  (fabs(err1)<0.0001) && (fabs(err2)<0.0001) ) {
     //printf("Two solutions for anklepitch\n");
     double err_1 = fabs(anklePitchCurrent-anklePitch1);
@@ -308,7 +314,6 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   //then now solve for ankle roll (q5)
   //tInv(1,3) = m0*sin(q4)* sin(q5) + m1*cos(q5) + m2*cos(q4)*sin(q5)
   //sin(q5) * (m0*sin(q4) + m2*cos(q4))  + m1*cos(q5) - tInv(1,3) = 0
-
   double p1 = m(0,3)*sin(anklePitchNew) + m(2,3)*cos(anklePitchNew);
   a = p1*p1+m(1,3)*m(1,3);
   b = -tInv(1,3)*p1;
@@ -326,10 +331,6 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   double err3 = tInv(1,3)-m(2,3)*cos(ankleRoll1)-p1*sin(ankleRoll1);
   double err4 = tInv(1,3)-m(2,3)*cos(ankleRoll2)-p1*sin(ankleRoll2);
   double ankleRollNew = ankleRoll1;
-
-  if ((fabs(err3)<0.0001) && (fabs(err3)<0.0001) ) {
-    printf("Two solutions for ankleroll\n");}
-
   if (fabs(err3)>fabs(err4)){ankleRollNew = ankleRoll2;}
 
 
@@ -339,48 +340,22 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   t=t.rotateX(-ankleRollNew).rotateY(-anklePitchNew-kneePitch);
 
   //now use ZXY euler angle equation to get q0,q1,q2
-
   double hipRollNew = asin(t(2,1));
   double hipYawNew = atan2(-t(0,1),t(1,1));
   double hipPitchNew = atan2(-t(2,0),t(2,2));
 
-  if (leg == LEG_LEFT) {
-    if (fabs(hipPitchNew)>135*3.1415/180){
-      printf("\ntrLeg:\n");
-      printTransform(trLeg);
-      printf("Hip Roll:%f Pitch: %f Yaw:%f\n",
-      hipRollNew*180/3.1415, hipPitchNew*180/3.1415, hipYawNew*180/3.1415)    ;
-      printf("anklePitch: #1 %f (err %f) #2 %f (err %f) \n ",
-        anklePitch1*180/3.1415,err1,anklePitch2*180/3.1415,err2
-        );
-      printf("ankleRoll: #1 %f (err %f) #2 %f (err %f) \n ",
-        ankleRoll1*180/3.1415,err3,ankleRoll2*180/3.1415,err4
-        );
-      printf("Ankle Roll:%f Pitch: %f\n",
-      ankleRollNew*180/3.1415, anklePitchNew*180/3.1415)    ;
-      printTransform(t);
-      printf("\n");
-    }
-  }
-
+/*  
   // Ankle pitch and roll
   double ankleRoll = atan2(xLeg[1], xLeg[2]);
   double lLeg = sqrt(dLeg);
   if (lLeg < 1e-16) lLeg = 1e-16;
   double pitch0 = asin(dThigh*sin(kneePitch)/lLeg);
   double anklePitch = asin(-xLeg[0]/lLeg) - pitch0;
-
   Transform rHipT = trcopy(trLeg);
-
   rHipT = rHipT.rotateX(-ankleRoll).rotateY(-anklePitch-kneePitch);
-
   double hipYaw = atan2(-rHipT(0,1), rHipT(1,1));
   double hipRoll = asin(rHipT(2,1));
   double hipPitch = atan2(-rHipT(2,0), rHipT(2,2));
-
-  
-  
-
   // Need to compensate for KneeOffsetX:
   qLeg[0] = hipYaw;
   qLeg[1] = hipRoll;
@@ -389,22 +364,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   qLeg[4] = anklePitch-aTibia*kneeOffsetA;
   qLeg[5] = ankleRoll;
   qLeg[4] = qLeg[4]+ankle_tilt_angle;
-
-
-//TODO: pitch sometimes screws up
-/*
-  if (hipPitchNew<-1.57*1.2) {
-   printf("Pitch:%f\n",hipPitchNew*180/3.1415);
-   printf("val: %f %f\n",t(2,0),t(2,2));
-   hipPitchNew = qLeg[2];
-  }
-
-  if (hipPitchNew>1.57*1.2) {
-   printf("Pitch:%f\n",hipPitchNew*180/3.1415);
-   printf("val: %f %f\n",t(2,0),t(2,2));
-   hipPitchNew = qLeg[2];
-  }
-*/
+  */
 
 //new IK
   qLeg[0] = hipYawNew;
@@ -439,6 +399,17 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
 
   //TODOTODOTODOTODOTODO!!!!!!!!!!!!!!
   std::vector<double> qLeg(6);
+
+
+//testing
+  trLeg.rotateX(aShiftX).rotateY(aShiftY);
+
+
+
+
+
+
+
   Transform trInvLeg = inv(trLeg);
 
   // Hip Offset vector in Torso frame
@@ -498,64 +469,74 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
     //    -(vecx2 * heelX)  + vecx2*Fc*cos(b)+ vecz2*Fc*sin(b),
     // }
 
-  // Leg distant constraint    
-  // (xLeg[0]-ax)^2 + xLeg[1]^2 + (xLeg[2]-az)^2 = dLegMax^2
+    // Leg distant constraint    
+    // (xLeg[0]-ax)^2 + xLeg[1]^2 + (xLeg[2]-az)^2 = dLegMax^2
 
-  // xLeg0Mod, yLeg0Mod, zLeg0Mod = xLeg[0]+vecx0*heelX, xLeg[1]+vecx1*heelX,xLeg[2]+vecx2*heelX
-  // or 
-  //  (xLeg0Mod - vecx0*Fc*cos(b) - vecz0*Fc*sin(b))^2 + 
-  //  (xLeg1Mod - vecx1*Fc*cos(b) - vecz1*Fc*sin(b))^2 + 
-  //  (xLeg2Mod - vecx2*Fc*cos(b) - vecz2*Fc*sin(b))^2 = dLegMax^2 
-   
-  // = (xLeg0Mod^2+xLeg1Mod^2+xLeg2Mod^2) + Fc^2 (vecx0^2+vecx1^2+vecx2^2) +
-  //   - 2*Fc*cos(b) * (  xLeg0Mod*vecx0 + xLeg1Mod*vecx1 + xLeg2Mod*vecx2 ) +
-  //   - 2*Fc*sin(b) * (  xLeg0Mod*vecz0 + xLeg1Mod*vecz1 + xLeg2Mod*vecz2 ) +    
+    // xLeg0Mod, yLeg0Mod, zLeg0Mod = xLeg[0]+vecx0*heelX, xLeg[1]+vecx1*heelX,xLeg[2]+vecx2*heelX
+    // or 
+    //  (xLeg0Mod - vecx0*Fc*cos(b) - vecz0*Fc*sin(b))^2 + 
+    //  (xLeg1Mod - vecx1*Fc*cos(b) - vecz1*Fc*sin(b))^2 + 
+    //  (xLeg2Mod - vecx2*Fc*cos(b) - vecz2*Fc*sin(b))^2 = dLegMax^2 
+     
+    // = (xLeg0Mod^2+xLeg1Mod^2+xLeg2Mod^2) + Fc^2 (vecx0^2+vecx1^2+vecx2^2) +
+    //   - 2*Fc*cos(b) * (  xLeg0Mod*vecx0 + xLeg1Mod*vecx1 + xLeg2Mod*vecx2 ) +
+    //   - 2*Fc*sin(b) * (  xLeg0Mod*vecz0 + xLeg1Mod*vecz1 + xLeg2Mod*vecz2 ) +    
+    //   2*Fc*Fc*cos(b)sin(b)* (vecx0*vecz0 + vecx1*vecz1+ vecx2*vecz2)
+
   //   2*Fc*Fc*cos(b)sin(b)* (vecx0*vecz0 + vecx1*vecz1+ vecx2*vecz2)
 
-//   2*Fc*Fc*cos(b)sin(b)* (vecx0*vecz0 + vecx1*vecz1+ vecx2*vecz2)
+    // eq: p*sinb + q*cosb + r* sinbcosb + s = 0
 
-  // eq: p*sinb + q*cosb + r* sinbcosb + s = 0
+    double xLM0 = xLeg[0]+vecx0*footHeelX;
+    double xLM1 = xLeg[1]+vecx1*footHeelX;
+    double xLM2 = xLeg[2]+vecx2*footHeelX;
 
-  double xLM0 = xLeg[0]+vecx0*footHeelX;
-  double xLM1 = xLeg[1]+vecx1*footHeelX;
-  double xLM2 = xLeg[2]+vecx2*footHeelX;
+    double s2 = (xLM0*xLM0+xLM1*xLM1+xLM2*xLM2) + footC*footC*(vecx0*vecx0+vecx1*vecx1+vecx2*vecx2)- dLegMax*dLegMax;
+    double p2 = -2*footC* (xLM0*vecz0 + xLM1*vecz1 + xLM2*vecz2);
+    double q2 = -2*footC* (xLM0*vecx0 + xLM1*vecx1 + xLM2*vecx2);
+    double r2 = 2*footC*footC*(vecx0*vecz0 + vecx1*vecz1+vecx2*vecz2);
 
-  double s2 = (xLM0*xLM0+xLM1*xLM1+xLM2*xLM2) + footC*footC*(vecx0*vecx0+vecx1*vecx1+vecx2*vecx2)- dLegMax*dLegMax;
-  double p2 = -2*footC* (xLM0*vecz0 + xLM1*vecz1 + xLM2*vecz2);
-  double q2 = -2*footC* (xLM0*vecx0 + xLM1*vecx1 + xLM2*vecx2);
-  double r2 = 2*footC*footC*(vecx0*vecz0 + vecx1*vecz1+vecx2*vecz2);
-
-//newton method to find the solution
-  double x0 = 0;
-  double ferr=0;
-  int iter_count=0;
-  bool not_done=true; 
-  while ((iter_count++<10) && not_done){
-    ferr = p2*sin(x0)+q2*cos(x0)+r2*sin(x0)*cos(x0)+s2;
-    double fdot = p2*cos(x0) - q2*sin(x0) + r2*cos(x0)*cos(x0) - r2*sin(x0)*sin(x0);
-    x0 = x0 - ferr/fdot;
-    if (fabs(ferr)<0.001) not_done=false;
-  }  
-  if (fabs(ferr)<0.01){ 
-    ankle_tilt_angle = x0-afootA;
+  //newton method to find the solution
+    double x0 = 0;
+    double ferr=0;
+    int iter_count=0;
+    bool not_done=true; 
+    while ((iter_count++<10) && not_done){
+      ferr = p2*sin(x0)+q2*cos(x0)+r2*sin(x0)*cos(x0)+s2;
+      double fdot = p2*cos(x0) - q2*sin(x0) + r2*cos(x0)*cos(x0) - r2*sin(x0)*sin(x0);
+      x0 = x0 - ferr/fdot;
+      if (fabs(ferr)<0.001) not_done=false;
+    }  
+    if (fabs(ferr)<0.01){ 
+      ankle_tilt_angle = x0-afootA;
+    }
+    else{
+      ankle_tilt_angle = 0;
+    }
+  //    if (ankle_tilt_angle<-45*3.1415/180)  ankle_tilt_angle=-45*3.1415/180;
   }
-  else{
-    ankle_tilt_angle = 0;
-  }
-//    if (ankle_tilt_angle<-45*3.1415/180)  ankle_tilt_angle=-45*3.1415/180;
 
+  //lets calculate correct ankle offset position
+  double dAnkle1Mod = vecx0*(-footHeelX + footC*cos(ankle_tilt_angle+afootA)) + vecz0*footC*sin(ankle_tilt_angle+afootA);
+  double dAnkle2Mod = vecx1*(-footHeelX +  footC*cos(ankle_tilt_angle+afootA)) + vecz1*footC*sin(ankle_tilt_angle+afootA);
+  double dAnkle3Mod = vecx2*(-footHeelX +  footC*cos(ankle_tilt_angle+afootA)) + vecz2*footC*sin(ankle_tilt_angle+afootA);      
+
+  ankle_tilt_angle = -ankle_tilt_angle; //change into ankle PITCH bias angle
+
+
+/*
   //TODO: ankle location incorporiating surface angles 
   xLeg[0] = xLeg[0] + footHeelX - footC*cos(-ankle_tilt_angle+afootA);
   xLeg[2] = xLeg[2] - sin(afootA-ankle_tilt_angle)*footC;
+*/
 
-  ankle_tilt_angle = -ankle_tilt_angle; //change into ankle PITCH bias angle
-    dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
-    cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
-  }else{    
+//Find relative torso position from ankle position (in global frame)
+  xLeg[0] = xLeg[0] - dAnkle1Mod;
+  xLeg[1] = xLeg[1] - dAnkle2Mod;
+  xLeg[2] = xLeg[2] - dAnkle3Mod;
 
-    xLeg[2] -= footHeight;
-  }
-
+  dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
+  cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
 
   if (cKnee > 1) cKnee = 1;
   if (cKnee < -1) cKnee = -1;
@@ -660,38 +641,22 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   t=t.rotateX(-ankleRollNew).rotateY(-anklePitchNew-kneePitchActual);
 
   //now use ZXY euler angle equation to get q0,q1,q2
-
   double hipRollNew = asin(t(2,1));
   double hipYawNew = atan2(-t(0,1),t(1,1));
   double hipPitchNew = atan2(-t(2,0),t(2,2));
 
-
-
-
-
-
-
-
-
-
-
-
-
+/*
   // Ankle pitch and roll
   double ankleRoll = atan2(xLeg[1], xLeg[2]);
   double lLeg = sqrt(dLeg);
   if (lLeg < 1e-16) lLeg = 1e-16;
   double pitch0 = asin(dThigh*sin(kneePitch)/lLeg);
   double anklePitch = asin(-xLeg[0]/lLeg) - pitch0;
-
   Transform rHipT = trLeg;
-
   rHipT = rHipT.rotateX(-ankleRoll).rotateY(-anklePitch-kneePitch);
-
   double hipYaw = atan2(-rHipT(0,1), rHipT(1,1));
   double hipRoll = asin(rHipT(2,1));
   double hipPitch = atan2(-rHipT(2,0), rHipT(2,2));
-
   // Need to compensate for KneeOffsetX:
   qLeg[0] = hipYaw;
   qLeg[1] = hipRoll;
@@ -700,24 +665,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   qLeg[4] = anklePitch-aTibia*kneeOffsetA;
   qLeg[5] = ankleRoll;
   qLeg[4] = qLeg[4]+ankle_tilt_angle;
-
-
-
-
-//TODO: pitch sometimes screws up
-
-  if (hipPitchNew<-1.57*1.2) {
-   printf("Pitch:%f\n",hipPitchNew*180/3.1415);
-   printf("val: %f %f\n",t(2,0),t(2,2));
-   hipPitchNew = qLeg[2];
-  }
-
-  if (hipPitchNew>1.57*1.2) {
-   printf("Pitch:%f\n",hipPitchNew*180/3.1415);
-   printf("val: %f %f\n",t(2,0),t(2,2));
-   hipPitchNew = qLeg[2];
-  }
-
+*/
 
 //new IK
   qLeg[0] = hipYawNew;

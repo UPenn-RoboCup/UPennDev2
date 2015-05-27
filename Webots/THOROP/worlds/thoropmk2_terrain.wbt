@@ -42,8 +42,8 @@ DEF TASKFLOOR Floor {
 }
 #THOROP_mk15_Fullmass_longarm_2 {
 THOROP_mk2_Fullmass_longarm_2 {
-  translation 0 1.17 0.0
-  rotation 1 0 0 0
+  translation 0 1.17 0
+  rotation 0 1 0 3.1415
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360

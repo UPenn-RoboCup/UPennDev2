@@ -22,8 +22,9 @@ local function procMP(data)
 end
 
 local function procRaw(data)
-	--print('data',data, #data)
-	return data
+	--print('data', #data)
+	--return data
+	return {mpack({c='jpeg'}), data}
 end
 
 local function procZlib(c_data)
@@ -65,6 +66,8 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(out_channels, s)
 		if key=='feedback' and false then
 			table.insert(ch_processing, procZlib)
+		elseif key:find'ittybitty' then
+			table.insert(ch_processing, procRaw)
 		else
 			table.insert(ch_processing, procMP)
 		end

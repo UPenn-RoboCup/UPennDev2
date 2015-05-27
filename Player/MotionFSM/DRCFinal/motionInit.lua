@@ -69,8 +69,7 @@ function state.entry()
   hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)
 
   mcm.set_status_uTorsoZMPComp({0,0,0})
-  mcm.set_stance_uTorsoComp({0,0})
-  mcm.set_status_iskneeling(0)
+  mcm.set_stance_uTorsoComp({0,0})  
 
   mcm.set_walk_zShift({0,0})
   mcm.set_walk_zvShift({0,0})

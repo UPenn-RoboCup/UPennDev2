@@ -106,7 +106,7 @@ elseif key_char_lower==("q") then
 		--hcm.set_step_relpos({0.0,0,0})
 		
 		hcm.set_step_zpr({0,0,0})
-		hcm.set_step_relpos({0.35,0,0})		
+		hcm.set_step_relpos({0.35,0.01,0})		
 		hcm.set_step_zpr({stair_height,0,0}) --stair		
 		body_ch:send'stepover1'		
 
@@ -116,7 +116,7 @@ elseif key_char_lower==("w") then
 --		hcm.set_step_relpos({0.35,0,0})
 		--hcm.set_step_relpos({0.0,0,0})
 		hcm.set_step_zpr({0.00,0,0})
-		hcm.set_step_relpos({0.35,0,0})
+		hcm.set_step_relpos({0.35,-0.01,0})
 		hcm.set_step_zpr({stair_height,0,0}) --stair		
 		body_ch:send'stepover1'		
 

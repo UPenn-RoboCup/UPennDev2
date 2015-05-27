@@ -175,7 +175,6 @@ function state.exit()
   mcm.set_stance_bodyHeightTarget(Config.walk.bodyHeight)
 
   mcm.set_stance_uTorsoComp({0,0})
-  mcm.set_status_iskneeling(0)
 
   local pg = Config.walk.leg_p_gain or 64
   local ag = Config.walk.ankle_p_gain or 64

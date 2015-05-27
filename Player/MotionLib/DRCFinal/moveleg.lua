@@ -312,6 +312,9 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   local kneeShiftXTarget = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
   local hipShiftYTarget=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
 
+  stabilization_mode = mcm.get_status_stabilization_mode()
+  if stabilization_mode==2 then kneeShiftXTarget = 0 end --don't use knee stabilization during climbing (stinction possible)
+
 --[[
   local angleShift = mcm.get_walk_angleShift()
 

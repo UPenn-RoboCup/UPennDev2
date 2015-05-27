@@ -64,7 +64,7 @@ local function check_send_mesh()
 			--local meta = mpack(metadata)
 			--local ret, err = mesh0_udp_ch:send(meta..c_mesh)
 			local ret, err = mesh0_udp_ch:send(table.concat(raw_msg))
-			print('Mesh0 | Sent UDP', unpack(ret))
+			--print('Mesh0 | Sent UDP', unpack(ret))
 		end
 	end
 
@@ -87,7 +87,7 @@ local function check_send_mesh()
 		end
 		if mesh1_udp_ch then
 			local ret, err = mesh1_udp_ch:send(table.concat(raw_msg))
-			print('Mesh1 | Sent UDP', unpack(ret))
+			--print('Mesh1 | Sent UDP', unpack(ret))
 		end
 	end
 

@@ -134,7 +134,8 @@ function sstart(scriptname)
 	})
 	rpc_req:send(msg)
   local data = unpack(rpc_req:receive())
-	return data
+	if type(data)~='string' then return end
+	return mp.unpack(data)
 end
 
 print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))

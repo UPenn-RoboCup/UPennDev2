@@ -89,10 +89,7 @@ for _,fname in ipairs(unix.readdir(ROBOT_HOME)) do
 end
 function sstart(scriptname, ...)
 	local kind = runnable[scriptname]
-	if not kind then
-		print('not a script')
-		return
-	end
+	if not kind then return false end
 	local script = kind=='wizard' and scriptname..'_wizard.lua' or 'run_'..scriptname..'.lua'
 	kill(script)
 	unix.chdir(kind=='wizard' and HOME..'/Run' or ROBOT_HOME)
@@ -100,7 +97,7 @@ function sstart(scriptname, ...)
 	print('screen', screen)
 	local status = os.execute(screen)
 	unix.usleep(2e5)
-	local ret = io.popen("pgrep -fl "..script)
+	local ret = io.popen("pgrep -fla "..script)
 	for pid in ret:lines() do
 		if pid:find('luajit') then
 			return true

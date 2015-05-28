@@ -82,8 +82,9 @@ for _,fname in ipairs(unix.readdir(HOME..'/Run')) do
 end
 for _,fname in ipairs(unix.readdir(ROBOT_HOME)) do
 	local found, found_end = fname:find'run_'
-	if found then
-		local name = fname:sub(1,found-1)
+	local foundlua, foundlua_end = fname:find'.lua'
+	if found and foundlua then
+		local name = fname:sub(found_end+1, foundlua-1)
 		runnable[name] = 'robot'
 	end
 end
@@ -96,7 +97,7 @@ function sstart(scriptname, ...)
 	local screen = gen_screen(scriptname, script, ...)
 	print('screen', screen)
 	local status = os.execute(screen)
-	unix.usleep(2e5)
+	unix.usleep(1e6/4)
 	local ret = io.popen("pgrep -fla "..script)
 	for pid in ret:lines() do
 		if pid:find('luajit') then

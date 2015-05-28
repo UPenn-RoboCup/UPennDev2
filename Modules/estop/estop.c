@@ -76,6 +76,8 @@ unsigned long diffTime(struct timespec start, struct timespec end, struct timesp
 }
 
 void handleJoystickMsg(VscMsgType *recvMsg) {
+
+	printf("JOYSTICK MSG!\n");
 	JoystickMsgType *joyMsg = (JoystickMsgType*) recvMsg->msg.data;
 	printf("Joystick (L / R): %5i, %5i, %5i / %5i, %5i, %5i ",
 			vsc_get_stick_value(joyMsg->leftX), vsc_get_stick_value(joyMsg->leftY),
@@ -91,30 +93,9 @@ void handleJoystickMsg(VscMsgType *recvMsg) {
 	/* TODO: Add application specific code here to handle joystick messages */
 }
 
-void handleHeartbeatMsg(VscMsgType *recvMsg) {
+int handleHeartbeatMsg(VscMsgType *recvMsg) {
 	HeartbeatMsgType *msgPtr = (HeartbeatMsgType*) recvMsg->msg.data;
-
-	printf("Heartbeat: E-Stop:  0x%x, VscMode: 0x%x, AutonomonyMode: 0x%x\n", 
-              msgPtr->EStopStatus, msgPtr->VscMode, msgPtr->AutonomonyMode);
-
-/*	if (msgPtr->EStopStatus > 0) {
-		EstopStatusType stopStatus;
-		stopStatus.bytes = msgPtr->EStopStatus;
-
-		if(stopStatus.bits.SRC) {
-			printf("WARNING!  Received EMERGENCY STOP from the SRC\n");
-		}
-
-		if(stopStatus.bits.VSC) {
-			printf("WARNING!  Received EMERGENCY STOP from the VSC\n");
-		}
-
-		if(stopStatus.bits.USER) {
-			printf("WARNING!  Received EMERGENCY STOP from the USER\n");
-		}
-	}
-*/
-	/* TODO: Add application specific code here to handle heartbeat messages */
+	return msgPtr->EStopStatus;
 }
 
 void handleGpsMsg(VscMsgType *recvMsg) {
@@ -123,7 +104,7 @@ void handleGpsMsg(VscMsgType *recvMsg) {
 
 	strncpy(message, (char*)msgPtr->data, recvMsg->msg.length-1);
 	message[recvMsg->msg.length-1] = '\0';
-//	printf("Received GPS Message (0x%x): %s\n", msgPtr->source, message);
+	printf("Received GPS Message (0x%x): %s\n", msgPtr->source, message);
 
 	/* TODO: Add application specific code here to handle GPS messages */
 }
@@ -131,25 +112,23 @@ void handleGpsMsg(VscMsgType *recvMsg) {
 void handleFeedbackMsg(VscMsgType *recvMsg) {
 	UserFeedbackMsgType *msgPtr = (UserFeedbackMsgType*) recvMsg->msg.data;
 
-//	printf("Received Feedback Message.  Key: %i, Value %i\n", msgPtr->key, msgPtr->value);
+	printf("Received Feedback Message.  Key: %i, Value %i\n", msgPtr->key, msgPtr->value);
 
 	/* TODO: Add application specific code here to handle feedback messages */
 }
 
-void readFromVsc() {
+int readFromVsc() {
 	VscMsgType recvMsg;
 
 	/* Read all messages */
 	while (vsc_read_next_msg(vscInterface, &recvMsg) > 0) {
 		/* Read next Vsc Message */
+//		printf("[%d] ",recvMsg.msg.msgType);
 		switch (recvMsg.msg.msgType) {
 		case MSG_VSC_HEARTBEAT:
-			handleHeartbeatMsg(&recvMsg);
-
+			return handleHeartbeatMsg(&recvMsg);			
 			break;
 		case MSG_VSC_NMEA_STRING:
-			handleGpsMsg(&recvMsg);
-
 			break;
 		case MSG_USER_FEEDBACK:
 			handleFeedbackMsg(&recvMsg);
@@ -165,35 +144,19 @@ void readFromVsc() {
 			break;
 		}
 	}
-
+	return 0;
 }
 
 
 
 
-void estop_init(){
-	/* Verify Arguments */
-/*	
-	if (argc != 3) {
-		printf("Usage - program SerialPort BaudRate\n");
-		printf("\t%s /dev/ttyUSB0 115200\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
+void estop_init(char* ch, int baud){
 
 	// Catch CTRL-C 
 	signal(SIGINT, signal_handler);
 
 	// Open VSC Interface 
-	vscInterface = vsc_initialize(argv[1], atoi(argv[2]));
-*/
-
-
-	// Catch CTRL-C 
-	signal(SIGINT, signal_handler);
-
-
-	// Open VSC Interface 
-	vscInterface = vsc_initialize("/dev/ttyACM0",115200);
+	vscInterface = vsc_initialize(ch,baud);
 
 	if (vscInterface == NULL) {
 		printf("Opening VSC Interface failed.\n");
@@ -214,16 +177,6 @@ void estop_init(){
 
 	// Send Heartbeat Message to VSC 
 	vsc_send_heartbeat(vscInterface, ESTOP_STATUS_NOT_SET);
-
-
-/*
-
-//TESTING CODE (as lua wrapping is still buggy)
-	while (1) {
-		estop_update();
-	}
-	estop_shutdown();
-	*/
 }
 
 
@@ -257,7 +210,6 @@ int estop_update(){
 		FD_ZERO(&input);
 		FD_SET(vsc_fd, &input);
 		max_fd = vsc_fd + 1;
-
 		retval = select(max_fd, &input, NULL, NULL, &timeout);
 
 		/* See if there was an error */
@@ -276,15 +228,14 @@ int estop_update(){
 			/* Input received, check to see if its from the VSC */
 			if (FD_ISSET(vsc_fd, &input)) {
 				/* Read from VSC */
-				readFromVsc();
-
+				int ret = readFromVsc();
+		
 				/* Record the last time input was recieved from the VSC */
 				clock_gettime(CLOCK_REALTIME, &lastReceived);
+				return ret;
 			} else {
 				fprintf(stderr, "vsc_example: invalid fd set");
 			}
 		}
-
-		//we should return stuff here
 		return 0;
 }

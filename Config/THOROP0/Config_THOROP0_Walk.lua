@@ -46,9 +46,9 @@ walk.torsoX = 0.0     -- com-to-body-center offset
 walk.tStep = 0.80
 walk.tZMP = 0.32
 walk.stepHeight = 0.03 --mk2. lower 
-walk.phSingle = {0.15,0.85}
-walk.phZmp = {0.15,0.85}
 walk.phComp = {0.1,0.9}
+walk.phSingle = {0.2,0.8}
+walk.phZmp = {0.25,0.75}
 walk.phCompSlope = 0.2
 walk.supportX = 0.0 
 walk.supportY = 0.0
@@ -73,11 +73,10 @@ walk.delay_threshold_angle = 2.5*math.pi/180
 walk.delay_factor = {0.8,1.7}
 
 walk.ankleRollCompensation = 0*DEG_TO_RAD  
-walk.hipRollCompensation = 2*DEG_TO_RAD
 walk.footSagCompensation = {0.0,0.0}
 walk.kneePitchCompensation = 0*DEG_TO_RAD
-
-
+walk.hipRollCompensation = 1.5*DEG_TO_RAD
+    
 
 -----------------------------------
 walk.velLimitX = {-.10,.15}
@@ -110,28 +109,34 @@ if IS_WEBOTS then
   Config.supportY_preview = 0.0
   Config.supportY_preview2 = 0.0
 else
-  --Chip default (mk2)
-  walk.velLimitX = {-.10,.20}
-  walk.velLimitY = {-.06,.06}
-  walk.delay_threshold_angle = 999*math.pi/180 --disabled
-  walk.delay_factor = {0.8,1.7}
-  walk.phSingle = {0.2,0.8}
-  walk.phZmp = {0.25,0.75}
-  walk.supportY = 0.01
-  Config.supportY_preview = 0.00 --this smooths out first step a bit
-  Config.supportY_preview2 = 0.0  
+
+
+  if HOSTNAME=="teddy2" or HOSTNAME=="dale" then --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
+    --Chip default (mk2)
+    walk.delay_threshold_angle = 999*math.pi/180 --disabled
+    
+    --Dale addon    
+    walk.hipRollCompensation = 1.5*DEG_TO_RAD
+    walk.tZMP = 0.33   
+    walk.footY = 0.115 --teddy, even wider
+    walk.supportX = 0.02 
+    walk.supportY = -0.01 
+    walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
+    Config.supportY_preview = 0.00 --this smooths out first step a bit
+    Config.supportY_preview2 = 0.0  
+  else
+     walk.delay_threshold_angle = 999*math.pi/180 --disabled
+
+    --Chip default (mk2)
+    walk.hipRollCompensation = 2*DEG_TO_RAD
+    walk.velLimitX = {-.10,.20}
+    walk.velLimitY = {-.06,.06}
+    walk.tZMP = 0.32
+    walk.supportY = 0.01
+    Config.supportY_preview = 0.00 --this smooths out first step a bit
+    Config.supportY_preview2 = 0.0  
+  end
 end
-
-if HOSTNAME=="teddy2" or HOSTNAME=="dale" then --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
-  walk.hipRollCompensation = 1.5*DEG_TO_RAD
-  walk.tZMP = 0.33   
-  walk.footY = 0.115 --teddy, even wider
-  walk.supportX = 0.02 
-  walk.supportY = -0.01 
-  walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
-end
-
-
 
 --hack to test invariance
 --walk.supportY = 0.20
@@ -139,11 +144,9 @@ end
   Config.supportY_preview = 0.02 --increase initial bobbing
   Config.supportY_preview = 0.0 --works best with webots
 
-
   Config.supportY_preview2 = 0.0  
 --testing
 --walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD
-
 
 ------------------------------------
 -- Associate with the table

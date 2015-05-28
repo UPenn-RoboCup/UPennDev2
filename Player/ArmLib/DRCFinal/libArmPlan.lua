@@ -306,7 +306,7 @@ function libArmPlan.joint_preplan(self, plan)
 		for i, lim in ipairs(dq_limit) do
 			if fabs(dqAverage[i]) > lim then
 				print(string.format(prefix.."dq[%d] |%g| > %g", i, dqAverage[i], lim))
-				return
+				return qArm
 			end
 		end
 		-- Form the plan

@@ -1,0 +1,440 @@
+#VRML_SIM V7.4.3 utf8
+#16 8 6 block, we assume the size of 40 20 15cm instead
+#15 degree angle
+#Block size 0.4 *0.4 * 0.15
+#Total dimension: 42.5193187281 cm
+PROTO Surprise2 [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+	field SFColor diffuseColor 0.5 0.5 0.5
+	field SFColor redColor 1.0 0 0 
+	]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0	0.805 0	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 1.31 1.61 0.064 }
+			  }
+			]			
+		}
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0.623	0.805 0.633	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 0.064 1.61 1.33 }
+			  }
+			]			
+		}
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation -0.623	0.805 0.633	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 0.064 1.61 1.33 }
+			  }
+			]			
+		}
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0	0.805 1.266	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 1.31 1.61 0.064 }
+			  }
+			]			
+		}
+		# Shower Head
+		DEF shower Transform{
+			rotation 0 0 1 0 
+			translation 0.623 2.25 -0.58
+			children[
+				DEF SHOWER Shape{
+				 	appearance Appearance {
+				 		material Material { diffuseColor IS redColor }
+				 	}
+					geometry Cone {
+						height        0.1   
+						bottomRadius  0.1
+						bottom        FALSE     
+						side          TRUE
+						subdivision   12    
+					}
+				}
+			]
+		}
+		# SIDE BOX 1-1
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation -0.68	1.475 0.633	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS color}}
+			     geometry Box { size 0.10 0.25 0.20 }
+			  }
+			]			
+		}
+		# SIDE BOX 1-sideL
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation -0.73	1.475 0.533	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS color}}
+			     geometry Box { size 0.15 0.25 0.001 }
+			  }
+			]			
+		}
+		# SIDE BOX 1-sideR
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation -0.73	1.475 0.733	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS color}}
+			     geometry Box { size 0.15 0.25 0.001 }
+			  }
+			]			
+		}
+		# SIDE BOX 1-bottom
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation -0.73	1.35 0.633	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS color}}
+			     geometry Box { size 0.15 0.001 0.20 }
+			  }
+			]			
+		}
+		# SIDE BOX 1-top
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation -0.73	1.6 0.633	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS color}}
+			     geometry Box { size 0.15 0.001 0.20 }
+			  }
+			]			
+		}
+
+		# BOX 1 Inside Red Button
+		DEF button SliderJoint {
+			jointParameters JointParameters {
+			  position 0 0 0 
+	          axis 1 0 0
+	          maxStop 0.005
+			  minStop -0.005
+	          dampingConstant 50
+	          #springConstant 0
+	          staticFriction 0.05
+	        }
+	        device LinearMotor {
+	        	name "button_slider"
+	        }
+	        endPoint Solid {
+	          translation -0.76	1.475 0.633 
+	          children [ 
+	          	DEF button_trans Transform {
+								rotation 0 0 1 1.57
+								translation 0 0 0 
+								children[
+									Shape{
+										appearance Appearance {material Material {diffuseColor IS redColor}}
+										geometry Cylinder {
+											height 0.03
+											radius 0.0275
+											subdivision 8 
+											top TRUE
+
+										}
+									}
+								]
+							}
+						]
+						boundingObject Group {
+							children [
+								USE button_trans
+							]
+						}
+						physics Physics {
+							#density 1
+							mass 1
+						}
+					}
+				}
+
+		# SIDE BOX 2
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0	1.28 1.41
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS color}}
+			     geometry Box { size 0.40 0.72 0.16 }
+			  }
+			]			
+		}
+		# Bar from Main Box to Shower Head
+		DEF bar Transform{
+			rotation 1 0 0 1.57 
+			translation 0.623 2.3 -0.29 
+			children[
+				Shape{
+					geometry Cylinder {
+						height 0.58
+						radius 0.01
+						subdivision 8 
+					}
+				}
+			]
+		}
+		# Pillar
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0.623 1.225 0	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 0.064 2.45 0.064 }
+			  }
+			]			
+		}
+		# BOX 1 door
+		HingeJoint {
+	        jointParameters HingeJointParameters {
+	          axis 0 -1 0
+	          anchor -0.805	1.475 0.533 #-0.425 1.01 0
+	          maxStop 5
+			  minStop 0
+	          dampingConstant 10
+	        }
+	        endPoint Solid {
+	          translation -0.805 1.475 0.633 # -0.425 1.01 0
+	          children [
+	            Shape {
+	              appearance Appearance {
+	                material Material {
+	                  diffuseColor IS color
+	                  specularColor 0.4 0.4 0.4
+	                }
+	#                texture ImageTexture {url IS mainTextureUrl}
+	              }
+	              geometry Box { size 0.001 0.25 0.20 }
+	            }
+	          ]
+	          boundingObject Group {
+	            children [
+	              Transform {
+	                translation 0 0 0
+	                children [
+	                  Box {
+							size 0.001 0.25 0.20
+	                  }
+	                ]
+	              }
+	            ]
+	          }
+	          physics Physics {
+	            #density -1
+	            mass 0.1
+	            centerOfMass [
+	              0.44 0 0
+	            ]
+	            inertiaMatrix [
+	              5.7361 0.40878 5.1162, 0 0.0061152 0
+	            ]
+	          }
+	        }
+	    }
+	    # HANDLE - Hinge
+		HingeJoint {
+		    jointParameters HingeJointParameters {
+		        axis -1 0 0
+		        anchor 0.623 2.3 -0.29
+		        maxStop 0.5
+		        minStop 0
+		        staticFriction 2
+		        springConstant 5
+		    }
+		    endPoint Solid {
+	        translation 0.623 2.3 -0.34
+	        rotation 0 1 0 0
+	        children [
+	          DEF support Shape {
+	            appearance Appearance {
+	              material Material {
+	                specularColor 0.1 0.1 1.0
+	              }
+	            }
+	            geometry Box { size 0.005 0.06 0.12 }
+	          }
+	          HingeJoint{
+	          	jointParameters HingeJointParameters {
+	          		axis 1 0 0
+	          		anchor  0 0 -0.05
+	          		maxStop 3.5
+	          		minStop -3.5
+	          		staticFriction 0.5
+	          		springConstant 0.1
+	          		dampingConstant 10
+	          	}
+	          	endPoint Solid {
+	          	translation -0.623 -2.3025 0.53 
+	          	rotation 0 1 0 0
+	          	children [
+	          		DEF connect Transform{
+				    rotation 0 0 1 1.57
+				    translation 0.623 2.3 -0.58
+				    children[
+				      DEF CONNECT Shape {
+				        appearance Appearance {
+				          material Material {
+				            ambientIntensity 0.1
+				            diffuseColor IS color
+				          }
+				        }
+				        geometry Cylinder {
+				          height 0.02
+				          radius 0.005
+				  				subdivision 8
+				        }
+				      }
+				    ]
+				  	}
+	          		DEF handle1 Transform{
+				    rotation 0 0 1 1.57
+				    translation 0.623 1.6 -0.58
+				    children[
+				      DEF HANDLE Shape {
+				        appearance Appearance {
+				          material Material {
+				            ambientIntensity 0.1
+				            diffuseColor IS color
+				          }
+				        }
+				        geometry Cylinder {
+				          height 0.21
+				          radius 0.005
+				  				subdivision 8
+				        }
+				      }
+				    ]
+				  	}
+					  DEF handle2 Transform{
+					    rotation 0 0 1 0.5236
+					    translation 0.6755 1.6909 -0.58
+					    children[
+					      DEF HANDLE Shape {
+					        appearance Appearance {
+					          material Material {
+					            ambientIntensity 0.1
+					            diffuseColor IS color
+					          }
+					        }
+					        geometry Cylinder {
+					          height 0.21
+					          radius 0.005
+					          subdivision 8
+					        }
+					      }
+					    ]
+					  }
+					  DEF handle3 Transform{
+					    rotation 0 0 1 -0.5236
+					    translation 0.5705 1.6909 -0.58
+					    children[
+					      DEF HANDLE Shape {
+					        appearance Appearance {
+					          material Material {
+					            ambientIntensity 0.1
+					            diffuseColor IS color
+					          }
+					        }
+					        geometry Cylinder {
+					          height 0.21
+					          radius 0.005
+					          subdivision 8
+					        }
+					      }
+					    ]
+					  }
+					  DEF wire Transform{
+					    rotation 0 0 1 0
+					    translation 0.623 2.045 -0.58
+					    children[
+					      DEF WIRE Shape {
+					        appearance Appearance {
+					          material Material {
+					            ambientIntensity 0.1
+					            diffuseColor IS color
+					          }
+					        }
+					        geometry Cylinder {
+					          height 0.515
+					          radius 0.005
+					          subdivision 8
+					        }
+					      }
+					    ]
+					  }		          		
+		          	]
+		          	boundingObject Group {
+		          		children [
+		          			USE connect
+		          			USE handle1
+		          			USE handle2
+		          			USE handle3
+		          			USE wire
+		          		]
+		          	}
+		          	physics Physics {
+					    #density 1
+					    mass 1
+					}
+		          	}
+		          }
+		        ]
+		        boundingObject Group {
+	            children [
+	              Transform {
+	                translation 0 0 0
+	                children [
+	                  Box { size 0.005 0.06 0.12 } ]
+	              }
+	            ]
+          		}
+          		physics Physics {
+								#density 1
+								mass 0.1
+							}
+		      }
+		    }
+		  ]
+		}
+      ] # Main Children 
+      }
+    }
+  ]
+  boundingObject Group {
+		children [
+			USE block
+			USE button	
+			USE shower
+		]
+  }  
+ locked TRUE
+}
+}

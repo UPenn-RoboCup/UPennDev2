@@ -2,7 +2,7 @@ PROTO CHOPSTICKS [
   field SFVec3f translation 0 0 0
   field SFRotation rotation  0 1 0 0
   #ORIGIN: wrist axle
-	#total length to tip end: 380mm
+	#total length to tip end: 330mm
 ]
 {	
 	Solid {
@@ -11,12 +11,12 @@ PROTO CHOPSTICKS [
 		boundingObject Group {
 			children [
 				Transform {
-					translation -0.025 -0.25 0
-					children [ Box { size 0.01 0.26 0.01 } ]
+					translation -0.025 -0.22 0
+					children [ Box { size 0.01 0.205 0.01 } ]
 				}
 				Transform {
-					translation 0.025 -0.25 0
-					children [ Box { size 0.01 0.26 0.01 } ]
+					translation 0.025 -0.22 0
+					children [ Box { size 0.01 0.205 0.01 } ]
 				}
 			]
 		}
@@ -33,19 +33,19 @@ PROTO CHOPSTICKS [
 			GRIPPER_PLATE {
 				translation 0 -0.12 0
 				size 0.08 0.005 0.04
-				}
+			}
 			Transform {
-				translation -0.025 -0.25 0
+				translation -0.025 -0.22 0
 				children[ Shape {
 					geometry Cylinder {
 					  bottom TRUE
 					  side TRUE
 					  top FALSE
-					  height 0.26
+					  height 0.205
 					  radius 0.005
 					  subdivision 12
 					}
-			      appearance Appearance {
+					appearance Appearance {
 		        material Material {
 		          diffuseColor 0 0.75 1
 		          emissiveColor 0 0.075 0.1
@@ -56,13 +56,13 @@ PROTO CHOPSTICKS [
 				} ]
 			}
 			Transform {
-				translation 0.025 -0.25 0
+				translation 0.025 -0.22 0
 				children[ Shape {
 					geometry Cylinder {
 					  bottom TRUE
 					  side TRUE
 					  top FALSE
-					  height 0.26
+					  height 0.205
 					  radius 0.005
 					  subdivision 12
 					}

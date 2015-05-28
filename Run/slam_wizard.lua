@@ -1,136 +1,180 @@
----------------------------------
--- SLAM wizard for Team THOR
--- (c) Stephen McGill, 2013
----------------------------------
+#!/usr/bin/env luajit
+local ENABLE_LOG = false
+-- Mesh Wizard for Team THOR
+-- Accumulate lidar readings into an image for mesh viewing
+-- (c) Stephen McGill, Seung Joon Yi, 2013, 2014
 dofile'../include.lua'
-local simple_ipc = require'simple_ipc'
-local wait_channels = {}
-local mp = require'msgpack'
-local vector = require'vector'
-local util = require'util'
-local cutil = require'cutil'
+local libMesh = require'libMesh'
+local si = require'simple_ipc'
+local mpack = require'msgpack.MessagePack'.pack
+local munpack = require('msgpack.MessagePack')['unpack']
 local Body = require'Body'
-local torch = require'torch'
-local libMap = require'libMap'
---local libDetect = require'libDetect'
+local ffi = require'ffi'
+require'vcm'
+require'hcm'
 
--- Flags
-local USE_ODOMETRY = true
---local SAVE_POINTS  = true
---local DO_EXPORT    = true
+local sin, cos = require'math'.sin, require'math'.cos
+local T = require'Transform'
 
--- Open the map to localize against
-local map = libMap.open_map(HOME..'/Data/map.ppm')
---[[
-local map_area, map_resolution = 25, 0.05
-local map = libMap.new_map(map_area, map_resolution)
---]]
+local pillar_ch = si.new_publisher('pillars')
 
--- Render so that I can see it :)
-if DO_EXPORT==true then
-	local c_map = map:render'png'
-	local f_map = io.open('cur_map.png','w')
-	f_map:write(c_map)
-	f_map:close()
-	libMap.export(map.omap,'omap.raw','byte')
-end
-
-local function setup_ch( ch, meta )
-	ch.n   = meta.n
-	ch.res = meta.res
-	ch.fov = meta.n*meta.res
-	local half_view = ch.fov/2
-	ch.angles = torch.range(0,ch.n-1):mul(-1*DEG_TO_RAD*ch.res):add(half_view*DEG_TO_RAD)
-
-	assert(ch.n==ch.angles:size(1),"Bad lidar resolution")
-	ch.raw     = torch.FloatTensor(ch.n)
-	ch.ranges  = torch.Tensor(ch.n)
-	ch.cosines = torch.cos(ch.angles)
-	ch.sines   = torch.sin(ch.angles)
-	ch.points  = torch.Tensor(ch.n,2):zero()
-end
-
-local function localize(ch)
-	-- Update odometry
-	local odom = wcm.get_robot_odometry()
-	if USE_ODOMETRY==true then
-		local p_traveled = util.pose_relative(odom,map.odom)
-		map.pose = util.pose_global(p_traveled,map.pose)
-	end
-	map.odom = odom
-	-- Match laser scan points
-	local matched_pose, hits = map:localize( ch.points, {} )
-	--print("MATCH",matched_pose,hits)
-	map.pose = matched_pose
-	return matched_pose
-end
-
--- Listen for lidars
-local lidar_cb = function(sh)
-	local ch = wait_channels.lut[sh]
-	local t = Body.get_time()
-	local meta, ranges
-	repeat
-		-- Do not block
-    local metadata, has_more = ch:receive(true)
-		-- If no msg, then process
-		if not metadata then break end
-		-- Must have a pair with the range data
-		assert(has_more,"metadata and not lidar ranges!")
-		meta = mp.unpack(metadata)
-		ranges, has_more = ch:receive(true)
-	until false
-	-- Update the points
-	if meta.n~=ch.n then
-		print('Set up the channel!',ch.n,meta.n)
-		setup_ch(ch,meta)
-	end
-	-- Update the count
-	ch.count = ch.count + 1
-	-- Place into storage
-	cutil.string2storage(ranges,ch.raw:storage())
-	-- Copy to the double format
-	ch.ranges:copy(ch.raw)
-	-- Put into x/y space from r/theta
-	local pts_x = ch.points:select(2,1)
-	local pts_y = ch.points:select(2,2)
-	--
-	torch.cmul(pts_x,ch.cosines,ch.ranges)
-	torch.cmul(pts_y,ch.sines,ch.ranges)
-	-- Link length
-	pts_x:add(.3)
-
-	-- SLAM
-	if wcm.get_map_enable_slam()==1 then
-		if not map.pose then
-			local start = wcm.get_robot_initialpose()
-			-- Need a good guess for the starting pose of the robot
-			map.pose = vector.pose(start)
-			-- Store a snapshot of the odometry at this time
-			map.odom = wcm.get_robot_odometry()
+local polar_interval = 15 * DEG_TO_RAD
+local function find_pillars(xyz, polar)
+	local xyz_com = xyz[1]
+	local rho, theta = unpack(polar)
+	local pillars = {}
+	local interval = polar_interval + theta[1]
+	local xymin
+	local rmin = math.huge
+	for i, a in ipairs(theta) do
+		local xyz = xyz_com[i]
+		local r = rho[i]
+		if a<interval then
+			if r<rmin and r>0.25 then
+				xymin = {xyz[1], xyz[2]}
+				rmin = r
+			elseif not x then
+				rmin = math.huge
+				xymin = {xyz[1], xyz[2]}
+			end
+		else
+			table.insert(pillars, xymin)
+			xymin = nil
+			rmin = math.huge
+			interval = interval + polar_interval
 		end
-		-- If slam is enabled
-		local pose = localize(ch)
-		if map.read_only==false then
-			-- Update the map
-			map:update(ch.points, t)
-		end
-		print("SLAM POSE",pose)
-		wcm.set_robot_pose(pose)
 	end
-	
-	-- Detect circles
-	--libDetect.lidar_circles(ch)
+	table.insert(pillars, x)
+	pillar_ch:send(mpack(pillars))
+	--[[
+	print('Sending pillars', #pillars)
+	for i,p in ipairs(pillars) do
+		print(p[2], p[1])
+	end
+	--]]
+end
+
+local Thead = T.trans(0,0,0.282)
+local function head3d(meta, scan)
+	local scan_fl = ffi.cast('float*', scan)
+	local mid = meta.n / 2 * meta.res
+	local angles, rho = {}, {}
+	for i=1,meta.n do
+		table.insert(angles, i * meta.res - mid)
+		table.insert(rho, scan_fl[i-1])
+	end
+	local xyz = {}
+	for i,a in ipairs(angles) do
+		table.insert(xyz, {rho[i] * cos(a), rho[i] * sin(a), 0.1})
+	end
+	local xyz_actuated = {}
+	local Thead = T.rotZ(meta.angle[1]) * T.rotY(meta.angle[2])
+	for i,p in ipairs(xyz) do
+		table.insert(xyz_actuated, Thead * p)
+	end
+	local xyz_com = {}
+	local Tcom = Thead * T.rotZ(meta.qWaist[1])
+	for i, p in ipairs(xyz_actuated) do
+		table.insert(xyz_com, Tcom*p)
+	end
+	local rho_com = {}
+	local theta_com = {}
+	for i, p in ipairs(xyz_com) do
+		table.insert(theta_com, math.atan2(p[2], p[1]))
+		table.insert(rho_com, math.sqrt(math.pow(p[2],2), math.pow(p[1],2)))
+	end
+
+
+	local Tworld = T.from_flat(meta.tfG16)
+	local xyz_world = {}
+	for i, p in ipairs(xyz_com) do
+		table.insert(xyz_world, Tworld*p)
+	end
+	return {xyz_com, xyz_world}, {rho_com, theta_com}
+end
+
+local Tchest = T.trans(0.05, 0, 0.09)
+local function chest3d(meta, scan)
+	local scan_fl = ffi.cast('float*', scan)
+	local xyz = {}
+	for i,a in ipairs(angles) do
+		local r = scan_fl[i] + 0.02
+		table.insert(xyz, {r * sin(a), r * cos(a), 0})
+	end
+	local Tcom = Tchest * T.rotZ(meta.a) * T.rotX(math.pi/2)
+	local xyz_com = {}
+	for i, p in ipairs(xyz) do
+		table.insert(xyz_com, Tcom*p)
+	end
+	local Tworld = T.from_flat(meta.tfG16)
+	local xyz_world = {}
+	for i, p in ipairs(xyz_com) do
+		table.insert(xyz_world, Tworld*p)
+	end
+	return xyz_world, xyz_com
+end
+
+local function entry()
 
 end
 
-local lidar_ch = simple_ipc.new_subscriber'lidar0'
-lidar_ch.name = 'head'
-lidar_ch.count = 0
-lidar_ch.callback = lidar_cb
+local np = 0
+local function update(meta, scan)
+	local points
+	-- Form 3D coordinates
+	if meta.id=='lidar0' then
+		--points = chest3d(meta, scan)
+	elseif meta.id=='lidar1' then
+		local xyz, polar = head3d(meta, scan)
+		find_pillars(xyz, polar)
+	end
 
--- Make the poller
-table.insert(wait_channels, lidar_ch)
-local channel_timeout = 0.5 * 1e3
-local channel_poll = simple_ipc.wait_on_channels( wait_channels );
-while true do channel_poll:poll(channel_timeout) end
+	--[[
+	if np<1 then
+		for i,p in ipairs(points) do
+			print(i, unpack(p))
+		end
+	end
+	--]]
+	np = np + 1
+end
+
+local function exit()
+end
+
+-- If required from Webots, return the table
+if ... and type(...)=='string' then
+	return {entry=entry, update=update, exit=exit}
+end
+
+local poller
+local function cb(skt)
+	local idx = poller.lut[skt]
+	local mdata, ranges = unpack(skt:recv_all())
+	local meta = munpack(mdata)
+	update(meta, ranges)
+end
+
+local lidar0_ch = si.new_subscriber'lidar0'
+local lidar1_ch = si.new_subscriber'lidar1'
+
+lidar0_ch.callback = cb
+lidar1_ch.callback = cb
+poller = si.wait_on_channels({lidar1_ch})
+
+-- Cleanly exit on Ctrl-C
+local signal = require'signal'.signal
+local running = true
+local function shutdown()
+	io.write('Shutdown!\n')
+	poller:stop()
+end
+signal("SIGINT", shutdown)
+signal("SIGTERM", shutdown)
+
+poller:start()
+
+if ENABLE_LOG then
+	logger0:stop()
+	logger1:stop()
+end

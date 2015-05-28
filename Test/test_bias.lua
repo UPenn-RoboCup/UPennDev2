@@ -25,7 +25,7 @@ function process_keyinput()
     local legBias = mcm.get_leg_bias()
   
     -- Walk velocity setting
-    if byte==string.byte("i") then      targetvel_new[1]=targetvel[1]+0.02;
+    if byte==string.byte("i") then      targetvel_new[1]=targetvel[1]+0.01;
     elseif byte==string.byte("j") then  targetvel_new[3]=targetvel[3]+0.1;
     elseif byte==string.byte("k") then  targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
     elseif byte==string.byte("l") then  targetvel_new[3]=targetvel[3]-0.1;
@@ -86,7 +86,7 @@ function process_keyinput()
       unpack(vector.new(legBias)*RAD_TO_DEG)))
 
       --Append at the end of calibration file
-      outfile=assert(io.open("../Config/calibration.lua","a+"));
+      outfile=assert(io.open("../Config/THOR0/calibration.lua","a+"));
       --TODO: which one should we use?
       data=string.format("\n\n-- Updated date: %s\n" , os.date() );
       data=data..string.format("cal[\"%s\"].legBias=vector.new({\n   ",unix.gethostname());

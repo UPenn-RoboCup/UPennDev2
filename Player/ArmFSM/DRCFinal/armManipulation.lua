@@ -68,7 +68,12 @@ function state.update()
 	t_update = t
 	--if t-t_entry > timeout then return'timeout' end
 
-	if not stage then return'done' end
+	 -- Zero the waist
+  local qWaist = Body.get_safe_waist_command_position()
+  local qWaist_approach, doneWaist = util.approachTol(qWaist, {0,0}, {5 * DEG_TO_RAD, 5 * DEG_TO_RAD}, dt, {1*DEG_TO_RAD, 1*DEG_TO_RAD})
+  Body.set_safe_waist_command_position(qWaist_approach)
+
+	if doneWaist and not stage then return'done' end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco) or 'dead'
 	local rStatus = type(rco)=='thread' and coroutine.status(rco) or 'dead'
@@ -105,20 +110,6 @@ function state.update()
 	if type(qRWaypoint)=='table' then
 		Body.set_rarm_command_position(qRWaypoint)
 	end
-
-	--[[
-	if qLWaistpoint and qRWaistpoint then
-		print('Conflicting Waist')
-	elseif qLWaist then
-		Body.set_safe_waist_command_position(qLWaistpoint)
-	elseif qRWaist then
-		Body.set_safe_waist_command_position(qRWaistpoint)
-	end
-	--]]
-	  -- Zero the waist
-  local qWaist = Body.get_safe_waist_command_position()
-  local qWaist_approach, doneWaist = util.approachTol(qWaist, {0,0}, {2 * DEG_TO_RAD, 2 * DEG_TO_RAD}, dt, {1*DEG_TO_RAD, 1*DEG_TO_RAD})
-  Body.set_safe_waist_command_position(qWaist_approach)
 
 	-- Check if done
 	if lStatus=='dead' and rStatus=='dead' then

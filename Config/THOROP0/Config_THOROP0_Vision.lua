@@ -96,9 +96,9 @@ local ucla_head_param = {
 	--{'White Balance Temperature', 2300},
 	--{'Exposure (Absolute)', 112},
 	--{'Focus (absolute)', 120},
-	{'Brightness', 48},
-	{'Contrast', 32},
-	{'Saturation', 48},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 128},
 	{'Gain', 0},
 	{'Sharpness', 128},
 }

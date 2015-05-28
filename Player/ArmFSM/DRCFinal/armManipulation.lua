@@ -26,7 +26,7 @@ function state.entry()
 	t_entry = Body.get_time()
 	t_update = t_entry
 
-	sequence = {unpack(Config.arm.manipulation)}
+	sequence = {unpack(Config.arm.ready)}
 
 	if USE_SAFE_YAW then
 		-- Avoid self collisions.

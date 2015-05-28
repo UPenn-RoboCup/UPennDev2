@@ -8,9 +8,9 @@ local T = require'Transform'
 local arm = {}
 
 -- This comes after the walkInit
-arm.manipulation = {}
+arm.ready = {}
 
-arm.manipulation[1] =
+arm.ready[1] =
 	-- Pitch up
 	{
 	left = {

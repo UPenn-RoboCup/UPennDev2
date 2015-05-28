@@ -62,14 +62,14 @@ local function update(key_code)
 elseif key_char_lower==("t") then      
     hcm.set_step_supportLeg(0)    
     hcm.set_step_zpr({0,0,0})
-    hcm.set_step_relpos({0.40,0.01,0})    
+    hcm.set_step_relpos({0.35,0.01,0})    
     hcm.set_step_zpr({stair_height,0,0}) --stair    
     body_ch:send'stairclimb'   
 
 elseif key_char_lower==("y") then      
     hcm.set_step_supportLeg(1)
     hcm.set_step_zpr({0.00,0,0})
-    hcm.set_step_relpos({0.40,-0.01,0})
+    hcm.set_step_relpos({0.35,-0.01,0})
     hcm.set_step_zpr({stair_height,0,0}) --stair    
     body_ch:send'stairclimb'   
 

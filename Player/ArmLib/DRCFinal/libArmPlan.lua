@@ -304,8 +304,10 @@ function libArmPlan.joint_preplan(self, plan)
 		local dqdtAverage = dqTotal / plan.duration
 		local dqAverage = dqdtAverage * dt
 		for i, lim in ipairs(dq_limit) do
-			assert(fabs(dqAverage[i]) <= lim,
-				string.format(prefix.."dq[%d] |%g| > %g", i, dqAverage[i], lim))
+			if fabs(dqAverage[i]) > lim then
+				print(string.format(prefix.."dq[%d] |%g| > %g", i, dqAverage[i], lim))
+				return
+			end
 		end
 		-- Form the plan
 		local nsteps = plan.duration * hz

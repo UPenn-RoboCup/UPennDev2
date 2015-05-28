@@ -128,6 +128,17 @@ for _, sensor in ipairs(sensors) do
 	end
 end
 
+function sstart(scriptname)
+	if scriptname=='rpc' then return end
+	local msg = mp.pack({
+		raw = 'sstart("'..scriptname..'")'
+	})
+	rpc_req:send(msg)
+  local data = unpack(rpc_req:receive())
+	if type(data)~='string' then return end
+	return mp.unpack(data)
+end
+
 print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
 print(util.color('SHM access', 'blue'), table.concat(shm_vars, ' '))
 

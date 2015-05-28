@@ -26,6 +26,20 @@ local function qDiff(iq, q0)
 	return diff_use
 end
 
+local function qDiff2(iq, q0, qMin, qMax)
+	local qD0 = iq - q0
+	local qD1 = qDiff(iq, q0)
+	local qD = {}
+	for i, v in ipairs(qD0) do
+		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+			qD[i] = qD1[i]
+		else
+			qD[i] = qD0[i]
+		end
+	end
+	return qD
+end
+
 local function sanitize0(iqArm, cur_qArm)
 	local diff_use = {}
 	local mod_diff
@@ -164,7 +178,6 @@ local function find_shoulder_sj(self, tr, qArm)
 	return qBest
 end
 
-
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 local defaultWeights = {0, 0, 0, 0, 2}
 --
@@ -192,11 +205,11 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 		fks[ic] = self.forward(iq, qWaist)
 	end
 	--
-	local minArm, maxArm = self.qMin, self.qMax
+	local qMin, qMax = self.qMin, self.qMax
 	local rangeArm, halfway = self.qRange, self.halves
 	-- Cost for valid configurations
 	local cvalid = {}
-	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, minArm, maxArm) ) end
+	for ic, iq in ipairs(iqArms) do tinsert(cvalid, valid_cost(iq, qMin, qMax) ) end
 	-- FK sanity check
 	local dps = {}
 	local p_tr = vector.new(T.position(tr))
@@ -221,7 +234,7 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	----[[
 	local cusage, dRelative = {}
 	for _, iq in ipairs(iqArms) do
-		dRelative = ((iq - minArm) / rangeArm) - halfway
+		dRelative = ((iq - qMin) / rangeArm) - halfway
 		-- Don't use the infinite yaw ones.  Treated later
 		--tremove(dRelative, 7)
 		--tremove(dRelative, 5)
@@ -472,7 +485,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local hz, dt = self.hz, self.dt
 	local nStepsTimeout = math.ceil(timeout * hz)
 	-- Initial position
-	local qArm = vector.new(qArm0)
+	local qArm = vector.copy(qArm0)
+	-- Maybe sanitize the wrist... for the valve situation
+	--sanitize0(qArm, self.zeros)
 	-- Begin
 	local t0 = unix.time()
 	local path = {}
@@ -489,7 +504,8 @@ function libArmPlan.jacobian_preplan(self, plan)
 		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qArm)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
-		if qArmFGuess then 
+		if qArmFGuess then
+			--local dqdtNull = nullspace * torch.Tensor(qDiff2(qArm, qArmFGuess, qMin, qMax))
 			local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
 			dqdtCombo = dqdtArm - dqdtNull
 		else
@@ -720,7 +736,7 @@ function libArmPlan.jacobian_wasit_velocity(self, plan)
 	-- Set the limits
 	local qMin = {-math.pi, unpack(self.qMin)}
 	local qMax = {math.pi, unpack(self.qMax)}
-	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
+	local dq_limit = {30*DEG_TO_RAD*self.dt, unpack(self.dq_limit)}
 	-- While we have a plan, run the calculations
 	local qArmSensed, qWaistSensed
 	while type(plan)=='table' do

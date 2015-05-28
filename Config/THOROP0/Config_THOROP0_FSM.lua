@@ -113,7 +113,7 @@ fsm.Body = {
 	--
 	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
 	{'bodyStop', 'approach', 'bodyApproachMessy'},
-	{'bodyStop', 'stepover1', 'bodyStep'},
+	
 	{'bodyStop', 'stepflat', 'bodyStepAlign'},
 	{'bodyStop', 'stop', 'bodyStop'},
   --
@@ -123,7 +123,10 @@ fsm.Body = {
   {'bodyApproachBuggy', 'stop', 'bodyStop'},
 	{'bodyApproachBuggy', 'done', 'bodyStop'},
   --
-  {'bodyStep', 'nextstep', 'bodyStep'},
+
+
+  --these should NEVER called with mistake at all
+  {'bodyStop', 'stairclimb', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
 
   -- Take two slow stops (for precise alignment)

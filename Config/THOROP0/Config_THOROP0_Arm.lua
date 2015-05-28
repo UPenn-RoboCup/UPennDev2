@@ -46,9 +46,9 @@ table.insert(arm.init,
 })
 --]]
 
-arm.door = {}
+arm.pushdoor = {}
 
-arm.door[1] = {
+arm.pushdoor[1] = {
 	left = {
 		tr={0.7, 0.25, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		timeout=8,

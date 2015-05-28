@@ -97,8 +97,8 @@ function state.update()
 		rco = rco1
 	end
 
-	local lStatus = type(lco)=='thread' and coroutine.status(lco)
-	local rStatus = type(rco)=='thread' and coroutine.status(rco)
+	local lStatus = type(lco)=='thread' and coroutine.status(lco) or 'dead'
+	local rStatus = type(rco)=='thread' and coroutine.status(rco) or 'dead'
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()

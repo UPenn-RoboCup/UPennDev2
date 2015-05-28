@@ -67,6 +67,15 @@ if IS_WEBOTS then
 	end
 end
 
+
+
+Config.use_heeltoe_walk = true
+Config.heeltoe_angle = 0*DEG_TO_RAD
+Config.walktraj={}
+Config.walktraj.hybridwalk = "foot_trajectory_base"
+
+
+
 Config.use_imu_yaw = false --use odometry for yaw
 
 -----------------------------------

@@ -13,21 +13,6 @@ local jpeg = require'jpeg'
 local Body = require'Body'
 require'hcm'
 local get_time = Body.get_time
--- JPEG Compressor
-local c_grey = jpeg.compressor('y')
-local c_yuyv = jpeg.compressor('yuyv')
-local c_yuyv2 = jpeg.compressor('yuyv')
--- TODO: Control the downsampling mode
---c_yuyv:downsampling(2)
---c_yuyv:downsampling(1)
-
--- Stays 1:1
-c_grey:downsampling(1)
--- 240: w0, then div by 2 (downsample of 1) = w of 120 output
--- 180: h0, then div by 2 (downsample of 1) = h of 90 output
---local yuyv_jpg_crop = c_grey:compress_crop(yuyv_str, 640, 480, 161, 121, 160, 120)
-
-
 
 -- Grab the metadata for this camera
 local metadata, camera_id
@@ -50,6 +35,15 @@ else
 		assert(metadata, 'Bad camera name')
 	end
 end
+
+-- JPEG Compressor
+local c_grey = jpeg.compressor('y')
+local c_yuyv = jpeg.compressor('yuyv')
+local c_yuyv2 = jpeg.compressor('yuyv')
+c_yuyv2:quality(metadata.quality)
+c_yuyv2:downsampling(metadata.downsampling)
+c_grey:quality(metadata.quality)
+c_grey:downsampling(metadata.downsampling)
 
 local t_log = -math.huge
 local LOG_INTERVAL = 1/5
@@ -156,15 +150,16 @@ local function update(img, sz, cnt, t)
 	local c_img = c_yuyv:compress(img, w, h)
 
 	local ittybitty_img
-	c_yuyv2:quality(metadata.quality)
-	c_yuyv2:downsampling(metadata.downsampling)
 	if metadata.crop then
 		ittybitty_img= c_yuyv2:compress_crop(img, w, h, unpack(metadata.crop))
 	else
-		ittybitty_img= c_yuyv2:compress(img, w, h)
+		--ittybitty_img= c_yuyv2:compress(img, w, h)
+		ittybitty_img= c_grey:compress(img, w, h)
 	end
 	ittybitty_ch:send(ittybitty_img)
-	print('ittybitty_img', #ittybitty_img*8)
+	if #ittybitty_img*8>9600*2 then
+		print('ittybitty_img', #ittybitty_img*8)
+	end
 	--[[
 	c_meta.sz = #ittybitty_img
 	local msg = {mp.pack(c_meta), ittybitty_img}
@@ -172,7 +167,7 @@ local function update(img, sz, cnt, t)
 	c_meta.sz = #c_img
 	local msg = {mp.pack(c_meta), c_img}
 
-	--check_send(msg)
+	check_send(msg)
 
 	-- Do the logging if we wish
 	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then

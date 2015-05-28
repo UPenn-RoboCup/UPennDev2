@@ -97,37 +97,30 @@ arm.drill[3] = {
 	}
 }
 
---[[
-arm.drill[1] = {
-	left = false,
-	right = {
-		timeout=15,
+
+arm.shower = {}
+arm.shower[1] = {
+	left = {
 		via='jacobian_preplan',
-		tr={0.45, -0.2, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		weights = {0,1,-1,0,0},
+		timeout=15,
+		tr={0.3, 0.35, 0.75, 0, -90*DEG_TO_RAD,0},
+		qArmGuess = vector.new{0, 0, 0, -90, 0, 0, 0}*DEG_TO_RAD,
+		weights = {1,1,-1,1,2},
+	},
+	right = {
+		via='jacobian_preplan',
+		timeout=15,
+		tr={0.4, -0.3, 0.7, 0, -80*DEG_TO_RAD, 0},
+		qArmGuess = vector.new{0, 0, 0, -90, 0, 0, 0}*DEG_TO_RAD,
+		weights = {1,1,-1,1,2},
 	}
 }
 
-arm.drill[2] = {
-	left = false,
-	right = {
-		timeout=15,
-		via='jacobian_preplan',
-		tr={0.55, -0.4, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		weights = {0,0,-1,1,0},
-	}
-}
 
-arm.drill[3] = {
-	left = false,
-	right = {
-		timeout=15,
-		via='jacobian_preplan',
-		tr={0.45, -0.4, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		weights = {0,0,-1,1,0},
-	}
-}
---]]
+
+
+
+
 
 
 

@@ -29,6 +29,7 @@ shared_data.teleop = {
 	waypoint = zeros(3),
 	-- Head angles
   head = zeros(2),
+	headik = zeros(2),
 	-- Waist angles
 	waist = zeros(2),
 	-- Leg angles

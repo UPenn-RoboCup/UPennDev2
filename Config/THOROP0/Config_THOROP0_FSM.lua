@@ -158,31 +158,40 @@ fsm.Head = {
 	{'headIdle', 'init', 'headCenter'},
 	{'headIdle', 'teleop', 'headTeleop'},
 	--
-	--{'headCenter', 'done', 'headMesh'},
 	{'headCenter', 'trackleft', 'headTrackLeft'},
 	{'headCenter', 'trackright', 'headTrackRight'},
 	{'headCenter', 'teleop', 'headTeleop'},
-	-- Overrides
+	{'headCenter', 'teleopik', 'headTeleopIK'},
+	--
 	{'headTeleop', 'init', 'headCenter'},
 	{'headTeleop', 'trackleft', 'headTrackLeft'},
 	{'headTeleop', 'trackright', 'headTrackRight'},
 	{'headTeleop', 'mesh', 'headMesh'},
+	{'headTeleop', 'teleopik', 'headTeleopIK'},
+	--
+	{'headTeleopIK', 'init', 'headCenter'},
+	{'headTeleopIK', 'trackleft', 'headTrackLeft'},
+	{'headTeleopIK', 'trackright', 'headTrackRight'},
+	{'headTeleopIK', 'mesh', 'headMesh'},
+	{'headTeleopIK', 'teleop', 'headTeleop'},
 	--
 	{'headTrackLeft', 'init', 'headCenter'},
 	{'headTrackLeft', 'mesh', 'headMesh'},
 	{'headTrackLeft', 'trackright', 'headTrackRight'},
 	{'headTrackLeft', 'teleop', 'headTeleop'},
+	{'headTrackLeft', 'teleopik', 'headTeleopIK'},
 	--
 	{'headTrackRight', 'init', 'headCenter'},
 	{'headTrackRight', 'mesh', 'headMesh'},
 	{'headTrackRight', 'trackleft', 'headTrackLeft'},
 	{'headTrackRight', 'teleop', 'headTeleop'},
+	{'headTrackRight', 'teleopik', 'headTeleopIK'},
 	--
-	--{'headMesh', 'done', 'headCenter'},
 	{'headMesh', 'trackleft', 'headTrackLeft'},
 	{'headMesh', 'trackright', 'headTrackRight'},
 	{'headMesh', 'init', 'headCenter'},
 	{'headMesh', 'teleop', 'headTeleop'},
+	{'headMesh', 'teleopik', 'headTeleopIK'},
 }
 
 fsm.Gripper = {

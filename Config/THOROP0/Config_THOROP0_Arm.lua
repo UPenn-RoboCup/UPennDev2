@@ -61,7 +61,8 @@ arm.pushdoor[1] = {
 		--qWaistGuess = {-10*DEG_TO_RAD,0},
 		weights = {1,0,0}
 	},
-	right = false
+	right = false,
+	ikhead = {0.65, 0.25, -0.12}
 }
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
@@ -101,7 +102,7 @@ arm.shower[1] = {
 		tr={0.4, -0.3, 0.7, 0, -80*DEG_TO_RAD, 0},
 		qArmGuess = vector.new{0, 0, 0, -90, 0, 0, 0}*DEG_TO_RAD,
 		weights = {1,1,-1,1,2},
-	}
+	},
 }
 
 

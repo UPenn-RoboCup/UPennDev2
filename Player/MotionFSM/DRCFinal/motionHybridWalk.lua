@@ -33,7 +33,7 @@ local zmp_param_set = false
 
 -- What foot trajectory are we using?
 local foot_traj_func  
-local foot_traj_name = "foot_trajectory_base"
+local foot_traj_name = "foot_trajectory_base2"
 if Config.walktraj and Config.walktraj.hybridwalk then
   foot_traj_name = Config.walktraj.hybridwalk 
 end
@@ -65,6 +65,12 @@ end
 function walk.entry()
   print(walk._NAME..' Entry' )
   mcm.set_status_stabilization_mode(0) --We're in single support
+  if Config.use_heeltoe_walk then 
+    mcm.set_walk_heeltoewalk(1) 
+  else
+    mcm.set_walk_heeltoewalk(0) 
+  end
+
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
@@ -190,10 +196,25 @@ function walk.update()
 
   local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
   if iStep<=2 then phSingle = 0 end --This kills compensation and holds the foot on the ground  
-  local uLeft, uRight, zLeft, zRight = uLeft_now, uRight_now, 0,0
-  if supportLeg == 0 then uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight) --LS
-  else uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
+  local uLeft, uRight, zLeft, zRight, aLeft,aRight  = uLeft_now, uRight_now, 0,0, 0,0
+  if supportLeg == 0 then 
+    uRight,zRight,aRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight) --LS
+  else 
+    uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
   end
+
+  --Heel lift first, heel land first
+  --positive aLeft: toe lift
+  --negative aLeft: heel lift
+
+  local heeltoe_angle = Config.heeltoe_angle or 5*DEG_TO_RAD
+
+  if Config.use_heeltoe_walk then
+    mcm.set_walk_footlift({aLeft*heeltoe_angle, aRight*heeltoe_angle})
+  else
+    mcm.set_walk_footlift({0,0})
+  end
+
 
   local uZMP = zmp_solver:get_zmp(ph)
   moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP, zLeft,zRight)

@@ -358,6 +358,8 @@ end -- walk.update
 function walk.exit()
   print(walk._NAME..' Exit')  
   wcm.set_robot_reset_pose(0)  --Start updating localization
+  mcm.set_walk_footlift({0,0})
+  mcm.set_walk_heeltoewalk(0) --no heeltoewalk default  
 end
 
 return walk

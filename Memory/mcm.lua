@@ -109,6 +109,11 @@ shared.walk.avShiftY = vector.zeros(2)
 
 shared.walk.t_last = vector.zeros(1)
 
+shared.walk.footlift = vector.zeros(2)
+shared.walk.heeltoewalk = vector.zeros(1)
+
+
+
 
 --During SS, swinging foot sags below
 --So they should be lifted up more

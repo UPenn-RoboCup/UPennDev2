@@ -444,7 +444,9 @@ function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local zf = .5*(1-math.cos(2*math.pi*phSingleSkew))
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight * zf
-  return uFoot, zFoot
+
+  local aFoot = math.sin(phSingle*2*math.pi)
+  return uFoot, zFoot, aFoot
 end
 
 
@@ -471,7 +473,10 @@ local coefsY={
   local zf=eval_spline(breaksTY, coefsY,phSingle)  
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight
-  return uFoot, zFoot
+
+  local aFoot = math.sin(phSingle*2*math.pi)
+
+  return uFoot, zFoot, aFoot
 end
 
 

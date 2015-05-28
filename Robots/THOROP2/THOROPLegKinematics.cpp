@@ -112,16 +112,13 @@ std::vector<double> THOROP_kinematics_inverse_leg(Transform trLeg, int leg, doub
 
 
 
-std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY, int birdwalk, double anklePitchCurrent){
+std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int leg, double aShiftX, double aShiftY,
+                                                           int birdwalk, double anklePitchCurrent,
+                                                           double heelliftMin){
 
   std::vector<double> qLeg(6);
 
-
-
-//testing
   trLeg.rotateX(aShiftX).rotateY(aShiftY);
-
-
 
   Transform trInvLeg = inv(trLeg);
 
@@ -218,7 +215,14 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
     if (fabs(ferr)<0.01){ankle_tilt_angle = x0-afootA;}
     else{ankle_tilt_angle = 0;}
   }
-  //now we eknow ankle tilt ankle
+  //now we know ankle tilt ankle
+
+
+  //we can force tilt angle
+  if (ankle_tilt_angle<heelliftMin){
+    ankle_tilt_angle=heelliftMin;
+  }
+
 
   //lets calculate correct ankle offset position
   double dAnkle1Mod = vecx0*(footToeX - footC*cos(ankle_tilt_angle+afootA)) + vecz0*footC*sin(ankle_tilt_angle+afootA);
@@ -395,20 +399,13 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
 
 
 
-std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int leg, double aShiftX, double aShiftY,int birdwalk, double anklePitchCurrent){
+std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int leg, double aShiftX, double aShiftY,
+        int birdwalk, double anklePitchCurrent, double toeliftMin){
 
   //TODOTODOTODOTODOTODO!!!!!!!!!!!!!!
   std::vector<double> qLeg(6);
 
-
-//testing
   trLeg.rotateX(aShiftX).rotateY(aShiftY);
-
-
-
-
-
-
 
   Transform trInvLeg = inv(trLeg);
 
@@ -514,6 +511,11 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
       ankle_tilt_angle = 0;
     }
   //    if (ankle_tilt_angle<-45*3.1415/180)  ankle_tilt_angle=-45*3.1415/180;
+  }
+
+  //we can force tilt angle 
+  if (ankle_tilt_angle<toeliftMin){
+    ankle_tilt_angle=toeliftMin;
   }
 
   //lets calculate correct ankle offset position

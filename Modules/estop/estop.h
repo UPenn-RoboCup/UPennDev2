@@ -49,7 +49,7 @@ void handleGpsMsg(VscMsgType *recvMsg);
 void handleFeedbackMsg(VscMsgType *recvMsg);
 
 int handleHeartbeatMsg(VscMsgType *recvMsg);
-int readFromVsc();
+int readFromVsc(int *lstick, int*rstick, int *lbutton, int *rbutton);
 
 void estop_init(char* ch, int baud);
 void estop_shutdown();

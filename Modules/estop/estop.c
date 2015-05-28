@@ -49,6 +49,13 @@
 
 
 
+int lX=0,lY=0,lZ=0,   rX=0,rY=0,rZ=0;
+int lJ=0, rJ=0;
+int lU=0,lD=0,lL=0,lR=0,  rU=0, rD=0, rL=0, rR=0;
+
+int estop = 0;
+
+
 /* File descriptor for VSC Interface */
 VscInterfaceType* vscInterface;
 struct timespec lastSent, timeNow, lastReceived, timeDiff;
@@ -77,25 +84,33 @@ unsigned long diffTime(struct timespec start, struct timespec end, struct timesp
 
 void handleJoystickMsg(VscMsgType *recvMsg) {
 
-	printf("JOYSTICK MSG!\n");
+//	printf("JOYSTICK MSG!\n");
 	JoystickMsgType *joyMsg = (JoystickMsgType*) recvMsg->msg.data;
-	printf("Joystick (L / R): %5i, %5i, %5i / %5i, %5i, %5i ",
-			vsc_get_stick_value(joyMsg->leftX), vsc_get_stick_value(joyMsg->leftY),
-			vsc_get_stick_value(joyMsg->leftZ), vsc_get_stick_value(joyMsg->rightX),
-			vsc_get_stick_value(joyMsg->rightY), vsc_get_stick_value(joyMsg->rightZ));
 
-	printf("\tJoystick (L Pad / R Pad): %i, %i, %i, %i / %i, %i, %i, %i\n",
-			vsc_get_button_value(joyMsg->leftSwitch.home), vsc_get_button_value(joyMsg->leftSwitch.first),
-			vsc_get_button_value(joyMsg->leftSwitch.second), vsc_get_button_value(joyMsg->leftSwitch.third),
-			vsc_get_button_value(joyMsg->rightSwitch.home), vsc_get_button_value(joyMsg->rightSwitch.first),
-			vsc_get_button_value(joyMsg->rightSwitch.second), vsc_get_button_value(joyMsg->rightSwitch.third));
+	lX = vsc_get_stick_value(joyMsg->leftX);
+	lY = vsc_get_stick_value(joyMsg->leftY);
+	lZ = vsc_get_stick_value( joyMsg->leftZ);
 
-	/* TODO: Add application specific code here to handle joystick messages */
+	rX = vsc_get_stick_value(joyMsg->rightX);
+	rY = vsc_get_stick_value(joyMsg->rightY);
+	rZ = vsc_get_stick_value(joyMsg->rightZ);
+
+	lD=vsc_get_button_value(joyMsg->leftSwitch.home);//down
+	lR=vsc_get_button_value(joyMsg->leftSwitch.first);//right
+	lU=vsc_get_button_value(joyMsg->leftSwitch.second);//up
+	lL=vsc_get_button_value(joyMsg->leftSwitch.third);//left
+
+	rD=vsc_get_button_value(joyMsg->rightSwitch.home);//down
+	rR=vsc_get_button_value(joyMsg->rightSwitch.first);//right
+	rU=vsc_get_button_value(joyMsg->rightSwitch.second);//up
+	rL=vsc_get_button_value(joyMsg->rightSwitch.third);//left
+
 }
 
 int handleHeartbeatMsg(VscMsgType *recvMsg) {
 	HeartbeatMsgType *msgPtr = (HeartbeatMsgType*) recvMsg->msg.data;
-	return msgPtr->EStopStatus;
+  estop = msgPtr->EStopStatus;
+  return 0;
 }
 
 void handleGpsMsg(VscMsgType *recvMsg) {
@@ -117,16 +132,16 @@ void handleFeedbackMsg(VscMsgType *recvMsg) {
 	/* TODO: Add application specific code here to handle feedback messages */
 }
 
-int readFromVsc() {
+int readFromVsc(int *lstick, int*rstick, int *lbutton, int *rbutton) {
 	VscMsgType recvMsg;
-
+	int ret=0;
 	/* Read all messages */
 	while (vsc_read_next_msg(vscInterface, &recvMsg) > 0) {
 		/* Read next Vsc Message */
 //		printf("[%d] ",recvMsg.msg.msgType);
 		switch (recvMsg.msg.msgType) {
 		case MSG_VSC_HEARTBEAT:
-			return handleHeartbeatMsg(&recvMsg);			
+			ret= handleHeartbeatMsg(&recvMsg);			
 			break;
 		case MSG_VSC_NMEA_STRING:
 			break;
@@ -135,7 +150,7 @@ int readFromVsc() {
 
 			break;
 		case MSG_VSC_JOYSTICK:
-//			handleJoystickMsg(&recvMsg);
+			handleJoystickMsg(&recvMsg);
 
 			break;
 		default:
@@ -144,7 +159,28 @@ int readFromVsc() {
 			break;
 		}
 	}
-	return 0;
+
+//X forward, Y left
+	lstick[0]=lY;
+	lstick[1]=-lX;
+	lstick[2]=lZ;
+
+	rstick[0]=rY;
+	rstick[1]=-rX;
+	rstick[2]=rZ;
+
+	lbutton[0]=lU;
+	lbutton[1]=lD;
+	lbutton[2]=lL;
+	lbutton[3]=lR;
+
+	rbutton[0]=rU;
+	rbutton[1]=rD;
+	rbutton[2]=rL;
+	rbutton[3]=rR;
+
+
+	return ret;
 }
 
 
@@ -177,6 +213,12 @@ void estop_init(char* ch, int baud){
 
 	// Send Heartbeat Message to VSC 
 	vsc_send_heartbeat(vscInterface, ESTOP_STATUS_NOT_SET);
+
+	lX=0;	lY=0;	lZ=0;
+	rX=0;	rY=0;	rZ=0;
+	lU=0;lD=0;lL=0;lR=0;
+	rU=0;rD=0;rL=0;rR=0;
+	estop=0;
 }
 
 
@@ -188,7 +230,7 @@ void estop_shutdown(){
 
 
 
-int estop_update(){
+int estop_update(int *lstick, int*rstick, int *lbutton, int *rbutton){
 
 	/* Get current clock time */
 		clock_gettime(CLOCK_REALTIME, &timeNow);
@@ -228,14 +270,14 @@ int estop_update(){
 			/* Input received, check to see if its from the VSC */
 			if (FD_ISSET(vsc_fd, &input)) {
 				/* Read from VSC */
-				int ret = readFromVsc();
+				int ret = readFromVsc(lstick,rstick,lbutton,rbutton);
 		
 				/* Record the last time input was recieved from the VSC */
 				clock_gettime(CLOCK_REALTIME, &lastReceived);
-				return ret;
+				return estop;
 			} else {
 				fprintf(stderr, "vsc_example: invalid fd set");
 			}
 		}
-		return 0;
+		return estop;
 }

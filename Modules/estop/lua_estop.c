@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "SerialInterface.h"
 #include "VehicleInterface.h"
@@ -14,8 +15,14 @@
 #define MT_NAME "estop_mt"
 
 
-
-
+static void lua_pushintarray(lua_State *L, int* v, int n) {
+  lua_createtable(L, n, 0);
+  int i=0;
+  for (i = 0; i < n; i++) {
+    lua_pushnumber(L, v[i]);
+    lua_rawseti(L, -2, i+1);
+  }
+}
 
 static int lua_estop_index(lua_State *L) {
   /* Get index through metatable: */
@@ -38,9 +45,30 @@ static int lua_estop_init(lua_State *L) {
 
 
 static int lua_estop_update(lua_State *L) {
-  int ret = estop_update();
-  //remote estop bit: 0x01
-  lua_pushnumber(L, ret);  
+  int lstick[4],rstick[4],lbutton[4],rbutton[4];
+  int ret = estop_update(lstick,rstick,lbutton,rbutton);  
+  int rb = rbutton[1]+ 4*rbutton[2] + 3*rbutton[0] + 2*rbutton[3];
+
+  lua_createtable(L, 0, 4);
+  lua_pushstring(L, "estop");
+    lua_pushnumber(L,ret);
+  lua_rawset(L,-3);
+
+  lua_pushstring(L, "lbutton");
+    lua_pushintarray(L,lbutton,4);
+  lua_rawset(L,-3);
+
+  lua_pushstring(L, "lstick");
+    lua_pushintarray(L,lstick,3);
+  lua_rawset(L,-3);
+
+  lua_pushstring(L, "rstick");
+    lua_pushintarray(L,rstick,3);
+  lua_rawset(L,-3);
+
+  lua_pushstring(L, "rbutton");
+    lua_pushnumber(L,rb);
+  lua_rawset(L,-3);  
   return 1;
 }
 

@@ -6,8 +6,10 @@ local estop=require('estop')
 estop.init()
 while true do
   ret = estop.update()  
-  if ret==5 then
-  	print("ESTOPPED!!!!!")
-  end
+  print("ESTOP:",ret.estop)
+  print("LSTICK:",unpack(ret.lstick))
+  print("RSTICK:",unpack(ret.rstick))
+  print("LBUTTON:",unpack(ret.lbutton))
+  print("RBUTTON:",ret.rbutton)
 end
 estop.close()

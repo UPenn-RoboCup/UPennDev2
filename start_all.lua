@@ -24,16 +24,17 @@ local runs = {
 unix.chdir(HOME..'/Run')
 
 local function gen_screen(name, script, ...)
+	local args = {...}
 	return table.concat({
-			'screen',
-			'-S',
-			name,
-			'-L',
-			'-dm',
-			LUA,
-			name..'_wizard.lua',
-			...
-		},' ')
+		'screen',
+		'-S',
+		name..table.concat(args),
+		'-L',
+		'-dm',
+		LUA,
+		name..'_wizard.lua',
+		...
+	},' ')
 end
 
 for i, wizard in ipairs(wizards) do
@@ -46,7 +47,7 @@ for i, wizard in ipairs(wizards) do
 	local script = gen_screen(name, name..'_wizard.lua', unpack(wizard, 2))
 	local status = os.execute(script)
 	print(color(name, 'yellow'), 'starting')
-	--print(script)
+	print(script)
 end
 
 -- Print starting the robot
@@ -62,6 +63,7 @@ for i, run in ipairs(runs) do
 	local status = os.execute(script)
 	print(color(run, 'yellow'), 'starting')
 	--print(script)
+	unix.usleep(1e5)
 end
 
 -- Check the status
@@ -69,7 +71,7 @@ unix.sleep(1)
 for i, wizard in ipairs(wizards) do
 	local name = wizard[1]
 	-- Kill any previous instances
-	local ret = io.popen("pgrep -f "..name):lines()
+	local ret = io.popen("pgrep -fla "..name):lines()
 	local started = false
 	for pid in ret do
 		if pid then started = true end

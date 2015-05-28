@@ -57,6 +57,7 @@ fsm.Arm = {
 	{'armManipulation', 'teleop', 'armTeleop'},
 	{'armManipulation', 'teleopraw', 'armTeleopRaw'},
 	{'armManipulation', 'drill', 'armDrill'},
+	{'armManipulation', 'shower', 'armShower'},
 
 	-- Teleop for manipulation if needed
 	{'armTeleop', 'init', 'armInitWalk'},
@@ -75,6 +76,13 @@ fsm.Arm = {
 	{'armDrill', 'drill', 'armDrill'},
 	{'armDrill', 'teleop', 'armTeleop'},
 	{'armDrill', 'teleopraw', 'armTeleopRaw'},
+
+	-- Shower positioning
+	{'armShower', 'done', 'armTeleop'},
+	{'armShower', 'ready', 'armManipulation'},
+	{'armShower', 'shower', 'armShower'},
+	{'armShower', 'teleop', 'armTeleop'},
+	{'armShower', 'teleopraw', 'armTeleopRaw'},
 
 	-- armPullDoor
 	--[[

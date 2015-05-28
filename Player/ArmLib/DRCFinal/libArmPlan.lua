@@ -373,9 +373,10 @@ function libArmPlan.joint_waist_preplan(self, plan)
 	local qWaistArmF = {qWaistF[1], unpack(qArmF)}
 	local qWaistArm0 = {qWaist0[1], unpack(qArm0)}
 	-- Set the limits and check compliance
+	local hz, dt = self.hz, self.dt
 	local qMin = {-math.pi, unpack(self.qMin)}
 	local qMax = {math.pi, unpack(self.qMax)}
-	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
+	local dq_limit = {8*DEG_TO_RAD*dt, unpack(self.dq_limit)}
 	for i, q in ipairs(qWaistArmF) do
 		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
 			--[[
@@ -388,7 +389,6 @@ function libArmPlan.joint_waist_preplan(self, plan)
 		end
 	end
 	-- Set the timeout
-	local hz, dt = self.hz, self.dt
 	local qWaistArm = vector.new(qWaistArm0)
 	local path = {}
 	-- If given a duration, then check speed limit compliance

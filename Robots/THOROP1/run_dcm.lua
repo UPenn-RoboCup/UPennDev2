@@ -259,12 +259,16 @@ local function parse_read_leg(pkt, bus)
 	local read_val = p_parse(unpack(pkt.parameter, 1, leg_packet_offsets[1]))
 	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Set Current in SHM
 	local read_cur = c_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
-	c_ptr[read_j_id - 1] = read_cur
-	c_ptr_t[read_j_id - 1] = t_read
+	if type(read_cur)=='number' then
+		c_ptr[read_j_id - 1] = read_cur
+		c_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
 

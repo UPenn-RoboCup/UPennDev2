@@ -67,6 +67,8 @@ fsm.Arm = {
 
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
+	{'armManipulation', 'ready', 'armManipulation'},
+	{'armManipulation', 'pushdoor', 'armPushDoor'},
 	{'armManipulation', 'drill', 'armDrill'},
 	{'armManipulation', 'shower', 'armShower'},
 	--

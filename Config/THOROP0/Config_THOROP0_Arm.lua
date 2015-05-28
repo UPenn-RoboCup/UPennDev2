@@ -54,9 +54,9 @@ arm.pushdoor = {}
 
 arm.pushdoor[1] = {
 	left = {
-		--via='jacobian_preplan',
-		via='jacobian_waist_preplan',
-		qWaistGuess = {-10*DEG_TO_RAD,0},
+		via='jacobian_preplan',
+		--via='jacobian_waist_preplan',
+		--qWaistGuess = {-10*DEG_TO_RAD,0},
 		timeout=8,
 		tr={0.65, 0.25, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		weights = {1,0,0}

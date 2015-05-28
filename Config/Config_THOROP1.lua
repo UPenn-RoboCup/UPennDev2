@@ -69,8 +69,8 @@ end
 
 
 
-Config.use_heeltoe_walk = true
-Config.heeltoe_angle = 0*DEG_TO_RAD
+--Config.use_heeltoe_walk = true
+--Config.heeltoe_angle = 0*DEG_TO_RAD
 Config.walktraj={}
 Config.walktraj.hybridwalk = "foot_trajectory_base"
 

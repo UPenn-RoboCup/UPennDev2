@@ -129,6 +129,7 @@ for _, sensor in ipairs(sensors) do
 end
 
 function sstart(scriptname)
+	if scriptname=='rpc' then return end
 	local msg = mp.pack({
 		raw = 'sstart("'..scriptname..'")'
 	})

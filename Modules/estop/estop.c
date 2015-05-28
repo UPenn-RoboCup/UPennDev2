@@ -244,6 +244,28 @@ int estop_update(int *lstick, int*rstick, int *lbutton, int *rbutton){
 			vsc_send_heartbeat(vscInterface, ESTOP_STATUS_NOT_SET);
 		}
 
+
+
+
+
+
+	/* Send Display Mode to VSC */
+
+	vsc_send_user_feedback(vscInterface, VSC_USER_DISPLAY_MODE, DISPLAY_MODE_CUSTOM_TEXT);
+	vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_1, "          WHY       ");
+	vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_2, "         AM I       ");
+	vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_3, "          SO        ");
+//vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_4, "       AWESOME?     ");
+
+
+
+
+
+
+
+
+
+
 		/* Initialize the timeout structure for 50 milliseconds*/
 		timeout.tv_sec = 0;
 		timeout.tv_usec = (50000 - (diffTime(lastSent, timeNow, &timeDiff) * .001));

@@ -576,12 +576,12 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 		end
 	end
 	-- Grab our limits
+	local hz, dt = self.hz, self.dt
 	local qMin = {-math.pi, unpack(self.qMin)}
 	local qMax = {math.pi, unpack(self.qMax)}
-	local dq_limit = {30*DEG_TO_RAD, unpack(self.dq_limit)}
+	local dq_limit = {8*DEG_TO_RAD * dt, unpack(self.dq_limit)}
 	-- Set the timing
 	local timeout = assert(plan.timeout, prefix..'No timeout')
-	local hz, dt = self.hz, self.dt
 	local nStepsTimeout = math.ceil(timeout * hz)
 	-- Initial position
 	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}

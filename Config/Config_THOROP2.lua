@@ -34,7 +34,7 @@ Config.use_exact_tZMP = true
 
 
 Config.use_heeltoe_walk = true
-Config.heeltoe_angle = 15*DEG_TO_RAD
+--Config.heeltoe_angle = 5*DEG_TO_RAD
 
 
 

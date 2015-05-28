@@ -52,8 +52,6 @@ end
 -- Print starting the robot
 
 unix.chdir(ROBOT_HOME)
-
-
 for i, run in ipairs(runs) do
 	-- Kill any previous instances
 	local ret = io.popen("pkill -f "..run):lines()
@@ -83,6 +81,7 @@ for i, wizard in ipairs(wizards) do
 	end
 end
 
+unix.sleep(1)
 for i, name in ipairs(runs) do
 	-- Kill any previous instances
 	local ret = io.popen("pgrep -f "..name):lines()

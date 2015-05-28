@@ -54,6 +54,60 @@ state_ch = si.new_publisher'state!'
 --print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
 --print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))
 
+local function gen_screen(name, script, ...)
+	return table.concat({
+			'screen',
+			'-S',
+			name,
+			'-L',
+			'-dm',
+			'luajit',
+			script,
+			...
+		},' ')
+end
+local function kill(name)
+	local ret = io.popen("pkill -f "..name)
+	--for pid in ret:lines() do print('Killed Process', pid) end
+end
+
+-- Start script
+local runnable = {}
+for _,fname in ipairs(unix.readdir(HOME..'/Run')) do
+	local found, found_end = fname:find'_wizard'
+	if found then
+		local name = fname:sub(1,found-1)
+		runnable[name] = 'wizard'
+	end
+end
+for _,fname in ipairs(unix.readdir(ROBOT_HOME)) do
+	local found, found_end = fname:find'run_'
+	if found then
+		local name = fname:sub(1,found-1)
+		runnable[name] = 'robot'
+	end
+end
+function sstart(scriptname, ...)
+	local kind = runnable[scriptname]
+	if not kind then
+		print('not a script')
+		return
+	end
+	local script = kind=='wizard' and scriptname..'_wizard.lua' or 'run_'..scriptname..'.lua'
+	kill(script)
+	unix.chdir(kind=='wizard' and HOME..'/Run' or ROBOT_HOME)
+	local screen = gen_screen(scriptname, script, ...)
+	print('screen', screen)
+	local status = os.execute(screen)
+	unix.usleep(2e5)
+	local ret = io.popen("pgrep -fl "..script)
+	for pid in ret:lines() do
+		if pid:find('luajit') then
+			return true
+		end
+	end
+end
+
 IS_FIDDLE = true
 
 if arg and arg[-1]=='-i' and jit then

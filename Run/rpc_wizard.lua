@@ -102,7 +102,7 @@ local function process_rpc(rpc)
 	-- TODO: Raw commands
 	----[[
 	if type(rpc.raw)=='string' then
-		local res = loadstring('return '..rpc.val)
+		local res = loadstring('return '..rpc.raw)
 		status, reply = pcall(res)
 		--print('RAW |', rpc.raw, res, status, reply)
 		print('RAW |', rpc.raw)

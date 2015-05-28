@@ -44,45 +44,65 @@ fsm.Arm = {
 
 	-- armWalk does nothing (the arm should be in walk configuration)
 	{'armInitWalk', 'done', 'armWalk'},
-	-- Should have this in case
+	{'armWalk', 'ready', 'armManipulation'},
 	{'armWalk', 'teleop', 'armTeleop'},
 	{'armWalk', 'teleopraw', 'armTeleopRaw'},
+	--Old teleop code
+	----[[
+	{'armWalk', 'teleopoldl', 'armTeleopSJOLDL'},
+	{'armWalk', 'teleopoldr', 'armTeleopSJOLDR'},
+	{'armTeleopSJOLDL', 'done', 'armWalk'},
+	{'armTeleopSJOLDR', 'done', 'armWalk'},
+	--]]
+	
+	-- Teleop IK level
+	{'armTeleop', 'init', 'armInitWalk'},
+	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
+	{'armTeleop', 'teleop', 'armTeleop'},
 
-  --armInitManipulation raises the arms to the manipulation configuration
-  --should always transition from walk configuration. May work from elsewhere
-	{'armWalk', 'ready', 'armManipulation'},
+	-- Teleop Joint level
+	{'armTeleopRaw', 'init', 'armInitWalk'},
+	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
+	{'armTeleopRaw', 'teleop', 'armTeleop'},
 
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
-	{'armManipulation', 'teleop', 'armTeleop'},
-	{'armManipulation', 'teleopraw', 'armTeleopRaw'},
+	{'armManipulation', 'ready', 'armManipulation'},
+	{'armManipulation', 'pushdoor', 'armPushDoor'},
 	{'armManipulation', 'drill', 'armDrill'},
 	{'armManipulation', 'shower', 'armShower'},
-
-	-- Teleop for manipulation if needed
-	{'armTeleop', 'init', 'armInitWalk'},
+	--
 	{'armTeleop', 'ready', 'armManipulation'},
-	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
-
-	-- Teleop Raw: For escaping from a bad state
-	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
-	{'armTeleopRaw', 'teleop', 'armTeleop'},
 	{'armTeleopRaw', 'ready', 'armManipulation'},
-	{'armTeleopRaw', 'init', 'armInitWalk'},
+	{'armManipulation', 'teleop', 'armTeleop'},
+	{'armManipulation', 'teleopraw', 'armTeleopRaw'},
 
 	-- Drill positioning
 	{'armDrill', 'done', 'armTeleop'},
 	{'armDrill', 'ready', 'armManipulation'},
-	{'armDrill', 'drill', 'armDrill'},
+	--
+	{'armTeleop', 'drill', 'armDrill'},
+	{'armTeleopRaw', 'drill', 'armDrill'},
 	{'armDrill', 'teleop', 'armTeleop'},
 	{'armDrill', 'teleopraw', 'armTeleopRaw'},
 
 	-- Shower positioning
 	{'armShower', 'done', 'armTeleop'},
 	{'armShower', 'ready', 'armManipulation'},
-	{'armShower', 'shower', 'armShower'},
+	--
+	{'armTeleop', 'shower', 'armShower'},
+	{'armTeleopRaw', 'shower', 'armShower'},
 	{'armShower', 'teleop', 'armTeleop'},
 	{'armShower', 'teleopraw', 'armTeleopRaw'},
+	
+	-- PushDoor positioning
+	{'armPushDoor', 'done', 'armTeleop'},
+	{'armPushDoor', 'ready', 'armManipulation'},
+	--
+	{'armTeleop', 'pushdoor', 'armPushDoor'},
+	{'armTeleopRaw', 'pushdoor', 'armPushDoor'},
+	{'armPushDoor', 'teleop', 'armTeleop'},
+	{'armPushDoor', 'teleopraw', 'armTeleopRaw'},
 
 	-- armPullDoor
 	--[[
@@ -91,14 +111,6 @@ fsm.Arm = {
 	{'armPullDoor', 'pulldoor', 'armPullDoor'},
 	{'armPullDoor', 'teleop', 'armTeleop'},
 	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
-	--]]
-
-	--Old teleop code
-	----[[
-	{'armWalk', 'teleopoldl', 'armTeleopSJOLDL'},
-	{'armWalk', 'teleopoldr', 'armTeleopSJOLDR'},
-	{'armTeleopSJOLDL', 'done', 'armWalk'},
-	{'armTeleopSJOLDR', 'done', 'armWalk'},
 	--]]
 
 	-- armJacobian is for testing purposes only!

@@ -8,21 +8,25 @@ local T = require'Transform'
 local arm = {}
 
 -- This comes after the walkInit
-arm.init = {}
+arm.manipulation = {}
 
-arm.init[1] =
+arm.manipulation[1] =
 	-- Pitch up
 	{
 	left = {
+		via='jacobian_preplan',
+		timeout=15,
 		tr={0.25, 0.25, 0.15, 0, -60*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		timeout=8,
-		via='jacobian_preplan', weights = {1,0,0}
+		qArmGuess = vector.new{135, 0, 0, -135, 90, 45, -90}*DEG_TO_RAD,
+		weights = {1,1,-1,1,2},
 	},
 	right = {
-		tr={0.25, -0.25, 0.15, 0, -64*DEG_TO_RAD, 0},
-		timeout=8,
 		via='jacobian_preplan',
+		timeout=15,
+		tr={0.25, -0.25, 0.15, 0, -60*DEG_TO_RAD, 0},
 		weights = {0,1,0},
+		qArmGuess = vector.new{135, 0, 0, -135, -90, -45, 90}*DEG_TO_RAD,
+		weights = {1,1,-1,1,2},
 	}
 }
 
@@ -46,9 +50,9 @@ table.insert(arm.init,
 })
 --]]
 
-arm.door = {}
+arm.pushdoor = {}
 
-arm.door[1] = {
+arm.pushdoor[1] = {
 	left = {
 		tr={0.7, 0.25, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		timeout=8,

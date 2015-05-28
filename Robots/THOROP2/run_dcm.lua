@@ -93,22 +93,22 @@ local char = string.char
 local sel, uread, get_time, usleep = unix.select, unix.read, unix.time, unix.usleep
 
 -- Packet Processing Helpers
+-- TODO: Should not be zero returns!!
 local function radian_clamp(idx, radian)
+	if type(idx)~='number' and type(radian)~='number' then return 0 end
 	if is_unclamped[idx] then return radian end
 	return min(max(radian, min_rad[idx]), max_rad[idx])
 end
 local function radian_to_step(idx, radian)
+	if type(idx)~='number' and type(radian)~='number' then return 0 end
 	return floor(direction[idx] * radian_clamp(idx, radian) * to_steps[idx] + step_zero[idx] + step_offset[idx])
 end
 local function step_to_radian(idx, step)
-
-	if not idx then
-	  print("IDX NULL!!!!!!!!!!!!!!!!!!")
-	  return 0	
-	end
+if type(idx)~='number' and type(step)~='number' then return 0 end
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 local function torque_to_cmd(idx, tq)
+	if type(idx)~='number' and type(tq)~='number' then return 0 end
 	local cmd = min(max(direction[idx] * tq, -1023), 1023)
 	return cmd < 0 and (1024 - cmd) or cmd
 end
@@ -272,6 +272,7 @@ end
 
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, leg_packet_offsets[1]))
+	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
@@ -351,6 +352,7 @@ local function parse_read_arm(pkt, bus)
 		if #pkt.parameter==8 then
 			-- Set Position in SHM
 			local read_val = p_parse_mx(unpack(pkt.parameter, 1, arm_packet_offsets_mx[1]))
+			if type(read_val)~='number' then return read_j_id end
 			local read_rad = step_to_radian(read_j_id, read_val)
 			--print(m_id, 'Read val', read_val, unpack(pkt.parameter))
 			p_ptr[read_j_id - 1] = read_rad

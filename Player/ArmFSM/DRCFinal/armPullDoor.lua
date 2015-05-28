@@ -49,9 +49,9 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-	local pStatus = type(pco)=='thread' and coroutine.status(pco)
-	local lStatus = type(lco)=='thread' and coroutine.status(lco)
-	local rStatus = type(rco)=='thread' and coroutine.status(rco)
+	local pStatus = type(pco)=='thread' and coroutine.status(pco) or 'dead'
+	local lStatus = type(lco)=='thread' and coroutine.status(lco) or 'dead'
+	local rStatus = type(rco)=='thread' and coroutine.status(rco) or 'dead'
 
 	-- Evaluate the model
 	if not pStatus then

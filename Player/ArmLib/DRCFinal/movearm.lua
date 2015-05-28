@@ -115,8 +115,7 @@ function movearm.goto(l, r)
 	if (l and l.tr) or (r and r.tr) then
 		local uTorsoComp = Body.get_torso_compensation(qLComp, qRComp, qWComp)
 		print('movearm | uTorsoComp', unpack(uTorsoComp))
-		-- TODO: Check if birdwalk for the compensation direction :P
-		local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
+		local trComp = T.trans(uTorsoComp[1], uTorsoComp[2], 0)
 		if l and l.tr then
 			print('movearm | Compensating L...')
 			l.tr0 = l.tr

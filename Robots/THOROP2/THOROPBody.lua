@@ -540,6 +540,24 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
+
+  local footLift = mcm.get_walk_footlift()
+  local footlifttypeL,footlifttypeR, footliftL, footliftR = 0,0
+  if mcm.get_walk_heeltoewalk()==1 then
+    if footLift[1]>0 then 
+      footlifttypeL = -1 --heellift
+    else
+      footlifttypeL = 1 --toelift
+    end
+    if footLift[2]>0 then 
+      footlifttypeR = -1 --heellift
+    else
+      footlifttypeR = 1 --toelift
+    end
+    footliftL = math.abs(footLift[1])
+    footliftR = math.abs(footLift[2])
+  end
+
   local leftSupportRatio = mcm.get_status_leftSupportRatio()
 
  --Initial guess 
@@ -552,7 +570,7 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local qRLegCurrent = Body.get_rleg_command_position()
 
   local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0,
-    qLLegCurrent, qRLegCurrent)
+    qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
     
   local massL,massR = 0,0 --for now
 
@@ -574,8 +592,7 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
       qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0,
-      qLLegCurrent, qRLegCurrent --TODO: do we need to update current angles too?
-        )
+          qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
    count = count+1
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)

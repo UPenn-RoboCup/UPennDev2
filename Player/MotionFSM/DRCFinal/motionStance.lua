@@ -72,8 +72,8 @@ function state.entry()
   hcm.set_legdebug_torso({uTorso[1],uTorso[2]})
   hcm.set_legdebug_torso_angle({0,0}) 
 
-
-
+  mcm.set_walk_footlift({0,0})
+  mcm.set_walk_heeltoewalk(0) --no heeltoewalk default  
 end
 
 function state.update()
@@ -183,6 +183,7 @@ function state.exit()
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
 	wcm.set_robot_use_imu_yaw(1)
+
 end
 
 return state

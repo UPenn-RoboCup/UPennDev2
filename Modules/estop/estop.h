@@ -44,10 +44,13 @@
 
 
 void handleJoystickMsg(VscMsgType *recvMsg);
-void handleHeartbeatMsg(VscMsgType *recvMsg);
+
 void handleGpsMsg(VscMsgType *recvMsg);
 void handleFeedbackMsg(VscMsgType *recvMsg);
-void readFromVsc();
-void estop_init();
+
+int handleHeartbeatMsg(VscMsgType *recvMsg);
+int readFromVsc();
+
+void estop_init(char* ch, int baud);
 void estop_shutdown();
 int estop_update();

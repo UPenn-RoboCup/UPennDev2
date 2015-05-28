@@ -15,6 +15,8 @@
 
 
 
+
+
 static int lua_estop_index(lua_State *L) {
   /* Get index through metatable: */
   if (!lua_getmetatable(L, 1)) {lua_pop(L, 1); return 0;} /* push metatable */
@@ -30,13 +32,15 @@ static int lua_estop_delete(lua_State *L) {
 }
 
 static int lua_estop_init(lua_State *L) {
-  estop_init();
+  estop_init("/dev/ttyACM0",115200);
   return 1;
 }
 
 
 static int lua_estop_update(lua_State *L) {
-  estop_update();
+  int ret = estop_update();
+  //remote estop bit: 0x01
+  lua_pushnumber(L, ret);  
   return 1;
 }
 

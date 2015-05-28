@@ -529,21 +529,37 @@ static int inverse_legs(lua_State *L) {
 	std::vector<double> qL = lua_checkvector(L, 7);
 	std::vector<double> qR = lua_checkvector(L, 8);
 
-
+	//now we should be able to manually choose tilt type
+	//and the minimum tilt angle for them
+	int leftTiltType = luaL_optnumber(L, 9, 0);
+	int rightTiltType = luaL_optnumber(L, 10, 0);
+	double leftTiltMin = luaL_optnumber(L, 11, 0.0);
+	double rightTiltMin = luaL_optnumber(L, 12, 0.0);
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 
-//TODO: update toelift function
-	if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
-		qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4]);
-		qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4]);
+
+	if ((leftTiltType==0) && (rightTiltType==0)){ //automatic
+		if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
+			qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+			qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}else{
+			qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,  qL[4],leftTiltMin) ;
+			qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}
 	}else{
-		qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,  qL[4]) ;
-		qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4]);
-//		printf("Left heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
+		if (leftTiltType==1) {
+			qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+		}else{
+			qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+		}
+		if (rightTiltType==1) {
+			qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}else{
+			qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}
 	}
 	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
-
 	lua_pushvector(L, qLLeg);
 	return 1;
 }

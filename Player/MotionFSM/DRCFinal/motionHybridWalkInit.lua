@@ -31,17 +31,11 @@ local angleShift = vector.new{0,0,0,0}
 
 local iStep
 
--- What foot trajectory are we using?
---[[
-local foot_traj_func  
---foot_traj_func = moveleg.foot_trajectory_base
---foot_traj_func = moveleg.foot_trajectory_square
-foot_traj_func = moveleg.foot_trajectory_square_stair
---foot_traj_func = moveleg.foot_trajectory_square_stair_2
---]]
-local foot_traj_func  
-if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
-else foot_traj_func = moveleg.foot_trajectory_square end
+local foot_traj_name = "foot_trajectory_base2"
+if Config.walktraj and Config.walktraj.hybridwalk then
+  foot_traj_name = Config.walktraj.hybridwalk 
+end
+local foot_traj_func   = moveleg[foot_traj_name]
 
 local crossing_num
 local last_side = 1
@@ -358,6 +352,8 @@ end -- walk.update
 function walk.exit()
   print(walk._NAME..' Exit')  
   wcm.set_robot_reset_pose(0)  --Start updating localization
+  mcm.set_walk_footlift({0,0})
+  mcm.set_walk_heeltoewalk(0) --no heeltoewalk default  
 end
 
 return walk

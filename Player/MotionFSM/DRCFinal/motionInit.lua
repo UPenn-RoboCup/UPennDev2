@@ -78,6 +78,10 @@ function state.entry()
   mcm.set_walk_aShiftY({0,0})
   mcm.set_walk_avShiftY({0,0})
 
+  
+  mcm.set_walk_footlift({0,0})
+  mcm.set_walk_heeltoewalk(0) --no heeltoewalk default  
+
   mcm.set_arm_lhandoffset(Config.arm.handoffset.left or {0,0,0})
   mcm.set_arm_rhandoffset(Config.arm.handoffset.right or {0,0,0})
   

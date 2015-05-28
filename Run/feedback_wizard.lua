@@ -22,8 +22,8 @@ end
 
 local hz_indoor_send = 1
 local dt_indoor_send = 1/hz_indoor_send
-local hz_outdoor_send = 4
-local dt_outdoor_send = 1/hz_outdoor_send
+local hz_image_send = 0.5
+local dt_image_send = 1/hz_image_send
 
 local pillar_ch = si.new_subscriber('pillars')
 local ittybitty0_ch = si.new_subscriber(Config.net.streams.ittybitty0.sub)
@@ -121,11 +121,11 @@ local function update()
 	until not msg
 	if y1 then ittybitty1 = y1 end
 
-	if t_update - t_feedback < dt_indoor_send then return end
+	local is_indoors = hcm.get_network_indoors()
+	if is_indoors==1 and t_update - t_feedback < dt_indoor_send then return end
+	if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
 
 	local ret, err
-
-	local is_indoors = hcm.get_network_indoors()
 	if is_indoors==2 and ittybitty0_udp_ch then
 		-- send the ittybitty0 (head)
 		ret, err = ittybitty0_udp_ch:send(ittybitty0)

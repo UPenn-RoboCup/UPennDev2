@@ -156,30 +156,13 @@ local function update(img, sz, cnt, t)
 	local c_img = c_yuyv:compress(img, w, h)
 
 	local ittybitty_img
-	if false then
-		-- narrow fov
-		c_grey:quality(75)
-		c_grey:downsampling(1)
-		ittybitty_img= c_grey:compress_crop(img, w, h, w/2-w/8+1, h/2-h/8+1, w/4, h/4)
-	elseif false then
-		-- wide fov
-		--c_grey:quality(50)
-		--c_grey:downsampling(1)
-		c_grey:quality(75)
-		c_grey:downsampling(2)
-		ittybitty_img= c_grey:compress_crop(img, w, h, w/4+1, h/4+1, w/2, h/2)
+	c_yuyv2:quality(metadata.quality)
+	c_yuyv2:downsampling(metadata.downsampling)
+	if metadata.crop then
+		ittybitty_img= c_yuyv2:compress_crop(img, w, h, unpack(metadata.crop))
 	else
-		--c_yuyv2:quality(40)
-		--c_yuyv2:quality(90)
-		--c_yuyv2:quality(20)
-		c_yuyv2:quality(50)
-		c_yuyv2:downsampling(1)
-		--ittybitty_img= c_yuyv2:compress_crop(img, w, h, w/4+1, h/4+1, w/2, h/2)
-		--ittybitty_img= c_yuyv2:compress_crop(img, w, h, w/4+w/4+1, h/4+h/8+1, w/2, h/2)
-		--ittybitty_img= c_yuyv2:compress_crop(img, w, h, w/4+w/4+1, h/4+h/4+1, w/2, h/2)
-		ittybitty_img= c_yuyv2:compress_crop(img, w, h, w/4+w/4+1, h/4+h/4+1, w/2, h/2)
+		ittybitty_img= c_yuyv2:compress(img, w, h)
 	end
-
 	ittybitty_ch:send(ittybitty_img)
 	print('ittybitty_img', #ittybitty_img*8)
 	--[[

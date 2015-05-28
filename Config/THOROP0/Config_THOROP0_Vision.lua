@@ -122,7 +122,10 @@ camera[1] = {
 	w = 640,
 	h = 360,
 	fps = 15,
-	jpeg_quality = 60,
+	jpeg_quality = 50,
+	quality = 50,
+	downsampling = 2,
+	--crop = {640/2+1, 360/2+1, 640/2, 360/2},
 	mountOffset = {
 		-- cameraRoll, cameraPitch, cameraYaw
 		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
@@ -162,7 +165,10 @@ camera[2] = {
 	w = 320,
 	h = 240,
 	fps = 15,
-	jpeg_quality = 75,
+	jpeg_quality = 50,
+	quality = 77,
+	downsampling = 1,
+	crop = {320/2+1, 240/2+1, 320/2, 240/2},
 	auto_param = {
 		{'Exposure, Auto', 1},
 		{'White Balance Temperature, Auto', 1},

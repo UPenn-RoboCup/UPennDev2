@@ -1,7 +1,7 @@
 #!/usr/bin/env luajit
 -- (c) 2014 Team THORwIn
 local ok = pcall(dofile,'../fiddle.lua')
-if not ok then dofile'fiddle.lua' end
+if not ok then dofile'../fiddle.lua' end
 
 estop = require'estop'
 

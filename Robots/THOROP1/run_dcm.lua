@@ -416,6 +416,7 @@ local function parse_read_arm2(pkt, bus)
 	--if pkt.error ~= 0 then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
+	if not m_id then return end
 	local read_j_id = m_to_j[m_id]
 	if bus.has_mx_id[m_id] then
 		-- Check if MX
@@ -439,10 +440,10 @@ local function parse_read_arm2(pkt, bus)
 		return read_j_id
 	end
 
-	if #pkt.parameter ~= arm_packet_sz then return end
+	if #pkt.parameter ~= arm_packet_sz then return read_j_id end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
-	if not read_val then
+	if type(read_val)~='number' then
 		print('bad val', read_j_id)
 		return read_j_id
 	end

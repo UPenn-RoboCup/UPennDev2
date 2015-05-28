@@ -68,12 +68,13 @@ local function head3d(meta, scan)
 		table.insert(xyz, {rho[i] * cos(a), rho[i] * sin(a), 0.1})
 	end
 	local xyz_actuated = {}
+	local Thead = T.rotZ(meta.angle[1]) * T.rotY(meta.angle[2])
 	for i,p in ipairs(xyz) do
-		table.insert(xyz_actuated, T.rotZ(meta.angle[1]) * T.rotY(meta.angle[2]) * p)
+		table.insert(xyz_actuated, Thead * p)
 	end
 	local xyz_com = {}
 	local Tcom = Thead * T.rotZ(meta.qWaist[1])
-	for i, p in ipairs(xyz) do
+	for i, p in ipairs(xyz_actuated) do
 		table.insert(xyz_com, Tcom*p)
 	end
 	local rho_com = {}

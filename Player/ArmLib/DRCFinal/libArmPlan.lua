@@ -303,11 +303,17 @@ function libArmPlan.joint_preplan(self, plan)
 		local dqTotal = qArmF - qArm0
 		local dqdtAverage = dqTotal / plan.duration
 		local dqAverage = dqdtAverage * dt
-		for i, lim in ipairs(dq_limit) do
-			if fabs(dqAverage[i]) > lim then
+		local usage = {}
+		for i, limit in ipairs(dq_limit) do
+			if fabs(dqAverage[i]) > limit then
 				print(string.format(prefix.."dq[%d] |%g| > %g", i, dqAverage[i], lim))
-				return qArm
+				--return qArm
 			end
+			table.insert(usage, fabs(dqAverage[i]) / limit)
+		end
+		local max_usage = max(unpack(usage))
+		if max_usage>1 then
+			for i, qF in ipairs(dqAverage) do dqAverage[i] = qF / max_usage end
 		end
 		-- Form the plan
 		local nsteps = plan.duration * hz

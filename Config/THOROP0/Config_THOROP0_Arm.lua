@@ -56,23 +56,27 @@ arm.pushdoor[1] = {
 	left = {
 		via='jacobian_preplan',
 		timeout=8,
-		tr={0.7, 0.25, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		tr={0.65, 0.25, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		--via='jacobian_waist_preplan',
 		--qWaistGuess = {-10*DEG_TO_RAD,0},
 		weights = {1,0,0}
 	},
-	right = {
-		tr={0, -0.25, -0.12, 0, 0*DEG_TO_RAD, 0},
-		timeout=8,
-		via='jacobian_preplan',
-		weights = {1,0,0},
-	}
+	right = false
 }
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.drill = {}
+-- Left views the drill
+-- Right grabs the drill
 arm.drill[1] = {
-	left = false,
+	left = {
+		timeout=15,
+		via='jacobian_preplan',
+		tr={0.25, 0.25, 0.3,    0, 0, -90*DEG_TO_RAD},
+		qArmGuess = vector.new{0, 45, 90, -90, 0,-45,0}*DEG_TO_RAD,
+
+	 weights = {1,1,-1,1},
+	},
 	right = {
 		timeout=15,
 		via='jacobian_preplan',
@@ -81,29 +85,6 @@ arm.drill[1] = {
 		weights = {1,1,-1,1},
 	}
 }
-
-arm.drill[2] = {
-	left = false,
-	right = {
-		timeout=15,
-		via='jacobian_preplan',
-		tr={0.45, -0.4, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{0, -45, -90, -90, 0, 45, 0}*DEG_TO_RAD,
-		weights = {1,1,-1,1},
-	}
-}
-
-arm.drill[3] = {
-	left = false,
-	right = {
-		timeout=15,
-		via='jacobian_preplan',
-		tr={0.35, -0.4, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{0, -45, -90, -90, 0, 45, 0}*DEG_TO_RAD,
-		weights = {1,1,-1,1},
-	}
-}
-
 
 arm.shower = {}
 arm.shower[1] = {

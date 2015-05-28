@@ -7,7 +7,7 @@ state._NAME = ...
 
 -- TODO: need to compensate the torso pose
 local headSpeed = {5 * DEG_TO_RAD, 6 * DEG_TO_RAD}
-local lowAngle = {0, 45*DEG_TO_RAD}
+local lowAngle = {0, 60*DEG_TO_RAD}
 local highAngle = {0, 0*DEG_TO_RAD}
 
 local is_high

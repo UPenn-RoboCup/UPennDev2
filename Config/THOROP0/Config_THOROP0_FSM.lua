@@ -143,15 +143,18 @@ fsm.Body = {
   {'bodyApproachBuggy', 'stop', 'bodyStop'},
 	{'bodyApproachBuggy', 'done', 'bodyStop'},
   --
-
-
   --these should NEVER called with mistake at all
   {'bodyStop', 'stairclimb', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
-
   -- Take two slow stops (for precise alignment)
   {'bodyStepAlign', 'done', 'bodyStop'},
+
 }
+-- Anything can fall!
+local allbody = {}
+for i,v in ipairs(fsm.Body) do allbody[v[1]] = true end
+for k, v in pairs(allbody) do table.insert(fsm.Body, {k, 'fall', 'bodyFall'}) end
+-- Maybe just restart state_wizard at this point...
 
 
 fsm.Head = {

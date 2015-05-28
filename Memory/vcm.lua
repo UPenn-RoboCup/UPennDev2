@@ -37,8 +37,8 @@ shared.mesh0 = {
 }
 shared.mesh1 = {
 	-- Head
-	sweep = {45 * DEG_TO_RAD, 2},
-	fov = {-120*DEG_TO_RAD, 120*DEG_TO_RAD},
+	sweep = {60 * DEG_TO_RAD, 2},
+	fov = {-90*DEG_TO_RAD, 90*DEG_TO_RAD},
 	dynrange = {0.15, 1.5}
 }
 

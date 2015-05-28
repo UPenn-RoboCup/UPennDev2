@@ -6,9 +6,19 @@ local util = require'util'
 local vector = require'vector'
 local t_entry, t_update
 
+local HT = require'libHeadTransform'
+local T = require'Transform'
+
 -- Neck limits
 local headSpeed = 30 * DEG_TO_RAD * vector.ones(2)
 local headThresh = 1 * DEG_TO_RAD * vector.ones(2)
+
+local function get_world_tf()
+	local bH = mcm.get_stance_bodyHeight()
+	local uTorso = mcm.get_stance_uTorsoComp()
+	local pitch = Body.get_rpy()[2]
+	return T.trans(uTorso[1], uTorso[2], bH) * T.rotY(pitch)
+end
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -18,7 +28,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   -- Reset the human position
-  hcm.set_teleop_head(Body.get_head_position())
+  headIKtarget = hcm.get_teleop_headik()
+	doneHead = true
 end
 
 function state.update()
@@ -30,9 +41,19 @@ function state.update()
   t_update = t
 
   -- Grab the target
-  local headAngles = hcm.get_teleop_head()
+  local headIKtarget0 = hcm.get_teleop_headik()
+	if headIKtarget~=headIKtarget0 then
+		headIKtarget = headIKtarget0
+		doneHead = false
+	end
+	if doneHead then return end
+
+	local tfIKtorso = get_world_tf()*T.trans(unpack(headIKtarget))
+	local vTarget = vector.new(T.position(tfIKtorso))
+	local headAngles = vector.new{HT.ikineCam(unpack(vTarget))}
 	local headNow = Body.get_head_command_position()
-  local apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
+	local apprAng
+  apprAng, doneHead = util.approachTol(headNow, headAngles, headSpeed, dt, headThresh)
 
   -- Update the motors
 	Body.set_head_command_position(doneHead and headAngles or apprAng)

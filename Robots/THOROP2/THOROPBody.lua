@@ -524,7 +524,7 @@ end
 
 --SJ: I have moved this function to body as it is commonly used in many locations
 --Reads current leg and torso position from SHM
-
+require'mcm'
 Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()

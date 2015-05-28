@@ -299,6 +299,7 @@ end
 
 -- Take in joint angles and output an {x,y,z,r,p,yaw} table
 -- SJ: Now separated into two functions to get rid of directly calling IK
+require'mcm'
 Body.get_forward_larm = function(qL, bodyTilt, qWaist,ignore_hand_offset )
   if ignore_hand_offset then
     return Kinematics.l_arm_torso_7( qL,

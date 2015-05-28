@@ -56,23 +56,26 @@ THOROP_mk2_Fullmass_longarm_2 {
 
 
 
+CinderRampL { translation 0.2125 0.15 2.55}
+CinderRampB { translation -0.2125 0.15 2.55}
+CinderRampB {  translation -0.6425 0 2.55}
 
+CinderRampF { translation 0.2125 0.15 2.12}
+CinderRampR { translation -0.2125 0.30 2.12}
+CinderRampB {  translation -0.6425 0 2.12}
 
-CinderRamp {
-  translation 0.2 0 0.43
-  rotation 0 1 0 -1.57
-}
-CinderRamp {
-  translation -0.2 0 0.43
-  rotation 0 1 0 -3.14
-}
+CinderRampR { translation 0.2125 0 1.69}
+CinderRampB { translation -0.2125 0.15 1.69}
+CinderRampL {  translation -0.6425 0.15 1.69}
 
+CinderRampB { translation 0.2125 0 1.26}
+CinderRampL { translation -0.2125 0 1.26}
+CinderRampF {  translation -0.6425 0.15 1.26}
 
-CinderRamp {
-  translation 0.2 0 0.8
-  rotation 0 1 0 0
-}
-CinderRamp {
-  translation -0.2 0 0.8
-  rotation 0 1 0 -1.57
-}
+CinderRampL {  translation 0.2125 0 0.83}
+CinderRampF {  translation -0.2125 0 0.83}
+CinderRampR {  translation -0.6425 0.15 0.83}
+
+CinderRampF {  translation 0.2125 0 0.4}
+CinderRampR {  translation -0.2125 0 0.4}
+CinderRampB {  translation -0.6425 0 0.4}

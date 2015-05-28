@@ -3,9 +3,9 @@
 #15 degree angle
 #Block size 0.4 *0.4 * 0.15
 #Total dimension: 42.5193187281 cm
-PROTO CinderRamp [
+PROTO CinderRampR [
   field SFVec3f translation 0 0 0
-  field SFRotation rotation 0 1 0 0
+  field SFRotation rotation 0 1 0 -3.14 #right
 ]
 {
 Solid {
@@ -16,7 +16,7 @@ Solid {
 			
 			#Total x size: 0.40cosx +0.15 sinx   = 0.4251931872 (15 deg)			
 			#Z position: 0.20sinx + 0.075cosx
-			rotation 0 0 1 0.26179938779915 #15 deg
+			rotation 0 0 1 0.26179938779915 #15 deg		
 			translation 0	0.12858983848   0  #15 deg	
 			children[
 			  DEF cinderblock Shape {

@@ -14,6 +14,7 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
+
 end
 
 function state.update()
@@ -34,6 +35,8 @@ function state.update()
 end
 
 function state.exit()
+  --hack for stair climbing
+  if Config.stair_test then Body.set_head_torque_enable(0) end
   print(state._NAME..' Exit' )
 end
 

@@ -26,6 +26,9 @@ Config.debug = {
 
 --BIRDWALK DEFAULT FOR CHIP
 Config.birdwalk = 1 --testing birdwalk		
+
+
+
 Config.raise_body = true
 --Config.stepup_delay = true
 Config.use_exact_tZMP = true

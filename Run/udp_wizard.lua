@@ -4,23 +4,32 @@ local Config = require'Config'
 local si = require'simple_ipc'
 local util = require'util'
 --local unzlib = require'zlib'.inflate()
---local unzlib = require'zlib.ffi'.uncompress
+local unzlib = require'zlib.ffi'.uncompress
 
-local munpack = require'msgpack'.unpack
-local mpack = require'msgpack'.pack
+--local munpack = require'msgpack'.unpack
+--local mpack = require'msgpack'.pack
+
+local mpack = require'msgpack.MessagePack'.pack
+local munpack = require'msgpack.MessagePack'.unpack
+
 local function procMP(data)
 	if type(data)~='string' then return end
 	--print('running unpack', type(data), #data)
 	local tbl, offset = munpack(data)
-	--print('done unpack')
+	--local tbl2, offset2 = munpack2(data)
+	--print('done unpack', tbl,tbl.id, offset)
 	--if not ok then return end
 	if type(tbl)~='table' then return end
-	if type(offset)~='number' then return end
-	if offset==#data then
-		return mpack(tbl)
+
+	local extra
+	if type(offset)=='number' and offset<#data then
+		--print('extra', offset, offset2)
+		extra = data:sub(offset+1)
+		return {mpack(tbl), extra}
 	else
-		return {mpack(tbl), data:sub(offset+1)}
+		return mpack(tbl)
 	end
+
 end
 
 local function procRaw(data)
@@ -81,7 +90,7 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(in_channels, r)
 		local s = si.new_publisher(stream.sub)
 		table.insert(out_channels, s)
-		if key=='feedback' and false then
+		if key=='feedback' and true then
 			table.insert(ch_processing, procZlib)
 		elseif key:find'ittybitty' then
 			table.insert(ch_processing, procRaw)

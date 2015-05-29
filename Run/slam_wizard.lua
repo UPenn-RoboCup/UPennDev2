@@ -18,7 +18,7 @@ local T = require'Transform'
 
 local pillar_ch = si.new_publisher('pillars')
 
-local polar_interval = 15 * DEG_TO_RAD
+local polar_interval = 20 * DEG_TO_RAD
 local function find_pillars(xyz, polar)
 	local xyz_com = xyz[1]
 	local rho, theta = unpack(polar)

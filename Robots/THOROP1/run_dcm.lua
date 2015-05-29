@@ -856,7 +856,10 @@ local function initialize(bus)
 	table.insert(_fds, bus.fd)
 	-- Populate the IDs of the bus
 	if bus.m_ids then
-		bus:ping_verify(bus.m_ids)
+		if not bus:ping_verify(bus.m_ids) then
+			print('Command only motors:', bus.mx_cmd_ids, bus.nx_cmd_ids)
+			print('R/W motors:', bus.mx_cmd_ids, bus.nx_cmd_ids)
+		end
 	else
 		bus:ping_probe()
 	end

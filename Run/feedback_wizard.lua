@@ -24,10 +24,12 @@ if USE_ZLIB then
 	czlib = require'zlib.ffi'.compress
 end
 
-local hz_indoor_send = 1
-local dt_indoor_send = 1/hz_indoor_send
-local hz_image_send = 0.5
-local dt_image_send = 1/hz_image_send
+local hz_wrist_send = 1.2
+local dt_wrist_send = 1/hz_indoor_send
+local hz_head_send = 0.45
+local dt_head_send = 1/hz_image_send
+local hz_outdoor_send = 5
+local dt_outdoor_send = 1/hz_image_send
 
 local pillar_ch = si.new_subscriber('pillars')
 local ittybitty0_ch = si.new_subscriber(Config.net.streams.ittybitty0.sub)
@@ -133,10 +135,6 @@ local function update()
 		end
 	end
 
-	local is_indoors = hcm.get_network_indoors()
-	--if is_indoors==1 and t_update - t_feedback < dt_indoor_send then return end
-	if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
-
 	-- Default feedback
 	e.u = get_torso()
 	e.cp = Body.get_command_position()
@@ -160,6 +158,8 @@ local function update()
 	e.rpy = Body.get_rpy()
 	e.pose = wcm.get_robot_pose()
 	--]]
+
+	--[[
 	print()
 	local channel = 9600*dt_image_send
 	print('initial channel bits', channel)
@@ -176,18 +176,31 @@ local function update()
 	print('final meta  channel bits', channel)
 	print('final itty0 channel bits', channel0)
 	print('final itty1 channel bits', channel1)
+	--]]
 
+	local fbmsg = mpack(e)
+	if feedback_ch then feedback_ch:send(fbmsg) end
 
+	local is_indoors = hcm.get_network_indoors()
+	--if is_indoors==1 and t_update - t_feedback < dt_indoor_send then return end
+	if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
 	local ret, err
 	if is_indoors==2 and ittybitty0_udp_ch then
 		-- send the ittybitty0 (head)
+		if t_update - t_feedback < dt_head_send then return end
+		local fbmsgz = czlib(fbmsg)
+		ret, err = feedback_udp_ch:send(fbmsgz)
 		ret, err = ittybitty0_udp_ch:send(ittybitty0)
 	elseif is_indoors==3 and ittybitty1_udp_ch then
 		-- send the ittybitty1 (wrist)
+		if t_update - t_feedback < dt_wrist_send then return end
+		local fbmsgz = czlib(fbmsg)
+		ret, err = feedback_udp_ch:send(fbmsgz)
 		ret, err = ittybitty1_udp_ch:send(ittybitty1)
-	else
-		if feedback_ch then feedback_ch:send(fbmsg) end
-		if feedback_udp_ch then ret, err = feedback_udp_ch:send(fbmsgz) end
+	else if feedback_udp_ch then
+		if t_update - t_feedback < dt_outdoor_send then return end
+		local fbmsgz = czlib(fbmsg)
+		ret, err = feedback_udp_ch:send(fbmsgz)
 	end
 	if type(ret)=='string' then print('Feedback | UDP error: ', ret, '\n') end
 	count = count + 1

@@ -24,9 +24,9 @@ if USE_ZLIB then
 	czlib = require'zlib.ffi'.compress
 end
 
-local hz_wrist_send = .55
+local hz_wrist_send = .5
 local dt_wrist_send = 1/hz_wrist_send
-local hz_head_send = 0.45
+local hz_head_send = 0.4
 local dt_head_send = 1/hz_head_send
 local hz_outdoor_send = 2
 local dt_outdoor_send = 1/hz_outdoor_send

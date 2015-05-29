@@ -20,7 +20,7 @@ local pillar_ch = si.new_publisher('pillars')
 
 local polar_interval = 15 * DEG_TO_RAD
 local function find_pillars(xyz, polar)
-	local xyz_com = xyz[1]
+	local xyz_com, xyz_world = xyz[1], xyz[2]
 	local rho, theta = unpack(polar)
 	local pillars = {}
 	local interval = polar_interval + theta[1]
@@ -28,9 +28,11 @@ local function find_pillars(xyz, polar)
 	local rmin = math.huge
 	for i, a in ipairs(theta) do
 		local xyz = xyz_com[i]
+		local xyzw = xyz_world[i]
 		local r = rho[i]
 		if a<interval then
-			if r<rmin and r>0.24 and r<5 then
+			-- Filter too close, too far and ground
+			if r<rmin and r>0.24 and r<5 and xyzw[3]>0 then
 				xymin = {xyz[1], xyz[2]}
 				rmin = r
 --			elseif not xymin then
@@ -54,7 +56,7 @@ local function find_pillars(xyz, polar)
 	--]]
 end
 
-local Thead = T.trans(0,0,0.282)
+local Thead0 = T.trans(0,0,0.282)
 local function head3d(meta, scan)
 	local scan_fl = ffi.cast('float*', scan)
 	local mid = meta.n / 2 * meta.res
@@ -68,7 +70,7 @@ local function head3d(meta, scan)
 		table.insert(xyz, {rho[i] * cos(a), rho[i] * sin(a), 0.1})
 	end
 	local xyz_actuated = {}
-	local Thead = T.rotZ(meta.angle[1]) * T.rotY(meta.angle[2])
+	local Thead = Thead0 * T.rotZ(meta.angle[1]) * T.rotY(meta.angle[2])
 	for i,p in ipairs(xyz) do
 		table.insert(xyz_actuated, Thead * p)
 	end

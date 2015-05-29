@@ -246,6 +246,11 @@ function walk.update()
     uLeft_now, uRight_now, uLeft_next, uRight_next,
       supportLeg, ph, ended, walkParam = zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
 
+
+
+
+
+
     if ended and zmp_solver:can_stop() then return "done"  end
   
     --Get the current COM position
@@ -269,6 +274,12 @@ function walk.update()
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
     end
+
+
+
+print("init:",t-t_entry,ph, math.max(zLeft,zRight))
+
+    
     step_planner:save_stance(uLeft,uRight,uTorso)  
 
     --Update the odometry variable

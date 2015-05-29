@@ -124,12 +124,55 @@ local function update()
 	until not msg
 	if y1 then ittybitty1 = y1 end
 
+
+
 	local is_indoors = hcm.get_network_indoors()
 	if is_indoors==1 and t_update - t_feedback < dt_indoor_send then return end
 	if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
 
-	if #ittybitty0*8>9600*2 then print('ittybitty0', #ittybitty0*8) end
-	if #ittybitty1*8>9600*2 then print('ittybitty1', #ittybitty1*8) end
+	-- send this only when maxxed out..,
+	local qTemp = Body.get_temperature()
+	for i, tm in ipairs(qTemp) do
+		if tm>TEMP_LIM then
+			e.tm = qTemp
+			break
+		end
+	end
+
+	-- Default feedback
+	e.u = get_torso()
+	e.cp = Body.get_command_position()
+	e.s = pillars
+	e.g = Body.get_rgrip_command_torque()
+	--[[
+	e.gt = Body.get_rgrip_temperature()
+	e.p = Body.get_position()
+	e.p = Body.get_position()
+	e.id = 'fb'
+	e.t = t
+	e.n = count
+	e.fL = Body.get_lfoot()
+	e.fR = Body.get_rfoot()
+	e.b = Body.get_battery()
+	e.i = Body.get_current()
+	e.cp, e.t_cp = Body.get_command_position()
+	e.p, e.t_p = Body.get_position()
+	e.gyro, e.t_imu = Body.get_gyro()
+	e.acc = Body.get_accelerometer()
+	e.rpy = Body.get_rpy()
+	e.pose = wcm.get_robot_pose()
+	--]]
+	local fbmsg = mpack(e)
+	local fbmsgz = czlib(fbmsg)
+
+	print()
+	print('ittybitty0 bits', ittybitty0 and #ittybitty1*8)
+	print('ittybitty1 bits', ittybitty1 and #ittybitty0*8)
+	print('fbmsg bits', #fbmsg*8)
+	print('fbmsgz bits', #fbmsgz*8)
+	print()
+	if ittybitty0 and #ittybitty0*8>9600*2 then print('!!! ittybitty0') end
+	if ittybitty1 and #ittybitty1*8>9600*2 then print('!!! ittybitty1') end
 
 	local ret, err
 	if is_indoors==2 and ittybitty0_udp_ch then
@@ -139,47 +182,8 @@ local function update()
 		-- send the ittybitty1 (wrist)
 		ret, err = ittybitty1_udp_ch:send(ittybitty1)
 	else
-
-		-- send this only when maxxed out..,
-		local qTemp = Body.get_temperature()
-		for i, tm in ipairs(qTemp) do
-			if tm>TEMP_LIM then
-				e.tm = qTemp
-				break
-			end
-		end
-
-		-- Default feedback
-		e.u = get_torso()
-		e.cp = Body.get_command_position()
-		e.s = pillars
-		e.g = Body.get_rgrip_command_torque()
-		--[[
-		e.gt = Body.get_rgrip_temperature()
-		e.p = Body.get_position()
-		e.p = Body.get_position()
-		e.id = 'fb'
-		e.t = t
-		e.n = count
-		e.fL = Body.get_lfoot()
-		e.fR = Body.get_rfoot()
-		e.b = Body.get_battery()
-		e.i = Body.get_current()
-		e.cp, e.t_cp = Body.get_command_position()
-		e.p, e.t_p = Body.get_position()
-		e.gyro, e.t_imu = Body.get_gyro()
-		e.acc = Body.get_accelerometer()
-		e.rpy = Body.get_rpy()
-		e.pose = wcm.get_robot_pose()
-		--]]
-		msg = mpack(e)
-
-		if feedback_ch then feedback_ch:send(msg) end
-
-		if czlib then msg = czlib(msg) end
-		print(#msg, '=', #msg*8, 'bits', 'zlib. pillars:', pillars and #pillars)
-
-		if feedback_udp_ch then ret, err = feedback_udp_ch:send(msg) end
+		if feedback_ch then feedback_ch:send(fbmsg) end
+		if feedback_udp_ch then ret, err = feedback_udp_ch:send(fbmsgz) end
 	end
 	if type(ret)=='string' then print('Feedback | UDP error: ', ret, '\n') end
 	count = count + 1

@@ -93,6 +93,7 @@ function movearm.goto(l, r)
 	end
 
 	-- Add the compensation
+	--[[
 	local qLComp = qcLArm
 	if l and l.tr and l.qArmFGuess then
 		qLComp = l.qArmFGuess
@@ -127,6 +128,7 @@ function movearm.goto(l, r)
 			r.tr = trComp * r.tr0
 		end
 	end
+	--]]
 
 
 	if type(lplan)=='function' then

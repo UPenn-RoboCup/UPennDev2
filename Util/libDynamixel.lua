@@ -172,6 +172,7 @@ local nx_registers = {
 	['data4_mode'] = {char(47,0x00),1},
 	--
 	['shutdown'] = {char(48,0x00),1},
+	['alarm_shutdown'] = {char(48,0x00),1},
 
 	-- ENTER RAM AREA
 	['torque_enable'] = {char(0x32,0x02),1},
@@ -237,6 +238,12 @@ libDynamixel.registers_sensor = {
 }
 
 function lD.parse(reg, status)
+	if type(reg)~='string' or type(status)~='table' then return end
+	local reglocation = nx_registers[reg]
+	if type(reglocation)~='table' then return end
+	return byte_to_number[reglocation[2]](unpack(status.parameter))
+end
+function lD.parse_mx(reg, status)
 	if type(reg)~='string' or type(status)~='table' then return end
 	local reglocation = mx_registers[reg]
 	if type(reglocation)~='table' then return end

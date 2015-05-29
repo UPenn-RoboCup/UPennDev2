@@ -31,6 +31,15 @@ local indirects = {
 	{'position', 'temperature', 'data', 'command_position', 'position_p'}
 }
 
+-- Gripper states
+local is_gripper = {}
+for _,id in ipairs(Config.parts.LGrip) do
+	is_gripper[id] = true
+end
+for _,id in ipairs(Config.parts.RGrip) do
+	is_gripper[id] = true
+end
+
 for i, ids in ipairs(chain_ids) do
 	print('Checking', names)
 	local chain = chains[i]
@@ -38,14 +47,23 @@ for i, ids in ipairs(chain_ids) do
 	lD.ping_verify(chain, ids)
 	-- Next, set the return delay
 	for _, id in ipairs(ids) do
-		local status = lD.set_nx_return_delay_time(id, self)
-		local delay = type(status)=='table' and lD.parse('return_delay_time', status[1])
-		if delay~=0 then
+		local jid = m_to_j[id]
+		local delay
+		if is_gripper[jid] or id==37 then
+			local status = lD.get_nx_return_delay_time(id, self)
+			delay = type(status)=='table' and lD.parse('return_delay_time', status[1])
+		else
+			local status = lD.get_mx_return_delay_time(id, self)
+			delay = type(status)=='table' and lD.parse_mx('return_delay_time', status[1])
+		end
+		if type(delay)~='number' then
+			print('NOT FOUND')
+		elseif delay~=0 then
 			print('Updating', 'return_delay_time', 'for', id)
 			lD.set_nx_return_delay_time(id, 0, chain)
 		end
 	end
-	-- Now, Check the idirect addressing
+	-- Now, Check the indirect addressing
 	local indirect = indirects[i]
 	local indirect_ok = lD.check_indirect_address(ids, indirect, chain)
 	if not indirect_ok then
@@ -57,18 +75,51 @@ for i, ids in ipairs(chain_ids) do
 	local min_rad = Config.servo.min_rad
 	local m_to_j = Config.servo.motor_to_joint
 	for _, id in ipairs(ids) do
-		local status = lD.set_nx_return_delay_time(id, self)
-		local mode = type(status)=='table' and lD.parse('mode', status[1])
 		local jid = m_to_j[id]
-		if min_rad[jid]==-180*util.DEG_TO_RAD and max_rad[jid]==180*util.DEG_TO_RAD then
+		if is_gripper[jid] then
+			local status = lD.get_mx_mode(id, self)
+			local mode = type(status)=='table' and lD.parse_mx('mode', status[1])
+			local status = lD.get_mx_alarm_shutdown(id, self)
+			local alarm = type(status)=='table' and lD.parse_mx('alarm_shutdown', status[1])
+			print('MX Alarm', id, jid, ':', alarm)
+			-- Zero alarams :P
+			if type(alarm)~='number' then
+				print('NOT FOUND')
+			elseif alarm~=0 then
+				print('Updating', 'alarm', 'for', id, 'to', 4)
+				lD.set_mx_alarm_shutdown(id, 0, chain)
+			end
+		elseif id==37 then
+			local status = lD.get_mx_mode(id, self)
+			local mode = type(status)=='table' and lD.parse_mx('mode', status[1])
+		elseif min_rad[jid]==-180*util.DEG_TO_RAD and max_rad[jid]==180*util.DEG_TO_RAD then
+			local status = lD.get_nx_mode(id, self)
+			local mode = type(status)=='table' and lD.parse('mode', status[1])
 			-- 4
-			if mode~=4 then
+			if type(delay)~='number' then
+				print('NOT FOUND')
+			elseif mode~=4 then
 				print('Updating', 'mode', 'for', id, 'to', 4)
 				lD.set_nx_mode(id, 4, chain)
 			end
+			-- Also set the shutdown
+			local status = lD.get_nx_alarm_shutdown(id, self)
+			local alarm = type(status)=='table' and lD.parse_nx('alarm_shutdown', status[1])
+			print('NX Alarm', id, jid, ':', alarm)
+			-- Zero alarams :P
+			if type(alarm)~='number' then
+				print('NOT FOUND')
+			elseif alarm~=0 then
+				print('Updating', 'alarm', 'for', id, 'to', 4)
+				lD.set_nx_alarm_shutdown(id, 0, chain)
+			end
 		else
 			-- 3
-			if mode~=3 then
+			local status = lD.get_nx_mode(id, self)
+			local mode = type(status)=='table' and lD.parse('mode', status[1])
+			if type(delay)~='number' then
+				print('NOT FOUND')
+			elseif mode~=3 then
 				print('Updating', 'mode', 'for', id, 'to', 3)
 				lD.set_nx_mode(id, 3, chain)
 			end

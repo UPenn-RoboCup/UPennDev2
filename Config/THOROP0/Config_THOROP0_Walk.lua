@@ -101,48 +101,38 @@ stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
 stance.sitHeight = 0.75
 stance.dHeight = 0.04 --4cm per sec
 
-if IS_WEBOTS then  
-  walk.velLimitX = {-.10,.30}  
-  walk.hipRollCompensation = 0*DEG_TO_RAD    
-  walk.delay_threshold_angle = 999*math.pi/180 --disabled
-  walk.stepHeight = 0.06 --higher stepheight for webots
-  Config.supportY_preview = 0.0
-  Config.supportY_preview2 = 0.0
-else
 
-
-  if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
+if HOSTNAME=="teddy2" or HOSTNAME=="dale" or IS_STEVE then 
 --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
-    walk.delay_threshold_angle = 999*math.pi/180 --disabled
-    
-    --Dale addon    
-    walk.hipRollCompensation = 1.5*DEG_TO_RAD
-    walk.tZMP = 0.33   
-    walk.footY = 0.115 --teddy, even wider
-    walk.supportX = 0.02 
-    walk.supportY = -0.01 
-    walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
-    Config.supportY_preview = 0.00 --this smooths out first step a bit
-    Config.supportY_preview2 = 0.0  
-  else
-    --CHIP CHIP CHIP CHiP
+  walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  
+  --Dale addon    
+  walk.hipRollCompensation = 1.5*DEG_TO_RAD
+  walk.tZMP = 0.33   
+  walk.footY = 0.115 --teddy, even wider
+  walk.supportX = 0.02 
+  walk.supportY = -0.01 
+  walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
+  Config.supportY_preview = 0.00 --this smooths out first step a bit
+  Config.supportY_preview2 = 0.0  
+else
+  --CHIP CHIP CHIP CHiP
+print("CHIP CHIP CHIP")
+   walk.delay_threshold_angle = 999*math.pi/180 --disabled
 
-     walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  --Chip default (mk2)
+  walk.hipRollCompensation = 2*DEG_TO_RAD
+  walk.velLimitX = {-.10,.20}
+  walk.velLimitY = {-.06,.06}
+  walk.tZMP = 0.32
+  walk.supportY = 0.01
+  Config.supportY_preview = 0.00 --this smooths out first step a bit
+  Config.supportY_preview2 = 0.0
 
-    --Chip default (mk2)
-    walk.hipRollCompensation = 2*DEG_TO_RAD
-    walk.velLimitX = {-.10,.20}
-    walk.velLimitY = {-.06,.06}
-    walk.tZMP = 0.32
-    walk.supportY = 0.01
-    Config.supportY_preview = 0.00 --this smooths out first step a bit
-    Config.supportY_preview2 = 0.0
-
-    walk.stepHeight= 0.02  
-    walk.supportY = 0.0
+  walk.stepHeight= 0.02  
+  walk.supportY = 0.0
 
 
-  end
 end
 
 --hack to test invariance

@@ -124,6 +124,11 @@ function walk.update()
 
   -- Grab the phase of the current step
   local ph,is_next_step = zmp_solver:get_ph(t,t_last_step,ph_last)
+
+
+
+
+
   if ph_last<0.5 and ph>=0.5 then
     local rpy = Body.get_rpy()
     local roll = rpy[1]
@@ -223,6 +228,13 @@ function walk.update()
   else 
     uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
   end
+
+
+
+
+  print("walk:",t-t_entry, ph, math.max(zLeft,zRight))
+
+
 
   --Heel lift first, heel land first
   --positive aLeft: toe lift

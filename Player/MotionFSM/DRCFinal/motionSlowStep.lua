@@ -38,7 +38,8 @@ local foot_traj_func
 
 --foot_traj_func = moveleg.foot_trajectory_base
 
-foot_traj_func = moveleg.foot_trajectory_square
+foot_traj_func = moveleg.foot_trajectory_soft
+
 
 
 local touched =false

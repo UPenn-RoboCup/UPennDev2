@@ -480,6 +480,35 @@ function moveleg.foot_trajectory_base2(phSingle,uStart,uEnd,stepHeight)
 end
 
 
+function moveleg.foot_trajectory_soft(phSingle,uStart,uEnd,stepHeight)
+
+--super slow landing for alignment step
+
+  local breaksTX={0.150000,0.300000,0.400000,0.850000,1.000000,}
+  local breaksTY={0.100000,0.200000,0.350000,0.450000,0.700000,1.000000,}
+  local coefsX={
+    {1.505061,4.211612,-0.065606,0.000000,},
+    {1.505061,4.888889,1.299469,0.090000,},
+    {-42.434434,5.566166,2.867728,0.400000,},
+    {5.807140,-7.164164,2.707928,0.700000,},
+    {5.807140,0.675475,-0.211982,0.997000,},
+  }
+  local coefsY={
+    {-55.096427,28.528928,-0.501929,0.000000,},
+    {-55.096427,12.000000,3.550964,0.180000,},
+    {-42.314026,-4.528928,4.298071,0.600000,},
+    {77.382769,-23.570240,0.083196,1.000000,},
+    {3.171534,-0.355409,-2.309369,0.850000,},
+    {3.171534,2.023241,-1.892411,0.300000,},
+  }
+
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight*zf
+  local aFoot = 0
+  return uFoot, zFoot, aFoot
+end
 
 
 

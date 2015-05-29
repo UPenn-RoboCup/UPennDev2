@@ -95,20 +95,20 @@ local sel, uread, get_time, usleep = unix.select, unix.read, unix.time, unix.usl
 -- Packet Processing Helpers
 -- TODO: Should not be zero returns!!
 local function radian_clamp(idx, radian)
-	if type(idx)~='number' and type(radian)~='number' then return 0 end
+	if type(idx)~='number' or type(radian)~='number' then return 0 end
 	if is_unclamped[idx] then return radian end
 	return min(max(radian, min_rad[idx]), max_rad[idx])
 end
 local function radian_to_step(idx, radian)
-	if type(idx)~='number' and type(radian)~='number' then return 0 end
+	if type(idx)~='number' or type(radian)~='number' then return 0 end
 	return floor(direction[idx] * radian_clamp(idx, radian) * to_steps[idx] + step_zero[idx] + step_offset[idx])
 end
 local function step_to_radian(idx, step)
-if type(idx)~='number' and type(step)~='number' then return 0 end
+if type(idx)~='number' or type(step)~='number' then return 0 end
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 local function torque_to_cmd(idx, tq)
-	if type(idx)~='number' and type(tq)~='number' then return 0 end
+	if type(idx)~='number' or type(tq)~='number' then return 0 end
 	local cmd = min(max(direction[idx] * tq, -1023), 1023)
 	return cmd < 0 and (1024 - cmd) or cmd
 end

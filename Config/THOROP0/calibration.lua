@@ -79,8 +79,15 @@ cal["chip"].legBias=vector.new({
    })*math.pi/180
 
 
---REVERTED BACK
+--REVERTED BACK, this works for stairs!!!!
 cal["chip"].legBias=vector.new({
    0.000000,0.537500,0.000000,0.000000,-1.147500,0.000000,
    0.000000,0.337500,1.750000,0.000000,-1.485000,-0.945000,
+   })*math.pi/180
+
+
+-- Updated date: Fri May 29 02:58:38 2015
+cal["chip"].legBias=vector.new({
+   0.000000,0.537500,0.742500,0.000000,-1.147500,0.000000,
+   0.000000,0.337500,2.492500,0.000000,-1.485000,-0.945000,
    })*math.pi/180

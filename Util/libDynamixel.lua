@@ -337,26 +337,32 @@ local function get_status(fd, npkt, protocol, timeout)
 	local DP = protocol==1 and DP1 or DP2
 	-- Form the temporary variables
 	local status_str = ''
-	local full_status_str = ''
+	--local full_status_str = ''
 	local statuses = {}
 	local in_timeout = true
-	local t0 = unix.time()
+	local tm0 = unix.time()
+	--print('starting', t0)
 	local s, pkts
-	while in_timeout or s do
+	local max_i = 10
+	local ii = 0
+	while (in_timeout or s) and ii<=max_i do
+		ii=ii+1
+		--print('is_timeout', in_timeout, s, timeout)
 		-- Wait for any packets
 		--local status, ready = unix.select({fd},timeout)
 		unix.select({fd},timeout)
-		--local tf = unix.time()
-		--print("t_diff",tf-t0,1/(tf-t0))
+		local tf = unix.time()
+		--print("t_diff",tf-tm0,1/(tf-tm0))
 		s = unix.read(fd)
+		--print('s-type', type(s)=='string' and #s)
 		if s then
-			full_status_str = full_status_str..s
+			--full_status_str = full_status_str..s
 			--print('Full Status str',#s,#full_status_str,pkts)
 			pkts, status_str = DP.input(status_str..s)
-			--print(pkts,'packets',#pkts,'of',npkt)
+			--print(type(pkts),'packets of',npkt)
 			--print('PACKET', s:byte(1,-1))
 			--print(#status_str, 'LEFTOVER:', status_str:byte(1,-1))
-			--util.ptable(pkts)
+			--if type(pkts)=='table' then util.ptable(pkts) end
 			if pkts then
 				for p,pkt in ipairs(pkts) do
 					table.insert(statuses, DP.parse_status_packet(pkt))
@@ -364,10 +370,10 @@ local function get_status(fd, npkt, protocol, timeout)
 				if #statuses>=npkt then return statuses end
 			end -- if pkts
 		end -- if s
-		in_timeout = (unix.time()-t0)<timeout
+		in_timeout = (unix.time()-tm0)<timeout
 	end
-	--print('READ TIMEOUT',#statuses,'of',npkt,type(s),#status_str)
-	return statuses, full_status_str
+	--print('READ TIMEOUT',#statuses,'of',npkt,type(s),#status_str, ii)
+	return statuses --, full_status_str
 end
 
 function libDynamixel.get_bulk(motor_ids, items, bus, is_co)
@@ -566,12 +572,15 @@ for k,v in pairs(nx_registers) do
 			-- Single motor
 			instruction = DP2.read_data(motor_ids, addr, sz)
 			nids = 1
-		elseif #motor_ids==1 then
+		elseif type(motor_ids)=='table' and #motor_ids==1 then
 			-- Single motor
 			instruction = DP2.read_data(motor_ids[1], addr, sz)
-		else
+		elseif type(motor_ids)=='table' then
 			instruction = DP2.sync_read(char(unpack(motor_ids)), addr, sz)
 			nids = #motor_ids
+		else
+			print('bad get nx')
+			return
 		end
 		-- If no pre-existing bus is specified, just return the instruction
 		if not bus then return instruction end
@@ -756,7 +765,7 @@ local function send_ping( bus, id, protocol, twait )
 	stty.flush(bus.fd)
 	local ret    = unix.write(bus.fd, instruction)
 	local status = get_status( bus.fd, 1, protocol, twait )
-	if status then return status end
+	if type(status)=='table' then return status end
 end
 
 local function ping_probe(self, protocol, twait)
@@ -770,15 +779,19 @@ local function ping_probe(self, protocol, twait)
 	local parse_delay = byte_to_number[nx_registers.return_delay_time[2]]
 	local parse_mode = byte_to_number[nx_registers.mode[2]]
 	local ptable = require'util'.ptable
-	for id=0, 253 do
+	for id=1, 253 do
+		--print('checking', id)
 		local status = send_ping(self, id, protocol, twait)
-		status = status[1]
-		if not status then
+		--print('status', type(status))
+		if type(status)~='table' then
 			-- No packet received
-		elseif status.error~=0 then
-			print("ERROR PING PACKET", id)
-			ptable(status)
+		elseif type(status[1])~='table' or status[1].error~=0 then
+			if type(status[1])=='table' then
+				print("ERROR PING PACKET", id)
+				ptable(status[1])
+			end
 		else
+			status = status[1]
 			local id = status.id
 			table.insert(found_ids, id)
 			local lsb, msb = unpack(status.parameter)
@@ -790,19 +803,25 @@ local function ping_probe(self, protocol, twait)
 				print("NX Motor")
 				-- Check the firmware
 				status = lD.get_nx_firmware(id, self)
-				status = status[1]
-				local firmware = parse_firmware(unpack(status.parameter))
-				print('\tFirmware: '..firmware)
+				if type(status)=='table' and status[1] then
+					status = status[1]
+					local firmware = parse_firmware(unpack(status.parameter))
+					print('\tFirmware: '..firmware)
+				end
 				-- Check the Operating Mode
 				status = lD.get_nx_mode(id, self)
-				status = status[1]
-				local mode = parse_delay(unpack(status.parameter))
-				print('\tOperating Mode: '..mode)
+				if type(status)=='table' and status[1] then
+					status = status[1]
+					local mode = parse_delay(unpack(status.parameter))
+					print('\tOperating Mode: '..mode)
+				end
 				-- Return Delay
 				status = lD.get_nx_return_delay_time(status.id, self)
-				status = status[1]
-				local delay = parse_delay(unpack(status.parameter))
-				print('\tReturn Delay: '..delay)
+				if type(status)=='table' and status[1] then
+					status = status[1]
+					local delay = parse_delay(unpack(status.parameter))
+					print('\tReturn Delay: '..delay)
+				end
 			else
 				-- MX
 				table.insert(mx_ids, id)
@@ -844,7 +863,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 			--      ptable(status)
 			print("ERROR PING PACKET ID ", id, status.error)
 		end
-		if status then
+		if type(status)=='table' then
 			local id = status.id
 			table.insert(found_ids, id)
 			local lsb, msb = unpack(status.parameter)
@@ -857,21 +876,21 @@ local function ping_verify(self, m_ids, protocol, twait)
 				-- Check the firmware
 				status = lD.get_nx_firmware(id, self)
 				status = status[1]
-				if status then
+				if type(status)=='table' and status[1] then
 					local firmware = parse_firmware(unpack(status.parameter))
 					print('\tFirmware: '..firmware)
 				end
 				-- Check the Operating Mode
 				status = lD.get_nx_mode(id, self)
 				status = status[1]
-				if status then
+				if type(status)=='table' and status[1] then
 					local mode = parse_delay(unpack(status.parameter))
 					print('\tOperating Mode: '..mode)
 				end
 				-- Return Delay
-				status = lD.get_nx_return_delay_time(status.id, self)
-				status = status[1]
-				if status then
+				status = lD.get_nx_return_delay_time(id, self)
+				if type(status)=='table' and status[1] then
+					status = status[1]
 					local delay = parse_delay(unpack(status.parameter))
 					print('\tReturn Delay: '..delay)
 				end

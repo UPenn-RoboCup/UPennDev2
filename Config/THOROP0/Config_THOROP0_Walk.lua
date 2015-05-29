@@ -139,6 +139,9 @@ else
     Config.supportY_preview2 = 0.0
 
     walk.stepHeight= 0.02  
+    walk.supportY = 0.0
+
+
   end
 end
 

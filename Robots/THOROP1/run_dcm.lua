@@ -98,20 +98,20 @@ local sel, uread, get_time, usleep = unix.select, unix.read, unix.time, unix.usl
 
 -- Packet Processing Helpers
 local function radian_clamp(idx, radian)
-	if type(idx)~='number' and type(radian)~='number' then return 0 end
+	if type(idx)~='number' or type(radian)~='number' then return 0 end
 	if is_unclamped[idx] then return radian end
 	return min(max(radian, min_rad[idx]), max_rad[idx])
 end
 local function radian_to_step(idx, radian)
-	if type(idx)~='number' and type(radian)~='number' then return 0 end
+	if type(idx)~='number' or type(radian)~='number' then return 0 end
 	return floor(direction[idx] * radian_clamp(idx, radian) * to_steps[idx] + step_zero[idx] + step_offset[idx])
 end
 local function step_to_radian(idx, step)
-	if type(idx)~='number' and type(step)~='number' then return 0 end
+	if type(idx)~='number' or type(step)~='number' then return 0 end
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 local function torque_to_cmd(idx, tq)
-	if type(idx)~='number' and type(tq)~='number' then return 0 end
+	if type(idx)~='number' or type(tq)~='number' then return 0 end
 	local cmd = min(max(direction[idx] * tq, -1023), 1023)
 	return cmd < 0 and (1024 - cmd) or cmd
 end
@@ -801,7 +801,10 @@ local function output_co(bus)
 				p_ptr_t[j_id-1] = t_read
 			end
 		end
-		if not bus.enable_read and #commands<=0 then print('bad zone') end
+		if not bus.enable_read and #commands<=0 then
+			coroutine.yield(0)
+			--print('bad zone')
+		end
 	end
 end
 
@@ -912,7 +915,9 @@ local function initialize(bus)
 				status = lD.get_mx_torque_mode(m_id, bus)[1]
 				parse = lD.byte_to_number[lD.mx_registers.torque_mode[2]]
 				-- Save the mode
-				gripper_mode[j_id] = parse(unpack(status.parameter))
+				if type(status)=='table' then
+					gripper_mode[j_id] = parse(unpack(status.parameter))
+				end
 				--if status then break end
 				if gripper_mode[j_id]==1 then break end
 				n = n + 1

@@ -90,18 +90,18 @@ function walk.entry()
   tStep = Config.walk.tStep
 
 
-if Config.use_exact_tZMP then
-  -- Initiate the ZMP solver
-  zmp_solver = libZMP.new_solver({
-    ['tStep'] = Config.walk.tStep,
-    ['tZMP']  = mcm.get_status_temp_tZMP(),
-  })
-else
-  zmp_solver = libZMP.new_solver({
-    ['tStep'] = Config.walk.tStep,
-    ['tZMP']  = Config.walk.tZMP,
-  })
-end
+  if Config.use_exact_tZMP then
+    -- Initiate the ZMP solver
+    zmp_solver = libZMP.new_solver({
+      ['tStep'] = Config.walk.tStep,
+      ['tZMP']  = mcm.get_status_temp_tZMP(),
+    })
+  else
+    zmp_solver = libZMP.new_solver({
+      ['tStep'] = Config.walk.tStep,
+      ['tZMP']  = Config.walk.tZMP,
+    })
+  end
   
 
   

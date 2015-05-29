@@ -72,10 +72,18 @@ static int lua_estop_update(lua_State *L) {
   return 1;
 }
 
+static int lua_estop_display(lua_State *L){
+  int row = luaL_optnumber(L, 1,1);
+  const char * text= luaL_checkstring (L, 2);
+  estop_display(row,text);
+  return 1;
+}
+
 
 static const struct luaL_reg estop_functions [] = {
   {"init", lua_estop_init},
   {"update", lua_estop_update},
+  {"display", lua_estop_display},
   {NULL, NULL}
 };
 

@@ -4,6 +4,9 @@
 local estop=require('estop')
 
 estop.init()
+
+estop.display(1,"test")
+
 while true do
   ret = estop.update()  
   print("ESTOP:",ret.estop)

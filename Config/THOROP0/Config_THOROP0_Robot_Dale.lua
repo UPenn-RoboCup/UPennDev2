@@ -130,7 +130,7 @@ local right_arm = {
 		-- gripper
 		63, 65, 67
 	},
-	enable_read = false,
+	enable_read = true,
 }
 
 local left_arm = {
@@ -143,7 +143,7 @@ local left_arm = {
 		-- gripper
 		--	64, 66, 68
 	},
-	enable_read = false
+	enable_read = true
 }
 
 local right_leg = {

@@ -10,7 +10,8 @@ local DP2 = require'DynamixelPacket2' -- 2.0 protocol
 libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
-local READ_TIMEOUT = 1 / 60
+--local READ_TIMEOUT = 1 / 60
+local READ_TIMEOUT = 1 / 80
 local using_status_return = true
 
 -- Cache

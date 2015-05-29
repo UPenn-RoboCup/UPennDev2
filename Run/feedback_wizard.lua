@@ -24,12 +24,12 @@ if USE_ZLIB then
 	czlib = require'zlib.ffi'.compress
 end
 
-local hz_wrist_send = 1.2
-local dt_wrist_send = 1/hz_indoor_send
+local hz_wrist_send = .55
+local dt_wrist_send = 1/hz_wrist_send
 local hz_head_send = 0.45
-local dt_head_send = 1/hz_image_send
-local hz_outdoor_send = 5
-local dt_outdoor_send = 1/hz_image_send
+local dt_head_send = 1/hz_head_send
+local hz_outdoor_send = 2
+local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
 local ittybitty0_ch = si.new_subscriber(Config.net.streams.ittybitty0.sub)
@@ -183,24 +183,31 @@ local function update()
 
 	local is_indoors = hcm.get_network_indoors()
 	--if is_indoors==1 and t_update - t_feedback < dt_indoor_send then return end
-	if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
+	--if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
 	local ret, err
 	if is_indoors==2 and ittybitty0_udp_ch then
 		-- send the ittybitty0 (head)
 		if t_update - t_feedback < dt_head_send then return end
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
-		ret, err = ittybitty0_udp_ch:send(ittybitty0)
+		if ittybitty0 then
+			ret, err = ittybitty0_udp_ch:send(ittybitty0)
+			print(#fbmsgz + #ittybitty0, math.floor(9600/8*dt_head_send))
+		end
 	elseif is_indoors==3 and ittybitty1_udp_ch then
 		-- send the ittybitty1 (wrist)
 		if t_update - t_feedback < dt_wrist_send then return end
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
-		ret, err = ittybitty1_udp_ch:send(ittybitty1)
-	else if feedback_udp_ch then
+		if ittybitty1 then
+			ret, err = ittybitty1_udp_ch:send(ittybitty1)
+			print(#fbmsgz + #ittybitty1, math.floor(9600/8*dt_wrist_send))
+		end
+	elseif feedback_udp_ch then
 		if t_update - t_feedback < dt_outdoor_send then return end
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
+		print(#fbmsgz, 9600/8*dt_outdoor_send)
 	end
 	if type(ret)=='string' then print('Feedback | UDP error: ', ret, '\n') end
 	count = count + 1

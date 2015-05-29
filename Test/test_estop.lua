@@ -33,10 +33,11 @@ function update_estop()
 			if ret.lstick[1]>600 and ret.rstick[1]>600 then
 				targetvel_new={0,0,0}
 				button_pressed = true
-				print("ZERO VEL")				
 				motion_ch:send'hybridwalk'
+			elseif ret.lstick[1]>600 then
+				targetvel_new={0,0,0}
 			elseif
-				ret.lstick[1]<-600 and ret.rstick[1]<-600 then
+				ret.lstick[1]<-600 then
 				targetvel_new={0,0,0}
 				body_ch:send'stop'
 				button_pressed = true
@@ -45,7 +46,15 @@ function update_estop()
 			elseif ret.rbutton==1 then
 				print("INIT!!!!!!")
 				body_ch:send'init'	
-	  		button_pressed = true					
+	  		button_pressed = true		
+
+			elseif ret.lstick[2]>600 then
+				targetvel_new[3]=targetvel[3]+0.1
+		  		button_pressed = true				
+			elseif ret.lstick[2]<-600 then
+				targetvel_new[3]=targetvel[3]-0.1
+		  		button_pressed = true				
+			
 			elseif ret.lbutton[1]==1 then
 				targetvel_new[1]=targetvel[1]+0.02;
 	  		button_pressed = true				
@@ -57,12 +66,6 @@ function update_estop()
 	  		button_pressed = true				
 			elseif ret.lbutton[4]==1 then
 				targetvel_new[2]=targetvel[2]-0.02;
-	  		button_pressed = true				
-			elseif ret.rbutton==4 then
-				targetvel_new[3]=targetvel[3]+0.1
-	  		button_pressed = true				
-			elseif ret.rbutton==2 then
-				targetvel_new[3]=targetvel[3]-0.1
 	  		button_pressed = true				
 			end --end button check
 

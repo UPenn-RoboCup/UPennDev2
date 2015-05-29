@@ -124,6 +124,18 @@ else
     walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
     Config.supportY_preview = 0.00 --this smooths out first step a bit
     Config.supportY_preview2 = 0.0  
+
+
+walk.stepHeight = 0.02 --mk2. lower 
+
+
+walk.stepHeight = 0.01 --mk2. lower 
+
+
+
+
+
+
   else
      walk.delay_threshold_angle = 999*math.pi/180 --disabled
 

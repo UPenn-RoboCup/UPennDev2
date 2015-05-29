@@ -55,10 +55,11 @@ state_ch = si.new_publisher'state!'
 --print(util.color('SHM access', 'blue'), table.concat(shm_vars,  ' '))
 
 local function gen_screen(name, script, ...)
+	local args = {...}
 	return table.concat({
 			'screen',
 			'-S',
-			name,
+			name..table.concat(args),
 			'-L',
 			'-dm',
 			'luajit',
@@ -66,7 +67,7 @@ local function gen_screen(name, script, ...)
 			...
 		},' ')
 end
-local function kill(name)
+function pkill(name)
 	local ret = io.popen("pkill -f "..name)
 	--for pid in ret:lines() do print('Killed Process', pid) end
 end
@@ -89,10 +90,15 @@ for _,fname in ipairs(unix.readdir(ROBOT_HOME)) do
 	end
 end
 function sstart(scriptname, ...)
+	local args = {...}
 	local kind = runnable[scriptname]
 	if not kind then return false end
 	local script = kind=='wizard' and scriptname..'_wizard.lua' or 'run_'..scriptname..'.lua'
-	kill(script)
+	if #args>0 then
+		pkill(script..' '..table.concat(args,' '))
+	else
+		pkill(script)
+	end
 	unix.chdir(kind=='wizard' and HOME..'/Run' or ROBOT_HOME)
 	local screen = gen_screen(scriptname, script, ...)
 	print('screen', screen)

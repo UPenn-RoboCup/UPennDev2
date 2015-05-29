@@ -139,6 +139,17 @@ function sstart(scriptname)
 	return mp.unpack(data)
 end
 
+function pkill(scriptname)
+	if scriptname:find'rpc' then return end
+	local msg = mp.pack({
+		raw = 'pkill("'..scriptname..'")'
+	})
+	rpc_req:send(msg)
+  local data = unpack(rpc_req:receive())
+	if type(data)~='string' then return end
+	return mp.unpack(data)
+end
+
 print(util.color('FSM Channel', 'yellow'), table.concat(fsm_chs, ' '))
 print(util.color('SHM access', 'blue'), table.concat(shm_vars, ' '))
 

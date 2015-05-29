@@ -61,6 +61,9 @@ local p_ptr  = dcm.sensorPtr.position
 local p_ptr_t = dcm.tsensorPtr.position
 local c_ptr  = dcm.sensorPtr.current
 local c_ptr_t = dcm.tsensorPtr.current
+--
+local temp_ptr  = dcm.sensorPtr.temperature
+local temp_ptr_t = dcm.tsensorPtr.temperature
 
 --------------------------
 -- Global tmp variables --
@@ -86,6 +89,9 @@ local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 local c_parse = lD.byte_to_number[lD.nx_registers.current[2]]
 local c_parse_mx = lD.byte_to_number[lD.mx_registers.current[2]]
+--
+local temp_parse = lD.byte_to_number[lD.nx_registers.temperature[2]]
+local temp_parse_mx = lD.byte_to_number[lD.mx_registers.temperature[2]]
 
 -- Standard Lua Cache
 local min, max, floor = math.min, math.max, math.floor
@@ -216,7 +222,6 @@ local function parse_ft(ft, raw_str, m_id)
 	end
 	--]]
 
-
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
@@ -228,13 +233,11 @@ local function parse_ft(ft, raw_str, m_id)
 		end
 	end
 
-
 	if Config.birdwalk then
 		--for birdwalk, invert roll and pitch torques
 		ft.readings[4]=-ft.readings[4]
 		ft.readings[5]=-ft.readings[5]
 	end
-
 
 	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
 end
@@ -261,7 +264,7 @@ local function form_leg_read_cmd(bus)
 end
 local function parse_read_leg(pkt, bus)
 	-- Nothing to do if an error
-	if pkt.error ~= 0 then return end
+	if type(pkt)~='table' or pkt.error ~= 0 then return end
 	if type(pkt.parameter)~='table' or #pkt.parameter ~= leg_packet_sz then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
@@ -446,12 +449,16 @@ local function parse_read_arm2(pkt, bus)
 		return read_j_id
 	end
 	local read_rad = step_to_radian(read_j_id, read_val)
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Set Current in SHM
 	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
-	c_ptr[read_j_id - 1] = read_cur
-	c_ptr_t[read_j_id - 1] = t_read
+	if type(read_cur)=='number' then
+		c_ptr[read_j_id - 1] = read_cur
+		c_ptr_t[read_j_id - 1] = t_read
+	end
 	--
 	return read_j_id
 end

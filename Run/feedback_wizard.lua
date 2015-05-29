@@ -160,20 +160,22 @@ local function update()
 	e.rpy = Body.get_rpy()
 	e.pose = wcm.get_robot_pose()
 	--]]
+	print()
 	local channel = 9600*dt_image_send
 	print('initial channel bits', channel)
 	local fbmsg = mpack(e)
 	--print('fbmsg bits', #fbmsg*8)
 	local fbmsgz = czlib(fbmsg)
-	print('fbmsgz bits', #fbmsgz*8)
+	print('fbmsgz bits', #fbmsgz*8, #fbmsg*8)
 	channel = channel - #fbmsgz*8
 
-	print()
 	print('ittybitty0 bits', ittybitty0 and #ittybitty0*8)
 	print('ittybitty1 bits', ittybitty1 and #ittybitty1*8)
 	local channel0 = channel - (ittybitty0 and #ittybitty0*8 or 0)
 	local channel1 = channel - (ittybitty1 and #ittybitty1*8 or 0)
-	print('final channel bits', channel, channel0, channel1)
+	print('final meta  channel bits', channel)
+	print('final itty0 channel bits', channel0)
+	print('final itty1 channel bits', channel1)
 
 
 	local ret, err

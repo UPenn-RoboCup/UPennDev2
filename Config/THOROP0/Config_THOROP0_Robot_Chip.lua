@@ -121,12 +121,22 @@ Config.left_wrist_ft = FT16464
 ---------------------------------
 ---------------------------------
 
+if Config.birdwalk then
+	--swap ft type
+	Config.left_foot_ft = FT16390
+	Config.right_foot_ft = FT16389
+	--swap servo ids
+	Config.left_foot_ft.m_ids = {23, 25}
+	Config.right_foot_ft.m_ids = {24, 26}
+
+else --normal walk
+	Config.left_foot_ft = FT16389
+	Config.right_foot_ft = FT16390
+	Config.left_foot_ft.m_ids = {24, 26}
+	Config.right_foot_ft.m_ids = {23, 25}
+end
 
 
-
-
-Config.left_foot_ft.m_ids = {24, 26}
-Config.right_foot_ft.m_ids = {23, 25}
 
 -- DCM Chains
 Config.chain = {enabled = true}

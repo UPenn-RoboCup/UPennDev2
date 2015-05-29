@@ -36,6 +36,10 @@ Config.use_exact_tZMP = true
 Config.use_heeltoe_walk = true
 --Config.heeltoe_angle = 5*DEG_TO_RAD
 
+Config.walktraj={}
+Config.walktraj.hybridwalk = "foot_trajectory_base2"
+
+
 
 
 -- Tune for Webots
@@ -87,8 +91,6 @@ if IS_WEBOTS then
   -- Config.kinect_timestep = 30
 end
 
-Config.walktraj={}
-Config.walktraj.hybridwalk = "foot_trajectory_base"
 
 
 -----------------------------------

@@ -215,6 +215,7 @@ local function parse_ft(ft, raw_str, m_id)
 		return
 	end
 	--]]
+
 	
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
@@ -226,6 +227,15 @@ local function parse_ft(ft, raw_str, m_id)
 --			* ft.calibration_gain
 		end
 	end
+
+
+	if Config.birdwalk then
+		--for birdwalk, invert roll and pitch torques
+		ft.readings[4]=-ft.readings[4]
+		ft.readings[5]=-ft.readings[5]
+	end
+
+
 	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
 end
 

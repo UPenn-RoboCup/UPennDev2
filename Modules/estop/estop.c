@@ -229,6 +229,30 @@ void estop_shutdown(){
 }
 
 
+void estop_display(int row, char* text){
+	switch(row){
+		case 1:
+			vsc_send_user_feedback(vscInterface, VSC_USER_DISPLAY_MODE, DISPLAY_MODE_CUSTOM_TEXT);
+			vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_1, text);
+		break;
+		case 2:
+			vsc_send_user_feedback(vscInterface, VSC_USER_DISPLAY_MODE, DISPLAY_MODE_CUSTOM_TEXT);
+			vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_2, text);
+		break;
+
+		case 3:
+			vsc_send_user_feedback(vscInterface, VSC_USER_DISPLAY_MODE, DISPLAY_MODE_CUSTOM_TEXT);
+			vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_3, text);
+		break;
+
+		case 4:
+			vsc_send_user_feedback(vscInterface, VSC_USER_DISPLAY_MODE, DISPLAY_MODE_CUSTOM_TEXT);
+			vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_4, text);
+		break;
+	}
+
+
+}
 
 int estop_update(int *lstick, int*rstick, int *lbutton, int *rbutton){
 
@@ -243,28 +267,6 @@ int estop_update(int *lstick, int*rstick, int *lbutton, int *rbutton){
 			/* Send Heartbeat */
 			vsc_send_heartbeat(vscInterface, ESTOP_STATUS_NOT_SET);
 		}
-
-
-
-
-
-
-	/* Send Display Mode to VSC */
-
-	vsc_send_user_feedback(vscInterface, VSC_USER_DISPLAY_MODE, DISPLAY_MODE_CUSTOM_TEXT);
-	vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_1, "          WHY       ");
-	vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_2, "         AM I       ");
-	vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_3, "          SO        ");
-//vsc_send_user_feedback_string(vscInterface, VSC_USER_DISPLAY_ROW_4, "       AWESOME?     ");
-
-
-
-
-
-
-
-
-
 
 		/* Initialize the timeout structure for 50 milliseconds*/
 		timeout.tv_sec = 0;

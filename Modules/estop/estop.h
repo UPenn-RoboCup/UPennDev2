@@ -54,3 +54,4 @@ int readFromVsc(int *lstick, int*rstick, int *lbutton, int *rbutton);
 void estop_init(char* ch, int baud);
 void estop_shutdown();
 int estop_update();
+void estop_display(int row,char* text);

@@ -1,7 +1,7 @@
 #!/usr/bin/env luajit
 -- (c) 2014 Team THORwIn
 local ok = pcall(dofile,'../fiddle.lua')
-if not ok then dofile'fiddle.lua' end
+if not ok then dofile'../fiddle.lua' end
 
 estop = require'estop'
 
@@ -35,10 +35,14 @@ function update_estop()
 				targetvel_new={0,0,0}
 				mcm.set_walk_vel(targetvel)
 				button_pressed = true
-				print("ZERO VEL")				
 				motion_ch:send'hybridwalk'
+			elseif ret.lstick[1]>600 then
+				targetvel={0,0,0}
+				targetvel_new={0,0,0}
+				mcm.set_walk_vel(targetvel)
+
 			elseif
-				ret.lstick[1]<-600 and ret.rstick[1]<-600 then
+				ret.lstick[1]<-600 then
 				targetvel={0,0,0}
 				targetvel_new={0,0,0}
 				mcm.set_walk_vel(targetvel)

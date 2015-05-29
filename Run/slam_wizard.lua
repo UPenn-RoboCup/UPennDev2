@@ -18,7 +18,7 @@ local T = require'Transform'
 
 local pillar_ch = si.new_publisher('pillars')
 
-local polar_interval = 20 * DEG_TO_RAD
+local polar_interval = 15 * DEG_TO_RAD
 local function find_pillars(xyz, polar)
 	local xyz_com = xyz[1]
 	local rho, theta = unpack(polar)
@@ -30,21 +30,21 @@ local function find_pillars(xyz, polar)
 		local xyz = xyz_com[i]
 		local r = rho[i]
 		if a<interval then
-			if r<rmin and r>0.25 then
+			if r<rmin and r>0.24 and r<5 then
 				xymin = {xyz[1], xyz[2]}
 				rmin = r
-			elseif not x then
-				rmin = math.huge
-				xymin = {xyz[1], xyz[2]}
+--			elseif not xymin then
+--				rmin = math.huge
+--				xymin = {xyz[1], xyz[2]}
 			end
 		else
-			table.insert(pillars, xymin)
+			if xymin then table.insert(pillars, xymin) end
 			xymin = nil
 			rmin = math.huge
 			interval = interval + polar_interval
 		end
 	end
-	table.insert(pillars, x)
+	if xymin then table.insert(pillars, xymin) end
 	pillar_ch:send(mpack(pillars))
 	--[[
 	print('Sending pillars', #pillars)

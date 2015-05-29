@@ -114,7 +114,6 @@ local function update()
 	repeat
 		msg = ittybitty0_ch:receive(true)
 		if msg then
-			print(#msg)
 			y0 = msg[#msg] end
 	until not msg
 	if y0 then ittybitty0 = y0 end
@@ -123,7 +122,6 @@ local function update()
 	repeat
 		msg = ittybitty1_ch:receive(true)
 		if msg then
-			print(#msg)
 			y1 = msg[#msg]
 		end
 	until not msg
@@ -204,7 +202,6 @@ local function update()
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
 		if ittybitty1 then
-		print('it1')
 			ret, err = ittybitty1_udp_ch:send(ittybitty1)
 			print(#fbmsgz + #ittybitty1, math.floor(9600/8*dt_wrist_send))
 		end

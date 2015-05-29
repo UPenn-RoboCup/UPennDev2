@@ -130,7 +130,7 @@ local right_arm = {
 		-- gripper
 		63, 65, 67
 	},
-	enable_read = false,
+	enable_read = true,
 }
 
 local left_arm = {
@@ -143,7 +143,7 @@ local left_arm = {
 		-- gripper
 		--	64, 66, 68
 	},
-	enable_read = false
+	enable_read = true
 }
 
 local right_leg = {
@@ -151,7 +151,7 @@ local right_leg = {
 	ttyname = '/dev/ttyUSB2',
 	-- waist pitch
 	m_ids = {15,17,19, 21, 23,25, 27},
-	enable_read = false,
+	enable_read = true,
 }
 
 local left_leg = {
@@ -159,7 +159,7 @@ local left_leg = {
 	ttyname = '/dev/ttyUSB3',
 	-- waist yaw
 	m_ids = {16,18,20, 22, 24,26},
-	enable_read = false,
+	enable_read = true,
 }
 
 --------------------------------------------

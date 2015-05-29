@@ -10,7 +10,8 @@ local DP2 = require'DynamixelPacket2' -- 2.0 protocol
 libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
-local READ_TIMEOUT = 1 / 60
+--local READ_TIMEOUT = 1 / 60
+local READ_TIMEOUT = 1 / 80
 local using_status_return = true
 
 -- Cache
@@ -389,6 +390,7 @@ local function get_status(fd, npkt, protocol, timeout)
 		end -- if s
 		in_timeout = (unix.time()-tm0)<timeout
 	end
+	if ii >=10 then print('BAD ii!!') end
 	--print('READ TIMEOUT',#statuses,'of',npkt,type(s),#status_str, ii)
 	return statuses --, full_status_str
 end
@@ -788,10 +790,15 @@ end
 
 local ptable = require'util'.ptable
 local function check_motor_ping(status_tbl)
+	--print(status_tbl)
 	if type(status_tbl)~='table' then return end
-	local status = unpack(status_tbl)
+	--print('check', #status_tbl)
+	--ptable(status_tbl)
+	local status = unpack(status_tbl) or status_tbl
 	if type(status)~='table' then return end
-	local lsb, msb = unpack(status.parameter)
+	local params = status.parameter
+	if type(params)~='table' then return end
+	local lsb, msb = unpack(params)
 	--print('Found', status.id, status.error>0 and status.error or 'ok')
 	if msb>2 then return 'nx' else return 'mx' end
 end
@@ -855,6 +862,7 @@ local function ping_probe(self, protocol, twait)
 		local status = send_ping(self, id, protocol, twait)
 		local ok = check_motor_ping(status)
 		if ok then
+			print('Found', ok, id)
 			table.insert(found_ids, id)
 			if ok=='nx' then
 				table.insert(nx_ids, id)
@@ -901,7 +909,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 				--debug_mx(self, id)
 			end
 		else
-			print('NOT FOUND:', id)
+			print('NOT FOUND:', id, ok)
 			allgood = false
 		end
 		-- Wait .1 ms
@@ -914,6 +922,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 	self.has_nx_id = has_nx_id
 	self.has_mx = #mx_ids > 0
 	self.has_nx = #nx_ids > 0
+	if allgood then print('VERIFID') end
 	return allgood
 end
 

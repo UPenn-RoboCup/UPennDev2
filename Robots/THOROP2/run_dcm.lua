@@ -262,37 +262,27 @@ end
 local function parse_read_leg(pkt, bus)
 	-- Nothing to do if an error
 	if pkt.error ~= 0 then return end
-	if #pkt.parameter ~= leg_packet_sz then return end
+	if type(pkt.parameter)~='table' or #pkt.parameter ~= leg_packet_sz then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
-
-
-	if not pkt.id then 
-	  print("NO ID!!!!!!!!!!")
-	  return
-	end
-
-
+	if type(m_id)~='number' then return end
 	local read_j_id = m_to_j[m_id]
-
-if not read_j_id then
-print("ERROR M_ID:",m_id)
-return
-end
-
+	if type(read_j_id)~='number' then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, leg_packet_offsets[1]))
-	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Set Current in SHM
 	local read_cur = c_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
-	c_ptr[read_j_id - 1] = read_cur
-	c_ptr_t[read_j_id - 1] = t_read
+	if type(read_cur)=='number' then
+		c_ptr[read_j_id - 1] = read_cur
+		c_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
-
 --	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 --	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
 	
@@ -788,7 +778,10 @@ local function output_co(bus)
 				p_ptr_t[j_id-1] = t_read
 			end
 		end
-		if not bus.enable_read and #commands<=0 then print('bad zone') end
+		if not bus.enable_read and #commands<=0 then
+			print('bad zone')
+			coroutine.yield(0)
+		end
 	end
 end
 

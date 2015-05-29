@@ -15,7 +15,11 @@ local munpack = require'msgpack.MessagePack'.unpack
 local function procMP(data)
 	if type(data)~='string' then return end
 	--print('running unpack', type(data), #data)
-	local tbl, offset = munpack(data)
+	local ok, tbl, offset = pcall(munpack, data)
+	if not ok then
+		print(tbl)
+		return
+	end
 	--local tbl2, offset2 = munpack2(data)
 	--print('done unpack', tbl,tbl.id, offset)
 	--if not ok then return end

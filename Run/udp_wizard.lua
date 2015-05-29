@@ -6,8 +6,13 @@ local util = require'util'
 --local unzlib = require'zlib'.inflate()
 --local unzlib = require'zlib.ffi'.uncompress
 
-local munpack = require'msgpack'.unpack
-local mpack = require'msgpack'.pack
+--local munpack = require'msgpack'.unpack
+--local mpack = require'msgpack'.pack
+
+
+local mpack = require'msgpack.MessagePack'.pack
+local munpack = require'msgpack.MessagePack'.unpack
+
 local function procMP(data)
 	if type(data)~='string' then return end
 	--print('running unpack', type(data), #data)

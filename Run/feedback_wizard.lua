@@ -10,11 +10,15 @@ local usleep = require'unix'.usleep
 local pose_global = require'util'.pose_global
 local debug_interval = 5
 
+
+local TEMP_LIM = 70
+
 local t_sleep = 1 / 20
 local t_entry = get_time()
 require'wcm'
 require'mcm'
 require'hcm'
+local USE_ZLIB = true
 local czlib
 if USE_ZLIB then
 	czlib = require'zlib.ffi'.compress
@@ -28,7 +32,6 @@ local dt_image_send = 1/hz_image_send
 local pillar_ch = si.new_subscriber('pillars')
 local ittybitty0_ch = si.new_subscriber(Config.net.streams.ittybitty0.sub)
 local ittybitty1_ch = si.new_subscriber(Config.net.streams.ittybitty1.sub)
-require'util'.ptable(ittybitty1_ch)
 local pillars
 local ittybitty0, ittybitty1
 
@@ -133,10 +136,19 @@ local function update()
 		-- send the ittybitty1 (wrist)
 		ret, err = ittybitty1_udp_ch:send(ittybitty1)
 	else
+
+		-- send this only when maxxed out..,
+		local qTemp = Body.get_temperature()
+		for i, tm in ipairs(qTemp) do
+			if tm>TEMP_LIM then
+				e.tm = qTemp
+				break
+			end
+		end
+
 		-- Default feedback
 		e.u = get_torso()
 		e.cp = Body.get_command_position()
-		e.tm = Body.get_temperature()
 		e.s = pillars
 		e.g = Body.get_rgrip_command_torque()
 		--[[
@@ -160,6 +172,10 @@ local function update()
 		msg = mpack(e)
 
 		if feedback_ch then feedback_ch:send(msg) end
+
+		if czlib then msg = czlib(msg) end
+		print(#msg, '=', #msg*8, 'bits', 'zlib. pillars:', pillars and #pillars)
+
 		if feedback_udp_ch then
 			--ret, err = feedback_udp_ch:send(czlib(msg))
 			ret, err = feedback_udp_ch:send(msg)

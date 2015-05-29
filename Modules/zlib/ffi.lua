@@ -29,7 +29,7 @@ function zlib.compress(txt, len)
     buflen[0] = n
   end
   -- Just make fast, so use 1 for level
-  res = z.compress2(buf, buflen, txt, sz, 6)
+  res = z.compress2(buf, buflen, txt, sz, 9)
   if res~=0 then return end
   -- Reset the bounds
   n = buflen[0]

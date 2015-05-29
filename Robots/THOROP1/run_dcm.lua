@@ -484,10 +484,12 @@ end
 -- Position Packet
 local function parse_read_position(pkt, bus)
 	-- TODO: Nothing to do if an error
-	if not pkt then return end
+	if type(pkt)~='table' then return end
 	--if pkt.error ~= 0 then return end
 	local m_id = pkt.id
+	if type(m_id)~='number' then return end
 	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
 	local read_val
 	if bus.has_mx_id[m_id] then
 		if #pkt.parameter~=lD.mx_registers.position[2] then return end
@@ -499,8 +501,10 @@ local function parse_read_position(pkt, bus)
 	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
 	-- Set in Shared memory
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	return read_j_id, read_rad
 end
 

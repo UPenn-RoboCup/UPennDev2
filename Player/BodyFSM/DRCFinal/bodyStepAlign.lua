@@ -85,9 +85,27 @@ function initiate_step(supportLeg, step_relpos )
   local st,wt = 1,2
 
 
+--F/W max: 0.20
+--sidesteo max: 0.10
+
+
 
 
   local move_target = vector.pose(hcm.get_teleop_waypoint())
+
+
+  --Sanitize the velocity
+  local step_lim = {0.20,0.10,15*math.pi/180}
+
+  local step_mag = math.sqrt((move_target[1]/step_lim[1])^2+(move_target[2]/step_lim[2])^2)
+  step_mag = math.max(1,step_mag)
+
+  move_target[1] = move_target[1]/step_mag
+  move_target[2] = move_target[2]/step_mag
+  move_target[3] = math.min(step_lim[3], math.max(-step_lim[3],move_target[3]))
+
+  print("ALIGN STEP:",move_target[1],move_target[2],move_target[3]*RAD_TO_DEG)
+
   local uTorsoTarget = util.pose_global(move_target, uTorso)
   local uLeftTarget = util.pose_global({0,Config.walk.footY,0},uTorsoTarget)
   local uRightTarget = util.pose_global({0,-Config.walk.footY,0},uTorsoTarget)
@@ -104,36 +122,179 @@ function initiate_step(supportLeg, step_relpos )
   local side_adj = Config.walk.supportY - 0.00
   local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 
-  if move_target[2]>=0 and move_target[3]<=0 then --2 step, left step first
+
+  if Config.birdwalk then
+    if move_target[2]>=0 then
+      if move_target[3]<=0 then --2 step, left step first
+      --take left step
+      step_queues={
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+          {uLeftMove,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+
+          {uRightMove,0,  0.1,wt,0.1 ,     {0,0},     {0,sh1,sh2},  {0,0}},   --LS     --Move and land
+          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+         },
+      }
+      else --3 step. right step first
+        local uRightMove1 = {0,-0.01,uRightMove[3]}
+        local uRightMove2 = util.pose_relative(uRightMove, uRightMove1)
+
+        step_queues={
+         {
+          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+          {uRightMove1,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+          {uLeftMove,1,   0.1,wt,0.1 ,   {0,0}, {0,sh1,sh2}   ,  {0,0}},   --LS     --Move and land
+          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
+
+          {uRightMove2,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+         },
+        }
+
+      end      
+    else
+      if move_target[3]>=0 then --2 step, right step first
+
+        step_queues={
+         {
+          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+          {uRightMove,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+          {uLeftMove,1,   0.1,wt,0.1 ,   {0,0}, {0,sh1,sh2}   ,  {0,0}},   --LS     --Move and land
+          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
+         },
+        }
+      else --3 step, left step first
+        local uLeftMove1 = {0,0.01,uLeftMove[3]}
+        local uLeftMove2 = util.pose_relative(uLeftMove, uLeftMove1)
+  --take left step
+        step_queues={
+           {
+            {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+            {uLeftMove1,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+            {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+
+            {uRightMove,0,  0.1,wt,0.1 ,     {0,0},     {0,sh1,sh2},  {0,0}},   --LS     --Move and land
+            {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+            {uLeftMove2,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+            {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+           },
+        }
+      end
+    end
+
+
+  else  --NON-BIRDWALK
+
+
+
+
+
+
+   if move_target[2]>=0 then --move left
+        if move_target[3]>=0 then --2 step, left step first
+        --take left step
+        step_queues={
+           {
+            {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+            {uLeftMove,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+            {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+
+            {uRightMove,0,  0.1,wt,0.1 ,     {0,0},     {0,sh1,sh2},  {0,0}},   --LS     --Move and land
+            {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+           },
+        }
+        else --3 step. right step first
+          local uRightMove1 = {0,-0.01,uRightMove[3]}
+          local uRightMove2 = util.pose_relative(uRightMove, uRightMove1)
+
+          step_queues={
+           {
+            {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+            {uRightMove1,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+            {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+            {uLeftMove,1,   0.1,wt,0.1 ,   {0,0}, {0,sh1,sh2}   ,  {0,0}},   --LS     --Move and land
+            {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
+
+            {uRightMove2,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+            {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+           },
+          }
+
+        end      
+      else  --move right
+
+        if move_target[3]<=0 then --2 step, right step first
+
+          step_queues={
+           {
+            {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+            {uRightMove,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+            {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+            {uLeftMove,1,   0.1,wt,0.1 ,   {0,0}, {0,sh1,sh2}   ,  {0,0}},   --LS     --Move and land
+            {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
+           },
+          }
+        else --3 step, left step first
+          local uLeftMove1 = {0,0.01,uLeftMove[3]}
+          local uLeftMove2 = util.pose_relative(uLeftMove, uLeftMove1)
     --take left step
-    step_queues={
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        {uLeftMove,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-        {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+          step_queues={
+             {
+              {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+              {uLeftMove1,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+              {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+
+              {uRightMove,0,  0.1,wt,0.1 ,     {0,0},     {0,sh1,sh2},  {0,0}},   --LS     --Move and land
+              {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+              {uLeftMove2,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+              {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+             },
+          }
+        end
+      end
 
 
-        {uRightMove,0,  0.1,wt,0.1 ,     {0,0},     {0,sh1,sh2},  {0,0}},   --LS     --Move and land
-
-        {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
-       },
-    }
-    
-  elseif move_target[2]<=0 and move_target[3]>=0 then --2 step, right step first
-
-    step_queues={
-     {
-      {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-      {uRightMove,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
-      {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
 
 
-      {uLeftMove,1,   0.1,wt,0.1 ,   {0,0}, {0,sh1,sh2}   ,  {0,0}},   --LS     --Move and land
-      {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
-     },
-    }
 
-     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   end
 

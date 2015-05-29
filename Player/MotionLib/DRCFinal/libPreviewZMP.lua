@@ -478,6 +478,12 @@ local function precompute(self)
   -- param_a : 3x3
   -- param_b : 4x1
   ------------------------------------
+  if not self.tZmp then
+    print("ERROR: tZMP MISSING!!!!!!!!!!!!!")
+    self.tZmp = Config.walk.tZMP
+  end
+
+
 
   local timeStep = self.preview_tStep
   self.param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}}

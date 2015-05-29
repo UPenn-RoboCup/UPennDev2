@@ -9,7 +9,7 @@ local DP2 = require'DynamixelPacket2' -- 2.0 protocol
 libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
-local READ_TIMEOUT = 1 / 50
+local READ_TIMEOUT = 1 / 60
 local using_status_return = true
 
 -- Cache
@@ -870,8 +870,8 @@ local function ping_verify(self, m_ids, protocol, twait)
 				end
 				-- Return Delay
 				status = lD.get_nx_return_delay_time(status.id, self)
+				status = status[1]
 				if status then
-					status = status[1]
 					local delay = parse_delay(unpack(status.parameter))
 					print('\tReturn Delay: '..delay)
 				end

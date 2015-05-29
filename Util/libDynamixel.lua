@@ -870,8 +870,8 @@ local function ping_verify(self, m_ids, protocol, twait)
 				end
 				-- Return Delay
 				status = lD.get_nx_return_delay_time(status.id, self)
-				status = status[1]
 				if status then
+					status = status[1]
 					local delay = parse_delay(unpack(status.parameter))
 					print('\tReturn Delay: '..delay)
 				end

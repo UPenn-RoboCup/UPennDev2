@@ -86,7 +86,7 @@ for key,stream in pairs(Config.net.streams) do
 		table.insert(in_channels, r)
 		local s = si.new_publisher(stream.sub)
 		table.insert(out_channels, s)
-		if key=='feedback' and false then
+		if key=='feedback' and true then
 			table.insert(ch_processing, procZlib)
 		elseif key:find'ittybitty' then
 			table.insert(ch_processing, procRaw)

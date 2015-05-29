@@ -157,9 +157,6 @@ local function update(img, sz, cnt, t)
 		ittybitty_img= c_grey:compress(img, w, h)
 	end
 	ittybitty_ch:send(ittybitty_img)
-	if #ittybitty_img*8>9600*2 then
-		print('ittybitty_img', #ittybitty_img*8)
-	end
 	--[[
 	c_meta.sz = #ittybitty_img
 	local msg = {mp.pack(c_meta), ittybitty_img}

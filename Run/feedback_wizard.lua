@@ -128,6 +128,9 @@ local function update()
 	if is_indoors==1 and t_update - t_feedback < dt_indoor_send then return end
 	if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
 
+	if #ittybitty0*8>9600*2 then print('ittybitty0', #ittybitty0*8) end
+	if #ittybitty1*8>9600*2 then print('ittybitty1', #ittybitty1*8) end
+
 	local ret, err
 	if is_indoors==2 and ittybitty0_udp_ch then
 		-- send the ittybitty0 (head)
@@ -176,10 +179,7 @@ local function update()
 		if czlib then msg = czlib(msg) end
 		print(#msg, '=', #msg*8, 'bits', 'zlib. pillars:', pillars and #pillars)
 
-		if feedback_udp_ch then
-			--ret, err = feedback_udp_ch:send(czlib(msg))
-			ret, err = feedback_udp_ch:send(msg)
-		end
+		if feedback_udp_ch then ret, err = feedback_udp_ch:send(msg) end
 	end
 	if type(ret)=='string' then print('Feedback | UDP error: ', ret, '\n') end
 	count = count + 1

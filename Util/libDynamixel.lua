@@ -873,6 +873,7 @@ local function ping_probe(self, protocol, twait)
 end
 
 local function ping_verify(self, m_ids, protocol, twait)
+	local allgood = true
 	local found_ids = {}
 	local mx_ids, has_mx_id = {}, {}
 	local nx_ids, has_nx_id = {}, {}
@@ -894,6 +895,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 			end
 		else
 			print('NOT FOUND:', id)
+			allgood = false
 		end
 		-- Wait .1 ms
 		unix.usleep(READ_TIMEOUT * 1e6)
@@ -905,7 +907,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 	self.has_nx_id = has_nx_id
 	self.has_mx = #mx_ids > 0
 	self.has_nx = #nx_ids > 0
-	return found_ids
+	return allgood
 end
 
 local function close(self)

@@ -31,17 +31,13 @@ function update_estop()
 		if not button_pressed then --don't do pogo stick
 
 			if ret.lstick[1]>600 and ret.rstick[1]>600 then
-				targetvel={0,0,0}
 				targetvel_new={0,0,0}
-				mcm.set_walk_vel(targetvel)
 				button_pressed = true
 				print("ZERO VEL")				
 				motion_ch:send'hybridwalk'
 			elseif
 				ret.lstick[1]<-600 and ret.rstick[1]<-600 then
-				targetvel={0,0,0}
 				targetvel_new={0,0,0}
-				mcm.set_walk_vel(targetvel)
 				body_ch:send'stop'
 				button_pressed = true
 				print("STOP")
@@ -75,6 +71,11 @@ function update_estop()
 		  if vel_diff>0 then
 		    targetvel[1],targetvel[2],targetvel[3] = targetvel_new[1],targetvel_new[2],targetvel_new[3]
 		    print(string.format("Target velocity: %.3f %.3f %.3f",unpack(targetvel)))
+
+		    ostring = string.format("Vel: %.1d %.1d %.2f",
+			targetvel[1]*100, targetvel[2]*100, targetvel[3]);
+			estop.display(1,ostring)
+
 		    mcm.set_walk_vel(targetvel)
 		  end --end vel update
 

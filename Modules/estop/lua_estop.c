@@ -75,6 +75,7 @@ static int lua_estop_update(lua_State *L) {
 static int lua_estop_display(lua_State *L){
   int row = luaL_optnumber(L, 1,1);
   const char * text= luaL_checkstring (L, 2);
+
   estop_display(row,text);
   return 1;
 }

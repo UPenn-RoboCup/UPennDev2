@@ -9,9 +9,44 @@ targetvel={0,0,0}
 targetvel_new={0,0,0}
 button_pressed = false
 
+count=1
+count2=1
+
+function update_display()
+--TODO: filtered zmp Y is inverted
+  local LZMPr = dcm.get_sensor_lzmp()
+  local RZMPr = dcm.get_sensor_rzmp()
+
+  local zmpstr1 = string.format("ZL%d/%d R%d/%d",
+			LZMPr[1]*1000, LZMPr[2]*1000,
+			RZMPr[1]*1000, RZMPr[2]*1000)
+
+  local velstr = string.format("Vel:%d %d cm %.1f",
+		targetvel[1]*100, targetvel[2]*100, targetvel[3]);
+--  count=count%4+1
+  count=count+1
 
 
+  if count%4==0 then
+    estop.display(1,zmpstr1)
 
+  elseif count%4==2 then
+    estop.display(2,velstr)
+
+  elseif count%10==5 then
+	count2=count2+1
+
+    estop.display(3,string.format("count %d",count2))
+
+  elseif count%10==7 then
+--	count2=count2+1
+--    estop.display(4,string.format("count %d",count2))
+
+
+  end
+
+
+end
 
 
 
@@ -75,9 +110,6 @@ function update_estop()
 		    targetvel[1],targetvel[2],targetvel[3] = targetvel_new[1],targetvel_new[2],targetvel_new[3]
 		    print(string.format("Target velocity: %.3f %.3f %.3f",unpack(targetvel)))
 
-		    ostring = string.format("Vel: %.1d %.1d %.2f",
-			targetvel[1]*100, targetvel[2]*100, targetvel[3]);
-			estop.display(1,ostring)
 
 		    mcm.set_walk_vel(targetvel)
 		  end --end vel update
@@ -98,7 +130,9 @@ estop.init()
 
 while true do
 	update_estop()
+	update_display()
 	unix.usleep(1e6*0.1)
+	
 end
 
 estop.close()

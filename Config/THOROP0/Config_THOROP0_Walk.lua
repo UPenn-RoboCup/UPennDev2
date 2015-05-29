@@ -111,8 +111,8 @@ if IS_WEBOTS then
 else
 
 
-  if HOSTNAME=="teddy2" or HOSTNAME=="dale" then --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
-    --Chip default (mk2)
+  if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
+--or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
     walk.delay_threshold_angle = 999*math.pi/180 --disabled
     
     --Dale addon    
@@ -125,6 +125,8 @@ else
     Config.supportY_preview = 0.00 --this smooths out first step a bit
     Config.supportY_preview2 = 0.0  
   else
+    --CHIP CHIP CHIP CHiP
+
      walk.delay_threshold_angle = 999*math.pi/180 --disabled
 
     --Chip default (mk2)
@@ -134,7 +136,9 @@ else
     walk.tZMP = 0.32
     walk.supportY = 0.01
     Config.supportY_preview = 0.00 --this smooths out first step a bit
-    Config.supportY_preview2 = 0.0  
+    Config.supportY_preview2 = 0.0
+
+    walk.stepHeight= 0.02  
   end
 end
 

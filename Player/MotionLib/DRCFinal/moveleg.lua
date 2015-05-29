@@ -77,7 +77,7 @@ function moveleg.get_ft()
     lf_x=l_ft[1],rf_x=r_ft[1],
     lf_y=l_ft[2],rf_y=r_ft[2],
     lf_z=l_ft[3],rf_z=r_ft[3],
-    lt_x=-l_ft[4],rt_x=-r_ft[4],
+    lt_x=l_ft[4],rt_x=r_ft[4],
     lt_y=l_ft[5],rt_y=r_ft[5],
     lt_z=0, rt_z=0 --do we ever need yaw torque?
   }
@@ -136,12 +136,12 @@ function moveleg.get_ft()
   local uZMPRight=mcm.get_status_uRight()
 
   if ft.lf_z>zf_touchdown then
-    zmp_err_left = {-ft.lt_y/ft.lf_z, ft.lt_x/ft.lf_z, 0}
+    zmp_err_left = {-ft.lt_y/ft.lf_z, -ft.lt_x/ft.lf_z, 0}
     uZMPLeft = util.pose_global(zmp_err_left, uLeft)
     forceLeft = ft.lf_z
   end
   if ft.rf_z>zf_touchdown then
-    zmp_err_right = {-ft.rt_y/ft.rf_z, ft.rt_x/ft.rf_z, 0}
+    zmp_err_right = {-ft.rt_y/ft.rf_z, -ft.rt_x/ft.rf_z, 0}
     uZMPRight = util.pose_global(zmp_err_right, uRight)
     forceRight = ft.rf_z
   end

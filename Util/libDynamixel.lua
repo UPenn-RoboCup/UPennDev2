@@ -236,6 +236,13 @@ libDynamixel.registers_sensor = {
 	'position', 'velocity', 'current', 'load', 'voltage', 'temperature',
 }
 
+function lD.parse(reg, status)
+	if type(reg)~='string' or type(status)~='table' then return end
+	local reglocation = mx_registers[reg]
+	if type(reglocation)~='table' then return end
+	return byte_to_number[reglocation[2]](unpack(status.parameter))
+end
+
 --------------------
 -- Convienence functions for constructing Sync Write instructions
 local function sync_write_byte(ids, addr, data)
@@ -813,14 +820,13 @@ local function debug_nx(self, id)
 	local parse_mode = byte_to_number[nx_registers.mode[2]]
 	-- Check the firmware
 	local status = lD.get_nx_firmware(id, self)
-	if type(status)=='table' and type(status[1])=='table' then
-		local firmware = parse_firmware(unpack(status[1].parameter))
-		print('\tFirmware: '..firmware)
+	if type(status)=='table' then
+		print('\tFirmware: ', lD.parse('firmware', status[1]))
 	end
 	-- Check the Operating Mode
 	status = lD.get_nx_mode(id, self)
 	if type(status)=='table' and type(status[1])=='table' then
-		local mode = parse_delay(unpack(status[1].parameter))
+		local mode = parse_mode(unpack(status[1].parameter))
 		print('\tOperating Mode: '..mode)
 	end
 	-- Return Delay

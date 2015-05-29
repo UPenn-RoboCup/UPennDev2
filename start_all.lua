@@ -12,7 +12,8 @@ local wizards = {
 	{'mesh', },
 	{'slam', },
 	{'rpc', },
-	{'lidar', },
+	{'lidar_chest', },
+	{'lidar_head', },
 	{'camera', 1},
 	{'camera', 2},
 }

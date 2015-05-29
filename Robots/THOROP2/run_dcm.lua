@@ -21,8 +21,8 @@ local sformat = string.format
 local WRITE_TIMEOUT = 1 / 250
 local READ_TIMEOUT = 1 / 250
 if OPERATING_SYSTEM=='darwin' then
-  WRITE_TIMEOUT = 1 / 60
-  READ_TIMEOUT = 1 / 60
+	WRITE_TIMEOUT = 1 / 60
+	READ_TIMEOUT = 1 / 60
 end
 
 -- Setup the channels
@@ -61,6 +61,9 @@ local p_ptr  = dcm.sensorPtr.position
 local p_ptr_t = dcm.tsensorPtr.position
 local c_ptr  = dcm.sensorPtr.current
 local c_ptr_t = dcm.tsensorPtr.current
+--
+local temp_ptr  = dcm.sensorPtr.temperature
+local temp_ptr_t = dcm.tsensorPtr.temperature
 
 --------------------------
 -- Global tmp variables --
@@ -86,6 +89,9 @@ local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 local c_parse = lD.byte_to_number[lD.nx_registers.current[2]]
 local c_parse_mx = lD.byte_to_number[lD.mx_registers.current[2]]
+--
+local temp_parse = lD.byte_to_number[lD.nx_registers.temperature[2]]
+local temp_parse_mx = lD.byte_to_number[lD.mx_registers.temperature[2]]
 
 -- Standard Lua Cache
 local min, max, floor = math.min, math.max, math.floor
@@ -104,7 +110,7 @@ local function radian_to_step(idx, radian)
 	return floor(direction[idx] * radian_clamp(idx, radian) * to_steps[idx] + step_zero[idx] + step_offset[idx])
 end
 local function step_to_radian(idx, step)
-if type(idx)~='number' or type(step)~='number' then return 0 end
+	if type(idx)~='number' or type(step)~='number' then return 0 end
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 local function torque_to_cmd(idx, tq)
@@ -170,7 +176,7 @@ local function parse_ft(ft, raw_str, m_id)
 		for i=0,6,2 do
 			raw16_as_8[i] = ft.raw[i]
 			raw16_as_8[i+1] = ft.raw[i+1]
---			if i==6 then print(ft.raw[i], ft.raw[i+1]) end
+			--			if i==6 then print(ft.raw[i], ft.raw[i+1]) end
 		end
 		--print('V1', m_id)
 		--print(3.3 * tonumber(ft.raw16[0]) / 4095.0)
@@ -201,22 +207,21 @@ local function parse_ft(ft, raw_str, m_id)
 	-- Lower ID has the 2 components
 	--[[
 	if m_id==ft.m_ids[1] then
-		ffi.copy(ft.raw, raw_str, 8)
-		ft.component[0] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[0]
-		ft.component[1] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[1]
-		ft.component[2] = 3.3 * ft.raw[2] / 4095 - ft.unloaded[2]
-		ft.component[3] = 3.3 * ft.raw[3] / 4095 - ft.unloaded[3]
+	ffi.copy(ft.raw, raw_str, 8)
+	ft.component[0] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[0]
+	ft.component[1] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[1]
+	ft.component[2] = 3.3 * ft.raw[2] / 4095 - ft.unloaded[2]
+	ft.component[3] = 3.3 * ft.raw[3] / 4095 - ft.unloaded[3]
 	elseif m_id==ft.m_ids[2] then
-		ffi.copy(ft.raw, raw_str, 4)
-		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw)
-		ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
-		ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
+	ffi.copy(ft.raw, raw_str, 4)
+	local raw16_as_8 = ffi.cast('uint8_t*', ft.raw)
+	ft.component[4] = 3.3 * ft.raw[0] / 4095 - ft.unloaded[4]
+	ft.component[5] = 3.3 * ft.raw[1] / 4095 - ft.unloaded[5]
 	else
-		return
+	return
 	end
 	--]]
 
-	
 	-- New is always zeroed
 	ffi.fill(ft.readings, ffi.sizeof(ft.readings))
 	for i=0,5 do
@@ -224,17 +229,15 @@ local function parse_ft(ft, raw_str, m_id)
 			ft.readings[i] = ft.readings[i]
 			+ ft.calibration_mat[i][j]
 			* ft.component[j]
---			* ft.calibration_gain
+			--			* ft.calibration_gain
 		end
 	end
-
 
 	if Config.birdwalk then
 		--for birdwalk, invert roll and pitch torques
 		ft.readings[4]=-ft.readings[4]
 		ft.readings[5]=-ft.readings[5]
 	end
-
 
 	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
 end
@@ -261,7 +264,7 @@ local function form_leg_read_cmd(bus)
 end
 local function parse_read_leg(pkt, bus)
 	-- Nothing to do if an error
-	if pkt.error ~= 0 then return end
+	if type(pkt)~='table' or pkt.error ~= 0 then return end
 	if type(pkt.parameter)~='table' or #pkt.parameter ~= leg_packet_sz then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
@@ -283,9 +286,9 @@ local function parse_read_leg(pkt, bus)
 	end
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
---	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
---	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
-	
+	--	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
+	--	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
+
 	parse_ft(left_ft, raw_str, m_id)
 	parse_ft(right_ft, raw_str, m_id)
 	return read_j_id
@@ -363,7 +366,7 @@ local function parse_read_arm(pkt, bus)
 		end
 		return read_j_id
 	end
-	
+
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
@@ -375,11 +378,11 @@ local function parse_read_arm(pkt, bus)
 	c_ptr[read_j_id - 1] = read_cur
 	c_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
---	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
+	--	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
 	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
---	parse_ft(left_ft, raw_str, m_id)
---	parse_ft(right_ft, raw_str, m_id)
+	--	parse_ft(left_ft, raw_str, m_id)
+	--	parse_ft(right_ft, raw_str, m_id)
 	--
 	return read_j_id
 end
@@ -442,16 +445,20 @@ local function parse_read_arm2(pkt, bus)
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
 	if not read_val then
-print('bad val', read_j_id)
-return read_j_id
-end
+		print('bad val', read_j_id)
+		return read_j_id
+	end
 	local read_rad = step_to_radian(read_j_id, read_val)
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Set Current in SHM
 	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
-	c_ptr[read_j_id - 1] = read_cur
-	c_ptr_t[read_j_id - 1] = t_read
+	if type(read_cur)=='number' then
+		c_ptr[read_j_id - 1] = read_cur
+		c_ptr_t[read_j_id - 1] = t_read
+	end
 	--
 	return read_j_id
 end
@@ -459,10 +466,12 @@ end
 -- Position Packet
 local function parse_read_position(pkt, bus)
 	-- TODO: Nothing to do if an error
-	if not pkt then return end
+	if type(pkt)~='table' then return end
 	--if pkt.error ~= 0 then return end
 	local m_id = pkt.id
+	if type(m_id)~='number' then return end
 	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
 	local read_val
 	if bus.has_mx_id[m_id] then
 		if #pkt.parameter~=lD.mx_registers.position[2] then return end
@@ -473,8 +482,10 @@ local function parse_read_position(pkt, bus)
 	end
 	local read_rad = step_to_radian(read_j_id, read_val)
 	-- Set in Shared memory
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	return read_j_id, read_rad
 end
 
@@ -997,49 +1008,49 @@ while is_running do
 			bus.n_read_timeouts = 0
 		end
 
-	local rpy = dcm.get_sensor_rpy()
-	local acc = dcm.get_sensor_accelerometer()
-	local gyro = dcm.get_sensor_gyro()
-	table.insert(debug_str, sformat('Acc  : X%.2f Y%.2f Z%.2f (g)', unpack(acc)))
-	table.insert(debug_str, sformat('Gyro : R%.2f P%.2f Y%.2f (deg/s)', unpack(RAD_TO_DEG*gyro)))
-	table.insert(debug_str, sformat('Angle: R%.2f P%.2f Y%.2f (deg)', unpack(RAD_TO_DEG * rpy)))
+		local rpy = dcm.get_sensor_rpy()
+		local acc = dcm.get_sensor_accelerometer()
+		local gyro = dcm.get_sensor_gyro()
+		table.insert(debug_str, sformat('Acc  : X%.2f Y%.2f Z%.2f (g)', unpack(acc)))
+		table.insert(debug_str, sformat('Gyro : R%.2f P%.2f Y%.2f (deg/s)', unpack(RAD_TO_DEG*gyro)))
+		table.insert(debug_str, sformat('Angle: R%.2f P%.2f Y%.2f (deg)', unpack(RAD_TO_DEG * rpy)))
 
-	local pos = dcm.get_sensor_position()
-	local cmd_pos = dcm.get_actuator_command_position()
-	table.insert(debug_str, sformat('LLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
+		local pos = dcm.get_sensor_position()
+		local cmd_pos = dcm.get_actuator_command_position()
+		table.insert(debug_str, sformat('LLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
 		unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,10,15)) ))
-	table.insert(debug_str, sformat('RLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
+		table.insert(debug_str, sformat('RLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
 		unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,16,21)) ))
 
-	local lfoot = dcm.get_sensor_lfoot()
-	local rfoot = dcm.get_sensor_rfoot()
-	table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f',
+		local lfoot = dcm.get_sensor_lfoot()
+		local rfoot = dcm.get_sensor_rfoot()
+		table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f',
 		lfoot[3], -lfoot[4],lfoot[5] ))
-	table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f',
+		table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f',
 		rfoot[3], -rfoot[4],rfoot[5] ))
 
-	if lfoot[3]>20 then
-		local rel_zmp_left = {-lfoot[5]/lfoot[3], lfoot[4]/lfoot[3], 0}
-		table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)',
-		rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
-		dcm.set_sensor_lzmp({rel_zmp_left[1],rel_zmp_left[2]})
-	else
-		dcm.set_sensor_lzmp({0,0})
+		if lfoot[3]>20 then
+			local rel_zmp_left = {-lfoot[5]/lfoot[3], lfoot[4]/lfoot[3], 0}
+			table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)',
+			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
+			dcm.set_sensor_lzmp({rel_zmp_left[1],rel_zmp_left[2]})
+		else
+			dcm.set_sensor_lzmp({0,0})
 
-	end
+		end
 
-	if rfoot[3]>20 then
-		local rel_zmp_right = {-rfoot[5]/rfoot[3], rfoot[4]/rfoot[3], 0}
-		table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)',
-		rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
-		dcm.set_sensor_rzmp({rel_zmp_right[1],rel_zmp_right[2]})
-	else
-		dcm.set_sensor_rzmp({0,0})
-	end
+		if rfoot[3]>20 then
+			local rel_zmp_right = {-rfoot[5]/rfoot[3], rfoot[4]/rfoot[3], 0}
+			table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)',
+			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
+			dcm.set_sensor_rzmp({rel_zmp_right[1],rel_zmp_right[2]})
+		else
+			dcm.set_sensor_rzmp({0,0})
+		end
 
-	debug_str = table.concat(debug_str, '\n')
-	--os.execute('clear')
-	io.write(debug_str)
+		debug_str = table.concat(debug_str, '\n')
+		--os.execute('clear')
+		io.write(debug_str)
 
 	end
 end

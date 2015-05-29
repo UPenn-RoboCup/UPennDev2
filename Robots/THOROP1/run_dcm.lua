@@ -63,6 +63,7 @@ local p_ptr  = dcm.sensorPtr.position
 local p_ptr_t = dcm.tsensorPtr.position
 local c_ptr  = dcm.sensorPtr.current
 local c_ptr_t = dcm.tsensorPtr.current
+--
 local temp_ptr  = dcm.sensorPtr.temperature
 local temp_ptr_t = dcm.tsensorPtr.temperature
 
@@ -90,6 +91,7 @@ local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 local c_parse = lD.byte_to_number[lD.nx_registers.current[2]]
 local c_parse_mx = lD.byte_to_number[lD.mx_registers.current[2]]
+--
 local temp_parse = lD.byte_to_number[lD.nx_registers.temperature[2]]
 local temp_parse_mx = lD.byte_to_number[lD.mx_registers.temperature[2]]
 
@@ -99,6 +101,7 @@ local char = string.char
 local sel, uread, get_time, usleep = unix.select, unix.read, unix.time, unix.usleep
 
 -- Packet Processing Helpers
+-- TODO: Should not be zero returns!!
 local function radian_clamp(idx, radian)
 	if type(idx)~='number' or type(radian)~='number' then return 0 end
 	if is_unclamped[idx] then return radian end
@@ -231,6 +234,13 @@ local function parse_ft(ft, raw_str, m_id)
 			--			* ft.calibration_gain
 		end
 	end
+
+	if Config.birdwalk then
+		--for birdwalk, invert roll and pitch torques
+		ft.readings[4]=-ft.readings[4]
+		ft.readings[5]=-ft.readings[5]
+	end
+
 	ffi.copy(ft.shm, ft.readings, ffi.sizeof(ft.readings))
 end
 
@@ -256,14 +266,15 @@ local function form_leg_read_cmd(bus)
 end
 local function parse_read_leg(pkt, bus)
 	-- Nothing to do if an error
-	if pkt.error ~= 0 then return end
-	if #pkt.parameter ~= leg_packet_sz then return end
+	if type(pkt)~='table' or pkt.error ~= 0 then return end
+	if type(pkt.parameter)~='table' or #pkt.parameter ~= leg_packet_sz then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
+	if type(m_id)~='number' then return end
 	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, leg_packet_offsets[1]))
-	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
 	if type(read_rad)=='number' then
 		p_ptr[read_j_id - 1] = read_rad
@@ -401,7 +412,7 @@ local function form_arm_read_cmd2(bus)
 			--table.insert(rd_addrs, lD.mx_registers.current)
 			table.insert(used_ids, m_id)
 			has_mx = true
-----[[
+			----[[
 		else
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
@@ -410,7 +421,7 @@ local function form_arm_read_cmd2(bus)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
 			table.insert(used_ids, m_id)
 			has_nx = true
---]]
+			--]]
 		end
 	end
 	-- Set the default reading command for the bus
@@ -484,10 +495,12 @@ end
 -- Position Packet
 local function parse_read_position(pkt, bus)
 	-- TODO: Nothing to do if an error
-	if not pkt then return end
+	if type(pkt)~='table' then return end
 	--if pkt.error ~= 0 then return end
 	local m_id = pkt.id
+	if type(m_id)~='number' then return end
 	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
 	local read_val
 	if bus.has_mx_id[m_id] then
 		if #pkt.parameter~=lD.mx_registers.position[2] then return end
@@ -496,11 +509,12 @@ local function parse_read_position(pkt, bus)
 		if #pkt.parameter~=lD.nx_registers.position[2] then return end
 		read_val = p_parse(unpack(pkt.parameter))
 	end
-	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
 	-- Set in Shared memory
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	return read_j_id, read_rad
 end
 
@@ -864,7 +878,6 @@ local function initialize(bus)
 	if bus.m_ids then
 		if not bus:ping_verify(bus.m_ids) then
 			print('Command only motors:', bus.mx_cmd_ids, bus.nx_cmd_ids)
-			print('R/W motors:', bus.mx_cmd_ids, bus.nx_cmd_ids)
 		end
 	else
 		bus:ping_probe()

@@ -9,12 +9,12 @@ local LUA = 'luajit'
 
 local wizards = {
 	{'feedback', },
+	{'mesh', },
+	{'slam', },
 	{'rpc', },
 	{'lidar', },
 	{'camera', 1},
 	{'camera', 2},
-	{'mesh', },
-	{'slam', },
 }
 local runs = {
 	'dcm',
@@ -65,7 +65,7 @@ if RUN_ROBOT then
 		local status = os.execute(script)
 		print(color(run, 'yellow'), 'starting')
 		--print(script)
-		unix.usleep(1e5)
+		unix.usleep(1e6)
 	end
 end
 

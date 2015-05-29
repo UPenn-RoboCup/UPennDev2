@@ -4,6 +4,7 @@
 -- Support: http://support.robotis.com/en/product/dynamixel_pro/communication/instruction_status_packet.htm
 
 local libDynamixel = {}
+local lD = libDynamixel
 local DP1 = require'DynamixelPacket1' -- 1.0 protocol
 local DP2 = require'DynamixelPacket2' -- 2.0 protocol
 libDynamixel.DP2 = DP2
@@ -777,7 +778,7 @@ local function check_motor_ping(status_tbl)
 	local status = unpack(status_tbl)
 	if type(status)~='table' then return end
 	local lsb, msb = unpack(status.parameter)
-	print('Found', status.id, status.error>0 and status.error or 'ok')
+	--print('Found', status.id, status.error>0 and status.error or 'ok')
 	if msb>2 then return 'nx' else return 'mx' end
 end
 
@@ -837,9 +838,7 @@ local function ping_probe(self, protocol, twait)
 	local nx_ids, has_nx_id = {}, {}
 	protocol = protocol or 2
 	twait = twait or READ_TIMEOUT
-	local lD = libDynamixel
 	for id=1, 253 do
-		--print('Checking', id)
 		local status = send_ping(self, id, protocol, twait)
 		local ok = check_motor_ping(status)
 		if ok then
@@ -873,20 +872,19 @@ local function ping_verify(self, m_ids, protocol, twait)
 	local nx_ids, has_nx_id = {}, {}
 	protocol = protocol or 2
 	twait = twait or READ_TIMEOUT
-	local lD = libDynamixel
 	for i, id in ipairs(m_ids) do
 		local status = send_ping(self, id, protocol, twait)
-		local ok = check_motor_ping(status_tbl)
+		local ok = check_motor_ping(status)
 		if ok then 
 			table.insert(found_ids, id)
 			if ok=='nx' then
 				table.insert(nx_ids, id)
 				has_nx_id[id] = true
-				debug_nx(id)
+				--debug_nx(self, id)
 			else
 				table.insert(mx_ids, id)
 				has_mx_id[id] = true
-				debug_mx(id)
+				--debug_mx(self, id)
 			end
 		else
 			print('NOT FOUND:', id)

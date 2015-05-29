@@ -56,7 +56,7 @@ local function find_pillars(xyz, polar)
 	--]]
 end
 
-local Thead0 = T.trans(0,0,0.282)
+local Thead = T.trans(0,0,0.282)
 local function head3d(meta, scan)
 	local scan_fl = ffi.cast('float*', scan)
 	local mid = meta.n / 2 * meta.res
@@ -70,14 +70,18 @@ local function head3d(meta, scan)
 		table.insert(xyz, {rho[i] * cos(a), rho[i] * sin(a), 0.1})
 	end
 	local xyz_actuated = {}
-	local Thead = Thead0 * T.rotZ(meta.angle[1]) * T.rotY(meta.angle[2])
+	local Tact = T.rotY(meta.angle[2]) * T.rotZ(meta.angle[1])
 	for i,p in ipairs(xyz) do
-		table.insert(xyz_actuated, Thead * p)
+		table.insert(xyz_actuated, Tact * p)
+	end
+	local xyz_head = {}
+	for i,p in ipairs(xyz_actuated) do
+		table.insert(xyz_head, Thead * p)
 	end
 	local xyz_com = {}
-	local Tcom = Thead * T.rotZ(meta.qWaist[1])
-	for i, p in ipairs(xyz_actuated) do
-		table.insert(xyz_com, Tcom*p)
+	local Twaist = T.rotZ(meta.qWaist[1])
+	for i, p in ipairs(xyz_head) do
+		table.insert(xyz_com, Twaist*p)
 	end
 	local rho_com = {}
 	local theta_com = {}
@@ -85,7 +89,6 @@ local function head3d(meta, scan)
 		table.insert(theta_com, math.atan2(p[2], p[1]))
 		table.insert(rho_com, math.sqrt(math.pow(p[2],2), math.pow(p[1],2)))
 	end
-
 
 	local Tworld = T.from_flat(meta.tfG16)
 	local xyz_world = {}

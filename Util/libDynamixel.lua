@@ -9,7 +9,7 @@ local DP2 = require'DynamixelPacket2' -- 2.0 protocol
 libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
-local READ_TIMEOUT = 1 / 60
+local READ_TIMEOUT = 1 / 50
 local using_status_return = true
 
 -- Cache
@@ -224,6 +224,7 @@ local nx_registers = {
 
 	-- Status return
 	['status_return_level'] = {char(0x7B,0x03),1},
+	['hardware_error'] = {char(0x7C,0x03),2},
 }
 libDynamixel.nx_registers = nx_registers
 
@@ -856,19 +857,24 @@ local function ping_verify(self, m_ids, protocol, twait)
 				-- Check the firmware
 				status = lD.get_nx_firmware(id, self)
 				status = status[1]
-				local firmware = parse_firmware(unpack(status.parameter))
-				print('\tFirmware: '..firmware)
+				if status then
+					local firmware = parse_firmware(unpack(status.parameter))
+					print('\tFirmware: '..firmware)
+				end
 				-- Check the Operating Mode
 				status = lD.get_nx_mode(id, self)
 				status = status[1]
-				assert(status, 'bad read mode')
-				local mode = parse_delay(unpack(status.parameter))
-				print('\tOperating Mode: '..mode)
+				if status then
+					local mode = parse_delay(unpack(status.parameter))
+					print('\tOperating Mode: '..mode)
+				end
 				-- Return Delay
 				status = lD.get_nx_return_delay_time(status.id, self)
 				status = status[1]
-				local delay = parse_delay(unpack(status.parameter))
-				print('\tReturn Delay: '..delay)
+				if status then
+					local delay = parse_delay(unpack(status.parameter))
+					print('\tReturn Delay: '..delay)
+				end
 			else
 				-- MX
 				table.insert(mx_ids, id)

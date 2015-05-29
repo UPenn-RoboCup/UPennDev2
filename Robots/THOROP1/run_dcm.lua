@@ -61,6 +61,8 @@ local p_ptr  = dcm.sensorPtr.position
 local p_ptr_t = dcm.tsensorPtr.position
 local c_ptr  = dcm.sensorPtr.current
 local c_ptr_t = dcm.tsensorPtr.current
+local temp_ptr  = dcm.sensorPtr.temperature
+local temp_ptr_t = dcm.tsensorPtr.temperature
 
 --------------------------
 -- Global tmp variables --
@@ -86,6 +88,8 @@ local p_parse = lD.byte_to_number[lD.nx_registers.position[2]]
 local p_parse_mx = lD.byte_to_number[lD.mx_registers.position[2]]
 local c_parse = lD.byte_to_number[lD.nx_registers.current[2]]
 local c_parse_mx = lD.byte_to_number[lD.mx_registers.current[2]]
+local temp_parse = lD.byte_to_number[lD.nx_registers.temperature[2]]
+local temp_parse_mx = lD.byte_to_number[lD.mx_registers.temperature[2]]
 
 -- Standard Lua Cache
 local min, max, floor = math.min, math.max, math.floor
@@ -229,7 +233,7 @@ local function parse_ft(ft, raw_str, m_id)
 end
 
 -- Custom Leg Packet
-local leg_packet_reg = {'position', 'current', 'data'}
+local leg_packet_reg = {'position', 'temperature', 'data'}
 local leg_packet_sz = 0
 local leg_packet_offsets = {}
 for i,v in ipairs(leg_packet_reg) do
@@ -264,10 +268,10 @@ local function parse_read_leg(pkt, bus)
 		p_ptr_t[read_j_id - 1] = t_read
 	end
 	-- Set Current in SHM
-	local read_cur = c_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
-	if type(read_cur)=='number' then
-		c_ptr[read_j_id - 1] = read_cur
-		c_ptr_t[read_j_id - 1] = t_read
+	local read_temp = temp_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
+	if type(read_temp)=='number' then
+		temp_ptr[read_j_id - 1] = read_temp
+		temp_ptr_t[read_j_id - 1] = t_read
 	end
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
@@ -281,7 +285,7 @@ local function parse_read_leg(pkt, bus)
 end
 
 -- Custom Arm Packet
-local arm_packet_reg = {'position', 'current'}
+local arm_packet_reg = {'position', 'temperature'}
 --table.insert(arm_packet_reg,'data')
 local arm_packet_sz = 0
 local arm_packet_offsets = {}
@@ -366,9 +370,9 @@ local function parse_read_arm(pkt, bus)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
 	-- Set Current in SHM
-	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
-	c_ptr[read_j_id - 1] = read_cur
-	c_ptr_t[read_j_id - 1] = t_read
+	local read_temp = temp_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
+	temp_ptr[read_j_id - 1] = read_temp
+	temp_ptr_t[read_j_id - 1] = t_read
 	-- Update the F/T Sensor
 	--	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
 	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
@@ -444,10 +448,10 @@ local function parse_read_arm2(pkt, bus)
 			dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
 		elseif #pkt.parameter==2 then
 			-- Set Current in SHM
-			local read_cur = c_parse_mx(unpack(pkt.parameter))
+			local read_temp = temp_parse_mx(unpack(pkt.parameter))
 			--print(m_id, 'Read cur mx', read_cur, unpack(pkt.parameter))
-			c_ptr[read_j_id - 1] = read_cur
-			c_ptr_t[read_j_id - 1] = t_read
+			temp_ptr[read_j_id - 1] = read_temp
+			temp_ptr_t[read_j_id - 1] = t_read
 		end
 		return read_j_id
 	end
@@ -464,9 +468,9 @@ local function parse_read_arm2(pkt, bus)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
 	-- Set Current in SHM
-	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
-	c_ptr[read_j_id - 1] = read_cur
-	c_ptr_t[read_j_id - 1] = t_read
+	local read_temp = temp_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
+	temp_ptr[read_j_id - 1] = read_temp
+	temp_ptr_t[read_j_id - 1] = t_read
 	--
 	return read_j_id
 end

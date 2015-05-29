@@ -124,19 +124,15 @@ function state.update()
 
 
 
+
+  --Raise body height when we are in double support
   local uLeftTorso = util.pose_relative(uLeft,uTorso)
   local uRightTorso = util.pose_relative(uRight,uTorso)
   local distL = math.sqrt(uLeftTorso[1]*uLeftTorso[1] + uLeftTorso[2]*uLeftTorso[2])
   local distR = math.sqrt(uRightTorso[1]*uRightTorso[1] + uRightTorso[2]*uRightTorso[2])
   local centTh = 0.4
   local leftRatio = distL/(distL+distR)
-
-  --Raise body height when we are in double support
   local z_min = math.min(zLeg[1],zLeg[2])
---  local lft = mcm.get_status_LFT()
---  local rft = mcm.get_status_RFT()
---  local support_threshold = 180
-
   local raiseVelDS = 0.10
   if z_min>0 and leftRatio>centTh and leftRatio<1-centTh then
     leg_raise = math.min(z_min,raiseVelDS*t_diff)

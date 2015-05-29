@@ -45,8 +45,6 @@ local function update(key_code)
 	local ltorso = hcm.get_legdebug_torso()
 
 
-local stair_height = 0.225
-
 
 	local torsoangle = hcm.get_legdebug_torso_angle()
 	 if key_char_lower==("i") then      targetvel_new[1]=targetvel[1]+0.02;
@@ -62,78 +60,31 @@ local stair_height = 0.225
 	elseif key_char_lower==("1") then			
 		body_ch:send'init'
 
-elseif key_char_lower==("3") then      
-		hcm.set_step_supportLeg(0)	--move lfoot
---		hcm.set_step_relpos({0.35,0,0})
-		--hcm.set_step_relpos({0.0,0,0})
-		
-		hcm.set_step_zpr({0,0,0})
-		hcm.set_step_relpos({0.30,0,0})
 
-		
-		hcm.set_step_zpr({stair_height,0,0}) --stair
-		
-		body_ch:send'stepover1'		
-
-elseif key_char_lower==("4") then      
-		hcm.set_step_supportLeg(1) --move rfoot
-		
---		hcm.set_step_relpos({0.35,0,0})
-		--hcm.set_step_relpos({0.0,0,0})
+	elseif key_char_lower==("3") then 
+		hcm.set_step_supportLeg(0)
+		hcm.set_step_relpos({0.08,0,0})
 		hcm.set_step_zpr({0.00,0,0})
+		body_ch:send'stepflat'		
 
-		hcm.set_step_relpos({0.30,0,0})
+	elseif key_char_lower==("4") then      
+		hcm.set_step_supportLeg(1)
+		hcm.set_step_relpos({0.08,0,0})
+		hcm.set_step_zpr({0.00,0,0})
+		body_ch:send'stepflat'
 
-		hcm.set_step_zpr({stair_height,0,0}) --stair
-		
-		body_ch:send'stepover1'		
 
 elseif key_char_lower==("5") then 
-		hcm.set_step_supportLeg(0) --move lfoot
-		hcm.set_step_relpos({-0.30,0,0})
-		hcm.set_step_zpr({-stair_height,0,0}) --stair
-		body_ch:send'stepover1'		
-	elseif key_char_lower==("6") then 
-		hcm.set_step_supportLeg(1) --move rfoot
-		hcm.set_step_relpos({-0.30,0,0})
-		hcm.set_step_zpr({-stair_height,0,0}) --stair
-		body_ch:send'stepover1'		
-
-
-elseif key_char_lower==("q") then      
-		hcm.set_step_supportLeg(0)		
---		hcm.set_step_relpos({0.35,0,0})
-		--hcm.set_step_relpos({0.0,0,0})
-		
-		hcm.set_step_zpr({0,0,0})
-		hcm.set_step_relpos({0.35,0.01,0})		
-		hcm.set_step_zpr({stair_height,0,0}) --stair		
-		body_ch:send'stepover1'		
-
-elseif key_char_lower==("w") then      
-		hcm.set_step_supportLeg(1)
-		
---		hcm.set_step_relpos({0.35,0,0})
-		--hcm.set_step_relpos({0.0,0,0})
-		hcm.set_step_zpr({0.00,0,0})
-		hcm.set_step_relpos({0.35,-0.01,0})
-		hcm.set_step_zpr({stair_height,0,0}) --stair		
-		body_ch:send'stepover1'		
-
-
-
-	elseif key_char_lower==("t") then 
 		hcm.set_step_supportLeg(0)
 		hcm.set_step_relpos({0.16,0,0})
 		hcm.set_step_zpr({0.00,0,0})
 		body_ch:send'stepflat'		
 
-	elseif key_char_lower==("y") then      
+	elseif key_char_lower==("6") then      
 		hcm.set_step_supportLeg(1)
 		hcm.set_step_relpos({0.16,0,0})
 		hcm.set_step_zpr({0.00,0,0})
 		body_ch:send'stepflat'
-
 
 
 	

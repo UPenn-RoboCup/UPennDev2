@@ -41,7 +41,7 @@ Config.walktraj.hybridwalk = "foot_trajectory_base"
 --Config.walktraj.hybridwalk = "foot_trajectory_base2"
 
 
-
+Config.variable_tstep = true
 
 -- Tune for Webots
 if IS_WEBOTS then

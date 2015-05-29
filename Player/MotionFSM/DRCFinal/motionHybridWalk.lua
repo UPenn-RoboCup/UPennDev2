@@ -183,8 +183,24 @@ function walk.update()
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
 
+
+
+    local uTorsoVel = mcm.get_status_uTorsoVel()
+    local uSupportDist1 = util.pose_relative(uSupport,uTorso_now)
+    local uSupportDist2 = util.pose_relative(uSupport, uTorso_next)
+  
+    local y_dist = math.abs(uSupportDist1[2]+uSupportDist2[2])
+    local y_dist_mag = y_dist/(Config.walk.footY+Config.walk.supportY)/2
+     
+    local tStepNew = Config.walk.tStep
+    if Config.variable_tstep then
+--      print("DIST:",y_dist, y_dist_mag)    
+      tStepNew = Config.walk.tStep*y_dist_mag
+      tStepNew = Config.walk.tStep* y_dist_mag
+    end
+
     --Update walk coefficients
-    zmp_solver:set_param()
+    zmp_solver:set_param(tStepNew)
     zmp_param_set = true
     -- Compute the ZMP coefficients for the next step
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
@@ -193,6 +209,11 @@ function walk.update()
   
   local uTorso = zmp_solver:get_com(ph)
   uTorso[3] = ph*(uLeft_next[3]+uRight_next[3])/2 + (1-ph)*(uLeft_now[3]+uRight_now[3])/2
+
+  --update the current COM velocity
+  local uTorsoVel = zmp_solver:get_com_vel(ph)   
+  mcm.set_status_uTorsoVel(uTorsoVel)
+
 
   local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
   if iStep<=2 then phSingle = 0 end --This kills compensation and holds the foot on the ground  

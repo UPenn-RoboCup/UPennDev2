@@ -44,13 +44,16 @@ local function update(key_code)
 	local lright = hcm.get_legdebug_right()
 	local ltorso = hcm.get_legdebug_torso()
 
+print(unpack(ltorso))
+
+
 	local torsoangle = hcm.get_legdebug_torso_angle()
 
 
 	if key_char_lower==("i") then      lright[1]=lright[1]+0.01
 	elseif key_char_lower==("j") then  lright[2]=lright[2]+0.01
 	elseif key_char_lower==("k") then  
-		lright[4]=0
+																			lright[4]=0
 	elseif key_char_lower==("l") then  lright[2]=lright[2]-0.01
 	elseif key_char_lower==(",") then  lright[1]=lright[1]-0.01
 	elseif key_char_lower==("u") then  lright[4]=lright[4]+0.005
@@ -77,13 +80,8 @@ local function update(key_code)
 		ltorso[1]=ltorso[1]-0.01
 		print("Torso X:",ltorso[1])
 	elseif key_char_lower==("g") then  
+		ltorso[1],ltorso[2]=0,0
 
-	--[[		
-	elseif key_char_lower==("-") then  torsoangle[1]=torsoangle[1]-math.pi/180		
-	elseif key_char_lower==("=") then  torsoangle[1]=torsoangle[1]+math.pi/180			
-	elseif key_char_lower==("[") then  torsoangle[2]=torsoangle[2]-math.pi/180		
-	elseif key_char_lower==("]") then  torsoangle[2]=torsoangle[2]+math.pi/180			
-	--]]					
 
 
 

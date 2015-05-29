@@ -28,6 +28,10 @@ breakTY = [0    0.3   0.6   0.7  0.8  0.9  1];
 breakY = [0      0.9   1    0.9  0.65  0.22  0];
 
 
+breakTY = [0 0.2  0.4  0.5 0.6   0.8  0.9 1];
+breakY = [0  0.38 0.95   1  0.9   0.25  0.07 0];
+
+
 
 
 
@@ -68,12 +72,18 @@ for i=1:size(coefY,1)
 end
 disp('}');
 
-subplot(1,2,1);
+subplot(2,2,1);
 fnplt(p);
 ylabel('x');
 xlabel('t');
 
-subplot(1,2,2);
+subplot(2,2,2);
 fnplt(q);
 ylabel('y');
 xlabel('t');
+
+
+subplot(2,2,3);
+px = fnval(p,[0:0.01:1]);
+py = fnval(q,[0:0.01:1]);
+plot(px,py);

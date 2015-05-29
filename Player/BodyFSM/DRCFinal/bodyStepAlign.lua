@@ -82,50 +82,60 @@ function initiate_step(supportLeg, step_relpos )
 
   local step_min = 0.05
   local sh1,sh2 = 0.05, 0
-
   local st,wt = 1,2
 
-  if supportLeg == 1 then
-    --Take right step
 
-    print("left support, supportY:",Config.walk.supportY)
 
-    local uRightTarget = util.pose_global(step_relpos, uRight)
-    local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeft)
-    local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTarget)
-    local uTorsoTarget = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
-    local uLeftTorsoTarget = util.pose_relative(uTorsoTarget, uLeftSupport)
-    local side_adj = Config.walk.supportY - 0.00
-    local com_side = Config.walk.footY+Config.walk.supportY-side_adj
+
+  local move_target = vector.pose(hcm.get_teleop_waypoint())
+  local uTorsoTarget = util.pose_global(move_target, uTorso)
+  local uLeftTarget = util.pose_global({0,Config.walk.footY,0},uTorsoTarget)
+  local uRightTarget = util.pose_global({0,-Config.walk.footY,0},uTorsoTarget)
+
+  local uLeftMove = util.pose_relative(uLeftTarget,uLeft)
+  local uRightMove = util.pose_relative(uRightTarget,uRight)
+
+  local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeft)
+  local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTarget)
+  
+  local uLeftTorsoTarget = util.pose_relative(uTorsoTarget, uLeftSupport)
+  local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
+
+  local side_adj = Config.walk.supportY - 0.00
+  local com_side = Config.walk.footY+Config.walk.supportY-side_adj
+
+  if move_target[2]>=0 and move_target[3]<=0 then --2 step, left step first
+    --take left step
+    step_queues={
+       {
+        {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+        {uLeftMove,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+        {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+
+        {uRightMove,0,  0.1,wt,0.1 ,     {0,0},     {0,sh1,sh2},  {0,0}},   --LS     --Move and land
+
+        {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+       },
+    }
+    
+  elseif move_target[2]<=0 and move_target[3]>=0 then --2 step, right step first
 
     step_queues={
      {
       {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-      {step_relpos,0,  0.1,wt,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+      {uRightMove,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
       {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+
+      {uLeftMove,1,   0.1,wt,0.1 ,   {0,0}, {0,sh1,sh2}   ,  {0,0}},   --LS     --Move and land
+      {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
      },
     }
 
-  else
+     
 
-   print("right support, supportY:",Config.walk.supportY)
-    --Take left step
-    local uLeftTarget = util.pose_global(step_relpos, uLeft)
-    local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeftTarget)
-    local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRight)
-    local uTorsoTarget = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
-    local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
-    local side_adj = Config.walk.supportY - 0.00
-    local com_side = Config.walk.footY+Config.walk.supportY-side_adj
-     step_queues={
-       {
-        {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        {step_relpos,1,   0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-        {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
-       },
-    }
   end
-
 
   stage = 1
   calculate_footsteps(stage)

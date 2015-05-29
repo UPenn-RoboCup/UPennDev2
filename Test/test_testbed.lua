@@ -133,6 +133,16 @@ local function update(key_code)
 		body_ch:send'approach' --todo
     override_target = vector.zeros(6)
     movement_target = vector.zeros(3)
+
+
+  elseif key_char_lower==("`") then
+    hcm.set_state_override(override_target)    
+--    hcm.set_move_target(movement_target)
+    hcm.set_teleop_waypoint(movement_target)
+    body_ch:send'stepflat' --todo
+    override_target = vector.zeros(6)
+    movement_target = vector.zeros(3)
+
   end
 
   

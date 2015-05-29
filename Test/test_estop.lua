@@ -12,15 +12,26 @@ button_pressed = false
 count=1
 count2=1
 
+display_mode = 1 --velocity
+
+
+
 function update_display()
 --TODO: filtered zmp Y is inverted
-  local LZMPr = dcm.get_sensor_lzmp()
-  local RZMPr = dcm.get_sensor_rzmp()
-
-  local zmpstr1 = string.format("ZL%d/%d R%d/%d",
+  if display_mode==1 then
+    local LZMPr = dcm.get_sensor_lzmp()
+    local RZMPr = dcm.get_sensor_rzmp()
+    local zmpstr1 = string.format("ZL%d/%d ZR%d/%d",
 			LZMPr[1]*1000, LZMPr[2]*1000,
 			RZMPr[1]*1000, RZMPr[2]*1000)
+    estop.display(1,zmpstr1)
+  elseif display_mode==2 then
 
+
+    
+
+  end
+--[[
   local velstr = string.format("Vel:%d %d cm %.1f",
 		targetvel[1]*100, targetvel[2]*100, targetvel[3]);
 --  count=count%4+1
@@ -29,22 +40,10 @@ function update_display()
 
   if count%4==0 then
     estop.display(1,zmpstr1)
-
-  elseif count%4==2 then
+  elseif count%4==1 then
     estop.display(2,velstr)
-
-  elseif count%10==5 then
-	count2=count2+1
-
-    estop.display(3,string.format("count %d",count2))
-
-  elseif count%10==7 then
---	count2=count2+1
---    estop.display(4,string.format("count %d",count2))
-
-
   end
-
+--]]
 
 end
 
@@ -65,7 +64,7 @@ function update_estop()
 
 		if not button_pressed then --don't do pogo stick
 
-			if ret.lstick[1]>600 and ret.rstick[1]>600 then
+			if ret.lstick[1]>600 then
 				targetvel_new={0,0,0}
 				button_pressed = true
 				motion_ch:send'hybridwalk'
@@ -127,6 +126,12 @@ function update_estop()
 end
 
 estop.init()
+
+estop.display(2,"  ROCK")
+estop.display(3,"    N ")
+estop.display(4,"  ROLL")
+
+
 
 while true do
 	update_estop()

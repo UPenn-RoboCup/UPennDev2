@@ -128,9 +128,21 @@ function initiate_step(supportLeg, step_relpos )
   local uRightTargetTorsoMidRight = util.pose_relative(uRightTarget, uTorsoMidRight)
 
 
-  --3-step case
+  local uLeftMove = util.pose_relative(uLeftTarget,uLeft)
+  local uRightMove = util.pose_relative(uRightTarget,uRight)
+
+  --3-step case, LS-RS-LS
   local uLeftMove1 = {0,0.01,uLeftMove[3]}
   local uLeftMove2 = util.pose_relative(uLeftMove, uLeftMove1)
+
+  local uLeftMid = util.pose_global(uLeft,uLeftMove1)
+  local uTorsoMid1Left = util.se2_interpolate(0.5,uLeftMid,uRight)
+  local uTorsoMid2Left = util.se2_interpolate(0.5,uLeftMid,uRightTarget)
+
+  local uLeftTorsoMid1Left = util.pose_relative(uLeft, uTorsoMid1Left)
+  local uRightTorsoMid1Left = util.pose_relative(uRight, uTorsoMid1Left)
+
+
   local uRightMove1 = {0,-0.01,uRightMove[3]}
   local uRightMove2 = util.pose_relative(uRightMove, uRightMove1)
 
@@ -143,8 +155,6 @@ function initiate_step(supportLeg, step_relpos )
 
 
 
-  local uLeftMove = util.pose_relative(uLeftTarget,uLeft)
-  local uRightMove = util.pose_relative(uRightTarget,uRight)
 
   local uLeftTorsoTarget = util.pose_relative(uTorsoTarget, uLeftSupport)
   local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
@@ -182,9 +192,12 @@ function initiate_step(supportLeg, step_relpos )
         step_queues={
          {
           {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-          {uRightMove1,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+          {uRightMove1,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {uLeftTorsoMid1Left[1],uLeftTorsoMid1Left[2] - Config.walk.supportY}},   --LS     --Move and land
           {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
 
+
+
+          {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uRightTargetTorsoMid1Left[1],uRightTargetTorsoMid1Left[2]},{0,0,0} },    --Shift and Lift
           {uLeftMove,1,   0.1,wt,0.1 ,   {0,0}, {0,sh1,sh2}   ,  {0,0}},   --LS     --Move and land
           {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
 
@@ -204,6 +217,7 @@ function initiate_step(supportLeg, step_relpos )
           {uRightMove,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {uLeftTorsoMidRight[1], uLeftTorsoMidRight[2] - Config.walk.supportY}},   --LS     --Move and land
 
           {{0,0,0},2,      st*2, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
           {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uRightTargetTorsoMidRight[1],uRightTargetTorsoMidRight[2]},{0,0,0} },    --Shift and Lift
 
           {uLeftMove,1,   lt,wt,lt ,   {0,side_adj}, {0,sh1,sh2}   ,  {0, -Config.walk.footY+Config.walk.supportY}},   --LS     --Move and land
@@ -213,6 +227,26 @@ function initiate_step(supportLeg, step_relpos )
 
       else --3 step, left step first
 
+        step_queues={
+         {
+          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , uRightTorso[2] },{0,0,0} },    --Shift and Lift
+          {uLeftMove1,1,       0.1,wt,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {uRightTorsoMidLeft[1]  , uRightTorsoMidLeft[2] + Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,      st*2, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+--TODOTODO
+          {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uLeftTargetTorsoMidLeft[1],uLeftTargetTorsoMidLeft[2]},{0,0,0} },    --Shift and Lift
+          {uRightMove,0,    lt,wt,lt ,     {0,-side_adj}, {0,sh1,sh2},  {0, Config.walk.footY-Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+
+
+
+          {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uRightTargetTorsoMidRight[1],uRightTargetTorsoMidRight[2]},{0,0,0} },    --Shift and Lift
+          {uLeftMove2,1,   lt,wt,lt ,   {0,side_adj}, {0,sh1,sh2}   ,  {0, -Config.walk.footY+Config.walk.supportY}},   --LS     --Move and land
+          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
+
+
+         },
+       }
+--[[
   --take left step
         step_queues={
            {
@@ -227,6 +261,7 @@ function initiate_step(supportLeg, step_relpos )
             {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
            },
         }
+        --]]
       end
     end
 
@@ -275,6 +310,7 @@ function initiate_step(supportLeg, step_relpos )
 
         if move_target[3]<=0 then --2 step, right step first
          step_queues={
+          {
             {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],uLeftTorso[2]},{0,0,0} },    --Shift and Lift
             {uRightMove,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {uLeftTorsoMidRight[1], uLeftTorsoMidRight[2] - Config.walk.supportY}},   --LS     --Move and land
 

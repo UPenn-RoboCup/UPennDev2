@@ -401,7 +401,7 @@ local function form_arm_read_cmd2(bus)
 			--table.insert(rd_addrs, lD.mx_registers.current)
 			table.insert(used_ids, m_id)
 			has_mx = true
-----[[
+			----[[
 		else
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
@@ -410,7 +410,7 @@ local function form_arm_read_cmd2(bus)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
 			table.insert(used_ids, m_id)
 			has_nx = true
---]]
+			--]]
 		end
 	end
 	-- Set the default reading command for the bus
@@ -864,7 +864,6 @@ local function initialize(bus)
 	if bus.m_ids then
 		if not bus:ping_verify(bus.m_ids) then
 			print('Command only motors:', bus.mx_cmd_ids, bus.nx_cmd_ids)
-			print('R/W motors:', bus.mx_cmd_ids, bus.nx_cmd_ids)
 		end
 	else
 		bus:ping_probe()

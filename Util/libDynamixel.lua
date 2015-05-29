@@ -892,6 +892,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 	local found_ids = {}
 	local mx_ids, has_mx_id = {}, {}
 	local nx_ids, has_nx_id = {}, {}
+	local nx_cmd_ids, mx_cmd_ids = {}, {}
 	protocol = protocol or 2
 	twait = twait or READ_TIMEOUT
 	for i, id in ipairs(m_ids) do
@@ -910,6 +911,12 @@ local function ping_verify(self, m_ids, protocol, twait)
 			end
 		else
 			print('NOT FOUND:', id, ok)
+			if id<32 then
+				--nx
+				table.insert(nx_cmd_ids, id)
+			else
+				table.insert(mx_cmd_ids, id)
+			end
 			allgood = false
 		end
 		-- Wait .1 ms
@@ -918,6 +925,8 @@ local function ping_verify(self, m_ids, protocol, twait)
 	self.m_ids = found_ids
 	self.mx_ids = mx_ids
 	self.nx_ids = nx_ids
+	self.mx_cmd_ids = mx_ids
+	self.nx_cmd_ids = nx_ids
 	self.has_mx_id = has_mx_id
 	self.has_nx_id = has_nx_id
 	self.has_mx = #mx_ids > 0

@@ -135,12 +135,14 @@ local function update()
 	else
 		-- Default feedback
 		e.u = get_torso()
-		e.p = Body.get_position()
 		e.cp = Body.get_command_position()
+		e.tm = Body.get_temperature()
 		e.s = pillars
 		e.g = Body.get_rgrip_command_torque()
-		e.gt = Body.get_rgrip_temperature()
 		--[[
+		e.gt = Body.get_rgrip_temperature()
+		e.p = Body.get_position()
+		e.p = Body.get_position()
 		e.id = 'fb'
 		e.t = t
 		e.n = count

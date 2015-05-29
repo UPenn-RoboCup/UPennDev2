@@ -118,13 +118,17 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-		1,3,5,7,9,11,13,
+--		1,3,5,7,9,11,13,
+
+		1,3,5,7,9,11,
+
+
 		-- waist
 		28,
 		--head
 		29, 30,
 		-- gripper
-		63, 65, 67
+		--63, 65, 67
 	},
 	enable_read = true,
 }

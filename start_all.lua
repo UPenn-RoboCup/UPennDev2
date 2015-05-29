@@ -39,8 +39,10 @@ end
 
 for i, wizard in ipairs(wizards) do
 	local name = wizard[1]
+	local scriptname = wizard[1]..'_wizard.lua'
+	local name_w_args = wizard[2] and scriptname..' '..wizard[2] or scriptname
 	-- Kill any previous instances
-	local ret = io.popen("pkill -f "..name):lines()
+	local ret = io.popen("pkill -f "..name_w_args):lines()
 	for pid in ret do
 		print('Killed Process', pid)
 	end
@@ -51,19 +53,20 @@ for i, wizard in ipairs(wizards) do
 end
 
 -- Print starting the robot
-
-unix.chdir(ROBOT_HOME)
-for i, run in ipairs(runs) do
-	-- Kill any previous instances
-	local ret = io.popen("pkill -f "..run):lines()
-	for i, pid in ret do
-		print('Killed Process', pid)
+if RUN_ROBOT then
+	unix.chdir(ROBOT_HOME)
+	for i, run in ipairs(runs) do
+		-- Kill any previous instances
+		local ret = io.popen("pkill -f "..run):lines()
+		for i, pid in ret do
+			print('Killed Process', pid)
+		end
+		local script = gen_screen(run, 'run_'..run..'.lua')
+		local status = os.execute(script)
+		print(color(run, 'yellow'), 'starting')
+		--print(script)
+		unix.usleep(1e5)
 	end
-	local script = gen_screen(run, 'run_'..run..'.lua')
-	local status = os.execute(script)
-	print(color(run, 'yellow'), 'starting')
-	--print(script)
-	unix.usleep(1e5)
 end
 
 -- Check the status
@@ -83,17 +86,19 @@ for i, wizard in ipairs(wizards) do
 	end
 end
 
-unix.sleep(1)
-for i, name in ipairs(runs) do
-	-- Kill any previous instances
-	local ret = io.popen("pgrep -f "..name):lines()
-	local started = false
-	for pid in ret do
-		if pid then started = true end
-	end
-	if started then
-		print(color(name, 'green'), 'started')
-	else
-		print(color(name, 'red'), 'not started')
+if RUN_ROBOT then
+	unix.sleep(1)
+	for i, name in ipairs(runs) do
+		-- Kill any previous instances
+		local ret = io.popen("pgrep -f "..name):lines()
+		local started = false
+		for pid in ret do
+			if pid then started = true end
+		end
+		if started then
+			print(color(name, 'green'), 'started')
+		else
+			print(color(name, 'red'), 'not started')
+		end
 	end
 end

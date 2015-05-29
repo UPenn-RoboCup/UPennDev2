@@ -31,21 +31,14 @@ function update_estop()
 		if not button_pressed then --don't do pogo stick
 
 			if ret.lstick[1]>600 and ret.rstick[1]>600 then
-				targetvel={0,0,0}
 				targetvel_new={0,0,0}
-				mcm.set_walk_vel(targetvel)
 				button_pressed = true
 				motion_ch:send'hybridwalk'
 			elseif ret.lstick[1]>600 then
-				targetvel={0,0,0}
 				targetvel_new={0,0,0}
-				mcm.set_walk_vel(targetvel)
-
 			elseif
 				ret.lstick[1]<-600 then
-				targetvel={0,0,0}
 				targetvel_new={0,0,0}
-				mcm.set_walk_vel(targetvel)
 				body_ch:send'stop'
 				button_pressed = true
 				print("STOP")
@@ -53,7 +46,15 @@ function update_estop()
 			elseif ret.rbutton==1 then
 				print("INIT!!!!!!")
 				body_ch:send'init'	
-	  		button_pressed = true					
+	  		button_pressed = true		
+
+			elseif ret.lstick[2]>600 then
+				targetvel_new[3]=targetvel[3]+0.1
+		  		button_pressed = true				
+			elseif ret.lstick[2]<-600 then
+				targetvel_new[3]=targetvel[3]-0.1
+		  		button_pressed = true				
+			
 			elseif ret.lbutton[1]==1 then
 				targetvel_new[1]=targetvel[1]+0.02;
 	  		button_pressed = true				
@@ -66,12 +67,6 @@ function update_estop()
 			elseif ret.lbutton[4]==1 then
 				targetvel_new[2]=targetvel[2]-0.02;
 	  		button_pressed = true				
-			elseif ret.rbutton==4 then
-				targetvel_new[3]=targetvel[3]+0.1
-	  		button_pressed = true				
-			elseif ret.rbutton==2 then
-				targetvel_new[3]=targetvel[3]-0.1
-	  		button_pressed = true				
 			end --end button check
 
 
@@ -79,6 +74,11 @@ function update_estop()
 		  if vel_diff>0 then
 		    targetvel[1],targetvel[2],targetvel[3] = targetvel_new[1],targetvel_new[2],targetvel_new[3]
 		    print(string.format("Target velocity: %.3f %.3f %.3f",unpack(targetvel)))
+
+		    ostring = string.format("Vel: %.1d %.1d %.2f",
+			targetvel[1]*100, targetvel[2]*100, targetvel[3]);
+			estop.display(1,ostring)
+
 		    mcm.set_walk_vel(targetvel)
 		  end --end vel update
 

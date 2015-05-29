@@ -124,12 +124,6 @@ local function update()
 	until not msg
 	if y1 then ittybitty1 = y1 end
 
-
-
-	local is_indoors = hcm.get_network_indoors()
-	if is_indoors==1 and t_update - t_feedback < dt_indoor_send then return end
-	if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
-
 	-- send this only when maxxed out..,
 	local qTemp = Body.get_temperature()
 	for i, tm in ipairs(qTemp) do
@@ -138,6 +132,10 @@ local function update()
 			break
 		end
 	end
+
+	local is_indoors = hcm.get_network_indoors()
+	--if is_indoors==1 and t_update - t_feedback < dt_indoor_send then return end
+	if is_indoors~=1 and t_update - t_feedback < dt_image_send then return end
 
 	-- Default feedback
 	e.u = get_torso()
@@ -162,17 +160,21 @@ local function update()
 	e.rpy = Body.get_rpy()
 	e.pose = wcm.get_robot_pose()
 	--]]
+	local channel = 9600*dt_image_send
+	print('initial channel bits', channel)
 	local fbmsg = mpack(e)
+	--print('fbmsg bits', #fbmsg*8)
 	local fbmsgz = czlib(fbmsg)
+	print('fbmsgz bits', #fbmsgz*8)
+	channel = channel - #fbmsgz*8
 
 	print()
-	print('ittybitty0 bits', ittybitty0 and #ittybitty1*8)
-	print('ittybitty1 bits', ittybitty1 and #ittybitty0*8)
-	print('fbmsg bits', #fbmsg*8)
-	print('fbmsgz bits', #fbmsgz*8)
-	print()
-	if ittybitty0 and #ittybitty0*8>9600*2 then print('!!! ittybitty0') end
-	if ittybitty1 and #ittybitty1*8>9600*2 then print('!!! ittybitty1') end
+	print('ittybitty0 bits', ittybitty0 and #ittybitty0*8)
+	print('ittybitty1 bits', ittybitty1 and #ittybitty1*8)
+	local channel0 = channel - (ittybitty0 and #ittybitty0*8 or 0)
+	local channel1 = channel - (ittybitty1 and #ittybitty1*8 or 0)
+	print('final channel bits', channel, channel0, channel1)
+
 
 	local ret, err
 	if is_indoors==2 and ittybitty0_udp_ch then

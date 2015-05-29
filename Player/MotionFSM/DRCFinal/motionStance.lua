@@ -74,6 +74,9 @@ function state.entry()
 
   mcm.set_walk_footlift({0,0})
   mcm.set_walk_heeltoewalk(0) --no heeltoewalk default  
+
+  mcm.set_status_temp_tZMP(Config.walk.tZMP)
+
 end
 
 function state.update()

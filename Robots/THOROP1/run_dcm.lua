@@ -20,6 +20,8 @@ local sformat = string.format
 -- Timeouts
 local WRITE_TIMEOUT = 1 / 250
 local READ_TIMEOUT = 1 / 250
+local WRITE_TIMEOUT = 1 / 500
+local READ_TIMEOUT = 1 / 500
 if OPERATING_SYSTEM=='darwin' then
 	WRITE_TIMEOUT = 1 / 60
 	READ_TIMEOUT = 1 / 60
@@ -433,6 +435,7 @@ local function parse_read_arm2(pkt, bus)
 	local m_id = pkt.id
 	if not m_id then return end
 	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
 	if bus.has_mx_id[m_id] then
 		-- Check if MX
 		if #pkt.parameter==8 then
@@ -463,14 +466,17 @@ local function parse_read_arm2(pkt, bus)
 		print('bad val', read_j_id)
 		return read_j_id
 	end
-	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Set Current in SHM
 	local read_temp = temp_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
-	temp_ptr[read_j_id - 1] = read_temp
-	temp_ptr_t[read_j_id - 1] = t_read
+	if type(read_temp)=='number' then
+		temp_ptr[read_j_id - 1] = read_temp
+		temp_ptr_t[read_j_id - 1] = t_read
+	end
 	--
 	return read_j_id
 end
@@ -880,7 +886,7 @@ local function initialize(bus)
 			if status then break end
 			n = n + 1
 		until n > 5
-		assert(n<=5, 'Too many attempts at reading position')
+		assert(n<=5, 'Too many attempts at reading position '..m_id)
 		assert(status.id==m_id, 'Bad id coherence, position')
 		t_read = get_time()
 		local j_id, rad = parse_read_position(status, bus)
@@ -898,7 +904,7 @@ local function initialize(bus)
 			if status then break end
 			n = n + 1
 		until n > 5
-		assert(n<=5, 'Too many attempts at reading torque enable')
+		assert(n<=5, 'Too many attempts at reading torque enable '..m_id)
 		assert(status.id==m_id, 'Bad id coherence, torque enable')
 		j_id = m_to_j[m_id]
 		local tq_parse

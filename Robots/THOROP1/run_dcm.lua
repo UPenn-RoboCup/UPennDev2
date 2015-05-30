@@ -363,20 +363,24 @@ local function parse_read_arm(pkt, bus)
 	--if pkt.error ~= 0 then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
+	if type(m_id)~='number' then return end
 	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
 	if bus.has_mx_id[m_id] then
 		-- Check if MX
-		if #pkt.parameter==8 then
+		if type(pkt)=='table' and #pkt.parameter==8 then
 			-- Set Position in SHM
 			local read_val = p_parse_mx(unpack(pkt.parameter, 1, arm_packet_offsets_mx[1]))
-			if type(read_val)~='number' then return read_j_id end
 			local read_rad = step_to_radian(read_j_id, read_val)
-			--print(m_id, 'Read val', read_val, unpack(pkt.parameter))
-			p_ptr[read_j_id - 1] = read_rad
-			p_ptr_t[read_j_id - 1] = t_read
+			if type(read_rad)=='number' then
+				p_ptr[read_j_id - 1] = read_rad
+				p_ptr_t[read_j_id - 1] = t_read
+			end
 			-- Set temperature (Celsius)
-			dcm.sensorPtr.temperature[read_j_id - 1] = pkt.parameter[8]
-			dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
+			if type(pkt.parameter[8])=='number' then
+				dcm.sensorPtr.temperature[read_j_id - 1] = pkt.parameter[8]
+				dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
+			end
 		end
 		return read_j_id
 	end
@@ -386,15 +390,22 @@ local function parse_read_arm(pkt, bus)
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
-	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Set Current in SHM
 	local read_temp = temp_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
 	temp_ptr[read_j_id - 1] = read_temp
 	temp_ptr_t[read_j_id - 1] = t_read
-	-- Update the F/T Sensor
+	--[[
+	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
+	c_ptr[read_j_id - 1] = read_cur
+	c_ptr_t[read_j_id - 1] = t_read
+	--]]
+
+	-- Update the arm F/T Sensor
 	--	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
 	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
@@ -414,7 +425,6 @@ local function form_arm_read_cmd2(bus)
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
-			-- Position through temperature (NOTE: No current)
 			-- Position through temperature (NOTE: No current)
 			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
 			--table.insert(rd_addrs, lD.mx_registers.current)
@@ -437,12 +447,12 @@ local function form_arm_read_cmd2(bus)
 		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
 		bus.read_loop_cmd_alt_str = lD.get_indirect_data(used_ids, arm_packet_reg)
-	else
+	elseif has_mx then
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
 		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	end
-	bus.read_loop_cmd_alt_n = #rd_addrs
+	bus.read_loop_cmd_alt_n = #used_ids
 	bus.read_loop_cmd_alt = 'arm2'
 	bus.use_alt = true
 end
@@ -833,6 +843,7 @@ local function output_co(bus)
 		-- Copy the command positions if reading is not enabled,
 		-- otherwise, send a read instruction
 		if bus.enable_read then
+			if bus.use_alt~=nil then bus.use_alt = not bus.use_alt end
 			if bus.use_alt then
 				--bus.use_alt = false
 				bus:send_instruction(bus.read_loop_cmd_alt_str)

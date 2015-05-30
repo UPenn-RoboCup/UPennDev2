@@ -351,7 +351,7 @@ local function form_arm_read_cmd(bus)
 	elseif has_mx then
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	end
 	bus.read_loop_cmd_n = #used_ids
 	bus.read_loop_cmd = 'arm'
@@ -361,23 +361,29 @@ local function parse_read_arm(pkt, bus)
 	--if pkt.error ~= 0 then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
+	if type(m_id)~='number' then return end
 	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
 	if bus.has_mx_id[m_id] then
 		-- Check if MX
 		if #pkt.parameter==8 then
 			-- Set Position in SHM
 			local read_val = p_parse_mx(unpack(pkt.parameter, 1, arm_packet_offsets_mx[1]))
-			if type(read_val)~='number' then return read_j_id end
 			local read_rad = step_to_radian(read_j_id, read_val)
-			--print(m_id, 'Read val', read_val, unpack(pkt.parameter))
-			p_ptr[read_j_id - 1] = read_rad
-			p_ptr_t[read_j_id - 1] = t_read
+			if type(read_rad)=='number' then
+				p_ptr[read_j_id - 1] = read_rad
+				p_ptr_t[read_j_id - 1] = t_read
+			end
 			-- Set temperature (Celsius)
-			dcm.sensorPtr.temperature[read_j_id - 1] = pkt.parameter[8]
-			dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
+			if type(pkt.parameter[8])=='number' then
+				dcm.sensorPtr.temperature[read_j_id - 1] = pkt.parameter[8]
+				dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
+			end
 		end
 		return read_j_id
 	end
+
+	if not bus.has_nx_id[m_id] then return end
 
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
@@ -386,10 +392,16 @@ local function parse_read_arm(pkt, bus)
 	p_ptr[read_j_id - 1] = read_rad
 	p_ptr_t[read_j_id - 1] = t_read
 	-- Set Current in SHM
+	--[[
+	local read_temp = temp_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
+	temp_ptr[read_j_id - 1] = read_temp
+	temp_ptr_t[read_j_id - 1] = t_read
+	--]]
 	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
 	c_ptr[read_j_id - 1] = read_cur
 	c_ptr_t[read_j_id - 1] = t_read
-	-- Update the F/T Sensor
+
+	-- Update the arm F/T Sensor
 	--	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
 	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
@@ -405,32 +417,36 @@ end
 ------------------------
 local function form_arm_read_cmd2(bus)
 	local rd_addrs, has_mx, has_nx = {}, false, false
+	local used_ids = {}
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
 			-- Position through temperature (NOTE: No current)
+			--table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
 			table.insert(rd_addrs, lD.mx_registers.current)
+			table.insert(used_ids, m_id)
 			has_mx = true
-		else
+		elseif is_nx then
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
 			'Bad Indirect addresses for the arm chain ID '..m_id
 			)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
+			table.insert(used_ids, m_id)
 			has_nx = true
 		end
 	end
 	-- Set the default reading command for the bus
 	if has_mx and has_nx then
-		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
-		bus.read_loop_cmd_alt_str = lD.get_indirect_data(bus.m_ids, arm_packet_reg)
-	else
+		bus.read_loop_cmd_alt_str = lD.get_indirect_data(used_ids, arm_packet_reg)
+	elseif has_mx then
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
-		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	end
-	bus.read_loop_cmd_alt_n = #bus.m_ids
+	bus.read_loop_cmd_alt_n = #used_ids
 	bus.read_loop_cmd_alt = 'arm2'
 	bus.use_alt = true
 end

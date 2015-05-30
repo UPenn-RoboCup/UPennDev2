@@ -11,7 +11,8 @@ libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
 --local READ_TIMEOUT = 1 / 60
-local READ_TIMEOUT = 1 / 80
+--local READ_TIMEOUT = 1 / 80
+local READ_TIMEOUT = 1 / 90
 local using_status_return = true
 
 -- Cache
@@ -849,8 +850,9 @@ local function debug_nx(self, id)
 	local parse_status_return_level = byte_to_number[nx_registers.status_return_level[2]]
 	-- Check the firmware
 	local status = lD.get_nx_firmware(id, self)
-	if type(status)=='table' then
-		print('\tFirmware: ', lD.parse('firmware', status[1]))
+	if type(status)=='table' and type(status[1])=='table' then
+		local mode = parse_firmware(unpack(status[1].parameter))
+		print('\tFirmware: '..mode)
 	end
 	-- Check the Operating Mode
 	status = lD.get_nx_mode(id, self)
@@ -959,10 +961,11 @@ local function ping_verify(self, m_ids, protocol, twait)
 	self.has_mx = #mx_ids > 0
 	self.has_nx = #nx_ids > 0
 	--
-	self.mx_cmd_ids = mx_ids
-	self.nx_cmd_ids = nx_ids
+	self.mx_cmd_ids = mx_cmd_ids
+	self.nx_cmd_ids = nx_cmd_ids
 	self.has_mx_cmd_id = has_mx_cmd_id
 	self.has_nx_cmd_id = has_nx_cmd_id
+	lD.set_nx_status_return_level(nx_cmd_ids, 1, self)
 
 	if allgood then print('VERIFID') end
 	return allgood

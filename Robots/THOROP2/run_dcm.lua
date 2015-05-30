@@ -468,6 +468,7 @@ local function parse_read_arm2(pkt, bus)
 		end
 		return read_j_id
 	end
+	if not bus.has_nx_id[m_id] then return end
 
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM

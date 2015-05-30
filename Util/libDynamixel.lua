@@ -812,6 +812,7 @@ local function debug_mx(self, id)
 	local parse_firmware = byte_to_number[mx_registers.firmware[2]]
 	local parse_delay = byte_to_number[mx_registers.return_delay_time[2]]
 	local parse_mode = byte_to_number[mx_registers.mode[2]]
+	local parse_status_return_level = byte_to_number[mx_registers.status_return_level[2]]
 	-- Check the firmware
 	local status = lD.get_mx_firmware(id, self)
 	if type(status)=='table' and type(status[1])=='table' then
@@ -831,7 +832,12 @@ local function debug_mx(self, id)
 		local delay = parse_delay(unpack(status.parameter))
 		print('\tReturn Delay: '..delay)
 	end
-	local status = lD.get_mx_status_return_level(id, self)
+	status = lD.get_mx_status_return_level(id, self)
+	if type(status)=='table' and status[1] then
+		status = status[1]
+		local level = parse_status_return_level(unpack(status.parameter))
+		print('\tStatus Return Level: '..level)
+	end
 
 
 end
@@ -840,6 +846,7 @@ local function debug_nx(self, id)
 	local parse_firmware = byte_to_number[nx_registers.firmware[2]]
 	local parse_delay = byte_to_number[nx_registers.return_delay_time[2]]
 	local parse_mode = byte_to_number[nx_registers.mode[2]]
+	local parse_status_return_level = byte_to_number[nx_registers.status_return_level[2]]
 	-- Check the firmware
 	local status = lD.get_nx_firmware(id, self)
 	if type(status)=='table' then
@@ -857,6 +864,12 @@ local function debug_nx(self, id)
 		status = status[1]
 		local delay = parse_delay(unpack(status.parameter))
 		print('\tReturn Delay: '..delay)
+	end
+	status = lD.get_nx_status_return_level(id, self)
+	if type(status)=='table' and status[1] then
+		status = status[1]
+		local level = parse_status_return_level(unpack(status.parameter))
+		print('\tStatus Return Level: '..level)
 	end
 end
 

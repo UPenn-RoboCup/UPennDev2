@@ -20,8 +20,8 @@ local sformat = string.format
 -- Timeouts
 local WRITE_TIMEOUT = 1 / 250
 local READ_TIMEOUT = 1 / 250
-local WRITE_TIMEOUT = 1 / 500
-local READ_TIMEOUT = 1 / 500
+--local WRITE_TIMEOUT = 1 / 500
+--local READ_TIMEOUT = 1 / 500
 if OPERATING_SYSTEM=='darwin' then
 	WRITE_TIMEOUT = 1 / 60
 	READ_TIMEOUT = 1 / 60

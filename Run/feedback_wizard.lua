@@ -28,7 +28,7 @@ local hz_wrist_send = .5
 local dt_wrist_send = 1/hz_wrist_send
 local hz_head_send = 0.4
 local dt_head_send = 1/hz_head_send
-local hz_outdoor_send = 1.5
+local hz_outdoor_send = 1
 local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
@@ -185,15 +185,16 @@ local function update()
 	if feedback_ch then feedback_ch:send(fbmsg) end
 
 	local available_bits = 0
+	local available_bits0 = 0
 	local is_indoors = hcm.get_network_indoors()
 	local ret, err
 	if is_indoors==2 and ittybitty0_udp_ch then
 		-- send the ittybitty0 (head)
 		if t_update - t_feedback < dt_head_send then return end
-		available_bits = 9600*dt_head_send
+		available_bits0 = 9600*dt_head_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
-		available_bits = available_bits - 8*#fbmsgz
+		available_bits = available_bits0 - 8*#fbmsgz
 		if ittybitty0 then
 			ret, err = ittybitty0_udp_ch:send(ittybitty0)
 			available_bits = available_bits - 8*#ittybitty0
@@ -201,26 +202,26 @@ local function update()
 	elseif is_indoors==3 and ittybitty1_udp_ch then
 		-- send the ittybitty1 (wrist)
 		if t_update - t_feedback < dt_wrist_send then return end
-		available_bits = 9600*dt_wrist_send
+		available_bits0 = 9600*dt_wrist_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
-		available_bits = available_bits - 8*#fbmsgz
+		available_bits = available_bits0 - 8*#fbmsgz
 		if ittybitty1 then
 			ret, err = ittybitty1_udp_ch:send(ittybitty1)
 			available_bits = available_bits - 8*#ittybitty1
 		end
 	elseif feedback_udp_ch then
 		if t_update - t_feedback < dt_outdoor_send then return end
-		available_bits = 9600*dt_outdoor_send
+		available_bits0 = 9600*dt_outdoor_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
-		available_bits = available_bits - 8*#fbmsgz
+		available_bits = available_bits0 - 8*#fbmsgz
 	else
 		return
 	end
 
 	t_feedback = t_update
-	print('available_bits', available_bits)
+	print('available_bits', available_bits, '/', available_bits0)
 	if type(available_bits)=='number' and available_bits < 0 then
 		local twait = math.max( 0.05, math.min(math.abs(available_bits / 9600), 0.5))
 		print('fb | wait!', twait)

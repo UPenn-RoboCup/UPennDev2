@@ -133,13 +133,6 @@ function initiate_step(supportLeg, step_relpos )
   local uLeftMove = util.pose_relative(uLeftTarget,uLeft)
   local uRightMove = util.pose_relative(uRightTarget,uRight)
 
-
-
-
-
-
-
-
   --3-step case, LS-RS-LS
   local uLeftMove1 = {0,0.01,uLeftMove[3]}
   local uLeftMove2 = util.pose_relative(uLeftMove, uLeftMove1)
@@ -168,7 +161,7 @@ function initiate_step(supportLeg, step_relpos )
 
 
 
-
+--[[
 
   local uRightTorsoMid1Left = util.pose_relative(uRight, uTorsoMid1Left)
   local uRightTargetTorsoMid1Left = util.pose_relative(uRightTarget, uTorsoMid1Left)
@@ -177,7 +170,7 @@ function initiate_step(supportLeg, step_relpos )
 
   local uLeftTorsoTarget = util.pose_relative(uTorsoTarget, uLeftSupport)
   local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
-
+--]]
   local side_adj = Config.walk.supportY - 0.00
   local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 
@@ -206,6 +199,12 @@ function initiate_step(supportLeg, step_relpos )
 
   if step_type=="left2" then
       --take left step
+      local move1 = math.sqrt(uRightTorso[1]^2+uRightTorso[2]^2)
+      local uTorsoMove = util.pose_relative(uTorsoTarget,uRight)
+      local move2 = math.sqrt(uTorsoMove[1]^2+uTorsoMove[2]^2)
+
+print("torso move dist:",move1,move2)
+
       step_queues={
          {
           {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , uRightTorso[2] },{0,0,0} },    --Shift and Lift
@@ -214,7 +213,7 @@ function initiate_step(supportLeg, step_relpos )
           {{0,0,0}, 2,     st*3, 0.1, 0.1,   {uLeftTargetTorsoMidLeft[1],uLeftTargetTorsoMidLeft[2]},{0,0,0} },    --Shift and Lift
 
           {uRightMove,0,    lt,wt,lt ,     {0,-side_adj}, {0,sh1,sh2},  {0, Config.walk.footY-Config.walk.supportY}},   --LS     --Move and land
-          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
    
          },
        }
@@ -228,7 +227,7 @@ function initiate_step(supportLeg, step_relpos )
           {{0,0,0}, 2,     st*3, 0.1, 0.1,   {uRightTargetTorsoMidRight[1],uRightTargetTorsoMidRight[2]},{0,0,0} },    --Shift and Lift
 
           {uLeftMove,1,   lt,wt,lt ,   {0,side_adj}, {0,sh1,sh2}   ,  {0, -Config.walk.footY+Config.walk.supportY}},   --LS     --Move and land
-          {{0,0,0},2,        st, st, 0.1,   {0,0},{0,0,0} },  --move to center      
+          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center      
          },
         }
    elseif step_type=="left3" then

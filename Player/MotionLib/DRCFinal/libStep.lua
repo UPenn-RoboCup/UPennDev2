@@ -80,6 +80,33 @@ local function save_stance(self,uLeft,uRight,uTorso,zLeft,zRight)
   if zLeft then mcm.set_status_zLeg({zLeft,zRight}) end
 end
 
+local function adaptive_support(velocity, uTorso,uLeft,uRight,uLeftNext,uRightNext)
+
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uLeftNextTorso = util.pose_relative(uLeftNext,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+  local uRightNextTorso = util.pose_relative(uRightNext,uTorso)
+
+  local uLeftMove = {uLeftNextTorso[1]-uLeftTorso[1],uLeftNextTorso[2]-uLeftTorso[2]}
+  local uRightMove = {uRightNextTorso[1]-uRightTorso[1],uRightNextTorso[2]-uRightTorso[2]}
+
+  --Foot moves forward or backward: support Y inwards
+  local frontFactor = 0.01 / 0.16
+  supportYMod = (math.abs(uLeftMove[1]) - math.abs(uRightMove[1]) )* frontFactor
+
+  --Foot moves right: support Y to the left (prevent overshooting)
+
+  local sideFactor = 0.03 / 0.08
+  supportYMod =supportYMod + (-uLeftMove[2] - uRightMove[2])*sideFactor
+
+  return supportYMod
+end
+
+
+
+
+
+
 local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, supportLeg, initialStep,lastStep)  
   local uLeft_next, uRight_next, uTorso_next = uLeft_now, uRight_now, uTorso_now
   local uLSupport,uRSupport = self.get_supports(uLeft_now,uRight_now)
@@ -98,17 +125,16 @@ local function get_next_step_velocity(self,uLeft_now, uRight_now, uTorso_now, su
       uSupport = util.se2_interpolate(0.3,uRSupport,uTorso_next)      
     end  
   else
+    local uLSupport_next,uRSupport_next
     if supportLeg == 0 then    -- Left support
       uSupport = uLSupport
-      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now,lastStep)    
-      local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
-      uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
+      uRight_next = self.step_destination_right(velWalk, uLeft_now, uRight_now,lastStep)  
     else    -- Right support
       uSupport = uRSupport
       uLeft_next = self.step_destination_left(velWalk, uLeft_now, uRight_now,lastStep)    
-      local uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
-      uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)
-    end  
+    end
+    uLSupport_next,uRSupport_next = self.get_supports(uLeft_next,uRight_next)
+    uTorso_next = util.se2_interpolate(0.5, uLSupport_next, uRSupport_next)  
   end
   return uLeft_now, uRight_now,uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport 
 end

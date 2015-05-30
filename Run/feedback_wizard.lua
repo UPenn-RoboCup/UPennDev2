@@ -28,7 +28,7 @@ local hz_wrist_send = .5
 local dt_wrist_send = 1/hz_wrist_send
 local hz_head_send = 0.4
 local dt_head_send = 1/hz_head_send
-local hz_outdoor_send = 2
+local hz_outdoor_send = 1.5
 local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
@@ -198,6 +198,7 @@ local function update()
 			available_bits = available_bits - 8*#ittybitty0
 		end
 	elseif is_indoors==3 and ittybitty1_udp_ch then
+		local available_bits = 9600*dt_wrist_send
 		-- send the ittybitty1 (wrist)
 		if t_update - t_feedback < dt_wrist_send then return end
 		local fbmsgz = czlib(fbmsg)
@@ -209,6 +210,7 @@ local function update()
 		end
 	elseif feedback_udp_ch then
 		if t_update - t_feedback < dt_outdoor_send then return end
+		local available_bits = 9600*dt_outdoor_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
 		available_bits = available_bits - 8*#fbmsgz
@@ -218,7 +220,7 @@ local function update()
 
 	t_feedback = t_update
 	print('available_bits', available_bits)
-	if available_bits < 0 then
+	if type(available_bits)=='number' and available_bits < 0 then
 		local twait = math.max( 0.05, math.min(math.abs(available_bits / 9600), 0.5))
 		print('fb | wait!', twait)
 		unix.usleep(math.floor(twait*1e6))

@@ -1079,13 +1079,13 @@ local function initialize(bus)
 			n = 0
 			local parse
 			repeat
-				status = lD.set_mx_torque_mode(m_id, 1, bus)[1]
+				status = lD.set_mx_torque_mode(m_id, 1, bus)
 				unix.usleep(1e5)
-				status = lD.get_mx_torque_mode(m_id, bus)[1]
+				status = lD.get_mx_torque_mode(m_id, bus)
 				parse = lD.byte_to_number[lD.mx_registers.torque_mode[2]]
 				-- Save the mode
-				if type(status)=='table' then
-					gripper_mode[j_id] = parse(unpack(status.parameter))
+				if type(status[1])=='table' then
+					gripper_mode[j_id] = parse(unpack(status[1].parameter))
 				end
 				--if status then break end
 				if gripper_mode[j_id]==1 then break end

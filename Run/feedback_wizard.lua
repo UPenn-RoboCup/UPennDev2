@@ -184,12 +184,13 @@ local function update()
 
 	if feedback_ch then feedback_ch:send(fbmsg) end
 
+	local available_bits = 0
 	local is_indoors = hcm.get_network_indoors()
 	local ret, err
 	if is_indoors==2 and ittybitty0_udp_ch then
-		local available_bits = 9600*dt_head_send
 		-- send the ittybitty0 (head)
 		if t_update - t_feedback < dt_head_send then return end
+		available_bits = 9600*dt_head_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
 		available_bits = available_bits - 8*#fbmsgz
@@ -198,9 +199,9 @@ local function update()
 			available_bits = available_bits - 8*#ittybitty0
 		end
 	elseif is_indoors==3 and ittybitty1_udp_ch then
-		local available_bits = 9600*dt_wrist_send
 		-- send the ittybitty1 (wrist)
 		if t_update - t_feedback < dt_wrist_send then return end
+		available_bits = 9600*dt_wrist_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
 		available_bits = available_bits - 8*#fbmsgz
@@ -210,7 +211,7 @@ local function update()
 		end
 	elseif feedback_udp_ch then
 		if t_update - t_feedback < dt_outdoor_send then return end
-		local available_bits = 9600*dt_outdoor_send
+		available_bits = 9600*dt_outdoor_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
 		available_bits = available_bits - 8*#fbmsgz

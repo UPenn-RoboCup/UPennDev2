@@ -85,6 +85,9 @@ function state.entry()
   stage = 1
 end
 
+
+local shoulderRollInit = 10*math.pi/180
+
 function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
@@ -103,8 +106,11 @@ function state.update()
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
-  elseif stage==3 then --straighten shoulder yaw
+  elseif stage==3 then --straighten shoulder yaw, widen shoulder
+    qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
+
+
   elseif stage==4 then
     --Now go to the initial arm position
     qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget

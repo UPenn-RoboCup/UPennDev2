@@ -277,7 +277,7 @@ function walk.update()
 
 
 
-print("init:",t-t_entry,ph, math.max(zLeft,zRight))
+--print("init:",t-t_entry,ph, math.max(zLeft,zRight))
 
     
     step_planner:save_stance(uLeft,uRight,uTorso)  

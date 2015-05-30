@@ -53,10 +53,7 @@ local update_odometry = function(uTorso_in)
   local pose_odom0 = wcm.get_robot_odometry()
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
   wcm.set_robot_odometry(pose_odom)
-  
   wcm.set_robot_utorso1(uTorso_in)--updae odometry variable
-
-
 end
 
 ---------------------------
@@ -126,9 +123,6 @@ function walk.update()
   local ph,is_next_step = zmp_solver:get_ph(t,t_last_step,ph_last)
 
 
-
-
-
   if ph_last<0.5 and ph>=0.5 then
     local rpy = Body.get_rpy()
     local roll = rpy[1]
@@ -188,7 +182,28 @@ function walk.update()
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
 
+    local uTorsoVelCurrent = mcm.get_status_uTorsoVel()
+    if Config.variable_support then
+      print("TorsoVel:",unpack(uTorsoVelCurrent))
+      local torsoVelYMin = 0.20
+      local torsoVelYFactor = 0.5 
 
+      local torsoVelXMin = 0.07
+      local torsoVelXFactor = 0.1
+
+      local torsoXExt = math.max(0,(math.abs(uTorsoVelCurrent[1])-torsoVelXMin))*torsoVelXFactor
+      torsoXExt = -math.min(torsoXExt, 0.02)* util.sign(uTorsoVelCurrent[2])
+      print("torsoXExt:",torsoXExt)
+
+      local torsoYExt = math.max(0, (math.abs(uTorsoVelCurrent[2])-torsoVelYMin )) *torsoVelYFactor 
+      torsoYExt = -math.min(torsoYExt, 0.02)*util.sign(uTorsoVelCurrent[2])
+      print("torsoYExt:",torsoYExt)
+
+      local uSupportModY = torsoXExt + torsoYExt
+
+      print("supportModY:",uSupportModY)
+      uSupport = util.pose_global({0,uSupportModY,0},uSupport)
+    end
 
     local uTorsoVel = mcm.get_status_uTorsoVel()
     local uSupportDist1 = util.pose_relative(uSupport,uTorso_now)
@@ -228,12 +243,6 @@ function walk.update()
   else 
     uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
   end
-
-
-
-
---  print("walk:",t-t_entry, ph, math.max(zLeft,zRight))
-
 
 
   --Heel lift first, heel land first

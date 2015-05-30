@@ -83,8 +83,6 @@ function initiate_step(supportLeg, step_relpos )
   local step_min = 0.05
   local sh1,sh2 = 0.05, 0
 
-  local st,wt = 2,3 --slower step
-
   local st,wt = 1,3 --slower step
 
 
@@ -161,48 +159,8 @@ function initiate_step(supportLeg, step_relpos )
   local uLeftMove = util.pose_relative(uLeftTarget,uLeft)
   local uRightMove = util.pose_relative(uRightTarget,uRight)
 
-  --3-step case, LS-RS-LS
-  local uLeftMove1 = {0,0.01,uLeftMove[3]}
-  local uLeftMove2 = util.pose_relative(uLeftMove1,uLeftMove)
-
-  local uLeftMid = util.pose_global(uLeftMove1,uLeft)
-  local uTorsoMid1Left = util.se2_interpolate(0.5,uLeftMid,uRight)
-  local uTorsoMid2Left = util.se2_interpolate(0.5,uLeftMid,uRightTarget)
-
-  local uLeftTorsoMid1Left = util.pose_relative(uLeft, uTorsoMid1Left)
-  local uRightTorsoMid1Left = util.pose_relative(uRight, uTorsoMid1Left)
-  local uRightTargetTorsoMid1Left = util.pose_relative(uRightTarget, uTorsoMid1Left)
-
-
-
-  --3 step case, R-L-R
-  local uRightMove1 = {0,-0.01,uRightMove[3]}
-  local uRightMove2 = util.pose_relative(uRightMove1,uRightMove)
-
-  local uRightMid = util.pose_global(uRightMove,uRight)
-  local uTorsoMid1Right = util.se2_interpolate(0.5,uLeft,uRightMid)
-  local uTorsoMid2Right = util.se2_interpolate(0.5,uRightMid,uLeftTarget)
-
-  local uLeftTorsoMid1Right = util.pose_relative(uLeft, uTorsoMid1Right)
-  local uRightTorsoMid1Right = util.pose_relative(uRight, uTorsoMid1Right)
-  local uLeftTargetTorsoMid1Right = util.pose_relative(uLeftTarget, uTorsoMid1Right)
-
-
-
---[[
-
-  local uRightTorsoMid1Left = util.pose_relative(uRight, uTorsoMid1Left)
-  local uRightTargetTorsoMid1Left = util.pose_relative(uRightTarget, uTorsoMid1Left)
-
-
-
-  local uLeftTorsoTarget = util.pose_relative(uTorsoTarget, uLeftSupport)
-  local uRightTorsoTarget = util.pose_relative(uTorsoTarget, uRightSupport)
---]]
   local side_adj = Config.walk.supportY - 0.00
   local com_side = Config.walk.footY+Config.walk.supportY-side_adj
-
-
 
   local lt = 0.1
 

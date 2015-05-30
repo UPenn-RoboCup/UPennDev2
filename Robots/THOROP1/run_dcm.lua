@@ -329,7 +329,7 @@ local function form_arm_read_cmd(bus)
 			table.insert(used_ids, m_id)
 			has_mx = true
 			--]]
-		else
+		elseif is_nx then
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
 			'Bad Indirect addresses for the arm chain ID '..m_id
@@ -375,6 +375,8 @@ local function parse_read_arm(pkt, bus)
 		return read_j_id
 	end
 
+	if not bus.has_nx_id[m_id] then return end
+
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
@@ -413,7 +415,7 @@ local function form_arm_read_cmd2(bus)
 			table.insert(used_ids, m_id)
 			has_mx = true
 			----[[
-		else
+		elseif is_nx then
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
 			'Bad Indirect addresses for the arm chain ID '..m_id
@@ -469,6 +471,8 @@ local function parse_read_arm2(pkt, bus)
 		end
 		return read_j_id
 	end
+
+	if not bus.has_nx_id[m_id] then return end
 
 	if #pkt.parameter ~= arm_packet_sz then return read_j_id end
 	-- Set Position in SHM

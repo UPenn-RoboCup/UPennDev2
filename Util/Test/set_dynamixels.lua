@@ -29,33 +29,31 @@ local indirects = {
 	{'position', 'temperature', 'data', 'command_position', 'position_p'}
 }
 
--- Gripper states
+-- Identifiers
 local is_gripper = {}
-for _,id in ipairs(Config.parts.LGrip) do
-	is_gripper[id] = true
-end
-for _,id in ipairs(Config.parts.RGrip) do
-	is_gripper[id] = true
-end
+for _,id in ipairs(Config.parts.LGrip) do is_gripper[id] = true end
+for _,id in ipairs(Config.parts.RGrip) do is_gripper[id] = true end
 local m_to_j, j_to_m = Config.servo.motor_to_joint, Config.servo.joint_to_motor
+local max_rad = Config.servo.max_rad
+local min_rad = Config.servo.min_rad
 
 for i, ids in ipairs(chain_ids) do
+
 	print('Checking', names[i], unpack(ids))
 	local chain = chains[i]
 	-- First, ping verify, to see the firmware
-	chain:ping_verify(ids)
-	print('done verifying')
+
+	print('Verifying...', chain:ping_verify(ids))
+
 	-- Next, set the return delay
 	for _, id in ipairs(ids) do
 		local jid = m_to_j[id]
-		local delay
-		if is_gripper[jid] or id==37 then
+
+		if chain.has_mx_cmd_id[id] then
 			local status = lD.get_mx_return_delay_time(id, self)
-			delay = type(status)=='table' and lD.parse_mx('return_delay_time', status)
-			if type(delay)~='number' then
-				print(id, 'delay', 'MX NOT FOUND', delay)
-			elseif delay~=0 then
-				print('Updating', 'return_delay_time', 'for', id)
+			local delay = (type(status)=='table') and lD.parse_mx('return_delay_time', status)
+			if type(delay)=='number' and delay~=0 then
+				print('Updating delay', id)
 				lD.set_mx_return_delay_time(id, 0, chain)
 			end
 		else
@@ -69,17 +67,22 @@ for i, ids in ipairs(chain_ids) do
 		end
 		end
 	end
+
+	-- Status return level to 1
+
 	-- Now, Check the indirect addressing
-	local indirect = indirects[i]
-	local indirect_ok = lD.check_indirect_address(ids, indirect, chain)
-	if not indirect_ok then
-		print('Updating indirect addressing')
-		lD.set_indirect_address(ids, indirect, chain)
+	if false then
+		local indirect = indirects[i]
+		local indirect_ok = lD.check_indirect_address(ids, indirect, chain)
+		if not indirect_ok then
+			print('Updating indirect addressing')
+			lD.set_indirect_address(ids, indirect, chain)
+		end
+	else
+		print('Skipping indirect - please take off any MX motors before doing indrect!!')
 	end
 	-- Set the modes
-	local max_rad = Config.servo.max_rad
-	local min_rad = Config.servo.min_rad
-	local m_to_j = Config.servo.motor_to_joint
+
 	for _, id in ipairs(ids) do
 		local jid = m_to_j[id]
 		if is_gripper[jid] then

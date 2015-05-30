@@ -40,6 +40,7 @@ local foot_traj_func
 
 foot_traj_func = moveleg.foot_trajectory_soft
 
+--foot_traj_func = moveleg.foot_trajectory_square
 
 
 local touched =false
@@ -264,10 +265,7 @@ function walk.update()
         wparam[2] = wparam[2]+0.05
       end
 
-
-
-
-      uRight,zRight,liftp, landp = foot_traj_func(
+      uRight,zRight = foot_traj_func(
         phSingle,uRight_now,uRight_next,stepHeight,wparam, zLeg[2],r_ft[3],touched)
 
       zLeg0[1] = zLeg0[1] - leg_raise
@@ -275,10 +273,6 @@ function walk.update()
       mcm.set_status_zLeg0(zLeg0)
       zLeft = zLeg0[1]      
       zRight = zRight +zLeg0[2]
-      local aShiftY = {aShiftY0[1],liftp*aShiftY0[2] + (landp)*zpr_target[2]}
-      mcm.set_walk_aShiftY(aShiftY)
-
-
 
     elseif supportLeg==1 then    -- Right support    
       local zpr_target = hcm.get_step_zpr()
@@ -293,16 +287,14 @@ function walk.update()
 
 
 
-      uLeft,zLeft,liftp, landp = foot_traj_func(
+      uLeft,zLeft = foot_traj_func(
         phSingle,uLeft_now,uLeft_next,stepHeight,wparam, zLeg[1], l_ft[3],touched)    
-          
+
       zLeg0[1] = zLeg0[1] - leg_raise
       zLeg0[2] = zLeg0[2] - leg_raise
       mcm.set_status_zLeg0(zLeg0)
       zRight = zLeg0[2]    
       zLeft = zLeft +zLeg0[1]
-      local aShiftY = {liftp*aShiftY0[1] + landp*zpr_target[2],aShiftY0[2]}
-      mcm.set_walk_aShiftY(aShiftY)
     end
 
     

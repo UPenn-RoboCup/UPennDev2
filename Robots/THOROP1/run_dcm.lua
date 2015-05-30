@@ -845,7 +845,6 @@ local function output_co(bus)
 		if bus.enable_read then
 			if bus.use_alt~=nil then bus.use_alt = not bus.use_alt end
 			if bus.use_alt then
-				--bus.use_alt = false
 				bus:send_instruction(bus.read_loop_cmd_alt_str)
 				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_alt_n
 				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_alt_n
@@ -1116,12 +1115,18 @@ while is_running do
 			local rel_zmp_left = {-lfoot[5]/lfoot[3], lfoot[4]/lfoot[3], 0}
 			table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)',
 			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
+			dcm.set_sensor_lzmp({rel_zmp_left[1],rel_zmp_left[2]})
+		else
+			dcm.set_sensor_lzmp({0,0})
 		end
 
 		if rfoot[3]>20 then
 			local rel_zmp_right = {-rfoot[5]/rfoot[3], rfoot[4]/rfoot[3], 0}
 			table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)',
 			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
+			dcm.set_sensor_rzmp({rel_zmp_right[1],rel_zmp_right[2]})
+		else
+			dcm.set_sensor_rzmp({0,0})
 		end
 
 		debug_str = table.concat(debug_str, '\n')

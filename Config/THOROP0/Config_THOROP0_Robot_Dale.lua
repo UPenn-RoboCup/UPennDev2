@@ -128,7 +128,7 @@ local right_arm = {
 		--head
 		29, 30,
 		-- gripper
-		63, 65, 67
+		--63, 65, 67
 	},
 	enable_read = true,
 }
@@ -362,7 +362,7 @@ servo.rad_offset = vector.new({
 	90,  90,  90,-45,  90,0,-90, --RArm, teddy, wristYaw fix
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
-	0, 45, 0, -- right gripper/trigger (UCLA rev2 verified)
+	-90, -90, 0, -- right gripper/trigger (UCLA rev2 verified)
 	--70, -125, 0, -- right gripper/trigger (UCLA rev1 verified)
 	0, -- Lidar pan
 })*DEG_TO_RAD

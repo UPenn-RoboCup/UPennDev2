@@ -244,6 +244,7 @@ function walk.update()
     uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
   end
 
+
   --Heel lift first, heel land first
   --positive aLeft: toe lift
   --negative aLeft: heel lift

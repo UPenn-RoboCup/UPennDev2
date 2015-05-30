@@ -11,8 +11,10 @@ libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
 --local READ_TIMEOUT = 1 / 60
-local READ_TIMEOUT = 1 / 80
+--local READ_TIMEOUT = 1 / 80
+local READ_TIMEOUT = 1 / 90
 local using_status_return = true
+local using_status_return_mx = false
 
 -- Cache
 local char = string.char
@@ -646,12 +648,15 @@ for k,v in pairs(mx_registers) do
 		unix.write(bus.fd, instruction)
 
 		-- Grab any status returns
-		if using_status_return and single then
+		if using_status_return_mx and single then
+			return get_status(bus.fd, 1)
+			--[[
 			local status = get_status(bus.fd)
 			if not status then return end
 			if status.error~=0 then return status end
 			local value = byte_to_number[sz](unpack(status.parameter))
 			return status, value
+			--]]
 		end
 
 	end --function
@@ -722,8 +727,7 @@ for k,v in pairs(rx_registers) do
 
 		-- Grab any status returns
 		if using_status_return and single then
-			local status = get_status( bus.fd, 1 )
-			return status
+			return get_status( bus.fd, 1 )
 		end
 
 	end --function
@@ -849,8 +853,9 @@ local function debug_nx(self, id)
 	local parse_status_return_level = byte_to_number[nx_registers.status_return_level[2]]
 	-- Check the firmware
 	local status = lD.get_nx_firmware(id, self)
-	if type(status)=='table' then
-		print('\tFirmware: ', lD.parse('firmware', status[1]))
+	if type(status)=='table' and type(status[1])=='table' then
+		local mode = parse_firmware(unpack(status[1].parameter))
+		print('\tFirmware: '..mode)
 	end
 	-- Check the Operating Mode
 	status = lD.get_nx_mode(id, self)
@@ -959,10 +964,11 @@ local function ping_verify(self, m_ids, protocol, twait)
 	self.has_mx = #mx_ids > 0
 	self.has_nx = #nx_ids > 0
 	--
-	self.mx_cmd_ids = mx_ids
-	self.nx_cmd_ids = nx_ids
+	self.mx_cmd_ids = mx_cmd_ids
+	self.nx_cmd_ids = nx_cmd_ids
 	self.has_mx_cmd_id = has_mx_cmd_id
 	self.has_nx_cmd_id = has_nx_cmd_id
+	lD.set_nx_status_return_level(nx_cmd_ids, 1, self)
 
 	if allgood then print('VERIFID') end
 	return allgood

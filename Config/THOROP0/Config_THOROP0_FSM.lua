@@ -41,6 +41,7 @@ fsm.Arm = {
 	--armInitWalk initializes the arms to walk configuration
 	--This is done in joint-level, and (hopefully) should work with any initial arm configurations
 	{'armIdle', 'init', 'armInitWalk'},
+	{'armIdle', 'ready', 'armManipulation'},
 
 	-- armWalk does nothing (the arm should be in walk configuration)
 	{'armInitWalk', 'done', 'armWalk'},

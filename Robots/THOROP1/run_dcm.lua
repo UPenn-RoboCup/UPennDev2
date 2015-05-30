@@ -779,7 +779,7 @@ local function form_write_command(bus, m_ids)
 		lD.set_mx_command_position(mx_send_ids, mx_commands, bus)
 	end
 	-- MX-only sync does not work for some reason
-	if not has_mx then cmd_addrs = nil end
+	if not has_mx then cmd_addrs = false end
 	return send_ids, commands, cmd_addrs, just_mx
 end
 
@@ -796,7 +796,7 @@ local function output_co(bus)
 	coroutine.yield()
 	local cnt = 0
 	while true do
-		cnt = cnt +1
+		cnt = cnt + 1
 		-- Send the position commands
 		local send_ids, commands, cmd_addrs, just_mx = form_write_command(bus)
 		-- Perform the sync write

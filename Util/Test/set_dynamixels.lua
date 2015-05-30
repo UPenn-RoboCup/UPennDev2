@@ -45,30 +45,45 @@ for i, ids in ipairs(chain_ids) do
 
 	print('Verifying...', chain:ping_verify(ids))
 
+	-- Status return level to 1
+	for _, id in ipairs(ids) do
+		local jid = m_to_j[id]
+		if chain.has_mx_cmd_id[id] then
+			local status = lD.get_mx_status_return_level(id, self)
+			local level = (type(status)=='table') and lD.parse_mx('status_return_level', status)
+			if type(level)=='number' and level~=1 then
+				print('Updating MX status_return_level', id)
+				lD.set_mx_status_return_level(id, 1, chain)
+			end
+		elseif chain.has_nx_cmd_id[id] then
+			local status = lD.get_nx_status_return_level(id, self)
+			local level = (type(status)=='table') and lD.parse('status_return_level', status)
+			if type(level)=='number' and level~=1 then
+				print('Updating NX status_return_level', id)
+				lD.set_nx_status_return_level(id, 1, chain)
+			end
+		end
+	end
+
 	-- Next, set the return delay
 	for _, id in ipairs(ids) do
 		local jid = m_to_j[id]
-
 		if chain.has_mx_cmd_id[id] then
 			local status = lD.get_mx_return_delay_time(id, self)
 			local delay = (type(status)=='table') and lD.parse_mx('return_delay_time', status)
 			if type(delay)=='number' and delay~=0 then
-				print('Updating delay', id)
+				print('Updating MX return_delay_time', id)
 				lD.set_mx_return_delay_time(id, 0, chain)
 			end
-		else
+		elseif chain.has_nx_cmd_id[id] then
 			local status = lD.get_nx_return_delay_time(id, self)
-			delay = type(status)=='table' and lD.parse('return_delay_time', status)
-		if type(delay)~='number' then
-			print(id, 'delay', 'NX NOT FOUND', delay)
-		elseif delay~=0 then
-			print('Updating', 'return_delay_time', 'for', id)
-			lD.set_nx_return_delay_time(id, 0, chain)
-		end
+			local delay = (type(status)=='table') and lD.parse('return_delay_time', status)
+			if type(delay)=='number' and delay~=0 then
+				print('Updating NX return_delay_time', id)
+				lD.set_nx_return_delay_time(id, 0, chain)
+			end
 		end
 	end
-
-	-- Status return level to 1
 
 	-- Now, Check the indirect addressing
 	if false then

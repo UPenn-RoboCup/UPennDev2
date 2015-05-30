@@ -701,38 +701,50 @@ local function do_external(request, bus)
 			local status, is_mx, tq_val, j_id, pos
 			for i, m_id in ipairs(m_ids) do
 				is_mx = bus.has_mx_cmd_id[m_id]
+				is_nx = bus.has_nx_cmd_id[m_id]
 				j_id = m_to_j[m_id]
 				tq_val = m_vals[i]
 				if is_mx then
 					status = lD.set_mx_torque_enable(m_id, tq_val, bus)
 					--status = lD.get_mx_torque_enable(m_id, bus)[1]
-				else
+				elseif is_nx then
+					--status = lD.set_nx_torque_enable({m_id}, tq_val, bus)
 					status = lD.set_nx_torque_enable(m_id, tq_val, bus)
+					--status = lD.set_nx_torque_enable(m_id, tq_val, bus)
 					--status = lD.get_nx_torque_enable(m_id, bus)[1]
 				end
 				--if status and status.error==0 then
-				--[[
-				if type(status)~='table' then
+				----[[
+				if type(status)~='table' and is_nx then
 					print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
-					return
+				elseif is_nx then
+					status = status[1]
 				end
 				--]]
-				if tq_val==0 then return end
-				--ptable(status)
-				--print(unpack(status.parameter))
-				-- Set the CP and the P
-				if is_mx then
-					status = lD.get_mx_position(m_id, bus)[1]
-				else
-					status = lD.get_nx_position(m_id, bus)[1]
+				----[[
+				if tq_val~=0 then
+					-- Set the CP and the P
+					if is_mx then
+						status = lD.get_mx_position(m_id, bus)
+					else
+						status = lD.get_nx_position(m_id, bus)
+					end
+					if type(status)=='table' then
+						status = status[1]
+					end
+					if type(status)=='table' then
+						j_id, pos = parse_read_position(status, bus)
+						if not j_id then
+							print("BAD TORQUE ENABLE POS READ", m_id, status and status.error)
+						else
+							cp_ptr[j_id - 1] = p_ptr[j_id - 1]
+						end
+					end
 				end
-				j_id, pos = parse_read_position(status, bus)
-				if not j_id then
-					print("BAD TORQUE ENABLE POS READ", m_id, status and status.error)
-					return
-				end
-				cp_ptr[j_id - 1] = p_ptr[j_id - 1]
+				--]]
+				unix.usleep(1e4)
 			end
+			return 0
 
 		elseif wr_reg=='torque_mode' then
 			local status, j_id, val
@@ -751,6 +763,7 @@ local function do_external(request, bus)
 					print("BAD TORQUE MODE!!")
 				end
 			end
+			return 0
 		end
 		-- TODO: Special code for changing torque modes
 
@@ -1144,6 +1157,8 @@ while is_running do
 		-- We may output a read request
 		if bus.npkt_to_expect < 1 then
 			co_status, bus.npkt_to_expect, bus.read_reg = coroutine.resume(bus.output_co)
+			assert(co_status, bus.npkt_to_expect)
+			bus.npkt_to_expect = 0
 			--print('bus.npkt_to_expect', bus.npkt_to_expect)
 		end
 	end
@@ -1163,6 +1178,7 @@ while is_running do
 				bus = numbered_buses[bnum]
 				-- Place the data into packet structs
 				co_status, pkts, rxi = coroutine.resume(bus.input_co, uread(bus.fd))
+				assert(co_status, pkts)
 				-- Parse the packets into shared memory
 				bus.npkt_to_expect = bus.npkt_to_expect - #pkts
 				for _, pkt in ipairs(pkts) do

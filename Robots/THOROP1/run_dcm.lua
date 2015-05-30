@@ -728,20 +728,41 @@ local function form_write_command(bus, m_ids)
 	local mx_send_ids, mx_commands, mx_cmd_addrs = {}, {}, {}
 	local has_mx, has_nx = false, false
 	for i, m_id in ipairs(m_ids) do
-		is_mx = bus.has_mx_id[m_id]
+		is_mx = bus.has_mx_cmd_id[m_id]
 		j_id = m_to_j[m_id]
 		-- Only add position commands if torque enabled
 		-- TODO: Gripper should get a command_torque!
 		if tq_en_ptr[j_id-1]==1 then
 			if is_gripper[j_id] and gripper_mode[j_id]==1 then
-				has_mx = true
-				table.insert(send_ids, m_id)
-				table.insert(commands, torque_to_cmd(j_id, tq_ptr[j_id-1]))
-				table.insert(cmd_addrs, lD.mx_registers.command_torque)
+
+				local step = torque_to_cmd(j_id, tq_ptr[j_id-1])
+				if type(step)=='number' then
+					----[[
+					has_mx = true
+					table.insert(send_ids, m_id)
+					table.insert(commands, step)
+					table.insert(cmd_addrs, lD.mx_registers.command_torque)
+					--]]
+					--[[
+					table.insert(mx_send_ids, m_id)
+					table.insert(mx_commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+					--]]
+				end
+
 			elseif is_mx then
-				--has_mx = true
-				table.insert(mx_send_ids, m_id)
-				table.insert(mx_commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+
+				local step = radian_to_step(j_id, cp_ptr[j_id-1])
+				if type(step)=='number' then
+					has_mx = true
+					table.insert(send_ids, m_id)
+					table.insert(commands, step)
+					table.insert(cmd_addrs, lD.mx_registers.command_position)
+					--[[
+					table.insert(mx_send_ids, m_id)
+					table.insert(mx_commands, step)
+					--]]
+				end
+
 			else
 				has_nx = true
 				table.insert(send_ids, m_id)
@@ -754,7 +775,9 @@ local function form_write_command(bus, m_ids)
 	local just_mx = #mx_send_ids>0
 	if #mx_send_ids==1 then
 		lD.set_mx_command_position(mx_send_ids[1], mx_commands[1], bus)
-	elseif #mx_send_ids>1 then lD.set_mx_command_position(mx_send_ids, mx_commands, bus) end
+	elseif #mx_send_ids>1 then
+		lD.set_mx_command_position(mx_send_ids, mx_commands, bus)
+	end
 	-- MX-only sync does not work for some reason
 	if not has_mx then cmd_addrs = nil end
 	return send_ids, commands, cmd_addrs, just_mx
@@ -877,7 +900,8 @@ local function initialize(bus)
 	-- Populate the IDs of the bus
 	if bus.m_ids then
 		if not bus:ping_verify(bus.m_ids) then
-			print('Command only motors:', bus.mx_cmd_ids, bus.nx_cmd_ids)
+			print('Command only nx motors:', unpack(bus.nx_cmd_ids))
+			print('Command only mx motors:', unpack(bus.mx_cmd_ids))
 		end
 	else
 		bus:ping_probe()
@@ -895,8 +919,8 @@ local function initialize(bus)
 			else
 				status = lD.get_nx_position(m_id, bus)[1]
 			end
-			--if status and status.error==0 then break end
 			if status then break end
+			unix.usleep(1e5)
 			n = n + 1
 		until n > 5
 		assert(n<=5, 'Too many attempts at reading position '..m_id)
@@ -913,8 +937,8 @@ local function initialize(bus)
 			else
 				status = lD.get_nx_torque_enable(m_id, bus)[1]
 			end
-			--if status and status.error==0 then break end
 			if status then break end
+			unix.usleep(1e5)
 			n = n + 1
 		until n > 5
 		assert(n<=5, 'Too many attempts at reading torque enable '..m_id)
@@ -943,8 +967,9 @@ local function initialize(bus)
 				--if status then break end
 				if gripper_mode[j_id]==1 then break end
 				n = n + 1
+				unix.usleep(1e5)
 			until n > 5
-			assert(gripper_mode[j_id] == 1, 'Too many attempts at setting torque mode')
+			assert(gripper_mode[j_id] == 1, 'Too many attempts at setting torque mode '..m_id)
 			-- Set to zero torque in our process
 			tq_ptr[j_id-1] = 0
 		end

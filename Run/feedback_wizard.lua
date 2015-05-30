@@ -220,7 +220,7 @@ local function update()
 	print('available_bits', available_bits)
 	if available_bits < 0 then
 		local twait = math.max( 0.05, math.min(math.abs(available_bits / 9600), 0.5))
-		print('wait!', twait)
+		print('fb | wait!', twait)
 		unix.usleep(math.floor(twait*1e6))
 	end
 

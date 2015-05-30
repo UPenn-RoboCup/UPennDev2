@@ -893,6 +893,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 	local mx_ids, has_mx_id = {}, {}
 	local nx_ids, has_nx_id = {}, {}
 	local nx_cmd_ids, mx_cmd_ids = {}, {}
+	local had_nx_cmd_id, had_mx_cmd_id = {}, {}
 	protocol = protocol or 2
 	twait = twait or READ_TIMEOUT
 	for i, id in ipairs(m_ids) do
@@ -904,18 +905,25 @@ local function ping_verify(self, m_ids, protocol, twait)
 				table.insert(nx_ids, id)
 				has_nx_id[id] = true
 				--debug_nx(self, id)
+				table.insert(nx_cmd_ids, id)
+				had_nx_cmd_id[id] = true
 			else
 				table.insert(mx_ids, id)
 				has_mx_id[id] = true
 				--debug_mx(self, id)
+				table.insert(mx_cmd_ids, id)
+				had_mx_cmd_id[id] = true
 			end
 		else
 			print('NOT FOUND:', id, ok)
 			if id<32 then
 				--nx
 				table.insert(nx_cmd_ids, id)
+				had_nx_cmd_id[id] = true
 			else
+				-- mx
 				table.insert(mx_cmd_ids, id)
+				had_mx_cmd_id[id] = true
 			end
 			allgood = false
 		end
@@ -925,12 +933,16 @@ local function ping_verify(self, m_ids, protocol, twait)
 	self.m_ids = found_ids
 	self.mx_ids = mx_ids
 	self.nx_ids = nx_ids
-	self.mx_cmd_ids = mx_ids
-	self.nx_cmd_ids = nx_ids
 	self.has_mx_id = has_mx_id
 	self.has_nx_id = has_nx_id
 	self.has_mx = #mx_ids > 0
 	self.has_nx = #nx_ids > 0
+	--
+	self.mx_cmd_ids = mx_ids
+	self.nx_cmd_ids = nx_ids
+	self.has_mx_cmd_id = has_mx_cmd_id
+	self.has_nx_cmd_id = has_nx_cmd_id
+
 	if allgood then print('VERIFID') end
 	return allgood
 end

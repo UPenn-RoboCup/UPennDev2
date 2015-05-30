@@ -103,20 +103,20 @@ local sel, uread, get_time, usleep = unix.select, unix.read, unix.time, unix.usl
 -- Packet Processing Helpers
 -- TODO: Should not be zero returns!!
 local function radian_clamp(idx, radian)
-	if type(idx)~='number' or type(radian)~='number' then return 0 end
+	if type(idx)~='number' or type(radian)~='number' then return end
 	if is_unclamped[idx] then return radian end
 	return min(max(radian, min_rad[idx]), max_rad[idx])
 end
 local function radian_to_step(idx, radian)
-	if type(idx)~='number' or type(radian)~='number' then return 0 end
+	if type(idx)~='number' or type(radian)~='number' then return end
 	return floor(direction[idx] * radian_clamp(idx, radian) * to_steps[idx] + step_zero[idx] + step_offset[idx])
 end
 local function step_to_radian(idx, step)
-	if type(idx)~='number' or type(step)~='number' then return 0 end
+	if type(idx)~='number' or type(step)~='number' then return end
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 local function torque_to_cmd(idx, tq)
-	if type(idx)~='number' or type(tq)~='number' then return 0 end
+	if type(idx)~='number' or type(tq)~='number' then return end
 	local cmd = min(max(direction[idx] * tq, -1023), 1023)
 	return cmd < 0 and (1024 - cmd) or cmd
 end
@@ -1011,17 +1011,18 @@ for chain_id, chain in ipairs(dcm_chains) do
 	numbered_buses[bus.fd] = bus
 	initialize(bus)
 	-- Make the output coroutine
-	bus.output_co = coroutine.wrap(output_co)
-	bus.output_co(bus)
+	bus.output_co = coroutine.create(output_co)
+	coroutine.resume(bus.output_co, bus)
 	-- Make the input coroutine
-	bus.input_co = coroutine.wrap(input_co)
-	bus.input_co(bus)
+	bus.input_co = coroutine.create(input_co)
+	coroutine.resume(bus.input_co, bus)
 end
 
 -- Begin the loop
 
 local t0 = get_time()
 -- Begin the master loop
+local co_status
 while is_running do
 	t_start = get_time()
 	-- Check for commands for the DCM from external sources
@@ -1034,13 +1035,13 @@ while is_running do
 			bus.n_read_timeouts = bus.n_read_timeouts + bus.npkt_to_expect
 			bus.read_reg = nil
 			bus.npkt_to_expect = 0
-			bus.input_co(false)
+			co_status = coroutine.resume(bus.input_co, false)
 		end
 		-- Check if we are not expecting any packets
 		-- We now output to the bus
 		-- We may output a read request
 		if bus.npkt_to_expect < 1 then
-			bus.npkt_to_expect, bus.read_reg = bus.output_co()
+			co_status, bus.npkt_to_expect, bus.read_reg = coroutine.resume(bus.output_co)
 		end
 	end
 	-- Load data from the bus into the input coroutine
@@ -1058,7 +1059,7 @@ while is_running do
 			if is_ready then
 				bus = numbered_buses[bnum]
 				-- Place the data into packet structs
-				pkts, rxi = bus.input_co(uread(bus.fd))
+				co_status, pkts, rxi = coroutine.resume(bus.input_co, uread(bus.fd))
 				-- Parse the packets into shared memory
 				bus.npkt_to_expect = bus.npkt_to_expect - #pkts
 				for _, pkt in ipairs(pkts) do

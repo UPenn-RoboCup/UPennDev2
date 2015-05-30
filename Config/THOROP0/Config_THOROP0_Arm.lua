@@ -15,14 +15,14 @@ arm.ready[1] =
 	{
 	left = {
 		via='jacobian_preplan',
-		timeout=15,
+		timeout=8,
 		tr={0.25, 0.25, 0.15, 0, -60*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		qArmGuess = vector.new{135, 0, 0, -135, 90, 45, -90}*DEG_TO_RAD,
 		weights = {1,1,-1,1,2},
 	},
 	right = {
 		via='jacobian_preplan',
-		timeout=15,
+		timeout=8,
 		tr={0.25, -0.25, 0.15, 0, -60*DEG_TO_RAD, 0},
 		weights = {0,1,0},
 		qArmGuess = vector.new{135, 0, 0, -135, -90, -45, 90}*DEG_TO_RAD,
@@ -69,6 +69,7 @@ arm.pushdoor[1] = {
 arm.drill = {}
 -- Left views the drill
 -- Right grabs the drill
+-- Useful: t = m.rPlanner.forward(Body.get_rarm_command_position(), Body.get_safe_waist_command_position())
 arm.drill[1] = {
 	left = false,
 	--[[
@@ -81,11 +82,31 @@ arm.drill[1] = {
 	},
 	--]]
 	right = {
+		timeout=8,
+		via='jacobian_preplan',
+		tr={0.21, -0.25, 0.3, 0*DEG_TO_RAD, -80*DEG_TO_RAD, 0*DEG_TO_RAD},
+		qArmGuess = vector.new{75, 0, 0, -135, 0, -30, 0}*DEG_TO_RAD,
+		weights = {1,1,-1,1},
+	}
+}
+arm.drill[2] = {
+	left = false,
+	--[[
+	left = {
 		timeout=15,
 		via='jacobian_preplan',
-		tr={0.25, -0.2, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{0, -45, -90, -90, 0, 45, 0}*DEG_TO_RAD,
-		weights = {1,1,-1,1},
+		tr={0.25, 0.25, 0.3,    0, 0, 0*DEG_TO_RAD},
+		--qArmGuess = vector.new{0, 45, 90, -90, 0,-45,0}*DEG_TO_RAD,
+		--weights = {1,1,-1,1},
+	},
+	--]]
+	right = {
+		timeout=20,
+		via='jacobian_preplan',
+		tr={0.3, -0.25, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 15*DEG_TO_RAD},
+		--tr={0.35, -0.23, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
+		weights = {1,1,-1,1, 0},
 	}
 }
 --[[

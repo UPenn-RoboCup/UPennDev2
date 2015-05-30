@@ -105,6 +105,15 @@ fsm.Arm = {
 	{'armPushDoor', 'teleop', 'armTeleop'},
 	{'armPushDoor', 'teleopraw', 'armTeleopRaw'},
 
+	-- Valve positioning
+	{'armValve', 'done', 'armTeleop'},
+	{'armValve', 'ready', 'armManipulation'},
+	--
+	{'armTeleop', 'valve', 'armValve'},
+	{'armTeleopRaw', 'valve', 'armValve'},
+	{'armValve', 'teleop', 'armTeleop'},
+	{'armValve', 'teleopraw', 'armTeleopRaw'},
+
 	-- armPullDoor
 	--[[
 	{'armPullDoor', 'done', 'armTeleop'},

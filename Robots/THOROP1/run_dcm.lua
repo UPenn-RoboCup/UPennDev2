@@ -620,40 +620,40 @@ local function do_external(request, bus)
 			-- Need this to work well
 			local status, is_mx, tq_val, j_id, pos
 			for i, m_id in ipairs(m_ids) do
-				is_mx = bus.has_mx_id[m_id]
+				is_mx = bus.has_mx_cmd_id[m_id]
 				j_id = m_to_j[m_id]
 				tq_val = m_vals[i]
 				if is_mx then
 					status = lD.set_mx_torque_enable(m_id, tq_val, bus)[1]
-					status = lD.get_mx_torque_enable(m_id, bus)[1]
+					--status = lD.get_mx_torque_enable(m_id, bus)[1]
 				else
 					status = lD.set_nx_torque_enable(m_id, tq_val, bus)[1]
-					status = lD.get_nx_torque_enable(m_id, bus)[1]
+					--status = lD.get_nx_torque_enable(m_id, bus)[1]
 				end
 				--if status and status.error==0 then
-				if status then
-					--ptable(status)
-					print(unpack(status.parameter))
-					-- Set the CP and the P
-					if tq_val==1 then
-						if is_mx then
-							status = lD.get_mx_position(m_id, bus)[1]
-						else
-							status = lD.get_nx_position(m_id, bus)[1]
-						end
-						j_id, pos = parse_read_position(status, bus)
-						if not j_id then
-							print(get_time(), "BAD TORQUE ENABLE POS READ", m_id, status and status.error)
-						else
-							cp_ptr[j_id - 1] = p_ptr[j_id - 1]
-						end
-					end
-				else
+				--[[
+				if type(status)~='table' then
 					print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
+					return
 				end
+				--]]
+				if tq_val==0 then return end
+				--ptable(status)
+				--print(unpack(status.parameter))
+				-- Set the CP and the P
+				if is_mx then
+					status = lD.get_mx_position(m_id, bus)[1]
+				else
+					status = lD.get_nx_position(m_id, bus)[1]
+				end
+				j_id, pos = parse_read_position(status, bus)
+				if not j_id then
+					print("BAD TORQUE ENABLE POS READ", m_id, status and status.error)
+					return
+				end
+				cp_ptr[j_id - 1] = p_ptr[j_id - 1]
 			end
-			-- Done the cycle if setting torque
-			return
+
 		elseif wr_reg=='torque_mode' then
 			local status, j_id, val
 			for i, m_id in ipairs(m_ids) do

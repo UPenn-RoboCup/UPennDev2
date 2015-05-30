@@ -24,9 +24,7 @@ function state.entry()
 	t_entry = Body.get_time()
 	t_update = t_entry
 
-	sequence = {unpack(Config.arm.pushdoor)}
-
-	--head_ch:send'teleopik'
+	sequence = {unpack(Config.arm.valve)}
 
 	s = 1
 	stage = sequence[s]
@@ -87,16 +85,19 @@ function state.update()
 		Body.set_rarm_command_position(qRWaypoint)
 	end
 
+	--[[
 	if qLWaistpoint and qRWaistpoint then
 		print('Conflicting Waist')
-	elseif qLWaistpoint then
+	elseif qLWaist then
 		Body.set_safe_waist_command_position(qLWaistpoint)
-	elseif qRWaistpoint then
+	elseif qRWaist then
 		Body.set_safe_waist_command_position(qRWaistpoint)
 	end
-
-	-- Also set the head
-	--hcm.set_teleop_headik(stage.ikhead)
+	--]]
+	  -- Zero the waist
+  local qWaist = Body.get_safe_waist_command_position()
+  local qWaist_approach, doneWaist = util.approachTol(qWaist, {0,0}, {2 * DEG_TO_RAD, 2 * DEG_TO_RAD}, dt, {1*DEG_TO_RAD, 1*DEG_TO_RAD})
+  Body.set_safe_waist_command_position(qWaist_approach)
 
 	-- Check if done
 	if lStatus=='dead' and rStatus=='dead' then
@@ -117,7 +118,7 @@ end
 
 function state.exit()
 	print(state._NAME..' Exit')
-	head_ch:send'trackleft'
+
 end
 
 return state

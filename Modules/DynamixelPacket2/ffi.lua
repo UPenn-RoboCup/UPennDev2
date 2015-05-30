@@ -119,7 +119,7 @@ function DP2.input_co(bus)
   			-- TODO: Verify the checksum
   			-- if good checksum, then we have a packet!
   			npkt_processed = npkt_processed + 1
-				local tbl = pkt2tbl(pkt_raw, pkt_obj)
+				local ok, tbl = pcall(pkt2tbl, pkt_raw, pkt_obj)
         if type(tbl)=='table' then table.insert(pkts, tbl) end
   			-- Start a new packet
   			rx_i = -1

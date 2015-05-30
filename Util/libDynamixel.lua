@@ -246,6 +246,7 @@ function lD.parse(reg, status)
 	if type(status.parameter)~=table then return end
 	return byte_to_number[reglocation[2]](unpack(status.parameter))
 end
+lD.parse_nx = lD.parse
 function lD.parse_mx(reg, status)
 	if type(reg)~='string' or type(status)~='table' then return end
 	status = status[1] and status[1] or status
@@ -830,6 +831,9 @@ local function debug_mx(self, id)
 		local delay = parse_delay(unpack(status.parameter))
 		print('\tReturn Delay: '..delay)
 	end
+	local status = lD.get_mx_status_return_level(id, self)
+
+
 end
 
 local function debug_nx(self, id)

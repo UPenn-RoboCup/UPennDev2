@@ -103,47 +103,38 @@ for i, ids in ipairs(chain_ids) do
 		if is_gripper[jid] and chain.has_mx_cmd_id[id] then
 			local status = lD.get_mx_alarm_shutdown(id, self)
 			local alarm = (type(status)=='table') and lD.parse_mx('alarm_shutdown', status)
-			print('MX Alarm', id, jid, ':', alarm)
 			-- Zero alarams :P
-			if type(alarm)~='number' then
-				print(id, 'NOT FOUND', 'alarm', alarm)
-			elseif alarm~=0 then
-				print('Updating', 'alarm', 'for', id, 'to', 4)
+			if type(alarm)=='number' and alarm~=0 then
+				print('Updating MX alarm_shutdown', id)
 				lD.set_mx_alarm_shutdown(id, 0, chain)
 			end
 		elseif id==37 and chain.has_mx_cmd_id[id] then
 			-- lidar
 			local status = lD.get_mx_mode(id, self)
-			local mode = type(status)=='table' and lD.parse_mx('mode', status[1])
-		elseif chain.has_nx_cmd_id[id] and min_rad[jid]==-180*DEG_TO_RAD and max_rad[jid]==180*DEG_TO_RAD then
-			local status = lD.get_nx_mode(id, self)
-			local mode = type(status)=='table' and lD.parse('mode', status[1])
+			local mode = type(status)=='table' and lD.parse_mx('mode', status)
+		elseif chain.has_nx_cmd_id[id] and
+			min_rad[jid]==-180*DEG_TO_RAD and max_rad[jid]==180*DEG_TO_RAD then
 			-- 4
-			if type(mode)~='number' then
-				print(id, 'NOT FOUND', 'mode', delay)
-			elseif mode~=4 then
-				print('Updating', 'mode', 'for', id, 'to', 4)
+			local status = lD.get_nx_mode(id, self)
+			local alarm = (type(status)=='table') and lD.parse_nx('mode', status)
+			if type(alarm)=='number' and alarm~=4 then
+				print('Updating NX mode', id, 4)
 				lD.set_nx_mode(id, 4, chain)
 			end
 			-- Also set the shutdown
 			local status = lD.get_nx_alarm_shutdown(id, self)
-			local alarm = type(status)=='table' and lD.parse_nx('alarm_shutdown', status[1])
+			local alarm = (type(status)=='table') and lD.parse_nx('alarm_shutdown', status)
 			print('NX Alarm', id, jid, ':', alarm)
-			-- Zero alarams :P
-			if type(alarm)~='number' then
-				print(id, 'NOT FOUND', 'alarm', alarm)
-			elseif alarm~=0 then
-				print('Updating', 'alarm', 'for', id, 'to', 4)
+			if type(alarm)=='number' and alarm~=0 then
+				print('Updating NX alarm_shutdown', id)
 				lD.set_nx_alarm_shutdown(id, 0, chain)
 			end
 		elseif chain.has_nx_cmd_id[id] then
-			-- 3
+			-- 4
 			local status = lD.get_nx_mode(id, self)
-			local mode = type(status)=='table' and lD.parse('mode', status[1])
-			if type(mode)~='number' then
-				print(id, 'NOT FOUND', 'mode', mode)
-			elseif mode~=3 then
-				print('Updating', 'mode', 'for', id, 'to', 3)
+			local alarm = (type(status)=='table') and lD.parse_nx('mode', status)
+			if type(alarm)=='number' and alarm~=3 then
+				print('Updating NX mode', id, 3)
 				lD.set_nx_mode(id, 3, chain)
 			end
 		end

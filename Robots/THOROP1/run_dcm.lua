@@ -637,11 +637,11 @@ local function form_read_loop_cmd(bus, cmd)
 	if bus.name:find'leg' then
 		return form_leg_read_cmd(bus)
 	elseif bus.name:find'arm' then
-		--[[
+		----[[
 		form_arm_read_cmd(bus)
 		return form_arm_read_cmd2(bus)
 		--]]
-		return form_arm_read_cmdmx(bus)
+		--return form_arm_read_cmdmx(bus)
 	end
 	local rd_addrs, has_mx, has_nx = {}, false, false
 	for _, m_id in ipairs(bus.m_ids) do
@@ -704,10 +704,10 @@ local function do_external(request, bus)
 				j_id = m_to_j[m_id]
 				tq_val = m_vals[i]
 				if is_mx then
-					status = lD.set_mx_torque_enable(m_id, tq_val, bus)[1]
+					status = lD.set_mx_torque_enable(m_id, tq_val, bus)
 					--status = lD.get_mx_torque_enable(m_id, bus)[1]
 				else
-					status = lD.set_nx_torque_enable(m_id, tq_val, bus)[1]
+					status = lD.set_nx_torque_enable(m_id, tq_val, bus)
 					--status = lD.get_nx_torque_enable(m_id, bus)[1]
 				end
 				--if status and status.error==0 then
@@ -926,7 +926,7 @@ local function output_co(bus)
 		request = table.remove(bus.request_queue, 1)
 		while request do
 			n, reg = do_external(request, bus)
-			if n then
+			if type(n)=='number' then
 				--bus.reads_cnt = bus.reads_cnt + n
 				dy = true
 				coroutine.yield(n, reg)
@@ -1144,6 +1144,7 @@ while is_running do
 		-- We may output a read request
 		if bus.npkt_to_expect < 1 then
 			co_status, bus.npkt_to_expect, bus.read_reg = coroutine.resume(bus.output_co)
+			--print('bus.npkt_to_expect', bus.npkt_to_expect)
 		end
 	end
 	-- Load data from the bus into the input coroutine

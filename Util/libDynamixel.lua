@@ -968,7 +968,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 	self.nx_cmd_ids = nx_cmd_ids
 	self.has_mx_cmd_id = has_mx_cmd_id
 	self.has_nx_cmd_id = has_nx_cmd_id
-	lD.set_nx_status_return_level(nx_cmd_ids, 1, self)
+--	lD.set_nx_status_return_level(nx_cmd_ids, 1, self)
 
 	if allgood then print('VERIFID') end
 	return allgood

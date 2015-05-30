@@ -232,7 +232,7 @@ function walk.update()
 
 
 
-  print("walk:",t-t_entry, ph, math.max(zLeft,zRight))
+--  print("walk:",t-t_entry, ph, math.max(zLeft,zRight))
 
 
 

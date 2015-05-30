@@ -446,7 +446,7 @@ function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local zFoot = stepHeight * zf
 
   local aFoot = math.sin(phSingle*2*math.pi)
-
+  aFoot = math.max(0,aFoot) --dont lift heel
   
   return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
@@ -478,6 +478,8 @@ function moveleg.foot_trajectory_base2(phSingle,uStart,uEnd,stepHeight)
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight*zf
   local aFoot = math.sin(phSingle*2*math.pi)
+  aFoot = math.max(0,aFoot) --dont lift heel
+
   return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
 

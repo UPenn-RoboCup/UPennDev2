@@ -512,6 +512,63 @@ local function parse_read_arm2(pkt, bus)
 	return read_j_id
 end
 
+------------------------
+-- Tick tock - get gripper current on every other arm read
+------------------------
+local arm_packet_reg_mx = {'position','speed','load','voltage','temperature'}
+local arm_packet_sz_mx = 0
+local arm_packet_offsets_mx = {}
+for i,v in ipairs(arm_packet_reg_mx) do
+	local reg = assert(lD.mx_registers[v])
+	local sz = reg[2]
+	table.insert(arm_packet_offsets_mx, (arm_packet_offsets_mx[1] or 0) + sz)
+	arm_packet_sz_mx = arm_packet_sz_mx + sz
+end
+--
+local function form_arm_read_cmdmx(bus)
+	local rd_addrs, has_mx, has_nx = {}, false, false
+	local used_ids = {}
+	for _, m_id in ipairs(bus.m_ids) do
+		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
+		if is_mx then
+			table.insert(rd_addrs, lD.mx_registers.position)
+			table.insert(used_ids, m_id)
+			has_mx = true
+		end
+	end
+
+	if not has_mx then
+		return
+	end
+
+	-- Set the default reading command for the bus
+	-- Sync read with just MX does not work for some reason?
+	--bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
+	bus.read_loop_mx_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
+	bus.read_loop_mx_cmd_n = #used_ids
+	bus.read_loop_mx_cmd = 'armmx'
+	bus.use_mx_only = true
+end
+
+local function parse_read_armmx(pkt, bus)
+	-- Nothing to do if an error
+	--if pkt.error ~= 0 then return end
+	-- Assume just reading position, for now
+	local m_id = pkt.id
+	if not m_id then return end
+	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
+	if bus.has_mx_id[m_id] then
+		local read_val = p_parse_mx(unpack(pkt.parameter))
+		local read_rad = step_to_radian(read_j_id, read_val)
+		if type(read_rad)=='number' then
+			p_ptr[read_j_id - 1] = read_rad
+			p_ptr_t[read_j_id - 1] = t_read
+		end
+		return read_j_id
+	end
+end
+
 -- Position Packet
 local function parse_read_position(pkt, bus)
 	-- TODO: Nothing to do if an error
@@ -580,8 +637,11 @@ local function form_read_loop_cmd(bus, cmd)
 	if bus.name:find'leg' then
 		return form_leg_read_cmd(bus)
 	elseif bus.name:find'arm' then
+		--[[
 		form_arm_read_cmd(bus)
 		return form_arm_read_cmd2(bus)
+		--]]
+		return form_arm_read_cmdmx(bus)
 	end
 	local rd_addrs, has_mx, has_nx = {}, false, false
 	for _, m_id in ipairs(bus.m_ids) do
@@ -745,7 +805,11 @@ end
 local function form_write_command(bus, m_ids)
 	local m_ids = bus.m_ids
 	local send_ids, commands, cmd_addrs = {}, {}, {}
-	local mx_send_ids, mx_commands, mx_cmd_addrs = {}, {}, {}
+	local mx_cp_ids, mx_cps = {}, {}, {}
+	local mx_tq_ids, mx_tqs = {}, {}, {}
+	local mx_addrs = {}
+	local mx_ids, mx_cmds = {}, {}
+
 	local has_mx, has_nx = false, false
 	for i, m_id in ipairs(m_ids) do
 		is_mx = bus.has_mx_cmd_id[m_id]
@@ -754,7 +818,7 @@ local function form_write_command(bus, m_ids)
 		-- TODO: Gripper should get a command_torque!
 		if tq_en_ptr[j_id-1]==1 then
 			if is_gripper[j_id] and gripper_mode[j_id]==1 then
-
+				has_mx = true
 				local step = torque_to_cmd(j_id, tq_ptr[j_id-1])
 				if type(step)=='number' then
 					----[[
@@ -763,13 +827,17 @@ local function form_write_command(bus, m_ids)
 					table.insert(commands, step)
 					table.insert(cmd_addrs, lD.mx_registers.command_torque)
 					--]]
-					--[[
-					table.insert(mx_send_ids, m_id)
-					table.insert(mx_commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+					----[[
+					table.insert(mx_addrs, lD.mx_registers.command_torque)
+					table.insert(mx_tq_ids, m_id)
+					table.insert(mx_tqs, step)
+					table.insert(mx_ids, m_id)
+					table.insert(mx_cmds, step)
 					--]]
 				end
 
 			elseif is_mx then
+				has_mx = true
 
 				local step = radian_to_step(j_id, cp_ptr[j_id-1])
 				if type(step)=='number' then
@@ -777,9 +845,12 @@ local function form_write_command(bus, m_ids)
 					table.insert(send_ids, m_id)
 					table.insert(commands, step)
 					table.insert(cmd_addrs, lD.mx_registers.command_position)
-					--[[
-					table.insert(mx_send_ids, m_id)
-					table.insert(mx_commands, step)
+					----[[
+					table.insert(mx_addrs, lD.mx_registers.command_position)
+					table.insert(mx_cp_ids, m_id)
+					table.insert(mx_cps, step)
+					table.insert(mx_ids, m_id)
+					table.insert(mx_cmds, step)
 					--]]
 				end
 
@@ -792,15 +863,31 @@ local function form_write_command(bus, m_ids)
 			--print(m_id, commands[#commands], unpack(cmd_addrs[#cmd_addrs]))
 		end
 	end
-	local just_mx = #mx_send_ids>0
-	if #mx_send_ids==1 then
-		lD.set_mx_command_position(mx_send_ids[1], mx_commands[1], bus)
-	elseif #mx_send_ids>1 then
-		lD.set_mx_command_position(mx_send_ids, mx_commands, bus)
+	----[[
+	local didmx = 0
+	if has_mx then
+		-- mx sync can be weird... so ready the bulk
+		--lD.set_bulk(char(unpack(mx_ids)), mx_addrs, mx_cmds, bus)
+		--didmx = didmx + 1
 	end
-	-- MX-only sync does not work for some reason
-	if not has_mx then cmd_addrs = false end
-	return send_ids, commands, cmd_addrs, just_mx
+
+	if #mx_cp_ids==1 then
+		lD.set_mx_command_position(mx_cp_ids[1], mx_cps[1], bus)
+		didmx = didmx + 1
+	elseif #mx_cp_ids>1 then
+		lD.set_mx_command_position(mx_cp_ids, mx_cps, bus)
+		didmx = didmx + 1
+	end
+	--
+	if #mx_tq_ids==1 then
+		lD.set_mx_command_torque(mx_tq_ids[1], mx_tqs[1], bus)
+		didmx = didmx + 1
+	elseif #mx_tq_ids>1 then
+		lD.set_mx_command_torque(mx_tq_ids, mx_tqs, bus)
+		didmx = didmx + 1
+	end
+	--]]
+	return send_ids, commands, cmd_addrs, didmx
 end
 
 ------------------------
@@ -817,16 +904,22 @@ local function output_co(bus)
 	local cnt = 0
 	while true do
 		cnt = cnt + 1
+		local dy = false
 		-- Send the position commands
-		local send_ids, commands, cmd_addrs, just_mx = form_write_command(bus)
+		local send_ids, commands, cmd_addrs, didmx = form_write_command(bus)
 		-- Perform the sync write
-		if #commands>0 or just_mx then
+		if #commands>0 then
 			if cmd_addrs then
 				lD.set_bulk(char(unpack(send_ids)), cmd_addrs, commands, bus)
 			else
 				lD.set_nx_command_position(send_ids, commands, bus)
 			end
-			bus.cmds_cnt = bus.cmds_cnt + 1
+			bus.cmds_cnt = bus.cmds_cnt + 1 + didmx
+			dy = true
+			coroutine.yield(0)
+		elseif didmx>0 then
+			bus.cmds_cnt = bus.cmds_cnt + didmx
+			dy = true
 			coroutine.yield(0)
 		end
 		-- Run the parent queue until a write to the bus
@@ -835,6 +928,7 @@ local function output_co(bus)
 			n, reg = do_external(request, bus)
 			if n then
 				--bus.reads_cnt = bus.reads_cnt + n
+				dy = true
 				coroutine.yield(n, reg)
 				break
 			end
@@ -843,19 +937,31 @@ local function output_co(bus)
 		-- Copy the command positions if reading is not enabled,
 		-- otherwise, send a read instruction
 		if bus.enable_read then
+
 			if bus.use_alt~=nil then bus.use_alt = not bus.use_alt end
-			if bus.use_alt then
+			if bus.use_alt and bus.read_loop_cmd_alt_str then
+				dy = true
 				bus:send_instruction(bus.read_loop_cmd_alt_str)
 				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_alt_n
 				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_alt_n
 				bus.reqs_cnt = bus.reqs_cnt + 1
 				coroutine.yield(bus.read_loop_cmd_alt_n, bus.read_loop_cmd_alt)
-			else
+			elseif bus.read_loop_cmd_str then
+				dy = true
 				bus:send_instruction(bus.read_loop_cmd_str)
 				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_n
 				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_n
 				bus.reqs_cnt = bus.reqs_cnt + 1
 				coroutine.yield(bus.read_loop_cmd_n, bus.read_loop_cmd)
+			end
+		elseif bus.enable_read_mx then
+			if bus.read_loop_mx_cmd_str then
+				dy = true
+				bus:send_instruction(bus.read_loop_mx_cmd_str)
+				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_mx_cmd_str_n
+				bus.reads_cnt = bus.reads_cnt + bus.read_loop_mx_cmd_str_n
+				bus.reqs_cnt = bus.reqs_cnt + 1
+				coroutine.yield(bus.read_loop_mx_cmd_str_n, bus.read_loop_mx_cmd)
 			end
 		else
 			for i, m_id in ipairs(m_ids) do
@@ -864,10 +970,7 @@ local function output_co(bus)
 				p_ptr_t[j_id-1] = t_read
 			end
 		end
-		if not bus.enable_read and #commands<=0 then
-			coroutine.yield(0)
-			--print('bad zone')
-		end
+		if dy==false then coroutine.yield(0) end
 	end
 end
 

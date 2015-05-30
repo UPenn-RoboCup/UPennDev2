@@ -34,7 +34,7 @@ Config.raise_body = true
 Config.use_exact_tZMP = true
 
 
-
+Config.stair_test=true
 
 Config.use_heeltoe_walk = true
 --Config.heeltoe_angle = 5*DEG_TO_RAD

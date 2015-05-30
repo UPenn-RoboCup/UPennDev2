@@ -43,6 +43,7 @@ local function print_override()
 end
 
 local stair_height = 0.225
+local stair_height = 0.210
 
 local function update(key_code)
   if type(key_code)~='number' or key_code==0 then return end

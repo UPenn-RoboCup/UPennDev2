@@ -102,7 +102,7 @@ stance.sitHeight = 0.75
 stance.dHeight = 0.04 --4cm per sec
 
 
-if HOSTNAME=="teddy2" or HOSTNAME=="dale" or IS_STEVE then 
+if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
 --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   
@@ -129,21 +129,24 @@ print("CHIP CHIP CHIP")
   Config.supportY_preview = 0.00 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0
 
-  walk.stepHeight= 0.02  
   walk.supportY = 0.0
+
+walk.phSingle = {0.2,0.8}
+walk.phZmp = {0.25,0.75}
+
+  walk.stepHeight= 0.03  
+
+  walk.hipRollCompensation = 1.5*DEG_TO_RAD
+
+--walk.phSingle = {0.15,0.85}
 
 
 end
 
 --hack to test invariance
 --walk.supportY = 0.20
-  Config.supportY_preview = -0.02 --reduce initial bobbing
-  Config.supportY_preview = 0.02 --increase initial bobbing
   Config.supportY_preview = 0.0 --works best with webots
-
   Config.supportY_preview2 = 0.0  
---testing
---walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD
 
 ------------------------------------
 -- Associate with the table

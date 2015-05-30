@@ -14,6 +14,7 @@ local stty = require'stty'
 --local READ_TIMEOUT = 1 / 80
 local READ_TIMEOUT = 1 / 90
 local using_status_return = true
+local using_status_return_mx = false
 
 -- Cache
 local char = string.char
@@ -647,12 +648,15 @@ for k,v in pairs(mx_registers) do
 		unix.write(bus.fd, instruction)
 
 		-- Grab any status returns
-		if using_status_return and single then
+		if using_status_return_mx and single then
+			return get_status(bus.fd, 1)
+			--[[
 			local status = get_status(bus.fd)
 			if not status then return end
 			if status.error~=0 then return status end
 			local value = byte_to_number[sz](unpack(status.parameter))
 			return status, value
+			--]]
 		end
 
 	end --function
@@ -723,8 +727,7 @@ for k,v in pairs(rx_registers) do
 
 		-- Grab any status returns
 		if using_status_return and single then
-			local status = get_status( bus.fd, 1 )
-			return status
+			return get_status( bus.fd, 1 )
 		end
 
 	end --function

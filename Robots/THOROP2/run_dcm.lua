@@ -284,6 +284,13 @@ local function parse_read_leg(pkt, bus)
 		c_ptr[read_j_id - 1] = read_cur
 		c_ptr_t[read_j_id - 1] = t_read
 	end
+	--[[
+	local read_temp = temp_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
+	if type(read_temp)=='number' then
+		temp_ptr[read_j_id - 1] = read_temp
+		temp_ptr_t[read_j_id - 1] = t_read
+	end
+	--]]
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
 	--	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
@@ -316,32 +323,37 @@ for i,v in ipairs(arm_packet_reg_mx) do
 end
 local function form_arm_read_cmd(bus)
 	local rd_addrs, has_mx, has_nx = {}, false, false
+	local used_ids = {}
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
 			-- Position through temperature (NOTE: No current)
+			----[[
 			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
+			table.insert(used_ids, m_id)
 			has_mx = true
-		else
+			--]]
+		elseif is_nx then
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
 			'Bad Indirect addresses for the arm chain ID '..m_id
 			)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
+			table.insert(used_ids, m_id)
 			has_nx = true
 		end
 	end
 	-- Set the default reading command for the bus
 	if has_mx and has_nx then
-		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
+		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
-		bus.read_loop_cmd_str = lD.get_indirect_data(bus.m_ids, arm_packet_reg)
-	else
+		bus.read_loop_cmd_str = lD.get_indirect_data(used_ids, arm_packet_reg)
+	elseif has_mx then
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
 		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(bus.m_ids)), rd_addrs)
 	end
-	bus.read_loop_cmd_n = #bus.m_ids
+	bus.read_loop_cmd_n = #used_ids
 	bus.read_loop_cmd = 'arm'
 end
 local function parse_read_arm(pkt, bus)

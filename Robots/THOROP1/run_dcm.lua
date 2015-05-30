@@ -281,6 +281,13 @@ local function parse_read_leg(pkt, bus)
 		p_ptr_t[read_j_id - 1] = t_read
 	end
 	-- Set Current in SHM
+	--[[
+	local read_cur = c_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
+	if type(read_cur)=='number' then
+		c_ptr[read_j_id - 1] = read_cur
+		c_ptr_t[read_j_id - 1] = t_read
+	end
+	--]]
 	local read_temp = temp_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
 	if type(read_temp)=='number' then
 		temp_ptr[read_j_id - 1] = read_temp
@@ -288,7 +295,6 @@ local function parse_read_leg(pkt, bus)
 	end
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
-
 	--	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
 
@@ -323,8 +329,8 @@ local function form_arm_read_cmd(bus)
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
-			----[[
 			-- Position through temperature (NOTE: No current)
+			----[[
 			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
 			table.insert(used_ids, m_id)
 			has_mx = true
@@ -344,7 +350,7 @@ local function form_arm_read_cmd(bus)
 		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
 		bus.read_loop_cmd_str = lD.get_indirect_data(used_ids, arm_packet_reg)
-	else
+	elseif has_mx then
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
 		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)

@@ -60,6 +60,8 @@ local function pkt2tbl(raw, obj)
 		}
 	else
 	--]]
+		if #pkt<10 then print('small pkt!', err) return end
+		if len+5 > #pkt then print('small pkt', err) return end
 		return {
 			id = pkt:byte(5),
 			length = len,
@@ -117,7 +119,8 @@ function DP2.input_co(bus)
   			-- TODO: Verify the checksum
   			-- if good checksum, then we have a packet!
   			npkt_processed = npkt_processed + 1
-        table.insert(pkts, pkt2tbl(pkt_raw, pkt_obj))
+				local tbl = pkt2tbl(pkt_raw, pkt_obj)
+        if type(tbl)=='table' then table.insert(pkts, tbl) end
   			-- Start a new packet
   			rx_i = -1
   		elseif rx_i > pkt_obj.length + N_PACKET_HEADERS then

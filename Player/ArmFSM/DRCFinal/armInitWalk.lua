@@ -80,9 +80,13 @@ function state.entry()
     mcm.get_stance_bodyTilt(),{0,0},true)
 --  print("QLArmTarget:", util.print_jangle(qLArmTarget))
 --  print("QRArmTarget:", util.print_jangle(qRArmTarget))  
+
+
   t_last_debug=t_entry
   last_error = 999
   stage = 1
+  t_stage_start = t_entry
+  t_stage = 1
 end
 
 
@@ -99,23 +103,26 @@ function state.update()
   local ret
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
     
-  if stage==1 then --Straighten wrist roll        
+  if stage==1 then --Straighten wrist roll and second wrist yaw       
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
-
-  elseif stage==2 then
-    qLArmTargetC[6],qRArmTargetC[6] = 0,0
-    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
-  elseif stage==3 then --straighten shoulder yaw, widen shoulder
+    t_stage = 1.0
+
+  elseif stage==2 then  --Straighten first wrist yaw, straighten shouldr yaw, widen shoulder
     qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
+    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
+    qLArmTargetC[6],qRArmTargetC[6] = 0,0
+    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
+    t_stage = 1.0
 
+  elseif stage==3 then --straighten shoulder yaw, widen shoulder
+    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+    t_stage = 2.0
 
   elseif stage==4 then
-    --Now go to the initial arm position
-    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
-  elseif stage==5 then
     return "done"
+  elseif stage==5 then
 
   elseif stage==7 then
     --Straighten wrist yaws first (without touching roll)
@@ -155,6 +162,15 @@ function state.update()
     err=err+math.abs(qLArmActual[i]-qLArmCommand[i])
     err=err+math.abs(qRArmActual[i]-qRArmCommand[i])
   end
+
+  if Config.arm_init_timeout and t-t_stage_start>t_stage then
+    t_stage_start = t
+    stage=stage+1
+    last_error=err
+    return
+  end
+
+
 
   if t>t_last_debug+0.2 then
     t_last_debug=t

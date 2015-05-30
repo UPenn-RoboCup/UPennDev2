@@ -505,8 +505,8 @@ function libArmPlan.jacobian_preplan(self, plan)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
 		if qArmFGuess then
-			--local dqdtNull = nullspace * torch.Tensor(qDiff2(qArm, qArmFGuess, qMin, qMax))
-			local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+			local dqdtNull = nullspace * torch.Tensor(qDiff2(qArm, qArmFGuess, qMin, qMax))
+			--local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
 			dqdtCombo = dqdtArm - dqdtNull
 		else
 			dqdtCombo = dqdtArm

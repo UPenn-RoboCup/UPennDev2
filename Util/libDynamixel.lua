@@ -240,14 +240,19 @@ libDynamixel.registers_sensor = {
 
 function lD.parse(reg, status)
 	if type(reg)~='string' or type(status)~='table' then return end
+	status = status[1] and status[1] or status
 	local reglocation = nx_registers[reg]
 	if type(reglocation)~='table' then return end
+	if type(status.parameter)~=table then return end
 	return byte_to_number[reglocation[2]](unpack(status.parameter))
 end
+lD.parse_nx = lD.parse
 function lD.parse_mx(reg, status)
 	if type(reg)~='string' or type(status)~='table' then return end
+	status = status[1] and status[1] or status
 	local reglocation = mx_registers[reg]
 	if type(reglocation)~='table' then return end
+	if type(status.parameter)~=table then return end
 	return byte_to_number[reglocation[2]](unpack(status.parameter))
 end
 
@@ -807,6 +812,7 @@ local function debug_mx(self, id)
 	local parse_firmware = byte_to_number[mx_registers.firmware[2]]
 	local parse_delay = byte_to_number[mx_registers.return_delay_time[2]]
 	local parse_mode = byte_to_number[mx_registers.mode[2]]
+	local parse_status_return_level = byte_to_number[mx_registers.status_return_level[2]]
 	-- Check the firmware
 	local status = lD.get_mx_firmware(id, self)
 	if type(status)=='table' and type(status[1])=='table' then
@@ -826,12 +832,21 @@ local function debug_mx(self, id)
 		local delay = parse_delay(unpack(status.parameter))
 		print('\tReturn Delay: '..delay)
 	end
+	status = lD.get_mx_status_return_level(id, self)
+	if type(status)=='table' and status[1] then
+		status = status[1]
+		local level = parse_status_return_level(unpack(status.parameter))
+		print('\tStatus Return Level: '..level)
+	end
+
+
 end
 
 local function debug_nx(self, id)
 	local parse_firmware = byte_to_number[nx_registers.firmware[2]]
 	local parse_delay = byte_to_number[nx_registers.return_delay_time[2]]
 	local parse_mode = byte_to_number[nx_registers.mode[2]]
+	local parse_status_return_level = byte_to_number[nx_registers.status_return_level[2]]
 	-- Check the firmware
 	local status = lD.get_nx_firmware(id, self)
 	if type(status)=='table' then
@@ -849,6 +864,12 @@ local function debug_nx(self, id)
 		status = status[1]
 		local delay = parse_delay(unpack(status.parameter))
 		print('\tReturn Delay: '..delay)
+	end
+	status = lD.get_nx_status_return_level(id, self)
+	if type(status)=='table' and status[1] then
+		status = status[1]
+		local level = parse_status_return_level(unpack(status.parameter))
+		print('\tStatus Return Level: '..level)
 	end
 end
 
@@ -893,6 +914,7 @@ local function ping_verify(self, m_ids, protocol, twait)
 	local mx_ids, has_mx_id = {}, {}
 	local nx_ids, has_nx_id = {}, {}
 	local nx_cmd_ids, mx_cmd_ids = {}, {}
+	local has_nx_cmd_id, has_mx_cmd_id = {}, {}
 	protocol = protocol or 2
 	twait = twait or READ_TIMEOUT
 	for i, id in ipairs(m_ids) do
@@ -904,18 +926,25 @@ local function ping_verify(self, m_ids, protocol, twait)
 				table.insert(nx_ids, id)
 				has_nx_id[id] = true
 				--debug_nx(self, id)
+				table.insert(nx_cmd_ids, id)
+				has_nx_cmd_id[id] = true
 			else
 				table.insert(mx_ids, id)
 				has_mx_id[id] = true
 				--debug_mx(self, id)
+				table.insert(mx_cmd_ids, id)
+				has_mx_cmd_id[id] = true
 			end
 		else
 			print('NOT FOUND:', id, ok)
 			if id<32 then
 				--nx
 				table.insert(nx_cmd_ids, id)
+				has_nx_cmd_id[id] = true
 			else
+				-- mx
 				table.insert(mx_cmd_ids, id)
+				has_mx_cmd_id[id] = true
 			end
 			allgood = false
 		end
@@ -925,12 +954,16 @@ local function ping_verify(self, m_ids, protocol, twait)
 	self.m_ids = found_ids
 	self.mx_ids = mx_ids
 	self.nx_ids = nx_ids
-	self.mx_cmd_ids = mx_ids
-	self.nx_cmd_ids = nx_ids
 	self.has_mx_id = has_mx_id
 	self.has_nx_id = has_nx_id
 	self.has_mx = #mx_ids > 0
 	self.has_nx = #nx_ids > 0
+	--
+	self.mx_cmd_ids = mx_ids
+	self.nx_cmd_ids = nx_ids
+	self.has_mx_cmd_id = has_mx_cmd_id
+	self.has_nx_cmd_id = has_nx_cmd_id
+
 	if allgood then print('VERIFID') end
 	return allgood
 end

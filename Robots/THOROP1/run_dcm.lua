@@ -20,8 +20,8 @@ local sformat = string.format
 -- Timeouts
 local WRITE_TIMEOUT = 1 / 250
 local READ_TIMEOUT = 1 / 250
-local WRITE_TIMEOUT = 1 / 500
-local READ_TIMEOUT = 1 / 500
+--local WRITE_TIMEOUT = 1 / 500
+--local READ_TIMEOUT = 1 / 500
 if OPERATING_SYSTEM=='darwin' then
 	WRITE_TIMEOUT = 1 / 60
 	READ_TIMEOUT = 1 / 60
@@ -103,20 +103,20 @@ local sel, uread, get_time, usleep = unix.select, unix.read, unix.time, unix.usl
 -- Packet Processing Helpers
 -- TODO: Should not be zero returns!!
 local function radian_clamp(idx, radian)
-	if type(idx)~='number' or type(radian)~='number' then return 0 end
+	if type(idx)~='number' or type(radian)~='number' then return end
 	if is_unclamped[idx] then return radian end
 	return min(max(radian, min_rad[idx]), max_rad[idx])
 end
 local function radian_to_step(idx, radian)
-	if type(idx)~='number' or type(radian)~='number' then return 0 end
+	if type(idx)~='number' or type(radian)~='number' then return end
 	return floor(direction[idx] * radian_clamp(idx, radian) * to_steps[idx] + step_zero[idx] + step_offset[idx])
 end
 local function step_to_radian(idx, step)
-	if type(idx)~='number' or type(step)~='number' then return 0 end
+	if type(idx)~='number' or type(step)~='number' then return end
 	return direction[idx] * to_radians[idx] * (step - step_zero[idx] - step_offset[idx])
 end
 local function torque_to_cmd(idx, tq)
-	if type(idx)~='number' or type(tq)~='number' then return 0 end
+	if type(idx)~='number' or type(tq)~='number' then return end
 	local cmd = min(max(direction[idx] * tq, -1023), 1023)
 	return cmd < 0 and (1024 - cmd) or cmd
 end
@@ -281,6 +281,13 @@ local function parse_read_leg(pkt, bus)
 		p_ptr_t[read_j_id - 1] = t_read
 	end
 	-- Set Current in SHM
+	--[[
+	local read_cur = c_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
+	if type(read_cur)=='number' then
+		c_ptr[read_j_id - 1] = read_cur
+		c_ptr_t[read_j_id - 1] = t_read
+	end
+	--]]
 	local read_temp = temp_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
 	if type(read_temp)=='number' then
 		temp_ptr[read_j_id - 1] = read_temp
@@ -288,7 +295,6 @@ local function parse_read_leg(pkt, bus)
 	end
 	-- Update the F/T Sensor
 	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
-
 	--	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
 
@@ -323,13 +329,13 @@ local function form_arm_read_cmd(bus)
 	for _, m_id in ipairs(bus.m_ids) do
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
-			----[[
 			-- Position through temperature (NOTE: No current)
+			----[[
 			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
 			table.insert(used_ids, m_id)
 			has_mx = true
 			--]]
-		else
+		elseif is_nx then
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
 			'Bad Indirect addresses for the arm chain ID '..m_id
@@ -344,7 +350,7 @@ local function form_arm_read_cmd(bus)
 		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
 		bus.read_loop_cmd_str = lD.get_indirect_data(used_ids, arm_packet_reg)
-	else
+	elseif has_mx then
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
 		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
@@ -357,36 +363,49 @@ local function parse_read_arm(pkt, bus)
 	--if pkt.error ~= 0 then return end
 	-- Assume just reading position, for now
 	local m_id = pkt.id
+	if type(m_id)~='number' then return end
 	local read_j_id = m_to_j[m_id]
+	if type(read_j_id)~='number' then return end
 	if bus.has_mx_id[m_id] then
 		-- Check if MX
-		if #pkt.parameter==8 then
+		if type(pkt)=='table' and #pkt.parameter==8 then
 			-- Set Position in SHM
 			local read_val = p_parse_mx(unpack(pkt.parameter, 1, arm_packet_offsets_mx[1]))
-			if type(read_val)~='number' then return read_j_id end
 			local read_rad = step_to_radian(read_j_id, read_val)
-			--print(m_id, 'Read val', read_val, unpack(pkt.parameter))
-			p_ptr[read_j_id - 1] = read_rad
-			p_ptr_t[read_j_id - 1] = t_read
+			if type(read_rad)=='number' then
+				p_ptr[read_j_id - 1] = read_rad
+				p_ptr_t[read_j_id - 1] = t_read
+			end
 			-- Set temperature (Celsius)
-			dcm.sensorPtr.temperature[read_j_id - 1] = pkt.parameter[8]
-			dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
+			if type(pkt.parameter[8])=='number' then
+				dcm.sensorPtr.temperature[read_j_id - 1] = pkt.parameter[8]
+				dcm.tsensorPtr.temperature[read_j_id - 1] = t_read
+			end
 		end
 		return read_j_id
 	end
 
+	if not bus.has_nx_id[m_id] then return end
+
 	if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
-	if type(read_val)~='number' then return read_j_id end
 	local read_rad = step_to_radian(read_j_id, read_val)
-	p_ptr[read_j_id - 1] = read_rad
-	p_ptr_t[read_j_id - 1] = t_read
+	if type(read_rad)=='number' then
+		p_ptr[read_j_id - 1] = read_rad
+		p_ptr_t[read_j_id - 1] = t_read
+	end
 	-- Set Current in SHM
 	local read_temp = temp_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
 	temp_ptr[read_j_id - 1] = read_temp
 	temp_ptr_t[read_j_id - 1] = t_read
-	-- Update the F/T Sensor
+	--[[
+	local read_cur = c_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
+	c_ptr[read_j_id - 1] = read_cur
+	c_ptr_t[read_j_id - 1] = t_read
+	--]]
+
+	-- Update the arm F/T Sensor
 	--	local raw_str = pkt.raw_parameter:sub(arm_packet_offsets[2]+1, arm_packet_offsets[3])
 	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
@@ -407,13 +426,12 @@ local function form_arm_read_cmd2(bus)
 		local is_mx, is_nx = bus.has_mx_id[m_id], bus.has_nx_id[m_id]
 		if is_mx then
 			-- Position through temperature (NOTE: No current)
-			-- Position through temperature (NOTE: No current)
 			table.insert(rd_addrs, {lD.mx_registers.position[1], arm_packet_sz_mx})
 			--table.insert(rd_addrs, lD.mx_registers.current)
 			table.insert(used_ids, m_id)
 			has_mx = true
 			----[[
-		else
+		elseif is_nx then
 			assert(
 			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
 			'Bad Indirect addresses for the arm chain ID '..m_id
@@ -429,12 +447,12 @@ local function form_arm_read_cmd2(bus)
 		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
 		bus.read_loop_cmd_alt_str = lD.get_indirect_data(used_ids, arm_packet_reg)
-	else
+	elseif has_mx then
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
 		bus.read_loop_cmd_alt_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	end
-	bus.read_loop_cmd_alt_n = #rd_addrs
+	bus.read_loop_cmd_alt_n = #used_ids
 	bus.read_loop_cmd_alt = 'arm2'
 	bus.use_alt = true
 end
@@ -469,6 +487,8 @@ local function parse_read_arm2(pkt, bus)
 		end
 		return read_j_id
 	end
+
+	if not bus.has_nx_id[m_id] then return end
 
 	if #pkt.parameter ~= arm_packet_sz then return read_j_id end
 	-- Set Position in SHM
@@ -620,40 +640,40 @@ local function do_external(request, bus)
 			-- Need this to work well
 			local status, is_mx, tq_val, j_id, pos
 			for i, m_id in ipairs(m_ids) do
-				is_mx = bus.has_mx_id[m_id]
+				is_mx = bus.has_mx_cmd_id[m_id]
 				j_id = m_to_j[m_id]
 				tq_val = m_vals[i]
 				if is_mx then
 					status = lD.set_mx_torque_enable(m_id, tq_val, bus)[1]
-					status = lD.get_mx_torque_enable(m_id, bus)[1]
+					--status = lD.get_mx_torque_enable(m_id, bus)[1]
 				else
 					status = lD.set_nx_torque_enable(m_id, tq_val, bus)[1]
-					status = lD.get_nx_torque_enable(m_id, bus)[1]
+					--status = lD.get_nx_torque_enable(m_id, bus)[1]
 				end
 				--if status and status.error==0 then
-				if status then
-					--ptable(status)
-					print(unpack(status.parameter))
-					-- Set the CP and the P
-					if tq_val==1 then
-						if is_mx then
-							status = lD.get_mx_position(m_id, bus)[1]
-						else
-							status = lD.get_nx_position(m_id, bus)[1]
-						end
-						j_id, pos = parse_read_position(status, bus)
-						if not j_id then
-							print(get_time(), "BAD TORQUE ENABLE POS READ", m_id, status and status.error)
-						else
-							cp_ptr[j_id - 1] = p_ptr[j_id - 1]
-						end
-					end
-				else
+				--[[
+				if type(status)~='table' then
 					print(get_time(), "BAD TORQUE ENABLE", m_id, tq_val, status and status.error)
+					return
 				end
+				--]]
+				if tq_val==0 then return end
+				--ptable(status)
+				--print(unpack(status.parameter))
+				-- Set the CP and the P
+				if is_mx then
+					status = lD.get_mx_position(m_id, bus)[1]
+				else
+					status = lD.get_nx_position(m_id, bus)[1]
+				end
+				j_id, pos = parse_read_position(status, bus)
+				if not j_id then
+					print("BAD TORQUE ENABLE POS READ", m_id, status and status.error)
+					return
+				end
+				cp_ptr[j_id - 1] = p_ptr[j_id - 1]
 			end
-			-- Done the cycle if setting torque
-			return
+
 		elseif wr_reg=='torque_mode' then
 			local status, j_id, val
 			for i, m_id in ipairs(m_ids) do
@@ -728,20 +748,41 @@ local function form_write_command(bus, m_ids)
 	local mx_send_ids, mx_commands, mx_cmd_addrs = {}, {}, {}
 	local has_mx, has_nx = false, false
 	for i, m_id in ipairs(m_ids) do
-		is_mx = bus.has_mx_id[m_id]
+		is_mx = bus.has_mx_cmd_id[m_id]
 		j_id = m_to_j[m_id]
 		-- Only add position commands if torque enabled
 		-- TODO: Gripper should get a command_torque!
 		if tq_en_ptr[j_id-1]==1 then
 			if is_gripper[j_id] and gripper_mode[j_id]==1 then
-				has_mx = true
-				table.insert(send_ids, m_id)
-				table.insert(commands, torque_to_cmd(j_id, tq_ptr[j_id-1]))
-				table.insert(cmd_addrs, lD.mx_registers.command_torque)
+
+				local step = torque_to_cmd(j_id, tq_ptr[j_id-1])
+				if type(step)=='number' then
+					----[[
+					has_mx = true
+					table.insert(send_ids, m_id)
+					table.insert(commands, step)
+					table.insert(cmd_addrs, lD.mx_registers.command_torque)
+					--]]
+					--[[
+					table.insert(mx_send_ids, m_id)
+					table.insert(mx_commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+					--]]
+				end
+
 			elseif is_mx then
-				--has_mx = true
-				table.insert(mx_send_ids, m_id)
-				table.insert(mx_commands, radian_to_step(j_id, cp_ptr[j_id-1]))
+
+				local step = radian_to_step(j_id, cp_ptr[j_id-1])
+				if type(step)=='number' then
+					has_mx = true
+					table.insert(send_ids, m_id)
+					table.insert(commands, step)
+					table.insert(cmd_addrs, lD.mx_registers.command_position)
+					--[[
+					table.insert(mx_send_ids, m_id)
+					table.insert(mx_commands, step)
+					--]]
+				end
+
 			else
 				has_nx = true
 				table.insert(send_ids, m_id)
@@ -754,9 +795,11 @@ local function form_write_command(bus, m_ids)
 	local just_mx = #mx_send_ids>0
 	if #mx_send_ids==1 then
 		lD.set_mx_command_position(mx_send_ids[1], mx_commands[1], bus)
-	elseif #mx_send_ids>1 then lD.set_mx_command_position(mx_send_ids, mx_commands, bus) end
+	elseif #mx_send_ids>1 then
+		lD.set_mx_command_position(mx_send_ids, mx_commands, bus)
+	end
 	-- MX-only sync does not work for some reason
-	if not has_mx then cmd_addrs = nil end
+	if not has_mx then cmd_addrs = false end
 	return send_ids, commands, cmd_addrs, just_mx
 end
 
@@ -773,7 +816,7 @@ local function output_co(bus)
 	coroutine.yield()
 	local cnt = 0
 	while true do
-		cnt = cnt +1
+		cnt = cnt + 1
 		-- Send the position commands
 		local send_ids, commands, cmd_addrs, just_mx = form_write_command(bus)
 		-- Perform the sync write
@@ -800,8 +843,8 @@ local function output_co(bus)
 		-- Copy the command positions if reading is not enabled,
 		-- otherwise, send a read instruction
 		if bus.enable_read then
+			if bus.use_alt~=nil then bus.use_alt = not bus.use_alt end
 			if bus.use_alt then
-				--bus.use_alt = false
 				bus:send_instruction(bus.read_loop_cmd_alt_str)
 				bus.read_timeout_t = get_time() + READ_TIMEOUT * bus.read_loop_cmd_alt_n
 				bus.reads_cnt = bus.reads_cnt + bus.read_loop_cmd_alt_n
@@ -877,7 +920,8 @@ local function initialize(bus)
 	-- Populate the IDs of the bus
 	if bus.m_ids then
 		if not bus:ping_verify(bus.m_ids) then
-			print('Command only motors:', bus.mx_cmd_ids, bus.nx_cmd_ids)
+			print('Command only nx motors:', unpack(bus.nx_cmd_ids))
+			print('Command only mx motors:', unpack(bus.mx_cmd_ids))
 		end
 	else
 		bus:ping_probe()
@@ -895,8 +939,8 @@ local function initialize(bus)
 			else
 				status = lD.get_nx_position(m_id, bus)[1]
 			end
-			--if status and status.error==0 then break end
 			if status then break end
+			unix.usleep(1e5)
 			n = n + 1
 		until n > 5
 		assert(n<=5, 'Too many attempts at reading position '..m_id)
@@ -913,8 +957,8 @@ local function initialize(bus)
 			else
 				status = lD.get_nx_torque_enable(m_id, bus)[1]
 			end
-			--if status and status.error==0 then break end
 			if status then break end
+			unix.usleep(1e5)
 			n = n + 1
 		until n > 5
 		assert(n<=5, 'Too many attempts at reading torque enable '..m_id)
@@ -943,8 +987,9 @@ local function initialize(bus)
 				--if status then break end
 				if gripper_mode[j_id]==1 then break end
 				n = n + 1
+				unix.usleep(1e5)
 			until n > 5
-			assert(gripper_mode[j_id] == 1, 'Too many attempts at setting torque mode')
+			assert(gripper_mode[j_id] == 1, 'Too many attempts at setting torque mode '..m_id)
 			-- Set to zero torque in our process
 			tq_ptr[j_id-1] = 0
 		end
@@ -965,17 +1010,18 @@ for chain_id, chain in ipairs(dcm_chains) do
 	numbered_buses[bus.fd] = bus
 	initialize(bus)
 	-- Make the output coroutine
-	bus.output_co = coroutine.wrap(output_co)
-	bus.output_co(bus)
+	bus.output_co = coroutine.create(output_co)
+	coroutine.resume(bus.output_co, bus)
 	-- Make the input coroutine
-	bus.input_co = coroutine.wrap(input_co)
-	bus.input_co(bus)
+	bus.input_co = coroutine.create(input_co)
+	coroutine.resume(bus.input_co, bus)
 end
 
 -- Begin the loop
 
 local t0 = get_time()
 -- Begin the master loop
+local co_status
 while is_running do
 	t_start = get_time()
 	-- Check for commands for the DCM from external sources
@@ -988,13 +1034,13 @@ while is_running do
 			bus.n_read_timeouts = bus.n_read_timeouts + bus.npkt_to_expect
 			bus.read_reg = nil
 			bus.npkt_to_expect = 0
-			bus.input_co(false)
+			co_status = coroutine.resume(bus.input_co, false)
 		end
 		-- Check if we are not expecting any packets
 		-- We now output to the bus
 		-- We may output a read request
 		if bus.npkt_to_expect < 1 then
-			bus.npkt_to_expect, bus.read_reg = bus.output_co()
+			co_status, bus.npkt_to_expect, bus.read_reg = coroutine.resume(bus.output_co)
 		end
 	end
 	-- Load data from the bus into the input coroutine
@@ -1012,7 +1058,7 @@ while is_running do
 			if is_ready then
 				bus = numbered_buses[bnum]
 				-- Place the data into packet structs
-				pkts, rxi = bus.input_co(uread(bus.fd))
+				co_status, pkts, rxi = coroutine.resume(bus.input_co, uread(bus.fd))
 				-- Parse the packets into shared memory
 				bus.npkt_to_expect = bus.npkt_to_expect - #pkts
 				for _, pkt in ipairs(pkts) do
@@ -1069,12 +1115,18 @@ while is_running do
 			local rel_zmp_left = {-lfoot[5]/lfoot[3], lfoot[4]/lfoot[3], 0}
 			table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)',
 			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
+			dcm.set_sensor_lzmp({rel_zmp_left[1],rel_zmp_left[2]})
+		else
+			dcm.set_sensor_lzmp({0,0})
 		end
 
 		if rfoot[3]>20 then
 			local rel_zmp_right = {-rfoot[5]/rfoot[3], rfoot[4]/rfoot[3], 0}
 			table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)',
 			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
+			dcm.set_sensor_rzmp({rel_zmp_right[1],rel_zmp_right[2]})
+		else
+			dcm.set_sensor_rzmp({0,0})
 		end
 
 		debug_str = table.concat(debug_str, '\n')

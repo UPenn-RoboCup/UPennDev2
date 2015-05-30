@@ -94,18 +94,18 @@ repeat
 	-- If time for debug
 	local dt_debug = t_start - t_debug
 	if dt_debug>debug_interval and not IS_WEBOTS then
-		local times_str = {}
+		local times_str = ""
 		local total = 0
 		for name,time in pairs(state_times) do
 			--print(time, count)
-			table.insert(times_str, string.format('%s: %g ms average', name, 1e3*time/count))
+			times_str=times_str..string.format('%s:%dus ', name, 1e6*time/count)
 			total = total + time
 			state_times[name] = 0
 		end
 
 		local kb = collectgarbage('count')
 		print(string.format('\nState | Uptime: %.2f sec, Mem: %d kB, %.2f Hz %g ms cycle\n%s',
-				t_start-t0, kb, count/dt_debug, 1e3*total/count, table.concat(times_str, '\n')))
+				t_start-t0, kb, count/dt_debug, 1e3*total/count,times_str))
 		count = 0
 		t_debug = t_start
 		--collectgarbage('step')

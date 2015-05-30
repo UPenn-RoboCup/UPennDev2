@@ -240,14 +240,18 @@ libDynamixel.registers_sensor = {
 
 function lD.parse(reg, status)
 	if type(reg)~='string' or type(status)~='table' then return end
+	status = status[1] and status[1] or status
 	local reglocation = nx_registers[reg]
 	if type(reglocation)~='table' then return end
+	if type(status.parameter)~=table then return end
 	return byte_to_number[reglocation[2]](unpack(status.parameter))
 end
 function lD.parse_mx(reg, status)
 	if type(reg)~='string' or type(status)~='table' then return end
+	status = status[1] and status[1] or status
 	local reglocation = mx_registers[reg]
 	if type(reglocation)~='table' then return end
+	if type(status.parameter)~=table then return end
 	return byte_to_number[reglocation[2]](unpack(status.parameter))
 end
 

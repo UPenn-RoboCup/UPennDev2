@@ -96,15 +96,13 @@ for i, ids in ipairs(chain_ids) do
 	else
 		print('Skipping indirect - please take off any MX motors before doing indrect!!')
 	end
-	-- Set the modes
 
+	-- Set the modes
 	for _, id in ipairs(ids) do
 		local jid = m_to_j[id]
-		if is_gripper[jid] then
-			local status = lD.get_mx_mode(id, self)
-			local mode = type(status)=='table' and lD.parse_mx('mode', status[1])
+		if is_gripper[jid] and chain.has_mx_cmd_id[id] then
 			local status = lD.get_mx_alarm_shutdown(id, self)
-			local alarm = type(status)=='table' and lD.parse_mx('alarm_shutdown', status[1])
+			local alarm = (type(status)=='table') and lD.parse_mx('alarm_shutdown', status)
 			print('MX Alarm', id, jid, ':', alarm)
 			-- Zero alarams :P
 			if type(alarm)~='number' then
@@ -113,10 +111,11 @@ for i, ids in ipairs(chain_ids) do
 				print('Updating', 'alarm', 'for', id, 'to', 4)
 				lD.set_mx_alarm_shutdown(id, 0, chain)
 			end
-		elseif id==37 then
+		elseif id==37 and chain.has_mx_cmd_id[id] then
+			-- lidar
 			local status = lD.get_mx_mode(id, self)
 			local mode = type(status)=='table' and lD.parse_mx('mode', status[1])
-		elseif min_rad[jid]==-180*DEG_TO_RAD and max_rad[jid]==180*DEG_TO_RAD then
+		elseif chain.has_nx_cmd_id[id] and min_rad[jid]==-180*DEG_TO_RAD and max_rad[jid]==180*DEG_TO_RAD then
 			local status = lD.get_nx_mode(id, self)
 			local mode = type(status)=='table' and lD.parse('mode', status[1])
 			-- 4
@@ -137,7 +136,7 @@ for i, ids in ipairs(chain_ids) do
 				print('Updating', 'alarm', 'for', id, 'to', 4)
 				lD.set_nx_alarm_shutdown(id, 0, chain)
 			end
-		else
+		elseif chain.has_nx_cmd_id[id] then
 			-- 3
 			local status = lD.get_nx_mode(id, self)
 			local mode = type(status)=='table' and lD.parse('mode', status[1])
@@ -148,5 +147,8 @@ for i, ids in ipairs(chain_ids) do
 				lD.set_nx_mode(id, 3, chain)
 			end
 		end
+		-- end of mode loop
 	end
+
+	-- end of chain loop
 end

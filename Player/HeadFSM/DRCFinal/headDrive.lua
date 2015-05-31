@@ -15,6 +15,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
+  Body.set_head_torque_enable(1)
+
 end
 
 function state.update()
@@ -26,17 +28,16 @@ function state.update()
   t_update = t
 
 --	local centerAngles = {0, 0*DEG_TO_RAD-Body.get_rpy()[2]}
-	local centerAngles = {0, 0}
-	local headNow = Body.get_head_command_position()
-  local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt, 1*DEG_TO_RAD)
-	Body.set_head_command_position(apprAng)
+  local centerAngles = {0, 0}
+  local centerAngles = {math.pi, 0}
 
-  return doneHead and 'done'
+  local headNow = Body.get_head_command_position()
+  local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt, 1*DEG_TO_RAD)
+  Body.set_head_command_position(apprAng)
 end
 
 function state.exit()
   --hack for stair climbing
-  if Config.stair_test then Body.set_head_torque_enable(0) end
   print(state._NAME..' Exit' )
 end
 

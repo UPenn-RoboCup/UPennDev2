@@ -13,13 +13,12 @@ function state.entry()
   t_update = t_entry
 
   --untorque arm and leg servos for car ingressing
-	arm_ch:send'driveready'
+  arm_ch:send'driveready'
   motion_ch:send'driveready'
-
 
 --	gripper_ch:send'close' -- do we need anything for gripper?
   lidar_ch:send'drive' --center lidar
-	head_ch:send'drive'  --flip head
+  head_ch:send'drive'  --flip head
 end
 
 function state.update()

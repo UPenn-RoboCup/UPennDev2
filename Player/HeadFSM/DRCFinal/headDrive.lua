@@ -5,7 +5,9 @@ local t_entry, t_update
 local state = {}
 state._NAME = ...
 
-local headSpeed = {30 * DEG_TO_RAD, 30 * DEG_TO_RAD}
+--faster
+local headSpeed = {45 * DEG_TO_RAD, 30 * DEG_TO_RAD}
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -29,7 +31,8 @@ function state.update()
 
 --	local centerAngles = {0, 0*DEG_TO_RAD-Body.get_rpy()[2]}
   local centerAngles = {0, 0}
-  local centerAngles = {math.pi, 0}
+  local lookAngles = hcm.get_teleop_drive_head()
+  local centerAngles = {math.pi + lookAngles[1] * 90*DEG_TO_RAD, lookAngles[2]*45*DEG_TO_RAD}
 
   local headNow = Body.get_head_command_position()
   local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt, 1*DEG_TO_RAD)

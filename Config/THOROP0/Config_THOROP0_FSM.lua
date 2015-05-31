@@ -60,7 +60,7 @@ fsm.Body = {
 
 --Driving stuff
   {'bodyStop', 'driveready', 'bodyDriveready'},   --untorques leg and arm, rotate the head back, centers lidar
-	{'bodyDriveready', 'drive', 'bodyDrive'}, -- torques all servos and enable foot and arm control
+  {'bodyDriveready', 'drive', 'bodyDrive'}, -- torques all servos and enable foot and arm control
 
   {'bodyDrive', 'undrive', 'bodyUndrive'}, -- untorques arm and leg for egress
   {'bodyUndrive', 'reinit', 'bodyInit'}, --re-inits leg
@@ -115,7 +115,16 @@ fsm.Head = {
 	{'headMesh', 'teleopik', 'headTeleopIK'},
 
 --Driving stuff
+
+
+
+
 	{'headCenter', 'drive', 'headDrive'}, --go to 180 deg rotated position
+	{'headTeleop', 'drive', 'headDrive'},
+	{'headTrackLeft', 'drive', 'headDrive'},
+	{'headTrackRight', 'drive', 'headDrive'},
+
+
 	{'headDrive', 'undrive', 'headUndrive'}, --unscrew the head safelty
 	{'headUndrive', 'done', 'headCenter'}, 
 }
@@ -231,6 +240,14 @@ fsm.Arm = {
 	{'armJacobian', 'ready', 'armReady'},
 	{'armJacobian', 'pulldoor', 'armPullDoor'},
 	--]]
+
+
+
+	{'armWalk', 'driveready', 'armDriveready'},
+	{'armDriveready', 'drive', 'armDrive'},
+	{'armDrive', 'undrive', 'armUndrive'},
+	{'armUndrive', 'reinit', 'armInitWalk'},
+
 }
 
 
@@ -293,7 +310,7 @@ fsm.Lidar = {
 	{'lidarPan', 'stop', 'lidarIdle'},
 
 	--while driving chest lidar should be keep centered
-	{'lidarPan', 'center', 'lidarDrive'},
+	{'lidarPan', 'drive', 'lidarDrive'},
 	{'lidarDrive', 'pan', 'lidarPan'},
 }
 
@@ -319,7 +336,6 @@ fsm.Motion = {
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
-	--{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
 	--
 	{'motionStepPreview', 'done', 'motionStance'},
 	--
@@ -336,12 +352,7 @@ fsm.Motion = {
 	{'motionDriveready', 'drive', 'motionDrive'}, --torque the body, enable foot control
 	
 	{'motionDrive', 'undrive', 'motionUndrive'}, --untorque lower body again
-	{'motionUndrive', 'reinit', 'motionInit'}, --torque all the legs and make the robot stand up
-	
-	
-
-
-
+	{'motionUndrive', 'stand', 'motionInit'}, --torque all the legs and make the robot stand up
 
 
 }

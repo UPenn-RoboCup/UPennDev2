@@ -20,11 +20,29 @@ function state.entry()
 
   -- Torque OFF the motors
   Body.set_waist_torque_enable(1)
-  Body.set_lleg_torque_enable({1})
-  Body.set_rleg_torque_enable({1})
+  Body.set_lleg_torque_enable(1)
+  Body.set_rleg_torque_enable(1)
+
+
+  if not IS_WEBOTS then
+    for i=1,10 do
+      Body.set_lleg_command_velocity({500,500,500,500,500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_rleg_command_velocity({500,500,500,500,500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_rleg_command_acceleration({50,50,50,50,50,50})
+      unix.usleep(1e6*0.01);
+      Body.set_lleg_command_acceleration({50,50,50,50,50,50})
+      unix.usleep(1e6*0.01);
+    end
+  end
 
   qLLeg0 = Body.get_lleg_command_position()
   qRLeg0 = Body.get_rleg_command_position()
+
+
+
+
 end
 
 ---
@@ -54,6 +72,9 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' ) 
+  Body.set_lleg_torque_enable(1)
+  Body.set_rleg_torque_enable(1)
+
 end
 
 return state

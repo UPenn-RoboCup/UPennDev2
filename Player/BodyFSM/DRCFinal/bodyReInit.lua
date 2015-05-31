@@ -13,13 +13,11 @@ function state.entry()
   t_update = t_entry
 
   --Torque on and re-init arms
-	arm_ch:send'init'
-  motion_ch:send'reinit'
-
+  arm_ch:send'init'
+  motion_ch:send'stand'
 
   --rotate head, start lidar panning[]
-	head_ch:send'undrive'
-	lidar_ch:send'pan'
+  lidar_ch:send'pan'
 
   -- TODO: This should be somewhere else...
   hcm.set_step_dir(0)

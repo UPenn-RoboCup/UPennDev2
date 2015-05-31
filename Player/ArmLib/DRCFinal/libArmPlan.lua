@@ -40,18 +40,47 @@ local function qDiff2(iq, q0, qMin, qMax)
 	return qD
 end
 
-local function sanitize0(iqArm, cur_qArm)
-	local diff_use = {}
-	local mod_diff
+local function sanitize0(qPlanned, qNow)
+	local qDiff = qPlanned - qNow
+	local qDiffEffective = mod_angle(qDiff)
+	if fabs(qDiffEffective) < fabs(qDiff) then
+		return qNow + qDiffEffective
+	else
+		return qNow + qDiff
+	end
+end
+
+local function sanitizeAll0(iqArm, cur_qArm)
+	local iqArm2 = {}
 	for i, v in ipairs(cur_qArm) do
-		diff_use[i] = iqArm[i] - v
-		mod_diff = mod_angle(diff_use[i])
-		if fabs(diff_use[i]) > fabs(mod_diff) then
-			iqArm[i] = v + mod_diff
-			diff_use[i] = mod_diff
+		iqArm2[i] = sanitize0
+	end
+	return iqArm2
+end
+
+-- Get the real planned q for infinite turn
+local function sanitize1(qPlanned, qNow)
+	local qNowEffective = mod_angle(qNow)
+	local qPlannedEffective = mod_angle(qPlanned)
+	local qDiff = qPlannedEffective - qNowEffective
+	local qDiffEffective = mod_angle(qDiff)
+	if fabs(qDiffEffective) < fabs(qDiff) then
+		return qNow + qDiffEffective
+	else
+		return qNow + qDiff
+	end
+end
+
+local function sanitizeAll1(iqArm, cur_qArm)
+	local iqArm2 = {}
+	for i, qNow in ipairs(cur_qArm) do
+		if i==5 or i==7 then
+			iqArm2[i] = sanitize1(iqArm[i], qNow)
+		else
+			iqArm2[i] = sanitize0(iqArm[i], qNow)
 		end
 	end
-	return diff_use
+	return iqArm2
 end
 
 -- Use the Jacobian
@@ -181,9 +210,10 @@ end
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 local defaultWeights = {0, 0, 0, 0, 2}
 --
-local function valid_cost(iq, minArm, maxArm)
+local function valid_cost(iq, qMin, qMax)
 	for i, q in ipairs(iq) do
-		if q<minArm[i] or q>maxArm[i] then return INFINITY end
+		if qMin[i]==-180*DEG_TO_RAD and qMax[i]==180*DEG_TO_RAD then --inf turn
+		elseif q<qMin[i] or q>qMax[i] then return INFINITY end
 	end
 	return 0
 end
@@ -196,8 +226,9 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	local iqArms = {}
 	for i, q in ipairs(self.shoulderAngles) do
 		local iq = self.inverse(tr, qArm, q, 0, qWaist)
-		local du = sanitize0(iq, qArm)
-		tinsert(iqArms, iq)
+		--local iq2 = sanitizeAll0(iq, qArm)
+		local iq2 = sanitizeAll1(iq, qArm)
+		tinsert(iqArms, iq2)
 	end
 	-- Form the FKs
 	local fks = {}
@@ -304,6 +335,9 @@ function libArmPlan.joint_preplan(self, plan)
 				string.format('%s Above qMax[%d] %g > %g', prefix, i, q, qMax[i]))
 			--]]
 			qArmF[i] = min(max(qMin[i], q), qMax[i])
+		else
+			-- nearest (sanitize)
+			qArmF[i] = sanitize1(qArmF[i], qArm0[i])
 		end
 	end
 	-- Set the timeout
@@ -486,8 +520,6 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local nStepsTimeout = math.ceil(timeout * hz)
 	-- Initial position
 	local qArm = vector.copy(qArm0)
-	-- Maybe sanitize the wrist... for the valve situation
-	--sanitize0(qArm, self.zeros)
 	-- Begin
 	local t0 = unix.time()
 	local path = {}

@@ -13,8 +13,9 @@ function state.entry()
   t_update = t_entry
 
   --untorque arm and leg servos for car egress
-	arm_ch:send'undrive'
+  arm_ch:send'undrive'
   motion_ch:send'undrive'
+  head_ch:send'undrive'
 end
 
 function state.update()

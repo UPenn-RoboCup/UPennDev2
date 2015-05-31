@@ -13,7 +13,7 @@ function state.entry()
   t_update = t_entry
 
   --untorque arm and leg servos for car ingressing
-	arm_ch:send'drive'
+  arm_ch:send'drive'
   motion_ch:send'drive'
 end
 

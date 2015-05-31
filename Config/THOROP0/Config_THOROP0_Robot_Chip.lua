@@ -145,13 +145,13 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-		1,3,5,7,9,11,13,
+	1,3,5,7,9,11,13,
 		-- waist
 	28,
 	--head
-		29, 30,
-		-- gripper
-		63, 65, 67
+	29, 30,
+	-- gripper
+	63, 65, 67
 	},
 	enable_read = true,
 }
@@ -161,11 +161,9 @@ local left_arm = {
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
 	2,4,6,8,10,12,14,
---	2,4,6,
 	-- lidar
 	37,
-	-- gripper
---	64, 66, 68
+	--no gripper
 	},
 	enable_read = true
 }

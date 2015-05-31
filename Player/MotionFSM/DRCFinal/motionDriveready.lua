@@ -33,6 +33,14 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
+
+
+  local qLLeg = Body.get_lleg_position()
+  local qRLeg = Body.get_rleg_position()
+
+  Body.set_lleg_command_position(qLLeg)
+  Body.set_rleg_command_position(qRLeg)
+
 end
 
 function state.exit()

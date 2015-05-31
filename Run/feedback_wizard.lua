@@ -138,11 +138,15 @@ local function update()
 
 	-- Default feedback
 	e.u = get_torso()
-	e.cp = Body.get_command_position(1, 29)
+	e.p = Body.get_command_position(1, 29)
 	e.s = pillars
 	--e.g = Body.get_rgrip_command_torque()
+
+	--[[
 	e.gp = Body.get_rgrip_position()
 	e.gt = Body.get_rgrip_temperature()
+	--]]
+
 	--[[
 	e.p = Body.get_position()
 	e.p = Body.get_position()

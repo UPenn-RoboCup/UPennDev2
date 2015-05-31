@@ -40,6 +40,7 @@ static int lua_estop_delete(lua_State *L) {
 
 static int lua_estop_init(lua_State *L) {
   estop_init("/dev/ttyACM1",115200);
+//  estop_init("/dev/ttyACM0",115200);
   return 1;
 }
 

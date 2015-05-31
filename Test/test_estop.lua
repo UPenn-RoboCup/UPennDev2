@@ -48,6 +48,18 @@ function update_display()
 end
 
 
+function process_estop_drivemode()
+
+
+
+end
+
+
+
+
+
+
+
 
 function update_estop()
 	ret = estop.update()

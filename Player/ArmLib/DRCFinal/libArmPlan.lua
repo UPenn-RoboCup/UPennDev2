@@ -136,10 +136,24 @@ local function get_distance(self, trGoal, qArm, qWaist)
 	-- Grab our relative transform from here to the goal
 	local fkArm = self.forward(qArm, qWaist)
 	local invArm = T.inv(fkArm)
-	local here = invArm * trGoal
+	--local here = invArm * trGoal --old ok one
+	--local invGoal = T.inv(trGoal)
+	local here = trGoal * invArm -- new good one
+	--local here = invGoal * fkArm -- ??
+	--local here = fkArm * invGoal -- opp
+	--[[
+	local dp2 = T.position(here2)
+	local drpy2 = T.to_rpy(here2)
+	local dp3 = T.position(here3)
+	local drpy3 = T.to_rpy(here3)
+	--]]
+
 	-- Determine the position and angular velocity target
 	local dp = T.position(here)
 	local drpy = T.to_rpy(here)
+
+	--print(vector.new(dp), vector.new(dp2), vector.new(dp3))
+
 	local components = {vnorm(dp), vnorm(drpy)}
 	return dp, drpy, components
 end
@@ -526,9 +540,18 @@ function libArmPlan.jacobian_preplan(self, plan)
 	repeat
 		-- Check if we are close enough
 		local dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
-		if dist_components[1] < 0.02 and dist_components[2] < 3*RAD_TO_DEG then
+
+		if #path<200 then
+			print(vector.new(dp))
+			print(vector.new(drpy))
+			print(unpack(dist_components))
+		end
+
+		if dist_components[1] < 0.02 and dist_components[2] < 3*DEG_TO_RAD then
+			print('close!', unpack(dist_components))
 			break
 		end
+
 		-- Form our desired velocity
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
@@ -557,11 +580,15 @@ function libArmPlan.jacobian_preplan(self, plan)
 			end
 		end
 		-- Apply the joint change (Creates a new table)
+		local qOld = qArm
 		qArm = qArm + dqCombo
+		--print('qArm', qOld)
 		-- Check joint limit compliance
 		for i, q in ipairs(qArm) do
 			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
 				qArm[i] = min(max(qMin[i], q), qMax[i])
+			else
+				qArm[i] = sanitize1(q, qOld[i])
 			end
 		end
 		-- Add to the path
@@ -642,7 +669,7 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 			self, trGoal,
 			{unpack(qWaistArm,2,#qWaistArm)}, {qWaistArm[1],0})
 		-- Check if we are close enough
-		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
+		if dist_components[1] < 0.01 and dist_components[2] < 2*DEG_TO_RAD then
 			break
 		end
 		-- Form our desired velocity

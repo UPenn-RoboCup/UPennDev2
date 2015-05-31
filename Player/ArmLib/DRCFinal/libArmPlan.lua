@@ -40,18 +40,47 @@ local function qDiff2(iq, q0, qMin, qMax)
 	return qD
 end
 
-local function sanitize0(iqArm, cur_qArm)
-	local diff_use = {}
-	local mod_diff
+local function sanitize0(qPlanned, qNow)
+	local qDiff = qPlanned - qNow
+	local qDiffEffective = mod_angle(qDiff)
+	if fabs(qDiffEffective) < fabs(qDiff) then
+		return qNow + qDiffEffective
+	else
+		return qNow + qDiff
+	end
+end
+
+local function sanitizeAll0(iqArm, cur_qArm)
+	local iqArm2 = {}
 	for i, v in ipairs(cur_qArm) do
-		diff_use[i] = iqArm[i] - v
-		mod_diff = mod_angle(diff_use[i])
-		if fabs(diff_use[i]) > fabs(mod_diff) then
-			iqArm[i] = v + mod_diff
-			diff_use[i] = mod_diff
+		iqArm2[i] = sanitize0
+	end
+	return iqArm2
+end
+
+-- Get the real planned q for infinite turn
+local function sanitize1(qPlanned, qNow)
+	local qNowEffective = mod_angle(qNow)
+	local qPlannedEffective = mod_angle(qPlanned)
+	local qDiff = qPlannedEffective - qNowEffective
+	local qDiffEffective = mod_angle(qDiff)
+	if fabs(qDiffEffective) < fabs(qDiff) then
+		return qNow + qDiffEffective
+	else
+		return qNow + qDiff
+	end
+end
+
+local function sanitizeAll1(iqArm, cur_qArm)
+	local iqArm2 = {}
+	for i, qNow in ipairs(cur_qArm) do
+		if i==5 or i==7 then
+			iqArm2[i] = sanitize1(iqArm[i], qNow)
+		else
+			iqArm2[i] = sanitize0(iqArm[i], qNow)
 		end
 	end
-	return diff_use
+	return iqArm2
 end
 
 -- Use the Jacobian
@@ -107,10 +136,24 @@ local function get_distance(self, trGoal, qArm, qWaist)
 	-- Grab our relative transform from here to the goal
 	local fkArm = self.forward(qArm, qWaist)
 	local invArm = T.inv(fkArm)
-	local here = invArm * trGoal
+	--local here = invArm * trGoal --old ok one
+	--local invGoal = T.inv(trGoal)
+	local here = trGoal * invArm -- new good one
+	--local here = invGoal * fkArm -- ??
+	--local here = fkArm * invGoal -- opp
+	--[[
+	local dp2 = T.position(here2)
+	local drpy2 = T.to_rpy(here2)
+	local dp3 = T.position(here3)
+	local drpy3 = T.to_rpy(here3)
+	--]]
+
 	-- Determine the position and angular velocity target
 	local dp = T.position(here)
 	local drpy = T.to_rpy(here)
+
+	--print(vector.new(dp), vector.new(dp2), vector.new(dp3))
+
 	local components = {vnorm(dp), vnorm(drpy)}
 	return dp, drpy, components
 end
@@ -181,9 +224,10 @@ end
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 local defaultWeights = {0, 0, 0, 0, 2}
 --
-local function valid_cost(iq, minArm, maxArm)
+local function valid_cost(iq, qMin, qMax)
 	for i, q in ipairs(iq) do
-		if q<minArm[i] or q>maxArm[i] then return INFINITY end
+		if qMin[i]==-180*DEG_TO_RAD and qMax[i]==180*DEG_TO_RAD then --inf turn
+		elseif q<qMin[i] or q>qMax[i] then return INFINITY end
 	end
 	return 0
 end
@@ -196,8 +240,9 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	local iqArms = {}
 	for i, q in ipairs(self.shoulderAngles) do
 		local iq = self.inverse(tr, qArm, q, 0, qWaist)
-		local du = sanitize0(iq, qArm)
-		tinsert(iqArms, iq)
+		--local iq2 = sanitizeAll0(iq, qArm)
+		local iq2 = sanitizeAll1(iq, qArm)
+		tinsert(iqArms, iq2)
 	end
 	-- Form the FKs
 	local fks = {}
@@ -304,6 +349,9 @@ function libArmPlan.joint_preplan(self, plan)
 				string.format('%s Above qMax[%d] %g > %g', prefix, i, q, qMax[i]))
 			--]]
 			qArmF[i] = min(max(qMin[i], q), qMax[i])
+		else
+			-- nearest (sanitize)
+			qArmF[i] = sanitize1(qArmF[i], qArm0[i])
 		end
 	end
 	-- Set the timeout
@@ -486,17 +534,24 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local nStepsTimeout = math.ceil(timeout * hz)
 	-- Initial position
 	local qArm = vector.copy(qArm0)
-	-- Maybe sanitize the wrist... for the valve situation
-	--sanitize0(qArm, self.zeros)
 	-- Begin
 	local t0 = unix.time()
 	local path = {}
 	repeat
 		-- Check if we are close enough
 		local dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
-		if dist_components[1] < 0.02 and dist_components[2] < 3*RAD_TO_DEG then
+
+		if #path<200 then
+			print(vector.new(dp))
+			print(vector.new(drpy))
+			print(unpack(dist_components))
+		end
+
+		if dist_components[1] < 0.02 and dist_components[2] < 3*DEG_TO_RAD then
+			print('close!', unpack(dist_components))
 			break
 		end
+
 		-- Form our desired velocity
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
@@ -525,11 +580,15 @@ function libArmPlan.jacobian_preplan(self, plan)
 			end
 		end
 		-- Apply the joint change (Creates a new table)
+		local qOld = qArm
 		qArm = qArm + dqCombo
+		--print('qArm', qOld)
 		-- Check joint limit compliance
 		for i, q in ipairs(qArm) do
 			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
 				qArm[i] = min(max(qMin[i], q), qMax[i])
+			else
+				qArm[i] = sanitize1(q, qOld[i])
 			end
 		end
 		-- Add to the path
@@ -610,7 +669,7 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 			self, trGoal,
 			{unpack(qWaistArm,2,#qWaistArm)}, {qWaistArm[1],0})
 		-- Check if we are close enough
-		if dist_components[1] < 0.01 and dist_components[2] < 2*RAD_TO_DEG then
+		if dist_components[1] < 0.01 and dist_components[2] < 2*DEG_TO_RAD then
 			break
 		end
 		-- Form our desired velocity

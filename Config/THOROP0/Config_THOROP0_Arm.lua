@@ -51,7 +51,6 @@ table.insert(arm.init,
 --]]
 
 arm.pushdoor = {}
-
 arm.pushdoor[1] = {
 	left = {
 		via='jacobian_preplan',
@@ -63,6 +62,20 @@ arm.pushdoor[1] = {
 	},
 	right = false,
 	ikhead = {0.65, 0.25, -0.12}
+}
+
+
+arm.valve = {}
+arm.valve[1] = {
+	right = false,
+	left = {
+		timeout=20,
+		via='jacobian_preplan',
+		tr={0.6, 0.3, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--tr={0.35, -0.23, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
+		--weights = {1,1,-1,1, 0},
+	}
 }
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
@@ -88,77 +101,55 @@ arm.drill[1] = {
 	}
 }
 arm.drill[2] = {
-	--left = false,
-	----[[
 	left = {
 		timeout=15,
-		via='joint_preplan',
-		q = vector.new{0, 75, 90, -90, -90, -45, 0}*DEG_TO_RAD,
-		--via='jacobian_preplan',
-		--tr={0.4, 0.00, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -75*DEG_TO_RAD},
-		--qArmGuess = vector.new{0, 60, 90, -120, -90, -15, 0}*DEG_TO_RAD,
-		--weights = {0,1,0, 1, 2},
+		--via='joint_preplan',
+		--q = vector.new{0, 75, 90, -90, -90, -45, 0}*DEG_TO_RAD,
+		via='jacobian_preplan',
+		tr={0.3, 0.00, 0.32, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -75*DEG_TO_RAD},
+		qArmGuess = vector.new{0, 60, 90, -120, -90, -15, 0}*DEG_TO_RAD,
+		weights = {0,1, 0, 1, 2},
+	},
+	--[[
+	left = {
+		tr={0.25, 0.25, 0.18,    0, 0, -45*DEG_TO_RAD},
+		--qArmGuess = vector.new{70,25,-28, -150, 10,-80,-90}*DEG_TO_RAD,
+		timeout=15,
+		via='jacobian_preplan', weights = {0,1,1,1}
 	},
 	--]]
-	right = {
-		timeout=20,
-		via='jacobian_preplan',
-		tr={0.3, -0.3, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 30*DEG_TO_RAD},
-		--tr={0.35, -0.23, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
-		weights = {1,1,-1,1, 0},
-	}
-}
---[[
-arm.drill[2] = {
-	left = {
-		timeout=15,
-		via='jacobian_preplan',
-		tr={0.32, 0.25, 0.22,    0, 0, -60*DEG_TO_RAD},
-	},
 	right = false
 }
 
 arm.drill[3] = {
-	left = {
-		timeout=15,
+	left = false,
+	right = {
+		timeout=20,
 		via='jacobian_preplan',
-		tr={0.3, 0, 0.22,    0, 0, -80*DEG_TO_RAD},
-		qArmGuess = vector.new{0, 45, 90, -90, 0,-45,0}*DEG_TO_RAD,
-		--weights = {1,1,-1,1},
-	},
-	right = false
+		--tr={0.28, -0.3, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 30*DEG_TO_RAD},
+		tr={0.32, -0.23, 0.32, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
+		weights = {1,1,-1,1, 0},
+	}
 }
---]]
+
+
 arm.shower = {}
 arm.shower[1] = {
 	left = {
 		via='jacobian_preplan',
 		timeout=15,
-		tr={0.3, 0.35, 0.75, 0, -90*DEG_TO_RAD,0},
+		tr={0.28, 0.35, 0.75, 0, -90*DEG_TO_RAD,0},
 		qArmGuess = vector.new{0, 0, 0, -90, 0, 0, 0}*DEG_TO_RAD,
 		weights = {1,1,-1,1,2},
 	},
 	right = {
 		via='jacobian_preplan',
 		timeout=15,
-		tr={0.4, -0.3, 0.7, 0, -80*DEG_TO_RAD, 0},
+		tr={0.3, -0.3, 0.7, 0, -80*DEG_TO_RAD, 0},
 		qArmGuess = vector.new{0, 0, 0, -90, 0, 0, 0}*DEG_TO_RAD,
 		weights = {1,1,-1,1,2},
 	},
-}
-
-arm.valve = {}
-arm.valve[1] = {
-	right = false,
-	left = {
-		timeout=20,
-		via='jacobian_preplan',
-		tr={0.6, 0.3, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		--tr={0.35, -0.23, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		--qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
-		--weights = {1,1,-1,1, 0},
-	}
 }
 
 

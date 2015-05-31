@@ -541,11 +541,13 @@ function libArmPlan.jacobian_preplan(self, plan)
 		-- Check if we are close enough
 		local dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
 
+		--[[
 		if #path<200 then
 			print(vector.new(dp))
 			print(vector.new(drpy))
 			print(unpack(dist_components))
 		end
+		--]]
 
 		if dist_components[1] < 0.02 and dist_components[2] < 3*DEG_TO_RAD then
 			print('close!', unpack(dist_components))

@@ -178,6 +178,7 @@ fsm.Arm = {
 	{'armManipulation', 'pushdoor', 'armPushDoor'},
 	{'armManipulation', 'drill', 'armDrill'},
 	{'armManipulation', 'shower', 'armShower'},
+	{'armManipulation', 'valve', 'armValve'},
 	--
 	{'armTeleop', 'ready', 'armManipulation'},
 	{'armTeleopRaw', 'ready', 'armManipulation'},

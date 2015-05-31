@@ -47,7 +47,7 @@ print('RLeg Check', rleg_ok)
 --]]
 
 local arm_regs = {'position','temperature', 'data', 'command_position', 'position_p'}
---[[
+--
 local larm = Config.chain.larm
 local larm_ok = lD.check_indirect_address(larm.m_ids, arm_regs, left_arm)
 print('LArm Check', larm_ok)
@@ -55,7 +55,7 @@ if not larm_ok then
   lD.set_indirect_address(larm.m_ids, arm_regs, left_arm)
 end
 --]]
---
+--[[
 local rarm = Config.chain.rarm
 local rarm_ok = lD.check_indirect_address(rarm.m_ids, arm_regs, right_arm)
 print('ids', unpack(rarm.m_ids))

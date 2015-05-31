@@ -122,17 +122,6 @@ function state.update()
 
   elseif stage==4 then
     return "done"
-  elseif stage==5 then
-
-  elseif stage==7 then
-    --Straighten wrist yaws first (without touching roll)
-    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]    
-    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
-    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
-  elseif stage==8 then
-    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
-  elseif stage==9 then
-    return "done"    
   end
 
   local dqArmLim = vector.new(util.shallow_copy(Config.arm.vel_angular_limit_init))
@@ -143,10 +132,7 @@ function state.update()
   --SJ: initial waist position can be either +2 or -358
   --so we should be careful using it for jacobian
 
-
   Body.set_safe_waist_command_position({0,0})
-
-
 --  local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,false) --should use absolute position (for jacobian)
   local qLArmActual = Body.get_larm_position()
   local qRArmActual = Body.get_rarm_position()
@@ -163,14 +149,14 @@ function state.update()
     err=err+math.abs(qRArmActual[i]-qRArmCommand[i])
   end
 
+--[[
   if Config.arm_init_timeout and t-t_stage_start>t_stage then
     t_stage_start = t
     stage=stage+1
     last_error=err
     return
   end
-
-
+--]]
 
   if t>t_last_debug+0.2 then
     t_last_debug=t
@@ -180,8 +166,6 @@ function state.update()
     end
     last_error = err
   end    
-
-
 end
 
 function state.exit()

@@ -31,10 +31,10 @@ function state.update()
   t_update = t
 
   local steering = hcm.get_teleop_steering()
-  local qRArm = util.shallow_copy(qRArm0)
-  qRArm[7] = qRArm0[7]+steering
+  local qLArm = util.shallow_copy(qLArm0)
+  qLArm[7] = qLArm0[7]+steering
 
-  Body.set_rarm_command_position(qRArm)
+  Body.set_larm_command_position(qLArm)
 end
 
 function state.exit()

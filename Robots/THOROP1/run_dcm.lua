@@ -336,10 +336,10 @@ local function form_arm_read_cmd(bus)
 			has_mx = true
 			--]]
 		elseif is_nx then
-			assert(
-			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
-			'Bad Indirect addresses for the arm chain ID '..m_id
-			)
+			--assert(
+			--lD.check_indirect_address({m_id}, arm_packet_reg, bus),
+			--'Bad Indirect addresses for the arm chain ID '..m_id
+			--)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
 			table.insert(used_ids, m_id)
 			has_nx = true

@@ -128,10 +128,11 @@ for _, sensor in ipairs(sensors) do
 	end
 end
 
-function sstart(scriptname)
+function sstart(scriptname, ...)
 	if scriptname=='rpc' then return end
+	local argss = {...}
 	local msg = mp.pack({
-		raw = 'sstart("'..scriptname..'")'
+		raw = 'sstart("'..scriptname..'"'..(argss[1] and ', '..argss[1] or '')..')'
 	})
 	rpc_req:send(msg)
   local data = unpack(rpc_req:receive())

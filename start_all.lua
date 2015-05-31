@@ -8,14 +8,14 @@ local color = require'util'.color
 local LUA = 'luajit'
 
 local wizards = {
-	{'feedback', },
-	{'mesh', },
-	{'slam', },
-	{'rpc', },
 	{'lidar_chest', },
 	{'lidar_head', },
 	{'camera', 1},
 	{'camera', 2},
+	{'rpc', },
+	{'feedback', },
+	{'mesh', },
+	{'slam', },
 }
 local runs = {
 	'dcm',
@@ -47,6 +47,12 @@ for i, wizard in ipairs(wizards) do
 	for pid in ret do
 		print('Killed Process', pid)
 	end
+end
+
+for i, wizard in ipairs(wizards) do
+	local name = wizard[1]
+	local scriptname = wizard[1]..'_wizard.lua'
+	local name_w_args = wizard[2] and scriptname..' '..wizard[2] or scriptname
 	local script = gen_screen(name, name..'_wizard.lua', unpack(wizard, 2))
 	local status = os.execute(script)
 	print(color(name, 'yellow'), 'starting')

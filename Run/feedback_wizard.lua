@@ -202,6 +202,8 @@ local function update()
 		if ittybitty0 then
 			ret, err = ittybitty0_udp_ch:send(ittybitty0)
 			available_bits = available_bits - 8*#ittybitty0
+		else
+			print('No ittybitty0 to send')
 		end
 	elseif is_indoors==3 and ittybitty1_udp_ch then
 		-- send the ittybitty1 (wrist)
@@ -213,6 +215,8 @@ local function update()
 		if ittybitty1 then
 			ret, err = ittybitty1_udp_ch:send(ittybitty1)
 			available_bits = available_bits - 8*#ittybitty1
+		else
+			print('No ittybitty1 to send')
 		end
 	elseif feedback_udp_ch then
 		if t_update - t_feedback < dt_outdoor_send then return end

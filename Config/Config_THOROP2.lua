@@ -49,7 +49,7 @@ Config.variable_tstep = true
 Config.variable_support = true
 
 
-Config.arm_init_timeout = true
+--Config.arm_init_timeout = true
 
 -- Tune for Webots
 if IS_WEBOTS then

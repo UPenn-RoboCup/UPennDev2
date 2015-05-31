@@ -50,6 +50,9 @@ shared_data.teleop = {
 	--
 	lgrip_position = zeros(3),
 	rgrip_position = zeros(3),
+
+	throttle = zeros(1), --should be zero to one
+	steering = zeros(1)
 }
 
 shared_data.demo = {

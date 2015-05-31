@@ -34,6 +34,103 @@ fsm.libraries = {
 	World = 'DRCFinal'
 }
 
+fsm.Body = {
+  {'bodyIdle', 'init', 'bodyInit'},
+  --
+  {'bodyInit', 'done', 'bodyStop'},
+	--
+	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
+	{'bodyStop', 'approach', 'bodyApproachMessy'},
+	
+	{'bodyStop', 'stepflat', 'bodyStepAlign'},
+	{'bodyStop', 'stop', 'bodyStop'},
+  --
+  {'bodyApproachMessy', 'stop', 'bodyStop'},
+	{'bodyApproachMessy', 'done', 'bodyStop'},
+  --
+  {'bodyApproachBuggy', 'stop', 'bodyStop'},
+	{'bodyApproachBuggy', 'done', 'bodyStop'},
+  --
+  --these should NEVER called with mistake at all
+  {'bodyStop', 'stairclimb', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},
+  -- Take two slow stops (for precise alignment)
+  {'bodyStepAlign', 'done', 'bodyStop'},
+
+
+--Driving stuff
+  {'bodyStop', 'driveready', 'bodyDriveready'},   --untorques leg and arm, rotate the head back, centers lidar
+	{'bodyDriveready', 'drive', 'bodyDrive'}, -- torques all servos and enable foot and arm control
+
+  {'bodyDrive', 'undrive', 'bodyUndrive'}, -- untorques arm and leg for egress
+  {'bodyUndrive', 'reinit', 'bodyInit'}, --re-inits leg
+
+}
+
+-- Anything can fall!
+local allbody = {}
+for i,v in ipairs(fsm.Body) do allbody[v[1]] = true end
+for k, v in pairs(allbody) do table.insert(fsm.Body, {k, 'fall', 'bodyFall'}) end
+-- Maybe just restart state_wizard at this point...
+
+
+
+fsm.Head = {
+	{'headIdle', 'init', 'headCenter'},
+	{'headIdle', 'teleop', 'headTeleop'},
+	--
+	{'headCenter', 'trackleft', 'headTrackLeft'},
+	{'headCenter', 'trackright', 'headTrackRight'},
+	{'headCenter', 'teleop', 'headTeleop'},
+	{'headCenter', 'teleopik', 'headTeleopIK'},
+	--
+	{'headTeleop', 'init', 'headCenter'},
+	{'headTeleop', 'trackleft', 'headTrackLeft'},
+	{'headTeleop', 'trackright', 'headTrackRight'},
+	{'headTeleop', 'mesh', 'headMesh'},
+	{'headTeleop', 'teleopik', 'headTeleopIK'},
+	--
+	{'headTeleopIK', 'init', 'headCenter'},
+	{'headTeleopIK', 'trackleft', 'headTrackLeft'},
+	{'headTeleopIK', 'trackright', 'headTrackRight'},
+	{'headTeleopIK', 'mesh', 'headMesh'},
+	{'headTeleopIK', 'teleop', 'headTeleop'},
+	--
+	{'headTrackLeft', 'init', 'headCenter'},
+	{'headTrackLeft', 'mesh', 'headMesh'},
+	{'headTrackLeft', 'trackright', 'headTrackRight'},
+	{'headTrackLeft', 'teleop', 'headTeleop'},
+	{'headTrackLeft', 'teleopik', 'headTeleopIK'},
+	--
+	{'headTrackRight', 'init', 'headCenter'},
+	{'headTrackRight', 'mesh', 'headMesh'},
+	{'headTrackRight', 'trackleft', 'headTrackLeft'},
+	{'headTrackRight', 'teleop', 'headTeleop'},
+	{'headTrackRight', 'teleopik', 'headTeleopIK'},
+	--
+	{'headMesh', 'trackleft', 'headTrackLeft'},
+	{'headMesh', 'trackright', 'headTrackRight'},
+	{'headMesh', 'init', 'headCenter'},
+	{'headMesh', 'teleop', 'headTeleop'},
+	{'headMesh', 'teleopik', 'headTeleopIK'},
+
+--Driving stuff
+	{'headCenter', 'drive', 'headDrive'}, --go to 180 deg rotated position
+	{'headDrive', 'undrive', 'headUndrive'}, --unscrew the head safelty
+	{'headUndrive', 'done', 'headCenter'}, 
+}
+
+
+
+
+
+
+
+
+
+
+
+
 fsm.Arm = {
 	-- Idle
 	{'armIdle', 'timeout', 'armIdle'},
@@ -136,76 +233,8 @@ fsm.Arm = {
 	--]]
 }
 
-fsm.Body = {
-  {'bodyIdle', 'init', 'bodyInit'},
-  --
-  {'bodyInit', 'done', 'bodyStop'},
-	--
-	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
-	{'bodyStop', 'approach', 'bodyApproachMessy'},
-	
-	{'bodyStop', 'stepflat', 'bodyStepAlign'},
-	{'bodyStop', 'stop', 'bodyStop'},
-  --
-  {'bodyApproachMessy', 'stop', 'bodyStop'},
-	{'bodyApproachMessy', 'done', 'bodyStop'},
-  --
-  {'bodyApproachBuggy', 'stop', 'bodyStop'},
-	{'bodyApproachBuggy', 'done', 'bodyStop'},
-  --
-  --these should NEVER called with mistake at all
-  {'bodyStop', 'stairclimb', 'bodyStep'},
-  {'bodyStep', 'done', 'bodyStop'},
-  -- Take two slow stops (for precise alignment)
-  {'bodyStepAlign', 'done', 'bodyStop'},
-
-}
--- Anything can fall!
-local allbody = {}
-for i,v in ipairs(fsm.Body) do allbody[v[1]] = true end
-for k, v in pairs(allbody) do table.insert(fsm.Body, {k, 'fall', 'bodyFall'}) end
--- Maybe just restart state_wizard at this point...
 
 
-fsm.Head = {
-	{'headIdle', 'init', 'headCenter'},
-	{'headIdle', 'teleop', 'headTeleop'},
-	--
-	{'headCenter', 'trackleft', 'headTrackLeft'},
-	{'headCenter', 'trackright', 'headTrackRight'},
-	{'headCenter', 'teleop', 'headTeleop'},
-	{'headCenter', 'teleopik', 'headTeleopIK'},
-	--
-	{'headTeleop', 'init', 'headCenter'},
-	{'headTeleop', 'trackleft', 'headTrackLeft'},
-	{'headTeleop', 'trackright', 'headTrackRight'},
-	{'headTeleop', 'mesh', 'headMesh'},
-	{'headTeleop', 'teleopik', 'headTeleopIK'},
-	--
-	{'headTeleopIK', 'init', 'headCenter'},
-	{'headTeleopIK', 'trackleft', 'headTrackLeft'},
-	{'headTeleopIK', 'trackright', 'headTrackRight'},
-	{'headTeleopIK', 'mesh', 'headMesh'},
-	{'headTeleopIK', 'teleop', 'headTeleop'},
-	--
-	{'headTrackLeft', 'init', 'headCenter'},
-	{'headTrackLeft', 'mesh', 'headMesh'},
-	{'headTrackLeft', 'trackright', 'headTrackRight'},
-	{'headTrackLeft', 'teleop', 'headTeleop'},
-	{'headTrackLeft', 'teleopik', 'headTeleopIK'},
-	--
-	{'headTrackRight', 'init', 'headCenter'},
-	{'headTrackRight', 'mesh', 'headMesh'},
-	{'headTrackRight', 'trackleft', 'headTrackLeft'},
-	{'headTrackRight', 'teleop', 'headTeleop'},
-	{'headTrackRight', 'teleopik', 'headTeleopIK'},
-	--
-	{'headMesh', 'trackleft', 'headTrackLeft'},
-	{'headMesh', 'trackright', 'headTrackRight'},
-	{'headMesh', 'init', 'headCenter'},
-	{'headMesh', 'teleop', 'headTeleop'},
-	{'headMesh', 'teleopik', 'headTeleopIK'},
-}
 
 fsm.Gripper = {
 	{'gripperIdle', 'close', 'gripperClose'},
@@ -262,6 +291,10 @@ fsm.Lidar = {
 	{'lidarIdle', 'pan', 'lidarPan'},
 	{'lidarPan', 'switch', 'lidarPan'},
 	{'lidarPan', 'stop', 'lidarIdle'},
+
+	--while driving chest lidar should be keep centered
+	{'lidarPan', 'center', 'lidarDrive'},
+	{'lidarDrive', 'pan', 'lidarPan'},
 }
 
 fsm.Motion = {
@@ -293,6 +326,24 @@ fsm.Motion = {
 	{'motionStepPreviewStair', 'done', 'motionStance'},
 	--
 	{'motionSlowStep', 'done', 'motionStance'},
+
+
+
+
+
+	--DRIVE
+	{'motionStance', 'driveready', 'motionDriveready'}, --untorque lower body
+	{'motionDriveready', 'drive', 'motionDrive'}, --torque the body, enable foot control
+	
+	{'motionDrive', 'undrive', 'motionUndrive'}, --untorque lower body again
+	{'motionUndrive', 'reinit', 'motionInit'}, --torque all the legs and make the robot stand up
+	
+	
+
+
+
+
+
 }
 
 Config.fsm = fsm

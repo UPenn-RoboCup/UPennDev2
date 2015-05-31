@@ -23,12 +23,19 @@ function state.entry()
   Body.set_lleg_torque_enable(1)
   Body.set_rleg_torque_enable(1)
 
-
+--
   if not IS_WEBOTS then
     for i=1,10 do
-      Body.set_lleg_command_velocity({500,500,500,500,500,500})
+--      Body.set_lleg_command_velocity({500,500,500,500,500,500})
+      Body.set_lleg_command_velocity({500,500,500,500,2000,500})
+
       unix.usleep(1e6*0.01);
-      Body.set_rleg_command_velocity({500,500,500,500,500,500})
+--      Body.set_rleg_command_velocity({500,500,500,500,500,500})
+      Body.set_rleg_command_velocity({500,500,500,500,2000,500})
+
+
+
+
       unix.usleep(1e6*0.01);
       Body.set_rleg_command_acceleration({50,50,50,50,50,50})
       unix.usleep(1e6*0.01);
@@ -36,7 +43,7 @@ function state.entry()
       unix.usleep(1e6*0.01);
     end
   end
-
+--
   qLLeg0 = Body.get_lleg_command_position()
   qRLeg0 = Body.get_rleg_command_position()
 
@@ -55,7 +62,7 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  local throttle = hcm.get_teleop_throttle()
+  local throttle = math.min(1,math.max(-1,hcm.get_teleop_throttle() ))
   local throttle_pitch_mag = Config.throttle_pitch_mag or 15*math.pi/180
   
   if Config.birdwalk then

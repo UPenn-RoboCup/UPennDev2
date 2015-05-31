@@ -100,3 +100,10 @@ cal["chip"].legBias=vector.new({
 
    })*math.pi/180
 
+
+--AFTER FOOT SWAP
+-- Updated date: Sun May 31 16:20:09 2015
+cal["chip"].legBias=vector.new({
+   0.000000,0.740000,-0.877500,0.000000,1.485000,0.000000,
+   0.000000,0.337500,0.805000,0.000000,0.472500,-0.945000,
+   })*math.pi/180

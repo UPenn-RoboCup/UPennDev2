@@ -38,6 +38,7 @@ function process_keyinput()
 
     elseif byte==string.byte("-") then      
       motion_ch:send'bias'
+      arm_ch:send'bias'
     elseif byte==string.byte("8") then  
       motion_ch:send'stand'
       body_ch:send'stop'

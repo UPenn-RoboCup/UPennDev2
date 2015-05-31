@@ -174,9 +174,9 @@ function process_stick(ret)
 		steer = math.min(1, math.max(-1, -ret.rstick[2]/800 ))
 		gas = math.min (1,  math.max(0,-ret.rstick[3]/ 800 ))
 
-		hcm.set_teleop_drive_head({headyaw*90/math.pi, headpitch*45/math.pi})
-		hcm.set_teleop_steering(steer*180/math.pi)
-		hcm.set_teleop_throttle(gas*180/math.pi)
+		hcm.set_teleop_drive_head({headyaw, headpitch})
+		hcm.set_teleop_steering(steer)
+		hcm.set_teleop_throttle(gas)
 	end	
 end	
 

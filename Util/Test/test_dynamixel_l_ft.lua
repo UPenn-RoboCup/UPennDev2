@@ -32,7 +32,7 @@ local left_ft = {
   raw = ffi.new'uint8_t[8]',
   readings = ffi.new'double[6]',
   component = ffi.new'double[6]',
-	--unloaded = ffi.new('double[6]', vector.zeros(6)),
+  --unloaded = ffi.new('double[6]', vector.zeros(6)),
   unloaded = ffi.new('double[6]', Config.left_foot_ft.unloaded),
   calibration_mat = ffi.new('double[6][6]', Config.left_foot_ft.matrix),
   calibration_gain = Config.left_foot_ft.gain,
@@ -79,6 +79,8 @@ local function parse_ft(ft, raw_str, m_id)
 		for i=0,#v-1 do v[i+1] = ft.raw16[i] end
 		--print(m_id,'B',v)
 	else
+		print('no id', m_id,'need', unpack(ft.m_ids))
+		ptable(ft)
 		return
 	end
 	--if ft.id:find'217' then print(ft.id, vector.slice(ft.component, 0, 5)) end
@@ -105,24 +107,33 @@ while true do
   print('\n===')
 
 	status = lD.get_nx_data(26, chain)[1]
-	if status then
+	if type(status)=='table' then
+		ptable(status)
 		print('status.raw_parameter', #status.raw_parameter)
 		--print('PARAM 25',unpack(status.parameter))
 		--print('PARAM 25',vector.slice(ffi.new('int8_t[8]',status.parameter), 0, 3))
 		proc, volt, rawA = parse_ft(left_ft, status.raw_parameter, 26)
+	else
+		print('nope')
 	end
 	status = lD.get_nx_data(24, chain)[1]
-	if status then
+	if type(status)=='table' then
 		print('status.raw_parameter', #status.raw_parameter)
 		--print('PARAM 23',unpack(status.parameter))
 		--print('PARAM 23',vector.slice(ffi.new('int8_t[8]',status.parameter), 0, 3))
 		proc, volt, rawB = parse_ft(left_ft, status.raw_parameter, 24)
+	else
+		print('nope 2')
 	end
 
 	--print(string.format("%d: %3.3f, %3.3f, %3.3f, %3.3f", 25, unpack(rawA)))
 	--print(string.format("%d: %3.3f, %3.3f, %3.3f, %3.3f", 23, unpack(rawB)))
 	--print(string.format("V: %3.3f, %3.3f, %3.3f, %3.3f, %3.3f, %3.3f", unpack(volt)))
-	print(string.format("Fx: %3.3f Fy: %3.3f Fz: %3.3f | Tx: %3.3f Ty: %3.3f Tz: %3.3f", unpack(proc)))
+	if type(proc)=='table' then
+		print(string.format("Fx: %3.3f Fy: %3.3f Fz: %3.3f | Tx: %3.3f Ty: %3.3f Tz: %3.3f", unpack(proc)))
+	else
+		print('no proc')
+	end
 	unix.usleep(0.5*1e6)
 end
 os.exit()

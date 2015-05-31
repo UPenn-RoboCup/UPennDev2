@@ -294,7 +294,7 @@ local function parse_read_leg(pkt, bus)
 		temp_ptr_t[read_j_id - 1] = t_read
 	end
 	-- Update the F/T Sensor
-	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
+	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+2, leg_packet_offsets[3])
 	--	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
 	--	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
 

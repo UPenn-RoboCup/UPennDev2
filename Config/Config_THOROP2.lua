@@ -39,6 +39,7 @@ Config.stair_test=true
 Config.use_heeltoe_walk = true
 --Config.heeltoe_angle = 5*DEG_TO_RAD
 Config.heeltoe_angle = 3*DEG_TO_RAD
+Config.heeltoe_angle = 0*DEG_TO_RAD
 
 Config.walktraj={}
 Config.walktraj.hybridwalk = "foot_trajectory_base"
@@ -49,7 +50,7 @@ Config.variable_tstep = true
 Config.variable_support = true
 
 
-Config.arm_init_timeout = true
+--Config.arm_init_timeout = true
 
 -- Tune for Webots
 if IS_WEBOTS then

@@ -1,3 +1,4 @@
+-- arecord -f S16_LE -c2 -d 20 -D hw:3,0 -t raw | ./vumeter > test.tmp
 dofile'../include.lua'
 -- (c) 2013, 2014 Stephen McGill
 require'hcm'
@@ -17,6 +18,7 @@ while true do
 		local t = unix.time()
 		-- Start the audio record process
 		os.execute'arecord -f S16_LE -c2 -d 7 -D hw:1,0 -t raw | lame -r -s 16 -b 8 -h - /tmp/robot.mp3'
+--arecord -f S16_LE -c2 -d 7 -D hw:3,0 -t raw | lame -r -s 16 -b 8 -h - /tmp/robot.mp3
 		-- Open the file to snd over the net
 		local f = io.open'/tmp/robot.mp3'
 		local audio = f:read'*all'

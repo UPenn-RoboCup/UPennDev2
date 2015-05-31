@@ -41,11 +41,11 @@ function state.update()
   local throttle_pitch_mag = Config.throttle_pitch_mag or 15*math.pi/180
   
   if Config.birdwalk then
-    local qLLeg = util.swallow_copy(qLLeg0)
+    local qLLeg = util.shallow_copy(qLLeg0)
     qLLeg[5] = qLLeg[5]-throttle_pitch_mag * throttle
     Body.set_lleg_command_position(qLLeg)
   else
-    local qRLeg = util.swallow_copy(qRLeg0)
+    local qRLeg = util.shallow_copy(qRLeg0)
     qRLeg[5] = qRLeg[5]+throttle_pitch_mag * throttle
     Body.set_rleg_command_position(qRLeg)
   end

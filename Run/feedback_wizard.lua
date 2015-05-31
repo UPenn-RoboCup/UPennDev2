@@ -131,7 +131,7 @@ local function update()
 	local qTemp = Body.get_temperature()
 	for i, tm in ipairs(qTemp) do
 		if tm>TEMP_LIM then
-			e.tm = qTemp
+			--e.tm = qTemp
 			break
 		end
 	end

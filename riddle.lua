@@ -128,8 +128,12 @@ for _, sensor in ipairs(sensors) do
 	end
 end
 
-function sstart(scriptname)
+function sstart(scriptname, ...)
 	if scriptname=='rpc' then return end
+	local args = table.concat{..., ' '}
+	if #args>0 then
+		scriptname = scriptname..' '..args
+	end
 	local msg = mp.pack({
 		raw = 'sstart("'..scriptname..'")'
 	})

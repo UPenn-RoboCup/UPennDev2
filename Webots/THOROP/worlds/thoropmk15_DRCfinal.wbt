@@ -70,64 +70,64 @@ simple_wall {
   translation 0 1 1.25
 }
 CinderRampF {
-  translation 5 0 2
+  translation 4.5 0 2
 }
 CinderRampR {
-  translation 5 0 2.43
+  translation 4.5 0 2.43
 }
 CinderRampR {
-  translation 5 0 2.86
+  translation 4.5 0 2.86
 }
 CinderRampR {
-  translation 5 0 3.29
+  translation 4.5 0 3.29
 }
 CinderRampF {
-  translation 5.43 0 2
+  translation 4.93 0 2
 }
 CinderRampR {
-  translation 5.43 0 2.43
+  translation 4.93 0 2.43
 }
 CinderRampR {
-  translation 5.43 0 2.86
+  translation 4.93 0 2.86
 }
 CinderRampR {
-  translation 5.43 0 3.29
+  translation 4.93 0 3.29
 }
 CinderBlock {
-  translation 5.86 0 2
+  translation 5.36 0 2
 }
 CinderBlock {
-  translation 5.86 0 2.43
+  translation 5.36 0 2.43
 }
 CinderRampR {
-  translation 5.86 0 2.86
+  translation 5.36 0 2.86
 }
 CinderRampR {
-  translation 5.86 0 3.29
+  translation 5.36 0 3.29
 }
 CinderRampF {
-  translation 6.29 0 2
+  translation 5.79 0 2
 }
 CinderRampR {
-  translation 6.29 0 2.43
+  translation 5.79 0 2.43
 }
 CinderRampR {
-  translation 6.29 0 2.86
+  translation 5.79 0 2.86
 }
 CinderRampR {
-  translation 6.29 0 3.29
+  translation 5.79 0 3.29
 }
 CinderRampF {
-  translation 6.72 0 2
+  translation 6.22 0 2
 }
 CinderRampR {
-  translation 6.72 0 2.43
+  translation 6.22 0 2.43
 }
 CinderRampR {
-  translation 6.72 0 2.86
+  translation 6.22 0 2.86
 }
 CinderRampR {
-  translation 6.72 0 3.29
+  translation 6.22 0 3.29
 }
 StairLung {
   translation 8 0 0
@@ -149,43 +149,44 @@ StairLung {
   translation 9.2 0.675 0
   rotation 0 1 0 1.57
 }
-simple_wall {
+simple_wall {  # main big
   size 6 2 0.01
-  translation -5.5 1 -2
+  translation 3 1 3 # -2
 }
 simple_wall {
-  size 1 2 0.01
-  translation -4 1 -1.56
+  size 1.25 2 0.01
+  translation 1.5 1 2.558 #-1.56
   rotation 0 1 0 0.785398
 }
 simple_wall {
-  size 1 2 0.01
-  translation -4.7 1 -1.56
+  size 1.25 2 0.01
+  translation 2.384 1 2.558 #-1.56
   rotation 0 1 0 -0.785398
 }
 simple_wall {
-  size 1 2 0.01
-  translation -5.4 1 -1.56
+  size 1.25 2 0.01
+  translation 3.268 1 2.558 #-1.56
   rotation 0 1 0 0.785398
 }
 simple_wall {
-  size 1 2 0.01
-  translation -6.1 1 -1.56
+  size 1.25 2 0.01
+  translation 4.152 1 2.558 #-1.56
   rotation 0 1 0 -0.785398
 }
+
 DEF VALVE CircleValve {
   hidden position_0_0 6.4387e-12
   color 1 0 0
-  translation -3.8 1 -1.4
-  rotation 0 1 0 0.785398
+  translation 3.8 1 -1.4
+  rotation 0 1 0 -0.785398
   scale 0.15 0.15 0.15
 }
 simple_wall {
   size 0.44 0.1 0.26
-  translation -5.33 1.04 -1.55
+  translation 5.33 1.04 -1.55
   rotation 0 1 0 0.785398
 }
 SimpleDrill {
-  translation -5.24924 1.20875 -1.44924
+  translation 5.24924 1.20875 -1.44924
   rotation 0.00208244 0.999985 0.00502746 -2.3562
 }

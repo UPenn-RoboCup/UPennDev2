@@ -41,7 +41,7 @@ DirectionalLight {
 }
 THOROP_mk15_Fullmass_longarm_2 {
   translation -1.49409 1.14628 -0.00831604
-  rotation 0.00615966 0.99998 -0.00104589 -1.57002
+  rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
@@ -105,7 +105,8 @@ DEF VALVE CircleValve {
   hidden translation_1 0 -1.39042e-08 0
   hidden rotation_1 5.3783e-07 0 1 6.4387e-12
   color 1 0 0
-  translation -4 1 -1.6
+  #translation -4 1 -1.6
+  translation -3.8 1 -1.4
   rotation 0 1 0 0.785398
   scale 0.15 0.15 0.15
 }

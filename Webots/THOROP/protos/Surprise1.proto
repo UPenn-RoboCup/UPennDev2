@@ -1,0 +1,205 @@
+#VRML_SIM V7.4.3 utf8
+#16 8 6 block, we assume the size of 40 20 15cm instead
+#15 degree angle
+#Block size 0.4 *0.4 * 0.15
+#Total dimension: 42.5193187281 cm
+PROTO Surprise1 [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+	field SFColor diffuseColor 0.5 0.5 0.5
+	]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0	0.805 0	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 1.31 1.61 0.064 }
+			  }
+			]			
+		}
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0.623	0.805 0.633	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 0.064 1.61 1.33 }
+			  }
+			]			
+		}
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation -0.623	0.805 0.633	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 0.064 1.61 1.33 }
+			  }
+			]			
+		}
+		# bar
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0	0.805 1.266	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 1.31 1.61 0.064 }
+			  }
+			]			
+		}
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0.623 1.225 0	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 0.064 2.45 0.064 }
+			  }
+			]			
+		}
+		# SIDE BOX 1
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation -0.73	1.475 0.633	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS color}}
+			     geometry Box { size 0.15 0.25 0.20 }
+			  }
+			]			
+		}
+		# SIDE BOX 2
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0	1.28 1.41
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS color}}
+			     geometry Box { size 0.40 0.72 0.16 }
+			  }
+			]			
+		}
+		# box to shower head bar
+		DEF bar Transform{
+			rotation 1 0 0 1.57 
+			translation 0.623 2.3 -0.29 
+			children[
+				Shape{
+					geometry Cylinder {
+						height 0.58
+						radius 0.01
+						subdivision 8 
+					}
+				}
+			]
+		}
+		# Pillar
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0.623 1.225 0	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 0.064 2.45 0.064 }
+			  }
+			]			
+		}
+		DEF handle Transform{
+		    rotation 0 0 1 1.57
+		    translation 0.623 1.6 -0.58
+		    children[
+		      DEF HANDLE Shape {
+		        appearance Appearance {
+		          material Material {
+		            ambientIntensity 0.1
+		            diffuseColor IS color
+		          }
+		        }
+		        geometry Cylinder {
+		          height 0.21
+		          radius 0.005
+		  				subdivision 8
+		        }
+		      }
+		    ]
+		  }
+		  DEF handle Transform{
+		    rotation 0 0 1 0.5236
+		    translation 0.6755 1.6909 -0.58
+		    children[
+		      DEF HANDLE Shape {
+		        appearance Appearance {
+		          material Material {
+		            ambientIntensity 0.1
+		            diffuseColor IS color
+		          }
+		        }
+		        geometry Cylinder {
+		          height 0.21
+		          radius 0.005
+		          subdivision 8
+		        }
+		      }
+		    ]
+		  }
+		  DEF handle Transform{
+		    rotation 0 0 1 -0.5236
+		    translation 0.5705 1.6909 -0.58
+		    children[
+		      DEF HANDLE Shape {
+		        appearance Appearance {
+		          material Material {
+		            ambientIntensity 0.1
+		            diffuseColor IS color
+		          }
+		        }
+		        geometry Cylinder {
+		          height 0.21
+		          radius 0.005
+		          subdivision 8
+		        }
+		      }
+		    ]
+		  }
+		  DEF wire Transform{
+		    rotation 0 0 1 0
+		    translation 0.623 2.045 -0.58
+		    children[
+		      DEF WIRE Shape {
+		        appearance Appearance {
+		          material Material {
+		            ambientIntensity 0.1
+		            diffuseColor IS color
+		          }
+		        }
+		        geometry Cylinder {
+		          height 0.515
+		          radius 0.005
+		          subdivision 8
+		        }
+		      }
+		    ]
+		  }		
+        ]
+        }
+      }
+  ]
+  boundingObject Group {
+		children [
+			USE block
+			USE bar
+			USE handle
+			USE wire		
+		]
+  }  
+ locked TRUE
+}
+}

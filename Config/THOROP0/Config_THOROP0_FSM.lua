@@ -62,8 +62,8 @@ fsm.Body = {
   {'bodyStop', 'driveready', 'bodyDriveready'},   --untorques leg and arm, rotate the head back, centers lidar
   {'bodyDriveready', 'drive', 'bodyDrive'}, -- torques all servos and enable foot and arm control
 
-  {'bodyDrive', 'undrive', 'bodyUndrive'}, -- untorques arm and leg for egress
-  {'bodyUndrive', 'reinit', 'bodyInit'}, --re-inits leg
+  {'bodyDrive', 'driveready', 'bodyUndrive'}, -- untorques arm and leg for egress
+  {'bodyUndrive', 'init', 'bodyInit'}, --re-inits leg
 
 }
 
@@ -124,9 +124,7 @@ fsm.Head = {
 	{'headTrackLeft', 'drive', 'headDrive'},
 	{'headTrackRight', 'drive', 'headDrive'},
 
-
-	{'headDrive', 'undrive', 'headUndrive'}, --unscrew the head safelty
-	{'headUndrive', 'done', 'headCenter'}, 
+	{'headDrive', 'undrive', 'headCenter'}, --unscrew the head safelty
 }
 
 
@@ -251,7 +249,7 @@ fsm.Arm = {
 	{'armWalk', 'driveready', 'armDriveready'},
 	{'armDriveready', 'drive', 'armDrive'},
 	{'armDrive', 'undrive', 'armUndrive'},
-	{'armUndrive', 'reinit', 'armInitWalk'},
+	{'armUndrive', 'init', 'armInitWalk'},
 
 }
 

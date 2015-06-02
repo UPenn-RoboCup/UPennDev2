@@ -18,9 +18,16 @@ function state.entry()
   t_finish = t
 
   for i=1,5 do
-    Body.set_larm_torque_enable(0)
-    Body.set_rarm_torque_enable(0)
+    Body.set_larm_torque_enable({1,0,0,0,0,0,0})
+    Body.set_rarm_torque_enable({1,1,1,1,0,0,0})
     unix.usleep(1e5)
+
+    local vel = 2000
+     Body.set_rarm_command_velocity(vector.ones(7)*vel)
+      unix.usleep(1e6*0.01);
+     Body.set_larm_command_velocity(vector.ones(7)*vel)
+      unix.usleep(1e6*0.01);
+
   end
 
 

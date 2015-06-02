@@ -64,11 +64,12 @@ function update_display()
 	if display_mode_old~=display_mode then
 		display_mode_old = display_mode
 		if display_mode==1 then
-			update_display_msg(1,"4<<   Walk Test  >>2")
+			update_display_msg(1,"4<<   Walk Test     ")
 			update_display_msg(2, string.format("Vel: %3i %3i %3i",vel[1],vel[2],vel[3]) )
 		elseif display_mode==2 then
-			update_display_msg(1,"4<< Driving Test >>2")
-			update_display_msg(3,"                    ")
+			update_display_msg(1,"    Driving Test >>4")
+			update_display_msg(3,"1-init  2-driveready")
+			update_display_msg(4,"3-drive             ")
 		end
 	end
 
@@ -111,10 +112,7 @@ function process_click(ret)
 
 
 	if display_mode==1 then
-		if ret.rbutton==2 then 
-			display_mode = 2
-			return
-		elseif ret.rbutton==4 then 
+		if ret.rbutton==4 then 
 			display_mode = 2
 			return
 		elseif ret.rbutton==1 then
@@ -146,18 +144,22 @@ function process_click(ret)
 	    mcm.set_walk_vel(targetvel)
 	  end --end vel update
 	elseif display_mode==2 then
-		
-
-
-		if ret.rbutton==2 then 
+		if ret.rbutton==4 then 
 			display_mode = 1
+			return
+		elseif ret.rbutton==1 then
+			body_ch:send'init'	
+			return
+		elseif ret.rbutton==2 then
+			body_ch:send'driveready'	
+			return
+		elseif ret.rbutton==3 then
+			body_ch:send'drive'	
 			return
 		elseif ret.rbutton==4 then 
 			display_mode = 1
 			return
 		end
-
-
 
 	end
 end

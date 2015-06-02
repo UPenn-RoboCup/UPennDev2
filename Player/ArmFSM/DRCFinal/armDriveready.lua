@@ -18,9 +18,16 @@ function state.entry()
   t_finish = t
 
   for i=1,5 do
-    Body.set_larm_torque_enable(0)
-    Body.set_rarm_torque_enable(0)
+    Body.set_larm_torque_enable({1,0,0,0,0,0,0})
+    Body.set_rarm_torque_enable({1,1,1,0,0,0,0})
     unix.usleep(1e5)
+
+    local vel = 2000
+     Body.set_rarm_command_velocity(vector.ones(7)*vel)
+      unix.usleep(1e6*0.01);
+     Body.set_larm_command_velocity(vector.ones(7)*vel)
+      unix.usleep(1e6*0.01);
+
   end
 
 
@@ -36,6 +43,12 @@ function state.update()
 
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()
+
+qRArm[1],qRArm[2],qRArm[3] = 88*DEG_TO_RAD, -10*DEG_TO_RAD,-10*DEG_TO_RAD
+qRArm[4] = -129*DEG_TO_RAD
+
+qLArm[1] = 180*DEG_TO_RAD
+qLArm[1] = 195*DEG_TO_RAD
 
   Body.set_larm_command_position(qLArm)
   Body.set_rarm_command_position(qRArm)

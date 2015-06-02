@@ -119,7 +119,7 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	local qWaist = Body.get_waist_position()
+	local qWaist = Body.get_safe_waist_position()
 	if lStatus=='suspended' then
 		okL, qLWaypoint, qLWaistpoint = coroutine.resume(lco, qLArm, qWaist)
 	end

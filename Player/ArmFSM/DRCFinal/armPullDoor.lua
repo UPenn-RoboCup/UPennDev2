@@ -13,8 +13,8 @@ local t_entry, t_update, t_finish
 local timeout = 30.0
 
 local pco, lco, rco
-local okL, qLWaypoint, qLWaist
-local okR, qRWaypoint, qRWaist
+local okL, qLWaypoint, qLWaypoint
+local okR, qRWaypoint, qRWaypoint
 
 local pStatus, lmovement, rmovement
 
@@ -39,6 +39,10 @@ function state.entry()
 	-- Check for no motion
 	okL = type(lco)=='thread' or lco==false
 	okR = type(rco)=='thread' or rco==false
+	qLWaypoint = nil
+	qRWaypoint = nil
+	qLWaistpoint = nil
+	qRWaistpoint = nil
 
 end
 
@@ -84,10 +88,10 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	local qWaist = Body.get_waist_position()
+	local qWaist = Body.get_safe_waist_position()
 
 	if lStatus=='suspended' then
-		okL, qLWaypoint, qLWaist =
+		okL, qLWaypoint, qLWaypoint =
 			coroutine.resume(lco, qLArm, qWaist, unpack(lmovement or {}))
 	end
 	if not okL then
@@ -97,7 +101,7 @@ function state.update()
 	end
 
 	if rStatus=='suspended' then
-		okR, qRWaypoint, qRWaist =
+		okR, qRWaypoint, qRWaypoint =
 			coroutine.resume(rco, qRArm, qWaist, unpack(rmovement or {}))
 	end
 	if not okR then
@@ -116,9 +120,9 @@ function state.update()
 	if qLWaist and qRWaist then
 		print(state._NAME, 'Conflicting Waist')
 	elseif qLWaist then
-		Body.set_waist_command_position(qLWaist)
+		Body.set_safe_waist_command_position(qLWaypoint)
 	elseif qRWaist then
-		Body.set_waist_command_position(qRWaist)
+		Body.set_safe_waist_command_position(qRWaypoint)
 	end
 
 end

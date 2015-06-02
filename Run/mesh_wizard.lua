@@ -24,7 +24,7 @@ local mag_sweep1, t_sweep1, ranges_fov1
 local hz_outdoor_send = 1
 local dt_outdoor_send = 1/hz_outdoor_send
 --
-local hz_indoor_send = 4
+local hz_indoor_send = 3
 local dt_indoor_send = 1/hz_indoor_send
 
 local function check_send_mesh()

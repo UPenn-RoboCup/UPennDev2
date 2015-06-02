@@ -3,19 +3,24 @@
 dofile'../include.lua'
 require'hcm'
 
+local cmdstr = {
+	'arecord -f S16_LE -c1 -D hw:2,0 -t raw | ./vumeter',
+	'arecord -f S16_LE -c2 -D hw:3,0 -t raw | ./vumeter',
+	-- flip
+	'arecord -f S16_LE -c2 -D hw:2,0 -t raw | ./vumeter',
+	'arecord -f S16_LE -c1 -D hw:3,0 -t raw | ./vumeter'
+}
+
 hcm.set_audio_volume(percent)
 hcm.set_audio_rawvolume(raw)
 
 -- TODO: Reliably opening these, regardless of the dev number
-local f2 = io.popen'arecord -f S16_LE -c1 -D hw:2,0 -t raw | ./vumeter'
-f2:setvbuf'no'
-local f3 = io.popen'arecord -f S16_LE -c2 -D hw:3,0 -t raw | ./vumeter'
-f3:setvbuf'no'
---unix.select({f2, f3})å
+local f = assert(io.popen(cmdstr[arg[1] or 1]))
+f:setvbuf'no'
 
 local level
 repeat
-	level = ≈:read('*line')
+	level = f:read('*line')
 	local raw, percent = level:match("(%d+) (%d+)")
 	raw = tonumber(raw)
 	percent = tonumber(percent)
@@ -26,5 +31,4 @@ repeat
 until not level
 print('done reading!')
 
-f2:close()
-f3:close()
+f:close()

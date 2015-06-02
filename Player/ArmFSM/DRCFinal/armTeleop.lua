@@ -20,7 +20,8 @@ local okL, qLWaypoint, qLWaistpoint
 local okR, qRWaypoint, qRWaistpoint
 local quatpL, quatpR
 local qWaistDesired
-local default_weights = {1,1,0}
+--local default_weights = {1,1,0}
+local default_weights = {0,1,0,1}
 
 function state.entry()
 	print(state._NAME..' Entry')

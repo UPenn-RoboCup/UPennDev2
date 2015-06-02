@@ -100,7 +100,7 @@ local t_debug = 0
 local buffer = {}
 local hz_buffer = 1
 local dt_buffer = 1/hz_buffer
-local nbuffer = 5
+local nbuffer = 3
 --
 local hz_open_send = 0.5
 local dt_open_send = 1/hz_open_send
@@ -108,7 +108,7 @@ local dt_open_send = 1/hz_open_send
 local hz_outdoor_send = 15
 local dt_outdoor_send = 1/hz_outdoor_send
 --
-local hz_indoor_send = 4
+local hz_indoor_send = 3
 local dt_indoor_send = 1/hz_indoor_send
 --
 local t_buffer = -math.huge

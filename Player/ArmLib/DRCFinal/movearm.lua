@@ -7,7 +7,7 @@ local P = require'libArmPlan'
 -- Use Steve's kinematics for arm kinematics
 local K = require'K_ffi'
 -- Use SJ's kinematics for the mass properties
-local K0 = Body.Kinematics
+--local K0 = Body.Kinematics
 
 local dqLimit = DEG_TO_RAD / 3
 local radiansPerSecond, torso0
@@ -63,7 +63,7 @@ function movearm.goto(l, r)
 		if l.q then vector.new(l.q) end
 		if l.weights then vector.new(l.weights) end
 		if l.qWaistGuess then vector.new(l.qWaistGuess) end
-		if l.qArmFGuess then vector.new(l.qArmFGuess) end
+		if l.qArmGuess then vector.new(l.qArmGuess) end
 		-- Check the various formats
 		if l.tr then
 			if #l.tr==6 then
@@ -87,7 +87,7 @@ function movearm.goto(l, r)
 		end
 		if r.weights then vector.new(r.weights) end
 		if r.qWaistGuess then vector.new(r.qWaistGuess) end
-		if r.qArmFGuess then vector.new(r.qArmFGuess) end
+		if r.qArmGuess then vector.new(r.qArmGuess) end
 		r.qArm0 = vector.new(r.qRArm0 or qcRArm)
 		r.qWaist0 = vector.new(r.qWaist0 or qcWaist)
 	end

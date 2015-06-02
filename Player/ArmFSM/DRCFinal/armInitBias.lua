@@ -67,9 +67,29 @@ function state.entry()
      end
   end
 
-  qLArmTarget = {math.pi/2, 0,0,   0,  0,0,0}
-  qRArmTarget = {math.pi/2, 0,0,   0,  0,0,0}
+  qLArmTarget = Body.get_inverse_larm(
+    vector.zeros(7),
+    Config.arm.trLArm0,
+    Config.arm.ShoulderYaw0[1],
+    mcm.get_stance_bodyTilt(),{0,0},true)
 
+  qRArmTarget = Body.get_inverse_rarm(
+    vector.zeros(7),
+    Config.arm.trRArm0,
+    Config.arm.ShoulderYaw0[2],
+    mcm.get_stance_bodyTilt(),{0,0},true)
+
+  qLArmTarget[1],
+  qLArmTarget[2],
+  qLArmTarget[3],
+  qLArmTarget[4],
+  qLArmTarget[6] = math.pi/2, 0,0,0,0
+
+  qRArmTarget[1],
+  qRArmTarget[2],
+  qRArmTarget[3],
+  qRArmTarget[4],
+  qRArmTarget[6] = math.pi/2, 0,0,0,0
 
   t_last_debug=t_entry
   last_error = 999
@@ -138,8 +158,8 @@ function state.update()
     err=err+math.abs(qRArmActual[i]-qRArmCommand[i])
   end
 
---[[
-  if Config.arm_init_timeout and t-t_stage_start>t_stage then
+--
+  if ret==1 and Config.arm_init_timeout and t-t_stage_start>t_stage then
     t_stage_start = t
     stage=stage+1
     last_error=err

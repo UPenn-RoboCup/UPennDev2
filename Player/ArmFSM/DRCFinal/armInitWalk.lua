@@ -78,9 +78,6 @@ function state.entry()
     Config.arm.trRArm0,
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0},true)
---  print("QLArmTarget:", util.print_jangle(qLArmTarget))
---  print("QRArmTarget:", util.print_jangle(qRArmTarget))  
-
 
   t_last_debug=t_entry
   last_error = 999
@@ -149,8 +146,8 @@ function state.update()
     err=err+math.abs(qRArmActual[i]-qRArmCommand[i])
   end
 
---[[
-  if Config.arm_init_timeout and t-t_stage_start>t_stage then
+--
+  if ret==1 and Config.arm_init_timeout and t-t_stage_start>t_stage then
     t_stage_start = t
     stage=stage+1
     last_error=err

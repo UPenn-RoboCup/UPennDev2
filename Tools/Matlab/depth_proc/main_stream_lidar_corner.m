@@ -7,7 +7,7 @@ run('../startup.m');
 %s_color = zmq('subscribe', 'tcp', '192.168.123.246', 43347);
 s_mesh = zmq('subscribe', 'tcp', '192.168.123.246', 43300);
 %s_mesh = zmq( 'subscribe', 'ipc', 'mesh0' );
-
+s_field = zmq('publish', 'tcp', 1999);
 count = 0;
 while 1
     idx = zmq('poll',1000);  % assume only one channel
@@ -28,7 +28,7 @@ while 1
                 metadata.flag = 1;
                 raw = reshape(typecast(raw, 'single'), [metadata.dim(2), metadata.dim(1)]);
 
-                [ Planes ] = detectPlaneInstances_lidar_loc( raw, 4, metadata);    
+                [ Planes ] = detectPlaneInstances_lidar_loc2( raw, 4, metadata);    
                 pose = localizeCorner_v4L(Planes,metadata)
                  if (pose.isValid1 + pose.isValid2) > 0
                     if pose.isValid1 == 1 && pose.isValid2 == 0

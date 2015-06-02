@@ -1,8 +1,16 @@
-function  [Planes, outdata] = detectPlanes7(data, meta, ui)
+function  [Planes, outdata] = detectPlanes7b(data, meta, ui)
 % v7: rough terrain (cinder blocks) 
+persistent prevdata
+persistent count
+persistent MASK 
+persistent list_planes
 
 if isempty(MASK)
     load MASK2.mat
+end
+
+if isempty(list_planes)
+    list_planes = struct('Center',[],'Normal',[],'var',0,'N',0);
 end
 
 Planes = [];
@@ -14,6 +22,30 @@ data = flip(double(data)',2);%-20;
 data(data(:) <= DEPTH_MIN) = 0;
 data(data(:) >= DEPTH_MAX) = 0;   
 
+% moving average 
+if isempty(prevdata) || count == 0 %|| ui.reset == 1
+    prevdata = data;
+    count = 1;
+    list_planes = struct('Center',[],'Normal',[],'var',0,'N',0);
+    return;
+else
+    % test difference 
+    if ~isempty(prevdata)
+        mad = mean(abs(data(:) - prevdata(:))) % mean absolute difference
+        if mad < 100 %small enough % indoor setting
+            
+            count = count + 1;
+               
+            % moving average of the image
+            prevdata = (1-1/count)*prevdata + 1/count*data;  
+        else
+            count = 0;
+            return;
+        end
+    end
+end
+
+% transformation
 if ~isempty(meta)   
      if isfield(meta,'tr')    
         [Rot, tr] = TransKinectToBody(meta);
@@ -30,11 +62,12 @@ if ui.undistortDepth == 1
     data = undistort_depth(data); 
 end
 
+% median filtering
 data_ = medfilt2(prevdata,[7 7]);
 data_ = MASK.*data_;
 
-% if strcmp(char(meta.name),'depth')
-[ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v7(data,Rot,tr,ui);
+% detec planes
+[ Planes, nPlanes, PlaneOfInterest ] = detectPlaneInstances_kinect_v7(data_,Rot,tr,ui);
 outdata = [];
 
 % track planes
@@ -80,7 +113,7 @@ if count > 5
         for k=1:N_
             lidx = match(k);
             if lidx > 0
-                list_planes.Center(:,lidx)
+                list_planes.Center(:,lidx) 
             end
         end
     end   

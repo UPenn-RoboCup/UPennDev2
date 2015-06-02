@@ -75,9 +75,10 @@ Y0 = ss_.*cv_.*mesh_;
 Z0  = -sv_.*mesh_ ;
 
 if visflag > 0
+    
     P = Ccb*[ X0(:)'; Y0(:)'; Z0(:)' ] + repmat(Tcb,1,numel(X0));
     figure(visflag), hold off;
-    showPointCloud(P(1,:),P(2,:),P(3,:),[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
+    showPointCloud([P(1,:)' P(2,:)' P(3,:)'],[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
     hold on;  
 end
 %% Normal Computation
@@ -243,7 +244,7 @@ if visflag
         ALL = Ccb*Points3D{t} + repmat(Tcb,1,length(Points3D{t}));
         randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
         figure(visflag), 
-        showPointCloud(ALL(1,:), ALL(2,:),ALL(3,:),...
+        showPointCloud([ALL(1,:)' ALL(2,:)' ALL(3,:)'],...
           randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',5);
         nvec = [Planes{t}.Center  Planes{t}.Center+Planes{t}.Normal*0.15];
         figure(visflag),

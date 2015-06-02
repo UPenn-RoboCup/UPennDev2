@@ -6,7 +6,7 @@ local state = {}
 state._NAME = ...
 
 --faster
-local headSpeed = {45 * DEG_TO_RAD, 30 * DEG_TO_RAD}
+local headSpeed = {90 * DEG_TO_RAD, 90 * DEG_TO_RAD}
 
 
 function state.entry()

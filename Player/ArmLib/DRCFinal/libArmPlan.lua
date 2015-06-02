@@ -50,14 +50,6 @@ local function sanitize0(qPlanned, qNow)
 	end
 end
 
-local function sanitizeAll0(iqArm, cur_qArm)
-	local iqArm2 = {}
-	for i, v in ipairs(cur_qArm) do
-		iqArm2[i] = sanitize0
-	end
-	return iqArm2
-end
-
 -- Get the real planned q for infinite turn
 local function sanitize1(qPlanned, qNow)
 	local qNowEffective = mod_angle(qNow)
@@ -242,7 +234,7 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 		local iq = self.inverse(tr, qArm, q, 0, qWaist)
 		--local iq2 = sanitizeAll0(iq, qArm)
 		local iq2 = sanitizeAll1(iq, qArm)
-		tinsert(iqArms, iq2)
+		tinsert(iqArms, vector.new(iq2))
 	end
 	-- Form the FKs
 	local fks = {}
@@ -268,7 +260,7 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	local cdiff = {}
 	for ic, iq in ipairs(iqArms) do
 		--tinsert(cdiff, fabs(iq[3] - qArm[3]))
-		tinsert(cdiff, vnorm(qDiff(iq, qArm)))
+		tinsert(cdiff, vnorm(qDiff2(iq, qArm, qMin, qMax)))
 	end
 	-- Cost for being tight (Percentage)
 	local ctight, wtight = {}, weights[3] or 0
@@ -506,10 +498,11 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local qArm0 = assert(plan.qArm0, prefix..'Need initial arm')
 	local qWaist0 = assert(plan.qWaist0, prefix..'Need initial waist')
 	-- Find a guess of the final arm configuration
-	local qArmFGuess, trGoal
+	local qArmFGuess = plan.qArmGuess
+	local trGoal
 	if type(plan.q)=='table' then
 		trGoal = self.forward(plan.q, qWaist0)
-		qArmFGuess = plan.qArmGuess or plan.q
+		qArmFGuess = plan.q
 	elseif plan.tr then
 		trGoal = plan.tr
 		local weights = plan.weights

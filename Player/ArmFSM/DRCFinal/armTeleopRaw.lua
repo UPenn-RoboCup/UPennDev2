@@ -23,15 +23,18 @@ function state.entry()
   t_update = t_entry
 
 	-- Set where we are
-	local qcLArm = Body.get_larm_command_position()
+	--[[
 	local qLArm = Body.get_larm_position()
-	local qcRArm = Body.get_rarm_command_position()
 	local qRArm = Body.get_rarm_position()
-	local qcWaist = Body.get_safe_waist_command_position()
 	local qWaist = Body.get_safe_waist_position()
-	teleopLArm = qLArm
-	teleopRArm = qRArm
-	teleopWaist = qWaist
+	--]]
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+	local qcWaist = Body.get_safe_waist_command_position()
+
+	teleopLArm = qcLArm
+	teleopRArm = qcRArm
+	teleopWaist = qcWaist
 	hcm.set_teleop_larm(teleopLArm)
 	hcm.set_teleop_rarm(teleopRArm)
 	hcm.set_teleop_waist(teleopWaist)

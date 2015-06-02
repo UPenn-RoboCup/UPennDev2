@@ -20,7 +20,9 @@ local okL, qLWaypoint, qLWaistpoint
 local okR, qRWaypoint, qRWaistpoint
 local quatpL, quatpR
 local qWaistDesired
-local default_weights = {1,1,0}
+local teleopLArm, teleopRArm
+--local default_weights = {1,1,0}
+local default_weights = {0,1,0,1}
 
 function state.entry()
 	print(state._NAME..' Entry')
@@ -46,6 +48,11 @@ function state.entry()
 	hcm.set_teleop_lweights(default_weights)
 	hcm.set_teleop_rweights(default_weights)
 
+	teleopLArm = qcLArm
+	teleopRArm = qcRArm
+	hcm.set_teleop_larm(teleopLArm)
+	hcm.set_teleop_rarm(teleopRArm)
+
 	lco, rco = movearm.goto(false, false)
 	-- Check for no motion
 	okL = type(lco)=='thread' or lco==false
@@ -68,11 +75,15 @@ function state.update()
 	local quatpL1 = hcm.get_teleop_tflarm()
 	local quatpR1 = hcm.get_teleop_tfrarm()
 	local qWaistDesired1 = hcm.get_teleop_waist()
+	local teleopLArm1 = hcm.get_teleop_larm()
+	local teleopRArm1 = hcm.get_teleop_rarm()
 
 	-- Check for changes
 	local lChange = quatpL1~=quatpL
 	local rChange = quatpR1~=quatpR
 	local wChange = qWaistDesired1~=qWaistDesired
+	local qlChange = teleopLArm~=teleopLArm1
+	local qrChange = teleopRArm~=teleopRArm1
 
 	-- Cannot do all. Need an indicator
 	if lChange and rChange and wChange then
@@ -84,6 +95,7 @@ function state.update()
 	if lChange then
 		quatpL = quatpL1
 		qWaistDesired = qWaistDesired1
+		teleopLArm = teleopLArm1
 		print(state._NAME, 'L target update')
 		local tfL = fromQ(quatpL)
 		local via = wChange and 'jacobian_waist_preplan' or 'jacobian_preplan'
@@ -93,6 +105,7 @@ function state.update()
 			via = via,
 			weights = weights,
 			qWaistGuess = wChange and qWaistDesired,
+			qArmGuess = qlChange and teleopLArm,
 			timeout = default_plan_timeout,
 		}, false)
 		lco = lco1
@@ -100,6 +113,7 @@ function state.update()
 	if rChange then
 		quatpR = quatpR1
 		qWaistDesired = qWaistDesired1
+		teleopRArm = teleopRArm1
 		print(state._NAME, 'R target update')
 		local tfR = fromQ(quatpR)
 		local via = wChange and 'jacobian_waist_preplan' or 'jacobian_preplan'
@@ -109,6 +123,7 @@ function state.update()
 			via = via,
 			weights = weights,
 			qWaistGuess = wChange and qWaistDesired,
+			qArmGuess = qrChange and teleopRArm,
 			timeout = default_plan_timeout,
 		})
 		rco = rco1
@@ -119,7 +134,7 @@ function state.update()
 
 	local qLArm = Body.get_larm_position()
 	local qRArm = Body.get_rarm_position()
-	local qWaist = Body.get_waist_position()
+	local qWaist = Body.get_safe_waist_position()
 	if lStatus=='suspended' then
 		okL, qLWaypoint, qLWaistpoint = coroutine.resume(lco, qLArm, qWaist)
 	end

@@ -1,0 +1,102 @@
+PROTO Shower [
+  field SFColor color 0 0 0
+  field SFFloat mass 3
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation  0 1 0 0
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+  
+	# Handle
+  DEF handle Transform{
+    rotation 0 0 1 1.57
+    translation 0.623 1.6 -0.58
+    children[
+      DEF HANDLE Shape {
+        appearance Appearance {
+          material Material {
+            ambientIntensity 0.1
+            diffuseColor IS color
+          }
+        }
+        geometry Cylinder {
+          height 0.21
+          radius 0.005
+  				subdivision 8
+        }
+      }
+    ]
+  }
+  DEF handle Transform{
+    rotation 0 0 1 0.5236
+    translation 0.6755 1.6909 -0.58
+    children[
+      DEF HANDLE Shape {
+        appearance Appearance {
+          material Material {
+            ambientIntensity 0.1
+            diffuseColor IS color
+          }
+        }
+        geometry Cylinder {
+          height 0.21
+          radius 0.005
+          subdivision 8
+        }
+      }
+    ]
+  }
+  DEF handle Transform{
+    rotation 0 0 1 -0.5236
+    translation 0.5705 1.6909 -0.58
+    children[
+      DEF HANDLE Shape {
+        appearance Appearance {
+          material Material {
+            ambientIntensity 0.1
+            diffuseColor IS color
+          }
+        }
+        geometry Cylinder {
+          height 0.21
+          radius 0.005
+          subdivision 8
+        }
+      }
+    ]
+  }
+  DEF wire Transform{
+    rotation 0 0 1 0
+    translation 0.623 2.045 -0.58
+    children[
+      DEF WIRE Shape {
+        appearance Appearance {
+          material Material {
+            ambientIntensity 0.1
+            diffuseColor IS color
+          }
+        }
+        geometry Cylinder {
+          height 0.515
+          radius 0.005
+          subdivision 8
+        }
+      }
+    ]
+  }
+  ]
+  boundingObject Group {
+    children [
+			USE handle
+      USE wire
+    ]
+  }
+  physics Physics {
+    density -1
+    mass IS mass
+  }
+}
+}

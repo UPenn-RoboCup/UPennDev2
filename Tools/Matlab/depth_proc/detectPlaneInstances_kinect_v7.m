@@ -30,6 +30,7 @@ persistent param_normalComputation
 persistent thre_sValue
 persistent thre_clusterSize
 persistent thre_memberSize
+persistent max_memberSize
 persistent param_meanShiftResol
 persistent param_meanShiftWeights
 
@@ -59,11 +60,7 @@ PlaneOfInterest = [];
 clickxy = [];
 
 %% Filtering     
-depth = flip(double(depthRaw)',2);%-20;
-depth(depth(:) <= DEPTH_MIN) = 0;
-depth(depth(:) >= DEPTH_MAX) = 0;   
-depth = medfilt2(depth,[7 7]);
-depth = MASK.*depth;
+depth = depthRaw; 
 validInd = find(depth>0);
 mask = zeros(size(depth));
 mask(validInd) = 1;
@@ -99,10 +96,10 @@ end
 
 stPoint = zeros(5,5);
 stPoint(3:5,1) = Ccb*[1; 0; 0];   
-stPoint(3:5,2) = Ccb*[0 0 1;-1 0 0; 0 -1 0]*eulr2dcm([ 15;  0; 0]*pi/180)*[0; 0; 1];   
-stPoint(3:5,3) = Ccb*[0 0 1;-1 0 0; 0 -1 0]*eulr2dcm([-15;  0; 0]*pi/180)*[0; 0; 1];    
-stPoint(3:5,4) = Ccb*[0 0 1;-1 0 0; 0 -1 0]*eulr2dcm([ 0;  15; 0]*pi/180)*[0; 0; 1];  
-stPoint(3:5,5) = Ccb*[0 0 1;-1 0 0; 0 -1 0]*eulr2dcm([ 0; -15; 0]*pi/180)*[0; 0; 1];  
+stPoint(3:5,2) = [0 0 1;-1 0 0; 0 -1 0]*Ccb*eulr2dcm([ 15;  0; 0]*pi/180)*[0; 0; 1];   
+stPoint(3:5,3) = [0 0 1;-1 0 0; 0 -1 0]*Ccb*eulr2dcm([-15;  0; 0]*pi/180)*[0; 0; 1];    
+stPoint(3:5,4) = [0 0 1;-1 0 0; 0 -1 0]*Ccb*eulr2dcm([ 0;  15; 0]*pi/180)*[0; 0; 1];  
+stPoint(3:5,5) = [0 0 1;-1 0 0; 0 -1 0]*Ccb*eulr2dcm([ 0; -15; 0]*pi/180)*[0; 0; 1];  
 % compute Closest Point And Normal;
 [finalMean,clusterXYcell,nMembers] = sphericalMeanShiftxyB(data,A(1:3,validNormal),param_meanShiftResol,param_meanShiftWeights,stPoint);
 
@@ -111,7 +108,8 @@ blankConnImg = zeros(floor(DEPTH_H/param_normalComputation(2)),floor(DEPTH_W /pa
 for tt = 1: size(finalMean,2)      
     if nMembers(tt) > thre_clusterSize  % if cluster size is big enough 
         mean_robot = [finalMean(5,tt) -finalMean(3,tt) -finalMean(4,tt)]';    
-        if plane_dist(ui.taskMode,Ccb*mean_robot) == true % if the normal is close to our models
+        %if plane_dist(ui.taskMode,Ccb*mean_robot) == true % if the normal is close to our models
+        if plane_dist(-1,Ccb*mean_robot) == true % consider all
             connImg = blankConnImg;
             index = validNormal(clusterXYcell{tt}); 
             [index_y, index_x] = ind2sub([DEPTH_H DEPTH_W],index);
@@ -131,6 +129,7 @@ for tt = 1: size(finalMean,2)
             if NL >0
                 for t = 1: length(count_)                 
                     if count_(t) > thre_memberSize % if the connected bloc is big enough 
+                        if count_(t) < max_memberSize 
                         [dummy,whichcell] = intersect(index_ , indices{t});    
                         if ~isempty(whichcell)   
                          %% Find center, bbox, boundary
@@ -157,6 +156,7 @@ for tt = 1: size(finalMean,2)
                                 Pts(2,:) = -Xind_c(index(whichcell_))*Sx.*Pts(1,:);   
                                 Pts(3,:) = -Yind_c(index(whichcell_))*Sy.*Pts(1,:);                                                                           
                             end       
+                                                     
 
                          %% refinement 
                             % (could test using svd and find the principal axes?)                       
@@ -176,20 +176,24 @@ for tt = 1: size(finalMean,2)
                                 y_mean = mean((Yind(index(whichcell))-IMCY)/fy.*z_);
 
                                 Center = [ z_mean; -x_mean; -y_mean;];
+                                
+                                if (max(sum(([Pts Bbox] - repmat(Center, 1, (size(Pts,2) + size(Bbox,2)))).^2 , 1)) < 0.3^2);
 
-                                PlaneID = PlaneID + 1;
-                                Planes{PlaneID} = struct('Center',Center,...
-                                                         'Normal', n__',...
-                                                         'Points',[Pts Bbox],...
-                                                         'Size', numel(ins),...
-                                                         'Type','Else');   
+                                    PlaneID = PlaneID + 1;
+                                    Planes{PlaneID} = struct('Center',Center,...
+                                                             'Normal', n__',...
+                                                             'Points',[Pts Bbox],...
+                                                             'Size', numel(ins),...
+                                                             'Type','Else');   
 
-                                if ui.clickType == 2 
-                                    Indices{PlaneID} = [Xind(index(whichcell)); Yind(index(whichcell))];
-                                else %if ui.clickType == 3                                 
-                                    Points3D{PlaneID} = [  z_; -(Xind(index(whichcell))-IMCX)/fx.*z_ ; -(Yind(index(whichcell))-IMCY)/fy.*z_; ];                   
+                                    if ui.clickType == 2 
+                                        Indices{PlaneID} = [Xind(index(whichcell)); Yind(index(whichcell))];
+                                    else %if ui.clickType == 3                                 
+                                        Points3D{PlaneID} = [  z_; -(Xind(index(whichcell))-IMCX)/fx.*z_ ; -(Yind(index(whichcell))-IMCY)/fy.*z_; ];                   
+                                    end
                                 end
                             end
+                        end
                         end
                     end
                 end
@@ -275,7 +279,7 @@ elseif ui.taskMode == 2
         Planes{candidates(idx)}.Type = 'wall';
         PlaneOfInterest = candidates(idx);
     end
-elseif ui.taskMode == 11 || ui.taskMode == 4
+elseif ui.taskMode == 11 % || ui.taskMode == 4
      
     [Planes,PlaneID,PlaneOfInterest,Points3D] = mergePlanes(Planes,PlaneID,PlaneOfInterest,Points3D,30);
   

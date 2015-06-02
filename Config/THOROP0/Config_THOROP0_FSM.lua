@@ -81,6 +81,7 @@ fsm.Head = {
 	--
 	{'headCenter', 'trackleft', 'headTrackLeft'},
 	{'headCenter', 'trackright', 'headTrackRight'},
+	{'headCenter', 'mesh', 'headMesh'},
 	{'headCenter', 'teleop', 'headTeleop'},
 	{'headCenter', 'teleopik', 'headTeleopIK'},
 	--

@@ -1,6 +1,6 @@
 DEPTH_W = 512;
 DEPTH_H = 424;
-DEPTH_MAX = 3000; %8000;
+DEPTH_MAX = 2500; %8000;
 DEPTH_MIN = 400;
 IMCX = 255.8;%422487561914693 ;% DEPTH_W/2;
 IMCY = 203.7; %.487139940005989;% DEPTH_H/2;
@@ -34,12 +34,13 @@ load('MASK2.mat')
 %clear bw;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
 % parameters 
-param_normalComputation = [7 2]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  
-thre_sValue = 0.05; % The smaller it is, the flatter the plane fit is 
-thre_clusterSize = 500; % number of clusters
+param_normalComputation = [5 5]; % 1: (odd nember)^2+1 <- window sizw,  2: increment  
+thre_sValue = 0.07; % The smaller it is, the flatter the plane fit is 
+thre_clusterSize = 300; % number of clusters
 thre_memberSize = 200; % number of connected members (in the image domain)
-param_meanShiftResol = 0.4;% 0.6;         % mean shift resolution
-param_meanShiftWeights = [0.2 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
+max_memberSize = 500;
+param_meanShiftResol = 0.35;% 0.6;         % mean shift resolution
+param_meanShiftWeights = [0 1]; %[0.2 1];   % mean shift weights (1:image distance, 2:angular distance in normal space) 
 
 prevNormals = [];
 manualModel = [];

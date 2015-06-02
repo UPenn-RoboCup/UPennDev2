@@ -73,6 +73,8 @@ shared_data.guidance.t = zeros(1)
 
 shared_data.audio = {}
 shared_data.audio.request = vector.zeros(1)
+shared_data.audio.volume = vector.zeros(2)
+shared_data.audio.rawvolume = vector.zeros(2)
 
 shared_data.drive={}
 shared_data.drive.gas_pedal = vector.zeros(2)

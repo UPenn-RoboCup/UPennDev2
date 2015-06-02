@@ -12,6 +12,8 @@ local wizards = {
 	{'lidar_head', },
 	{'camera', 1},
 	{'camera', 2},
+	{'audio', 1},
+	{'audio', 2},
 	{'rpc', },
 	{'feedback', },
 	{'mesh', },

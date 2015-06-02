@@ -36,9 +36,11 @@ while 1
                     % TASK: rough terrain
                     ui.taskMode = 4;
                     ui.figures(3) = 2;
-                    % average 
-                    [res, meta] = detectPlanes7(raw, metadata, ui);  
-                    res
+                    % average list_planes = struct('Center',[],'Normal',[],'var',0,'N',0);
+                    tic,
+                    [res, output] = detectPlanes7(raw, metadata, ui);  
+                    toc,
+                    output
 %                     if numel(distance)> 0
 %                         %distance
 %                         %yaw
@@ -49,29 +51,12 @@ while 1
 %                         % yaw
 %                         zmq('send',s_field,packed_data);
 %                      end
-              
-               % figure(1), imagesc(raw');            
-             % end
+                   
         elseif strcmp(char(metadata.id), 'k2_rgb') %%%%%%%%%%%%%%%%%%%%%%%%% RGB
             % rgb_img = djpeg(raw);
             % set(h_rgb, 'CData', rgb_img);            
-         
-        elseif 0 %strcmp(char(metadata.id), 'mesh0')
-          
-            if (mod(count,3) == 0) 
-                
-                metadata.dims = metadata.dim;
-                metadata.flag = 1;
-                raw = reshape(typecast(raw, 'single'), [metadata.dim(2), metadata.dim(1)]);
-
-    %             figure(3), imagesc(raw);
-    %              disp(metadata)
-    %              size(raw)
-
-               [ Planes ] = detectPlaneInstances_lidar_v5c( raw', 3, metadata);  
-            end
-           count = count + 1;
-        end
+        end 
+     
     end
     drawnow;
 end

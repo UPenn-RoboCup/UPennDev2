@@ -42,7 +42,7 @@ se = strel('disk',7,4);
 
 % %%
 % meshRaw = reshape(typecast(meshRaw,'single'), [ONESCAN_ NUMSCAN_]);
-meshRaw(meshRaw>3) = 0;             % clamp on ranges
+meshRaw(meshRaw>2) = 0;             % clamp on ranges
 meshRaw(meshRaw<0.7) = 0;
 [mesh_, s_, v_, nzcols] = scan2DepthImg_spherical0( meshRaw, s_angles, v_angles); % remove repeated measure   
 
@@ -77,7 +77,7 @@ Z0  = -sv_.*mesh_ ;
 if visflag > 0
     P = Ccb*[ X0(:)'; Y0(:)'; Z0(:)' ] + repmat(Tcb,1,numel(X0));
     figure(visflag), hold off;
-    showPointCloud(P(1,:),P(2,:),P(3,:),[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
+    showPointCloud([P(1,:)' P(2,:)' P(3,:)'],[0.5 0.5 0.5],'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',2);
     hold on;  
 end
 %% Normal Computation
@@ -218,7 +218,7 @@ if NumPlane > 0
                     ALL = Ccb*Points3D{PlaneID} + repmat(Tcb,1,length(Points3D{PlaneID}));
                     randcolor = rand(1,3); % 0.5*(finalMean(3:5,tt)+1);   
                     figure(visflag), 
-                    showPointCloud(ALL(1,:), ALL(2,:),ALL(3,:),...
+                    showPointCloud([ALL(1,:)' ALL(2,:)' ALL(3,:)'],...
                       randcolor,'VerticalAxis', 'Z', 'VerticalAxisDir', 'Up','MarkerSize',5);
                     nvec = [Planes{PlaneID}.Center  Planes{PlaneID}.Center+Planes{PlaneID}.Normal*0.15];
                     figure(visflag),

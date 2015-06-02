@@ -64,17 +64,17 @@ arm.pushdoor[1] = {
 	ikhead = {0.65, 0.25, -0.12}
 }
 
-
+-- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.valve = {}
 arm.valve[1] = {
 	right = false,
 	left = {
 		timeout=20,
 		via='jacobian_preplan',
-		tr={0.6, 0.3, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.6, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		--tr={0.35, -0.23, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		--qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
-		--weights = {1,1,-1,1, 0},
+		qArmGuess = vector.new{0, 30, 0, -120, 60, -75, -90}*DEG_TO_RAD,
+		weights = {1,1,-1,1, 0},
 	}
 }
 

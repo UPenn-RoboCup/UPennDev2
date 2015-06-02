@@ -1226,13 +1226,31 @@ while is_running do
 
 		local lfoot = dcm.get_sensor_lfoot()
 		local rfoot = dcm.get_sensor_rfoot()
-		table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f',
-		lfoot[3], -lfoot[4],lfoot[5] ))
-		table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f',
-		rfoot[3], -rfoot[4],rfoot[5] ))
+	
+		local lf_z, lf_r, lf_p = lfoot[3], -lfoot[4], lfoot[5]
+		local rf_z, rf_r, rf_p = rfoot[3], -rfoot[4], rfoot[5]
 
-		if lfoot[3]>20 then
-			local rel_zmp_left = {-lfoot[5]/lfoot[3], lfoot[4]/lfoot[3], 0}
+--
+		if Config.left_foot_ft.bias_forceZ then
+		  lf_z , lf_p, lf_r = 
+			lf_z-Config.left_foot_ft.bias_forceZ, 
+			lf_p - Config.left_foot_ft.bias_torque[2],
+			lf_r - Config.left_foot_ft.bias_torque[1]
+
+		  rf_z , rf_p, rf_r = 
+			rf_z-Config.right_foot_ft.bias_forceZ, 
+			rf_p - Config.right_foot_ft.bias_torque[2],
+			rf_r - Config.right_foot_ft.bias_torque[1]
+		end
+
+--]]
+		table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f',
+		lf_z,lf_r, lf_p ))
+		table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f',
+		rf_z,rf_r, rf_p ))
+
+		if lf_z>50 then
+			local rel_zmp_left = {-lf_p/lf_z, lf_r/lf_z,0}
 			table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)',
 			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
 			dcm.set_sensor_lzmp({rel_zmp_left[1],rel_zmp_left[2]})
@@ -1240,8 +1258,8 @@ while is_running do
 			dcm.set_sensor_lzmp({0,0})
 		end
 
-		if rfoot[3]>20 then
-			local rel_zmp_right = {-rfoot[5]/rfoot[3], rfoot[4]/rfoot[3], 0}
+		if rf_z>50 then
+			local rel_zmp_right = {-rf_p/rf_z, rf_r/rf_z,0}
 			table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)',
 			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
 			dcm.set_sensor_rzmp({rel_zmp_right[1],rel_zmp_right[2]})

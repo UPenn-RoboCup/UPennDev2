@@ -1,3 +1,4 @@
+#!/usr/local/bin/luajit
 -- arecord -f S16_LE -c2 -d 20 -D hw:3,0 -t raw | ./vumeter > test.tmp
 -- arecord -f S16_LE -c2 -d 7 -D hw:1,0 -t raw | lame -r -s 16 -b 8 -h - /tmp/robot.mp3
 dofile'../include.lua'
@@ -15,7 +16,7 @@ hcm.set_audio_volume(percent)
 hcm.set_audio_rawvolume(raw)
 
 -- TODO: Reliably opening these, regardless of the dev number
-local f = assert(io.popen(cmdstr[arg[1] or 1]))
+local f = assert(io.popen(cmdstr[arg[1]]or cmdstr[1]))
 f:setvbuf'no'
 
 local level

@@ -32,30 +32,15 @@ shared.stance.bodyTilt   = vector.zeros(1)
 shared.stance.bodyHeight = vector.zeros(1)
 shared.stance.bodyHeightTarget = vector.zeros(1)
 shared.stance.uTorsoComp = vector.zeros(2) --For quasi-static balancing
-
 shared.stance.waistPitchBias = vector.zeros(1) --To cancel out body sag
 shared.stance.waistPitchBiasTarget = vector.zeros(1) --To cancel out body sag
-
 shared.stance.singlesupport = vector.zeros(1) --we are doing quasi-static motion, so need more roll compensation
-
-
 shared.stance.last_support = vector.zeros(3) --We keep last support point here
-
 shared.stance.COMoffset = vector.zeros(3)--relative COM position from waist joint
 shared.stance.COMoffsetPose1 = vector.zeros(3) --com offset for 'default' arm pose
 
 
 
-
---Used for drilling task
---Torso compensation is used to follow arm position, not for balancing
---0: compensation
---1: follow the arm
---2: stop compensation (keep current value)
-shared.stance.enable_torso_track = vector.zeros(1)
-shared.stance.track_hand_isleft = vector.zeros(1)
-shared.stance.track_hand_y0 =  vector.zeros(1)
-shared.stance.track_torso_y0 =  vector.zeros(1)
 
 --Arm info
 
@@ -73,31 +58,12 @@ shared.arm.trrarm = vector.zeros(7)
 shared.arm.qlarmcomp = vector.zeros(7)
 shared.arm.qrarmcomp = vector.zeros(7)
 
---Current arm velocity limit
-shared.arm.dqVelLeft = vector.zeros(7) 
-shared.arm.dqVelRight = vector.zeros(7)
-
-shared.arm.dpVelLeft = vector.zeros(6) --transform vel
-shared.arm.dpVelRight = vector.zeros(6)
-
---hand offset X and Y (for hook)
-if Config.arm then
-  shared.arm.handoffset = vector.zeros(3)
-  shared.arm.lhandoffset = vector.zeros(3)
-  shared.arm.rhandoffset = vector.zeros(3)
-end
-
-
---SJ: I will move to shared memory (from function arguments)
-
+--left and right hand offsets
+shared.arm.lhandoffset = vector.zeros(3)
+shared.arm.rhandoffset = vector.zeros(3)
 shared.arm.handmass = vector.zeros(2) --Hand weight 
 shared.arm.holdmass = vector.zeros(2) --Additional holding mass weight
 shared.arm.endpoint_compensation = vector.zeros(2) --should we apply ik-based endpoint compensation?
-
-
-
-
-
 
 -- Walk Parameters (for tuning on the fly)
 shared.walk = {}
@@ -142,6 +108,11 @@ shared.walk.aShiftY = vector.zeros(2)
 shared.walk.avShiftY = vector.zeros(2)
 
 shared.walk.t_last = vector.zeros(1)
+
+shared.walk.footlift = vector.zeros(2)
+shared.walk.heeltoewalk = vector.zeros(1)
+
+
 
 
 --During SS, swinging foot sags below
@@ -215,14 +186,30 @@ shared.status.LFT = vector.zeros(3) --fZ tx ty
 shared.status.RFT = vector.zeros(3) --fz tx ty
 shared.status.LZMP = vector.zeros(3)
 shared.status.RZMP = vector.zeros(3)
-shared.status.IMU = vector.zeros(4) --r p vr vp
+shared.status.IMU = vector.zeros(6) --rpy vr vp vy
 
 
---If we are kneeling, we don't need quasistatic balancing
-shared.status.iskneeling    = vector.zeros(1)
+--how much of the upper body weight is held by left leg?
+-- 0.5 for double support
+-- 1 for full left single support
 
---If we are in wide stance, we don't use lateral quasistatic balancing 
-shared.status.iswidestance    = vector.zeros(1)
+--Torso mass: 14.832lg, Arm mass: 5.714/6.74kg 
+--Total upper body mass: 27.286kg
+--Leg mass: 11.86kg for each leg
+--so if ratio is less than 11.86 / (11.86*2+27.286), the left leg is in mid-air
+--and we should compensate the COM position so that we can hold the left leg mass
+shared.status.leftSupportRatio = vector.ones(1)*0.5
+
+
+shared.status.lleg_torque = vector.zeros(6)
+shared.status.rleg_torque = vector.zeros(6)
+
+--stabilization mode: SS (0) / DS (1) / Load (2)
+shared.status.stabilization_mode = vector.zeros(1)
+shared.status.temp_tZMP = vector.zeros(1)
+
+
+
 
 --Current time
 shared.status.t = vector.zeros(1)

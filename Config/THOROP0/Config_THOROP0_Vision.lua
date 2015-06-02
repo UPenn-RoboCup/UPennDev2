@@ -85,29 +85,52 @@ local m308_param = {
 local grasp_afternoon_param = {
 	{'White Balance Temperature', 3300},
 	{'Exposure (Absolute)', 170},
-	{'Focus (absolute)', 0},
+	{'Focus', 0},
 	{'Brightness', 128},
 	{'Contrast', 128},
 	{'Saturation', 150},
 	{'Gain', 66},
 	{'Sharpness', 0},
 }
+local ucla_head_param = {
+	--{'White Balance Temperature', 2300},
+	--{'Exposure (Absolute)', 112},
+	--{'Focus (absolute)', 120},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 128},
+	{'Gain', 0},
+	{'Sharpness', 128},
+}
+local ucla_wrist_param = {
+	--{'White Balance Temperature', 2300},
+	--{'Exposure (Absolute)', 112},
+	--{'Focus', 120},
+	{'Brightness', 48},
+	{'Contrast', 32},
+	{'Saturation', 48},
+	{'Gain', 0},
+	{'Sharpness', 128},
+}
 
 -- Cameras
 local camera = {}
 camera[1] = {
 	name = 'head',
-	dev = '/dev/video0',
+	dev = '/dev/video-headcamera',
 	format = 'yuyv',
 	w = 640,
-	h = 360, --480,
-	fps = 30,
-	jpeg_quality = 60,
+	h = 360,
+	fps = 15,
+	jpeg_quality = 40,
+	quality = 40,
+	downsampling = 2,
+	--crop = {640/2+1, 360/2+1, 640/2, 360/2},
 	mountOffset = {
 		-- cameraRoll, cameraPitch, cameraYaw
 		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
 		-- Translation offset from the neck
-		{0.04,0,0.04}
+		{0.02,0,0.14}
 	},
 	cx_offset = 0,
 	cy_offset = 0,
@@ -126,31 +149,34 @@ camera[1] = {
 	focal_length = 395.17,
 	focal_base = 640,
 	auto_param = {
-		--      {'Exposure, Auto', 1},
-		{'White Balance Temperature, Auto', 0},
+		{'Exposure, Auto', 1},
+		{'White Balance Temperature, Auto', 1},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 0},
---		{'Focus, Auto', 0}
+		{'Exposure, Auto Priority', 1},
+		--{'Focus, Auto', 0}
 	},
-	param = m308_param,
+	param = ucla_head_param,
 }
 
 camera[2] = {
-	name = 'waist',
-	dev = '/dev/video1',
+	name = 'wrist',
+	dev = '/dev/video-wristcamera',
 	format = 'yuyv',
-	w = 640,
-	h = 360,
-	fps = 30,
-	jpeg_quality = 60,
+	w = 320,
+	h = 240,
+	fps = 15,
+	jpeg_quality = 50,
+	quality = 50,
+	downsampling = 1,
+	crop = {320/2+1, 240/2+1, 320/2, 240/2},
 	auto_param = {
-		-- {'Exposure, Auto', 1},
-		{'White Balance Temperature, Auto', 0},
+		{'Exposure, Auto', 1},
+		{'White Balance Temperature, Auto', 1},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 0},
-		{'Focus, Auto', 0}
+		{'Exposure, Auto Priority', 1},
+		--{'Focus, Auto', 0}
 	},
-	param = m308_param,
+	param = ucla_wrist_param,
 }
 
 local kinect = {

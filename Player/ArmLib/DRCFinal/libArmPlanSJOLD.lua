@@ -19,7 +19,11 @@ debugmsg = true
 Config.arm.plan={}
 Config.arm.plan.dt_step0_jacobian = 0.1
 Config.arm.plan.dt_step_jacobian = 0.2
-Config.arm.plan.dt_step_min_jacobian = 0.02
+
+
+Config.arm.plan.dt_step_min_jacobian = 0.02 --how fast we can speed up the joint
+Config.arm.plan.dt_step_min_jacobian = 0.015 --how fast we can speed up the joint
+
 Config.arm.plan.scale_limit={0.05,2}
 
 
@@ -60,11 +64,11 @@ local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()  
 
-  local dqVelLeft = mcm.get_arm_dqVelLeft()
-  local dqVelRight = mcm.get_arm_dqVelRight()
+  local dqVelLeft = Config.arm.vel_angular_limit
+  local dqVelRight = Config.arm.vel_angular_limit
 
-  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
-  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt,nil,false )  
+  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt,nil,false )
 
   if not absolute then  
     for i=1,7 do
@@ -156,12 +160,24 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
   local trArmDiff = util.diff_transform(trArmTarget,trArm)  
 
 --Calculate target velocity
+--[[
   local trArmVelTarget={
     0,0,0,
     util.procFunc(-trArmDiff[4],0,15*math.pi/180),
     util.procFunc(-trArmDiff[5],0,15*math.pi/180),
     util.procFunc(-trArmDiff[6],0,15*math.pi/180),
   }  
+--]]
+
+  local trArmVelTarget={
+    0,0,0,
+    util.procFunc(-trArmDiff[4],0,5*math.pi/180),
+    util.procFunc(-trArmDiff[5],0,5*math.pi/180),
+    util.procFunc(-trArmDiff[6],0,5*math.pi/180),
+  }  
+
+
+
   local linear_dist = util.norm(trArmDiff,3)
   local total_angular_vel = 
      math.abs(trArmVelTarget[4])+math.abs(trArmVelTarget[5])+math.abs(trArmVelTarget[6])
@@ -172,11 +188,7 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
     trArmDiff[2]/linear_dist *linear_vel,
     trArmDiff[3]/linear_dist *linear_vel    
   end
-    
-  if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then 
-    return qArm,true,1
-  end --reached
-
+  
   local J= torch.Tensor(JacArm):resize(6,7)  
   local JT = torch.Tensor(J):transpose(1,2)
   local e = torch.Tensor(trArmVelTarget)
@@ -190,6 +202,7 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
   local lambda=torch.eye(7)
   local c, p = 2,10  
 
+--[[
   local joint_limits={
     {-math.pi/2*100/180, math.pi*200/180},
     {0,math.pi/2},
@@ -199,16 +212,34 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
     {-math.pi/2, math.pi/2},
     {-math.pi, math.pi}
   }
+  --]]
+  local joint_limits={
+    {-math.pi/2*100/180, math.pi*200/180},
+    {0,math.pi/2},
+    {-math.pi/4, math.pi/2},    
+    {-math.pi, -0.2}, --temp value    
+    {-math.pi*1.5, math.pi*1.5},
+    {-math.pi/2, math.pi/2},
+    {-math.pi, math.pi}
+  }
+
   if isLeft==0 then
     joint_limits[2]={-math.pi/2,0}
---    joint_limits[2]={-math.pi/180*135,0}
+    joint_limits[3]={-math.pi/2, math.pi/4}
     joint_limits[5]={-math.pi*1.5, math.pi*1.5}
   end
 
+
+
+
+
+
+
   for i=1,7 do
-    lambda[i][i]=0.1*0.1 + c*
+     lambda[i][i]=0.1*0.1 + c*
       ((2*qArm[i]-joint_limits[i][1]-joint_limits[i][2])/
-       (joint_limits[i][2]-joint_limits[i][1]))^p
+      (joint_limits[i][2]-joint_limits[i][1]))^p
+  
   end
 
   I:addmm(JT,J):add(1,lambda)
@@ -243,6 +274,10 @@ local function get_armangle_jacobian(self,qArm,trArmTarget,isLeft,  qWaist,dt_st
       )
   end
 
+  if linear_dist<0.001 and total_angular_vel<1*math.pi/180 then 
+    return qArmTarget,true,1
+  end --reached
+
   return qArmTarget,false, linearVelActual/linear_vel
 end
 
@@ -250,7 +285,7 @@ end
 local function get_next_movement_jacobian(self, init_cond, trLArm1,trRArm1, dt_step, waistYaw, waistPitch, velL, velR)
 
   local default_hand_mass = Config.arm.default_hand_mass or 0
-  local dqVelLeft,dqVelRight = mcm.get_arm_dqVelLeft(),mcm.get_arm_dqVelRight()    
+  local dqVelLeft,dqVelRight = Config.arm.vel_angular_limit,Config.arm.vel_angular_limit
   local massL, massR = self.mLeftHand + default_hand_mass, self.mRightHand + default_hand_mass
 
   local trLArm, trRArm, qLArmComp, qRArmComp, uTorsoComp = unpack(init_cond)
@@ -294,8 +329,8 @@ end
 
 
 local function plan_unified(self, plantype, init_cond, init_param, target_param)
-  local dpVelLeft = mcm.get_arm_dpVelLeft()
-  local dpVelRight = mcm.get_arm_dpVelRight()
+  local dpVelLeft = Config.arm.vel_linear_limit
+  local dpVelRight =  Config.arm.vel_linear_limit
   local t00 = unix.time()
   if not init_cond then return end
 

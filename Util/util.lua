@@ -276,7 +276,7 @@ end
 --SJ: modangle didnt work for whatever reason so just used math.mod
 
 
-function util.approachTolRad( values, targets, speedlimits, dt, tolerance )
+function util.approachTolRad( values, targets, speedlimits, dt, tolerance, absolute )
   tolerance = tolerance or 1e-6
   -- Tolerance check (Asumme within tolerance)
   local within_tolerance = true
@@ -284,14 +284,14 @@ function util.approachTolRad( values, targets, speedlimits, dt, tolerance )
   for i,speedlimit in ipairs(speedlimits) do
     -- Target value minus present value
     local delta = util.mod_angle(targets[i]-values[i])
---    local delta = math.mod(targets[i]-values[i]+5*math.pi,2*math.pi)-math.pi
+    if absolute then delta = targets[i]-values[i] end
+
     -- If any values is out of tolerance,
     -- then we are not within tolerance
     if math.abs(delta) > tolerance then
       within_tolerance = false
       -- Ensure that we do not move motors too quickly
       delta = util.procFunc(delta,0,speedlimit*dt)
---      values[i] = math.mod(values[i]+delta+5*math.pi,2*math.pi)-math.pi
       values[i] = values[i] + delta
     end
   end
@@ -510,6 +510,19 @@ util.color = function(str,fg,bg,blink)
   end
   return begin_fg..str..color_end
 end
+
+
+util.colorcode = function(val, max, c1, c2, str)
+  str= str or "%d"
+  c1 = c1 or 'green'
+  c2 = c2 or 'red'
+  if math.abs(val)<max then 
+    return util.color(string.format(str,val), c1)
+  else
+    return util.color(string.format(str,val), c2)
+  end
+end
+
 
 util.procFunc = procFunc
 util.p_feedback = p_feedback

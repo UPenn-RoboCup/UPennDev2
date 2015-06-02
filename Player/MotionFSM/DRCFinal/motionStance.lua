@@ -51,6 +51,9 @@ function state.entry()
   mcm.set_walk_steprequest(0)
   mcm.set_motion_state(2)
 
+	-- Disable imu yaw
+	wcm.set_robot_use_imu_yaw(0)
+
 
   uLeft = mcm.get_status_uLeft()
   uRight = mcm.get_status_uRight()
@@ -69,12 +72,11 @@ function state.entry()
   hcm.set_legdebug_torso({uTorso[1],uTorso[2]})
   hcm.set_legdebug_torso_angle({0,0}) 
 
+  mcm.set_walk_footlift({0,0})
+  mcm.set_walk_heeltoewalk(0) --no heeltoewalk default  
 
+  mcm.set_status_temp_tZMP(Config.walk.tZMP)
 
---Waist control
-  if Config.waist_testing then
-    Body.set_waist_command_velocity({500,500})
-  end
 end
 
 function state.update()
@@ -83,11 +85,7 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-  
-  if Config.waist_testing then
-    waist_target=hcm.get_motion_waistTarget()
-    Body.set_waist_command_position({waist_target,0})
-  end
+ 	
 
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
@@ -106,9 +104,11 @@ function state.update()
   
   supportLeg = 2; --Double support
 
-
-  local gyro_rpy = Body.get_gyro()
+  local gyro_rpy = moveleg.update_sensory_feedback()
   local delta_legs
+
+
+
 
 ------------------------------------------------
 --External control
@@ -125,6 +125,35 @@ function state.update()
   uTorso[1] = util.approachTol( uTorso[1],uTorsoTarget[1],vel_movement , t_diff )
   uTorso[2] = util.approachTol( uTorso[2],uTorsoTarget[2],vel_movement , t_diff )
 
+
+
+
+  --Raise body height when we are in double support
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+  local distL = math.sqrt(uLeftTorso[1]*uLeftTorso[1] + uLeftTorso[2]*uLeftTorso[2])
+  local distR = math.sqrt(uRightTorso[1]*uRightTorso[1] + uRightTorso[2]*uRightTorso[2])
+  local centTh = 0.4
+  local leftRatio = distL/(distL+distR)
+  local z_min = math.min(zLeg[1],zLeg[2])
+  local raiseVelDS = 0.10
+  if z_min>0 and leftRatio>centTh and leftRatio<1-centTh then
+    leg_raise = math.min(z_min,raiseVelDS*t_diff)
+    zLeg[1] = zLeg[1] - leg_raise
+    zLeg[2] = zLeg[2] - leg_raise        
+    mcm.set_status_zLeg(zLeg)
+    mcm.set_status_zLeg0(zLeg)
+    uLeftTarget[4] = zLeg[1]
+    uRightTarget[4] = zLeg[2]
+    hcm.set_legdebug_left(uLeftTarget) 
+    hcm.set_legdebug_right(uRightTarget) 
+  end  
+
+  -------------------------------------------------------
+
+
+
+
   local enable_balance = hcm.get_legdebug_enable_balance()
   if enable_balance[1]+enable_balance[2]>0 then
     uLeftTarget[4] = zLeg[1]
@@ -137,13 +166,10 @@ function state.update()
   end
 
   moveleg.store_stance(t,0,uLeft,uTorso,uRight,2,uTorso, zLeg[1],zLeg[2])
-
   mcm.set_stance_bodyHeight(bodyHeight)  
-  moveleg.ft_compensate(t_diff)
 
   delta_legs, angleShift = moveleg.get_leg_compensation_new(supportLeg,0,gyro_rpy, angleShift,t_diff)
   moveleg.set_leg_positions(delta_legs)
-
 
   mcm.set_status_uTorsoVel({0,0,0})
 
@@ -155,6 +181,8 @@ end -- walk.update
 function state.exit()
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
+	wcm.set_robot_use_imu_yaw(1)
+
 end
 
 return state

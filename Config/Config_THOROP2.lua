@@ -1,29 +1,15 @@
+--Now the Config file is entirely identical over two robots (using hostname)
 IS_STEVE = true
---IS_STEVE = false
-
 IS_COMPETING = false
 
+if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 -- Global Config
-Config = {
-	PLATFORM_NAME = 'THOROP2',
-	demo = false,
-}
+--Config = {PLATFORM_NAME = 'THOROP1',demo = false,}
+--local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
-local exo = {
-	'Walk','Net','FSM','World','Vision',
-	'Robot_Chip',
-	(IS_STEVE and 'Arm_Steve' or 'Arm_DRCFinal'),
-}
+Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
+exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}
 
-Config.toeheel_lift = true
-Config.enable_touchdown = false
-Config.raise_body = true
-Config.waist_testing = true
-Config.use_jacobian_arm_planning = true
-Config.piecewise_step = true
-Config.enable_jacobian_test = false
---birdwalk TODO : IMU and FT values swap
---Config.birdwalk = 1 --testing birdwalk
 
 -- Printing of debug messages
 Config.debug = {
@@ -35,31 +21,87 @@ Config.debug = {
   goalpost = false,
   world = false,
   feedback = false,
+  armplan = true,
 }
+
+--BIRDWALK DEFAULT FOR CHIP
+Config.birdwalk = 1 --testing birdwalk		
+
+
+
+Config.raise_body = true
+--Config.stepup_delay = true
+Config.use_exact_tZMP = true
+
+
+Config.stair_test=true
+
+Config.use_heeltoe_walk = true
+--Config.heeltoe_angle = 5*DEG_TO_RAD
+Config.heeltoe_angle = 3*DEG_TO_RAD
+Config.heeltoe_angle = 0*DEG_TO_RAD
+
+Config.walktraj={}
+Config.walktraj.hybridwalk = "foot_trajectory_base"
+--Config.walktraj.hybridwalk = "foot_trajectory_base2"
+
+
+Config.variable_tstep = true
+Config.variable_support = true
+
+
+--Config.arm_init_timeout = true
 
 -- Tune for Webots
 if IS_WEBOTS then
-	--Config.testfile = 'test_balance'
-  --Config.testfile = 'test_testbed'
- -- Config.testfile = 'test_walkstuff'
-   Config.testfile = 'test_teleop2'
-	--
-  Config.sensors = {
-		ft = true,
-		feedback = 'feedback_wizard',
-		--slam = true,
+	if IS_STEVE then
+		Config.testfile = 'test_teleop'
+		Config.debug.armplan = true
+
+	  Config.sensors = {
+			ft = true,
+			feedback = 'feedback_wizard',
+		slam = 'slam_wizard',
     --head_camera = 'camera_wizard',
     --chest_lidar = true,
-    --head_lidar = true,
+    head_lidar = true,
     --kinect = 'kinect2_wizard',
-		mesh = 'mesh_wizard',
-	 	world = 'world_wizard',
-  }
+			mesh = 'mesh_wizard',
+		 	world = 'world_wizard',
+	  }
+
+	else
+		--Config.testfile = 'test_testbed'		
+		Config.testfile = 'test_walkstuff'		
+		Config.debug.armplan = false		
+		Config.use_jacobian_arm_planning = true
+		Config.enable_jacobian_test = false
+		--Config.enable_jacobian_test = true
+		Config.enable_touchdown = false
+
+
+
+--		Config.piecewise_step = true
+
+--		Config.use_gps_pose=true
+--		Config.debug.world=true
+	  Config.sensors = {
+			ft = true,
+			feedback = 'feedback_wizard',
+		 	world = 'world_wizard',
+	  }
+
+	end
+
+
+
   -- Adjust the timesteps if desired
   -- Config.camera_timestep = 33
   -- Config.lidar_timestep = 200 --slower
   -- Config.kinect_timestep = 30
 end
+
+
 
 -----------------------------------
 -- Load Paths and Configurations --
@@ -69,6 +111,7 @@ local pname = {HOME, '/Config/THOROP0/?.lua;', package.path}
 package.path = table.concat(pname)
 if Config.demo then table.insert(exo, 'Demo') end
 for _,v in ipairs(exo) do
+	--print('Loading', v)
 	local fname = {'Config_THOROP0_', v}
 	local filename = table.concat(fname)
   assert(pcall(require, filename))

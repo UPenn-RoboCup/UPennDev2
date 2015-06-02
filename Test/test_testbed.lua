@@ -52,8 +52,8 @@ local char_to_movetarget = {
   ['x'] = vector.new({-.05, 0, 0}),
   ['a'] = vector.new({0, 0.05, 0}),
   ['d'] = vector.new({0, -.05, 0}),
-  ['q'] = vector.new({0, 0, 15*math.pi/180}),
-  ['e'] = vector.new({0,0, -15*math.pi/180}),
+  ['q'] = vector.new({0, 0, 5*math.pi/180}),
+  ['e'] = vector.new({0,0, -5*math.pi/180}),
 }
 
 
@@ -101,25 +101,30 @@ local function update(key_code)
   local key_char_lower = string.lower(key_char)
 
 
-  if key_char_lower==("1") then      body_ch:send'init'
+  if key_char_lower==("1") then      
+    body_ch:send'init'
+    arm_ch:send'init'  --initialize arm to walk position 
+
 	elseif key_char_lower==("0") then      body_ch:send'uninit'
+
+  elseif key_char_lower==("2") then  arm_ch:send'teleopoldl'  
+  elseif key_char_lower==("3") then  arm_ch:send'teleopoldr'  
+
+
+
+  elseif key_char_lower==("4") then  arm_ch:send'ready'  
+
+
+
 	elseif key_char_lower==("8") then  
---[[		
-		motion_ch:send'stand'
 		body_ch:send'stop'
-		head_ch:send'teleop'
-		hcm.set_motion_headangle({0,0*math.pi/180})
---]]		
-		if mcm.get_walk_ismoving()>0 then 
-			print("requesting stop")
-			mcm.set_walk_stoprequest(1) 
-		end
 	elseif key_char_lower==("9") then  
 		motion_ch:send'hybridwalk'
 --
+--
+  
 
---  elseif key_char_lower==("2") then  arm_ch:send'toolgrab'  
-  elseif key_char_lower==("3") then  arm_ch:send'teleop'  
+
   elseif key_char_lower==("k") then  override_target=vector.new({0,0,0,  0,0,0,0})
   elseif key_char_lower==(" ") then
     hcm.set_state_override(override_target)    
@@ -128,6 +133,16 @@ local function update(key_code)
 		body_ch:send'approach' --todo
     override_target = vector.zeros(6)
     movement_target = vector.zeros(3)
+
+
+  elseif key_char_lower==("`") then
+    hcm.set_state_override(override_target)    
+--    hcm.set_move_target(movement_target)
+    hcm.set_teleop_waypoint(movement_target)
+    body_ch:send'stepflat' --todo
+    override_target = vector.zeros(6)
+    movement_target = vector.zeros(3)
+
   end
 
   
@@ -138,23 +153,6 @@ local function update(key_code)
     print_override()   
     return
   end
-
---[[
-  local lf = char_to_lfinger[key_char_lower]
-  if lf then
-    Body.move_lgrip1(lf[1])
-    Body.move_lgrip2(lf[2])
-    return
-  end
-
-  local rf = char_to_rfinger[key_char_lower]
-  if rf then
-    Body.move_rgrip1(rf[1])
-    Body.move_rgrip2(rf[2])
-    return
-  end
---]]
-
 
   local state_adj = char_to_state[key_char_lower]
   if state_adj then

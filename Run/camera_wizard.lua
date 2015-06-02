@@ -13,12 +13,6 @@ local jpeg = require'jpeg'
 local Body = require'Body'
 require'hcm'
 local get_time = Body.get_time
--- JPEG Compressor
-local c_grey = jpeg.compressor('gray')
-local c_yuyv = jpeg.compressor('yuyv')
--- TODO: Control the downsampling mode
---c_yuyv:downsampling(2)
---c_yuyv:downsampling(1)
 
 -- Grab the metadata for this camera
 local metadata, camera_id
@@ -42,10 +36,17 @@ else
 	end
 end
 
-local t_send, t_log = 0, 0
-local LOG_INTERVAL = 1/5
-local SEND_INTERVAL = .5
+-- JPEG Compressor
+local c_grey = jpeg.compressor('y')
+local c_yuyv = jpeg.compressor('yuyv')
+local c_yuyv2 = jpeg.compressor('yuyv')
+c_yuyv2:quality(metadata.quality)
+c_yuyv2:downsampling(metadata.downsampling)
+c_grey:quality(metadata.quality)
+c_grey:downsampling(metadata.downsampling)
 
+local t_log = -math.huge
+local LOG_INTERVAL = 1/5
 
 local libLog, logger
 
@@ -62,6 +63,11 @@ local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
+--
+local ittybitty_identifier = 'ittybitty'..(camera_id-1)
+local stream = Config.net.streams[ittybitty_identifier]
+local ittybitty_ch = si.new_publisher(stream.sub)
+
 print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
 -- Metadata for the operator for compressed image data
@@ -90,26 +96,75 @@ local udp_ret, udp_err, udp_data
 local t0 = get_time()
 local t_debug = 0
 
+--
+local buffer = {}
+local hz_buffer = 1
+local dt_buffer = 1/hz_buffer
+local nbuffer = 5
+--
+local hz_open_send = 0.5
+local dt_open_send = 1/hz_open_send
+--
+local hz_outdoor_send = 15
+local dt_outdoor_send = 1/hz_outdoor_send
+--
+local hz_indoor_send = 4
+local dt_indoor_send = 1/hz_indoor_send
+--
+local t_buffer = -math.huge
+local t_send = -math.huge
+local function check_send(msg)
+	local is_outdoors = hcm.get_network_indoors()==0
+	local is_indoors = not is_outdoors
+	local t = Body.get_time()
+
+	-- Check the buffer
+	local dt_buffer0 = t - t_buffer
+	if is_indoors and dt_buffer0 > dt_buffer then
+		t_buffer = t
+		table.insert(buffer, 1, msg)
+		if #buffer>nbuffer then table.remove(buffer) end
+	end
+	if is_outdoors then
+		buffer = {msg}
+	end
+
+	-- Check the sending
+	local dt_send0 = t - t_send
+	if is_outdoors and dt_send0 < dt_outdoor_send then return end
+	if is_indoors and dt_send0 < dt_indoor_send then return end
+	t_send = t
+
+	for i,m in ipairs(buffer) do
+		if camera_ch then camera_ch:send(m) end
+		if udp_ch then udp_ret, udp_err = udp_ch:send(table.concat(m)) end
+	end
+
+end
+
+
 local function update(img, sz, cnt, t)
 	-- Update metadata
 	c_meta.t = t
 	c_meta.n = cnt
+	local c_img = c_yuyv:compress(img, w, h)
 
-	local do_send = t-t_send > (1 / hcm.get_monitor_fps())
-	t_send = do_send and t or t_send
-
-	-- Check if we are sending to the operator
-	if ENABLE_NET and do_send then		
-		local c_img = c_yuyv:compress(img, w, h)
-		c_meta.sz = #c_img
-		if camera_ch then
-			camera_ch:send({mp.pack(c_meta), c_img})
-		end
-		if udp_ch then
-			udp_data = mp.pack(c_meta)..c_img
-			udp_ret, udp_err = udp_ch:send(udp_data)
-		end
+	local ittybitty_img
+	if metadata.crop then
+		ittybitty_img= c_yuyv2:compress_crop(img, w, h, unpack(metadata.crop))
+	else
+		--ittybitty_img= c_yuyv2:compress(img, w, h)
+		ittybitty_img= c_grey:compress(img, w, h)
 	end
+	ittybitty_ch:send(ittybitty_img)
+	--[[
+	c_meta.sz = #ittybitty_img
+	local msg = {mp.pack(c_meta), ittybitty_img}
+	--]]
+	c_meta.sz = #c_img
+	local msg = {mp.pack(c_meta), c_img}
+
+	check_send(msg)
 
 	-- Do the logging if we wish
 	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then
@@ -157,8 +212,9 @@ if ... and type(...)=='string' and not tonumber(...) then
 end
 
 -- Open the camera
+print('Opening', metadata.dev)
 local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
-os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto" 1')
+os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto 1"')
 -- Set the params
 for i, param in ipairs(metadata.auto_param) do
 	local name, value = unpack(param)
@@ -166,7 +222,9 @@ for i, param in ipairs(metadata.auto_param) do
 	local ok = camera:set_param(name, value)
 --	unix.usleep(1e5)
 --	local now = camera:get_param(name)
-	assert(ok, string.format('Failed to set %s: from %d to %d', name, before, value))
+	if not ok then
+		print(string.format('Failed to set %s: from %d to %d', name, before, value))
+	end
 end
 -- Set the params
 for i, param in ipairs(metadata.param) do
@@ -184,7 +242,9 @@ for i, param in ipairs(metadata.param) do
 		count = count + 1
 		--now = camera:get_param(name)
 	end
-	assert(now==value, string.format('Failed to set %s: %d -> %d',name, value, now))
+	if now~=value then
+		print(string.format('Failed to set %s: %d -> %d',name, value, now))
+	end
 end
 
 -- Cleanly exit on Ctrl-C

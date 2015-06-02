@@ -6,9 +6,12 @@ local state = {}
 state._NAME = ...
 
 -- TODO: need to compensate the torso pose
-local headSpeed = {5 * DEG_TO_RAD, 5 * DEG_TO_RAD}
-local lowAngle = {0, 45*DEG_TO_RAD}
+local headSpeed = {5 * DEG_TO_RAD, 6 * DEG_TO_RAD}
+local lowAngle = {0, 60*DEG_TO_RAD}
+local highAngle = {0, 0*DEG_TO_RAD}
 
+local is_high
+local desiredAngle
 function state.entry()
   print(state._NAME..' Entry' )
   -- When entry was previously called
@@ -16,6 +19,8 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
+	desiredAngle = lowAngle
+	is_high = true
 end
 
 function state.update()
@@ -27,8 +32,13 @@ function state.update()
   t_update = t
 
 	local headNow = Body.get_head_command_position()
-  local apprAng, doneHead = util.approachTol(headNow, lowAngle, headSpeed, dt)
+  local apprAng, doneHead = util.approachTol(headNow, desiredAngle, headSpeed, dt)
 	Body.set_head_command_position(apprAng)
+
+	if doneHead then
+		desiredAngle = is_high and lowAngle or highAngle
+		is_high = not is_high
+	end
 
   return doneHead and 'done'
 end

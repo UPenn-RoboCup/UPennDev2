@@ -3,7 +3,8 @@
 -- DCM is a thread or standalone
 local CTX, metadata = ...
 -- Still need our library paths set
-dofile'include.lua'
+dofile'../../include.lua'
+
 --assert(ffi, 'IMU | Please use LuaJIT :). Lua support in the near future')
 -- Going to be threading this
 local si = require'simple_ipc'
@@ -65,19 +66,38 @@ local function do_read()
 	t_read = get_time()
 	if not a then return end
 
-	-- Quickly set in shared memory
-	acc_ptr[0], acc_ptr[1], acc_ptr[2] = a[1], a[2], -a[0]
-	gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] =
+	if not Config.birdwalk then
+	  -- Quickly set in shared memory
+	  acc_ptr[0], acc_ptr[1], acc_ptr[2] = a[1], a[2], -a[0]
+	  gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] =
     -g[1] - gyro_yaw_bias[1], -g[2] - gyro_yaw_bias[2], -g[0] - gyro_yaw_bias[3]
+	else
 
-yaw = yaw + 6 * gyro_ptr[2] / 1e3
+	  --Acc: front-back, left-right flip
+	  acc_ptr[0], acc_ptr[1], acc_ptr[2] = -a[1], -a[2], -a[0]
+
+	--Gyro: roll and pitch flip
+	  gyro_ptr[0], gyro_ptr[1], gyro_ptr[2] =
+   		 g[1] + gyro_yaw_bias[1], g[2] + gyro_yaw_bias[2], -g[0] - gyro_yaw_bias[3]
+
+	end
+	yaw = yaw + 6 * gyro_ptr[2] / 1e3
   
   -- Overwrite the RPY value
   if OVERRIDE_YAW then
-  	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], yaw
+    if Config.birdwalk then --this one is actually called
+      rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], e[2], yaw
+    else
+      rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = -e[1], -e[2], yaw
+    end
   else
-	rpy0_yaw = rpy0_yaw or -e[0]
-  	rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], -e[2], -e[0] - rpy0_yaw
+    if Config.birdwalk then
+      rpy0_yaw = rpy0_yaw or -e[0]
+      rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], -e[2], -e[0] - rpy0_yaw
+    else
+      rpy0_yaw = rpy0_yaw or -e[0]
+      rpy_ptr[0], rpy_ptr[1], rpy_ptr[2] = e[1], -e[2], -e[0] - rpy0_yaw
+    end
   end
 
   -- Save the time and count
@@ -96,8 +116,13 @@ t_debug, t_last, t = t0, t0, t0
 t_last_read = t0
 
 
---SJ: We need to add check to see whether the robot was not moving
---TODO
+
+
+
+
+
+local t0 = get_time()
+dcm.set_sensor_imu_t0(t0) --set run_imu start time to shm
 
 if CALIBRATE_GYRO_BIAS then
   local n = 1
@@ -124,12 +149,17 @@ if CALIBRATE_GYRO_BIAS then
   print("BIAS:", gyro_yaw_bias, gyro_accumulated)
 end
 
+
+
+
 -- Run the main loop
 while running do
 	-----------------
 	-- Read Values --
 	-----------------
 	t = do_read()
+  dcm.set_sensor_imu_t(t) --set last imu update time to shm
+
 	--------------------
 	-- Periodic Debug --
 	--------------------
@@ -143,6 +173,7 @@ while running do
     local gyro = dcm.get_sensor_gyro()
     local mag = dcm.get_sensor_magnetometer()
     local rpy = dcm.get_sensor_rpy()
+
 		local debug_str = {
 			sformat('\nIMU | Uptime %.2f sec, Mem: %d kB, %.1fHz', t-t0, kb, fps),
 			sformat('Acc (g): %.2f %.2f %.2f', unpack(acc)),

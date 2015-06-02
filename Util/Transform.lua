@@ -197,6 +197,14 @@ function Transform.position6D(tr)
   atan2(tr[2][1],tr[1][1])
   }
 end
+function Transform.string6D(tr)
+  return string.format('%.2f %.2f %.2f | %.2f %.2f %.2f',
+  tr[1][4],tr[2][4],tr[3][4],
+  atan2(tr[3][2],tr[3][3]) * RAD_TO_DEG,
+  -math.asin(tr[3][1]) * RAD_TO_DEG,
+  atan2(tr[2][1],tr[1][1]) * RAD_TO_DEG
+  )
+end
 
 function Transform.position(tr)
   return {tr[1][4],tr[2][4],tr[3][4]}
@@ -388,8 +396,8 @@ local function mul(t1, t2)
 end
 
 -- Copy
-function Transform.copy(tt)
-  if type(tt)=='table' then
+function Transform.copy(tt, t0)
+  if type(tt)=='table' and not t0 then
     -- Copy the table
     return setmetatable({
     	{unpack(tt[1])},
@@ -398,7 +406,7 @@ function Transform.copy(tt)
     	{unpack(tt[4])},
 		}, mt)
   end
-  local t = eye()
+  local t = t0 or setmetatable({{},{},{},{}}, mt)
   for i=1,3 do
     for j=1,4 do
       t[i][j] = tt[i][j]

@@ -478,6 +478,12 @@ local function precompute(self)
   -- param_a : 3x3
   -- param_b : 4x1
   ------------------------------------
+  if not self.tZmp then
+    print("ERROR: tZMP MISSING!!!!!!!!!!!!!")
+    self.tZmp = Config.walk.tZMP
+  end
+
+
 
   local timeStep = self.preview_tStep
   self.param_a=matrix {{1,timeStep,timeStep^2/2},{0,1,timeStep},{0,0,1}}
@@ -487,7 +493,7 @@ local function precompute(self)
     self.param_k1_px = matrix:new({Config.zmpparam[self.tZmp].param_k1_px});
     self.param_k1 = matrix:new({Config.zmpparam[self.tZmp].param_k1});
   else
-    print("ERROR: zmp parma not precalculated!!!!")  
+    print("ERROR: zmp param not precalculated!!!!",self.tZmp)  
     print("Generating ZMP parameters")
     local timeStep = self.preview_tStep
     local tZmp = self.tZmp

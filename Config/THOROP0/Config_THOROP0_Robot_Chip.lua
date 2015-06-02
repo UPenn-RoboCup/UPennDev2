@@ -15,7 +15,8 @@ Config.imu = {
 local FT13288 = {   --
 id = 'FT13288 TWE',
 -- Robotis: 1.372045898 1.824023438 1.604882813 2.045581055 1.819995117 1.914257813
-unloaded= {1.385, 1.860, 1.636, 2.085, 1.855, 1.940},
+-- Original before changing voltage for Chip: unloaded= {1.385, 1.860, 1.636, 2.085, 1.855, 1.940},
+unloaded = {1.71687, 1.93279, 1.8772, 2.01174, 1.91473, 1.97597}, -- For Dale
 matrix = {
 	{4.900247363, 3.309169943, 20.61617248, -599.8274623, -38.69937629, 563.3938299},
 	{-46.18208054, 708.6639521, 32.66477198, -345.2932518, -7.10425612, -327.8129788},
@@ -29,8 +30,9 @@ gain = 1,
 
 local FT14216 = {
 	id = 'FT14216 TWE',
-	--Robotis: 1.752319336	1.839331055	1.696728516	1.773266602	1.718481445	1.874780273
-	unloaded = {1.765, 1.843, 1.705, 1.792, 1.744, 1.880},
+	-- Robotis: 1.752319336	1.839331055	1.696728516	1.773266602	1.718481445	1.874780273
+	-- Original before changing voltage for Chip: unloaded = {1.765, 1.843, 1.705, 1.792, 1.744, 1.880},
+	unloaded = {1.64597, 1.6782, 1.5082, 1.6645, 1.54806, 1.69213}, -- For Dale
 	matrix = {
 		{-17.58726087, 2.862495136, 72.47124518, -572.1905501, -137.501991, 579.6660841},
 		{-43.6278751, 680.2963926, 36.9166943, -321.8118551, 76.20995953, -339.6674833},
@@ -108,8 +110,33 @@ Config.left_foot_ft = FT16389
 Config.right_wrist_ft = FT16465
 Config.left_wrist_ft = FT16464
 
-Config.left_foot_ft.m_ids = {24, 26}
-Config.right_foot_ft.m_ids = {23, 25}
+
+--temporary testing for dale's FT sensors (from penn)
+---------------------------------
+---------------------------------
+---------------------------------
+--Config.right_foot_ft = FT13288
+--Config.left_foot_ft = FT14216 
+---------------------------------
+---------------------------------
+---------------------------------
+
+if Config.birdwalk then
+	--swap ft type
+	Config.left_foot_ft = FT16390
+	Config.right_foot_ft = FT16389
+	--swap servo ids
+	Config.left_foot_ft.m_ids = {23, 25}
+	Config.right_foot_ft.m_ids = {24, 26}
+
+else --normal walk
+	Config.left_foot_ft = FT16389
+	Config.right_foot_ft = FT16390
+	Config.left_foot_ft.m_ids = {24, 26}
+	Config.right_foot_ft.m_ids = {23, 25}
+end
+
+
 
 -- DCM Chains
 Config.chain = {enabled = true}
@@ -118,13 +145,13 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-		1,3,5,7,9,11,13,
+	1,3,5,7,9,11,13,
 		-- waist
 	28,
 	--head
-		29, 30,
-		-- gripper
---		63, 65, 67
+	29, 30,
+	-- gripper
+	63, 65, 67
 	},
 	enable_read = true,
 }
@@ -134,11 +161,9 @@ local left_arm = {
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
 	2,4,6,8,10,12,14,
---	2,4,6,
 	-- lidar
 	37,
-	-- gripper
---	64, 66, 68
+	--no gripper
 	},
 	enable_read = true
 }
@@ -337,12 +362,13 @@ servo.steps = 2 * vector.new({
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head, mk2
-	1,-1,1, 1, 1,1,1, --LArm, mk1 retrofitted, tested
+
+	1,1,1, 1, 1,1,1, --LArm, mk2 reassembled 
 	------
 	-1, 1,1,   1,  1,1, --LLeg
 	-1, 1,-1, -1,  -1,1, --RLeg
 	------
-	-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
+	-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
 	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
@@ -352,10 +378,11 @@ servo.direction = vector.new({
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
 	0,0, -- Head
-	-90,  -90,  -90,45,  90,0,0, --LArm
+	-90,  -90,  -90,45,  -90,0,0, --LArm
 	0,0,0,  0  ,0,0, --LLeg
 	0,0,0,  0  ,0,0, --RLeg
-	90,  90,  90,-45,  -90,0,0, --RArm
+	90,  90,  90,-45,  90,0,0, --RArm
+--	90,  90,  90,-45,  -90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
 	70, -125, 0, -- right gripper/trigger (UCLA verified)
@@ -364,11 +391,12 @@ servo.rad_offset = vector.new({
 
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
-	-135,-80, -- Head
+	-90,-80, -- Head
 	-90, 0, -90,    -160,   -180,-87,-180, --LArm
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-90,-87,-90,    -160,   -180,-87,-180, --RArm
+--	-90,-45, -- Waist
 	-90,-45, -- Waist
 	-60, -55, -60,
 	-60, -35, -60, -- right gripper/trigger (UCLA verified)
@@ -377,11 +405,17 @@ servo.min_rad = vector.new({
 
 servo.max_rad = vector.new({
 	--90,80, -- Head
-	135,80, -- Head
-	160,87,90,   0,     180,87,180, --LArm
+	270,80, -- Head
+--	160,87,90,   0,     180,87,180, --LArm
+--FOR DRIVING
+
+	180,87,135,   0,     180,87,180, --LArm
+
 	175,25,175,175,175,175, --LLeg
 	175,175,175,175,175,175, --RLeg
+--	160,-0,90,   0,     180,87,180, --RArm
 	160,-0,90,   0,     180,87,180, --RArm
+--	90,45, -- Waist
 	90,45, -- Waist
 	65,65,55, -- lgrip
 	80,40,55, -- right gripper/trigger (UCLA verified)
@@ -398,15 +432,22 @@ if Config.birdwalk then
 
 	servo.rad_offset = vector.new({
 		0,0, -- Head
-		-90,  -90,  -90,45,  90,0,0, --LArm
+	--	-90,  -90,  -90,45,  90,0,0, --LArm
+		-90,  -90,  -90,45,  -90,0,0, --LArm
+
 		0,0,0,  0  ,0,0, --LLeg
 		0,0,0,  0  ,0,0, --RLeg
-		90,  90,  90,-45,  -90,0,0, --RArm
+--		90,  90,  90,-45,  -90,0,0, --RArm
+		90,  90,  90,-45,  90,0,0, --RArm
+
 		-180,0, -- Waist flip (for birdwalk)
 		0, 0, 0, -- left gripper/trigger
 		70, -125, 0, -- right gripper/trigger (UCLA verified)
 		0, -- Lidar pan
 	})*DEG_TO_RAD
+
+
+
 
 	servo.joint_to_motor={
 		29,30,  --Head yaw/pitch
@@ -424,7 +465,8 @@ if Config.birdwalk then
 
 	servo.direction = vector.new({
 		1,1, -- Head, mk2
-		1,-1,1, 1, 1,1,1, --LArm, mk1 retrofitted, tested
+
+		1,1,1, 1, 1,1,1, --LArm, mk2 reassembled 
 		------
 --  -1, 1, 1, 1, 1, 1, --LLeg
 --  -1, 1,-1,-1,-1, 1, --RLeg
@@ -432,12 +474,48 @@ if Config.birdwalk then
 		-1, -1,-1,-1,-1, -1, --RLeg, mk2, flipped
 
 		------
-		-1,-1,1, -1, 1,1,1, --RArm, mk1 retrofitted, tested
+--		-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
+		-1,1,1, -1, 1,1,-1, --RArm, mk2 reassembled
 		1, 1, -- Waist, mk2
 		-1,1,-1, -- left gripper TODO
 		1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
 		-1, -- Lidar pan
 	})
+
+
+
+servo.min_rad = vector.new({
+	-90,-80, -- Head
+--	-90, 0, -90,    -160,   -180,-87,-180, --LArm
+	-90, -10, -120,    -160,   -180,-87,-180, --LArm
+	-175,-25,-175,-175,-175,-175, --LLeg
+	-175,-175,-175,-175,-175,-175, --RLeg
+	-90,-87,-90,    -160,   -180,-87,-180, --RArm
+--	-90,-45, -- Waist
+	-540,-45, -- Waist
+	-60, -55, -60,
+	-60, -35, -60, -- right gripper/trigger (UCLA verified)
+	-60, -- Lidar pan
+})*DEG_TO_RAD
+
+servo.max_rad = vector.new({
+	--90,80, -- Head
+	270,80, -- Head
+--	160,87,90,   0,     180,87,180, --LArm
+--	180,87,90,   0,     180,87,180, --LArm
+	230,87,120,   0,     180,87,180, --LArm
+	175,25,175,175,175,175, --LLeg
+	175,175,175,175,175,175, --RLeg
+	160,-0,90,   0,     180,87,180, --RArm
+--	90,45, -- Waist
+	540,45, -- Waist
+	65,65,55, -- lgrip
+	80,40,55, -- right gripper/trigger (UCLA verified)
+	60, -- Lidar pan
+})*DEG_TO_RAD
+
+
+
 
 end
 
@@ -627,7 +705,11 @@ if IS_WEBOTS then
 
 
 	if Config.birdwalk then
+print("BIRDWALK")
 
+print("BIRDWALK")
+
+print("BIRDWALK")
 		servo.direction = vector.new({
 			1,1, -- Head
 			1,-1,-1,  1,  -1,-1,1, --LArm

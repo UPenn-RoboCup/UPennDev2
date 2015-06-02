@@ -36,6 +36,9 @@ function state.entry()
   print(state._NAME..' Entry' )
   hcm.set_motion_waistTarget(0) --set target waist to zero
 
+  -- Reset the pose
+  wcm.set_robot_reset_pose(1)
+
   Body.enable_read'lleg'
   Body.enable_read'rleg'
 
@@ -66,8 +69,7 @@ function state.entry()
   hcm.set_motion_bodyHeightTarget(Config.walk.bodyHeight)
 
   mcm.set_status_uTorsoZMPComp({0,0,0})
-  mcm.set_stance_uTorsoComp({0,0})
-  mcm.set_status_iskneeling(0)
+  mcm.set_stance_uTorsoComp({0,0})  
 
   mcm.set_walk_zShift({0,0})
   mcm.set_walk_zvShift({0,0})
@@ -75,6 +77,10 @@ function state.entry()
   mcm.set_walk_avShiftX({0,0})
   mcm.set_walk_aShiftY({0,0})
   mcm.set_walk_avShiftY({0,0})
+
+  
+  mcm.set_walk_footlift({0,0})
+  mcm.set_walk_heeltoewalk(0) --no heeltoewalk default  
 
   mcm.set_arm_lhandoffset(Config.arm.handoffset.left or {0,0,0})
   mcm.set_arm_rhandoffset(Config.arm.handoffset.right or {0,0,0})
@@ -101,7 +107,10 @@ function state.entry()
   mcm.set_motion_state(1.03)  
   hcm.set_legdebug_enable_balance({0,0})
 
-  Body.set_waist_command_position({0,0})
+  wcm.set_robot_reset_pose(1)
+
+	-- Let the upper body control this
+  --Body.set_waist_command_position({0,0})
   --if IS_WEBOTS then Body.set_waist_command_position({math.pi,0}) end
 end
 
@@ -167,8 +176,6 @@ function state.exit()
   -- now on feet
   mcm.set_walk_bipedal(1)
   
-  -- Update current pose
-  wcm.set_robot_reset_pose(1)
   
 
   local pg = Config.walk.leg_p_gain or 64
@@ -215,6 +222,8 @@ function state.exit()
   --Body.disable_read'lleg'
   --Body.disable_read'rleg'
   wcm.set_robot_initdone(1)
+  wcm.set_robot_reset_pose(1)
 end
+
 
 return state

@@ -41,6 +41,18 @@ local rtx_queue = vector.zeros(queue_size)
 local lty_queue = vector.zeros(queue_size)
 local rty_queue = vector.zeros(queue_size)
 
+local function eval_spline(breaks,coefs,ph)
+  local x_offset, xf = 0,0
+  for i=1,#breaks do
+    if ph<=breaks[i] then
+      local x=ph - x_offset
+      xf = coefs[i][1]*x^3 + coefs[i][2]*x^2 + coefs[i][3]*x + coefs[i][4]
+      break;
+    end
+    x_offset = breaks[i]    
+  end
+  return xf
+end
 
 
 function moveleg.get_ph_single(ph,phase1,phase2) return math.min(1, math.max(0, (ph-phase1)/(phase2-phase1) ))end
@@ -59,19 +71,19 @@ function moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP,zLeft,zRi
 end
 
 function moveleg.get_ft()
-  local y_angle_zero = 3*math.pi/180
+  local y_angle_zero = 0*math.pi/180
   local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
   local ft= {
     lf_x=l_ft[1],rf_x=r_ft[1],
     lf_y=l_ft[2],rf_y=r_ft[2],
     lf_z=l_ft[3],rf_z=r_ft[3],
-    lt_x=-l_ft[4],rt_x=-r_ft[4],
+    lt_x=l_ft[4],rt_x=r_ft[4],
     lt_y=l_ft[5],rt_y=r_ft[5],
     lt_z=0, rt_z=0 --do we ever need yaw torque?
   }
   if IS_WEBOTS then
-    ft.lt_y, ft.rt_y = -l_ft[4],-r_ft[5]      
-    ft.lt_x,ft.rt_x = -l_ft[5],-r_ft[4] 
+    ft.lt_x,ft.rt_x = -l_ft[4],-r_ft[4] 
+    ft.lt_y, ft.rt_y = -l_ft[5],-r_ft[5]
   end
   local rpy = Body.get_rpy()
   local gyro, gyro_t = Body.get_gyro()
@@ -79,7 +91,6 @@ function moveleg.get_ft()
     roll_err = rpy[1], pitch_err = rpy[2]-y_angle_zero,  
     v_roll = gyro[1], v_pitch = gyro[2]
   }
-
 
   --moving window 
   lf_queue[queue_count] = math.sqrt(ft.lf_z^2+ft.lf_y^2+ft.lf_x^2)
@@ -101,15 +112,112 @@ function moveleg.get_ft()
     vector.sum(rty_queue)/queue_size
     })
 
-
   mcm.set_status_IMU({imu.roll_err, imu.pitch_err, v_roll,v_pitch})
 
   local zf_touchdown = 50
   if IS_WEBOTS then zf_touchdown = 1 end
 
+  local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()  
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+
+  local uLeftSupport = util.pose_global({supportX, supportY, 0}, uLeft)
+  local uRightSupport = util.pose_global({supportX, -supportY, 0}, uRight)  
+  local uTorsoNeutral = util.se2_interpolate(0.5,uLeftSupport, uRightSupport)
+
+  local zmp_err_left = {0,0,0}
+  local zmp_err_right = {0,0,0}
+  local forceLeft, forceRight = 0,0
+
+  local uZMP = mcm.get_status_uZMP()  
+  local uZMPLeft=mcm.get_status_uLeft()
+  local uZMPRight=mcm.get_status_uRight()
+
+  if ft.lf_z>zf_touchdown then
+    zmp_err_left = {-ft.lt_y/ft.lf_z, -ft.lt_x/ft.lf_z, 0}
+    uZMPLeft = util.pose_global(zmp_err_left, uLeft)
+    forceLeft = ft.lf_z
+  end
+  if ft.rf_z>zf_touchdown then
+    zmp_err_right = {-ft.rt_y/ft.rf_z, -ft.rt_x/ft.rf_z, 0}
+    uZMPRight = util.pose_global(zmp_err_right, uRight)
+    forceRight = ft.rf_z
+  end
+  local uZMPMeasured= (forceLeft*uZMPLeft + forceRight*uZMPRight) / (forceLeft+forceRight)
+
+  mcm.set_status_LZMP({zmp_err_left[1],zmp_err_left[2],0})
+  mcm.set_status_RZMP({zmp_err_right[1],zmp_err_right[2],0})  
+  mcm.set_status_uZMPMeasured(uZMPMeasured) 
+  mcm.set_status_uTorsoNeutral(uTorsoNeutral)
+
+  return ft,imu
+end
 
 
 
+
+
+
+function moveleg.update_sensory_feedback()
+  local y_angle_zero = 0*math.pi/180
+  local l_ft, r_ft = Body.get_lfoot(), Body.get_rfoot()  
+  local ft= {
+    lf_x=l_ft[1],rf_x=r_ft[1],
+    lf_y=l_ft[2],rf_y=r_ft[2],
+    lf_z=l_ft[3],rf_z=r_ft[3],
+    lt_x=-l_ft[4],rt_x=-r_ft[4],
+    lt_y=l_ft[5],rt_y=r_ft[5],
+    lt_z=0, rt_z=0 --do we ever need yaw torque?
+  }
+  if IS_WEBOTS then
+    ft.lt_x,ft.rt_x = -l_ft[4],-r_ft[4] 
+    ft.lt_y, ft.rt_y = -l_ft[5],-r_ft[5]
+  end
+
+  local t= Body.get_time()
+  local imu_t = Body.get_imu_t()
+  local imu_t0 = Body.get_imu_t0()
+
+  local rpy = Body.get_rpy()
+  local gyro, gyro_t = Body.get_gyro()
+  local imu={rpy[1],rpy[2],rpy[3], gyro[1],gyro[2],gyro[3]}
+
+  if (t-imu_t)>1.0 or (t-imu_t0<2.0) then
+    --imu data is old or it is just initialized, ignore gyro data
+    imu[4],imu[5],imu[6]=0,0,0
+  end
+  mcm.set_status_IMU(imu)
+
+--  print(string.format("IMU T0:%f sec ago T:%f sec ago",
+--    t-imu_t0, t-imu_t ))
+
+  --Filter FT sensor values with moving average
+  lf_queue[queue_count] = math.sqrt(ft.lf_z^2+ft.lf_y^2+ft.lf_x^2)
+  rf_queue[queue_count] = math.sqrt(ft.rf_z^2+ft.rf_y^2+ft.rf_x^2)
+  ltx_queue[queue_count] = ft.lt_x
+  rtx_queue[queue_count] = ft.rt_x
+  lty_queue[queue_count] = ft.lt_y
+  rty_queue[queue_count] = ft.rt_y
+  queue_count = queue_count+1
+  if queue_count>queue_size then queue_count=1 end
+  mcm.set_status_LFT({
+    vector.sum(lf_queue)/queue_size,    
+    vector.sum(ltx_queue)/queue_size,    
+    vector.sum(lty_queue)/queue_size
+    })
+  mcm.set_status_RFT({
+    vector.sum(rf_queue)/queue_size,    
+    vector.sum(rtx_queue)/queue_size,    
+    vector.sum(rty_queue)/queue_size
+    })
+
+
+  local zf_touchdown = 50
+  if IS_WEBOTS then zf_touchdown = 1 end
+
+  --Calculate total zmp position
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorso = mcm.get_status_uTorso()  
@@ -145,8 +253,15 @@ function moveleg.get_ft()
   mcm.set_status_uZMPMeasured(uZMPMeasured) 
   mcm.set_status_uTorsoNeutral(uTorsoNeutral)
 
-  return ft,imu
+  --just return gyro rpy value (for simple feedback)
+  return {imu[4],imu[5],imu[6]}
 end
+
+
+
+
+
+
 
 
 
@@ -196,6 +311,9 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
   local ankleShiftYTarget = util.procFunc(gyro_roll*ankleImuParamY[2],ankleImuParamY[3],ankleImuParamY[4])
   local kneeShiftXTarget = util.procFunc(gyro_pitch*kneeImuParamX[2],kneeImuParamX[3],kneeImuParamX[4])
   local hipShiftYTarget=util.procFunc(gyro_roll*hipImuParamY[2],hipImuParamY[3],hipImuParamY[4])
+
+  stabilization_mode = mcm.get_status_stabilization_mode()
+  if stabilization_mode==2 then kneeShiftXTarget = 0 end --don't use knee stabilization during climbing (stinction possible)
 
 --[[
   local angleShift = mcm.get_walk_angleShift()
@@ -327,8 +445,79 @@ function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight * zf
 
-  return uFoot, zFoot
+  local aFoot = math.sin(phSingle*2*math.pi)
+  aFoot = math.max(0,aFoot) --dont lift heel
+  
+  return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
+
+
+function moveleg.foot_trajectory_base2(phSingle,uStart,uEnd,stepHeight)
+  --smooth landing, earlierx stop
+  local breaksTX={0.150000,0.350000,0.600000,0.800000,1.000000,}
+  local breaksTY={0.200000,0.400000,0.500000,0.600000,0.800000,0.900000,1.000000,}
+  local coefsX={
+    {-4.743550,5.086061,-0.056179,0.000000,},
+    {-4.743550,2.951463,1.149449,0.090000,},
+    {-2.994272,0.105333,1.760809,0.400000,},
+    {0.650617,-2.140370,1.252049,0.800000,},
+    {0.650617,-1.750000,0.473975,0.970000,},
+  }
+  local coefsY={
+    {-23.533333,16.495000,-0.457667,0.000000,},
+    {-23.533333,2.375000,3.316333,0.380000,},
+    {23.216667,-11.745000,1.442333,0.950000,},
+    {-31.183333,-4.780000,-0.210167,1.000000,},
+    {41.966667,-14.135000,-2.101667,0.900000,},
+    {-18.483333,11.045000,-2.719667,0.250000,},
+    {-18.483333,5.500000,-1.065167,0.070000,},
+  }
+
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight*zf
+  local aFoot = math.sin(phSingle*2*math.pi)
+  aFoot = math.max(0,aFoot) --dont lift heel
+
+  return uFoot, zFoot, aFoot, lift_phase, land_phase
+end
+
+
+function moveleg.foot_trajectory_soft(phSingle,uStart,uEnd,stepHeight)
+
+--super slow landing for alignment step
+
+  local breaksTX={0.150000,0.300000,0.400000,0.850000,1.000000,}
+  local breaksTY={0.100000,0.200000,0.350000,0.450000,0.700000,1.000000,}
+  local coefsX={
+    {1.505061,4.211612,-0.065606,0.000000,},
+    {1.505061,4.888889,1.299469,0.090000,},
+    {-42.434434,5.566166,2.867728,0.400000,},
+    {5.807140,-7.164164,2.707928,0.700000,},
+    {5.807140,0.675475,-0.211982,0.997000,},
+  }
+  local coefsY={
+    {-55.096427,28.528928,-0.501929,0.000000,},
+    {-55.096427,12.000000,3.550964,0.180000,},
+    {-42.314026,-4.528928,4.298071,0.600000,},
+    {77.382769,-23.570240,0.083196,1.000000,},
+    {3.171534,-0.355409,-2.309369,0.850000,},
+    {3.171534,2.023241,-1.892411,0.300000,},
+  }
+
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight*zf
+  local aFoot = 0
+
+
+  return uFoot, zFoot, aFoot, lift_phase, land_phase
+end
+
+
+
 
 function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkParam)
   local xf,zf,zFoot,aFoot, zHeight0, zHeight1= 0,0,0,0,0,0
@@ -370,7 +559,7 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkPa
   end   
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
 
-  return uFoot, zf, lift_phase, land_phase
+  return uFoot, zf, 0, lift_phase, land_phase
 end
 
 
@@ -378,102 +567,34 @@ end
 
 
 function moveleg.set_leg_positions()
-
-  local uLeft = mcm.get_status_uLeft()
+    local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorso = mcm.get_status_uTorso()
-  local uTorsoZMPComp = mcm.get_status_uTorsoZMPComp()
-
-  uTorso = util.pose_global(uTorsoZMPComp,uTorso)
-
-  local zLeg = mcm.get_status_zLeg()
-  local zSag = mcm.get_walk_zSag()
-    
-	local zLegComp = mcm.get_status_zLegComp()
-
-  local zLeft,zRight = zLeg[1]+zSag[1]+zLegComp[1],zLeg[2]+zSag[2]+zLegComp[2]
-  local supportLeg = mcm.get_status_supportLeg()
-  local uTorsoComp = mcm.get_stance_uTorsoComp()
-  local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
-  
-  local delta_legs = mcm.get_walk_delta_legs()  
-
-  local aShiftX = mcm.get_walk_aShiftX()
-  local aShiftY = mcm.get_walk_aShiftY()
-
-  --Now inclined surface compensation is done in IK, not here
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
-
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
 
+  local uTorsoOffset,qLegs,comZ= Body.get_torso_compensation(qLArm,qRArm,qWaist)  
+  local delta_legs = mcm.get_walk_delta_legs()  
+  mcm.set_stance_COMoffset({-uTorsoOffset[1],-uTorsoOffset[2],comZ })
 
-  local count,revise_max = 1,4
-  local adapt_factor = 1.0
-
-
-revise_max=10 --temporary test
-
-
-  --Initial guess 
-  local uTorsoAdapt = util.pose_global(vector.new({-torsoX,0,0}),uTorso)
-  local pTorso = vector.new({
-    uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
-            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-
-  local qLegs
-
-  qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY, Config.birdwalk or 0)
-
-  -------------------Incremental COM filtering
-  local com_z = 0
-  while count<=revise_max do
-    local qLLeg = vector.slice(qLegs,1,6)
-    local qRLeg = vector.slice(qLegs,7,12)
-
-    com = K.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0, Config.birdwalk or 0)
-    local uCOM = util.pose_global(
-      vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
-
-   uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
-   uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
-   local pTorso = vector.new({
-            uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
-            0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-
-   qLegs = K.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0)
-   count = count+1
+  --Knee angle check
+  if Config.birdwalk then
+    --knee pitch should be neagitve
+    qLegs[4]= math.min(0,qLegs[4])
+    qLegs[10]= math.min(0,qLegs[10])
+  else
+    --knee pitch should be positive
+    qLegs[4]= math.max(0,qLegs[4])
+    qLegs[10]= math.max(0,qLegs[10])  
   end
-  local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
-  
-
---print("com:",com[1]/com[4])
---  print("uTorsoZ:",com[3]/com[4])
---  print("uTorso:",uTorso[1],uTorsoAdapt[1])
---  print("Torso offset:",uTorsoOffset[1],uTorsoOffset[2])
-  mcm.set_stance_COMoffset({
-    -uTorsoOffset[1],-uTorsoOffset[2],com[3]/com[4]
-    })
-
---Knee angle check
-if Config.birdwalk then
-  --knee pitch should be neagitve
-  qLegs[4]= math.min(0,qLegs[4])
-  qLegs[10]= math.min(0,qLegs[10])
-else
-  --knee pitch should be positive
-  qLegs[4]= math.max(0,qLegs[4])
-  qLegs[10]= math.max(0,qLegs[10])  
-end
 
   local legBias = vector.new(mcm.get_leg_bias())
   qLegs = qLegs + delta_legs + legBias
-  qLegs[5]=qLegs[5]+aShiftY[1]
-  qLegs[11]=qLegs[11]+aShiftY[2]
-  qLegs[6]=qLegs[6]+aShiftX[1]
-  qLegs[12]=qLegs[12]+aShiftX[2]
+  qLegs[5]=qLegs[5]
+  qLegs[11]=qLegs[11]
+  qLegs[6]=qLegs[6]
+  qLegs[12]=qLegs[12]
 
   if Config.walk.anklePitchLimit then
     qLegs[5]=math.max(qLegs[5],Config.walk.anklePitchLimit[1])
@@ -493,6 +614,17 @@ end
   local bodyOffset = util.pose_relative(uTorso, uFoot)
   mcm.set_status_bodyOffset( bodyOffset )
   ------------------------------------------
+
+
+  if IS_WEBOTS then
+    local llt = Body.get_lleg_current()
+    local rlt = Body.get_rleg_current() 
+
+    mcm.set_status_lleg_torque(llt)
+    mcm.set_status_rleg_torque(rlt)
+
+  end
+
 end
 
 

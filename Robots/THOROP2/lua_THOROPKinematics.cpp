@@ -476,7 +476,7 @@ static int calculate_support_leg_torque(lua_State *L) {
 	lua_rawset(L, -3);
 	lua_pushstring(L, "b");
 	lua_pushdarray(L, b_matrix,36);
-    lua_rawset(L, -3);	
+  lua_rawset(L, -3);	
 	return 1;
 }
 
@@ -526,27 +526,71 @@ static int inverse_legs(lua_State *L) {
 	Transform trTorso = transform6D(&pTorso[0]);
 
 	int birdwalk = luaL_optnumber(L, 6,0);
+	std::vector<double> qL = lua_checkvector(L, 7);
+	std::vector<double> qR = lua_checkvector(L, 8);
 
+	//now we should be able to manually choose tilt type
+	//and the minimum tilt angle for them
+	int leftTiltType = luaL_optnumber(L, 9, 0);
+	int rightTiltType = luaL_optnumber(L, 10, 0);
+	double leftTiltMin = luaL_optnumber(L, 11, 0.0);
+	double rightTiltMin = luaL_optnumber(L, 12, 0.0);
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 
-//	qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
-//	qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
 
-	if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
-		qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk);
-		qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk);
-//		printf("Rightt heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
+	if ((leftTiltType==0) && (rightTiltType==0)){ //automatic
+		if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
+			qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+			qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}else{
+			qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,  qL[4],leftTiltMin) ;
+			qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}
 	}else{
-		qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk);
-		qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk);
-//		printf("Left heellift:%f %f\n",trTorso_LLeg(0,3),trTorso_RLeg(0,3));		
+		if (leftTiltType==1) {
+			qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+		}else{
+			qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+		}
+		if (rightTiltType==1) {
+			qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}else{
+			qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}
 	}
 	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
-
 	lua_pushvector(L, qLLeg);
 	return 1;
 }
+
+
+static int get_body_dh(lua_State *L) {
+	std::vector<double> pLLeg = lua_checkvector(L, 1);
+	std::vector<double> pRLeg = lua_checkvector(L, 2);
+	std::vector<double> pTorso = lua_checkvector(L, 3);
+	std::vector<double> aShiftX = lua_checkvector(L, 4);
+	std::vector<double> aShiftY = lua_checkvector(L, 5);
+
+	Transform trLLeg = transform6D(&pLLeg[0]);
+	Transform trRLeg = transform6D(&pRLeg[0]);
+	Transform trTorso = transform6D(&pTorso[0]);
+	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
+	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
+
+	double dhLeft = THOROP_kinematics_inverse_leg_bodyheight_diff(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0]);
+	double dhRight = THOROP_kinematics_inverse_leg_bodyheight_diff(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1]);
+
+	if (dhLeft<dhRight)	{
+		lua_pushnumber(L, dhRight);
+	}else{
+		lua_pushnumber(L, dhLeft);
+	}
+	return 1;
+}
+
+
+
 
 
 /* Extra definitions */
@@ -652,7 +696,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"inverse_r_leg", inverse_r_leg},
 	{"inverse_legs", inverse_legs},
 
-
+	{"get_body_dh",get_body_dh},
 
   /* 7 DOF specific */
 	{"l_arm_torso_7", l_arm_torso_7},

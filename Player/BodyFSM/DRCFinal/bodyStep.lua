@@ -101,24 +101,13 @@ function state.entry()
 -- Determine next step leg, position, height, angle  
 -- supportLeg = footstepplanner.getnextstep()
   
-
-
-
-
-
-
-
   if hcm.get_step_nosolution()>0 then
     --don't start step if there's no foot positions available!
     is_possible = false
     return
   end
 
-
   local step_min = 0.05
-  local step_min = 0.10
-
-  
   step_relpos = hcm.get_step_relpos() 
   step_zpr = hcm.get_step_zpr()
   if step_zpr[1]>0 then sh1,sh2 = step_zpr[1]+step_min, step_zpr[1]
@@ -126,36 +115,23 @@ function state.entry()
   end
 
   local st,wt = 1.0,3.0
---  if IS_WEBOTS then st,wt = 1.0,1.0 end
-  if IS_WEBOTS and not Config.enable_touchdown then 
-    st,wt = 0.3,1.0 
-    st,wt = 0.3,1.5 
---    st,wt = 0.1,0.5 
-  end
 
   local aShiftY0=mcm.get_walk_aShiftY()
-  
-  --[[
-  if aShiftY0[1]~=0 or aShiftY0[2]~=0 or step_zpr[2]~=0 then
-    print("ramp!")
-    st,wt = 2,2 
-  end
---]]
-
 
   local leg_move_dist = 
     math.abs(step_relpos[1])+math.abs(step_relpos[2])+
     math.abs(step_zpr[1])+step_min+step_min
   local wt2 = wt *  math.max(1,  leg_move_dist / 0.20) 
 
+  --we can save a lot of time here 
+  if not Config.stepup_delay then
+    wt2 = wt2 * (1-Config.walk.phSingle[1]-(1-Config.walk.phSingle[2]))      
+  end
+
 
 
 
   --[[
-
-
-
-
   --automatic detect
   supportLeg = 0 --right support
   if step_relpos[1]>0 then --walk forward
@@ -167,7 +143,7 @@ function state.entry()
 
 
   if supportLeg == 1 then
-    --Take right step
+    --left support, Take right step
 
     print("left support, supportY:",Config.walk.supportY)
 
@@ -176,62 +152,50 @@ function state.entry()
     local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRightTarget)
     local uTorsoTarget = util.se2_interpolate(0.5,uLeftSupport,uRightSupport)
     local uLeftTorsoTarget = util.pose_relative(uTorsoTarget, uLeftSupport)
-    local side_adj = Config.walk.supportY - 0.00
+    local side_adj = Config.walk.supportY
     local com_side = Config.walk.footY+Config.walk.supportY-side_adj
- 
 
---[[
-    print("uLeft:",unpack(uLeft))
-    print("uRight:",unpack(uRight))
-    print("uRightTarget:",unpack(uRightTarget))
-    print("uTorsoTarget:",unpack(uTorsoTarget))
-    print("uLeftTorso:",unpack(uLeftTorso))
-    print("uLeftTorsoTarget:",unpack(uLeftTorsoTarget))
+    local uTorso1 = util.pose_global({uLeftTorso[1],com_side,0},uTorso)
+    print("uTorso:",unpack(uTorso))
+    print("uTorso1:",unpack(uTorso1)) --initial support position
+    print("uTorsoTarget:",unpack(uTorsoTarget)) --initial support position
 
-    print("side_adj:",side_adj)
-    print("com_side:",com_side)
---]]
+    local torso_mov1 = math.sqrt((uTorso1[1]-uTorso[1])^2+(uTorso1[2]-uTorso[2])^2)
+    local torso_mov2 = math.sqrt((uTorsoTarget[1]-uTorso1[1])^2+(uTorsoTarget[2]-uTorso1[2])^2)
+    print("Torso movement:",torso_mov1,torso_mov2)
 
-    if Config.enable_touchdown then
-      step_queues={
-         {
-          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-          {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
-         },
+    --Current timing: 
+    -- 3.0 0.1 0.1 
+    -- 0.1 wt2 0.1
+    -- 3.0 1.0 0.1
 
-         {
-          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
-         },
-      }
-    else
-      if Config.piecewise_step then
+    --new timing: ~1 sec for lateral shift, ~2 sec for diagonal shift
+    local tslope1 = torso_mov1/0.1
+    local tslope2 = torso_mov2/0.1
 
-        step_queues={
-        {
-          {{0,0,0},    2,  st*3, st, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-        },
-        {
-          {step_relpos,0,  st,wt2,st ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
-        },
-        {
-          {{0,0,0},2,        st*3, st, st,   {0,0},{0,0,0} },  --move to center
-        },
-        }
+    print("Total leg midair time:",wt2)
+    print("Total step time:",tslope1+tslope2+wt2+0.6)
 
 
-      else
-        step_queues={
-         {
-          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
-          {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
-          {{0,0,0},2,        st*3, st, 0.1,   {0,0},{0,0,0} },  --move to center
-         },
-        }
+local zLeg = mcm.get_status_zLeg()
+print("bodyHeight for supportfoot:",zLeg[1])
 
-      end
-      
-    end
+--tzmp = sqrt(l/g), l=g*tzmp^2
+local tZMP = Config.walk.tZMP
+local COMz = 9.801 * tZMP*tZMP - zLeg[1]
+local tZMP2 = math.sqrt(COMz/9.801)
+tZMP2 = math.floor(tZMP2*100 +0.5)/100
+print("tZMP org:",tZMP, "tZMP new:",tZMP2)
+mcm.set_status_temp_tZMP(tZMP2)
 
+
+    step_queues={
+     {
+      {{0,0,0},    2,  tslope1, 0.1, 0.1,   {uLeftTorso[1],com_side},{0,0,0} },    --Shift and Lift
+      {step_relpos,0,  0.1,wt2,0.1 ,   {0,-side_adj},     {0,sh1,sh2},  {-uLeftTorsoTarget[1],-uLeftTorsoTarget[2] - Config.walk.supportY}},   --LS     --Move and land
+      {{0,0,0},2,      tslope2, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+     },
+    }
   else
 
 --print("right support, supportY:",Config.walk.supportY)
@@ -245,53 +209,50 @@ function state.entry()
     local side_adj = Config.walk.supportY - 0.00
     local com_side = Config.walk.footY+Config.walk.supportY-side_adj
 
---[[  
-    print("uLeft:",unpack(uLeft))
-    print("uRight:",unpack(uRight))
-    print("uLeftTarget:",unpack(uLeftTarget))
-    print("uTorsoTarget:",unpack(uTorsoTarget))
-    print("uRightTorso:",unpack(uRightTorso))
-    print("uRightTorsoTarget:",unpack(uRightTorsoTarget))
+    local uTorso1 = util.pose_global({uRightTorso[1]  , -com_side,0},uTorso)
+    print("uTorso:",unpack(uTorso))
+    print("uTorso1:",unpack(uTorso1)) --initial support position
+    print("uTorsoTarget:",unpack(uTorsoTarget)) --initial support position
+    local torso_mov1 = math.sqrt((uTorso1[1]-uTorso[1])^2+(uTorso1[2]-uTorso[2])^2)
+    local torso_mov2 = math.sqrt((uTorsoTarget[1]-uTorso1[1])^2+(uTorsoTarget[2]-uTorso1[2])^2)
 
-    print("side_adj:",side_adj)
-    print("com_side:",com_side)
---]]    
+    print("Total leg midair time:",wt2)    
+    print("Torso movement:",torso_mov1,torso_mov2)
+    --Current timing: 
+    -- 3.0 0.1 0.1 
+    -- 0.1 wt2 0.1
+    -- 3.0 1.0 0.1
 
-    if Config.enable_touchdown then
-      step_queues={
-         {
-          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-          {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-         },
+    --new timing: ~1 sec for lateral shift, ~2 sec for diagonal shift
+    local tslope1 = torso_mov1/0.1
+    local tslope2 = torso_mov2/0.1
 
-         {
-          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
-         },
-      }
-    else
-      if Config.piecewise_step then
-        step_queues={
-        {
-          {{0,0,0},2,        st*3, st, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-        },
-        {
-          {step_relpos,1,   st,wt2,st ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-        },
-        {
-          {{0,0,0},2,        st*3, st, st,   {0,0},{0,0,0} },  --move to center
-        },
-        }
 
-      else
-       step_queues={
-         {
-          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
-          {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
-          {{0,0,0},2,        st*3, st, 0.1,   {0,0},{0,0,0} },  --move to center
-         },
-      }
-      end
-    end
+    print("Total step time:",tslope1+tslope2+wt2+0.6)
+
+
+local zLeg = mcm.get_status_zLeg()
+print("bodyHeight for supportfoot:",zLeg[2])
+
+--tzmp = sqrt(l/g), l=g*tzmp^2
+local tZMP = Config.walk.tZMP
+local COMz = 9.801 * tZMP*tZMP - zLeg[1]
+local tZMP2 = math.sqrt(COMz/9.801)
+
+--round down at two digits
+tZMP2 = math.floor(tZMP2*100 +0.5)/100
+print("tZMP org:",tZMP, "tZMP new:",tZMP2)
+mcm.set_status_temp_tZMP(tZMP2)
+
+
+
+     step_queues={
+       {
+        {{0,0,0},2,       tslope1, 0.1, 0.1,   {uRightTorso[1]  , -com_side},{0,0,0} },    --Shift and Lift
+        {step_relpos,1,   0.1,wt2,0.1 ,   {0,side_adj}, {0,sh1,sh2}   ,  {-uRightTorsoTarget[1]  , -uRightTorsoTarget[2] + Config.walk.supportY}},   --LS     --Move and land
+        {{0,0,0},2,       tslope2, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+       },
+    }
   end
 
 

@@ -44,17 +44,20 @@ local function update(key_code)
 	local lright = hcm.get_legdebug_right()
 	local ltorso = hcm.get_legdebug_torso()
 
+print(unpack(ltorso))
+
+
 	local torsoangle = hcm.get_legdebug_torso_angle()
 
 
 	if key_char_lower==("i") then      lright[1]=lright[1]+0.01
 	elseif key_char_lower==("j") then  lright[2]=lright[2]+0.01
 	elseif key_char_lower==("k") then  
-		lright[4]=0
+																			lright[4]=0
 	elseif key_char_lower==("l") then  lright[2]=lright[2]-0.01
 	elseif key_char_lower==(",") then  lright[1]=lright[1]-0.01
-	elseif key_char_lower==("u") then  lright[4]=lright[4]+0.01
-	elseif key_char_lower==("m") then  lright[4]=lright[4]-0.01
+	elseif key_char_lower==("u") then  lright[4]=lright[4]+0.005
+	elseif key_char_lower==("m") then  lright[4]=lright[4]-0.005
 
 	elseif key_char_lower==("w") then  lleft[1]=lleft[1]+0.01
 	elseif key_char_lower==("a") then  lleft[2]=lleft[2]+0.01
@@ -62,26 +65,23 @@ local function update(key_code)
 		lleft[4]=0
 	elseif key_char_lower==("d") then  lleft[2]=lleft[2]-0.01
 	elseif key_char_lower==("x") then  lleft[1]=lleft[1]-0.01
-	elseif key_char_lower==("q") then  lleft[4]=lleft[4]+0.01
-	elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.01
+	elseif key_char_lower==("q") then  lleft[4]=lleft[4]+0.005
+	elseif key_char_lower==("z") then  lleft[4]=lleft[4]-0.005
 
 
 	elseif key_char_lower==("t") then  
 		ltorso[1]=ltorso[1]+0.01
-		print("Torso:",ltorso[1])
-	elseif key_char_lower==("f") then  ltorso[2]=ltorso[2]+0.01		
+		print("Torso X:",ltorso[1])
+	elseif key_char_lower==("f") then  ltorso[2]=ltorso[2]+0.01
+		print("Torso Y:",ltorso[2])
 	elseif key_char_lower==("h") then  ltorso[2]=ltorso[2]-0.01
+		print("Torso Y:",ltorso[2])
 	elseif key_char_lower==("b") then  
 		ltorso[1]=ltorso[1]-0.01
-		print("Torso:",ltorso[1])
+		print("Torso X:",ltorso[1])
 	elseif key_char_lower==("g") then  
+		ltorso[1],ltorso[2]=0,0
 
-	--[[		
-	elseif key_char_lower==("-") then  torsoangle[1]=torsoangle[1]-math.pi/180		
-	elseif key_char_lower==("=") then  torsoangle[1]=torsoangle[1]+math.pi/180			
-	elseif key_char_lower==("[") then  torsoangle[2]=torsoangle[2]-math.pi/180		
-	elseif key_char_lower==("]") then  torsoangle[2]=torsoangle[2]+math.pi/180			
-	--]]					
 
 
 

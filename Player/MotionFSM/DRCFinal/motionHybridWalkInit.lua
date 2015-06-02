@@ -31,17 +31,11 @@ local angleShift = vector.new{0,0,0,0}
 
 local iStep
 
--- What foot trajectory are we using?
---[[
-local foot_traj_func  
---foot_traj_func = moveleg.foot_trajectory_base
---foot_traj_func = moveleg.foot_trajectory_square
-foot_traj_func = moveleg.foot_trajectory_square_stair
---foot_traj_func = moveleg.foot_trajectory_square_stair_2
---]]
-local foot_traj_func  
-if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
-else foot_traj_func = moveleg.foot_trajectory_square end
+local foot_traj_name = "foot_trajectory_base2"
+if Config.walktraj and Config.walktraj.hybridwalk then
+  foot_traj_name = Config.walktraj.hybridwalk 
+end
+local foot_traj_func   = moveleg[foot_traj_name]
 
 local crossing_num
 local last_side = 1
@@ -252,6 +246,11 @@ function walk.update()
     uLeft_now, uRight_now, uLeft_next, uRight_next,
       supportLeg, ph, ended, walkParam = zmp_solver:get_current_step_info(t_discrete + time_discrete_shift)
 
+
+
+
+
+
     if ended and zmp_solver:can_stop() then return "done"  end
   
     --Get the current COM position
@@ -275,6 +274,12 @@ function walk.update()
 --      if walkParam then print(unpack(walkParam))end
     elseif supportLeg == 2 then --Double support
     end
+
+
+
+--print("init:",t-t_entry,ph, math.max(zLeft,zRight))
+
+    
     step_planner:save_stance(uLeft,uRight,uTorso)  
 
     --Update the odometry variable
@@ -303,6 +308,8 @@ function walk.update()
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
     --delta_legs, angleShift = moveleg.get_leg_compensation(supportLeg,ph,gyro_rpy, angleShift)
+
+    moveleg.ft_compensate(t_diff)
 
     delta_legs, angleShift = moveleg.get_leg_compensation_new(
       supportLeg,
@@ -356,6 +363,8 @@ end -- walk.update
 function walk.exit()
   print(walk._NAME..' Exit')  
   wcm.set_robot_reset_pose(0)  --Start updating localization
+  mcm.set_walk_footlift({0,0})
+  mcm.set_walk_heeltoewalk(0) --no heeltoewalk default  
 end
 
 return walk

@@ -14,7 +14,7 @@ function state.entry()
 
   -- Initialize all other state machines
 	arm_ch:send'init'
-	gripper_ch:send'init'
+	gripper_ch:send'close'
   motion_ch:send'stand'
 	head_ch:send'init'
 	lidar_ch:send'pan'

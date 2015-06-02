@@ -1,0 +1,35 @@
+#VRML_SIM V7.4.3 utf8
+#16 8 6 block, we assume the size of 40 20 15cm instead
+#15 degree angle
+#Block size 0.4 *0.4 * 0.15
+#Total dimension: 42.5193187281 cm
+PROTO CinderBlock [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+	field SFColor diffuseColor 0.5 0.5 0.5
+	]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0	0.075 0  #15 deg	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
+			     geometry Box { size 0.40 0.15 0.40 }
+			  }
+			]			
+		}
+		
+  ]
+  boundingObject Group {
+		children [
+			USE block		
+		]
+  }  
+ locked TRUE
+}
+}

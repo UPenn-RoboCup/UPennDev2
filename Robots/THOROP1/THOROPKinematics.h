@@ -110,9 +110,18 @@ const double bodyCom[2][3]={
 	{-0.0212, 0.0002, 0.0032}
 };
 
-const double MassArm[7]={
-	0.940, 0.752, 1.806, 1.124, 0.441, 0.077,0.474 //should add hand mass 
+//lets assume that the chopstick adds 100gr
+const double MassArmL[7]={
+//	0.940, 0.752, 1.806, 1.124, 0.441, 0.077,0.474
+		0.940, 0.752, 1.806, 1.124, 0.441, 0.077,0.574
 };
+
+//extender mass 400g, gripper mass 1200gr (w/last servo)
+const double MassArmR[7]={
+//	0.940, 0.752, 1.806, 1.124,       0.441, 0.077,0.474 
+	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.200 //extender and hand mass added
+};
+
 
 const double InertiaArm[7][6]={
 	{0.0000625, 0.0000625, 0.0000625, 0,0,0},
@@ -155,6 +164,8 @@ const double armComL[7][3]={
 	{0.0953,0,0} //after wrist yaw 2
 };
 
+
+//right arm com should be slightly different, but lets assume they are similar
 const double armComR[7][3]={
 	{0,0,0},	//after shoulder pitch
 	{0.0282,0,0.0},//after shoulder roll
@@ -231,9 +242,10 @@ std::vector<double> THOROP_kinematics_inverse_leg(const Transform trLeg, int leg
 std::vector<double> THOROP_kinematics_inverse_leg_toelift(const Transform trLeg, int leg,double aShiftX, double aShiftY,int birdwalk);
 std::vector<double> THOROP_kinematics_inverse_leg_heellift(const Transform trLeg, int leg, double aShiftX, double aShiftY, int birdwalk);
 
-
 std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg, double aShiftX, double aShiftY);
 std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg, double aShiftX, double aShiftY);
+
+double THOROP_kinematics_inverse_leg_bodyheight_diff(const Transform trLeg, int leg, double aShiftX, double aShiftY);
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // Arm FK / IK

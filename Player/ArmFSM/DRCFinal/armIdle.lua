@@ -17,16 +17,6 @@ function state.entry()
   t_update = t_entry
   t_finish = t
 
-  -- Torque OFF the motors
---  Body.set_larm_torque_enable(0)
---  Body.set_rarm_torque_enable(0)
-
-Body.set_rgrip_mode('torque')
-Body.set_rgrip_torque_enable(1)
-Body.set_rgrip_mode('torque')
-Body.set_rgrip_torque_enable(1)
-Body.set_rgrip_mode('torque')
-
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()
 end
@@ -53,8 +43,11 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
+	for i=1,10 do
   Body.set_larm_torque_enable(1)
   Body.set_rarm_torque_enable(1)
+	unix.usleep(1e5)
+end
 end
 
 return state

@@ -36,7 +36,7 @@ function state.entry()
   qWaist = Body.get_waist_command_position()
   if Config.walk.legBias then
     mcm.set_leg_bias(Config.walk.legBias)
-    print("BIAS SET:",unpack(Config.walk.legBias))
+--    print("BIAS SET:",unpack(Config.walk.legBias))
   end
 
   --Set up initial walk parameters
@@ -51,6 +51,7 @@ function state.entry()
   mcm.set_walk_hipRollCompensation(Config.walk.hipRollCompensation)
 
   mcm.set_motion_state(0)
+
 end
 
 ---

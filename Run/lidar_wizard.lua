@@ -4,6 +4,8 @@
 -- (c) Stephen McGill 2013, 2014
 dofile'../include.lua'
 
+--local LIDAR_ID = assert(tonumber(arg[1]), 'Need to give an id (0 or 1)')
+
 local ENABLE_LOG = false
 
 local libHokuyo  = require'libHokuyo'
@@ -20,6 +22,7 @@ require'mcm'
 
 -- Setup the Hokuyos array
 local hokuyos = {}
+local streams = Config.net.streams
 
 -- Initialize the Hokuyos
 --local h0 = libHokuyo.new_hokuyo('/dev/ttyACM0')
@@ -27,22 +30,35 @@ local hokuyos = {}
 --local h0 = libHokuyo.new_hokuyo(11)
 local h0 = libHokuyo.new_hokuyo(10) -- chest on mk2
 h0.name = 'chest'
-h0.ch = si.new_publisher'lidar0'
+h0.ch = si.new_publisher(streams.lidar0.sub)
+h0.tcp_ch = si.new_publisher(streams.lidar0.tcp)
+h0.metadata = {
+	id='lidar0'
+}
+h0.angle = Body.get_lidar_position
+----[[
+local h1 = libHokuyo.new_hokuyo(11) -- head on mk2
+h1.name = 'head'
+h1.ch = si.new_publisher(streams.lidar1.sub)
+h1.tcp_ch = si.new_publisher(streams.lidar1.tcp)
+h1.metadata = {
+	id='lidar1'
+}
+h1.angle = Body.get_head_position
+--]]
 
 local libLog, logger, nlog
 if ENABLE_LOG then
 	libLog = require'libLog'
-	logger = libLog.new('lidar', true)
+	h0.logger = libLog.new(h0.name, true)
+	h1.logger = libLog.new(h1.name, true)
 	nlog = 0
 end
 
-local metadata = {
-id='lidar0'
-}
-
 local cb = function(self, data)
+	local metadata = self.metadata
 	metadata.t = get_time()
-	metadata.angle = Body.get_lidar_position()
+	metadata.angle = self.angle()
 
 	local rpy = Body.get_rpy()
 	local uComp = mcm.get_stance_uTorsoComp()
@@ -51,6 +67,7 @@ local cb = function(self, data)
 	local pose = wcm.get_robot_pose()
 	local torsoG = pose_global(torso0, pose)
 	local bh = mcm.get_stance_bodyHeight()
+	local qW = Body.get_waist_position()
 
 	metadata.tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
 	metadata.tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
@@ -59,16 +76,19 @@ local cb = function(self, data)
 	metadata.n = self.n
 	metadata.res = self.res
 	metadata.rsz = #data
+	metadata.qWaist = qW
 
-	local ret = self.ch:send({mpack(metadata), data})
+	local send_data = {mpack(metadata), data}
+	local ret = self.ch:send(send_data)
+	local ret = self.tcp_ch:send(send_data)
 
 	if ENABLE_LOG then
-		logger:record(metadata, data)
+		self.logger:record(metadata, data)
 		nlog = nlog + 1
 		if nlog % 400 == 0 then
-			logger:stop()
-			logger = libLog.new('lidar', true)
-			print('Open new log!')
+			self.logger:stop()
+			self.logger = libLog.new(self.name, true)
+			print('Open new log!', self.name)
 		end
 	end
 
@@ -91,8 +111,14 @@ end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
 
+if h0 then
 h0.callback = cb
 table.insert(hokuyos, h0)
+end
+if h1 then
+h1.callback = cb
+table.insert(hokuyos, h1)
+end
 
 -- Begin to service
 os.execute('clear')

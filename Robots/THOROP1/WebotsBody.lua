@@ -383,24 +383,46 @@ function WebotsBody.update(Body)
 
 		-- F/T sensor
     if ENABLE_FT then
-			local l_ft = Body.get_lfoot()
-			l_ft[2], l_ft[3], l_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
-      l_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleL)
-      l_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootL)
-      l_ft[6] = 0 --No z torque sensing (unneceesary)
-      
-			dcm.set_sensor_lfoot(l_ft)
-      --
-      local r_ft = Body.get_rfoot()
-			r_ft[2], r_ft[3], r_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
-      r_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleR)
-      r_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootR)
-      r_ft[6] = 0
+          local l_ft = Body.get_lfoot()
+        local r_ft = Body.get_rfoot()
+        if Config.birdwalk then 
+        --LR FT sensors are flipped
+        --And their values are inverted
+        l_ft[2], l_ft[3], l_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
+        l_ft[1],l_ft[2]=-l_ft[1],-l_ft[2]
+        l_ft[5] = -webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleR) --pitch
+        l_ft[4] = -webots.wb_motor_get_force_feedback(tags.jointsByName.FootR) --roll
+        l_ft[6] = 0 --No z torque sensing (unneceesary)
 
-			dcm.set_sensor_rfoot(r_ft)
-      -- ZMP calculation
-      dcm.set_sensor_lzmp({-l_ft[5] / l_ft[3], l_ft[4] / l_ft[3]})
-      dcm.set_sensor_rzmp({-r_ft[5] / r_ft[3], r_ft[4] / r_ft[3]})
+        r_ft[2], r_ft[3], r_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
+        r_ft[1],r_ft[2]=-r_ft[1],-r_ft[2]
+        r_ft[5] = -webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleL) --pitch
+        r_ft[4] = -webots.wb_motor_get_force_feedback(tags.jointsByName.FootL) --roll
+        r_ft[6] = 0
+      else
+        l_ft[2], l_ft[3], l_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.l_ft))
+        l_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleL)
+        l_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootL)
+        l_ft[6] = 0 --No z torque sensing (unneceesary)
+        r_ft[2], r_ft[3], r_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
+        r_ft[5] = webots.wb_motor_get_force_feedback(tags.jointsByName.AnkleR)
+        r_ft[4] = webots.wb_motor_get_force_feedback(tags.jointsByName.FootR)
+        r_ft[6] = 0
+      end
+      dcm.set_sensor_lfoot(l_ft)
+      dcm.set_sensor_rfoot(r_ft)
+
+      --find immediate zmp error
+      local zf_touchdown = 30
+      local lzmp,rzmp={0,0},{0,0}
+      if l_ft[3]>zf_touchdown then 
+        lzmp={l_ft[5]/l_ft[3],-l_ft[4]/l_ft[3]}
+      end
+      if r_ft[3]>zf_touchdown then 
+        rzmp={r_ft[5]/r_ft[3],-r_ft[4]/r_ft[3]}
+      end
+      dcm.set_sensor_lzmp(lzmp)
+      dcm.set_sensor_rzmp(rzmp)
     end
 
     -- GPS and compass data
@@ -409,7 +431,9 @@ function WebotsBody.update(Body)
     if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
-
+--      if Config.use_gps_pose and Config.debug.world then         
+--        print("raw gps:",unpack(gps))
+--      end
 			--local angle   = math.atan2( compass[3], compass[1] )
       --local pose    = vector.pose{gps[3], gps[1], angle}
 
@@ -501,6 +525,7 @@ function WebotsBody.update(Body)
         id='lidar0', n=n,res=res,t=t,angle=Body.get_lidar_position(),
 				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
 				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
+				qWaist = Body.get_waist_position()
       }
 			metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
 			metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))
@@ -527,6 +552,7 @@ function WebotsBody.update(Body)
         id='lidar1', n=n,res=res,t=t,angle=Body.get_head_position(),
 				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
 				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
+				qWaist = Body.get_waist_position()
       }
 			metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
 			metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))

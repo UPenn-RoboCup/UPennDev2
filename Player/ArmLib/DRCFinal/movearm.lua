@@ -47,53 +47,23 @@ end
 movearm.lPlanner = lPlanner
 movearm.rPlanner = rPlanner
 
-local function get_compensation(qcLArm, qcRArm, qcWaist)
-	-- Legs are a bit different, since we are working in IK space
-	local bH = mcm.get_stance_bodyHeight()
-	local bT = mcm.get_stance_bodyTilt()
-	local uTorso = mcm.get_status_uTorso()
-	local aShiftX = mcm.get_walk_aShiftX()
-  local aShiftY = mcm.get_walk_aShiftY()
-	-- Current Foot Positions
-	local uLeft = mcm.get_status_uLeft()
-  local uRight = mcm.get_status_uRight()
-	local zLeg = mcm.get_status_zLeg()
-  local zSag = mcm.get_walk_zSag()
-	local zLegComp = mcm.get_status_zLegComp()
-	local zLeft, zRight = unpack(zLeg + zSag + zLegComp)
-	local pLLeg = {uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]}
-  local pRLeg = {uRight[1],uRight[2],zRight,0,0,uRight[3]}
-	qcWaist = qcWaist or {0, 0}
-
-	-- Initial guess is torso0, our default position.
-	-- See how far this guess is from our current torso position
-	local uTorsoAdapt = util.pose_global(torso0, uTorso)
-	local adapt_factor = 1.0
-	for i=1,4 do
-		-- Form the torso position now in the 6D space
-		local pTorso = {uTorsoAdapt[1], uTorsoAdapt[2], bH, 0, bT, uTorsoAdapt[3]}
-		local qLegs = K0.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
-		-- Grab the intended leg positions from this shift
-		local qLLeg = {unpack(qLegs, 1, 6)}
-		local qRLeg = {unpack(qLegs, 7, 12)}
-		-- Calculate the COM position
-		local com = K0.calculate_com_pos(qcWaist, qcLArm, qcRArm, qLLeg, qRLeg, 0, 0, 0)
-		local uCOM = util.pose_global({com[1]/com[4], com[2]/com[4], 0}, uTorsoAdapt)
-		uTorsoAdapt = uTorsoAdapt + adapt_factor * (uTorso - uCOM)
-	end
-	local uTorsoComp = util.pose_relative(uTorsoAdapt, uTorso)
-	table.remove(uTorsoComp)
-	return uTorsoComp
-end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto(l, r)
 	-- Assume no motion
 	local lco, rco = false, false
 
+	local qcLArm = Body.get_larm_command_position()
+	local qcRArm = Body.get_rarm_command_position()
+	local qcWaist = Body.get_safe_waist_command_position()
+
 	local lplan = type(l)=='table' and P[l.via]
 	if type(lplan)=='function' then
 		lco = coroutine.create(lplan)
+		if l.q then vector.new(l.q) end
+		if l.weights then vector.new(l.weights) end
+		if l.qWaistGuess then vector.new(l.qWaistGuess) end
+		if l.qArmFGuess then vector.new(l.qArmFGuess) end
 		-- Check the various formats
 		if l.tr then
 			if #l.tr==6 then
@@ -102,23 +72,11 @@ function movearm.goto(l, r)
 				l.tr = T.from_quatp(l.tr)
 			end
 		end
-		if l.weights then vector.new(l.weights) end
-		l.qArm0 = vector.new(l.qLArm0 or Body.get_larm_command_position())
-		l.qWaist0 = vector.new(l.qWaist0 or Body.get_waist_command_position())
-
-		print('L Plan')
-		util.ptable(l)
-		print()
-
-		local ok, msg = coroutine.resume(lco, lPlanner, l)
-		if not ok then
-			--print('Error goto l |', msg)
-			lco = msg
-		end
+		l.qArm0 = vector.new(l.qLArm0 or qcLArm)
+		l.qWaist0 = vector.new(l.qWaist0 or qcWaist)
 	end
 	local rplan = type(r)=='table' and P[r.via]
 	if type(rplan)=='function' then
-		rco = coroutine.create(rplan)
 		-- Check the various formats
 		if r.tr then
 			if #r.tr==6 then
@@ -128,37 +86,67 @@ function movearm.goto(l, r)
 			end
 		end
 		if r.weights then vector.new(r.weights) end
-		r.qArm0 = vector.new(r.qRArm0 or Body.get_rarm_command_position())
-		r.qWaist0 = vector.new(r.qWaist0 or Body.get_waist_command_position())
+		if r.qWaistGuess then vector.new(r.qWaistGuess) end
+		if r.qArmFGuess then vector.new(r.qArmFGuess) end
+		r.qArm0 = vector.new(r.qRArm0 or qcRArm)
+		r.qWaist0 = vector.new(r.qWaist0 or qcWaist)
+	end
 
-		print('\nR Plan')
-		util.ptable(r)
-		print()
+	-- Add the compensation
+	--[[
+	local qLComp = qcLArm
+	if l and l.tr and l.qArmFGuess then
+		qLComp = l.qArmFGuess
+	end
+	local qRComp = qcRArm
+	if r and r.tr and r.qArmFGuess then
+		qRComp = r.qArmFGuess
+	end
+	local qWComp = qcWaist
+	if l and l.tr and l.qWaistGuess then
+		if r and r.tr and r.qWaistGuess then
+			print('movearm | two waist comp')
+		else
+			qWComp = l.qWaistGuess
+		end
+	elseif r and r.tr and r.qWaistGuess then
+		qWComp = r.qWaistGuess
+	end
 
-		local ok, msg = coroutine.resume(rco, rPlanner, r)
-		if not ok then
-			--print('Error goto r |', msg)
-			rco = msg
+	if (l and l.tr) or (r and r.tr) then
+		local uTorsoComp = Body.get_torso_compensation(qLComp, qRComp, qWComp)
+		print('movearm | uTorsoComp', unpack(uTorsoComp))
+		local trComp = T.trans(uTorsoComp[1], uTorsoComp[2], 0)
+		if l and l.tr then
+			print('movearm | Compensating L...')
+			l.tr0 = l.tr
+			l.tr = trComp * l.tr0
+		end
+		if r and r.tr then
+			print('movearm | Compensating R...')
+			r.tr0 = r.tr
+			r.tr = trComp * r.tr0
 		end
 	end
+	--]]
 
-	-- TODO: Add compensation again
-	local uTorsoComp
-	--[[
-	if add_compensation then
-		uTorsoComp = get_compensation(l.q, r.q, qcWaist)
-		local trComp = T.trans(-uTorsoComp[1],-uTorsoComp[2], 0)
-		-- Save the old transform, and update
-		l.tr0 = l.tr
-		r.tr0 = r.tr
-		l.tr = trComp * l.tr0
-		r.tr = trComp * r.tr0
 
-		-- Re-run the planner
-		lco = gen_via[l.via](lPlanner, l, qLArm)
-		rco = gen_via[r.via](rPlanner, r, qRArm)
+	if type(lplan)=='function' then
+		print('movearm | L Plan')
+		util.ptable(l)
+		print()
+		lco = coroutine.create(lplan)
+		local ok, msg = coroutine.resume(lco, lPlanner, l)
+		if not ok then lco = msg end
 	end
-			--]]
+	if type(rplan)=='function' then
+		print('movearm | R Plan')
+		util.ptable(r)
+		print()
+		rco = coroutine.create(rplan)
+		local ok, msg = coroutine.resume(rco, rPlanner, r)
+		if not ok then rco = msg end
+	end
 
 	return lco, rco
 end

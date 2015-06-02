@@ -19,12 +19,22 @@ local shared_data_sz = {}
 -- DRC network detection
 shared_data.network = {
 	open = zeros(1),
-	topen = zeros(1)
+	topen = zeros(1),
+	indoors = zeros(1), -- 0: outdoors, 1: indoors
+	baud = {9600}, -- 2400, 4800 are options
 }
 
 shared_data.teleop = {
+	-- Waypoint
+	waypoint = zeros(3),
 	-- Head angles
   head = zeros(2),
+	headik = zeros(2),
+	-- Waist angles
+	waist = zeros(2),
+	-- Leg angles
+	lleg = zeros(6),
+  rleg = zeros(6),
   -- Joint space: Assume 7DOF arm
   larm = zeros(7),
   rarm = zeros(7),
@@ -34,16 +44,17 @@ shared_data.teleop = {
 	-- Weights for the shoulder search
 	lweights = zeros(3),
 	rweights = zeros(3),
-	-- Gripper has some modes it can use: 0 is torque, 1 is position
-	lgrip_mode = zeros(1),
-	rgrip_mode = zeros(1),
 	-- We have three fingers
 	lgrip_torque = zeros(3),
 	rgrip_torque = zeros(3),
+	--
 	lgrip_position = zeros(3),
 	rgrip_position = zeros(3),
-	-- Waypoint
-	waypoint = zeros(3)
+
+
+	drive_head = zeros(2),
+	throttle = zeros(1), --should be zero to one
+	steering = zeros(1)
 }
 
 shared_data.demo = {
@@ -62,6 +73,8 @@ shared_data.guidance.t = zeros(1)
 
 shared_data.audio = {}
 shared_data.audio.request = vector.zeros(1)
+shared_data.audio.volume = vector.zeros(1)
+shared_data.audio.rawvolume = vector.zeros(1)
 
 shared_data.drive={}
 shared_data.drive.gas_pedal = vector.zeros(2)

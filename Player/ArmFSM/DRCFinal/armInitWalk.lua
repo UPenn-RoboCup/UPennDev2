@@ -20,11 +20,8 @@ local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()  
 
-  local dqVelLeft = mcm.get_arm_dqVelLeft()
-  local dqVelRight = mcm.get_arm_dqVelRight()
-
-  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqVelLeft, dt )  
-  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqVelRight, dt )
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt ,nil,absolute)  
+  local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt ,nil,absolute)
 
   if not absolute then  
     for i=1,7 do
@@ -58,13 +55,15 @@ function state.entry()
   Body.set_rgrip_command_torque({0,0,0})
 
   if not IS_WEBOTS then
-  	local vel = 1000
+    local vel = 2000
     print('INIT setting params')
     for i=1,10 do
       Body.set_larm_command_velocity(vector.ones(7)*vel)
       unix.usleep(1e6*0.01);
       Body.set_rarm_command_velocity(vector.ones(7)*vel)
       unix.usleep(1e6*0.01);
+      Body.set_waist_command_velocity({500,500})
+      unix.usleep(1e6*0.01);      
      end
   end
 
@@ -79,18 +78,19 @@ function state.entry()
     Config.arm.trRArm0,
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0},true)
+--  print("QLArmTarget:", util.print_jangle(qLArmTarget))
+--  print("QRArmTarget:", util.print_jangle(qRArmTarget))  
 
-  print("QLArmTarget:", util.print_jangle(qLArmTarget))
-  print("QRArmTarget:", util.print_jangle(qRArmTarget))  
-
-  mcm.set_stance_enable_torso_track(0)
-  mcm.set_arm_dqVelLeft(Config.arm.vel_angular_limit_init)
-  mcm.set_arm_dqVelRight(Config.arm.vel_angular_limit_init)
 
   t_last_debug=t_entry
   last_error = 999
   stage = 1
+  t_stage_start = t_entry
+  t_stage = 1
 end
+
+
+local shoulderRollInit = 10*math.pi/180
 
 function state.update()
   local t  = Body.get_time()
@@ -99,72 +99,73 @@ function state.update()
   t_update = t
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-
+    
   local ret
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
+    
+  if stage==1 then --Straighten wrist roll and second wrist yaw       
+    qLArmTargetC[6],qRArmTargetC[6] = 0,0
+    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
+    t_stage = 1.0
 
-  if stage==1 then --straighten shoulder yaw first
+  elseif stage==2 then  --Straighten first wrist yaw, straighten shouldr yaw, widen shoulder
+    qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
     qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
-  elseif stage==2 then
-    if math.abs(qLArmTargetC[3]-qLArmTarget[3])<math.pi/2 and
-      math.abs(qLArmTargetC[3]-qLArmTarget[3])<math.pi/2 then     
-      stage=7  --no need to unscrew wrist yaw
-      return
-    else 
-      stage=3 
-      return
-    end 
-  elseif stage==3 then
-    --Straighten wrist roll
-    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
+    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
+    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
+    t_stage = 1.0
+
+  elseif stage==3 then --straighten shoulder yaw, widen shoulder
+    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+    t_stage = 2.0
+
   elseif stage==4 then
-    --Zero both wrist yaws
-    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
-    qLArmTargetC[6],qRArmTargetC[6] = 0,0
-    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
-    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
-  elseif stage==5 then
-    --Now go to the initial arm position
-    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
-  elseif stage==6 then
     return "done"
-  elseif stage==7 then
-    --Straighten wrist yaws first (without touching roll)
-    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]    
-    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
-    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
-  elseif stage==8 then
-    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
-  elseif stage==9 then
-    return "done"    
   end
 
-  local dqArmLim = vector.new({10,10,10,10,45,30,45}) *DEG_TO_RAD
-  if IS_WEBOTS then dqArmLim = dqArmLim*10 end
+  local dqArmLim = vector.new(util.shallow_copy(Config.arm.vel_angular_limit_init))
+  if IS_WEBOTS then dqArmLim = dqArmLim*2 end
 
   local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,true)
+
+  --SJ: initial waist position can be either +2 or -358
+  --so we should be careful using it for jacobian
+
+  Body.set_safe_waist_command_position({0,0})
+--  local ret = setArmJoints(qLArmTargetC,qRArmTargetC,dt,dqArmLim,false) --should use absolute position (for jacobian)
   local qLArmActual = Body.get_larm_position()
   local qRArmActual = Body.get_rarm_position()
+  local qWaistActual = Body.get_waist_position()
   local qLArmCommand = Body.get_larm_command_position()
   local qRArmCommand = Body.get_rarm_command_position()
+  local qWaistCommand = Body.get_waist_command_position()
 
   local err=0
+  err=err+math.abs(qWaistActual[1]-qWaistCommand[1])
+  err=err+math.abs(qWaistActual[2]-qWaistCommand[2])
   for i=1,7 do
     err=err+math.abs(qLArmActual[i]-qLArmCommand[i])
     err=err+math.abs(qRArmActual[i]-qRArmCommand[i])
   end
 
+--[[
+  if Config.arm_init_timeout and t-t_stage_start>t_stage then
+    t_stage_start = t
+    stage=stage+1
+    last_error=err
+    return
+  end
+--]]
+
   if t>t_last_debug+0.2 then
     t_last_debug=t
-    if ret==1 and math.abs(last_error-err)<1*math.pi/180 then 
+    if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then 
       stage = stage+1
       print("Total joint reading err:",err*180/math.pi)
     end
     last_error = err
   end    
-
-
 end
 
 function state.exit()
@@ -174,7 +175,7 @@ function state.exit()
   --we calculated the arm transforms (sans compensation) and stores them as current intiial conditions for planner
 
   local qWaist = Body.get_waist_command_position()
-  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist,0,0)  
+  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist)  
   local vec_comp = vector.new({uTorsoComp[1],uTorsoComp[2],0, 0,0,0})
   local trLArmComp = Body.get_forward_larm(qLArmTarget)
   local trRArmComp = Body.get_forward_rarm(qRArmTarget)
@@ -192,15 +193,14 @@ function state.exit()
       unix.usleep(1e6*0.01);
       Body.set_rarm_command_velocity({0,0,0,0,0,0,0})
       unix.usleep(1e6*0.01);
+      Body.set_waist_command_velocity({0,0})
+      unix.usleep(1e6*0.01);      
     end
   end
 
 --SJ: now we store the COM offset for default arm posture
---needed for arm returning
   local COMoffset = mcm.get_stance_COMoffset()
   mcm.set_stance_COMoffsetPose1(COMoffset)
-
-
   print("COMoffset:",unpack(COMoffset))
   --print("uTorsoComp",unpack(uTorsoComp))
   print(state._NAME..' Exit' )

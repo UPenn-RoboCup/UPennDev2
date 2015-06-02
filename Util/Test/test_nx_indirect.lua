@@ -28,24 +28,26 @@ local byte_to_number = lD.byte_to_number
 local nx_registers = lD.nx_registers
 local mx_registers = lD.mx_registers
 
-local leg_regs = {'position','current', 'data', 'command_position', 'position_p'}
---[[
+local leg_regs = {'position','temperature', 'data', 'command_position', 'position_p'}
+----[[
 local lleg = Config.chain.lleg
 local lleg_ok = lD.check_indirect_address(lleg.m_ids, leg_regs, left_leg)
 print('LLeg Check', lleg_ok)
-if not lleg_ok then
+--if not lleg_ok then
   lD.set_indirect_address(lleg.m_ids, leg_regs, left_leg)
-end
-local rleg = Config.chain.rleg
+--end
+--]]
+--[[
+--local rleg = Config.chain.rleg
 local rleg_ok = lD.check_indirect_address(rleg.m_ids, leg_regs, right_leg)
 print('RLeg Check', rleg_ok)
-if not rleg_ok then
+--if not rleg_ok then
   lD.set_indirect_address(rleg.m_ids, leg_regs, right_leg)
-end
+--end
 --]]
-
-local arm_regs = {'position','current', 'data', 'command_position', 'position_p'}
---[[
+os.exit()
+local arm_regs = {'position','temperature', 'data', 'command_position', 'position_p'}
+--
 local larm = Config.chain.larm
 local larm_ok = lD.check_indirect_address(larm.m_ids, arm_regs, left_arm)
 print('LArm Check', larm_ok)
@@ -53,7 +55,7 @@ if not larm_ok then
   lD.set_indirect_address(larm.m_ids, arm_regs, left_arm)
 end
 --]]
-----[[
+--[[
 local rarm = Config.chain.rarm
 local rarm_ok = lD.check_indirect_address(rarm.m_ids, arm_regs, right_arm)
 print('ids', unpack(rarm.m_ids))

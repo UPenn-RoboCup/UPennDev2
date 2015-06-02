@@ -32,9 +32,12 @@ local iStep,ph_last
 local zmp_param_set = false
 
 -- What foot trajectory are we using?
-local foot_traj_func  
-if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
-else foot_traj_func = moveleg.foot_trajectory_square end
+
+local foot_traj_name = "foot_trajectory_base2"
+if Config.walktraj and Config.walktraj.hybridwalk then
+  foot_traj_name = Config.walktraj.hybridwalk 
+end
+local foot_traj_func   = moveleg[foot_traj_name]
 
 local init_odometry = function(uTorso)
   wcm.set_robot_utorso0(uTorso)
@@ -50,10 +53,7 @@ local update_odometry = function(uTorso_in)
   local pose_odom0 = wcm.get_robot_odometry()
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
   wcm.set_robot_odometry(pose_odom)
-  
   wcm.set_robot_utorso1(uTorso_in)--updae odometry variable
-
-
 end
 
 ---------------------------
@@ -61,6 +61,13 @@ end
 ---------------------------
 function walk.entry()
   print(walk._NAME..' Entry' )
+  mcm.set_status_stabilization_mode(0) --We're in single support
+  if Config.use_heeltoe_walk then 
+    mcm.set_walk_heeltoewalk(1) 
+  else
+    mcm.set_walk_heeltoewalk(0) 
+  end
+
   -- Update the time of entry
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
@@ -114,6 +121,8 @@ function walk.update()
 
   -- Grab the phase of the current step
   local ph,is_next_step = zmp_solver:get_ph(t,t_last_step,ph_last)
+
+
   if ph_last<0.5 and ph>=0.5 then
     local rpy = Body.get_rpy()
     local roll = rpy[1]
@@ -173,8 +182,45 @@ function walk.update()
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
 
+    local uTorsoVelCurrent = mcm.get_status_uTorsoVel()
+    if Config.variable_support then
+      print("TorsoVel:",unpack(uTorsoVelCurrent))
+      local torsoVelYMin = 0.20
+      local torsoVelYFactor = 0.5 
+
+      local torsoVelXMin = 0.07
+      local torsoVelXFactor = 0.1
+
+      local torsoXExt = math.max(0,(math.abs(uTorsoVelCurrent[1])-torsoVelXMin))*torsoVelXFactor
+      torsoXExt = -math.min(torsoXExt, 0.02)* util.sign(uTorsoVelCurrent[2])
+      print("torsoXExt:",torsoXExt)
+
+      local torsoYExt = math.max(0, (math.abs(uTorsoVelCurrent[2])-torsoVelYMin )) *torsoVelYFactor 
+      torsoYExt = -math.min(torsoYExt, 0.02)*util.sign(uTorsoVelCurrent[2])
+      print("torsoYExt:",torsoYExt)
+
+      local uSupportModY = torsoXExt + torsoYExt
+
+      print("supportModY:",uSupportModY)
+      uSupport = util.pose_global({0,uSupportModY,0},uSupport)
+    end
+
+    local uTorsoVel = mcm.get_status_uTorsoVel()
+    local uSupportDist1 = util.pose_relative(uSupport,uTorso_now)
+    local uSupportDist2 = util.pose_relative(uSupport, uTorso_next)
+  
+    local y_dist = math.abs(uSupportDist1[2]+uSupportDist2[2])
+    local y_dist_mag = y_dist/(Config.walk.footY+Config.walk.supportY)/2
+     
+    local tStepNew = Config.walk.tStep
+    if Config.variable_tstep then
+--      print("DIST:",y_dist, y_dist_mag)    
+      tStepNew = Config.walk.tStep*y_dist_mag
+      tStepNew = Config.walk.tStep* y_dist_mag
+    end
+
     --Update walk coefficients
-    zmp_solver:set_param()
+    zmp_solver:set_param(tStepNew)
     zmp_param_set = true
     -- Compute the ZMP coefficients for the next step
     zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
@@ -184,12 +230,33 @@ function walk.update()
   local uTorso = zmp_solver:get_com(ph)
   uTorso[3] = ph*(uLeft_next[3]+uRight_next[3])/2 + (1-ph)*(uLeft_now[3]+uRight_now[3])/2
 
+  --update the current COM velocity
+  local uTorsoVel = zmp_solver:get_com_vel(ph)   
+  mcm.set_status_uTorsoVel(uTorsoVel)
+
+
   local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
   if iStep<=2 then phSingle = 0 end --This kills compensation and holds the foot on the ground  
-  local uLeft, uRight, zLeft, zRight = uLeft_now, uRight_now, 0,0
-  if supportLeg == 0 then uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight) --LS
-  else uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
+  local uLeft, uRight, zLeft, zRight, aLeft,aRight  = uLeft_now, uRight_now, 0,0, 0,0
+  if supportLeg == 0 then 
+    uRight,zRight,aRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight) --LS
+  else 
+    uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
   end
+
+
+  --Heel lift first, heel land first
+  --positive aLeft: toe lift
+  --negative aLeft: heel lift
+
+  local heeltoe_angle = Config.heeltoe_angle or 5*DEG_TO_RAD
+
+  if Config.use_heeltoe_walk then
+    mcm.set_walk_footlift({aLeft*heeltoe_angle, aRight*heeltoe_angle})
+  else
+    mcm.set_walk_footlift({0,0})
+  end
+
 
   local uZMP = zmp_solver:get_zmp(ph)
   moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP, zLeft,zRight)
@@ -199,7 +266,7 @@ function walk.update()
   local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
 
 
-
+  moveleg.ft_compensate(t_diff)
 
   delta_legs, angleShift = moveleg.get_leg_compensation_new(
       supportLeg,

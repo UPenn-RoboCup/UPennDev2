@@ -1,28 +1,15 @@
+--Now the Config file is entirely identical over two robots (using hostname)
 IS_STEVE = true
---IS_STEVE = false
-
 IS_COMPETING = false
 
+if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 -- Global Config
-Config = {
-	PLATFORM_NAME = 'THOROP1',
-	demo = false,
-}
+Config = {PLATFORM_NAME = 'THOROP1',demo = false,}
+local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
-local exo = {
-	'Walk','Net','FSM','World','Vision',
-	'Robot_Dale', 'Arm'
-}
+--Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
+--exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}
 
-Config.toeheel_lift = true
-Config.enable_touchdown = false
-Config.raise_body = true
-Config.waist_testing = true
-Config.use_jacobian_arm_planning = true
-Config.piecewise_step = true
-Config.enable_jacobian_test = false
---birdwalk TODO : IMU and FT values swap
---Config.birdwalk = 1 --testing birdwalk
 
 -- Printing of debug messages
 Config.debug = {
@@ -34,31 +21,62 @@ Config.debug = {
   goalpost = false,
   world = false,
   feedback = false,
+  armplan = true,
 }
 
 -- Tune for Webots
 if IS_WEBOTS then
-	--Config.testfile = 'test_balance'
-  --Config.testfile = 'test_testbed'
- -- Config.testfile = 'test_walkstuff'
-   Config.testfile = 'test_teleop2'
-	--
-  Config.sensors = {
-		ft = true,
-		feedback = 'feedback_wizard',
-		--slam = true,
-    --head_camera = 'camera_wizard',
-    --chest_lidar = true,
-    --head_lidar = true,
-    --kinect = 'kinect2_wizard',
-		mesh = 'mesh_wizard',
-	 	world = 'world_wizard',
-  }
-  -- Adjust the timesteps if desired
-  -- Config.camera_timestep = 33
-  -- Config.lidar_timestep = 200 --slower
-  -- Config.kinect_timestep = 30
+	if IS_STEVE then
+		Config.testfile = 'test_teleop'
+		Config.debug.armplan = true
+
+	  Config.sensors = {
+			ft = true,
+			feedback = 'feedback_wizard',
+			slam = 'slam_wizard',
+    	--head_camera = 'camera_wizard',
+    	--chest_lidar = true,
+    	--head_lidar = true,
+			--kinect = 'kinect2_wizard',
+			mesh = 'mesh_wizard',
+		 	world = 'world_wizard',
+	  }
+
+	else
+		--Config.testfile = 'test_testbed'		
+		Config.testfile = 'test_walkstuff'		
+		Config.debug.armplan = false		
+		Config.use_jacobian_arm_planning = true
+		Config.enable_jacobian_test = false
+		Config.enable_jacobian_test = true
+		Config.enable_touchdown = false
+		Config.raise_body = false
+		Config.piecewise_step = true
+--		Config.birdwalk = 1 --testing birdwalk		
+--		Config.use_gps_pose=true
+
+
+
+--		Config.debug.world=true
+	  Config.sensors = {
+			ft = true,
+			feedback = 'feedback_wizard',
+		 	world = 'world_wizard',
+	  }
+
+	end
 end
+
+
+
+--Config.use_heeltoe_walk = true
+--Config.heeltoe_angle = 0*DEG_TO_RAD
+Config.walktraj={}
+Config.walktraj.hybridwalk = "foot_trajectory_base"
+
+
+
+Config.use_imu_yaw = false --use odometry for yaw
 
 -----------------------------------
 -- Load Paths and Configurations --

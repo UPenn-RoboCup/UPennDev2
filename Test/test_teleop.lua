@@ -16,112 +16,143 @@ end
 
 local vector = require'vector'
 local T = require'Transform'
-local K = require'K_ffi'
-local sanitize = K.sanitize
+local fromQ = require'Transform'.from_quatp
+local toQ = require'Transform'.to_quatp
+local movearm = require'movearm'
 
 -- Look up tables for the test.lua script (NOTE: global)
 code_lut, char_lut, lower_lut = {}, {}, {}
 
 local narm = 7 -- TODO: Use the config to check...
 local selected_arm = 0 -- left to start
-
-local DO_IMMEDIATE = true
-local LARM_DIRTY, RARM_DIRTY = false, false
-local qLtmp, qL0
+--
+local LARM_DIRTY = false
+local qLtmp = vector.zeros(narm)
+local qL0 = vector.zeros(narm)
 local function get_larm(refresh)
 	if refresh then qLtmp = hcm.get_teleop_larm() end
-	return qLtmp
+	return qLtmp, qL0
 end
-
 local function set_larm(q, do_now)
 	if type(q)=='table' and #q==#qLtmp then
 		vector.copy(q, qLtmp)
 		LARM_DIRTY = true
 	end
 	if q==true or do_now==true then
-		LARM_DIRTY = false
-		local curTeleop = hcm.get_teleop_larm()
-		if curTeleop~=qL0 then
-			--print('TEST_TELEOP | L Outdated...')
-			vector.copy(curTeleop, qL0)
-			qLtmp = curTeleop
-			return
-		end
 		hcm.set_teleop_larm(qLtmp)
 		vector.copy(qLtmp, qL0)
-		arm_ch:send'teleop'
+		LARM_DIRTY = false
 	end
 end
-local qRtmp, qR0
+--
+local RARM_DIRTY = false
+local qRtmp = vector.zeros(narm)
+local qR0 = vector.zeros(narm)
 local function get_rarm(refresh)
 	if refresh then qRtmp = hcm.get_teleop_rarm() end
-	return qRtmp
+	return qRtmp, qR0
 end
-
 local function set_rarm(q, do_now)
 	if type(q)=='table' and #q==#qRtmp then
 		vector.copy(q, qRtmp)
 		RARM_DIRTY = true
 	end
 	if q==true or do_now==true then
-		LARM_DIRTY = false
-		local curTeleop = hcm.get_teleop_rarm()
-		if curTeleop~=qR0 then
-			--print('TEST_TELEOP | R Outdated...')
-			vector.copy(curTeleop, qR0)
-			qRtmp = curTeleop
-			return
-		end
 		hcm.set_teleop_rarm(qRtmp)
 		vector.copy(qRtmp, qR0)
-		arm_ch:send'teleop'
+		RARM_DIRTY = false
 	end
 end
+--
+local TFLARM_DIRTY = false
+local tfLtmp = T.eye()
+local tfL0 = T.eye()
+local function get_tflarm(refresh)
+	if refresh then
+		tfLtmp = fromQ(hcm.get_teleop_tflarm())
+	end
+	return tfLtmp, tfL0
+end
+local function set_tflarm(tf, do_now)
+	if type(tf)~='boolean' then
+		T.copy(tf, tfLtmp)
+		TFLARM_DIRTY = true
+	end
+	if tf==true or do_now==true then
+		hcm.set_teleop_tflarm(toQ(tfLtmp))
+		T.copy(tfLtmp, tfL0)
+		TFLARM_DIRTY = false
+	end
+end
+--
+local TFRARM_DIRTY = false
+local tfRtmp = T.eye()
+local tfR0 = T.eye()
+local function get_tfrarm(refresh)
+	if refresh then
+		tfRtmp = fromQ(hcm.get_teleop_tfrarm())
+	end
+	return tfRtmp, tfR0
+end
+local function set_tfrarm(tf, do_now)
+	if type(tf)~='boolean' then
+		T.copy(tf, tfRtmp)
+		TFRARM_DIRTY = true
+	end
+	if tf==true or do_now==true then
+		hcm.set_teleop_tfrarm(toQ(tfRtmp))
+		T.copy(tfRtmp, tfR0)
+		TFRARM_DIRTY = false
+	end
+end
+--
+local HEAD_DIRTY = false
+local qHeadtmp = vector.zeros(2)-- tracking this
+local qHead0 = vector.zeros(2) -- last sent
+local function get_head(refresh)
+	if refresh then qHeadtmp = hcm.get_teleop_head() end
+	return qHeadtmp, qHead0
+end
+local function set_head(q, do_now)
+	if type(q)=='table' and #q==#qHeadtmp then
+		vector.copy(q, qHeadtmp)
+		HEAD_DIRTY = true
+	end
+	if q==true or do_now==true then
+		hcm.set_teleop_head(qHeadtmp)
+		vector.copy(qHeadtmp, qHead0)
+		HEAD_DIRTY = false
+	end
+end
+
 -- Immediately write the changes?
+local DO_IMMEDIATE = true
 char_lut["'"] = function()
   DO_IMMEDIATE = not DO_IMMEDIATE
 end
 
 -- Sync the delayed sending
-char_lut[' '] = function()
-	if LARM_DIRTY then set_larm(true) end
-	if RARM_DIRTY then set_rarm(true) end
+function sync()
+	if LARM_DIRTY then set_larm(true) else vector.copy(get_larm(true), qL0) end
+	if RARM_DIRTY then set_rarm(true) else vector.copy(get_rarm(true), qR0) end
+	if HEAD_DIRTY then set_head(true) else vector.copy(get_head(true), qHead0) end
+	if TFLARM_DIRTY then set_tflarm(true) else T.copy(get_tflarm(true), tfL0) end
+	if TFRARM_DIRTY then set_tfrarm(true) else T.copy(get_tfrarm(true), tfR0) end
 end
+char_lut[' '] = sync
 
 -- Enter syncs the data
-local qlarm
-local qrarm
-local uComp
 local body_state
 local head_state
 local arm_state
 local motion_state
 local gripper_state
-local walk_velocity
-local function sync()
-	qlarm = Body.get_larm_position()
-	qrarm = Body.get_rarm_position()
-	uComp = mcm.get_stance_uTorsoComp()
+local function sync_fsm()
 	body_state = gcm.get_fsm_Body()
 	head_state = gcm.get_fsm_Head()
 	arm_state = gcm.get_fsm_Arm()
 	motion_state = gcm.get_fsm_Motion()
 	gripper_state = gcm.get_fsm_Gripper()
-	walk_velocity = mcm.get_walk_vel()
-end
-
--- Backspace (Win/Linux) / Delete (OSX)
-local USE_COMPENSATION
-code_lut[127] = function()
-	-- Disable the compensation
-	USE_COMPENSATION = hcm.get_teleop_compensation()
-	----[[
-	USE_COMPENSATION = USE_COMPENSATION + 1
-	USE_COMPENSATION = USE_COMPENSATION>2 and 0 or USE_COMPENSATION
-	--]]
-	USE_COMPENSATION = USE_COMPENSATION==1 and 2 or 1
-	hcm.set_teleop_compensation(USE_COMPENSATION)
-	arm_ch:send'teleop'
 end
 
 -- Switch to head teleop
@@ -138,23 +169,25 @@ char_lut['2'] = function()
 	arm_ch:send'ready'
 end
 char_lut['3'] = function()
-	arm_ch:send'jacobian'
+	head_ch:send'teleop'
 end
 char_lut['4'] = function()
-	arm_ch:send'pulldoor'
+	head_ch:send'trackleft'
 end
 char_lut['5'] = function()
-  body_ch:send'approach'
+  head_ch:send'trackright'
 end
 char_lut['6'] = function()
-	arm_ch:send'teleop'
-	--gripper_ch:send'dean'
-	--head_ch:send'trackhand'
-  --arm_ch:send'poke'
+	arm_ch:send'teleopraw'
+	unix.usleep(1e5)
+	vector.copy(get_larm(true), qL0)
+	vector.copy(get_rarm(true), qR0)
 end
-
 char_lut['7'] = function()
-	arm_ch:send'init'
+	arm_ch:send'teleop'
+	unix.usleep(1e5)
+	T.copy(get_tflarm(true), tfL0)
+	T.copy(get_tfrarm(true), tfR0)
 end
 char_lut['8'] = function()
 	body_ch:send'stop'
@@ -162,68 +195,6 @@ end
 char_lut['9'] = function()
   motion_ch:send'hybridwalk'
 end
-
-lower_lut['r'] = function()
-  if selected_arm==0 then
-		local options = hcm.get_teleop_loptions()
-		options[1] = math.max(options[1] - DEG_TO_RAD, 0)
-		hcm.set_teleop_loptions(options)
-		arm_ch:send'teleop'
-		--[[
-		local qLArm = get_larm()
-    --print('Pre',qLArm*RAD_TO_DEG)
-		local tr = K.forward_larm(qLArm)
-		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] - DEG_TO_RAD)
-		local itr = K.forward_larm(iqArm)
-		sanitize(iqArm, qLArm)
-		set_larm(iqArm, DO_IMMEDIATE)
-		--]]
-  else
-		local options = hcm.get_teleop_roptions()
-		options[1] = math.min(options[1] - DEG_TO_RAD, 0)
-		hcm.set_teleop_roptions(options)
-		arm_ch:send'teleop'
-		--[[
-    local qRArm = get_rarm()
-		local tr = K.forward_rarm(qRArm)
-		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] - DEG_TO_RAD)
-		local itr = K.forward_rarm(iqArm)
-		sanitize(iqArm, qRArm)
-		set_rarm(iqArm, DO_IMMEDIATE)
-		--]]
-  end
-end
-
-lower_lut['t'] = function()
-  if selected_arm==0 then
-		local options = hcm.get_teleop_loptions()
-		options[1] = math.min(options[1] + DEG_TO_RAD, 90*DEG_TO_RAD)
-		hcm.set_teleop_loptions(options)
-		arm_ch:send'teleop'
-		--[[
-    local qLArm = get_larm()
-		local tr = K.forward_larm(qLArm)
-		local iqArm = K.inverse_larm(tr, qLArm, qLArm[3] + DEG_TO_RAD)
-		local itr = K.forward_larm(iqArm)
-		sanitize(iqArm, qLArm)
-		set_larm(iqArm, DO_IMMEDIATE)
-		--]]
-  else
-		local options = hcm.get_teleop_roptions()
-		options[1] = math.max(options[1] + DEG_TO_RAD, -90*DEG_TO_RAD)
-		hcm.set_teleop_roptions(options)
-		arm_ch:send'teleop'
-		--[[
-    local qRArm = get_rarm()
-		local tr = K.forward_rarm(qRArm)
-		local iqArm = K.inverse_rarm(tr, qRArm, qRArm[3] + DEG_TO_RAD)
-		local itr = K.forward_rarm(iqArm)
-		sanitize(iqArm, qRArm)
-		set_rarm(iqArm, DO_IMMEDIATE)
-		--]]
-  end
-end
-
 --
 code_lut[92] = function()
   -- Backslash
@@ -270,43 +241,27 @@ char_lut['-'] = function()
   end
 end
 
---[[
-local zyz = T.to_zyz(desired_tr)
-print('des zyz:',zyz[1],zyz[2],zyz[3])
---]]
 local function apply_pre(d_tr)
 	if selected_arm==0 then --left
-		local qLArm = get_larm()
-		local fkL = K.forward_larm(qLArm)
-		local trLGoal = d_tr * fkL
-		local iqArm = vector.new(K.inverse_larm(trLGoal, qLArm))
-		sanitize(iqArm, qLArm)
-		set_larm(iqArm, DO_IMMEDIATE)
+		local tfLArm = get_tflarm()
+		local tfLGoal = d_tr * tfLArm
+		set_tflarm(tfLGoal, DO_IMMEDIATE)
 	else
-		local qRArm = get_rarm()
-		local fkR = K.forward_rarm(qRArm)
-		local trRGoal = d_tr * fkR
-		local iqArm = vector.new(K.inverse_rarm(trRGoal, qRArm))
-		sanitize(iqArm, qRArm)
-		set_rarm(iqArm, DO_IMMEDIATE)
+		local tfRArm = get_tfrarm()
+		local tfRGoal = d_tr * tfRArm
+		set_tfrarm(tfRGoal, DO_IMMEDIATE)
 	end
 end
 
 local function apply_post(d_tr)
 	if selected_arm==0 then --left
-		local qLArm = get_larm()
-		local fkL = K.forward_larm(qLArm)
-		local trLGoal = fkL * d_tr
-		local iqArm = vector.new(K.inverse_larm(trLGoal, qLArm))
-		sanitize(iqArm, qLArm)
-		set_larm(iqArm, DO_IMMEDIATE)
+		local tfLArm = get_tflarm()
+		local tfLGoal = tfLArm * d_tr
+		set_tflarm(tfLGoal, DO_IMMEDIATE)
 	else
-		local qRArm = get_rarm()
-		local fkR = K.forward_rarm(qRArm)
-		local trRGoal = fkR * d_tr
-		local iqArm = vector.new(K.inverse_rarm(trRGoal, qRArm))
-		sanitize(iqArm, qRArm)
-		set_rarm(iqArm, DO_IMMEDIATE)
+		local tfRArm = get_tfrarm()
+		local tfRGoal = tfRArm * d_tr
+		set_tfrarm(tfRGoal, DO_IMMEDIATE)
 	end
 end
 
@@ -347,11 +302,12 @@ local head = {
 }
 local function apply_head(dHead)
   if not dHead then return end
-  local goalBefore = hcm.get_teleop_head()
+  local goalBefore = get_head()
   local goalAfter = goalBefore + dHead
-  hcm.set_teleop_head(goalAfter)
+  set_head(goalAfter, DO_IMMEDIATE)
 end
 
+--[[
 local dWalk = 0.05
 local daWalk = 5*DEG_TO_RAD
 local walk = {
@@ -370,6 +326,7 @@ local function apply_walk(dWalk)
   local goalAfter = goalBefore + dWalk
   mcm.set_walk_vel(goalAfter)
 end
+--]]
 
 -- Add the access to the transforms
 setmetatable(lower_lut, {
@@ -377,10 +334,12 @@ setmetatable(lower_lut, {
     if (not arm_mode) then
       if head[k] then
 				return function() apply_head(head[k]) end
+--[[
       elseif k=='k' then
         return function() mcm.set_walk_vel({0,0,0}) end
       else
         return function() apply_walk(walk[k]) end
+--]]
       end
     elseif pre_arm[k] then
 			return function() apply_pre(pre_arm[k]) end
@@ -393,50 +352,49 @@ setmetatable(lower_lut, {
 -- Global status to show (NOTE: global)
 local color = require'util'.color
 function show_status()
-	
-local qrarm = Body.get_rarm_command_position()
-	local fkL = K.forward_larm(qlarm)
-	local fkR = K.forward_rarm(qrarm)
-	local rTr6 = T.position6D(fkR)
-	local fkR2 = {rTr6[1]+uComp[1], rTr6[2]+uComp[2], rTr6[3], rTr6[4]*RAD_TO_DEG, rTr6[5]*RAD_TO_DEG, rTr6[6]*RAD_TO_DEG}
-
-  local l_indicator = vector.zeros(#qlarm)
-  l_indicator[selected_joint] = selected_arm==0 and 1 or 0
-  local r_indicator = vector.zeros(#qlarm)
-  r_indicator[selected_joint] = selected_arm==1 and 1 or 0
+  local l_indicator = {}
+	local r_indicator = {}
+	for i=1,narm do
+		local indicator = selected_joint == i and i or '#'
+		table.insert(l_indicator, selected_arm==0 and indicator or '#')
+		table.insert(r_indicator, selected_arm==1 and indicator or '#')
+	end
 	--
-  local larm_info = string.format('\n%s %s %s\n%s\n%s\n%s',
+	local qL, qL0 = get_rarm()
+	local tfL, tfL0 = get_tflarm()
+  local larm_info = table.concat({string.format('\n%s %s\t%s',
     util.color('Left Arm', 'yellow'),
-    arm_mode and selected_arm==0 and '*' or '',
-		l_indicator,
-    'q: '..tostring(qlarm*RAD_TO_DEG),
-		'tr: '..tostring(vector.new(T.position6D(fkL))),
-		'teleop: '..tostring(qLtmp*RAD_TO_DEG)
-  )
-
-  local rarm_info = string.format('\n%s %s %s\n%s\n%s\n%s',
+    arm_mode and selected_arm==0 and '*' or ' ',
+		table.concat(l_indicator, ' ')),
+    'qRobot: '..tostring(qL0*RAD_TO_DEG),
+    'qOperator: '..tostring(qL*RAD_TO_DEG),
+		'tfRobot: '..T.string6D(tfL0),
+    'tfOperator: '..T.string6D(tfL)
+  },'\n')
+	--
+	local qR, qR0 = get_rarm()
+	local tfR, tfR0 = get_tfrarm()
+  local rarm_info = table.concat({string.format('%s %s\t%s',
     util.color('Right Arm', 'yellow'),
-    arm_mode and selected_arm==1 and '*' or '',
-		r_indicator,
-    'q: '..tostring(qrarm*RAD_TO_DEG),
-    string.format('tr: %.2f, %.2f, %.2f | %.2f, %.2f, %.2f', unpack(fkR2)),
-    'teleop: '..tostring(qRtmp*RAD_TO_DEG)
-  )
-  local head_info = string.format('\n%s %s\n%s',
+    arm_mode and selected_arm==1 and '*' or ' ',
+		table.concat(r_indicator, ' ')),
+		'qRobot: '..tostring(qR0*RAD_TO_DEG),
+    'qOperator: '..tostring(qR*RAD_TO_DEG),
+		'tfRobot: '..T.string6D(tfR0),
+    'tfOperator: '..T.string6D(tfR)
+  },'\n')
+	--
+	local qh, qh0 = get_head()
+  local head_info = string.format('\n%s %s\n%s\n%s',
     util.color('Head', 'yellow'),
     (not arm_mode) and '*' or '',
-    'q: '..tostring(Body.get_head_position()*RAD_TO_DEG)
+		'qRobot: '..tostring(qh0*RAD_TO_DEG),
+    'qOperator: '..tostring(qh*RAD_TO_DEG)
   )
-  local walk_info = string.format('\n%s %s\n%s',
-    util.color('Walk', 'yellow'),
-    (not arm_mode) and '*' or '',
-    'Velocity: '..tostring(walk_velocity)
-  )
+	--
   local info = {
     color('== Teleoperation ==', 'magenta'),
-		'1: init, 2: head teleop, 3: armReady, 4: armTeleop, 5: headTrack, 6: poke',
 		color(DO_IMMEDIATE and 'Immediate Send' or 'Delayed Send', DO_IMMEDIATE and 'red' or 'yellow'),
-		'Compensation: '..tostring(USE_COMPENSATION),
     'BodyFSM: '..color(body_state, 'green'),
     'ArmFSM: '..color(arm_state, 'green'),
     'HeadFSM: '..color(head_state, 'green'),
@@ -444,17 +402,14 @@ local qrarm = Body.get_rarm_command_position()
     larm_info,
     rarm_info,
     head_info,
-    walk_info,
     '\n'
   }
   if not IS_WEBOTS then io.write(table.concat(info,'\n')) end
 end
 
 -- Initial sync
+sync_fsm()
 sync()
--- Set initial arms in tmp and 0
-qL0 = vector.copy(get_larm(true))
-qR0 = vector.copy(get_rarm(true))
 
 -- Run the generic keypress library
 return dofile(HOME..'/Test/test.lua')

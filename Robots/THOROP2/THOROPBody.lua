@@ -493,10 +493,39 @@ Body.jointNames = jointNames
 Body.parts = Config.parts
 Body.Kinematics = Kinematics
 
+
+
+--SJ: those function are added as the joint-level waist yaw position can be 360 degree off
+Body.get_safe_waist_position = function()
+  local qWaist = Body.get_waist_position()
+  qWaist[1] = util.mod_angle(qWaist[1])
+  return qWaist
+end
+
+Body.get_safe_waist_command_position = function()
+  local qWaist = Body.get_waist_command_position()
+  qWaist[1] = util.mod_angle(qWaist[1])
+  return qWaist
+end
+
+Body.set_safe_waist_command_position = function(qWaist)
+  local qWaistSafe={qWaist[1],qWaist[2]}
+  qWaistSafe[1] = math.max(math.min(qWaistSafe[1],90*DEG_TO_RAD), -90*DEG_TO_RAD)
+  qWaistSafe[2] = 0 --fix pitch angle here  
+  local qWaistCommand = Body.get_waist_command_position()
+  local qWaistDiff = util.mod_angle(qWaistSafe[1]-qWaistCommand[1])
+  qWaistSafe[1] = qWaistCommand[1]+qWaistDiff
+  Body.set_waist_command_position(qWaistSafe)
+end
+
+
+
+
+
 --SJ: I have moved this function to body as it is commonly used in many locations
 --Reads current leg and torso position from SHM
-
-Body.get_torso_compensation= function (qLArm, qRArm, qWaist,massL, massR)
+require'mcm'
+Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorso = mcm.get_status_uTorso()
@@ -511,18 +540,49 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist,massL, massR)
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
+
+  local footLift = mcm.get_walk_footlift()
+  local footlifttypeL,footlifttypeR, footliftL, footliftR = 0,0
+  if mcm.get_walk_heeltoewalk()==1 then
+    if footLift[1]>0 then 
+      footlifttypeL = -1 --heellift
+    else
+      footlifttypeL = 1 --toelift
+    end
+    if footLift[2]>0 then 
+      footlifttypeR = -1 --heellift
+    else
+      footlifttypeR = 1 --toelift
+    end
+    footliftL = math.abs(footLift[1])
+    footliftR = math.abs(footLift[2])
+  end
+
+  local leftSupportRatio = mcm.get_status_leftSupportRatio()
+
  --Initial guess 
   local uTorsoAdapt = util.pose_global(vector.new({-Config.walk.torsoX,0,0}),uTorso)
   local pTorso = vector.new({
     uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
     0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-  local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY)
-  
+
+  local qLLegCurrent = Body.get_lleg_command_position()
+  local qRLegCurrent = Body.get_rleg_command_position()
+
+  local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0,
+    qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
+    
+  local massL,massR = 0,0 --for now
+
   -------------------Incremental COM filtering
   while count<=revise_max do
     local qLLeg = vector.slice(qLegs,1,6)
     local qRLeg = vector.slice(qLegs,7,12)
-    com = Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,0,0,0,Config.birdwalk or 0)
+
+  --Now we compensate for leg masses too (for single support cases)
+    com = Kinematics.calculate_com_pos(qWaist,qLArm,qRArm,qLLeg,qRLeg,
+          massL, massR,0, Config.birdwalk or 0)
+
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
@@ -531,11 +591,12 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist,massL, massR)
    local pTorso = vector.new({
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY)
+      qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0,
+          qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
    count = count+1
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
-  return {uTorsoOffset[1],uTorsoOffset[2]}
+  return {uTorsoOffset[1],uTorsoOffset[2]}, qLegs, com[3]/com[4]
 end
 
 return Body

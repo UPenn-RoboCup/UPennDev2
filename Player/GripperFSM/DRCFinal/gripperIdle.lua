@@ -3,9 +3,7 @@ local state = {}
 state._NAME = ...
 
 local Body = require'Body'
-local t_entry, t_update, qH
-
-local mp = require'msgpack'.MessagePack
+local t_entry, t_update
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -15,23 +13,14 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  -- Torque OFF the motors
-  Body.set_lgrip_torque_enable(0)
-	Body.set_rgrip_torque_enable(0)
-	-- Try to ensure we are in the correct mode
-	for i=1,2 do
-		Body.set_lgrip_command_torque(0)
-		Body.set_rgrip_command_torque(0)
-		Body.set_lgrip_mode('torque')
-		Body.set_rgrip_mode('torque')
-		--if not IS_WEBOTS then unix.usleep(1e5) end
-	end
--- read once
-	dcm_ch:send(mp.pack{
-		bus = 'larm',
-		key = 'use_alt',
-		val = true
-	})
+	Body.set_lgrip_command_torque(0)
+	Body.set_rgrip_command_torque(0)
+
+	Body.set_lgrip_torque_enable(1)
+	Body.set_rgrip_torque_enable(1)
+
+	Body.set_lgrip_command_torque(0)
+	Body.set_rgrip_command_torque(0)
 
 end
 
@@ -46,21 +35,6 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
-
-  -- Torque on the motor
-  Body.set_lgrip_torque_enable(1)
-	Body.set_rgrip_torque_enable(1)
-	for i=1,2 do
-		Body.set_lgrip_command_torque(0)
-		Body.set_rgrip_command_torque(0)
-		Body.set_lgrip_mode('torque')
-		Body.set_rgrip_mode('torque')
-		--if not IS_WEBOTS then unix.usleep(1e5) end
-	end
-
-	-- We are in torque mode to retain 0 torque
-	hcm.set_teleop_lgrip_mode(0)
-  hcm.set_teleop_rgrip_mode(0)
 
 end
 

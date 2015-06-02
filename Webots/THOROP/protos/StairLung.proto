@@ -1,0 +1,38 @@
+#VRML_SIM V7.4.3 utf8
+#Stair step size: 103 x 30 x 22.5cm
+
+PROTO StairLung [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+	field SFColor diffuseColor 0.8 0.8 0.8
+	field SFColor specularColor 0.9 0.9 0.9
+	]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+		DEF block Transform{			
+			rotation 0 0 1 0
+			translation 0	0.1125 0	
+			children[
+			  DEF cinderblock Shape {
+			     appearance Appearance {material Material {
+			     	diffuseColor IS diffuseColor
+			     	specularColor IS specularColor
+			     	}
+			     	}
+			     geometry Box { size 1.03 0.225 0.30 }
+			  }
+			]			
+		}
+		
+  ]
+  boundingObject Group {
+		children [
+			USE block		
+		]
+  }  
+ locked TRUE
+}
+}

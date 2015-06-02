@@ -8,7 +8,7 @@ local USE_ADJUSTMENT = false
 
 local t_entry, t_update, t_exit
 local wp_thread
-local dist_threshold = 0.05
+local dist_threshold = 0.01
 local angle_threshold = 2 * DEG_TO_RAD
 local maxStep = 0.07
 local maxTurn = 0.10
@@ -32,7 +32,7 @@ local function robocup_approach(target_pose, pose)
 	}
 
   -- Reduce speed based on how far away from the waypoint we are
-	local maxStep1 = rel_dist < 0.04 and 0.02 or maxStep
+	local maxStep1 = rel_dist < 0.01 and 0.02 or maxStep
   local scale = math.min(maxStep1/pDist(vStep), 1)
 
   return scale * vStep, rel_dist, math.abs(rel_pose.a)

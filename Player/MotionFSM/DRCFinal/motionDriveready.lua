@@ -23,6 +23,8 @@ function state.entry()
   Body.set_lleg_torque_enable({0,1,1, 0,0,0})
   Body.set_rleg_torque_enable({1,1,1, 0,0,0})
 
+  mcm.set_status_body_init(0) --Body requires init afterwards
+
   if not IS_WEBOTS then
     print('INIT setting params')
     for i=1,10 do

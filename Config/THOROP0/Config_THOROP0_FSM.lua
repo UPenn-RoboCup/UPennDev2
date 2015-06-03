@@ -51,6 +51,8 @@ fsm.Body = {
   {'bodyApproachBuggy', 'stop', 'bodyStop'},
 	{'bodyApproachBuggy', 'done', 'bodyStop'},
   --
+
+
   --these should NEVER called with mistake at all
   {'bodyStop', 'stairclimb', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
@@ -65,6 +67,17 @@ fsm.Body = {
   {'bodyDrive', 'driveready', 'bodyUndrive'}, -- untorques arm and leg for egress
   {'bodyUndrive', 'init', 'bodyInit'}, --re-inits leg
 
+
+  --SOFT E-stop handling
+  {'bodyInit', 'estop', 'bodyEStop'},
+  {'bodyStop', 'estop', 'bodyEStop'},
+  {'bodyApproachMessy', 'estop', 'bodyEStop'},
+  {'bodyStep', 'estop', 'bodyEStop'},
+  {'bodyStepAlign', 'estop', 'bodyEStop'},
+  {'bodyDrive', 'estop', 'bodyEStop'}, -- untorques arm and leg for egress
+  {'bodyDriveready', 'estop', 'bodyEStop'}, -- untorques arm and leg for egress
+  {'bodyUndrive', 'estop', 'bodyEStop'}, --re-inits leg
+  {'bodyEStop', 'done', 'bodyInit'},
 }
 
 -- Anything can fall!
@@ -116,26 +129,20 @@ fsm.Head = {
 	{'headMesh', 'teleopik', 'headTeleopIK'},
 
 --Driving stuff
-
-
-
-
 	{'headCenter', 'drive', 'headDrive'}, --go to 180 deg rotated position
 	{'headTeleop', 'drive', 'headDrive'},
 	{'headTrackLeft', 'drive', 'headDrive'},
 	{'headTrackRight', 'drive', 'headDrive'},
-
 	{'headDrive', 'undrive', 'headCenter'}, --unscrew the head safelty
+
+--E-stop handling
+	{'headCenter', 'estop', 'headIdle'}, --go to 180 deg rotated position
+	{'headTeleop', 'estop', 'headIdle'},
+	{'headTrackLeft', 'estop', 'headIdle'},
+	{'headTrackRight', 'estop', 'headIdle'},
+	{'headDrive', 'estop', 'headIdle'}, --unscrew the head safelty
+
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -251,8 +258,13 @@ fsm.Arm = {
 	{'armDriveready', 'drive', 'armDrive'},
 	{'armDrive', 'undrive', 'armUndrive'},
 	{'armUndrive', 'init', 'armInitWalk'},
-
 }
+
+-- E-stop handling
+local allarm = {}
+for i,v in ipairs(fsm.Arm) do allarm[v[1]] = true end
+for k, v in pairs(allarm) do table.insert(fsm.Arm, {k, 'estop', 'armIdle'}) end
+
 
 
 
@@ -347,10 +359,6 @@ fsm.Motion = {
 	--
 	{'motionSlowStep', 'done', 'motionStance'},
 
-
-
-
-
 	--DRIVE
 	{'motionStance', 'driveready', 'motionDriveready'}, --untorque lower body
 	{'motionDriveready', 'drive', 'motionDrive'}, --torque the body, enable foot control
@@ -360,6 +368,13 @@ fsm.Motion = {
 
 
 }
+
+
+-- E-stop handling
+local allmotion = {}
+for i,v in ipairs(fsm.Motion) do allmotion[v[1]] = true end
+for k, v in pairs(allmotion) do table.insert(fsm.Motion, {k, 'estop', 'motionIdle'}) end
+
 
 Config.fsm = fsm
 

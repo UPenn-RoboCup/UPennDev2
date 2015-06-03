@@ -15,6 +15,9 @@ function state.entry()
   print(state._NAME..' Entry' ) 
   Body.enable_read'lleg'
   Body.enable_read'rleg'
+
+  mcm.set_status_body_init(0) --Body requires init
+
  
   wcm.set_robot_initdone(0)
 

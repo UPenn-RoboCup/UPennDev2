@@ -201,9 +201,9 @@ fsm.Arm = {
 
 	-- PushDoor positioning
 	{'armPushDoorDown', 'ready', 'armManipulation'},
-	{'armPushDoorDown', 'done', 'armManipulation'},
+	--{'armPushDoorDown', 'done', 'armManipulation'},
 	--
-	{'armTeleop', 'pushdoordown', 'a1rmPushDoorDown'},
+	{'armTeleop', 'pushdoordown', 'armPushDoorDown'},
 	{'armTeleopRaw', 'pushdoordown', 'armPushDoorDown'},
 	{'armPushDoorDown', 'teleop', 'armTeleop'},
 	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},

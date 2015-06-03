@@ -45,7 +45,7 @@ walk.torsoX = 0.0     -- com-to-body-center offset
 ------------------------------------
 walk.tStep = 0.80
 walk.tZMP = 0.32
-walk.stepHeight = 0.03 --mk2. lower 
+walk.stepHeight = 0.04 
 walk.phComp = {0.1,0.9}
 walk.phSingle = {0.2,0.8}
 walk.phZmp = {0.25,0.75}
@@ -53,8 +53,13 @@ walk.phCompSlope = 0.2
 walk.supportX = 0.0 
 walk.supportY = 0.0
 
-Config.supportY_preview = 0.01 -- support position for the first step
-Config.supportY_preview2 = 0.0 -- support position for preview-based steps
+--Config.supportY_preview = 0.01 -- support position for the first step
+--Config.supportY_preview2 = 0.0 -- support position for preview-based steps
+
+Config.supportY_preview = 0.0 --this smooths out first step a bit
+Config.supportY_preview2 = 0.0  
+
+
 
 ------------------------------------
 -- Compensation parameters
@@ -106,32 +111,22 @@ if HOSTNAME=="teddy2" or HOSTNAME=="dale" then
 --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.hipRollCompensation = {1.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
-  walk.tZMP = 0.33   
-  walk.footY = 0.115 --teddy, even wider
-  walk.supportX = 0.02 
-  walk.supportY = -0.01 
   walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
-  Config.supportY_preview = 0.00 --this smooths out first step a bit
-  Config.supportY_preview2 = 0.0  
 
-
-
-  
+--  walk.tZMP = 0.33   
+--  walk.footY = 0.115 --teddy, even wider
+--  walk.supportX = 0.02 
+--  walk.supportY = -0.01 
 else
   --CHIP CHIP CHIP CHiP
   print("CHIP CHIP CHIP")
-   walk.delay_threshold_angle = 2.5*math.pi/180
   walk.velLimitX = {-.10,.20}
   walk.velLimitY = {-.06,.06}
-  walk.tZMP = 0.32
-  Config.supportY_preview = 0.00 --this smooths out first step a bit
+  walk.delay_threshold_angle = 2.5*math.pi/180
+  Config.supportY_preview = 0.0 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0
   walk.supportY = 0.0
-  walk.phSingle = {0.2,0.8}
-  walk.phZmp = {0.25,0.75}
-  walk.stepHeight= 0.03  
   walk.hipRollCompensation = {2.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
-  walk.stepHeight= 0.04  
 end
 ------------------------------------
 -- Associate with the table

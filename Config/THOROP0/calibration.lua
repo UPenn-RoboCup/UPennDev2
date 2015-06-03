@@ -96,6 +96,7 @@ cal["chip"].legBias=vector.new({
 
 
 -- Updated date: Wed Jun  3 00:20:31 2015
+--THIS WORKS NICE, at least on jun 3rd
 cal["chip"].legBias=vector.new({
    -0.000000,0.267500,0.540000,0.000000,0.810000,0.067500,
    0.270000,-0.202500,1.750000,0.000000,-0.337500,-0.472500,

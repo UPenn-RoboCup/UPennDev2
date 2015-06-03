@@ -105,8 +105,6 @@ stance.dHeight = 0.04 --4cm per sec
 if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
 --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
-  
-  
   walk.hipRollCompensation = {1.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
   walk.tZMP = 0.33   
   walk.footY = 0.115 --teddy, even wider
@@ -115,39 +113,26 @@ if HOSTNAME=="teddy2" or HOSTNAME=="dale" then
   walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
   Config.supportY_preview = 0.00 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0  
+
+
+
+  
 else
   --CHIP CHIP CHIP CHiP
-print("CHIP CHIP CHIP")
-   walk.delay_threshold_angle = 999*math.pi/180 --disabled
-
-  --Chip default (mk2)
-  walk.hipRollCompensation = 2*DEG_TO_RAD
+  print("CHIP CHIP CHIP")
+   walk.delay_threshold_angle = 2.5*math.pi/180
   walk.velLimitX = {-.10,.20}
   walk.velLimitY = {-.06,.06}
   walk.tZMP = 0.32
   Config.supportY_preview = 0.00 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0
-
   walk.supportY = 0.0
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
-
   walk.stepHeight= 0.03  
-  walk.hipRollCompensation = {
---	1.5*DEG_TO_RAD, 
-	2.5*DEG_TO_RAD, 
-	1.5*DEG_TO_RAD}
-
+  walk.hipRollCompensation = {2.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
   walk.stepHeight= 0.04  
-
---walk.phSingle = {0.15,0.85}
 end
-
---hack to test invariance
---walk.supportY = 0.20
-  Config.supportY_preview = 0.0 --works best with webots
-  Config.supportY_preview2 = 0.0  
-
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

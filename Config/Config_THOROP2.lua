@@ -24,28 +24,18 @@ Config.debug = {
   armplan = true,
 }
 
---BIRDWALK DEFAULT FOR CHIP
-Config.birdwalk = 1 --testing birdwalk		
 
-
+Config.birdwalk = 1 		
 Config.raise_body = true
 Config.use_exact_tZMP = true
-Config.stair_test=true
-
 Config.use_heeltoe_walk = true
---Config.heeltoe_angle = 3*DEG_TO_RAD
 Config.heeltoe_angle = 0*DEG_TO_RAD
-
 Config.walktraj={}
-Config.walktraj.hybridwalk = "foot_trajectory_base"
---Config.walktraj.hybridwalk = "foot_trajectory_base2"
---Config.walktraj.hybridwalk = "foot_trajectory_soft"
 Config.walktraj.hybridwalk = "foot_trajectory_softfast"
-
-
 Config.variable_tstep = true
 Config.variable_support = true
 Config.arm_init_timeout = true
+
 
 -- Tune for Webots
 if IS_WEBOTS then
@@ -64,7 +54,6 @@ if IS_WEBOTS then
 			mesh = 'mesh_wizard',
 		 	world = 'world_wizard',
 	  }
-
 	else
 		--Config.testfile = 'test_testbed'		
 		Config.testfile = 'test_walkstuff'		
@@ -73,30 +62,13 @@ if IS_WEBOTS then
 		Config.enable_jacobian_test = false
 		--Config.enable_jacobian_test = true
 		Config.enable_touchdown = false
-
-
-
---		Config.piecewise_step = true
-
---		Config.use_gps_pose=true
---		Config.debug.world=true
 	  Config.sensors = {
 			ft = true,
 			feedback = 'feedback_wizard',
 		 	world = 'world_wizard',
 	  }
-
 	end
-
-
-
-  -- Adjust the timesteps if desired
-  -- Config.camera_timestep = 33
-  -- Config.lidar_timestep = 200 --slower
-  -- Config.kinect_timestep = 30
 end
-
-
 
 -----------------------------------
 -- Load Paths and Configurations --
@@ -131,11 +103,5 @@ for sm, en in pairs(Config.fsm.enabled) do
 		end
 	end
 end
-
-
-
-
---testing adaptive landing timing
-Config.walk.delay_threshold_angle = 2.5*math.pi/180
 
 return Config

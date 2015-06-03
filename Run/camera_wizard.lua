@@ -135,7 +135,7 @@ local function check_send(msg)
 		table.insert(buffer, 1, msg)
 		if #buffer>nbuffer then table.remove(buffer) end
 	end
-	if is_outdoors then
+	if is_indoors==0 then
 		buffer = {msg}
 	end
 
@@ -160,6 +160,17 @@ local function update(img, sz, cnt, t)
 	c_meta.n = cnt
 	local c_img = c_yuyv:compress(img, w, h)
 
+	--[[
+	c_meta.sz = #ittybitty_img
+	local msg = {mp.pack(c_meta), ittybitty_img}
+	--]]
+	c_meta.sz = #c_img
+	local msg = {mp.pack(c_meta), c_img}
+
+	check_send(msg)
+
+
+
 	local is_indoors = hcm.get_network_indoors()
 	local dt_send_itty0 = t - t_send_itty
 	if is_indoors==camera_id+1 and dt_send_itty0 > dt_send_itty then
@@ -174,16 +185,6 @@ local function update(img, sz, cnt, t)
 		t_send_itty = t
 		print('Sent ittybitty', ret, err)
 	end
-
-
-	--[[
-	c_meta.sz = #ittybitty_img
-	local msg = {mp.pack(c_meta), ittybitty_img}
-	--]]
-	c_meta.sz = #c_img
-	local msg = {mp.pack(c_meta), c_img}
-
-	check_send(msg)
 
 	-- Do the logging if we wish
 	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then

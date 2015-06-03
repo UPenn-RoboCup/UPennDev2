@@ -153,15 +153,16 @@ local function check_send(msg)
 end
 
 
-local t_send_itty
+local t_send_itty = -math.huge
 local function update(img, sz, cnt, t)
 	-- Update metadata
 	c_meta.t = t
 	c_meta.n = cnt
 	local c_img = c_yuyv:compress(img, w, h)
 
-	local dt_send_itty0 = t - t_buffer
-	if is_indoors==camera_id+1 and dt_send_itty0 < dt_send_itty then
+	local is_indoors = hcm.get_network_indoors()
+	local dt_send_itty0 = t - t_send_itty
+	if is_indoors==camera_id+1 and dt_send_itty0 > dt_send_itty then
 		local ittybitty_img
 		if metadata.crop then
 			ittybitty_img = c_yuyv2:compress_crop(img, w, h, unpack(metadata.crop))
@@ -169,8 +170,9 @@ local function update(img, sz, cnt, t)
 			--ittybitty_img = c_yuyv2:compress(img, w, h)
 			ittybitty_img = c_grey:compress(img, w, h)
 		end
-		ittybitty_udp_ch:send(ittybitty_img)
+		local ret, err = ittybitty_udp_ch:send(ittybitty_img)
 		t_send_itty = t
+		print('Sent ittybitty', ret, err)
 	end
 
 

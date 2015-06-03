@@ -85,7 +85,18 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
- 	
+  local gyro_rpy = moveleg.update_sensory_feedback()
+  local imu= mcm.get_status_IMU()
+  local gyro_th = 0.04
+  local gamma = 0.01
+
+  if math.abs(imu[4])<gyro_th and math.abs(imu[5])<gyro_th then
+    local global_angle = mcm.get_walk_global_angle()
+    local angle_max = Config.roll_adaptation_max or 2*DEG_TO_RAD
+    global_angle[1] = gamma*imu[1] + global_angle[1]
+    global_angle[1]=math.max(-angle_max,math.min(angle_max,global_angle[1] ))
+    mcm.set_walk_global_angle(global_angle)
+  end
 
   local qWaist = Body.get_waist_command_position()
   local qLArm = Body.get_larm_command_position()
@@ -104,7 +115,6 @@ function state.update()
   
   supportLeg = 2; --Double support
 
-  local gyro_rpy = moveleg.update_sensory_feedback()
   local delta_legs
 
 

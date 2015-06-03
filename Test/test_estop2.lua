@@ -60,12 +60,15 @@ display_mode = 1 --Walk test mode
 button_pressed = false
 
 function update_display()
+	local batt = mcm.get_status_battery()/10
+
 	--persistent message
 	if display_mode_old~=display_mode then
 		display_mode_old = display_mode
 		if display_mode==1 then
 			update_display_msg(1,"4<<   Walk Test     ")
 			update_display_msg(2, string.format("Vel: %3i %3i %3i",vel[1],vel[2],vel[3]) )
+			update_display_msg(3, string.format("Battery: %.1f",batt) )
 		elseif display_mode==2 then
 			update_display_msg(1,"    Driving Test >>4")
 			update_display_msg(3,"1-init  2-driveready")
@@ -81,9 +84,12 @@ function update_display()
 			LZMPr[1]*1000, LZMPr[2]*1000,
 			RZMPr[1]*1000, RZMPr[2]*1000)
 		update_display_msg(3, zmpstr1 )
+ 		update_display_msg(4, string.format("Battery: %.1f",batt) )
 
 	elseif display_mode==2 then
 		update_display_msg(2,string.format("Steer: %3i Gas: %3i",steer*100, gas*100 ))
+		update_display_msg(3, string.format("Battery: %.1f",batt) )
+
 	end
 end
 
@@ -188,16 +194,20 @@ end
 function update_conmmand()
 	local t= Body.get_time()
 	ret = estop.update()
-	if ret.estop==1 then
-		print("ESTOP!!!!!!!!!!")
+
+	if ret.estop~=0 then
+		print("ESTOP!!!!!!!!!!",ret.estop)
 		--estop pressed, stop
-		body_ch:send'stop'
+		body_ch:send'estop'
+		hcm.set_teleop_estop(1)
 		update_display_msg(1,"ESTOP!!!")
 		update_display_msg(2,"ESTOP!!!")
 		update_display_msg(3,"ESTOP!!!")
 		update_display_msg(4,"ESTOP!!!")
 		display_mode = 0
 		return
+	else
+	  hcm.set_teleop_estop(0)
 	end
 
 	if display_mode==0 then 

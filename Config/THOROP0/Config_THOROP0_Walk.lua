@@ -106,8 +106,8 @@ if HOSTNAME=="teddy2" or HOSTNAME=="dale" then
 --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   
-  --Dale addon    
-  walk.hipRollCompensation = 1.5*DEG_TO_RAD
+  
+  walk.hipRollCompensation = {1.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
   walk.tZMP = 0.33   
   walk.footY = 0.115 --teddy, even wider
   walk.supportX = 0.02 
@@ -125,22 +125,22 @@ print("CHIP CHIP CHIP")
   walk.velLimitX = {-.10,.20}
   walk.velLimitY = {-.06,.06}
   walk.tZMP = 0.32
-  walk.supportY = 0.01
   Config.supportY_preview = 0.00 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0
 
   walk.supportY = 0.0
-
-walk.phSingle = {0.2,0.8}
-walk.phZmp = {0.25,0.75}
+  walk.phSingle = {0.2,0.8}
+  walk.phZmp = {0.25,0.75}
 
   walk.stepHeight= 0.03  
+  walk.hipRollCompensation = {
+--	1.5*DEG_TO_RAD, 
+	2.5*DEG_TO_RAD, 
+	1.5*DEG_TO_RAD}
 
-  walk.hipRollCompensation = 1.5*DEG_TO_RAD
+  walk.stepHeight= 0.04  
 
 --walk.phSingle = {0.15,0.85}
-
-
 end
 
 --hack to test invariance

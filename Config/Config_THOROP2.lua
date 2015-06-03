@@ -28,22 +28,19 @@ Config.debug = {
 Config.birdwalk = 1 --testing birdwalk		
 
 
-
 Config.raise_body = true
---Config.stepup_delay = true
 Config.use_exact_tZMP = true
-
-
 Config.stair_test=true
 
 Config.use_heeltoe_walk = true
---Config.heeltoe_angle = 5*DEG_TO_RAD
-Config.heeltoe_angle = 3*DEG_TO_RAD
+--Config.heeltoe_angle = 3*DEG_TO_RAD
 Config.heeltoe_angle = 0*DEG_TO_RAD
 
 Config.walktraj={}
 Config.walktraj.hybridwalk = "foot_trajectory_base"
 --Config.walktraj.hybridwalk = "foot_trajectory_base2"
+--Config.walktraj.hybridwalk = "foot_trajectory_soft"
+Config.walktraj.hybridwalk = "foot_trajectory_softfast"
 
 
 Config.variable_tstep = true
@@ -134,5 +131,11 @@ for sm, en in pairs(Config.fsm.enabled) do
 		end
 	end
 end
+
+
+
+
+--testing adaptive landing timing
+Config.walk.delay_threshold_angle = 2.5*math.pi/180
 
 return Config

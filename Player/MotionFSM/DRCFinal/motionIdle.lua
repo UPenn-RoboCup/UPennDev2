@@ -15,6 +15,9 @@ function state.entry()
   print(state._NAME..' Entry' ) 
   Body.enable_read'lleg'
   Body.enable_read'rleg'
+
+  mcm.set_status_body_init(0) --Body requires init
+
  
   wcm.set_robot_initdone(0)
 
@@ -48,6 +51,7 @@ function state.entry()
   mcm.set_walk_footY(Config.walk.footY)
   mcm.set_walk_supportX(Config.walk.supportX)
   mcm.set_walk_supportY(Config.walk.supportY)
+
   mcm.set_walk_hipRollCompensation(Config.walk.hipRollCompensation)
 
   mcm.set_motion_state(0)

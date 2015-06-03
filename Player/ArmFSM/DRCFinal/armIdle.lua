@@ -19,6 +19,7 @@ function state.entry()
 
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()
+  mcm.set_status_arm_init(0) --arm idle and requires init
 end
 
 function state.update()
@@ -43,11 +44,22 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
+  if not IS_WEBOTS then
+    local vel = 2000
+
 	for i=1,10 do
-  Body.set_larm_torque_enable(1)
-  Body.set_rarm_torque_enable(1)
-	unix.usleep(1e5)
-end
+	  Body.set_larm_torque_enable(1)
+	      unix.usleep(1e6*0.01);
+	  Body.set_rarm_torque_enable(1)
+		unix.usleep(1e5)
+	      Body.set_larm_command_velocity(vector.ones(7)*vel)
+      unix.usleep(1e6*0.01);
+      Body.set_rarm_command_velocity(vector.ones(7)*vel)
+      unix.usleep(1e6*0.01);
+      Body.set_waist_command_velocity({500,500})
+      unix.usleep(1e6*0.01);      
+     end
+   end
 end
 
 return state

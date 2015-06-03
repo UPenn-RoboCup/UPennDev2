@@ -26,7 +26,7 @@ local kneeImuParamX  = Config.walk.kneeImuParamX
 local hipImuParamY   = Config.walk.hipImuParamY
 
 -- Hip sag compensation parameters
-local hipRollCompensation = Config.walk.hipRollCompensation or 0
+local hipRollCompensation =  mcm.get_walk_hipRollCompensation()
 local ankleRollCompensation = Config.walk.ankleRollCompensation or 0
 local anklePitchCompensation = Config.walk.anklePitchCompensation or 0
 local kneePitchCompensation = Config.walk.kneePitchCompensation or 0
@@ -186,6 +186,7 @@ function moveleg.update_sensory_feedback()
 
   if (t-imu_t)>1.0 or (t-imu_t0<2.0) then
     --imu data is old or it is just initialized, ignore gyro data
+    imu[1],imu[2],imu[3]=0,0,0
     imu[4],imu[5],imu[6]=0,0,0
   end
   mcm.set_status_IMU(imu)
@@ -295,6 +296,9 @@ end
 
 
 function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,supportRatio,dt)
+
+
+  hipRollCompensation =  mcm.get_walk_hipRollCompensation()
 
 --New compensation code to cancelout backlash on ALL leg joints
   dt= dt or 0.010
@@ -418,13 +422,13 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
 
 
-  delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
+  delta_legs[2] = angleShift[4] + hipRollCompensation[1]*supportRatioLeft
   delta_legs[3] = - hipPitchCompensation*supportRatioLeft
   delta_legs[4] = angleShift[3]*shiftL - kneePitchCompensation*supportRatioLeft-kneeComp[1]
   delta_legs[5] = angleShift[1]*shiftL - anklePitchCompensation*supportRatioLeft
   delta_legs[6] = angleShift[2]*shiftL + ankleRollCompensation*supportRatioLeft
 
-  delta_legs[8]  = angleShift[4] - hipRollCompensation*supportRatioRight
+  delta_legs[8]  = angleShift[4] - hipRollCompensation[2]*supportRatioRight
   delta_legs[9] = -hipPitchCompensation*supportRatioRight
   delta_legs[10] = angleShift[3]*shiftR - kneePitchCompensation*supportRatioRight-kneeComp[2]
   delta_legs[11] = angleShift[1]*shiftR - anklePitchCompensation*supportRatioRight
@@ -511,11 +515,37 @@ function moveleg.foot_trajectory_soft(phSingle,uStart,uEnd,stepHeight)
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight*zf
   local aFoot = 0
-
-
   return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
 
+
+
+function moveleg.foot_trajectory_softfast(phSingle,uStart,uEnd,stepHeight)
+
+local breaksTX={0.150000,0.300000,0.400000,0.850000,1.000000,}
+local breaksTY={0.100000,0.200000,0.350000,0.450000,0.700000,1.000000,}
+local coefsX={
+  {1.505061,4.211612,-0.065606,0.000000,},
+  {1.505061,4.888889,1.299469,0.090000,},
+  {-42.434434,5.566166,2.867728,0.400000,},
+  {5.807140,-7.164164,2.707928,0.700000,},
+  {5.807140,0.675475,-0.211982,0.997000,},
+}
+local coefsY={
+  {-62.248559,28.174568,0.105029,0.000000,},
+  {-62.248559,9.500000,3.872486,0.230000,},
+  {-8.689349,-9.174568,3.905029,0.650000,},
+  {24.234998,-13.084775,0.566127,1.000000,},
+  {9.237541,-5.814275,-1.323778,0.950000,},
+  {9.237541,1.113881,-2.498876,0.400000,},
+}
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight*zf
+  local aFoot = 0
+  return uFoot, zFoot, aFoot, lift_phase, land_phase
+end
 
 
 

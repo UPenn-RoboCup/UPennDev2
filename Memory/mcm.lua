@@ -75,7 +75,7 @@ shared.walk.torsoX     = vector.zeros(1)
 shared.walk.footY      = vector.zeros(1)
 shared.walk.supportX   = vector.zeros(1)
 shared.walk.supportY   = vector.zeros(1)
-shared.walk.hipRollCompensation = vector.zeros(1)
+shared.walk.hipRollCompensation = vector.zeros(2)
 
 --Walk state variables
 shared.walk.bodyOffset = vector.zeros(3)
@@ -129,6 +129,8 @@ shared.walk.delta_legs = vector.zeros(12)
 shared.walk.torsoShift = vector.zeros(2) 
 
 
+shared.walk.global_angle = vector.zeros(2) --surface gradient
+
 -------------------------------------------
 
 
@@ -136,6 +138,8 @@ shared.walk.torsoShift = vector.zeros(2)
 
 -- Motion Status
 shared.status = {}
+
+shared.status.battery=vector.zeros(1)
 shared.status.velocity   = vector.zeros(3)
 shared.status.odometry   = vector.zeros(3)
 shared.status.bodyOffset = vector.zeros(3)

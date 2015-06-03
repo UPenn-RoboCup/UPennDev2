@@ -533,10 +533,21 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local zSag = mcm.get_walk_zSag()
   local zLegComp = mcm.get_status_zLegComp()
   local zLeft,zRight = zLeg[1]+zSag[1]+zLegComp[1],zLeg[2]+zSag[2]+zLegComp[2]
-  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})  
   local aShiftX = mcm.get_walk_aShiftX()
   local aShiftY = mcm.get_walk_aShiftY()
+
+
+  local uLeftTorso = util.pose_relative(uLeft,uTorso)
+  local uRightTorso = util.pose_relative(uRight,uTorso)
+  local global_angle = mcm.get_walk_global_angle()
+
+  zRight = zRight + math.tan(global_angle[1])*uRightTorso[2]
+  zLeft = zLeft - math.tan(global_angle[1])*uRightTorso[2]
+  aShiftX[1],aShiftX[2] =aShiftX[1]+global_angle[1],aShiftX[2]+global_angle[1]
+
+
+  local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})  
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 

@@ -86,28 +86,10 @@ function state.entry()
   mcm.set_arm_rhandoffset(Config.arm.handoffset.right or {0,0,0})
   
   stage = 1
---
-  if not IS_WEBOTS then
-    print('INIT setting params')
-    for i=1,10 do
-      Body.set_head_command_velocity({500,500})
-      unix.usleep(1e6*0.01);
-      Body.set_waist_command_velocity({500,500})
-      unix.usleep(1e6*0.01);
-      Body.set_lleg_command_velocity({500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
-      Body.set_rleg_command_velocity({500,500,500,500,500,500})
-      unix.usleep(1e6*0.01);
-      Body.set_rleg_command_acceleration({50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
-      Body.set_lleg_command_acceleration({50,50,50,50,50,50})
-      unix.usleep(1e6*0.01);
-    end
-  end
-  --]]
+
+
   mcm.set_motion_state(1.03)  
   hcm.set_legdebug_enable_balance({0,0})
-
   wcm.set_robot_reset_pose(1)
 
 	-- Let the upper body control this
@@ -156,7 +138,10 @@ function state.update()
     err = err + math.abs(qWaistActual[1]- qWaistCommand[1])
     err = err + math.abs(qWaistActual[2]- qWaistCommand[2])
 
-    if t>t_last_debug+1 then
+--	print(t-t_entry,err*180/math.pi)
+
+
+    if t>t_last_debug+1 and t>t_entry+1.5 then
       t_last_debug=t
       --SJ: we do have some steady steady error due to faulty servo (maybe)
       --so if the totall error does not decrase, we just exit
@@ -184,8 +169,7 @@ function state.exit()
 
   mcm.set_status_body_init(1) --Body init done
 
-  --
-
+  --[[
   if not IS_WEBOTS then
     for i=1,10 do
       Body.set_head_command_velocity({6000,6000})

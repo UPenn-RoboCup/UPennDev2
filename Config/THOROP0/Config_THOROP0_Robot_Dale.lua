@@ -413,7 +413,7 @@ if Config.birdwalk then
 		90,  90,  90,-45,  90,0,0, --RArm, teddy, wristYaw fix
 		180,0, -- Waist is flipped
 		0, 0, 0, -- left gripper/trigger
-		70, -125, 0, -- right gripper/trigger (UCLA verified)
+		-90, -90, 0, -- right gripper/trigger (UCLA verified)
 		0, -- Lidar pan
 	})*DEG_TO_RAD
 
@@ -440,7 +440,7 @@ if Config.birdwalk then
 		-1,1,-1, -1, 1,1,1, --RArm, teddy2, tested, rarm wrist fix
 		1, 1, -- Waist, mk2
 		-1,1,-1, -- left gripper TODO
-		1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
+		1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
 		-1, -- Lidar pan
 	})
 

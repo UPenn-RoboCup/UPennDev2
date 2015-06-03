@@ -42,7 +42,7 @@ DirectionalLight {
 DEF FLOOR Floor {
   contactMaterial "floor"
   size 10 10
-  rotation 1 0 0 0.035 #2 degree
+  rotation 0 0 1 0.05 #5 percent
   texture [
     "textures/texture_grid.png"
   ]

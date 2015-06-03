@@ -28,6 +28,8 @@ Config.debug = {
 Config.birdwalk = 1 --testing birdwalk		
 
 
+Config.birdwalk = nil
+
 
 Config.raise_body = true
 --Config.stepup_delay = true

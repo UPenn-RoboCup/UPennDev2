@@ -26,7 +26,7 @@ local kneeImuParamX  = Config.walk.kneeImuParamX
 local hipImuParamY   = Config.walk.hipImuParamY
 
 -- Hip sag compensation parameters
-local hipRollCompensation = Config.walk.hipRollCompensation or 0
+local hipRollCompensation =  mcm.get_walk_hipRollCompensation()
 local ankleRollCompensation = Config.walk.ankleRollCompensation or 0
 local anklePitchCompensation = Config.walk.anklePitchCompensation or 0
 local kneePitchCompensation = Config.walk.kneePitchCompensation or 0
@@ -297,6 +297,9 @@ end
 
 function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,supportRatio,dt)
 
+
+  hipRollCompensation =  mcm.get_walk_hipRollCompensation()
+
 --New compensation code to cancelout backlash on ALL leg joints
   dt= dt or 0.010
 
@@ -419,13 +422,13 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 
 
 
-  delta_legs[2] = angleShift[4] + hipRollCompensation*supportRatioLeft
+  delta_legs[2] = angleShift[4] + hipRollCompensation[1]*supportRatioLeft
   delta_legs[3] = - hipPitchCompensation*supportRatioLeft
   delta_legs[4] = angleShift[3]*shiftL - kneePitchCompensation*supportRatioLeft-kneeComp[1]
   delta_legs[5] = angleShift[1]*shiftL - anklePitchCompensation*supportRatioLeft
   delta_legs[6] = angleShift[2]*shiftL + ankleRollCompensation*supportRatioLeft
 
-  delta_legs[8]  = angleShift[4] - hipRollCompensation*supportRatioRight
+  delta_legs[8]  = angleShift[4] - hipRollCompensation[2]*supportRatioRight
   delta_legs[9] = -hipPitchCompensation*supportRatioRight
   delta_legs[10] = angleShift[3]*shiftR - kneePitchCompensation*supportRatioRight-kneeComp[2]
   delta_legs[11] = angleShift[1]*shiftR - anklePitchCompensation*supportRatioRight

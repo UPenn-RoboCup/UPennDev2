@@ -75,7 +75,7 @@ shared.walk.torsoX     = vector.zeros(1)
 shared.walk.footY      = vector.zeros(1)
 shared.walk.supportX   = vector.zeros(1)
 shared.walk.supportY   = vector.zeros(1)
-shared.walk.hipRollCompensation = vector.zeros(1)
+shared.walk.hipRollCompensation = vector.zeros(2)
 
 --Walk state variables
 shared.walk.bodyOffset = vector.zeros(3)

@@ -51,6 +51,7 @@ function state.entry()
   mcm.set_walk_footY(Config.walk.footY)
   mcm.set_walk_supportX(Config.walk.supportX)
   mcm.set_walk_supportY(Config.walk.supportY)
+
   mcm.set_walk_hipRollCompensation(Config.walk.hipRollCompensation)
 
   mcm.set_motion_state(0)

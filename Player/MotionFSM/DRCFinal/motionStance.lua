@@ -92,7 +92,7 @@ function state.update()
 
   if math.abs(imu[4])<gyro_th and math.abs(imu[5])<gyro_th then
     local global_angle = mcm.get_walk_global_angle()
-    local angle_max = 2*DEG_TO_RAD
+    local angle_max = Config.roll_adaptation_max or 2*DEG_TO_RAD
     global_angle[1] = gamma*imu[1] + global_angle[1]
     global_angle[1]=math.max(-angle_max,math.min(angle_max,global_angle[1] ))
     mcm.set_walk_global_angle(global_angle)

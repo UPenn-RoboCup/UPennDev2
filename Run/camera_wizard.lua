@@ -135,7 +135,7 @@ local function check_send(msg)
 		table.insert(buffer, 1, msg)
 		if #buffer>nbuffer then table.remove(buffer) end
 	end
-	if is_outdoors then
+	if is_indoors==0 then
 		buffer = {msg}
 	end
 
@@ -153,26 +153,12 @@ local function check_send(msg)
 end
 
 
-local t_send_itty
+local t_send_itty = -math.huge
 local function update(img, sz, cnt, t)
 	-- Update metadata
 	c_meta.t = t
 	c_meta.n = cnt
 	local c_img = c_yuyv:compress(img, w, h)
-
-	local dt_send_itty0 = t - t_buffer
-	if is_indoors==camera_id+1 and dt_send_itty0 < dt_send_itty then
-		local ittybitty_img
-		if metadata.crop then
-			ittybitty_img = c_yuyv2:compress_crop(img, w, h, unpack(metadata.crop))
-		else
-			--ittybitty_img = c_yuyv2:compress(img, w, h)
-			ittybitty_img = c_grey:compress(img, w, h)
-		end
-		ittybitty_udp_ch:send(ittybitty_img)
-		t_send_itty = t
-	end
-
 
 	--[[
 	c_meta.sz = #ittybitty_img
@@ -182,6 +168,23 @@ local function update(img, sz, cnt, t)
 	local msg = {mp.pack(c_meta), c_img}
 
 	check_send(msg)
+
+
+
+	local is_indoors = hcm.get_network_indoors()
+	local dt_send_itty0 = t - t_send_itty
+	if is_indoors==camera_id+1 and dt_send_itty0 > dt_send_itty then
+		local ittybitty_img
+		if metadata.crop then
+			ittybitty_img = c_yuyv2:compress_crop(img, w, h, unpack(metadata.crop))
+		else
+			--ittybitty_img = c_yuyv2:compress(img, w, h)
+			ittybitty_img = c_grey:compress(img, w, h)
+		end
+		local ret, err = ittybitty_udp_ch:send(ittybitty_img)
+		t_send_itty = t
+		print('Sent ittybitty', ret, err)
+	end
 
 	-- Do the logging if we wish
 	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then

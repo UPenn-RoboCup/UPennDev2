@@ -3,60 +3,41 @@ assert(Config, 'Need a pre-existing Config table!')
 -- IP addresses
 local IP = {
 	STEVE = 23,
-	SJ = 200,
+	SJ = 100,
 	BHORAM = 57,
 	JQ = 150,
 	--
-	CHIP = 245,
-	DALE = 246,
-	FIELD = 242,
+	CHIP2 = 144,
+	CHIP = 145,
+	DALE = 146,
+	FIELD = 132,
 }
 
 -- Who do we use?
-local WHO = IP.STEVE
+local WHO = IP.CHIP2
 local ROBOT_IP = IP.DALE
 local TEAM_NUMBER = 8
 
---local wired_subnet = '192.168.123.'
-local wired_subnet = '10.8.3.'
-local wireless_subnet = '192.168.1.'
-
 local net = {
-	field_computer = wired_subnet..IP.FIELD,
 	robot = {
-		wired = wired_subnet..ROBOT_IP,
-		wireless = wireless_subnet..ROBOT_IP,
+		wireless = '192.168.123.'..ROBOT_IP,
 	},
 	operator = {
-		wired              = wired_subnet..WHO,
-		wireless           = wireless_subnet..WHO,
+		wireless = '192.168.123.'..WHO,
 	},
 	broadcast = {
-		wired = wired_subnet..'255',
-		wireless = wireless_subnet..'255'
+		wireless = '192.168.123.255'
 	}
 }
 
-if IS_COMPETING then
-	net.field_computer = '10.'..TEAM_NUMBER..'.3.'..IP.FIELD
-	--
-	net.robot.wired = '10.'..TEAM_NUMBER..'.3.'..ROBOT_IP
-	net.robot.wireless = net.robot.wired
-	--
-	net.operator.wired = '10.'..TEAM_NUMBER..'.2.'..ROBOT_IP
-	net.operator.wireless = net.operator.wired
-	-- Broadcast from the robot to the operator(s)
-	net.broadcast.wired = '10.'..TEAM_NUMBER..'.2.'..ROBOT_IP
-	net.broadcast.wireless = net.broadcast.wired
+net.field_computer = '10.'..TEAM_NUMBER..'.3.'..IP.FIELD
+-- Robot IP
+net.robot.wired = '10.'..TEAM_NUMBER..'.3.'..ROBOT_IP
+-- Operator IP
+net.operator.wired = '10.'..TEAM_NUMBER..'.2.'..WHO
+-- Broadcast from the robot to the operator(s)
+net.broadcast.wired = '10.'..TEAM_NUMBER..'.2.'..WHO
 
-	net.ping = {
-		udp = 17000,
-		tcp = 2000,
-		pub = 'ping',
-		sub = 'go',
-	}
-
-end
 
 local streams = {}
 net.streams = streams

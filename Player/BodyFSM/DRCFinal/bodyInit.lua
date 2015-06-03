@@ -18,10 +18,9 @@ print("INITING FSMS")
 
   -- Initialize all other state machines
   arm_ch:send'init'
-  gripper_ch:send'close'
   motion_ch:send'stand'
   head_ch:send'init'
-  lidar_ch:send'pan'
+  gripper_ch:send'close'
 
 	-- TODO: This should be somewhere else...
   hcm.set_step_dir(0)
@@ -114,6 +113,9 @@ function state.exit()
 
     end
   end
+
+  lidar_ch:send'pan' --start lidar when init is over
+  gripper_ch:send'idle'
 
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()

@@ -280,11 +280,65 @@ static int inverse_rarm_given_wrist(lua_State *L) {
 	return 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+/* ADDED by HEEJIN JUN 2nd 2015 ------------------------------------------------------*/
+
+static int l_arm_origins(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	double bodyPitch = luaL_optnumber(L, 2,0.0);
+	std::vector<double> qWaist = lua_checkvector(L, 3);
+
+	double handOffsetXNew = luaL_optnumber(L, 4,handOffsetX);
+	double handOffsetYNew = luaL_optnumber(L, 5,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 6,handOffsetZ);
+	int idxNew = luaL_optnumber(L, 7, 0);
+
+	
+
+	Transform t = THOROP_kinematics_forward_l_arm_o(&q[0],bodyPitch,&qWaist[0],
+		handOffsetXNew, handOffsetYNew, handOffsetZNew, idxNew);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
+
+static int r_arm_origins(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	double bodyPitch = luaL_optnumber(L, 2,0.0);
+	std::vector<double> qWaist = lua_checkvector(L, 3);
+
+	double handOffsetXNew = luaL_optnumber(L, 4,handOffsetX);
+	double handOffsetYNew = luaL_optnumber(L, 5,handOffsetY);
+	double handOffsetZNew = luaL_optnumber(L, 6,handOffsetZ);
+	int idxNew = luaL_optnumber(L, 7,0);
+
+	Transform t = THOROP_kinematics_forward_r_arm_o(&q[0],bodyPitch,&qWaist[0], 
+		handOffsetXNew, handOffsetYNew, handOffsetZNew, idxNew);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
 
 
+static int l_leg_origins(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	int idxNew = luaL_optnumber(L,2,0);
+
+	Transform t = THOROP_kinematics_forward_l_leg_o(&q[0], idxNew);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
 
 
+static int r_leg_origins(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	int idxNew = luaL_optnumber(L,2,0);
 
+	Transform t = THOROP_kinematics_forward_r_leg_o(&q[0], idxNew);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
+
+/* --------------------------------------------------------------------------------- */
+///////////////////////////////////////////////////////////////////////////////////////
 
 
 static int l_leg_torso(lua_State *L) {
@@ -709,7 +763,13 @@ static const struct luaL_Reg kinematics_lib [] = {
   {"calculate_leg_torque", calculate_leg_torque},
   {"calculate_support_leg_torque", calculate_support_leg_torque},
 
-	{NULL, NULL}
+  {"l_arm_origins", l_arm_origins},
+  {"r_arm_origins", r_arm_origins},
+
+  {"l_leg_origins", l_leg_origins},
+  {"r_leg_origins", r_leg_origins},
+
+  {NULL, NULL}
 };
 
 static const def_info kinematics_constants[] = {

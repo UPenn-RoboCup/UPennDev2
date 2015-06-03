@@ -7,6 +7,155 @@ local min, max = math.min, math.max
 local sin, cos = math.sin, math.cos
 
 local PI, TWO_PI = math.pi, 2*math.pi
+
+--- Written by Heejin From here to ------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
+function util.findidx(v,num)
+  local idx = {}
+  local count = 1
+  for i=1,#v do
+    if v[i] == num then
+      idx[count] = i
+      count = count +1
+    end
+  end
+  return idx
+end
+
+function util.isthere(v,num)
+  local i = 1
+  local var = false
+  while (i < #v+1) do
+    if v[i] == num then
+      var = true
+      break
+    end
+    i = i+1
+  end
+  return var
+end
+
+function util.rot(rpy)
+  local rpyR_b2g ={} -- RPY rotation matrix of body w.r.t the global frame
+  rpyR_b2g[1] = {}
+    rpyR_b2g[1][1] = cos(rpy[1])*cos(rpy[2])
+    rpyR_b2g[1][2] = cos(rpy[1])*sin(rpy[2])*sin(rpy[3]) - sin(rpy[1])*cos(rpy[3])
+    rpyR_b2g[1][3] = cos(rpy[1])*sin(rpy[2])*cos(rpy[3]) + sin(rpy[1])*sin(rpy[3])
+  rpyR_b2g[2] = {}
+    rpyR_b2g[2][1] = sin(rpy[1])*cos(rpy[2])
+    rpyR_b2g[2][2] = sin(rpy[1])*sin(rpy[2])*sin(rpy[3]) + cos(rpy[1])*cos(rpy[3])
+    rpyR_b2g[2][3] = sin(rpy[1])*sin(rpy[2])*cos(rpy[3]) - cos(rpy[1])*sin(rpy[3]) 
+  rpyR_b2g[3] = {}
+    rpyR_b2g[3][1] = -sin(rpy[2])
+    rpyR_b2g[3][2] = cos(rpy[2])*sin(rpy[3])
+    rpyR_b2g[3][3] = cos(rpy[2])*cos(rpy[3])
+
+  return setmetatable(rpyR_b2g, matrix_meta)
+end
+
+function util.rotZ(R,v)
+  local temp = util.mulvec(R,v)
+  return temp[3]
+end
+
+function util.ypr(R,n,ypr_now)
+  local orivec = {}
+  orivec[1] = atan2(R[3][2],R[3][3])--yaw
+  orivec[2] = atan2(-R[3][1],math.sqrt( R[3][2]^2 + R[3][3]^2) )--pitch
+  orivec[3] = n*atan2(R[2][1],R[1][1])--roll
+  
+  if math.abs(orivec[1] - ypr_now[1]) >= math.pi then
+    orivec[1] = orivec[1] - util.sign(orivec[1])*math.pi*2
+  end
+  if math.abs(orivec[2] - ypr_now[2]) >= math.pi then
+    orivec[2] = orivec[2] - util.sign(orivec[2])*math.pi*2
+  end
+  if math.abs(orivec[3] - ypr_now[3]) >= math.pi then
+    orivec[3] = orivec[3] - util.sign(orivec[3])*math.pi*2
+  end
+
+  return setmetatable(orivec, matrix_meta)
+end
+
+function util.inner(v1,v2)
+  local s = 0
+  for i=1,#v1 do
+    s = s + v1[i]*v2[i]
+  end
+  return s
+end
+
+function util.concat(v1,v2)
+  local output = {}
+  for i=1, #v1 do
+    output[i] = v1[i]
+  end
+
+  for j=1, #v2 do
+    output[#v1 + j] = v2[j]
+  end
+
+  return setmetatable(output,matrix_meta)
+end
+
+function util.randi(imax,m,n)
+  local mat = {}
+  for i=1,m do 
+    mat[i]={}
+    for j=1,n do
+      mat[i][j] = math.ceil(math.random()*imax)
+    end
+  end
+  return setmetatable( mat, matrix_meta )
+end
+
+function util.mulvec (R,v)
+  if #R[1] ~= #v then
+    print("dimension error")
+  end
+
+  local mtx ={}
+  for i = 1,#R do
+    num = 0
+    for j= 1,#v do
+      num = num + R[i][j] * v[j]
+    end
+    mtx[i] = num
+  end
+  return setmetatable( mtx, matrix_meta )
+end
+
+
+function util.mul( m1, m2 )
+  -- multiply rows with columns
+  local mtx = {}
+  for i = 1,#m2 do
+    mtx[i] = {}
+
+    if #m2[1] == 1 then
+      local num = m1[i][1]
+      for n = 2,#m1[1] do
+        num = num + m1[i][n]*m2[n]
+      end
+      mtx[i] = num
+    else
+      for j = 1,#m2[1] do
+        local num = m1[i][1] * m2[1][j]
+        for n = 2,#m1[1] do
+          num = num + m1[i][n] * m2[n][j]
+        end
+        mtx[i][j] = num
+      end
+    end
+
+  end
+  return setmetatable( mtx, matrix_meta )
+end
+
+--[[to Here (JUN 2nd 2015)]]-------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+
+
 function util.mod_angle(a)
   -- Reduce angle to [-pi, pi)
   local b = a % TWO_PI

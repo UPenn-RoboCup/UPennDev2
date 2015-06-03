@@ -241,6 +241,10 @@ char_lut['-'] = function()
   end
 end
 
+char_lut['g'] = function()
+  motion_ch:send'getup'
+end
+
 local function apply_pre(d_tr)
 	if selected_arm==0 then --left
 		local tfLArm = get_tflarm()

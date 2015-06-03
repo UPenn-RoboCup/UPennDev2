@@ -415,6 +415,41 @@ Body.get_inverse_rarm = function( qR, trR, rShoulderYaw, bodyTilt, qWaist,ignore
   local passed = check_rarm_bounds(qR_target) and check_ik_error( trR, trR_check)
   if passed then return qR_target end
 end
+
+-- ADDED by HEEJIN JUN 2nd 2015 ------------------------------------------------------
+
+Body.get_forward_larm_origins = function(qL, idx, bodyTilt, qWaist)
+  local pLArm = Kinematics.l_arm_origins( qL,
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_lhandoffset()[1],mcm.get_arm_lhandoffset()[2],
+    mcm.get_arm_lhandoffset()[3], idx
+    )
+  return pLArm
+end
+
+Body.get_forward_rarm_origins = function(qR, idx, bodyTilt, qWaist)
+  local pRArm = Kinematics.r_arm_origins( qR,
+    bodyTilt or mcm.get_stance_bodyTilt(),
+    qWaist or Body.get_waist_command_position(),
+    mcm.get_arm_rhandoffset()[1],mcm.get_arm_rhandoffset()[2],
+    mcm.get_arm_rhandoffset()[3], idx
+    )
+  return pRArm
+end
+
+Body.get_forward_lleg_origins = function(qL,idx)
+  local pLLeg = Kinematics.l_leg_origins( qL, idx)
+  return pLLeg
+end
+
+Body.get_forward_rleg_origins = function(qR,idx)
+  local pRLeg = Kinematics.r_leg_origins( qR, idx)
+  return pRLeg
+end
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
 --
 
 ---------------------------------------------

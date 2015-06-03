@@ -207,6 +207,7 @@ fsm.Lidar = {
 }
 
 fsm.Motion = {
+
 	{'motionIdle', 'timeout', 'motionIdle'},
 	{'motionIdle', 'stand', 'motionInit'},
 	{'motionIdle', 'bias', 'motionBiasInit'},
@@ -224,6 +225,8 @@ fsm.Motion = {
 	{'motionStance', 'preview', 'motionStepPreview'},
 	{'motionStance', 'slowstep', 'motionSlowStep'},
 	{'motionStance', 'stair', 'motionStepPreviewStair'},
+	{'motionStance', 'getup', 'motionGetupFront2'},  
+ 	{'motionGetupFront2', 'done', 'motionInit'},
 	--
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},

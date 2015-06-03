@@ -227,6 +227,18 @@ const double InertiaLeg[12][6]={
 	{0.000708125,0.000708125,0.000708125,0,0,0}
 };
 
+///////////////////////////////////////////////////////////////////////////////////////
+/* ADDED by HEEJIN JUN 2nd 2015 */
+Transform THOROP_kinematics_forward_l_arm_o(const double *q, double bodyPitch, const double *qWaist,
+	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int idx);
+Transform THOROP_kinematics_forward_r_arm_o(const double *q, double bodyPitch, const double *qWaist,
+	double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int idx);
+
+Transform THOROP_kinematics_forward_l_leg_o(const double *q, int idx);
+Transform THOROP_kinematics_forward_r_leg_o(const double *q, int idx);
+/* --------------------------------------------------------------------------------- */
+///////////////////////////////////////////////////////////////////////////////////////
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // COM and ZMP generation functions

@@ -1,5 +1,146 @@
 #include "THOROPKinematics.h"
 
+/* HEEJIN JUN 2nd 2015 */
+
+  Transform
+THOROP_kinematics_forward_l_arm_o(const double *q, double bodyPitch, const double *qWaist, 
+  double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int idx)
+{
+//FK for 7-dof arm (pitch-roll-yaw-pitch-yaw-roll-yaw)
+  Transform t1, t2, t3, t4, t5, t6, t7;
+
+  t1 = t1
+    .rotateY(bodyPitch)
+    .rotateZ(qWaist[0]).rotateY(qWaist[1])
+    .translateY(shoulderOffsetY)
+    .translateZ(shoulderOffsetZ)
+    .mDH(-PI/2, 0, q[0], 0);
+
+  t2 = t1
+    .mDH(PI/2, 0, PI/2+q[1], 0);
+
+  t3 = t2
+    .mDH(PI/2, 0, PI/2+q[2], upperArmLengthL);
+
+  t4 = t3
+    .mDH(PI/2, elbowOffsetX, q[3], 0);
+
+  t5 = t4
+    .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLengthL);
+
+  t6 = t5
+    .mDH(-PI/2, 0, q[5], 0);
+
+  t7 = t6
+    .mDH(PI/2, 0, q[6], 0);
+    /*
+    .mDH(-PI/2, 0, -PI/2, 0)
+    .translateX(handOffsetXNew)
+    .translateY(-handOffsetYNew)
+    .translateZ(handOffsetZNew);
+    */
+
+  switch(idx)
+  {
+    case 1 :
+      return t1;
+      break;
+
+    case 2 :
+      return t2;
+      break;
+
+    case 3 :
+      return t3;
+      break;
+
+    case 4 :
+      return t4;
+      break;
+
+    case 5 :
+      return t5;
+      break;
+
+    case 6 :
+      return t6;
+      break;
+
+    case 7 :
+      return t7;
+      break;
+  }
+}
+
+  Transform
+THOROP_kinematics_forward_r_arm_o(const double *q, double bodyPitch, const double *qWaist,
+   double handOffsetXNew, double handOffsetYNew, double handOffsetZNew, int idx) 
+{
+  Transform t1, t2, t3, t4, t5, t6, t7;
+ 
+  t1 = t1
+    .rotateY(bodyPitch)
+    .rotateZ(qWaist[0]).rotateY(qWaist[1])
+    .translateY(-shoulderOffsetY)
+    .translateZ(shoulderOffsetZ)
+    .mDH(-PI/2, 0, q[0], 0);
+
+  t2 = t1
+    .mDH(PI/2, 0, PI/2+q[1], 0);
+
+  t3 = t2
+    .mDH(PI/2, 0, PI/2+q[2], upperArmLengthR);
+
+  t4 = t3
+    .mDH(PI/2, elbowOffsetX, q[3], 0);
+
+  t5 = t4
+    .mDH(-PI/2, -elbowOffsetX, -PI/2+q[4], lowerArmLengthR);
+
+  t6 = t5
+    .mDH(-PI/2, 0, q[5], 0);
+
+  t7 = t6
+    .mDH(PI/2, 0, q[6], 0);
+  /*
+    .mDH(-PI/2, 0, -PI/2, 0)
+    .translateX(handOffsetXNew)
+    .translateY(handOffsetYNew)
+    .translateZ(handOffsetZNew);*/
+  switch(idx)
+  {
+    case 1 :
+      return t1;
+      break;
+
+    case 2 :
+      return t2;
+      break;
+
+    case 3 :
+      return t3;
+      break;
+
+    case 4 :
+      return t4;
+      break;
+
+    case 5 :
+      return t5;
+      break;
+
+    case 6 :
+      return t6;
+      break;
+
+    case 7 :
+      return t7;
+      break;
+  }
+}
+/* ------------------------------------------------------------------------------------------------------------ */
+
+
 
 Transform THOROP_kinematics_forward_l_arm_7(const double *q, double bodyPitch, const double *qWaist, 
   double handOffsetXNew, double handOffsetYNew, double handOffsetZNew){

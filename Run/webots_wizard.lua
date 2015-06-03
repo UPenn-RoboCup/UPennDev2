@@ -4,7 +4,7 @@
 -- (c) Stephen McGill    --
 ---------------------------
 dofile'../fiddle.lua'
-local Body = require('Body')
+
 -- Cache some functions
 local get_time, usleep = Body.get_time, unix.usleep
 -- Cleanly exit on Ctrl-C
@@ -19,6 +19,7 @@ end
 
 local util = require'util'
 local vector = require'vector'
+local Body   = require'Body'
 require'mcm'
 local lW, uOdometry0
 if not IS_WEBOTS then

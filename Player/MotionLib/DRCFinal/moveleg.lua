@@ -186,6 +186,7 @@ function moveleg.update_sensory_feedback()
 
   if (t-imu_t)>1.0 or (t-imu_t0<2.0) then
     --imu data is old or it is just initialized, ignore gyro data
+    imu[1],imu[2],imu[3]=0,0,0
     imu[4],imu[5],imu[6]=0,0,0
   end
   mcm.set_status_IMU(imu)

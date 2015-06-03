@@ -85,25 +85,17 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
-
-  --update global surface gradient
-  local rpy = Body.get_rpy()
-  local gyro, gyro_t = Body.get_gyro()
-  
+  local gyro_rpy = moveleg.update_sensory_feedback()
+  local imu= mcm.get_status_IMU()
   local gyro_th = 0.04
   local gamma = 0.01
 
-  if math.abs(gyro[1])<gyro_th and math.abs(gyro[2])<gyro_th then
+  if math.abs(imu[4])<gyro_th and math.abs(imu[5])<gyro_th then
     local global_angle = mcm.get_walk_global_angle()
     local angle_max = 2*DEG_TO_RAD
-    global_angle[1] = gamma*rpy[1] + global_angle[1]
+    global_angle[1] = gamma*imu[1] + global_angle[1]
     global_angle[1]=math.max(-angle_max,math.min(angle_max,global_angle[1] ))
     mcm.set_walk_global_angle(global_angle)
---[[
-    print("Gyro:",gyro[1])
-    print("IMU Roll:",rpy[1]*RAD_TO_DEG)
-    print("IMU Roll(F):",global_angle[1]*RAD_TO_DEG)
---]]
   end
 
   local qWaist = Body.get_waist_command_position()
@@ -123,7 +115,6 @@ function state.update()
   
   supportLeg = 2; --Double support
 
-  local gyro_rpy = moveleg.update_sensory_feedback()
   local delta_legs
 
 

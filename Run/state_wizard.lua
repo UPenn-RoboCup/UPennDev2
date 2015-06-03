@@ -94,18 +94,29 @@ repeat
 	-- If time for debug
 	local dt_debug = t_start - t_debug
 	if dt_debug>debug_interval and not IS_WEBOTS then
+		local batt = Body.get_lleg_voltage()
+		local batt_ave = (batt[2]+batt[3]+batt[4])/3
+
+		mcm.set_status_battery(batt_ave)
+
+
 		local times_str = ""
 		local total = 0
 		for name,time in pairs(state_times) do
 			--print(time, count)
-			times_str=times_str..string.format('%s:%dus ', name, 1e6*time/count)
+  		  --only print out slow processes
+		  if time>0.001 then
+		    times_str=times_str..string.format('%s:%.2fms ', name, 1e3*time/count)
+		  end
 			total = total + time
 			state_times[name] = 0
 		end
 
+
+
 		local kb = collectgarbage('count')
-		print(string.format('\nState | Uptime: %.2f sec, Mem: %d kB, %.2f Hz %g ms cycle\n%s',
-				t_start-t0, kb, count/dt_debug, 1e3*total/count,times_str))
+		print(string.format('\nState | Uptime: %.2f sec, Mem: %d kB, %.2f Hz %g ms cycle battery %.1fV\n%s',
+				t_start-t0, kb, count/dt_debug, 1e3*total/count, batt_ave/10,times_str))
 		count = 0
 		t_debug = t_start
 		--collectgarbage('step')

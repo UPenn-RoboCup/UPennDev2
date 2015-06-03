@@ -63,9 +63,11 @@ function update_display()
 	--persistent message
 	if display_mode_old~=display_mode then
 		display_mode_old = display_mode
+		local batt = mcm.get_status_battery()/10
 		if display_mode==1 then
 			update_display_msg(1,"4<<   Walk Test     ")
 			update_display_msg(2, string.format("Vel: %3i %3i %3i",vel[1],vel[2],vel[3]) )
+			update_display_msg(3, string.format("Battery: %.1f",batt) )
 		elseif display_mode==2 then
 			update_display_msg(1,"    Driving Test >>4")
 			update_display_msg(3,"1-init  2-driveready")
@@ -81,9 +83,12 @@ function update_display()
 			LZMPr[1]*1000, LZMPr[2]*1000,
 			RZMPr[1]*1000, RZMPr[2]*1000)
 		update_display_msg(3, zmpstr1 )
+ 		update_display_msg(4, string.format("Battery: %.1f",batt) )
 
 	elseif display_mode==2 then
 		update_display_msg(2,string.format("Steer: %3i Gas: %3i",steer*100, gas*100 ))
+		update_display_msg(3, string.format("Battery: %.1f",batt) )
+
 	end
 end
 

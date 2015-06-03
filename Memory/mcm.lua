@@ -138,6 +138,8 @@ shared.walk.global_angle = vector.zeros(2) --surface gradient
 
 -- Motion Status
 shared.status = {}
+
+shared.status.battery=vector.zeros(1)
 shared.status.velocity   = vector.zeros(3)
 shared.status.odometry   = vector.zeros(3)
 shared.status.bodyOffset = vector.zeros(3)

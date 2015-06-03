@@ -25,9 +25,25 @@ function state.entry()
 	t_entry = Body.get_time()
 	t_update = t_entry
 
-	sequence = {unpack(Config.arm.valve)}
+	local qcLArm = Body.get_larm_command_position()
 
-	-- When to reset?
+	sequence = {}
+
+	local qL1 = vector.copy(qcLArm)
+	for i=1,13 do
+		qL1[7] = qL1[7] - 30*DEG_TO_RAD
+		table.insert(sequence, {
+			right = false,
+			left = {
+				timeout=5,
+				via='joint_preplan',
+				q = vector.copy(qL1)
+			}
+		})
+	end
+
+
+	-- Begin
 	s = 1
 	stage = sequence[s]
 	lco, rco = movearm.goto(stage.left, stage.right)

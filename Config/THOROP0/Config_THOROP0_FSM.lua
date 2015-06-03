@@ -163,7 +163,7 @@ fsm.Arm = {
 	{'armInitWalk', 'done', 'armWalk'},
 
 	-- From the walk state
-	{'armWalk', 'pushdoor', 'armPushDoorUp'},
+	--{'armWalk', 'pushdoor', 'armPushDoorUp'},
 	{'armWalk', 'ready', 'armManipulation'},
 	{'armWalk', 'teleop', 'armTeleop'},
 	{'armWalk', 'teleopraw', 'armTeleopRaw'},
@@ -189,7 +189,7 @@ fsm.Arm = {
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
 	{'armManipulation', 'ready', 'armManipulation'},
-	{'armManipulation', 'pushdoor', 'armPushDoorDown'},
+	{'armManipulation', 'pushdoordown', 'armPushDoorDown'},
 	{'armManipulation', 'drill', 'armDrill'},
 	{'armManipulation', 'shower', 'armShower'},
 	{'armManipulation', 'valve', 'armValve'},
@@ -201,14 +201,15 @@ fsm.Arm = {
 
 	-- PushDoor positioning
 	{'armPushDoorDown', 'ready', 'armManipulation'},
-	{'armPushDoorDown', 'done', 'armManipulation'},
+	--{'armPushDoorDown', 'done', 'armManipulation'},
 	--
-	{'armTeleop', 'pushdoor', 'armPushDoorDown'},
-	{'armTeleopRaw', 'pushdoor', 'armPushDoorDown'},
+	{'armTeleop', 'pushdoordown', 'armPushDoorDown'},
+	{'armTeleopRaw', 'pushdoordown', 'armPushDoorDown'},
 	{'armPushDoorDown', 'teleop', 'armTeleop'},
 	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
 
 	-- PushDoor positioning
+	--[[
 	{'armWalk', 'pushdoor', 'armPushDoorUp'},
 	{'armPushDoorUp', 'done', 'armManipulation'},
 	--
@@ -216,26 +217,53 @@ fsm.Arm = {
 	{'armTeleopRaw', 'pushdoor', 'armPushDoorUp'},
 	{'armPushDoorUp', 'teleop', 'armTeleop'},
 	{'armPushDoorUp', 'teleopraw', 'armTeleopRaw'},
+	--]]
 
 	-- Valve positioning
 	{'armWalk', 'valve', 'armValve'},
-	--{'armValve', 'done', 'armTeleop'},
-	{'armValve', 'done', 'armManipulation'},
-	--{'armValve', 'ready', 'armManipulation'},
+	{'armValve', 'done', 'armTeleop'},
 	--
 	{'armTeleop', 'valve', 'armValve'},
 	{'armTeleopRaw', 'valve', 'armValve'},
 	{'armValve', 'teleop', 'armTeleop'},
 	{'armValve', 'teleopraw', 'armTeleopRaw'},
 
+	-- Valve turning
+	--[[
+	{'armChopstickTurn', 'done', 'armTeleop'},
+	--
+	{'armTeleop', 'turn', 'armChopstickTurn'},
+	{'armTeleopRaw', 'turn', 'armChopstickTurn'},
+	{'armChopstickTurn', 'teleop', 'armTeleop'},
+	{'armChopstickTurn', 'teleopraw', 'armTeleopRaw'},
+	--]]
+
 	-- Drill positioning
-	{'armDrill', 'done', 'armTeleop'},
+	--{'armDrill', 'done', 'armCarry'},
+	{'armDrill', 'drillright', 'armDrillRight'},
+	{'armDrill', 'drillleft', 'armDrillLeft'},
 	{'armDrill', 'ready', 'armManipulation'},
 	--
-	{'armTeleop', 'drill', 'armDrill'},
-	{'armTeleopRaw', 'drill', 'armDrill'},
 	{'armDrill', 'teleop', 'armTeleop'},
 	{'armDrill', 'teleopraw', 'armTeleopRaw'},
+
+	-- Drill positioning (right)
+	{'armDrillRight', 'done', 'armCarry'},
+	{'armDrillRight', 'ready', 'armManipulation'},
+	--
+	{'armTeleop', 'drill', 'armDrillRight'},
+	{'armTeleopRaw', 'drill', 'armDrillRight'},
+	{'armDrillRight', 'teleop', 'armTeleop'},
+	{'armDrillRight', 'teleopraw', 'armTeleopRaw'},
+
+	-- Drill positioning (right)
+	{'armDrillLeft', 'done', 'armCarry'},
+	{'armDrillLeft', 'ready', 'armManipulation'},
+	--
+	{'armTeleop', 'drill', 'armDrillLeft'},
+	{'armTeleopRaw', 'drill', 'armDrillLeft'},
+	{'armDrillLeft', 'teleop', 'armTeleop'},
+	{'armDrillLeft', 'teleopraw', 'armTeleopRaw'},
 
 	-- Shower positioning
 	{'armShower', 'done', 'armTeleop'},

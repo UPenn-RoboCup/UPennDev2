@@ -24,7 +24,6 @@ arm.ready[1] =
 		via='jacobian_preplan',
 		timeout=12,
 		tr={0.19, -0.246, 0.08, 0, -65*DEG_TO_RAD, 0},
-		weights = {0,1,0},
 		qArmGuess = vector.new{135, 0, 0, -135, -90, -45, 90}*DEG_TO_RAD,
 		weights = {1,1,-1,1,2},
 	}
@@ -113,6 +112,7 @@ arm.pushdoordown[1] = {
 	right = false,
 	--ikhead = {0.65, 0.25, -0.12}
 }
+--[[
 arm.pushdoordown[2] = {
 	left = {
 		via='jacobian_preplan',
@@ -138,10 +138,11 @@ arm.pushdoordown[4] = {
 	},
 	right = false,
 }
+--]]
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.valve = {}
-arm.valve[1] = {
+table.insert(arm.valve, {
 	right = false,
 	left = {
 		timeout=12,
@@ -151,18 +152,19 @@ arm.valve[1] = {
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
 		--weights = {0,1,0,1},
 	}
-}
-arm.valve[2] = {
+})
+table.insert(arm.valve, {
 	right = false,
 	left = {
 		timeout=10,
 		via='jacobian_preplan',
-		tr={0.5, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.45, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
 		--weights = {0,1,0,1},
 	}
-}
-arm.valve[3] = {
+})
+--[[
+table.insert(arm.valve, {
 	right = false,
 	left = {
 		timeout=5,
@@ -171,8 +173,8 @@ arm.valve[3] = {
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
 		--weights = {0,1,0,1},
 	}
-}
-arm.valve[4] = {
+})
+table.insert(arm.valve, {
 	right = false,
 	left = {
 		timeout=5,
@@ -181,62 +183,137 @@ arm.valve[4] = {
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
 		--weights = {0,1,0,1},
 	}
-}
+})
+--]]
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
+-- Useful: t = m.rPlanner.forward(Body.get_rarm_command_position(), Body.get_safe_waist_command_position())
 arm.drill = {}
+-- Low Drill is on 1.1m table. 1.1-0.97 = 0.13 table top
+-- High Drill is on 0.75m table. 0.75-0.97 = -0.22 table top
+-- mid of drill handle is like 10cm higher... : 0.25 and -0.12
 -- Left views the drill
 -- Right grabs the drill
--- Useful: t = m.rPlanner.forward(Body.get_rarm_command_position(), Body.get_safe_waist_command_position())
-arm.drill[1] = {
+table.insert(arm.drill, {
 	--left = false,
 	left = {
 		timeout=8,
 		via='jacobian_preplan',
-		tr={0.24, 0.25, 0.33, 0*DEG_TO_RAD, -80*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{75, 10, 0, -135, 0, 30, 0}*DEG_TO_RAD,
-		weights = {0,1,1,1},
+		tr={0.28, 0.23, 0.42, 0*DEG_TO_RAD, -80*DEG_TO_RAD, 0*DEG_TO_RAD},
+		qArmGuess = vector.new{60, 10, 0, -135, 0, 30, 0}*DEG_TO_RAD,
+		weights = {0,1,0,1},
 	},
 	right = {
 		timeout=8,
 		via='jacobian_preplan',
-		tr={0.21, -0.25, 0.3, 0*DEG_TO_RAD, -80*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{75, -10, 0, -135, 0, -30, 0}*DEG_TO_RAD,
-		weights = {0,1,1,1},
+		tr={0.31, -0.23, 0.37, 0*DEG_TO_RAD, -80*DEG_TO_RAD, 0*DEG_TO_RAD},
+		qArmGuess = vector.new{75, -10, -5, -135, -10, -12, 10}*DEG_TO_RAD,
+		weights = {0,1,0,1},
 	}
-}
-arm.drill[2] = {
+})
+table.insert(arm.drill, {
 	left = {
-		timeout=15,
+		timeout=10,
 		--via='joint_preplan',
 		--q = vector.new{0, 75, 90, -90, -90, -45, 0}*DEG_TO_RAD,
 		via='jacobian_preplan',
-		tr={0.3, 0.00, 0.32, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -75*DEG_TO_RAD},
+		tr={0.345, 0.03, 0.25, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -75*DEG_TO_RAD},
 		qArmGuess = vector.new{0, 60, 90, -120, -90, -15, 0}*DEG_TO_RAD,
 		weights = {0,1, 0, 1, 2},
 	},
-	--[[
-	left = {
-		tr={0.25, 0.25, 0.18,    0, 0, -45*DEG_TO_RAD},
-		--qArmGuess = vector.new{70,25,-28, -150, 10,-80,-90}*DEG_TO_RAD,
-		timeout=15,
-		via='jacobian_preplan', weights = {0,1,1,1}
-	},
-	--]]
 	right = false
-}
+})
 
-arm.drill[3] = {
+table.insert(arm.drill, {
 	left = false,
 	right = {
-		timeout=20,
+		timeout=10,
 		via='jacobian_preplan',
 		--tr={0.28, -0.3, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 30*DEG_TO_RAD},
-		tr={0.32, -0.23, 0.32, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.46, -0.27, 0.27, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
 		weights = {1,1,-1,1, 0},
 	}
-}
+})
+
+-- Tip faces right
+arm.drillright = {}
+table.insert(arm.drillright, {
+	left = {
+		timeout=5,
+		via='jacobian_preplan',
+		tr={0.5, -0.25, 0.25, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -80*DEG_TO_RAD},
+	},
+	right = {
+		timeout=10,
+		via='jacobian_preplan',
+		--via='jacobian_waist_preplan',
+		--qWaistGuess = {10*DEG_TO_RAD,0},
+		tr={0.53, -0.43, 0.25, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -45*DEG_TO_RAD},
+	}
+})
+
+-- Tip faces right
+arm.drillleft = {}
+table.insert(arm.drillleft, {
+	left = {
+		timeout=5,
+		via='jacobian_preplan',
+		tr={0.5, -0.05, 0.25, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -80*DEG_TO_RAD},
+	},
+	right = {
+		timeout=5,
+		via='jacobian_preplan',
+		tr={0.7, -0.23, 0.25, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 90*DEG_TO_RAD},
+	}
+})
+
+arm.carry = {}
+
+table.insert(arm.carry, {
+	left = {
+		timeout=5,
+		via='jacobian_preplan',
+		tr={0.5, 0.2, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -45*DEG_TO_RAD},
+	},
+	right = false
+})
+table.insert(arm.carry, {
+	left = {
+		via='jacobian_preplan',
+		timeout=12,
+		tr={0.19, 0.28, 0.17, 0, -65*DEG_TO_RAD,0},
+		qArmGuess = vector.new{135, 0, 0, -135, 90, 45, -90}*DEG_TO_RAD,
+		weights = {1,1,-1,1,2},
+	},
+	right = false
+})
+table.insert(arm.carry, {
+	left = false,
+	right = {
+		timeout=5,
+		via='jacobian_preplan',
+		tr={0.55, -0.23, 0.4, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 90*DEG_TO_RAD},
+	}
+})
+--[[
+table.insert(arm.carry, {
+	left = false,
+	right = {
+		timeout=5,
+		via='jacobian_preplan',
+		tr={0.4, -0.18, 0.4, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 60*DEG_TO_RAD},
+	}
+})
+--]]
+table.insert(arm.carry, {
+	left = false,
+	right = {
+		timeout=5,
+		via='jacobian_preplan',
+		tr={0.15, -0.1, 0.15, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 90*DEG_TO_RAD},
+	}
+})
 
 
 arm.shower = {}

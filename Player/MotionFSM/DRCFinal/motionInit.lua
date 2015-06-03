@@ -86,6 +86,7 @@ function state.entry()
   mcm.set_arm_rhandoffset(Config.arm.handoffset.right or {0,0,0})
   
   stage = 1
+--
   if not IS_WEBOTS then
     print('INIT setting params')
     for i=1,10 do
@@ -103,7 +104,7 @@ function state.entry()
       unix.usleep(1e6*0.01);
     end
   end
-
+  --]]
   mcm.set_motion_state(1.03)  
   hcm.set_legdebug_enable_balance({0,0})
 
@@ -181,6 +182,10 @@ function state.exit()
   local pg = Config.walk.leg_p_gain or 64
   local ag = Config.walk.ankle_p_gain or 64
 
+  mcm.set_status_body_init(1) --Body init done
+
+  --
+
   if not IS_WEBOTS then
     for i=1,10 do
       Body.set_head_command_velocity({6000,6000})
@@ -216,6 +221,7 @@ function state.exit()
       end
     end
   end
+  --]]
   mcm.set_walk_ismoving(0) --We are stopped
 
   --now disable leg joint reading

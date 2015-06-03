@@ -33,6 +33,11 @@ function state.update()
   --if t-t_entry > timeout then return'timeout' end
 
   --TODO: Check whether all FSMs have done initialzing 
+  local body_init = mcm.get_status_body_init()
+  local arm_init = mcm.get_status_arm_init()
+  if body_init==1 and arm_init==1 then return "done" end
+
+  --TODO
   return 'done'
 
 end

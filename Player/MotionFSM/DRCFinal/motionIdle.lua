@@ -52,6 +52,10 @@ function state.entry()
 
   mcm.set_motion_state(0)
 
+  --both arm and body are not inited. slow down until it's done
+  mcm.set_status_body_init(0)
+  mcm.set_status_arm_init(0)
+
 end
 
 ---
@@ -84,6 +88,25 @@ function state.exit()
   print(state._NAME..' Exit' ) 
   -- Torque on the motors
   Body.set_waist_torque_enable(1)
+
+  --we are moving out of idle, slow down all the servos
+  if not IS_WEBOTS then
+    print('INIT setting params')
+    for i=1,10 do
+      Body.set_head_command_velocity({500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_waist_command_velocity({500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_lleg_command_velocity({500,500,500,500,500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_rleg_command_velocity({500,500,500,500,500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_rleg_command_acceleration({50,50,50,50,50,50})
+      unix.usleep(1e6*0.01);
+      Body.set_lleg_command_acceleration({50,50,50,50,50,50})
+      unix.usleep(1e6*0.01);
+    end
+  end
 
 
   if Config.torque_legs then

@@ -56,9 +56,6 @@ function state.update()
   local qLLeg = Body.get_lleg_position()
   local qRLeg = Body.get_rleg_position()
 
-  qLLeg[1],qLLeg[2],qLLeg[3] = 0, 3*DEG_TO_RAD, 80*DEG_TO_RAD
-  qRLeg[1],qRLeg[2],qRLeg[3] = 0, -5*DEG_TO_RAD, 80*DEG_TO_RAD
-
   Body.set_lleg_command_position(qLLeg)
   Body.set_rleg_command_position(qRLeg)
 
@@ -66,6 +63,10 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' ) 
+
+  Body.set_lleg_torque_enable(1)
+  Body.set_rleg_torque_enable(1)
+
 end
 
 return state

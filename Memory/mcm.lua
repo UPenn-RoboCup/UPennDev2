@@ -189,6 +189,12 @@ shared.status.RZMP = vector.zeros(3)
 shared.status.IMU = vector.zeros(6) --rpy vr vp vy
 
 
+
+--are arms and bodies intialized?
+shared.status.body_init = vector.zeros(0)
+shared.status.arm_init = vector.zeros(0)
+
+
 --how much of the upper body weight is held by left leg?
 -- 0.5 for double support
 -- 1 for full left single support

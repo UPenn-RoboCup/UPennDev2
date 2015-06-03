@@ -62,13 +62,10 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  local throttleT = math.min(1,math.max(-1,hcm.get_teleop_throttle() ))
+  local throttleT = math.min(30*math.pi/180,math.max(0,hcm.get_teleop_throttle() ))
 
-  throttleT = (throttleT-0.1)/0.9 --go back a bit 
-
-  local throttle_pitch_mag = Config.throttle_pitch_mag or 15*math.pi/180
-  
-  throttle = util.approachTol(throttle, throttleT*throttle_pitch_mag, 1, t_diff)
+  throttleT = throttleT-3*math.pi/180
+  throttle = util.approachTol(throttle, throttleT, 90*math.pi/180, t_diff)
 
   if Config.birdwalk then
     local qLLeg = util.shallow_copy(qLLeg0)

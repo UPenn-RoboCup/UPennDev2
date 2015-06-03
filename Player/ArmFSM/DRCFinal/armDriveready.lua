@@ -44,10 +44,9 @@ function state.update()
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()
 
-qRArm[1],qRArm[2],qRArm[3] = 88*DEG_TO_RAD, -10*DEG_TO_RAD,-10*DEG_TO_RAD
+qRArm[1],qRArm[2],qRArm[3] = 88*DEG_TO_RAD, -10*DEG_TO_RAD,-30*DEG_TO_RAD
 qRArm[4] = -129*DEG_TO_RAD
 
-qLArm[1] = 180*DEG_TO_RAD
 qLArm[1] = 195*DEG_TO_RAD
 
   Body.set_larm_command_position(qLArm)

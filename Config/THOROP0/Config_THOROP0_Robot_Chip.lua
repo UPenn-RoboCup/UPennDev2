@@ -138,6 +138,17 @@ end
 
 
 
+--FT BIAS
+Config.left_foot_ft.bias_forceZ = 49
+Config.left_foot_ft.bias_torque = {-6,13.8}
+
+Config.right_foot_ft.bias_forceZ = -20
+Config.right_foot_ft.bias_torque = {-10,18.5}
+
+
+
+
+
 -- DCM Chains
 Config.chain = {enabled = true}
 
@@ -203,6 +214,12 @@ if Config.birdwalk then
 	enable_read = true,
   }
 end
+
+
+
+
+
+
 
 
 
@@ -433,12 +450,14 @@ if Config.birdwalk then
 	servo.rad_offset = vector.new({
 		0,0, -- Head
 	--	-90,  -90,  -90,45,  90,0,0, --LArm
-		-90,  -90,  -90,45,  -90,0,0, --LArm
+--		-90,  -90,      -90,45,  -90,0,0, --LArm
+		-90.4,  -88.4 ,  -90,45,  -90,0,0, --LArm
 
 		0,0,0,  0  ,0,0, --LLeg
 		0,0,0,  0  ,0,0, --RLeg
 --		90,  90,  90,-45,  -90,0,0, --RArm
-		90,  90,  90,-45,  90,0,0, --RArm
+--		90,  90,  90,-45,  90,0,0, --RArm
+		88.8,  89.5,  90,-45,  90,0,0, --RArm
 
 		-180,0, -- Waist flip (for birdwalk)
 		0, 0, 0, -- left gripper/trigger
@@ -487,7 +506,8 @@ if Config.birdwalk then
 servo.min_rad = vector.new({
 	-90,-80, -- Head
 --	-90, 0, -90,    -160,   -180,-87,-180, --LArm
-	-90, -10, -120,    -160,   -180,-87,-180, --LArm
+--	-90, -10, -120,    -160,   -180,-87,-180, --LArm
+	-90, -30, -120,    -160,   -180,-87,-180, --LArm
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-90,-87,-90,    -160,   -180,-87,-180, --RArm

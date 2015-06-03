@@ -19,7 +19,7 @@ function state.entry()
 
   for i=1,5 do
     Body.set_larm_torque_enable({1,0,0,0,0,0,0})
-    Body.set_rarm_torque_enable({1,1,1,1,0,0,0})
+    Body.set_rarm_torque_enable({1,1,1,0,0,0,0})
     unix.usleep(1e5)
 
     local vel = 2000

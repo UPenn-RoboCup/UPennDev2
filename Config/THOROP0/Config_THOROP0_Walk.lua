@@ -33,7 +33,6 @@ if Config.birdwalk then
   walk.stanceLimitA = {-30*DEG_TO_RAD,0*DEG_TO_RAD}
 end
 walk.bodyHeight = 0.93
-walk.footY = 0.095
 walk.footY = 0.105 --mk2, wider
 walk.footX = 0
 walk.bodyTilt = 0
@@ -110,13 +109,20 @@ stance.dHeight = 0.04 --4cm per sec
 if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
 --or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
-  walk.hipRollCompensation = {1.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
   walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
+
+walk.footY = 0.110 --wider
+
 
 --  walk.tZMP = 0.33   
 --  walk.footY = 0.115 --teddy, even wider
 --  walk.supportX = 0.02 
---  walk.supportY = -0.01 
+
+  --for non birdwalk 
+  walk.hipRollCompensation = {2.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
+  walk.supportY = -0.01
+  walk.delay_threshold_angle = 2.5*math.pi/180
+  walk.stop_threshold_angle = 5*math.pi/180
 else
   --CHIP CHIP CHIP CHiP
   print("CHIP CHIP CHIP")

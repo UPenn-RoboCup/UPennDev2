@@ -18,7 +18,7 @@ local ROBOT_IP = IP.DALE
 local TEAM_NUMBER = 8
 
 --local wired_subnet = '192.168.123.'
-local wired_subnet = '10.8.3.'
+local wired_subnet = '10.8.2.'
 local wireless_subnet = '192.168.1.'
 
 local net = {

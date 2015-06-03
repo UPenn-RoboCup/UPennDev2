@@ -91,6 +91,27 @@ function state.exit()
 
         Body.set_lleg_position_p({pg,pg,pg,pg,pg,ag})
         unix.usleep(1e6*0.01);
+
+
+        Body.set_lleg_torque_enable(1)
+        unix.usleep(1e6*0.01);
+
+        Body.set_rleg_torque_enable(1)
+        unix.usleep(1e6*0.01);
+
+        Body.set_lleg_torque_enable(1)
+        unix.usleep(1e6*0.01);
+
+        Body.set_rleg_torque_enable(1)
+        unix.usleep(1e6*0.01);
+
+        Body.set_waist_torque_enable(1)
+        unix.usleep(1e6*0.01);
+
+        Body.set_head_torque_enable(1)
+        unix.usleep(1e6*0.01);
+
+
     end
   end
 

@@ -222,11 +222,11 @@ fsm.Arm = {
 	{'armValve', 'teleopraw', 'armTeleopRaw'},
 
 	-- Drill positioning
-	{'armDrill', 'done', 'armTeleop'},
+	{'armDrill', 'done', 'armCarry'},
 	{'armDrill', 'ready', 'armManipulation'},
 	--
-	{'armTeleop', 'drill', 'armDrill'},
-	{'armTeleopRaw', 'drill', 'armDrill'},
+	--{'armTeleop', 'drill', 'armDrill'},
+	--{'armTeleopRaw', 'drill', 'armDrill'},
 	{'armDrill', 'teleop', 'armTeleop'},
 	{'armDrill', 'teleopraw', 'armTeleopRaw'},
 

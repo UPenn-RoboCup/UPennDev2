@@ -515,11 +515,37 @@ function moveleg.foot_trajectory_soft(phSingle,uStart,uEnd,stepHeight)
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight*zf
   local aFoot = 0
-
-
   return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
 
+
+
+function moveleg.foot_trajectory_softfast(phSingle,uStart,uEnd,stepHeight)
+
+local breaksTX={0.150000,0.300000,0.400000,0.850000,1.000000,}
+local breaksTY={0.100000,0.200000,0.350000,0.450000,0.700000,1.000000,}
+local coefsX={
+  {1.505061,4.211612,-0.065606,0.000000,},
+  {1.505061,4.888889,1.299469,0.090000,},
+  {-42.434434,5.566166,2.867728,0.400000,},
+  {5.807140,-7.164164,2.707928,0.700000,},
+  {5.807140,0.675475,-0.211982,0.997000,},
+}
+local coefsY={
+  {-62.248559,28.174568,0.105029,0.000000,},
+  {-62.248559,9.500000,3.872486,0.230000,},
+  {-8.689349,-9.174568,3.905029,0.650000,},
+  {24.234998,-13.084775,0.566127,1.000000,},
+  {9.237541,-5.814275,-1.323778,0.950000,},
+  {9.237541,1.113881,-2.498876,0.400000,},
+}
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight*zf
+  local aFoot = 0
+  return uFoot, zFoot, aFoot, lift_phase, land_phase
+end
 
 
 

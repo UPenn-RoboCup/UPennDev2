@@ -133,7 +133,12 @@ print("CHIP CHIP CHIP")
   walk.phZmp = {0.25,0.75}
 
   walk.stepHeight= 0.03  
-  walk.hipRollCompensation = {1.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
+  walk.hipRollCompensation = {
+--	1.5*DEG_TO_RAD, 
+	2.5*DEG_TO_RAD, 
+	1.5*DEG_TO_RAD}
+
+  walk.stepHeight= 0.04  
 
 --walk.phSingle = {0.15,0.85}
 end

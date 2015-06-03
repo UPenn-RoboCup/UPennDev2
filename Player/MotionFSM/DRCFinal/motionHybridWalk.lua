@@ -184,7 +184,6 @@ function walk.update()
 
     local uTorsoVelCurrent = mcm.get_status_uTorsoVel()
     if Config.variable_support then
-      print("TorsoVel:",unpack(uTorsoVelCurrent))
       local torsoVelYMin = 0.20
       local torsoVelYFactor = 0.5 
 
@@ -193,15 +192,18 @@ function walk.update()
 
       local torsoXExt = math.max(0,(math.abs(uTorsoVelCurrent[1])-torsoVelXMin))*torsoVelXFactor
       torsoXExt = -math.min(torsoXExt, 0.02)* util.sign(uTorsoVelCurrent[2])
-      print("torsoXExt:",torsoXExt)
 
       local torsoYExt = math.max(0, (math.abs(uTorsoVelCurrent[2])-torsoVelYMin )) *torsoVelYFactor 
       torsoYExt = -math.min(torsoYExt, 0.02)*util.sign(uTorsoVelCurrent[2])
-      print("torsoYExt:",torsoYExt)
+
 
       local uSupportModY = torsoXExt + torsoYExt
-
-      print("supportModY:",uSupportModY)
+      if Config.debug.walk then
+        print("TorsoVel:",unpack(uTorsoVelCurrent))
+        print("torsoXExt:",torsoXExt)
+        print("torsoYExt:",torsoYExt)
+        print("supportModY:",uSupportModY)
+      end
       uSupport = util.pose_global({0,uSupportModY,0},uSupport)
     end
 

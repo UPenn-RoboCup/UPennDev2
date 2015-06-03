@@ -60,10 +60,11 @@ display_mode = 1 --Walk test mode
 button_pressed = false
 
 function update_display()
+	local batt = mcm.get_status_battery()/10
+
 	--persistent message
 	if display_mode_old~=display_mode then
 		display_mode_old = display_mode
-		local batt = mcm.get_status_battery()/10
 		if display_mode==1 then
 			update_display_msg(1,"4<<   Walk Test     ")
 			update_display_msg(2, string.format("Vel: %3i %3i %3i",vel[1],vel[2],vel[3]) )

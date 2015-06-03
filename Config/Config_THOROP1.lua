@@ -24,6 +24,19 @@ Config.debug = {
   armplan = true,
 }
 
+
+--Config.birdwalk = 1 
+Config.raise_body = true
+Config.use_exact_tZMP = true
+Config.use_heeltoe_walk = true
+Config.heeltoe_angle = 0*DEG_TO_RAD
+Config.walktraj={}
+Config.walktraj.hybridwalk = "foot_trajectory_softfast"
+Config.variable_tstep = true
+Config.variable_support = true
+Config.arm_init_timeout = true
+Config.use_imu_yaw = false --use odometry for yaw
+
 -- Tune for Webots
 if IS_WEBOTS then
 	if IS_STEVE then
@@ -52,31 +65,14 @@ if IS_WEBOTS then
 		Config.enable_touchdown = false
 		Config.raise_body = false
 		Config.piecewise_step = true
---		Config.birdwalk = 1 --testing birdwalk		
---		Config.use_gps_pose=true
-
-
-
---		Config.debug.world=true
 	  Config.sensors = {
 			ft = true,
 			feedback = 'feedback_wizard',
 		 	world = 'world_wizard',
 	  }
-
 	end
 end
 
-
-
---Config.use_heeltoe_walk = true
---Config.heeltoe_angle = 0*DEG_TO_RAD
-Config.walktraj={}
-Config.walktraj.hybridwalk = "foot_trajectory_base"
-
-
-
-Config.use_imu_yaw = false --use odometry for yaw
 
 -----------------------------------
 -- Load Paths and Configurations --

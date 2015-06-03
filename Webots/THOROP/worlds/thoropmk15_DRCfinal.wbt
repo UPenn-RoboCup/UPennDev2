@@ -41,7 +41,7 @@ DirectionalLight {
 }
 THOROP_mk15_Fullmass_longarm_2 {
   translation -1.5 1.14 0
-  rotation 0 1 0 -1.57
+  rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
@@ -69,89 +69,101 @@ simple_wall {
   size 0.05 2 2.7
   translation 0 1 1.75
 }
-CinderRampF {
-  translation 5.3 0 0.2 #2
+simple_wall {
+  size 0.05 2 2.7
+  translation 9.6 1 -1.75
 }
-CinderRampR {
-  translation 5.3 0 0.63 #2.43
-}
-CinderRampR {
-  translation 5.3 0 1.06 #2.86
-}
-CinderRampR {
-  translation 5.3 0 1.49 #3.29
+simple_wall {
+  size 0.05 2 2.7
+  translation 9.6 1 1.75
 }
 CinderRampF {
-  translation 5.73 0 0.2 #2
+  translation 7.068 0 0.2 #2
 }
 CinderRampR {
-  translation 5.73 0 0.63 #2.43
+  translation 7.068 0 0.63 #2.43
 }
 CinderRampR {
-  translation 5.73 0 1.06 #2.86
+  translation 7.068 0 1.06 #2.86
 }
 CinderRampR {
-  translation 5.73 0 1.49 #3.29
+  translation 7.068 0 1.49 #3.29
+}
+CinderRampF {
+  translation 7.499 0 0.2 #2
+}
+CinderRampR {
+  translation 7.499 0 0.63 #2.43
+}
+CinderRampR {
+  translation 7.499 0 1.06 #2.86
+}
+CinderRampR {
+  translation 7.499 0 1.49 #3.29
 }
 CinderBlock {
-  translation 6.16 0 0.2 #2
+  translation 7.928 0 0.2 #2
 }
 CinderBlock {
-  translation 6.16 0 0.63 #2.43
+  translation 7.928 0 0.63 #2.43
 }
 CinderRampR {
-  translation 6.16 0 1.06 #2.86
+  translation 7.928 0 1.06 #2.86
 }
 CinderRampR {
-  translation 6.16 0 1.49 #3.29
+  translation 7.928 0 1.49 #3.29
 }
 CinderRampF {
-  translation 6.59 0 0.2 # 2
+  translation 8.356 0 0.2 # 2
 }
 CinderRampR {
-  translation 6.59 0 0.63 #2.43
+  translation 8.356 0 0.63 #2.43
 }
 CinderRampR {
-  translation 6.59 0 1.06 #2.86
+  translation 8.356 0 1.06 #2.86
 }
 CinderRampR {
-  translation 6.59 0 1.49 #3.29
+  translation 8.356 0 1.49 #3.29
 }
 CinderRampF {
-  translation 7.02 0 0.2 #2
+  translation 8.788 0 0.2 #2
 }
 CinderRampR {
-  translation 7.02 0 0.63 #2.43
+  translation 8.788 0 0.63 #2.43
 }
 CinderRampR {
-  translation 7.02 0 1.06 #2.86
+  translation 8.788 0 1.06 #2.86
 }
 CinderRampR {
-  translation 7.02 0 1.49 #3.29
+  translation 8.788 0 1.49 #3.29
 }
 StairLung {
-  translation 8 0 0
+  translation 10.5 0 0
   rotation 0 1 0 1.57
 }
 StairLung {
-  translation 8.3 0.225 0
+  translation 10.8 0.225 0
   rotation 0 1 0 1.57
 }
 StairLung {
-  translation 8.6 0.45 0
+  translation 11.1 0.45 0
   rotation 0 1 0 1.57
 }
 StairLung {
-  translation 8.9 0.675 0
+  translation 11.4 0.675 0
   rotation 0 1 0 1.57
 }
 StairLung {
-  translation 9.2 0.675 0
+  translation 11.7 0.675 0
   rotation 0 1 0 1.57
 }
-simple_wall {  # main big
+simple_wall {  # main big RIGHT
   size 12 2 0.01
   translation 6 1 2.05 # 3
+}
+simple_wall {  # main big LEFT
+  size 12 2 0.01
+  translation 6 1 -2.140 # 3
 }
 simple_wall {
   size 1.25 2 0.01
@@ -173,11 +185,20 @@ simple_wall {
   translation 4.152 1 1.608 #2.558 #-1.56
   rotation 0 1 0 -0.785398
 }
-
+simple_wall {
+  size 1.25 2 0.01
+  translation 5.036 1 1.608 #2.558 #-1.56
+  rotation 0 1 0 0.785398
+}
+simple_wall {
+  size 1.25 2 0.01
+  translation 5.92 1 1.608 #2.558 #-1.56
+  rotation 0 1 0 -0.785398
+}
 DEF VALVE CircleValve {
   hidden position_0_0 6.4387e-12
   color 1 0 0
-  translation 1.35 1 1.458 #3.8 1 -1.4
+  translation 1.365 1 1.468 #3.8 1 -1.4
   rotation 0 1 0 0.785398
   scale 0.15 0.15 0.15
 }

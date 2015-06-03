@@ -213,8 +213,8 @@ fsm.Arm = {
 	-- Valve positioning
 	{'armWalk', 'valve', 'armValve'},
 	--{'armValve', 'done', 'armTeleop'},
-	--{'armValve', 'done', 'armManipulation'},
-	{'armValve', 'ready', 'armManipulation'},
+	{'armValve', 'done', 'armManipulation'},
+	--{'armValve', 'ready', 'armManipulation'},
 	--
 	{'armTeleop', 'valve', 'armValve'},
 	{'armTeleopRaw', 'valve', 'armValve'},

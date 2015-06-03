@@ -336,10 +336,10 @@ local function form_arm_read_cmd(bus)
 			has_mx = true
 			--]]
 		elseif is_nx then
-			assert(
-			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
-			'Bad Indirect addresses for the arm chain ID '..m_id
-			)
+			--assert(
+		--	lD.check_indirect_address({m_id}, arm_packet_reg, bus),
+		--	'Bad Indirect addresses for the arm chain ID '..m_id
+		--	)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
 			table.insert(used_ids, m_id)
 			has_nx = true
@@ -430,12 +430,12 @@ local function form_arm_read_cmd2(bus)
 			--table.insert(rd_addrs, lD.mx_registers.current)
 			table.insert(used_ids, m_id)
 			has_mx = true
-			----[[
 		elseif is_nx then
-			assert(
-			lD.check_indirect_address({m_id}, arm_packet_reg, bus),
-			'Bad Indirect addresses for the arm chain ID '..m_id
-			)
+
+			--assert(
+			--lD.check_indirect_address({m_id}, arm_packet_reg, bus),
+			--'Bad Indirect addresses for the arm chain ID '..m_id
+			--)
 			table.insert(rd_addrs, {lD.nx_registers.indirect_data[1], arm_packet_sz})
 			table.insert(used_ids, m_id)
 			has_nx = true
@@ -1202,7 +1202,7 @@ while is_running do
 		}
 		for bname, bus in pairs(named_buses) do
 			table.insert(debug_str,
-			string.format('%s Command @ %.1f Hz | Read @ %.1f Hz [%d / %d timeouts]',
+			string.format('%s Command @ %.1fHz| Read @%.1fHz [%d/%d timeouts]',
 			bname, bus.cmds_cnt / dt_debug, bus.reqs_cnt / dt_debug, bus.n_read_timeouts, bus.reads_cnt))
 			bus.reads_cnt = 0
 			bus.cmds_cnt = 0
@@ -1213,17 +1213,17 @@ while is_running do
 		local rpy = dcm.get_sensor_rpy()
 		local acc = dcm.get_sensor_accelerometer()
 		local gyro = dcm.get_sensor_gyro()
-		table.insert(debug_str, sformat('Acc  : X%.2f Y%.2f Z%.2f (g)', unpack(acc)))
+		table.insert(debug_str, sformat('Acc  : X%.1f Y%.1f Z%.1f (g)', unpack(acc)))
 		table.insert(debug_str, sformat('Gyro : R%.2f P%.2f Y%.2f (deg/s)', unpack(RAD_TO_DEG*gyro)))
 		table.insert(debug_str, sformat('Angle: R%.2f P%.2f Y%.2f (deg)', unpack(RAD_TO_DEG * rpy)))
-
+--[[
 		local pos = dcm.get_sensor_position()
 		local cmd_pos = dcm.get_actuator_command_position()
 		table.insert(debug_str, sformat('LLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
 		unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,10,15)) ))
 		table.insert(debug_str, sformat('RLeg ERR  %.1f %.1f %.1f %.1f %.1f %.1f',
 		unpack(RAD_TO_DEG * vector.slice(pos-cmd_pos,16,21)) ))
-
+--]]
 		local lfoot = dcm.get_sensor_lfoot()
 		local rfoot = dcm.get_sensor_rfoot()
 	
@@ -1244,15 +1244,9 @@ while is_running do
 		end
 
 --]]
-		table.insert(debug_str, sformat('LLeg FT  %.1f (Z)   R %.1f P %.1f',
-		lf_z,lf_r, lf_p ))
-		table.insert(debug_str, sformat('RLeg FT  %.1f (Z)   R %.1f P %.1f',
-		rf_z,rf_r, rf_p ))
 
 		if lf_z>50 then
 			local rel_zmp_left = {-lf_p/lf_z, lf_r/lf_z,0}
-			table.insert(debug_str, sformat('Left ZMP  %.1f %.1f (cm)',
-			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
 			dcm.set_sensor_lzmp({rel_zmp_left[1],rel_zmp_left[2]})
 		else
 			dcm.set_sensor_lzmp({0,0})
@@ -1260,12 +1254,22 @@ while is_running do
 
 		if rf_z>50 then
 			local rel_zmp_right = {-rf_p/rf_z, rf_r/rf_z,0}
-			table.insert(debug_str, sformat('Right ZMP  %.1f %.1f (cm)',
-			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
 			dcm.set_sensor_rzmp({rel_zmp_right[1],rel_zmp_right[2]})
 		else
 			dcm.set_sensor_rzmp({0,0})
 		end
+
+		local rel_zmp_left = dcm.get_sensor_lzmp()
+		local rel_zmp_right = dcm.get_sensor_rzmp()
+
+		table.insert(debug_str, sformat('LLeg FT  Z%.1f R%.1f P%.1f ZMP: %.1f %.1f',
+		lf_z,lf_r, lf_p,
+			rel_zmp_right[1]*100, rel_zmp_right[2]*100 ))
+
+
+		table.insert(debug_str, sformat('RLeg FT  Z%.1f R%.1f P%.1f ZMP: %.1f %.1f',
+		rf_z,rf_r, rf_p, 
+			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
 
 		debug_str = table.concat(debug_str, '\n')
 		--os.execute('clear')

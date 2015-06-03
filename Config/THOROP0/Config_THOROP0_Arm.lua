@@ -387,6 +387,12 @@ arm.ShoulderYaw0=vector.new({-1,1})*DEG_TO_RAD
 
 arm.vel_angular_limit = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD
 arm.vel_angular_limit_init = vector.new({20,20,20,20,30,30,30})*DEG_TO_RAD
+
+
+--faster
+arm.vel_angular_limit_init = vector.new({20,20,20,20,30,60,30})*DEG_TO_RAD
+
+
 arm.vel_linear_limit = vector.new({0.02,0.02,0.02, 30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD})
 arm.vel_waist_limit = vector.new({3,3})*DEG_TO_RAD
 arm.shoulder_yaw_limit = 30*DEG_TO_RAD

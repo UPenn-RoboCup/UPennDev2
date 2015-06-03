@@ -54,7 +54,9 @@ shared_data.teleop = {
 
 	drive_head = zeros(2),
 	throttle = zeros(1), --should be zero to one
-	steering = zeros(1)
+	steering = zeros(1),
+
+	estop = zeros(1) --remote estop status
 }
 
 shared_data.demo = {

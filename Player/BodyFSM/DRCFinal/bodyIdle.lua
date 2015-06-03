@@ -12,6 +12,8 @@ function state.entry()
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
   t_update = t_entry 
+  hcm.set_teleop_estop(1) --for not using estop
+
 end
 
 function state.update()
@@ -22,7 +24,8 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-
+  local estop = hcm.get_teleop_estop()
+  if t-t_entry>2.0 and estop==0 then return "init" end
 
 --[[
   local gamestate = gcm.get_game_state()
@@ -31,6 +34,9 @@ function state.update()
 end
 
 function state.exit()
+  --for manual transition to init (no estop case)
+  --clear estop flag so that we can keep running
+  hcm.set_teleop_estop(0)
   print(state._NAME..' Exit' )
 end
 

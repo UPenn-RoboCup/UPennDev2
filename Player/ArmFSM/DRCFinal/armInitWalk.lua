@@ -54,19 +54,6 @@ function state.entry()
   -- No torque rgrip
   Body.set_rgrip_command_torque({0,0,0})
 
-  if not IS_WEBOTS then
-    local vel = 2000
-    print('INIT setting params')
-    for i=1,10 do
-      Body.set_larm_command_velocity(vector.ones(7)*vel)
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_velocity(vector.ones(7)*vel)
-      unix.usleep(1e6*0.01);
-      Body.set_waist_command_velocity({500,500})
-      unix.usleep(1e6*0.01);      
-     end
-  end
-
   qLArmTarget = Body.get_inverse_larm(
     vector.zeros(7),
     Config.arm.trLArm0,
@@ -78,6 +65,17 @@ function state.entry()
     Config.arm.trRArm0,
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0},true)
+
+print("L:",qLArmTarget[5]*RAD_TO_DEG)
+print("R:",qRArmTarget[5]*RAD_TO_DEG)
+
+  qLArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, 90*DEG_TO_RAD,40*DEG_TO_RAD,-90*DEG_TO_RAD}
+  qRArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, -90*DEG_TO_RAD,-40*DEG_TO_RAD,90*DEG_TO_RAD}
+
+
+  qLArmTarget = vector.new({110,0,10,-155,90,45,-90})*DEG_TO_RAD
+  qRArmTarget = vector.new({110,0,-10,-160,-90,-40,90})*DEG_TO_RAD
+
 
   t_last_debug=t_entry
   last_error = 999
@@ -114,12 +112,19 @@ function state.update()
     t_stage = 1.0
 
   elseif stage==3 then --straighten shoulder yaw, widen shoulder
-    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+    qLArmTargetC,qRArmTargetC = 
+	util.shallow_copy(qLArmTarget),
+	util.shallow_copy(qRArmTarget)
+    qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
     t_stage = 2.0
 
   elseif stage==4 then
+    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+    t_stage = 1.0
+  elseif stage==5 then
     return "done"
   end
+
 
   local dqArmLim = vector.new(util.shallow_copy(Config.arm.vel_angular_limit_init))
   if IS_WEBOTS then dqArmLim = dqArmLim*2 end
@@ -184,16 +189,9 @@ function state.exit()
   mcm.set_arm_qrarmcomp(qRArmTarget)
   mcm.set_stance_uTorsoComp(uTorsoComp)  
 
-  if not IS_WEBOTS then
-    for i=1,10 do
-      Body.set_larm_command_velocity({0,0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
-      Body.set_rarm_command_velocity({0,0,0,0,0,0,0})
-      unix.usleep(1e6*0.01);
-      Body.set_waist_command_velocity({0,0})
-      unix.usleep(1e6*0.01);      
-    end
-  end
+
+  mcm.set_status_arm_init(1) --arm idle and requires init
+
 
 --SJ: now we store the COM offset for default arm posture
   local COMoffset = mcm.get_stance_COMoffset()

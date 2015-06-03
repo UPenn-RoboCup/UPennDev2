@@ -188,16 +188,20 @@ end
 function update_conmmand()
 	local t= Body.get_time()
 	ret = estop.update()
-	if ret.estop==1 then
-		print("ESTOP!!!!!!!!!!")
+
+	if ret.estop~=0 then
+		print("ESTOP!!!!!!!!!!",ret.estop)
 		--estop pressed, stop
-		body_ch:send'stop'
+		body_ch:send'estop'
+		hcm.set_teleop_estop(1)
 		update_display_msg(1,"ESTOP!!!")
 		update_display_msg(2,"ESTOP!!!")
 		update_display_msg(3,"ESTOP!!!")
 		update_display_msg(4,"ESTOP!!!")
 		display_mode = 0
 		return
+	else
+	  hcm.set_teleop_estop(0)
 	end
 
 	if display_mode==0 then 

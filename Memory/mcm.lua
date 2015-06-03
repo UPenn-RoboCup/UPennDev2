@@ -129,6 +129,8 @@ shared.walk.delta_legs = vector.zeros(12)
 shared.walk.torsoShift = vector.zeros(2) 
 
 
+shared.walk.global_angle = vector.zeros(2) --surface gradient
+
 -------------------------------------------
 
 

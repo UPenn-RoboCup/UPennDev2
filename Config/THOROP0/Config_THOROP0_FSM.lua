@@ -212,23 +212,49 @@ fsm.Arm = {
 
 	-- Valve positioning
 	{'armWalk', 'valve', 'armValve'},
-	--{'armValve', 'done', 'armTeleop'},
-	{'armValve', 'done', 'armManipulation'},
-	--{'armValve', 'ready', 'armManipulation'},
+	{'armValve', 'done', 'armTeleop'},
 	--
 	{'armTeleop', 'valve', 'armValve'},
 	{'armTeleopRaw', 'valve', 'armValve'},
 	{'armValve', 'teleop', 'armTeleop'},
 	{'armValve', 'teleopraw', 'armTeleopRaw'},
 
+	-- Valve turning
+	--[[
+	{'armChopstickTurn', 'done', 'armTeleop'},
+	--
+	{'armTeleop', 'turn', 'armChopstickTurn'},
+	{'armTeleopRaw', 'turn', 'armChopstickTurn'},
+	{'armChopstickTurn', 'teleop', 'armTeleop'},
+	{'armChopstickTurn', 'teleopraw', 'armTeleopRaw'},
+	--]]
+
 	-- Drill positioning
-	{'armDrill', 'done', 'armCarry'},
+	--{'armDrill', 'done', 'armCarry'},
+	{'armDrill', 'drillright', 'armDrillRight'},
+	{'armDrill', 'drillleft', 'armDrillLeft'},
 	{'armDrill', 'ready', 'armManipulation'},
 	--
-	--{'armTeleop', 'drill', 'armDrill'},
-	--{'armTeleopRaw', 'drill', 'armDrill'},
 	{'armDrill', 'teleop', 'armTeleop'},
 	{'armDrill', 'teleopraw', 'armTeleopRaw'},
+
+	-- Drill positioning (right)
+	{'armDrillRight', 'done', 'armCarry'},
+	{'armDrillRight', 'ready', 'armManipulation'},
+	--
+	{'armTeleop', 'drill', 'armDrillRight'},
+	{'armTeleopRaw', 'drill', 'armDrillRight'},
+	{'armDrillRight', 'teleop', 'armTeleop'},
+	{'armDrillRight', 'teleopraw', 'armTeleopRaw'},
+
+	-- Drill positioning (right)
+	{'armDrillLeft', 'done', 'armCarry'},
+	{'armDrillLeft', 'ready', 'armManipulation'},
+	--
+	{'armTeleop', 'drill', 'armDrillLeft'},
+	{'armTeleopRaw', 'drill', 'armDrillLeft'},
+	{'armDrillLeft', 'teleop', 'armTeleop'},
+	{'armDrillLeft', 'teleopraw', 'armTeleopRaw'},
 
 	-- Shower positioning
 	{'armShower', 'done', 'armTeleop'},

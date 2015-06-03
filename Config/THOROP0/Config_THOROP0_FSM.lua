@@ -154,9 +154,13 @@ fsm.Arm = {
 
 	-- armWalk does nothing (the arm should be in walk configuration)
 	{'armInitWalk', 'done', 'armWalk'},
+
+	-- From the walk state
+	{'armWalk', 'pushdoor', 'armPushDoorUp'},
 	{'armWalk', 'ready', 'armManipulation'},
 	{'armWalk', 'teleop', 'armTeleop'},
 	{'armWalk', 'teleopraw', 'armTeleopRaw'},
+
 	--Old teleop code
 	----[[
 	{'armWalk', 'teleopoldl', 'armTeleopSJOLDL'},
@@ -178,7 +182,7 @@ fsm.Arm = {
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
 	{'armManipulation', 'ready', 'armManipulation'},
-	{'armManipulation', 'pushdoor', 'armPushDoor'},
+	{'armManipulation', 'pushdoor', 'armPushDoorDown'},
 	{'armManipulation', 'drill', 'armDrill'},
 	{'armManipulation', 'shower', 'armShower'},
 	{'armManipulation', 'valve', 'armValve'},
@@ -187,6 +191,35 @@ fsm.Arm = {
 	{'armTeleopRaw', 'ready', 'armManipulation'},
 	{'armManipulation', 'teleop', 'armTeleop'},
 	{'armManipulation', 'teleopraw', 'armTeleopRaw'},
+
+	-- PushDoor positioning
+	{'armPushDoorDown', 'ready', 'armManipulation'},
+	{'armPushDoorDown', 'done', 'armManipulation'},
+	--
+	{'armTeleop', 'pushdoor', 'armPushDoorDown'},
+	{'armTeleopRaw', 'pushdoor', 'armPushDoorDown'},
+	{'armPushDoorDown', 'teleop', 'armTeleop'},
+	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
+
+	-- PushDoor positioning
+	{'armWalk', 'pushdoor', 'armPushDoorUp'},
+	{'armPushDoorUp', 'done', 'armManipulation'},
+	--
+	{'armTeleop', 'pushdoor', 'armPushDoorUp'},
+	{'armTeleopRaw', 'pushdoor', 'armPushDoorUp'},
+	{'armPushDoorUp', 'teleop', 'armTeleop'},
+	{'armPushDoorUp', 'teleopraw', 'armTeleopRaw'},
+
+	-- Valve positioning
+	{'armWalk', 'valve', 'armValve'},
+	--{'armValve', 'done', 'armTeleop'},
+	{'armValve', 'done', 'armManipulation'},
+	{'armValve', 'ready', 'armManipulation'},
+	--
+	{'armTeleop', 'valve', 'armValve'},
+	{'armTeleopRaw', 'valve', 'armValve'},
+	{'armValve', 'teleop', 'armTeleop'},
+	{'armValve', 'teleopraw', 'armTeleopRaw'},
 
 	-- Drill positioning
 	{'armDrill', 'done', 'armTeleop'},
@@ -205,24 +238,6 @@ fsm.Arm = {
 	{'armTeleopRaw', 'shower', 'armShower'},
 	{'armShower', 'teleop', 'armTeleop'},
 	{'armShower', 'teleopraw', 'armTeleopRaw'},
-	
-	-- PushDoor positioning
-	{'armPushDoor', 'done', 'armTeleop'},
-	{'armPushDoor', 'ready', 'armManipulation'},
-	--
-	{'armTeleop', 'pushdoor', 'armPushDoor'},
-	{'armTeleopRaw', 'pushdoor', 'armPushDoor'},
-	{'armPushDoor', 'teleop', 'armTeleop'},
-	{'armPushDoor', 'teleopraw', 'armTeleopRaw'},
-
-	-- Valve positioning
-	{'armValve', 'done', 'armTeleop'},
-	{'armValve', 'ready', 'armManipulation'},
-	--
-	{'armTeleop', 'valve', 'armValve'},
-	{'armTeleopRaw', 'valve', 'armValve'},
-	{'armValve', 'teleop', 'armTeleop'},
-	{'armValve', 'teleopraw', 'armTeleopRaw'},
 
 	-- armPullDoor
 	--[[

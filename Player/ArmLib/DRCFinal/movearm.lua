@@ -12,9 +12,11 @@ local K = require'K_ffi'
 local dqLimit = DEG_TO_RAD / 3
 local radiansPerSecond, torso0
 do
-	local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
+	-- Good
+	--local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
+
 	--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-	--local degreesPerSecond = vector.ones(7) * 30
+	local degreesPerSecond = vector.ones(7) * 30
 	--local degreesPerSecond = vector.ones(7) * 100
 	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 	-- Compensation items

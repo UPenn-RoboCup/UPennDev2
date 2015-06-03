@@ -15,15 +15,15 @@ arm.ready[1] =
 	{
 	left = {
 		via='jacobian_preplan',
-		timeout=8,
-		tr={0.25, 0.25, 0.15, 0, -60*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		timeout=12,
+		tr={0.19, 0.246, 0.17, 0, -65*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		qArmGuess = vector.new{135, 0, 0, -135, 90, 45, -90}*DEG_TO_RAD,
 		weights = {1,1,-1,1,2},
 	},
 	right = {
 		via='jacobian_preplan',
-		timeout=8,
-		tr={0.25, -0.25, 0.15, 0, -60*DEG_TO_RAD, 0},
+		timeout=12,
+		tr={0.19, -0.246, 0.08, 0, -65*DEG_TO_RAD, 0},
 		weights = {0,1,0},
 		qArmGuess = vector.new{135, 0, 0, -135, -90, -45, 90}*DEG_TO_RAD,
 		weights = {1,1,-1,1,2},
@@ -50,18 +50,93 @@ table.insert(arm.init,
 })
 --]]
 
-arm.pushdoor = {}
-arm.pushdoor[1] = {
+-- Weights: cusage, cdiff, ctight, cshoulder, cwrist
+arm.pushdoorup = {}
+arm.pushdoorup[1] = {
 	left = {
 		via='jacobian_preplan',
 		--via='jacobian_waist_preplan',
 		--qWaistGuess = {-10*DEG_TO_RAD,0},
 		timeout=8,
-		tr={0.6, 0.3, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		weights = {1,0,0}
+		tr={0.6, 0.3, -0.09, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		weights = {1,1,0}
 	},
 	right = false,
-	ikhead = {0.65, 0.25, -0.12}
+	--ikhead = {0.65, 0.25, -0.12}
+}
+arm.pushdoorup[2] = {
+	left = {
+		via='jacobian_preplan',
+		timeout=8,
+		tr={0.6, 0.33, -0.04, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		--weights = {1,1,0}
+	},
+	right = false,
+}
+arm.pushdoorup[3] = {
+	left = {
+		via='jacobian_waist_preplan',
+		timeout=8,
+		tr={0.65, 0.33, -0.04, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		--weights = {1,1,0}
+	},
+	right = false,
+}
+arm.pushdoorup[4] = {
+	left = {
+		via='jacobian_waist_preplan',
+		qWaistGuess = {-10*DEG_TO_RAD,0},
+		timeout=8,
+		tr={0.55, 0.3, -0.08, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		--weights = {1,1,0}
+	},
+	right = false,
+}
+arm.pushdoorup[5] = {
+	left = {
+		via='jacobian_waist_preplan',
+		qWaistGuess = {0*DEG_TO_RAD,0},
+		timeout=8,
+		tr={0.4, 0.3, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+	},
+	right = false,
+}
+
+arm.pushdoordown = {}
+arm.pushdoordown[1] = {
+	left = {
+		via='jacobian_preplan',
+		timeout=8,
+		tr={0.6, 0.3, -0.07, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		weights = {1,1,0}
+	},
+	right = false,
+	--ikhead = {0.65, 0.25, -0.12}
+}
+arm.pushdoordown[2] = {
+	left = {
+		via='jacobian_preplan',
+		timeout=8,
+		tr={0.6, 0.32, -0.10, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+	},
+	right = false,
+}
+arm.pushdoordown[3] = {
+	left = {
+		via='jacobian_waist_preplan',
+		timeout=8,
+		tr={0.65, 0.32, -0.10, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+	},
+	right = false,
+}
+arm.pushdoordown[4] = {
+	left = {
+		via='jacobian_waist_preplan',
+		qWaistGuess = {-10*DEG_TO_RAD,0},
+		timeout=8,
+		tr={0.55, 0.3, -0.07, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+	},
+	right = false,
 }
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
@@ -69,12 +144,42 @@ arm.valve = {}
 arm.valve[1] = {
 	right = false,
 	left = {
-		timeout=20,
+		timeout=12,
+		via='jacobian_preplan',
+		tr={0.25, 0.3, 0.3, 0*DEG_TO_RAD, -80*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--tr={0.52, 0.43, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		--weights = {0,1,0,1},
+	}
+}
+arm.valve[2] = {
+	right = false,
+	left = {
+		timeout=10,
+		via='jacobian_preplan',
+		tr={0.5, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		--weights = {0,1,0,1},
+	}
+}
+arm.valve[3] = {
+	right = false,
+	left = {
+		timeout=5,
 		via='jacobian_preplan',
 		tr={0.6, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		--tr={0.35, -0.23, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{0, 30, 0, -120, 60, -75, -90}*DEG_TO_RAD,
-		weights = {1,1,-1,1, 0},
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		--weights = {0,1,0,1},
+	}
+}
+arm.valve[4] = {
+	right = false,
+	left = {
+		timeout=5,
+		via='jacobian_preplan',
+		tr={0.4, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		--weights = {0,1,0,1},
 	}
 }
 

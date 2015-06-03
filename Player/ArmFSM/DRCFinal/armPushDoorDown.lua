@@ -24,7 +24,7 @@ function state.entry()
 	t_entry = Body.get_time()
 	t_update = t_entry
 
-	sequence = {unpack(Config.arm.pushdoor)}
+	sequence = {unpack(Config.arm.pushdoordown)}
 
 	--head_ch:send'teleopik'
 
@@ -100,6 +100,8 @@ function state.update()
 
 	-- Check if done
 	if lStatus=='dead' and rStatus=='dead' then
+		-- TODO: Only on hcm proceed do we do this
+
 		-- Goto the nextitem in the sequnce
 		s = s + 1
 		stage = sequence[s]
@@ -117,7 +119,7 @@ end
 
 function state.exit()
 	print(state._NAME..' Exit')
-	head_ch:send'trackleft'
+	head_ch:send'init'
 end
 
 return state

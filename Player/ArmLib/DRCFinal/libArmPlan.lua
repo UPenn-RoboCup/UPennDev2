@@ -181,6 +181,7 @@ local function co_play_waist(path, callback)
 		end
 	end
 	local qEnd = path[#path]
+	if not qEnd then return end
 	return {unpack(qEnd, 2, #qEnd)}, {qEnd[1], 0}
 end
 
@@ -530,9 +531,10 @@ function libArmPlan.jacobian_preplan(self, plan)
 	-- Begin
 	local t0 = unix.time()
 	local path = {}
+	local dp, drpy, dist_components
 	repeat
 		-- Check if we are close enough
-		local dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
+		dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
 
 		--[[
 		if #path<200 then
@@ -542,8 +544,8 @@ function libArmPlan.jacobian_preplan(self, plan)
 		end
 		--]]
 
-		if dist_components[1] < 0.02 and dist_components[2] < 3*DEG_TO_RAD then
-			print('close!', unpack(dist_components))
+		if dist_components[1] < 0.01 and dist_components[2] < 2*DEG_TO_RAD then
+			print(prefix..' close!', unpack(dist_components))
 			break
 		end
 
@@ -599,7 +601,10 @@ function libArmPlan.jacobian_preplan(self, plan)
 	if #path==0 then return qArm end
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
-		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end
+		if Config.debug.armplan then
+			print(prefix..'Timeout!', self.id, #path)
+			print(prefix..'Distance', unpack(dist_components))
+		end
 		return qArmF
 	end
 	-- Goto the final

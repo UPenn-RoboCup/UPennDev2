@@ -36,15 +36,6 @@ else
 	end
 end
 
---[[
-local hz_wrist_send = .5
-local dt_wrist_send = 1/hz_wrist_send
-local hz_head_send = 0.4
-local dt_head_send = 1/hz_head_send
---]]
-local hz_send_itty = metadata.name=='wrist' and 0.5 or 0.4
-local dt_send_itty = 1/hz_send_itty
-
 -- JPEG Compressor
 local c_grey = jpeg.compressor('y')
 local c_yuyv = jpeg.compressor('yuyv')
@@ -74,10 +65,8 @@ local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
 --
 local ittybitty_identifier = 'ittybitty'..(camera_id-1)
-local itty_stream = Config.net.streams[ittybitty_identifier]
-local ittybitty_ch = si.new_publisher(itty_stream.sub)
-local ittybitty_udp_ch = si.new_sender(Config.net.operator.wired, itty_stream.udp)
-
+local stream = Config.net.streams[ittybitty_identifier]
+local ittybitty_ch = si.new_publisher(stream.sub)
 
 print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
@@ -125,12 +114,13 @@ local dt_indoor_send = 1/hz_indoor_send
 local t_buffer = -math.huge
 local t_send = -math.huge
 local function check_send(msg)
-	local is_indoors = hcm.get_network_indoors()
+	local is_outdoors = hcm.get_network_indoors()==0
+	local is_indoors = not is_outdoors
 	local t = Body.get_time()
 
 	-- Check the buffer
 	local dt_buffer0 = t - t_buffer
-	if is_indoors>0 and dt_buffer0 > dt_buffer then
+	if is_indoors and dt_buffer0 > dt_buffer then
 		t_buffer = t
 		table.insert(buffer, 1, msg)
 		if #buffer>nbuffer then table.remove(buffer) end
@@ -141,8 +131,8 @@ local function check_send(msg)
 
 	-- Check the sending
 	local dt_send0 = t - t_send
-	if is_indoors==0 and dt_send0 < dt_outdoor_send then return end
-	if is_indoors>0 and dt_send0 < dt_indoor_send then return end
+	if is_outdoors and dt_send0 < dt_outdoor_send then return end
+	if is_indoors and dt_send0 < dt_indoor_send then return end
 	t_send = t
 
 	for i,m in ipairs(buffer) do
@@ -153,27 +143,20 @@ local function check_send(msg)
 end
 
 
-local t_send_itty
 local function update(img, sz, cnt, t)
 	-- Update metadata
 	c_meta.t = t
 	c_meta.n = cnt
 	local c_img = c_yuyv:compress(img, w, h)
 
-	local dt_send_itty0 = t - t_buffer
-	if is_indoors==camera_id+1 and dt_send_itty0 < dt_send_itty then
-		local ittybitty_img
-		if metadata.crop then
-			ittybitty_img = c_yuyv2:compress_crop(img, w, h, unpack(metadata.crop))
-		else
-			--ittybitty_img = c_yuyv2:compress(img, w, h)
-			ittybitty_img = c_grey:compress(img, w, h)
-		end
-		ittybitty_udp_ch:send(ittybitty_img)
-		t_send_itty = t
+	local ittybitty_img
+	if metadata.crop then
+		ittybitty_img= c_yuyv2:compress_crop(img, w, h, unpack(metadata.crop))
+	else
+		--ittybitty_img= c_yuyv2:compress(img, w, h)
+		ittybitty_img= c_grey:compress(img, w, h)
 	end
-
-
+	ittybitty_ch:send(ittybitty_img)
 	--[[
 	c_meta.sz = #ittybitty_img
 	local msg = {mp.pack(c_meta), ittybitty_img}
@@ -189,7 +172,7 @@ local function update(img, sz, cnt, t)
 		nlog = nlog + 1
 		metadata.rsz = sz
 		metadata.head = Body.get_head_position()
-		metadata.rpy = Body.get_rpy() 
+		metadata.rpy = Body.get_rpy()
 		for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
 		logger:record(metadata, img, sz)
 		if nlog % 10 == 0 then
@@ -202,6 +185,25 @@ local function update(img, sz, cnt, t)
 		end
 	end
 
+	-- Update the vision routines
+	if has_detection then
+		detection.update(img)
+		if ENABLE_NET and detection.send and do_send then
+			if camera_ch then
+				for _,v in ipairs(detection.send()) do camera_ch:send({mp.pack(v[1]), v[2]}) end
+			end
+			if udp_ch then
+				for _,v in ipairs(detection.send()) do
+					if v[2] then
+						udp_data = mp.pack(v[1])..v[2]
+					else
+						udp_data = mp.pack(v[1])
+					end
+					udp_ret, udp_err = udp_ch:send(udp_data)
+				end
+			end
+		end
+	end
 end
 
 -- If required from Webots, return the table

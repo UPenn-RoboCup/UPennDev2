@@ -24,18 +24,18 @@ if USE_ZLIB then
 	czlib = require'zlib.ffi'.compress
 end
 
-local hz_wrist_send = .5
+local hz_wrist_send = .4
 local dt_wrist_send = 1/hz_wrist_send
-local hz_head_send = 0.4
+local hz_head_send = 0.35
 local dt_head_send = 1/hz_head_send
 local hz_outdoor_send = 1
 local dt_outdoor_send = 1/hz_outdoor_send
 
 local pillar_ch = si.new_subscriber('pillars')
-local ittybitty0_ch = si.new_subscriber(Config.net.streams.ittybitty0.sub)
-local ittybitty1_ch = si.new_subscriber(Config.net.streams.ittybitty1.sub)
+--local ittybitty0_ch = si.new_subscriber(Config.net.streams.ittybitty0.sub)
+--local ittybitty1_ch = si.new_subscriber(Config.net.streams.ittybitty1.sub)
 local pillars
-local ittybitty0, ittybitty1
+--local ittybitty0, ittybitty1
 
 local feedback_udp_ch
 local feedback_ch
@@ -76,6 +76,7 @@ local function entry()
 		Config.net.operator.wired,
 		Config.net.streams.feedback.udp
 		)
+		--[[
 		ittybitty0_udp_ch = si.new_sender(
 		Config.net.operator.wired,
 		Config.net.streams.ittybitty0.udp
@@ -84,6 +85,7 @@ local function entry()
 		Config.net.operator.wired,
 		Config.net.streams.ittybitty1.udp
 		)
+		--]]
 		--[[
 		if IS_COMPETING then
 			ping_ch = si.new_subscriber(Config.net.ping.tcp, Config.net.operator.wired)
@@ -111,6 +113,7 @@ local function update()
 	if p then pillars = p end
 
 	local y0
+	--[[
 	repeat
 		msg = ittybitty0_ch:receive(true)
 		if msg then
@@ -126,6 +129,7 @@ local function update()
 		end
 	until not msg
 	if y1 then ittybitty1 = y1 end
+--]]
 
 	-- send this only when maxxed out..,
 	local qTemp = Body.get_temperature()
@@ -192,32 +196,36 @@ local function update()
 	local available_bits0 = 0
 	local is_indoors = hcm.get_network_indoors()
 	local ret, err
-	if is_indoors==2 and ittybitty0_udp_ch then
+	if is_indoors==2 then
 		-- send the ittybitty0 (head)
 		if t_update - t_feedback < dt_head_send then return end
 		available_bits0 = 9600*dt_head_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
 		available_bits = available_bits0 - 8*#fbmsgz
+		--[[
 		if ittybitty0 then
 			ret, err = ittybitty0_udp_ch:send(ittybitty0)
 			available_bits = available_bits - 8*#ittybitty0
 		else
 			print('No ittybitty0 to send')
 		end
-	elseif is_indoors==3 and ittybitty1_udp_ch then
+		--]]
+	elseif is_indoors==3 then
 		-- send the ittybitty1 (wrist)
 		if t_update - t_feedback < dt_wrist_send then return end
 		available_bits0 = 9600*dt_wrist_send
 		local fbmsgz = czlib(fbmsg)
 		ret, err = feedback_udp_ch:send(fbmsgz)
 		available_bits = available_bits0 - 8*#fbmsgz
+		--[[
 		if ittybitty1 then
 			ret, err = ittybitty1_udp_ch:send(ittybitty1)
 			available_bits = available_bits - 8*#ittybitty1
 		else
 			print('No ittybitty1 to send')
 		end
+		--]]
 	elseif feedback_udp_ch then
 		if t_update - t_feedback < dt_outdoor_send then return end
 		available_bits0 = 9600*dt_outdoor_send

@@ -189,7 +189,7 @@ fsm.Arm = {
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
 	{'armManipulation', 'ready', 'armManipulation'},
-	{'armManipulation', 'pushdoor', 'armPushDoorDown'},
+	{'armManipulation', 'pushdoordown', 'armPushDoorDown'},
 	{'armManipulation', 'drill', 'armDrill'},
 	{'armManipulation', 'shower', 'armShower'},
 	{'armManipulation', 'valve', 'armValve'},
@@ -203,8 +203,8 @@ fsm.Arm = {
 	{'armPushDoorDown', 'ready', 'armManipulation'},
 	{'armPushDoorDown', 'done', 'armManipulation'},
 	--
-	{'armTeleop', 'pushdoor', 'armPushDoorDown'},
-	{'armTeleopRaw', 'pushdoor', 'armPushDoorDown'},
+	{'armTeleop', 'pushdoordown', 'a1rmPushDoorDown'},
+	{'armTeleopRaw', 'pushdoordown', 'armPushDoorDown'},
 	{'armPushDoorDown', 'teleop', 'armTeleop'},
 	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
 

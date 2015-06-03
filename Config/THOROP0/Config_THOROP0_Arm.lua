@@ -112,6 +112,7 @@ arm.pushdoordown[1] = {
 	right = false,
 	--ikhead = {0.65, 0.25, -0.12}
 }
+--[[
 arm.pushdoordown[2] = {
 	left = {
 		via='jacobian_preplan',
@@ -137,6 +138,7 @@ arm.pushdoordown[4] = {
 	},
 	right = false,
 }
+--]]
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.valve = {}

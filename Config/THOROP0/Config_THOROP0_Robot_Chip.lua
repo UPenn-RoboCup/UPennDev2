@@ -388,7 +388,7 @@ servo.direction = vector.new({
 	-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
-	1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
+	1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
 	-1, -- Lidar pan
 })
 
@@ -402,7 +402,7 @@ servo.rad_offset = vector.new({
 --	90,  90,  90,-45,  -90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
-	70, -125, 0, -- right gripper/trigger (UCLA verified)
+	-90, -90, 0, -- right gripper/trigger (UCLA verified)
 	0, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -416,7 +416,7 @@ servo.min_rad = vector.new({
 --	-90,-45, -- Waist
 	-90,-45, -- Waist
 	-60, -55, -60,
-	-60, -35, -60, -- right gripper/trigger (UCLA verified)
+	-90, -120, -55, -- right gripper/trigger (UCLA verified)
 	-60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -435,7 +435,7 @@ servo.max_rad = vector.new({
 --	90,45, -- Waist
 	90,45, -- Waist
 	65,65,55, -- lgrip
-	80,40,55, -- right gripper/trigger (UCLA verified)
+	105,110,105, -- right gripper/trigger (UCLA verified)
 	60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -461,7 +461,7 @@ if Config.birdwalk then
 
 		-180,0, -- Waist flip (for birdwalk)
 		0, 0, 0, -- left gripper/trigger
-		70, -125, 0, -- right gripper/trigger (UCLA verified)
+		-90, -90, 0, -- right gripper/trigger (UCLA verified)
 		0, -- Lidar pan
 	})*DEG_TO_RAD
 
@@ -497,7 +497,7 @@ if Config.birdwalk then
 		-1,1,1, -1, 1,1,-1, --RArm, mk2 reassembled
 		1, 1, -- Waist, mk2
 		-1,1,-1, -- left gripper TODO
-		1,-1,1, -- right gripper/trigger (Good trigger with UCLA hand)
+		1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
 		-1, -- Lidar pan
 	})
 
@@ -514,7 +514,7 @@ servo.min_rad = vector.new({
 --	-90,-45, -- Waist
 	-540,-45, -- Waist
 	-60, -55, -60,
-	-60, -35, -60, -- right gripper/trigger (UCLA verified)
+	-90, -120, -55, -- right gripper/trigger (UCLA verified)
 	-60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -530,7 +530,7 @@ servo.max_rad = vector.new({
 --	90,45, -- Waist
 	540,45, -- Waist
 	65,65,55, -- lgrip
-	80,40,55, -- right gripper/trigger (UCLA verified)
+	105,110,105, -- right gripper/trigger (UCLA verified)
 	60, -- Lidar pan
 })*DEG_TO_RAD
 

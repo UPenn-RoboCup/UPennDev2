@@ -156,7 +156,7 @@ table.insert(arm.valve, {
 	left = {
 		timeout=10,
 		via='jacobian_preplan',
-		tr={0.5, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.45, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
 		--weights = {0,1,0,1},
 	}

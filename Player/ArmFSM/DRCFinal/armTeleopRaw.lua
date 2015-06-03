@@ -77,9 +77,14 @@ function state.update()
 
 	-- TODO: If *any* change, we should replan all...
 	if lChange then
+		print(state._NAME,'L target', teleopLArm1)
+		--print('teleopLArm', teleopLArm)
+		--print('diff', teleopLArm-teleopLArm1)
+		--teleopLArm = vector.copy(teleopLArm1)
 		teleopLArm = teleopLArm1
 		teleopWaist = teleopWaist1
-		print(state._NAME,'L target', teleopLArm)
+
+
 		local via = wChange and 'joint_waist_preplan' or 'joint_preplan'
 		local lco1, rco1 = movearm.goto({
 			q = teleopLArm,

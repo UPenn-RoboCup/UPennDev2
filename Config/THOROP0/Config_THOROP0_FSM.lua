@@ -163,7 +163,7 @@ fsm.Arm = {
 	{'armInitWalk', 'done', 'armWalk'},
 
 	-- From the walk state
-	{'armWalk', 'pushdoor', 'armPushDoorUp'},
+	--{'armWalk', 'pushdoor', 'armPushDoorUp'},
 	{'armWalk', 'ready', 'armManipulation'},
 	{'armWalk', 'teleop', 'armTeleop'},
 	{'armWalk', 'teleopraw', 'armTeleopRaw'},
@@ -209,6 +209,7 @@ fsm.Arm = {
 	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
 
 	-- PushDoor positioning
+	--[[
 	{'armWalk', 'pushdoor', 'armPushDoorUp'},
 	{'armPushDoorUp', 'done', 'armManipulation'},
 	--
@@ -216,6 +217,7 @@ fsm.Arm = {
 	{'armTeleopRaw', 'pushdoor', 'armPushDoorUp'},
 	{'armPushDoorUp', 'teleop', 'armTeleop'},
 	{'armPushDoorUp', 'teleopraw', 'armTeleopRaw'},
+	--]]
 
 	-- Valve positioning
 	{'armWalk', 'valve', 'armValve'},

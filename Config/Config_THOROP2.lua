@@ -136,7 +136,7 @@ end
 Config.world.use_imu_yaw = true
 
 
-Config.slowstep_duration =2
+Config.slowstep_duration =2.5
 Config.supportYSS = -0.03
 Config.walk.stepHeightSlow = 0.02
 

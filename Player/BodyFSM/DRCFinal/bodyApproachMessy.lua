@@ -52,6 +52,11 @@ local last_velocity=vector.zeros(3)
 
 
 
+
+local rotate_only = false
+
+
+
 local function longdistance_approach()
   local target_pose = wcm.get_step_pose()
   local current_pose = wcm.get_robot_pose()
@@ -213,7 +218,10 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   vStep[1]=vStep[1]/velMag * math.min(maxStep,velMag)
   vStep[2]=vStep[2]/velMag * math.min(maxStep,velMag)
 
-
+  if rotate_only then
+    vStep[1]=0
+    vStep[2]=0
+  end
 
 
 
@@ -377,11 +385,15 @@ function state.entry()
   wcm.set_robot_etastep(-1) --we're in approach
   finished=false
   last_velocity=vector.zeros(3)
+  rotate_only = false
   local move_target = vector.pose(hcm.get_teleop_waypoint())
   if move_target[1]==0 and move_target[2]==0 and move_target[3]==0 then
     finished = true --don't need to walk, just exit
     pose0 = wcm.get_robot_pose()
   else
+    if move_target[1]==0 and move_target[2]==0 then
+      rotate_only = true
+    end
     print('bodyApproach2 | Waypoint', move_target)
     local pose = wcm.get_robot_pose()
     local global_target_pose = util.pose_global(move_target,pose)

@@ -44,6 +44,8 @@ Config.estop_mode = 0 --don't do anything!
 --Config.estop_mode = 2 --make the robot sit down
 Config.auto_restart = true
 
+Config.hybrid_approach = true
+
 -- Tune for Webots
 if IS_WEBOTS then
 	if IS_STEVE then
@@ -64,6 +66,9 @@ if IS_WEBOTS then
 	else
 		--Config.testfile = 'test_testbed'		
 		Config.testfile = 'test_walkstuff'		
+
+		Config.testfile = 'test_longwalk'		
+
 		Config.debug.armplan = false		
 		Config.use_jacobian_arm_planning = true
 		Config.enable_jacobian_test = false
@@ -74,6 +79,8 @@ if IS_WEBOTS then
 			feedback = 'feedback_wizard',
 		 	world = 'world_wizard',
 	  }
+
+		Config.use_imu_yaw = false --use imu yaw only for single approach
 	end
 end
 
@@ -114,7 +121,11 @@ end
 
 
 
-
+if IS_WEBOTS then
+	Config.world.odomDrift = 0
+else
+	Config.world.odomDrift = -0.0001
+end
 
 
 --robot drifts backwards

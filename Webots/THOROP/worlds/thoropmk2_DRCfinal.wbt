@@ -21,8 +21,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.999988 0.00232366 -0.0043335 4.68989
-  position 4.93215 6.17467 -0.620607
+  orientation 0.468659 0.746873 0.47174 4.40416
+  position 3.07342 4.60282 2
 }
 Background {
   skyColor [
@@ -39,9 +39,9 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-THOROP_mk2_Fullmass_longarm_2 { 
-  translation -1.48019 1.0918 0.0163333
-  rotation 0.00882375 0.99992 0.00903089 1.56868
+THOROP_mk2_Fullmass_longarm_2 {
+  translation -3 1.14 0
+  rotation 0 1 0 -1.57
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
@@ -53,165 +53,258 @@ THOROP_mk2_Fullmass_longarm_2 {
 }
 DEF TASKFLOOR Floor {
   translation 6 0 0
-  rotation 1 0 0 0.05
-  size 12 6
+  size 16 8
   texture [
     "textures/marble.png"
   ]
 }
-PushDoor {
-  position 0 0 0
-  rotation 0 1 0 1.57
+
+
+#PushDoor {translation -2 0 0 rotation 0 1 0 1.57}
+simple_wall {
+  size 0.05 2 3
+  translation -2 1 -1.9
 }
 simple_wall {
   size 0.05 2 2.7
-  translation 0 1 -1.75
+  translation -2 1 1.75
+}
+
+
+
+
+
+simple_wall {
+  size 0.05 2 3
+  translation 10.4 1 -1.9
 }
 simple_wall {
   size 0.05 2 2.7
-  translation 0 1 1.75
+  translation 10.4 1 1.75
 }
-simple_wall {
-  size 0.05 2 2.7
-  translation 9.6 1 -1.75
-}
-simple_wall {
-  size 0.05 2 2.7
-  translation 9.6 1 1.75
-}
-CinderRampF {
-  translation 7.068 0 0.2
-}
-CinderRampR {
-  translation 7.068 0 0.63
-}
-CinderRampR {
-  translation 7.068 0 1.06
-}
-CinderRampR {
-  translation 7.068 0 1.49
-}
-CinderRampF {
-  translation 7.499 0 0.2
-}
-CinderRampR {
-  translation 7.499 0 0.63
-}
-CinderRampR {
-  translation 7.499 0 1.06
-}
-CinderRampR {
-  translation 7.499 0 1.49
+## Side Right
+CinderBlock {
+  translation 7.068 0.2 1.89 
+  rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 7.928 0 0.2
+  translation 7.499 0.2 1.89 
+  rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 7.928 0 0.63
+  translation 7.928 0.2 1.89 
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.356 0.2 1.89 
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.788 0.2 1.89 
+  rotation 1 0 0 1.57
+}
+
+## Side Left
+CinderBlock {
+  translation 7.068 0.2 0.075
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.499 0.2 0.075 
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.928 0.2 0.075 
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.356 0.2 0.075 
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.788 0.2 0.075 
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.068 0.2 -0.085 
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.499 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.928 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.356 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.788 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+### DEBRIS BORDER
+CinderBlock {
+  translation 7.068 0.2 -2.0 
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.499 0.2 -2.0
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.928 0.2 -2.0
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.356 0.2 -2.0
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.788 0.2 -2.0
+  rotation 1 0 0 1.57
+}
+
+##
+
+CinderRampF {
+  translation 7.068 0 0.45 #2
 }
 CinderRampR {
-  translation 7.928 0 1.06
+  translation 7.068 0 0.86 #2.43
 }
 CinderRampR {
-  translation 7.928 0 1.49
+  translation 7.068 0 1.27 #2.86
+}
+CinderRampR {
+  translation 7.068 0 1.68 #3.29
 }
 CinderRampF {
-  translation 8.356 0 0.2
+  translation 7.499 0 0.45 #2
 }
 CinderRampR {
-  translation 8.356 0 0.63
+  translation 7.499 0 0.86 #2.43
 }
 CinderRampR {
-  translation 8.356 0 1.06
+  translation 7.499 0 1.27 #2.86
 }
 CinderRampR {
-  translation 8.356 0 1.49
+  translation 7.499 0 1.68 #3.29
+}
+CinderBlock {
+  translation 7.928 0 0.45 #2
+}
+CinderBlock {
+  translation 7.928 0 0.86 #2.43
+}
+CinderRampR {
+  translation 7.928 0 1.27 #2.86
+}
+CinderRampR {
+  translation 7.928 0 1.68 #3.29
 }
 CinderRampF {
-  translation 8.788 0 0.2
+  translation 8.356 0 0.45 # 2
 }
 CinderRampR {
-  translation 8.788 0 0.63
+  translation 8.356 0 0.86 #2.43
 }
 CinderRampR {
-  translation 8.788 0 1.06
+  translation 8.356 0 1.29 #2.86
 }
 CinderRampR {
-  translation 8.788 0 1.49
+  translation 8.356 0 1.68 #3.29
+}
+CinderRampF {
+  translation 8.788 0 0.45 #2
+}
+CinderRampR {
+  translation 8.788 0 0.86 #2.43
+}
+CinderRampR {
+  translation 8.788 0 1.29 #2.86
+}
+CinderRampR {
+  translation 8.788 0 1.68 #3.29
 }
 StairLung {
-  translation 10.5 0 0
+  translation 11.5 0 0
   rotation 0 1 0 1.57
 }
 StairLung {
-  translation 10.8 0.225 0
+  translation 11.8 0.225 0
   rotation 0 1 0 1.57
 }
 StairLung {
-  translation 11.1 0.45 0
+  translation 12.1 0.45 0
   rotation 0 1 0 1.57
 }
 StairLung {
-  translation 11.4 0.675 0
+  translation 12.4 0.675 0
   rotation 0 1 0 1.57
 }
 StairLung {
-  translation 11.7 0.675 0
+  translation 12.7 0.675 0
   rotation 0 1 0 1.57
 }
-simple_wall {
+simple_wall {  # main big RIGHT
   size 12 2 0.01
-  translation 6 1 2.05
+  translation 6 1 2.05 # 3
 }
-simple_wall {
+simple_wall {  # main big LEFT
   size 12 2 0.01
-  translation 6 1 -2.14
+  translation 6 1 -3.2 # 3
 }
 simple_wall {
   size 1.25 2 0.01
-  translation 1.5 1 1.608
+  translation 1.5 1 1.608 #2.558 #-1.56
   rotation 0 1 0 0.785398
 }
 simple_wall {
   size 1.25 2 0.01
-  translation 2.384 1 1.608
+  translation 2.384 1 1.608 #2.558 #-1.56
   rotation 0 1 0 -0.785398
 }
 simple_wall {
   size 1.25 2 0.01
-  translation 3.268 1 1.608
+  translation 3.268 1 1.608 #2.558 #-1.56
   rotation 0 1 0 0.785398
 }
 simple_wall {
   size 1.25 2 0.01
-  translation 4.152 1 1.608
+  translation 4.152 1 1.608 #2.558 #-1.56
   rotation 0 1 0 -0.785398
 }
 simple_wall {
   size 1.25 2 0.01
-  translation 5.036 1 1.608
+  translation 5.036 1 1.608 #2.558 #-1.56
   rotation 0 1 0 0.785398
 }
 simple_wall {
   size 1.25 2 0.01
-  translation 5.92 1 1.608
+  translation 5.92 1 1.608 #2.558 #-1.56
   rotation 0 1 0 -0.785398
+}
+simple_wall {
+  size 1.25 2 0.01
+  translation 9.958 1 1.608 #2.558 #-1.56
+  rotation 0 1 0 0.785398
 }
 DEF VALVE CircleValve {
-  hidden position_0_0 1.29297e-11
-  hidden translation_1 0 -4.63522e-09 0
-  hidden rotation_1 1.75126e-07 0 1 6.49105e-12
+  hidden position_0_0 6.4387e-12
   color 1 0 0
-  translation 1.365 1 1.468
+  translation 1.365 1 1.468 #3.8 1 -1.4
   rotation 0 1 0 0.785398
   scale 0.15 0.15 0.15
 }
 simple_wall {
   size 0.44 0.1 0.26
-  translation 3.246 1.04 1.482
+  translation 3.246 1.04 1.482 # 5.33 1.04 -1.55 
   rotation 0 1 0 0.785398
 }
 SimpleDrill {
-  translation 3.2452 1.20969 1.4812
-  rotation 0.000116934 1 0.000282302 -2.35619
+  translation 3.246 1.20875 1.482 #5.24924 1.20875 -1.44924
+  rotation 0.00208244 0.999985 0.00502746 -2.3562
 }

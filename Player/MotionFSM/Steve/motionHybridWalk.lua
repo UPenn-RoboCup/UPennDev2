@@ -189,7 +189,7 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit') 
-  print("Total time: ",Body.get_time()-t_entry) 
+--  print("Total time: ",Body.get_time()-t_entry) 
   if zmp_param_set then
     local uTorsoVel = zmp_solver:get_com_vel(1)   --Get the final COM velocity
     mcm.set_status_uTorsoVel(uTorsoVel)

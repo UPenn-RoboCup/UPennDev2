@@ -180,7 +180,10 @@ function walk.update()
   ph_last = ph
   
   if is_next_step then
-    if emergency_stop then return "emergency" end
+    if emergency_stop then 
+      mcm.set_walk_ismoving(0) --no more moving (body FSM can check this)
+      return "emergency" 
+    end
     --Should we stop now?
     local stoprequest = mcm.get_walk_stoprequest()
     local steprequest = mcm.get_walk_steprequest()    
@@ -305,7 +308,7 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit') 
-  print("Total time: ",Body.get_time()-t_entry) 
+--  print("Total time: ",Body.get_time()-t_entry) 
   if zmp_param_set then
     local uTorsoVel = zmp_solver:get_com_vel(1)   --Get the final COM velocity
     mcm.set_status_uTorsoVel(uTorsoVel)

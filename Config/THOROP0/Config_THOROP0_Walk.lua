@@ -136,6 +136,7 @@ else
 
   walk.velLimitX = {-.05,.08}
   walk.velLimitY = {-.03,.03}
+  walk.velLimitY = {-.02,.02}
 end
 ------------------------------------
 -- Associate with the table

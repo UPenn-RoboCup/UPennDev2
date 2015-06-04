@@ -142,6 +142,7 @@ arm.pushdoordown[4] = {
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.valve = {}
+--[[
 table.insert(arm.valve, {
 	right = false,
 	left = {
@@ -153,6 +154,7 @@ table.insert(arm.valve, {
 		--weights = {0,1,0,1},
 	}
 })
+--]]
 table.insert(arm.valve, {
 	right = false,
 	left = {

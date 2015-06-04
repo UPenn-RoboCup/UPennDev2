@@ -44,7 +44,7 @@ Config.estop_mode = 0 --don't do anything!
 --Config.estop_mode = 2 --make the robot sit down
 Config.auto_restart = true
 
-Config.hybrid_approach = true
+--Config.hybrid_approach = true
 
 -- Tune for Webots
 if IS_WEBOTS then

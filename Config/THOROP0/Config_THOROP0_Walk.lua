@@ -134,6 +134,8 @@ else
   walk.hipRollCompensation = {2.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
   walk.velocityBias = {0.01,0,0} --To get rid of drifting
 
+  walk.velLimitX = {-.05,.08}
+  walk.velLimitY = {-.03,.03}
 end
 ------------------------------------
 -- Associate with the table

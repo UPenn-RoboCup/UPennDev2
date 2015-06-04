@@ -81,8 +81,8 @@ local function longdistance_approach()
     vStep[2] = 0
     vStep[1] = util.procFunc(vStep[1],0,0.04)
   end
-  if math.abs(vStep[2])>0.02 then
-    vStep[1] = util.procFunc(vStep[1],0,0.03)
+  if math.abs(vStep[1])>0.025 then
+    vStep[2] = 0
   end
 
 
@@ -225,7 +225,9 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   if math.abs(vStep[2])>0.02 then
     vStep[1] = util.procFunc(vStep[1],0,0.03)
   end
-
+  if math.abs(vStep[1])>0.025 then
+    vStep[2] = 0
+  end
 
 
 

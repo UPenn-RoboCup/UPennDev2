@@ -207,6 +207,7 @@ function walk.update()
     if Config.variable_support then
       local torsoVelYMin = 0.20
       local torsoVelYFactor = 0.5 
+      local torsoVelYFactor = 0 
 
       local torsoVelXMin = 0.07
       local torsoVelXFactor = 0.1

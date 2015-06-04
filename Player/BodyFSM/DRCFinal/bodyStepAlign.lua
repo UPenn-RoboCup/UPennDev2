@@ -96,7 +96,8 @@ function initiate_step(supportLeg, step_relpos )
 
   local move_target = vector.pose(hcm.get_teleop_waypoint())
 
-
+  print("Target movement:",move_target[1],move_target[2],move_target[3]*RAD_TO_DEG)
+  local pose0
 
   local step_type
   if Config.birdwalk then
@@ -130,21 +131,30 @@ function initiate_step(supportLeg, step_relpos )
   local step_mag = math.sqrt((move_target[1]/step_lim[1])^2+(move_target[2]/step_lim[2])^2)
   step_mag = math.max(1,step_mag)
 
-  move_target[1] = move_target[1]/step_mag
-  move_target[2] = move_target[2]/step_mag
-  move_target[3] = math.min(step_lim[3], math.max(-step_lim[3],move_target[3]))
 
+  --how many steps do we need?
+
+
+  local step_num_needed = math.max(
+      math.abs(move_target[1]/step_lim[1]),
+      math.abs(move_target[2]/step_lim[2]),
+      math.abs(move_target[3]/step_lim[3]) )
+  
+  step_num_needed = math.floor(step_num_needed+0.99)
+
+  print("Total step numbers:",step_num_needed)
+
+  local step_target={}
+  step_target[1] = move_target[1]/step_num_needed
+  step_target[2] = move_target[2]/step_num_needed
+  step_target[3] = move_target[3]/step_num_needed
   print("ALIGN STEP:",move_target[1],move_target[2],move_target[3]*RAD_TO_DEG)
 
-  local uTorsoTarget = util.pose_global(move_target, uTorso)
+  local uTorsoTarget = util.pose_global(step_target, uTorso)
   local uLeftTarget = util.pose_global({0,Config.walk.footY,0},uTorsoTarget)
   local uRightTarget = util.pose_global({0,-Config.walk.footY,0},uTorsoTarget)
-
-
-
   local uLeftSupport = util.pose_global({Config.walk.supportX, Config.walk.supportY,0},uLeft)
   local uRightSupport = util.pose_global({Config.walk.supportX, -Config.walk.supportY,0},uRight)
-  
 
   --if we take the left step first 
   --this will be the first target torso position
@@ -156,7 +166,6 @@ function initiate_step(supportLeg, step_relpos )
   local uTorsoMidRight = util.se2_interpolate(0.5,uLeft,uRightTarget)
   local uLeftTorsoMidRight = util.pose_relative(uLeft, uTorsoMidRight)
   local uRightTargetTorsoMidRight = util.pose_relative(uRightTarget, uTorsoMidRight)
-
 
   local uLeftMove = util.pose_relative(uLeftTarget,uLeft)
   local uRightMove = util.pose_relative(uRightTarget,uRight)
@@ -173,48 +182,43 @@ print("step type:",step_type)
       local move1 = math.sqrt(uRightTorso[1]^2+uRightTorso[2]^2)
       local uTorsoMove = util.pose_relative(uTorsoTarget,uRight)
       local move2 = math.sqrt(uTorsoMove[1]^2+uTorsoMove[2]^2)
+      --print("torso move dist:",move1,move2)
+      step_queues = {{}}
+      for i=1,step_num_needed do
+        --Shift and Lift
+        local Move1={{0,0,0},2,        st*2, 0.1, 0.1,   {uRightTorso[1]  , uRightTorso[2] - supportYSS},{0,0,0} }
+        --LS     --Move and land
+        local Move2={uLeftMove,1,       0.1,wt,0.1 ,   {0,side_adj-supportYSS}, {0,sh1,sh2}   ,  {uRightTorsoMidLeft[1]  , uRightTorsoMidLeft[2] + Config.walk.supportY - supportYSS}}
+        local Move3 = {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uLeftTargetTorsoMidLeft[1],uLeftTargetTorsoMidLeft[2]+supportYSS},{0,0,0} }    --Shift and Lift
+        local Move4 = {uRightMove,0,    lt,wt,lt ,     {0,-side_adj+supportYSS}, {0,sh1,sh2},  {0, Config.walk.footY-Config.walk.supportY+supportYSS}}   --LS     --Move and land
+        if i==1 then Move1[3] = st end 
 
-print("torso move dist:",move1,move2)
-
-      step_queues={
-         {
-          {{0,0,0},2,        st, 0.1, 0.1,   {uRightTorso[1]  , uRightTorso[2] - supportYSS},{0,0,0} },    --Shift and Lift
-          {uLeftMove,1,       0.1,wt,0.1 ,   {0,side_adj-supportYSS}, {0,sh1,sh2}   ,  {uRightTorsoMidLeft[1]  , uRightTorsoMidLeft[2] + Config.walk.supportY - supportYSS}},   --LS     --Move and land
-
-          {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uLeftTargetTorsoMidLeft[1],uLeftTargetTorsoMidLeft[2]+supportYSS},{0,0,0} },    --Shift and Lift
-          {uRightMove,0,    lt,wt,lt ,     {0,-side_adj+supportYSS}, {0,sh1,sh2},  {0, Config.walk.footY-Config.walk.supportY+supportYSS}},   --LS     --Move and land
-
-
---
-
-
-          {{0,0,0},2,        st*2, 0.1, 0.1,   {uRightTorso[1]  , uRightTorso[2] - supportYSS},{0,0,0} },    --Shift and Lift
-          {uLeftMove,1,       0.1,wt,0.1 ,   {0,side_adj-supportYSS}, {0,sh1,sh2}   ,  {uRightTorsoMidLeft[1]  , uRightTorsoMidLeft[2] + Config.walk.supportY - supportYSS}},   --LS     --Move and land
-
-          {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uLeftTargetTorsoMidLeft[1],uLeftTargetTorsoMidLeft[2]+supportYSS},{0,0,0} },    --Shift and Lift
-          {uRightMove,0,    lt,wt,lt ,     {0,-side_adj+supportYSS}, {0,sh1,sh2},  {0, Config.walk.footY-Config.walk.supportY+supportYSS}},   --LS     --Move and land
-
---]]
-
-
-
-          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
+        table.insert(step_queues[1], Move1 )
+        table.insert(step_queues[1], Move2 )
+        table.insert(step_queues[1], Move3 )
+        table.insert(step_queues[1], Move4 )
+      end
+      table.insert(step_queues[1],  {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} } )   --move to center
    
-         },
-       }
   elseif step_type=="right2" then
         --take right step
-        step_queues={
-         {
-          {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],uLeftTorso[2]},{0,0,0} },    --Shift and Lift
-          {uRightMove,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {uLeftTorsoMidRight[1], uLeftTorsoMidRight[2] - Config.walk.supportY}},   --LS     --Move and land
 
-          {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uRightTargetTorsoMidRight[1],uRightTargetTorsoMidRight[2]},{0,0,0} },    --Shift and Lift
+      step_queues = {{}}
+      for i=1,step_num_needed do
+        --Shift and Lift
+        local Move1 = {{0,0,0},    2,  st, 0.1, 0.1,   {uLeftTorso[1],uLeftTorso[2]},{0,0,0} }    --Shift and Lift
+        --LS     --Move and land
+        local Move2 = {uRightMove,0,  0.1,wt,0.1 ,     {0,-side_adj},     {0,sh1,sh2},  {uLeftTorsoMidRight[1], uLeftTorsoMidRight[2] - Config.walk.supportY}}
+        local Move3 = {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uRightTargetTorsoMidRight[1],uRightTargetTorsoMidRight[2]},{0,0,0} }
+        local Move4 = {uLeftMove,1,   lt,wt,lt ,   {0,side_adj}, {0,sh1,sh2}   ,  {0, -Config.walk.footY+Config.walk.supportY}}
+        if i==1 then Move1[3] = st end 
 
-          {uLeftMove,1,   lt,wt,lt ,   {0,side_adj}, {0,sh1,sh2}   ,  {0, -Config.walk.footY+Config.walk.supportY}},   --LS     --Move and land
-          {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center      
-         },
-        }
+        table.insert(step_queues[1], Move1 )
+        table.insert(step_queues[1], Move2 )
+        table.insert(step_queues[1], Move3 )
+        table.insert(step_queues[1], Move4 )
+      end
+      table.insert(step_queues[1],  {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} })   --move to center
   end
   stage = 1
   calculate_footsteps(stage)
@@ -235,6 +239,8 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   t_stage = t_entry
+
+  pose0 = wcm.get_robot_pose()
 
   supportLeg=hcm.get_step_supportLeg()
   step_relpos = hcm.get_step_relpos() 
@@ -276,6 +282,9 @@ function state.update()
 end
 
 function state.exit()
+  pose = wcm.get_robot_pose()
+  rel_pose = util.pose_relative(pose,pose0)
+  print("Actual movement:",rel_pose[1],rel_pose[2],rel_pose[3]*RAD_TO_DEG)
   print(state._NAME..' Exit' )
 end
 

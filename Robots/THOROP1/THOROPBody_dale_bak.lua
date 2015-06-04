@@ -299,6 +299,7 @@ end
 
 -- Take in joint angles and output an {x,y,z,r,p,yaw} table
 -- SJ: Now separated into two functions to get rid of directly calling IK
+require'mcm'
 Body.get_forward_larm = function(qL, bodyTilt, qWaist,ignore_hand_offset )
   if ignore_hand_offset then
     return Kinematics.l_arm_torso_7( qL,
@@ -494,7 +495,6 @@ Body.parts = Config.parts
 Body.Kinematics = Kinematics
 
 
-
 --SJ: those function are added as the joint-level waist yaw position can be 360 degree off
 Body.get_safe_waist_position = function()
   local qWaist = Body.get_waist_position()
@@ -520,11 +520,9 @@ end
 
 
 
-
-
 --SJ: I have moved this function to body as it is commonly used in many locations
 --Reads current leg and torso position from SHM
-require'mcm'
+
 Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
@@ -533,41 +531,12 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local zSag = mcm.get_walk_zSag()
   local zLegComp = mcm.get_status_zLegComp()
   local zLeft,zRight = zLeg[1]+zSag[1]+zLegComp[1],zLeg[2]+zSag[2]+zLegComp[2]
-  local aShiftX = mcm.get_walk_aShiftX()
-  local aShiftY = mcm.get_walk_aShiftY()
-
-
-  local uLeftTorso = util.pose_relative(uLeft,uTorso)
-  local uRightTorso = util.pose_relative(uRight,uTorso)
-  local global_angle = mcm.get_walk_global_angle()
-
-  zRight = zRight + math.tan(global_angle[1])*uRightTorso[2]
-  zLeft = zLeft - math.tan(global_angle[1])*uRightTorso[2]
-  aShiftX[1],aShiftX[2] =aShiftX[1]+global_angle[1],aShiftX[2]+global_angle[1]
-
-
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})  
+  local aShiftX = mcm.get_walk_aShiftX()
+  local aShiftY = mcm.get_walk_aShiftY()
   local count,revise_max = 1,4
   local adapt_factor = 1.0
-
-
-  local footLift = mcm.get_walk_footlift()
-  local footlifttypeL,footlifttypeR, footliftL, footliftR = 0,0
-  if mcm.get_walk_heeltoewalk()==1 then
-    if footLift[1]>0 then 
-      footlifttypeL = -1 --heellift
-    else
-      footlifttypeL = 1 --toelift
-    end
-    if footLift[2]>0 then 
-      footlifttypeR = -1 --heellift
-    else
-      footlifttypeR = 1 --toelift
-    end
-    footliftL = math.abs(footLift[1])
-    footliftR = math.abs(footLift[2])
-  end
 
   local leftSupportRatio = mcm.get_status_leftSupportRatio()
 
@@ -577,11 +546,12 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
     uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
     0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
 
+
   local qLLegCurrent = Body.get_lleg_command_position()
   local qRLegCurrent = Body.get_rleg_command_position()
 
   local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0,
-    qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
+    qLLegCurrent, qRLegCurrent)
     
   local massL,massR = 0,0 --for now
 
@@ -603,7 +573,8 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
       qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0,
-          qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
+      qLLegCurrent, qRLegCurrent --TODO: do we need to update current angles too?
+        )
    count = count+1
   end
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)

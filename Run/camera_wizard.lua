@@ -77,7 +77,8 @@ local ittybitty_identifier = 'ittybitty'..(camera_id-1)
 local itty_stream = Config.net.streams[ittybitty_identifier]
 local ittybitty_ch = si.new_publisher(itty_stream.sub)
 local ittybitty_udp_ch = si.new_sender(Config.net.operator.wired, itty_stream.udp)
-
+--
+local field_tcp_ch = si.new_publisher(stream.tcp);
 
 print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
@@ -154,6 +155,8 @@ end
 
 
 local t_send_itty = -math.huge
+local dt_send_field = 1
+local t_send_field = -math.huge
 local function update(img, sz, cnt, t)
 	-- Update metadata
 	c_meta.t = t
@@ -169,8 +172,6 @@ local function update(img, sz, cnt, t)
 
 	check_send(msg)
 
-
-
 	local is_indoors = hcm.get_network_indoors()
 	local dt_send_itty0 = t - t_send_itty
 	if is_indoors==camera_id+1 and dt_send_itty0 > dt_send_itty then
@@ -184,6 +185,12 @@ local function update(img, sz, cnt, t)
 		local ret, err = ittybitty_udp_ch:send(ittybitty_img)
 		t_send_itty = t
 		print('Sent ittybitty', ret, err)
+	end
+
+	local dt_send_field0 = t - t_send_field
+	if field_tcp_ch and dt_send_field0 > dt_send_field then
+		field_tcp_ch:send(msg)
+		t_send_field = t
 	end
 
 	-- Do the logging if we wish

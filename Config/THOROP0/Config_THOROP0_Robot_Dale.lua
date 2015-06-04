@@ -358,7 +358,8 @@ servo.direction = vector.new({
 servo.rad_offset = vector.new({
 	0,0, -- Head
 --	-90,  -90,  -90,45,  90,0,0, --LArm
-	-90,  -90,  -90,45,  -90,0,0, --LArm, wristyaw1 fix
+--	-90,  -90,  -90,45,  -90,0,0, --LArm, wristyaw1 fix
+	-90,  -90,  -90,45,  -90,0,0, --LArm, rebias
 	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
 	0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
 	90,  90,  90,-45,  90,0,-90, --RArm, teddy, wristYaw fix
@@ -405,7 +406,8 @@ if Config.birdwalk then
 
 	servo.rad_offset = vector.new({
 		0,0, -- Head
-		-90,  -90,  -90,45,  90,0,0, --LArm
+		-90,  -90,  -90,45,  -90,0,0, --LArm, rebias
+
 		--leg swapped
 		0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
 		0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
@@ -429,9 +431,13 @@ if Config.birdwalk then
 		37, -- Lidar pan
 	}
 
+
+
 	servo.direction = vector.new({
 		1,1, -- Head, mk2
-		1,1,-1, 1, 1,1,1, --LArm, mk2
+--		1,1,-1, 1, 1,1,1, --LArm, mk2
+		1,1,1, 1, 1,1,1, --LArm, mk2, after flipping wristyaw
+
 		-- -1,-1,-1,-1, 1, 1, --LLeg, mk1
 		-- -1,-1, 1, 1,-1, 1, --RLeg, mk1
 		-1, 1,-1,-1, 1,-1, --LLeg, mk1, flipped

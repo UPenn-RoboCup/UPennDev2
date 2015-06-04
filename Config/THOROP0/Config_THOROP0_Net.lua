@@ -15,7 +15,7 @@ local IP = {
 
 -- Who do we use?
 local WHO = IP.CHIP2
-local ROBOT_IP = IP.DALE
+local ROBOT_IP = IP.CHIP
 local TEAM_NUMBER = 8
 
 local net = {

@@ -128,23 +128,30 @@ for _, sensor in ipairs(sensors) do
 	end
 end
 
-function sstart(scriptname, ...)
+function pstart(scriptname, idx)
 	if scriptname=='rpc' then return end
-	local argss = {...}
-	local msg = mp.pack({
-		raw = 'sstart("'..scriptname..'"'..(argss[1] and ', '..argss[1] or '')..')'
-	})
+	local request
+	if tostring(idx) then
+		request = string.format('pstart(%s, %d)', scriptname, idx)
+	else
+		request = string.format('pstart(%s)', scriptname)
+	end
+	local msg = mp.pack({raw = request})
 	rpc_req:send(msg)
   local data = unpack(rpc_req:receive())
 	if type(data)~='string' then return end
 	return mp.unpack(data)
 end
 
-function pkill(scriptname)
+function pkill(scriptname, idx)
 	if scriptname:find'rpc' then return end
-	local msg = mp.pack({
-		raw = 'pkill("'..scriptname..'")'
-	})
+	local request
+	if tostring(idx) then
+		request = string.format('pkill(%s, %d)', scriptname, idx)
+	else
+		request = string.format('pkill(%s)', scriptname)
+	end
+	local msg = mp.pack({raw = request})
 	rpc_req:send(msg)
   local data = unpack(rpc_req:receive())
 	if type(data)~='string' then return end

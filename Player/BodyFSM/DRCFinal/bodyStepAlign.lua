@@ -83,14 +83,16 @@ function initiate_step(supportLeg, step_relpos )
   local step_min = 0.05
   local sh1,sh2 = 0.05, 0
 
-  local st,wt = 1,3 --slower step
+  local st=1
+  local wt = Config.slowstep_duration or 3
+ --slower step
 
 
 
 
 --F/W max: 0.20
 --sidesteo max: 0.10
-  local supportYSS = -0.02
+  local supportYSS = Config.supportYSS or -0.02
 
   local move_target = vector.pose(hcm.get_teleop_waypoint())
 

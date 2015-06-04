@@ -46,6 +46,9 @@ Config.auto_restart = true
 
 --Config.hybrid_approach = true
 
+
+
+
 -- Tune for Webots
 if IS_WEBOTS then
 	if IS_STEVE then
@@ -133,5 +136,8 @@ end
 Config.world.use_imu_yaw = true
 
 
+Config.slowstep_duration =2
+Config.supportYSS = -0.03
+Config.walk.stepHeightSlow = 0.02
 
 return Config

@@ -48,7 +48,8 @@ local function get_torso()
 	uComp[3] = 0
 
 	local torso0 = pose_global(uComp, mcm.get_status_bodyOffset())
-	local pose = wcm.get_robot_pose()
+	--local pose = wcm.get_robot_pose()
+	local pose = mcm.get_status_odometry()
 	local torsoG = pose_global(torso0, pose)
 
 	local bh = mcm.get_walk_bodyHeight()

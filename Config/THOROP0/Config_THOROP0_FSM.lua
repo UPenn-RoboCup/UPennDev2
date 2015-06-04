@@ -132,7 +132,7 @@ fsm.Head = {
 	{'headTeleop', 'drive', 'headDrive'},
 	{'headTrackLeft', 'drive', 'headDrive'},
 	{'headTrackRight', 'drive', 'headDrive'},
-	{'headDrive', 'undrive', 'headCenter'}, --unscrew the head safelty
+	{'headDrive', 'init', 'headCenter'}, --unscrew the head safelty
 
 --E-stop handling
 	{'headCenter', 'estop', 'headIdle'}, --go to 180 deg rotated position

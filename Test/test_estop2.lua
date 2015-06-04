@@ -165,9 +165,7 @@ function process_click(ret)
 		elseif ret.rbutton==4 then 
 			display_mode = 1
 			return
-		elseif ret.lbutton[1]==1 then
-			--go forward for 2 sec
-			hcm.set_teleop_throttle_duration(2)
+
 		end
 
 	end
@@ -180,7 +178,7 @@ function process_stick(ret)
 	if display_mode==1 then
 
 	elseif display_mode==2 then
-		headpitch = math.min(1, math.max(1, ret.lstick[1]/800 ))
+		headpitch = math.min(1, math.max(-1, ret.lstick[1]/800 ))
 		headyaw = math.min(1, math.max(-1, ret.lstick[2]/800 ))
 		steer = math.min(1, math.max(-1, -ret.rstick[2]/800 ))
 		gas = math.min (1,  math.max(0,-ret.rstick[3]/ 800 ))
@@ -188,10 +186,20 @@ function process_stick(ret)
 
 		steer_mag = 180*DEG_TO_RAD
 		gas_mag = 15*DEG_TO_RAD
+	
+		head_mag = 90*DEG_TO_RAD
 
-		hcm.set_teleop_drive_head({headyaw, headpitch})
 		hcm.set_teleop_steering(steer*steer_mag)
-		hcm.set_teleop_throttle(gas*gas_mag)
+
+		hcm.set_teleop_drive_head({headyaw*head_mag, headpitch*head_mag})
+
+
+		if ret.lbutton[1]==1 then
+			--go forward for 2 sec
+		  hcm.set_teleop_throttle_duration(2)
+		  hcm.set_teleop_throttle(gas*gas_mag)
+		end
+
 	end	
 end	
 
@@ -203,8 +211,11 @@ function update_conmmand()
 	if ret.estop~=0 then
 		print("ESTOP!!!!!!!!!!",ret.estop)
 		--estop pressed, stop
+		if Config.estop_mode and Config.estop_mode>0 then
+
 		body_ch:send'estop'
 		hcm.set_teleop_estop(1)
+		end
 		update_display_msg(1,"ESTOP!!!")
 		update_display_msg(2,"ESTOP!!!")
 		update_display_msg(3,"ESTOP!!!")

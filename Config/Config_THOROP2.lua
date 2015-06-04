@@ -37,6 +37,10 @@ Config.variable_support = true
 Config.arm_init_timeout = true
 Config.use_imu_yaw = false --use odometry for yaw
 
+
+Config.estop_mode = 0 --don't do anything
+Config.auto_restart = true
+
 -- Tune for Webots
 if IS_WEBOTS then
 	if IS_STEVE then

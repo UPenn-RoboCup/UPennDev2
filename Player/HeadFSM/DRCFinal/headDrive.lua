@@ -31,9 +31,7 @@ function state.update()
 
   local centerAngles = {0, 0}
   local lookAngles = hcm.get_teleop_drive_head()
-  local centerAngles = {
-	math.pi + lookAngles[1] * 90*DEG_TO_RAD,
-	lookAngles[2]*45*DEG_TO_RAD}
+  local centerAngles = {math.pi + lookAngles[1],lookAngles[2]}
 
   local headNow = Body.get_head_command_position()
   local apprAng, doneHead = util.approachTol(headNow, centerAngles, headSpeed, dt, 1*DEG_TO_RAD)

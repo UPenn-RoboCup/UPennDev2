@@ -33,9 +33,9 @@ Config.birdwalk = 1 --testing birdwalk
 if IS_WEBOTS then
 	if IS_STEVE then
 		Config.testfile = 'test_teleop'
+		print("Config_THOROP2")
 		Config.debug.armplan = true
-
-	  Config.sensors = {
+	  	Config.sensors = {
 			ft = true,
 			feedback = 'feedback_wizard',
 		--slam = true,

@@ -77,66 +77,7 @@ simple_wall {
   size 0.05 2 2.7
   translation 9.6 1 1.75
 }
-CinderRampF {
-  translation 7.068 0 0.2 #2
-}
-CinderRampR {
-  translation 7.068 0 0.63 #2.43
-}
-CinderRampR {
-  translation 7.068 0 1.06 #2.86
-}
-CinderRampR {
-  translation 7.068 0 1.49 #3.29
-}
-CinderRampF {
-  translation 7.499 0 0.2 #2
-}
-CinderRampR {
-  translation 7.499 0 0.63 #2.43
-}
-CinderRampR {
-  translation 7.499 0 1.06 #2.86
-}
-CinderRampR {
-  translation 7.499 0 1.49 #3.29
-}
-CinderBlock {
-  translation 7.928 0 0.2 #2
-}
-CinderBlock {
-  translation 7.928 0 0.63 #2.43
-}
-CinderRampR {
-  translation 7.928 0 1.06 #2.86
-}
-CinderRampR {
-  translation 7.928 0 1.49 #3.29
-}
-CinderRampF {
-  translation 8.356 0 0.2 # 2
-}
-CinderRampR {
-  translation 8.356 0 0.63 #2.43
-}
-CinderRampR {
-  translation 8.356 0 1.06 #2.86
-}
-CinderRampR {
-  translation 8.356 0 1.49 #3.29
-}
-CinderRampF {
-  translation 8.788 0 0.2 #2
-}
-CinderRampR {
-  translation 8.788 0 0.63 #2.43
-}
-CinderRampR {
-  translation 8.788 0 1.06 #2.86
-}
-CinderRampR {
-  translation 8.788 0 1.49 #3.29
-}
+
 StairLung {
   translation 10.5 0 0
   rotation 0 1 0 1.57

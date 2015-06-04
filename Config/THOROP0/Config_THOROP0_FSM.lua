@@ -225,9 +225,10 @@ fsm.Motion = {
 	{'motionStance', 'preview', 'motionStepPreview'},
 	{'motionStance', 'slowstep', 'motionSlowStep'},
 	{'motionStance', 'stair', 'motionStepPreviewStair'},
+	----- ADD BY HJ JUN 3rd 2015
 	{'motionStance', 'getup', 'motionGetupFront2'},  
  	{'motionGetupFront2', 'done', 'motionInit'},
-	--
+	-----
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
@@ -238,7 +239,7 @@ fsm.Motion = {
 	{'motionStepPreviewStair', 'done', 'motionStance'},
 	--
 	{'motionSlowStep', 'done', 'motionStance'},
-}
+
 
 Config.fsm = fsm
 

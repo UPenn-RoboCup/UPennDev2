@@ -121,6 +121,7 @@ local function update(key_code)
 		end
   elseif key_char_lower==("2") then  arm_ch:send'teleop'
   elseif key_char_lower==("k") then  override_target=vector.new({0,0,0,  0,0,0,0})
+  elseif key_char_lower==("p") then  motion_ch:send'getup'
   elseif key_char_lower==(" ") then
     --hcm.set_move_target(movement_target)
     hcm.set_teleop_waypoint(movement_target)

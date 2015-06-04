@@ -30,7 +30,6 @@ if IS_WEBOTS then
 	if IS_STEVE then
 		Config.testfile = 'test_teleop'
 		Config.debug.armplan = true
-
 	  Config.sensors = {
 			ft = true,
 			feedback = 'feedback_wizard',

@@ -27,6 +27,10 @@ local function find_pillars(xyz, polar)
 	local x
 	for i, a in ipairs(theta) do
 		if a<interval then
+			print("x",type(x))
+			print("x[1]",x)
+			print("i:",i)
+			print("rho",rho[i])
 			if (not x) or (rho[i]<x[1] and rho[i]>0.28) then
 				--x = {rho[i], a, interval-polar_interval, interval, xyz_com[i]}
 				-- Just need the xy
@@ -120,7 +124,7 @@ local function update(meta, scan)
 		--points = chest3d(meta, scan)
 	elseif meta.id=='lidar1' then
 		local xyz, polar = head3d(meta, scan)
-		find_pillars(xyz, polar)
+		--find_pillars(xyz, polar)
 	end
 
 	--[[

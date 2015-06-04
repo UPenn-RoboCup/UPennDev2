@@ -3,6 +3,114 @@
 
 
 
+/* ADDED by HEEJIN JUN 3rd 2015 ------------------------------------------------------*/
+  Transform
+THOROP_kinematics_forward_l_leg_o(const double *q, int idx)
+{
+  Transform t1, t2, t3, t4, t5, t6;
+  t1 = t1.translateY(hipOffsetY).translateZ(-hipOffsetZ)
+    .mDH(0, 0, PI/2+q[0], 0);
+
+  t2 = t1
+    .mDH(PI/2, 0, PI/2+q[1], 0);
+
+  t3 = t2
+    .mDH(PI/2, 0, aThigh+q[2], 0);
+
+  t4 = t3
+    .mDH(0, -dThigh, -aThigh-aTibia+q[3], 0);
+
+  t5 = t4
+    .mDH(0, -dTibia, aTibia+q[4], 0);
+
+  t6 = t5
+    .mDH(-PI/2, 0, q[5], 0);
+  /*
+    .rotateZ(PI).rotateY(-PI/2).translateZ(-footHeight);*/
+   
+   switch(idx)
+  {
+    case 1 :
+      return t1;
+      break;
+
+    case 2 :
+      return t2;
+      break;
+
+    case 3 :
+      return t3;
+      break;
+
+    case 4 :
+      return t4;
+      break;
+
+    case 5 :
+      return t5;
+      break;
+
+    case 6 :
+      return t6;
+      break;
+  }
+}
+/* ADDED by HEEJIN JUN 3rd 2015 ------------------------------------------------------*/
+  Transform
+THOROP_kinematics_forward_r_leg_o(const double *q, int idx)
+{
+  
+  Transform t1, t2, t3, t4, t5, t6;
+  t1 = t1.translateY(-hipOffsetY).translateZ(-hipOffsetZ)
+    .mDH(0, 0, PI/2+q[0], 0);
+
+  t2 = t1
+    .mDH(PI/2, 0, PI/2+q[1], 0);
+
+  t3 = t2
+    .mDH(PI/2, 0, aThigh+q[2], 0);
+
+  t4 = t3
+    .mDH(0, -dTibia, -aThigh-aTibia+q[3], 0);
+
+  t5 = t4
+    .mDH(0, -dTibia, aTibia+q[4], 0);
+
+  t6 = t5
+    .mDH(-PI/2, 0, q[5], 0);
+
+    /*
+    .rotateZ(PI).rotateY(-PI/2).translateZ(-footHeight);*/
+  
+  switch(idx)
+  {
+    case 1 :
+      return t1;
+      break;
+
+    case 2 :
+      return t2;
+      break;
+
+    case 3 :
+      return t3;
+      break;
+
+    case 4 :
+      return t4;
+      break;
+
+    case 5 :
+      return t5;
+      break;
+
+    case 6 :
+      return t6;
+      break;
+  }
+}
+/* --------------------------------------------------------------------------------------*/
+
 std::vector<double>THOROP_kinematics_forward_joints(const double *r){
   /* forward kinematics to convert servo positions to joint angles */
   std::vector<double> q(23);

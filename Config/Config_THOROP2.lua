@@ -35,10 +35,13 @@ Config.walktraj.hybridwalk = "foot_trajectory_softfast"
 Config.variable_tstep = true
 Config.variable_support = true
 Config.arm_init_timeout = true
-Config.use_imu_yaw = false --use odometry for yaw
+--Config.use_imu_yaw = false --use odometry for yaw
+Config.use_imu_yaw = true --use imu yaw only for single approach
 
 
-Config.estop_mode = 0 --don't do anything
+Config.estop_mode = 0 --don't do anything!
+--Config.estop_mode = 1 --untorque all the servos 
+--Config.estop_mode = 2 --make the robot sit down
 Config.auto_restart = true
 
 -- Tune for Webots
@@ -107,5 +110,17 @@ for sm, en in pairs(Config.fsm.enabled) do
 		end
 	end
 end
+
+
+
+
+
+
+
+--robot drifts backwards
+--Config.world.odomScale = {0.8,1,1} -- For now IMU not in use
+Config.world.use_imu_yaw = true
+
+
 
 return Config

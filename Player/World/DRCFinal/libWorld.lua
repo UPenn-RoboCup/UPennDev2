@@ -9,6 +9,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local util = require'util'
 local odomScale = Config.world.odomScale 
+local odomDrift = Config.world.odomDrift or -0.0001
 
 require'wcm'
 require'gcm'
@@ -33,12 +34,19 @@ local t_resample = 0
 local yaw0 = 0
 local function update_odometry(uOdometry)  
   -- Scale the odometry
-  uOdometry[1] = odomScale[1] * uOdometry[1]
-  uOdometry[2] = odomScale[2] * uOdometry[2]
+
+  --odometry update is called every frame (~120hz)
+  --we drift away 1cm back every step (~0.8sec)
+  --then we have 0.01m / 0.8sec / 120 hz drift per step
+
+  uOdometry[1] = odomScale[1] * uOdometry[1] + odomDrift
+  uOdometry[2] = odomScale[2] * uOdometry[2] 
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
 
-  if Config.use_imu_yaw and mcm.get_walk_ismoving()>0 then  
+--  if Config.use_imu_yaw and mcm.get_walk_ismoving()>0 then  
+
+  if Config.use_imu_yaw then
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
       uOdometry[3] = gps_pose[3] - yaw0

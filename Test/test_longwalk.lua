@@ -48,8 +48,8 @@ local char_to_override = {
 }
 
 local char_to_movetarget = {
-  ['w'] = vector.new({0.2, 0, 0}),
-  ['x'] = vector.new({-.05, 0, 0}),
+  ['w'] = vector.new({0.1, 0, 0}),
+  ['x'] = vector.new({-.1, 0, 0}),
   ['a'] = vector.new({0, 0.05, 0}),
   ['d'] = vector.new({0, -.05, 0}),
   ['q'] = vector.new({0, 0, 5*math.pi/180}),

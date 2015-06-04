@@ -398,6 +398,7 @@ fsm.Motion = {
 	--
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+	{'motionHybridWalk', 'emergency', 'motionStance'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
 	--
 	{'motionStepPreview', 'done', 'motionStance'},

@@ -487,7 +487,7 @@ if Config.birdwalk then
 		-1, -1, 1,  1, 1, -1, --LLeg, mk2, flipped
 		-1, -1,-1, -1,-1, -1, --RLeg, mk2, flipped
 		------
-		-1,1,1, -1, 1,1,-1, --RArm, mk2 reassembled
+		-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
 		1, 1, -- Waist, mk2
 		-1,1,-1, -- left gripper TODO
 		1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)

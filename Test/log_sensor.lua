@@ -100,7 +100,7 @@ while running do
 			))
 
 		print()
-		print(sformat("Pose: %.2f %.2f %d(deg)",pose[1],pose[2],pose[3]*180/math.pi))
+		print(sformat("Pose: %.2f %.2f %.1f(deg)",pose[1],pose[2],pose[3]*180/math.pi))
 
 
 		print(string.format("LLeg Torque: %s %s %s %s %s %s",

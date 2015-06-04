@@ -40,7 +40,7 @@ DirectionalLight {
   intensity 0.5
 }
 THOROP_mk15_Fullmass_longarm_2 {
-  translation -1.5 1.14 0
+  translation -3.5 1.14 0
   rotation 0 1 0 1.57
   controller "thorop"
   controllerArgs "0 32"
@@ -59,6 +59,7 @@ DEF TASKFLOOR Floor {
   ]
 }
 PushDoor {
+  translation -2 0 0
   rotation 0 1 0 1.57
 }
 simple_wall {

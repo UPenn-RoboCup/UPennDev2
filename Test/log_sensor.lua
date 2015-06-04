@@ -59,8 +59,18 @@ while running do
 
 	count = count + 1
 
+
+	local rpy = dcm.get_sensor_rpy()
+	local acc = dcm.get_sensor_accelerometer()
+	local gyro = dcm.get_sensor_gyro()
+
+
 	if count%2 ==0 then
 		os.execute('clear')
+
+		print(sformat("Angle: R%.1f P%.1f",
+			rpy[1]*RAD_TO_DEG, rpy[2]*RAD_TO_DEG))
+
 
 		print(sformat("Balancing: P Knee %.1f Ankle %.1f / R hip %.1f ankle %.1f",
 			RAD_TO_DEG*angleShift[3], RAD_TO_DEG*angleShift[1]  , RAD_TO_DEG*angleShift[4], RAD_TO_DEG*angleShift[2]))

@@ -35,7 +35,7 @@ Config.walktraj.hybridwalk = "foot_trajectory_softfast"
 Config.variable_tstep = true
 Config.variable_support = true
 Config.arm_init_timeout = true
-
+Config.use_imu_yaw = false --use odometry for yaw
 
 -- Tune for Webots
 if IS_WEBOTS then

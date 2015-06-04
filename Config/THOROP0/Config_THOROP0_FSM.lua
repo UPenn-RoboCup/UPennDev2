@@ -14,7 +14,7 @@ fsm.enabled = {
 	Body = true,
 	Head = true,
 	Motion = true,
-	Gripper = false,
+	Gripper = true,
 	Lidar = true,
 }
 

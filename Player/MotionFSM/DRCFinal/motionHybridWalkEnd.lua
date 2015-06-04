@@ -338,7 +338,7 @@ end -- walk.update
 function walk.exit()
   print(walk._NAME..' Exit')  
   mcm.set_walk_stoprequest(0) --cancel stop request flag
-  mcm.set_walk_ismoving(0) --We started moving
+  mcm.set_walk_ismoving(0) --We stopped moving
 end
 
 return walk

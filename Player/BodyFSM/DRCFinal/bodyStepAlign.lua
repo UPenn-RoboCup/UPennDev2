@@ -182,8 +182,22 @@ print("torso move dist:",move1,move2)
           {uLeftMove,1,       0.1,wt,0.1 ,   {0,side_adj-supportYSS}, {0,sh1,sh2}   ,  {uRightTorsoMidLeft[1]  , uRightTorsoMidLeft[2] + Config.walk.supportY - supportYSS}},   --LS     --Move and land
 
           {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uLeftTargetTorsoMidLeft[1],uLeftTargetTorsoMidLeft[2]+supportYSS},{0,0,0} },    --Shift and Lift
-
           {uRightMove,0,    lt,wt,lt ,     {0,-side_adj+supportYSS}, {0,sh1,sh2},  {0, Config.walk.footY-Config.walk.supportY+supportYSS}},   --LS     --Move and land
+
+
+--
+
+
+          {{0,0,0},2,        st*2, 0.1, 0.1,   {uRightTorso[1]  , uRightTorso[2] - supportYSS},{0,0,0} },    --Shift and Lift
+          {uLeftMove,1,       0.1,wt,0.1 ,   {0,side_adj-supportYSS}, {0,sh1,sh2}   ,  {uRightTorsoMidLeft[1]  , uRightTorsoMidLeft[2] + Config.walk.supportY - supportYSS}},   --LS     --Move and land
+
+          {{0,0,0}, 2,     st*2, 0.1, 0.1,   {uLeftTargetTorsoMidLeft[1],uLeftTargetTorsoMidLeft[2]+supportYSS},{0,0,0} },    --Shift and Lift
+          {uRightMove,0,    lt,wt,lt ,     {0,-side_adj+supportYSS}, {0,sh1,sh2},  {0, Config.walk.footY-Config.walk.supportY+supportYSS}},   --LS     --Move and land
+
+--]]
+
+
+
           {{0,0,0},2,        st, 0.1, 0.1,   {0,0},{0,0,0} },  --move to center
    
          },

@@ -132,9 +132,9 @@ function pstart(scriptname, idx)
 	if scriptname=='rpc' then return end
 	local request
 	if tostring(idx) then
-		request = string.format('pstart(%s, %d)', scriptname, idx)
+		request = string.format('pstart("%s", %d)', scriptname, idx)
 	else
-		request = string.format('pstart(%s)', scriptname)
+		request = string.format('pstart("%s")', scriptname)
 	end
 	local msg = mp.pack({raw = request})
 	rpc_req:send(msg)
@@ -147,9 +147,9 @@ function pkill(scriptname, idx)
 	if scriptname:find'rpc' then return end
 	local request
 	if tostring(idx) then
-		request = string.format('pkill(%s, %d)', scriptname, idx)
+		request = string.format('pkill("%s", %d)', scriptname, idx)
 	else
-		request = string.format('pkill(%s)', scriptname)
+		request = string.format('pkill("%s")', scriptname)
 	end
 	local msg = mp.pack({raw = request})
 	rpc_req:send(msg)

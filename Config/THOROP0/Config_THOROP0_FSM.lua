@@ -14,7 +14,7 @@ fsm.enabled = {
 	Body = true,
 	Head = true,
 	Motion = true,
-	Gripper = true,
+	Gripper = false,
 	Lidar = true,
 }
 
@@ -63,9 +63,8 @@ fsm.Body = {
 --Driving stuff
   {'bodyStop', 'driveready', 'bodyDriveready'},   --untorques leg and arm, rotate the head back, centers lidar
   {'bodyDriveready', 'drive', 'bodyDrive'}, -- torques all servos and enable foot and arm control
-
-  {'bodyDrive', 'driveready', 'bodyUndrive'}, -- untorques arm and leg for egress
-  {'bodyUndrive', 'init', 'bodyInit'}, --re-inits leg
+  {'bodyDrive', 'driveready', 'bodyDriveready'}, -- untorques arm and leg for egress
+  {'bodyDriveready', 'init', 'bodyInit'}, --re-inits leg
 
 
   --SOFT E-stop handling
@@ -152,7 +151,9 @@ fsm.Arm = {
 
 	--armInitWalk initializes the arms to walk configuration
 	--This is done in joint-level, and (hopefully) should work with any initial arm configurations
+--	{'armIdle', 'init', 'armInitFirst'},
 	{'armIdle', 'init', 'armInitWalk'},
+
 	{'armIdle', 'bias', 'armInitBias'},
 	{'armIdle', 'ready', 'armManipulation'},
 
@@ -161,6 +162,7 @@ fsm.Arm = {
 
 	-- armWalk does nothing (the arm should be in walk configuration)
 	{'armInitWalk', 'done', 'armWalk'},
+	{'armInitFirst', 'done', 'armWalk'},
 
 	-- From the walk state
 	--{'armWalk', 'pushdoor', 'armPushDoorUp'},
@@ -298,11 +300,11 @@ fsm.Arm = {
 	--]]
 
 
-
+	{'armTeleopRaw', 'driveready', 'armDriveready'},
 	{'armWalk', 'driveready', 'armDriveready'},
 	{'armDriveready', 'drive', 'armDrive'},
-	{'armDrive', 'undrive', 'armUndrive'},
-	{'armUndrive', 'init', 'armInitWalk'},
+	{'armDrive', 'driveready', 'armDriveready'},
+	{'armDriveready', 'init', 'armInitWalk'},
 }
 
 -- E-stop handling
@@ -407,9 +409,8 @@ fsm.Motion = {
 	--DRIVE
 	{'motionStance', 'driveready', 'motionDriveready'}, --untorque lower body
 	{'motionDriveready', 'drive', 'motionDrive'}, --torque the body, enable foot control
-	
-	{'motionDrive', 'undrive', 'motionUndrive'}, --untorque lower body again
-	{'motionUndrive', 'stand', 'motionInit'}, --torque all the legs and make the robot stand up
+	{'motionDrive', 'driveready', 'motionDriveready'}, --untorque lower body again
+	{'motionDriveready', 'stand', 'motionInit'}, --torque all the legs and make the robot stand up
 
 
 }

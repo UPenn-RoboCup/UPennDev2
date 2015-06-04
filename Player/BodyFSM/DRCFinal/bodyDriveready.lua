@@ -15,10 +15,8 @@ function state.entry()
   --untorque arm and leg servos for car ingressing
   arm_ch:send'driveready'
   motion_ch:send'driveready'
-
 --	gripper_ch:send'close' -- do we need anything for gripper?
   lidar_ch:send'drive' --center lidar
-  head_ch:send'drive'  --flip head
 end
 
 function state.update()
@@ -36,7 +34,7 @@ function state.update()
 end
 
 function state.exit()
-
+  head_ch:send'drive'  --flip head
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
 end

@@ -37,9 +37,9 @@ local function update(key_code)
   elseif key_char_lower==("4") then      
     body_ch:send'undrive'
   elseif key_char_lower==("5") then      
-    body_ch:send'reinit'
+    body_ch:send'init'
   elseif key_char_lower==("j") then      
-    steering = steering - 5*math.pi/180
+    steering = steering - 45*math.pi/180
     print("Steering angle:",steering*180/math.pi)
     hcm.set_teleop_steering(steering)
 
@@ -49,26 +49,26 @@ local function update(key_code)
     hcm.set_teleop_steering(steering)
 
   elseif key_char_lower==("l") then      
-    steering = steering + 5*math.pi/180
+    steering = steering + 45*math.pi/180
     print("Steering angle:",steering*180/math.pi)
     hcm.set_teleop_steering(steering)
 
 
   elseif key_char_lower==("w") then
-    throttle = math.min(throttle + 0.1,1)
+    throttle = math.min(throttle + 10*math.pi/180,30*math.pi/180)
     print("Throttle: %d percent ",throttle*100)
     hcm.set_teleop_throttle(throttle)
-
 
   elseif key_char_lower==("x") then
     throttle = 0
     print("Throttle: %d percent ",throttle*100)
     hcm.set_teleop_throttle(throttle)
 
-  elseif key_char_lower==("w") then
-    throttle = math.min(throttle + 0.1,1)
-    print("Throttle: %d percent ",throttle*100)
-    hcm.set_teleop_throttle(throttle)
+
+  elseif key_char_lower==(" ") then
+    print("2 sec burst")
+    hcm.set_teleop_throttle_duration(2)
+
 
 
   end

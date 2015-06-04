@@ -28,16 +28,9 @@ function state.entry()
 --
   if not IS_WEBOTS then
     for i=1,10 do
---      Body.set_lleg_command_velocity({500,500,500,500,500,500})
-      Body.set_lleg_command_velocity({500,500,500,2000,2000,500})
-
+      Body.set_lleg_command_velocity({500,500,500,1000,3000,500})
       unix.usleep(1e6*0.01);
---      Body.set_rleg_command_velocity({500,500,500,500,500,500})
       Body.set_rleg_command_velocity({500,500,500,2000,2000,500})
-
-
-
-
       unix.usleep(1e6*0.01);
       Body.set_rleg_command_acceleration({50,50,50,200,200,50})
       unix.usleep(1e6*0.01);
@@ -50,6 +43,7 @@ function state.entry()
   qRLeg0 = Body.get_rleg_command_position()
   throttle, throttle_old = 0,0
 
+  t_throttle_end = 0
 end
 
 ---
@@ -62,34 +56,30 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  local throttleT = math.min(30*math.pi/180,math.max(0,hcm.get_teleop_throttle() ))
+  local throttleT = hcm.get_teleop_throttle0() 
+  local throttle_duration = hcm.get_teleop_throttle_duration()
 
-  throttleT = throttleT-3*math.pi/180
+  if throttle_duration>0 then --start pedalling
+    t_throttle_end = t + throttle_duration
+    hcm.set_teleop_throttle_duration(0)
+  end
+
+  if t_throttle_end>t then
+    throttleT = throttleT + 
+	math.min(30*math.pi/180,math.max(0,
+      	hcm.get_teleop_throttle() ))
+  end
+
   throttle = util.approachTol(throttle, throttleT, 90*math.pi/180, t_diff)
 
-  if Config.birdwalk then
-    local qLLeg = util.shallow_copy(qLLeg0)
-    local qLLegCommand = Body.get_lleg_command_position()
+  --we are doing birdwalk and facing backwards
+  --so we use left foot to press the pedal
+  local qLLeg = util.shallow_copy(qLLeg0)
+  local qLLegCommand = Body.get_lleg_command_position()
 
-    qLLeg[4] = qLLeg[4] + throttle*0.3
-    qLLeg[5] = qLLeg[5] - throttle
-
---[[
-    local qLLeg_approach = util.approachTolRad( 
-	qLLegCommand, qLLeg,
-	{30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD,30*DEG_TO_RAD, 30*DEG_TO_RAD, 30*DEG_TO_RAD}  
-	,t_diff, ,nil,absolute)
-
-
-    Body.set_lleg_command_position(qLLeg_approach)
---]]
-    Body.set_lleg_command_position(qLLeg)
-
-  else
-    local qRLeg = util.shallow_copy(qRLeg0)
-    qRLeg[5] = qRLeg[5]+throttle_pitch_mag * throttle
-    Body.set_rleg_command_position(qRLeg)
-  end
+  qLLeg[4] = qLLeg[4] + throttle*0.3
+  qLLeg[5] = qLLeg[5] - throttle
+  Body.set_lleg_command_position(qLLeg)
 
 end
 

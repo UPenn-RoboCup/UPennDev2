@@ -93,6 +93,7 @@ function state.exit()
   -- Torque on the motors
   Body.set_waist_torque_enable(1)
 
+  local vel = 1000
   --we are moving out of idle, slow down all the servos
   if not IS_WEBOTS then
     print('INIT setting params')
@@ -101,9 +102,9 @@ function state.exit()
       unix.usleep(1e6*0.01);
       Body.set_waist_command_velocity({500,500})
       unix.usleep(1e6*0.01);
-      Body.set_lleg_command_velocity({500,500,500,500,500,500})
+      Body.set_lleg_command_velocity({vel,vel,vel,vel, vel*2,vel*2})
       unix.usleep(1e6*0.01);
-      Body.set_rleg_command_velocity({500,500,500,500,500,500})
+      Body.set_rleg_command_velocity({vel,vel,vel,vel, vel*2,vel*2})
       unix.usleep(1e6*0.01);
       Body.set_rleg_command_acceleration({50,50,50,50,50,50})
       unix.usleep(1e6*0.01);

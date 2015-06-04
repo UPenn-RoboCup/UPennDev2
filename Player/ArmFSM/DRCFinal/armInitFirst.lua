@@ -69,11 +69,12 @@ function state.entry()
 print("L:",qLArmTarget[5]*RAD_TO_DEG)
 print("R:",qRArmTarget[5]*RAD_TO_DEG)
 
+  qLArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, 90*DEG_TO_RAD,40*DEG_TO_RAD,-90*DEG_TO_RAD}
+  qRArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, -90*DEG_TO_RAD,-40*DEG_TO_RAD,90*DEG_TO_RAD}
+
+
   qLArmTarget = vector.new({110,0,10,-155,90,45,-90})*DEG_TO_RAD
   qRArmTarget = vector.new({110,0,-10,-160,-90,-40,90})*DEG_TO_RAD
-
-  qLArmTarget = vector.new({110,0,10,-155,90,45,-85})*DEG_TO_RAD
-  qRArmTarget = vector.new({110,0,-10,-160,-90,-40,85})*DEG_TO_RAD
 
 
   t_last_debug=t_entry
@@ -104,7 +105,7 @@ function state.update()
 
   elseif stage==2 then  --Straighten first wrist yaw, straighten shouldr yaw, widen shoulder
     qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
-    qLArmTargetC[3],qRArmTargetC[3] = 0,0
+    qLArmTargetC[3],qRArmTargetC[3] = qLArmTarget[3],qRArmTarget[3]
     qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
@@ -115,8 +116,8 @@ function state.update()
 	util.shallow_copy(qLArmTarget),
 	util.shallow_copy(qRArmTarget)
     qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
-    qLArmTargetC[3],qRArmTargetC[3] = 0,0
     t_stage = 2.0
+
   elseif stage==4 then
     qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
     t_stage = 1.0

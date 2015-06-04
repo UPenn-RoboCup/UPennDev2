@@ -52,9 +52,17 @@ shared_data.teleop = {
 	rgrip_position = zeros(3),
 
 
-	drive_head = zeros(2),
-	throttle = zeros(1), --should be zero to one
-	steering = zeros(1),
+--control method
+--throttle0: default ankle angle (-3 degree default to avoid keep pressing)
+--throttle: target ankle angle
+--throttle_duration: set positive value here to actuate the pedal
+
+
+	drive_head = zeros(2), --head angles, in radian 
+	throttle0 = ones(1)* (-3*math.pi/180), --in radian
+	throttle = zeros(1), --in radian
+	throttle_duration = zeros(1), --in seconds
+	steering = zeros(1), --in radian
 
 	estop = zeros(1) --remote estop status
 }

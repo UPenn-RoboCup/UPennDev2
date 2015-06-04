@@ -165,6 +165,9 @@ function process_click(ret)
 		elseif ret.rbutton==4 then 
 			display_mode = 1
 			return
+		elseif ret.lbutton[1]==1 then
+			--go forward for 2 sec
+			hcm.set_teleop_throttle_duration(2)
 		end
 
 	end
@@ -181,6 +184,8 @@ function process_stick(ret)
 		headyaw = math.min(1, math.max(-1, ret.lstick[2]/800 ))
 		steer = math.min(1, math.max(-1, -ret.rstick[2]/800 ))
 		gas = math.min (1,  math.max(0,-ret.rstick[3]/ 800 ))
+
+
 		steer_mag = 180*DEG_TO_RAD
 		gas_mag = 15*DEG_TO_RAD
 

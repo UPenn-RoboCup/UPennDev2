@@ -19,10 +19,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	-- Stop other state machines
-	--motion_ch:send'stand'
-	head_ch:send'teleop'
-	arm_ch:send'teleopraw'
+  -- Stop other state machines
+  --motion_ch:send'stand'
+  head_ch:send'teleop'
+  arm_ch:send'teleopraw'
   if mcm.get_walk_ismoving()>0 then
     print("requesting stop")
     mcm.set_walk_stoprequest(1)
@@ -35,9 +35,6 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
-  if hcm.get_step_dir()~=0 then
-    return 'stepover1'   
-  end
 end
 
 function state.exit()

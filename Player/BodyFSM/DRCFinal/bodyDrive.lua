@@ -32,7 +32,7 @@ function state.update()
 end
 
 function state.exit()
-
+  head_ch:send'undrive'
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
 end

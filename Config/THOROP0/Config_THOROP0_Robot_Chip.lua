@@ -376,6 +376,9 @@ servo.steps = 2 * vector.new({
 	2048, -- Lidar pan
 })
 
+
+
+--[[
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head, mk2
@@ -439,7 +442,7 @@ servo.max_rad = vector.new({
 	60, -- Lidar pan
 })*DEG_TO_RAD
 
-
+--]]
 
 --------------------------------------------
 --for birdwalk
@@ -447,25 +450,19 @@ servo.max_rad = vector.new({
 
 if Config.birdwalk then
 
+--ACTUAL STUFF
+
 	servo.rad_offset = vector.new({
 		0,0, -- Head
-	--	-90,  -90,  -90,45,  90,0,0, --LArm
---		-90,  -90,      -90,45,  -90,0,0, --LArm
 		-90.4,  -88.4 ,  -90,45,  -90,0,0, --LArm
-
 		0,0,0,  0  ,0,0, --LLeg
 		0,0,0,  0  ,0,0, --RLeg
---		90,  90,  90,-45,  -90,0,0, --RArm
---		90,  90,  90,-45,  90,0,0, --RArm
 		88.8,  89.5,  90,-45,  90,0,0, --RArm
-
 		-180,0, -- Waist flip (for birdwalk)
 		0, 0, 0, -- left gripper/trigger
 		-90, -90, 0, -- right gripper/trigger (UCLA verified)
 		0, -- Lidar pan
 	})*DEG_TO_RAD
-
-
 
 
 	servo.joint_to_motor={
@@ -487,13 +484,9 @@ if Config.birdwalk then
 
 		1,1,1, 1, 1,1,1, --LArm, mk2 reassembled 
 		------
---  -1, 1, 1, 1, 1, 1, --LLeg
---  -1, 1,-1,-1,-1, 1, --RLeg
-		-1, -1, 1, 1, 1, -1, --LLeg, mk2, flipped
-		-1, -1,-1,-1,-1, -1, --RLeg, mk2, flipped
-
+		-1, -1, 1,  1, 1, -1, --LLeg, mk2, flipped
+		-1, -1,-1, -1,-1, -1, --RLeg, mk2, flipped
 		------
---		-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
 		-1,1,1, -1, 1,1,-1, --RArm, mk2 reassembled
 		1, 1, -- Waist, mk2
 		-1,1,-1, -- left gripper TODO
@@ -505,13 +498,10 @@ if Config.birdwalk then
 
 servo.min_rad = vector.new({
 	-90,-80, -- Head
---	-90, 0, -90,    -160,   -180,-87,-180, --LArm
---	-90, -10, -120,    -160,   -180,-87,-180, --LArm
-	-90, -30, -120,    -160,   -180,-87,-180, --LArm
+	-90, -30, -120,    -160,   -360,-87,-360, --LArm
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
-	-90,-87,-90,    -160,   -180,-87,-180, --RArm
---	-90,-45, -- Waist
+	-90,-87,-90,    -160,      -360,-87,-360, --RArm
 	-540,-45, -- Waist
 	-60, -55, -60,
 	-90, -120, -55, -- right gripper/trigger (UCLA verified)
@@ -521,13 +511,10 @@ servo.min_rad = vector.new({
 servo.max_rad = vector.new({
 	--90,80, -- Head
 	270,80, -- Head
---	160,87,90,   0,     180,87,180, --LArm
---	180,87,90,   0,     180,87,180, --LArm
-	230,87,120,   0,     180,87,180, --LArm
+	230,87,120,   0,     360,87,360, --LArm
 	175,25,175,175,175,175, --LLeg
 	175,175,175,175,175,175, --RLeg
-	160,-0,90,   0,     180,87,180, --RArm
---	90,45, -- Waist
+	160,-0,90,   0,     360,87,360, --RArm
 	540,45, -- Waist
 	65,65,55, -- lgrip
 	105,110,105, -- right gripper/trigger (UCLA verified)

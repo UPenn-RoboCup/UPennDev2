@@ -77,9 +77,10 @@ local ittybitty_identifier = 'ittybitty'..(camera_id-1)
 local itty_stream = Config.net.streams[ittybitty_identifier]
 local ittybitty_ch = si.new_publisher(itty_stream.sub)
 local ittybitty_udp_ch = si.new_sender(Config.net.operator.wired, itty_stream.udp)
+--
+local field_tcp_ch = si.new_publisher(stream.tcp);
 
-
-print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
+print('Camera | ', operator, camera_identifier, stream.tcp, udp_ch)
 
 -- Metadata for the operator for compressed image data
 local c_meta = {
@@ -185,7 +186,10 @@ local function update(img, sz, cnt, t)
 		t_send_itty = t
 		print('Sent ittybitty', ret, err)
 	end
-
+        
+	if field_tcp_ch then
+		field_tcp_ch:send(c_img)	
+	end
 	-- Do the logging if we wish
 	if ENABLE_LOG and (t - t_log > LOG_INTERVAL) then
 		t_log = t

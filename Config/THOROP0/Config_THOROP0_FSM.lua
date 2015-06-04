@@ -248,6 +248,7 @@ fsm.Arm = {
 	{'armDrill', 'teleopraw', 'armTeleopRaw'},
 
 	-- Drill positioning (right)
+	--[[
 	{'armDrillRight', 'done', 'armCarry'},
 	{'armDrillRight', 'ready', 'armManipulation'},
 	--
@@ -256,7 +257,7 @@ fsm.Arm = {
 	{'armDrillRight', 'teleop', 'armTeleop'},
 	{'armDrillRight', 'teleopraw', 'armTeleopRaw'},
 
-	-- Drill positioning (right)
+	-- Drill positioning (left)
 	{'armDrillLeft', 'done', 'armCarry'},
 	{'armDrillLeft', 'ready', 'armManipulation'},
 	--
@@ -264,6 +265,7 @@ fsm.Arm = {
 	{'armTeleopRaw', 'drill', 'armDrillLeft'},
 	{'armDrillLeft', 'teleop', 'armTeleop'},
 	{'armDrillLeft', 'teleopraw', 'armTeleopRaw'},
+	--]]
 
 	-- Shower positioning
 	{'armShower', 'done', 'armTeleop'},

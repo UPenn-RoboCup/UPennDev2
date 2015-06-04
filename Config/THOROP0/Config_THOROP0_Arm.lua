@@ -160,7 +160,7 @@ table.insert(arm.valve, {
 	left = {
 		timeout=10,
 		via='jacobian_preplan',
-		tr={0.45, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.45, 0.246, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
 		weights = {1,1,1},
 	}
@@ -226,14 +226,15 @@ table.insert(arm.drill, {
 	right = false
 })
 
+--1.22m
 table.insert(arm.drill, {
 	left = false,
 	right = {
 		timeout=10,
 		via='jacobian_preplan',
 		--tr={0.28, -0.3, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 30*DEG_TO_RAD},
-		tr={0.46, -0.27, 0.27, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
+		tr={0.46, -0.27, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		qArmGuess = vector.new{-20, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
 		weights = {1,1,-1,1, 0},
 	}
 })

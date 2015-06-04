@@ -522,6 +522,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	-- Grab our limits
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax
+
 	-- Set the timing
 	local timeout = assert(plan.timeout, prefix..'No timeout')
 	local hz, dt = self.hz, self.dt
@@ -852,6 +853,13 @@ end
 local function set_limits(self, qMin, qMax, dqdt_limit)
 	self.qMin = assert(qMin)
 	self.qMax = assert(qMax)
+
+	-- TODO: Check with SJ on the proper limits
+	if self.id:lower():find'left' then
+		print('left fix')
+		qMin[2] = max(qMin[2], 0)
+	end
+
 	self.dqdt_limit = assert(dqdt_limit)
 	self.qRange = qMax - qMin
   return self

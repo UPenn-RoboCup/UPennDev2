@@ -1,20 +1,22 @@
 #!/usr/bin/env luajit
--- (c) 2014 Team THORwIn
+-- (c) 2015 Team THOR
+
+--[[
 local ok = pcall(dofile,'../fiddle.lua')
 if not ok then dofile'fiddle.lua' end
+--]]
+
+local ok = pcall(dofile,'../riddle.lua')
+if not ok then dofile'riddle.lua' end
 
 local targetvel = {0,0,0}
 local targetvel_new = {0,0,0}
 local WAS_REQUIRED
 
-local t_last = Body.get_time()
+local t_last = get_time()
 local tDelay = 0.005*1E6
 
-
-
-DEG_TO_RAD = math.pi/180
-RAD_TO_DEG = 1/DEG_TO_RAD
-
+local get_time = require'unix'.time
 
 local throttle = 0
 local steering = 0
@@ -22,8 +24,8 @@ local steering = 0
 local function update(key_code)
   if type(key_code)~='number' or key_code==0 then return end
 
-  if Body.get_time()-t_last<0.2 then return end
-  t_last = Body.get_time()
+  if get_time()-t_last<0.2 then return end
+  t_last = get_time()
 
   local key_char = string.char(key_code)
   local key_char_lower = string.lower(key_char)
@@ -50,7 +52,6 @@ local function update(key_code)
     print("Steering angle:",steering*180/math.pi)
     hcm.set_teleop_steering(steering)
 
-
   elseif key_char_lower==("w") then
     throttle = math.min(throttle + 10*math.pi/180,30*math.pi/180)
     print("Throttle:  ",throttle*RAD_TO_DEG)
@@ -66,17 +67,12 @@ local function update(key_code)
     print("Throttle:  ",throttle*RAD_TO_DEG)
     hcm.set_teleop_throttle(throttle)
 
-
   elseif key_char_lower==(" ") then
     print("2 sec burst")
     hcm.set_teleop_throttle_duration(2)
-
-
-
   end
+	-- end
 end
-
-
 
 if ... and type(...)=='string' then
   WAS_REQUIRED = true

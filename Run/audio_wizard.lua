@@ -5,14 +5,10 @@ dofile'../include.lua'
 require'hcm'
 
 local cmdstr = {
---[[
 	'arecord -f S16_LE -r16000 -c2 -D hw:2,0 -t raw | ./vumeter',
 	'arecord -f S16_LE -r16000 -c1 -D hw:3,0 -t raw | ./vumeter',
-	--]]
-	----[[
 	'arecord -f S16_LE -r16000 -c1 -D hw:2,0 -t raw | ./vumeter',
 	'arecord -f S16_LE -r16000 -c2 -D hw:3,0 -t raw | ./vumeter',
-	--]]
 }
 
 print('arg[1]', arg[1])
@@ -25,6 +21,9 @@ f:setvbuf'no'
 
 local volume_ptr = hcm.audioPtr.volume
 local rawvolume_ptr = hcm.audioPtr.rawvolume
+
+if idx==3 then idx=1 end
+if idx==4 then idx=2 end
 
 local level
 repeat

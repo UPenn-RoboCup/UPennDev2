@@ -54,14 +54,16 @@ for key,stream in pairs(Config.net.streams) do
 end
 
 -- This is on the field computer side
-for key,stream in pairs(Config.net.streams) do
-	if type(stream.tcp)=='number' then
-		print('Logging', key)
-		local r = si.new_subscriber(stream.tcp)
-		r.callback = cb
-		table.insert(in_channels, r)
-		table.insert(ch_names, key)
-		table.insert(loggers, libLog.new(key, true))
+if unix.gethostname()=='surge' then
+	for key,stream in pairs(Config.net.streams) do
+		if type(stream.tcp)=='number' then
+			print('Logging', key)
+			local r = si.new_subscriber(stream.tcp)
+			r.callback = cb
+			table.insert(in_channels, r)
+			table.insert(ch_names, key)
+			table.insert(loggers, libLog.new(key, true))
+		end
 	end
 end
 

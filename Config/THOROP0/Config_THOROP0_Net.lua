@@ -50,7 +50,7 @@ net.rpc = {
 streams.feedback = {
 	ws = 9002,
 	udp = 2002,
-	tcp = 43200,
+	--tcp = 43200,
 	sub = 'feedback'
 }
 streams.ittybitty0 = {
@@ -79,13 +79,13 @@ streams.camera1 = {
 streams.lidar0 = {
 	ws = 9010,
 	udp = 17010,
-	tcp = 43310,
+	--tcp = 43310,
 	sub = 'lidar0'
 }
 streams.lidar1 = {
 	ws = 9011,
 	udp = 17011,
-	tcp = 43311,
+	--tcp = 43311,
 	sub = 'lidar1'
 }
 streams.mesh0 = {

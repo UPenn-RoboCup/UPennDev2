@@ -48,15 +48,15 @@ table.insert(arm.init,
 	}
 })
 --]]
-
+arm.pushdoorup = {}
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.pushdoordown = {}
 arm.pushdoordown[1] = {
 	left = {
 		via='jacobian_preplan',
 		timeout=8,
-		tr={0.37, 0.285, 0, 90*DEG_TO_RAD, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		--weights = {1,1,0}
+		tr={0.37, 0.285, -0.12, -90*DEG_TO_RAD, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		weights = {1,1,0}
 	},
 	right = false,
 }

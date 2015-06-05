@@ -37,7 +37,6 @@ function state.update()
   qLArm[7] = util.approachTol(qLArmC[7], qLArmT, math.pi/2, dt)
 
   Body.set_larm_command_position(qLArm)
-  print("HERE")
 end
 
 function state.exit()

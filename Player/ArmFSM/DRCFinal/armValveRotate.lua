@@ -19,7 +19,6 @@ function state.entry()
 
    qLArm0 = Body.get_larm_command_position()
    hcm.set_teleop_steering(0)
-
 end
 
 function state.update()
@@ -27,11 +26,9 @@ function state.update()
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
-  -- Save this at the last update time
   t_update = t
 
-  local steering = math.min(math.pi/6, math.max(-math.pi, 
-	hcm.get_teleop_steering() ))
+  local steering = math.min(math.pi/6, math.max(-2.5*math.pi, hcm.get_teleop_steering() ))
 
   local qLArm = util.shallow_copy(qLArm0)
   qLArmT = qLArm0[7]+steering
@@ -40,6 +37,7 @@ function state.update()
   qLArm[7] = util.approachTol(qLArmC[7], qLArmT, math.pi/2, dt)
 
   Body.set_larm_command_position(qLArm)
+  print("HERE")
 end
 
 function state.exit()

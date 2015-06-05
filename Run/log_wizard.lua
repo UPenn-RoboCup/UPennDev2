@@ -17,7 +17,7 @@ local log_times = {}
 
 local signal = require'signal'.signal
 local function shutdown()
-  poller:stop()
+	poller:stop()
 end
 signal("SIGINT", shutdown)
 signal("SIGTERM", shutdown)
@@ -41,26 +41,27 @@ local function cb(skt)
 	log_times[ch_id] = t
 end
 
--- This is on the operator side
-for key,stream in pairs(Config.net.streams) do
-	if type(stream.udp)=='number' then
-		print('Logging', key)
-		local r = si.new_subscriber(stream.sub)
-		r.callback = cb
-		table.insert(in_channels, r)
-		table.insert(ch_names, key)
-		table.insert(loggers, libLog.new(key, true))
-	end
-end
 
--- This is on the field computer side
-if unix.gethostname()=='surge' then
+if unix.gethostname()=='field' then
+	-- This is on the field computer side
 	for key,stream in pairs(Config.net.streams) do
 		if type(stream.tcp)=='number' then
 			print('Logging', key)
 			local r = si.new_subscriber(stream.tcp)
 			r.callback = cb
-			table.insert(in_channels, r)
+			table.insert(channels, r)
+			table.insert(ch_names, key)
+			table.insert(loggers, libLog.new(key, true))
+		end
+	end
+else
+	-- This is on the operator side
+	for key,stream in pairs(Config.net.streams) do
+		if type(stream.udp)=='number' then
+			print('Logging', key)
+			local r = si.new_subscriber(stream.sub)
+			r.callback = cb
+			table.insert(channels, r)
 			table.insert(ch_names, key)
 			table.insert(loggers, libLog.new(key, true))
 		end

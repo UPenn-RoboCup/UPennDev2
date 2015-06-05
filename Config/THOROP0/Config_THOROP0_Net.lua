@@ -50,6 +50,7 @@ net.rpc = {
 streams.feedback = {
 	ws = 9002,
 	udp = 2002,
+	tcp = 43200,
 	sub = 'feedback'
 }
 streams.ittybitty0 = {

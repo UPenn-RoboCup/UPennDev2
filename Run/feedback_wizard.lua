@@ -197,7 +197,9 @@ local function update()
 	local available_bits0 = 0
 	local is_indoors = hcm.get_network_indoors()
 	local ret, err
-	if is_indoors==2 then
+	if IS_WEBOTS then
+		return
+	elseif is_indoors==2 then
 		-- send the ittybitty0 (head)
 		if t_update - t_feedback < dt_head_send then return end
 		available_bits0 = 9600*dt_head_send

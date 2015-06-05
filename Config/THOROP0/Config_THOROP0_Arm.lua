@@ -50,95 +50,16 @@ table.insert(arm.init,
 --]]
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
-arm.pushdoorup = {}
-arm.pushdoorup[1] = {
-	left = {
-		via='jacobian_preplan',
-		--via='jacobian_waist_preplan',
-		--qWaistGuess = {-10*DEG_TO_RAD,0},
-		timeout=8,
-		tr={0.6, 0.3, -0.09, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		weights = {1,1,0}
-	},
-	right = false,
-	--ikhead = {0.65, 0.25, -0.12}
-}
-arm.pushdoorup[2] = {
-	left = {
-		via='jacobian_preplan',
-		timeout=8,
-		tr={0.6, 0.33, -0.04, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		--weights = {1,1,0}
-	},
-	right = false,
-}
-arm.pushdoorup[3] = {
-	left = {
-		via='jacobian_waist_preplan',
-		timeout=8,
-		tr={0.65, 0.33, -0.04, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		--weights = {1,1,0}
-	},
-	right = false,
-}
-arm.pushdoorup[4] = {
-	left = {
-		via='jacobian_waist_preplan',
-		qWaistGuess = {-10*DEG_TO_RAD,0},
-		timeout=8,
-		tr={0.55, 0.3, -0.08, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		--weights = {1,1,0}
-	},
-	right = false,
-}
-arm.pushdoorup[5] = {
-	left = {
-		via='jacobian_waist_preplan',
-		qWaistGuess = {0*DEG_TO_RAD,0},
-		timeout=8,
-		tr={0.4, 0.3, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-	},
-	right = false,
-}
-
 arm.pushdoordown = {}
 arm.pushdoordown[1] = {
 	left = {
 		via='jacobian_preplan',
 		timeout=8,
-		tr={0.1, 0.3, -0.1, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		weights = {1,1,0}
-	},
-	right = false,
-	--ikhead = {0.65, 0.25, -0.12}
-}
---[[
-arm.pushdoordown[2] = {
-	left = {
-		via='jacobian_preplan',
-		timeout=8,
-		tr={0.6, 0.32, -0.10, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		tr={0.37, 0.285, 0, 90*DEG_TO_RAD, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		--weights = {1,1,0}
 	},
 	right = false,
 }
-arm.pushdoordown[3] = {
-	left = {
-		via='jacobian_waist_preplan',
-		timeout=8,
-		tr={0.65, 0.32, -0.10, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-	},
-	right = false,
-}
-arm.pushdoordown[4] = {
-	left = {
-		via='jacobian_waist_preplan',
-		qWaistGuess = {-10*DEG_TO_RAD,0},
-		timeout=8,
-		tr={0.55, 0.3, -0.07, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-	},
-	right = false,
-}
---]]
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.valve = {}

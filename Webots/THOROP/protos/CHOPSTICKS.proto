@@ -11,12 +11,12 @@ PROTO CHOPSTICKS [
 		boundingObject Group {
 			children [
 				Transform {
-					translation -0.025 -0.22 0
-					children [ Box { size 0.01 0.205 0.01 } ]
+					translation -0.055 -0.17 0
+					children [ Box { size 0.01 0.100 0.01 } ]
 				}
 				Transform {
-					translation 0.025 -0.22 0
-					children [ Box { size 0.01 0.205 0.01 } ]
+					translation 0.055 -0.17 0
+					children [ Box { size 0.01 0.100 0.01 } ]
 				}
 			]
 		}
@@ -35,13 +35,13 @@ PROTO CHOPSTICKS [
 				size 0.08 0.005 0.04
 			}
 			Transform {
-				translation -0.025 -0.22 0
+				translation -0.055 -0.17 0
 				children[ Shape {
 					geometry Cylinder {
 					  bottom TRUE
 					  side TRUE
 					  top FALSE
-					  height 0.205
+					  height 0.10
 					  radius 0.005
 					  subdivision 12
 					}
@@ -56,13 +56,13 @@ PROTO CHOPSTICKS [
 				} ]
 			}
 			Transform {
-				translation 0.025 -0.22 0
+				translation 0.055 -0.17 0
 				children[ Shape {
 					geometry Cylinder {
 					  bottom TRUE
 					  side TRUE
 					  top FALSE
-					  height 0.205
+					  height 0.10
 					  radius 0.005
 					  subdivision 12
 					}

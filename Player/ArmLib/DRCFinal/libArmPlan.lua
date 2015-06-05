@@ -50,6 +50,24 @@ local function sanitize0(qPlanned, qNow)
 	end
 end
 
+
+local PI, FIVE_PI = math.pi, 2*math.pi
+function mod_angle2(a)
+  -- Reduce angle to [-pi, pi)
+  local b = a % FIVE_PI
+	return b >= PI and (b - FIVE_PI) or b
+end
+local function sanitize2(qPlanned, qNow)
+	local qDiff = qPlanned - qNow
+	local qDiffEffective = mod_angle2(qDiff)
+	if fabs(qDiffEffective) < fabs(qDiff) then
+		return qNow + qDiffEffective
+	else
+		return qNow + qDiff
+	end
+end
+
+
 -- Get the real planned q for infinite turn
 local function sanitize1(qPlanned, qNow)
 	local qNowEffective = mod_angle(qNow)
@@ -344,7 +362,9 @@ function libArmPlan.joint_preplan(self, plan)
 			qArmF[i] = min(max(qMin[i], q), qMax[i])
 		else
 			-- nearest (sanitize)
-			qArmF[i] = sanitize1(qArmF[i], qArm0[i])
+			--qArmF[i] = sanitize1(qArmF[i], qArm0[i])
+			qArmF[i] = sanitize2(qArmF[i], qArm0[i])
+
 		end
 	end
 	-- Set the timeout

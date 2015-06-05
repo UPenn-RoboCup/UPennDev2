@@ -70,7 +70,7 @@ local function update(key_code)
 
   elseif key_char_lower==(" ") then
     print("2 sec burst")
-    hcm.set_teleop_throttle_duration{2}
+    hcm.set_teleop_throttle_duration{1.5}
   end
 	-- end
 end

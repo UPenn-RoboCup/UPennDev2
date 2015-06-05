@@ -33,7 +33,7 @@ local function cb(skt)
 
 	local meta = munpack(mdata)
 	if loggers[ch_id].n % 10 then print('Logging '..ch_names[ch_id], loggers[ch_id].n) end
-	if loggers[ch_id].n % 100 == 0 then loggers[ch_id] = libLog.new(ch_names[ch_id], '/home/thor/logs', true) end
+	if loggers[ch_id].n % 100 == 0 then loggers[ch_id] = libLog.new(ch_names[ch_id], true, '/home/thor/logs') end
 	meta.tlog = t
 	if payload then
 		meta.rsz = #payload
@@ -55,7 +55,7 @@ if unix.gethostname()=='field' then
 			table.insert(channels, r)
 			table.insert(log_times, 0)
 			table.insert(ch_names, key)
-			table.insert(loggers, libLog.new(key, '/home/thor/logs', true))
+			table.insert(loggers, libLog.new(key, true, '/home/thor/logs'))
 		end
 	end
 else
@@ -68,7 +68,7 @@ else
 			table.insert(channels, r)
 			table.insert(log_times, 0)
 			table.insert(ch_names, key)
-			table.insert(loggers, libLog.new(key, '/home/thor/logs', key~='feedback'))
+			table.insert(loggers, libLog.new(key, true, '/home/thor/logs'))
 		end
 	end
 end

@@ -32,12 +32,15 @@ local function cb(skt)
 	if t - log_times[ch_id] < 0.5 then return end
 
 	local meta = munpack(mdata)
-	print(data, type(data)=='table' and #table)
 	if loggers[ch_id].n % 10 then print('Logging '..ch_names[ch_id], loggers[ch_id].n) end
-	if loggers[ch_id].n % 100 == 0 then loggers[ch_id] = libLog.new(ch_names[ch_id], true) end
+	if loggers[ch_id].n % 100 == 0 then loggers[ch_id] = libLog.new(ch_names[ch_id], true, '/home/thor/logs') end
 	meta.tlog = t
-	meta.rsz = #payload
-	loggers[ch_id]:record(meta, payload, #payload)
+	if payload then
+		meta.rsz = #payload
+		loggers[ch_id]:record(meta, payload, #payload)
+	else
+		loggers[ch_id]:record(meta)
+	end
 	log_times[ch_id] = t
 end
 
@@ -47,12 +50,12 @@ if unix.gethostname()=='field' then
 	for key,stream in pairs(Config.net.streams) do
 		if type(stream.tcp)=='number' then
 			print('Logging', key)
-			local r = si.new_subscriber(stream.tcp)
+			local r = si.new_subscriber(stream.tcp, Config.net.robot.wired)
 			r.callback = cb
 			table.insert(channels, r)
 			table.insert(log_times, 0)
 			table.insert(ch_names, key)
-			table.insert(loggers, libLog.new(key, true))
+			table.insert(loggers, libLog.new(key, true, '/home/thor/logs'))
 		end
 	end
 else
@@ -65,7 +68,7 @@ else
 			table.insert(channels, r)
 			table.insert(log_times, 0)
 			table.insert(ch_names, key)
-			table.insert(loggers, libLog.new(key, true))
+			table.insert(loggers, libLog.new(key, true, '/home/thor/logs'))
 		end
 	end
 end

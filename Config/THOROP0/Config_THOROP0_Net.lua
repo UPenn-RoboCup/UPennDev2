@@ -100,6 +100,7 @@ streams.mesh1 = {
 	tcp = 43301,
 	sub = 'mesh1'
 }
+--[[
 streams.kinect2_depth = {
 	ws = 9046,
 	udp = 17046,
@@ -112,6 +113,7 @@ streams.kinect2_color = {
 	tcp = 43347,
 	sub = 'kinect2_color'
 }
+--]]
 --[[
 streams.audio = {
 ws = 9014,

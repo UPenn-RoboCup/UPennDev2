@@ -1,13 +1,14 @@
 #!/usr/bin/env luajit
 -- (c) 2015 Team THOR
 
---[[
+----[[
 local ok = pcall(dofile,'../fiddle.lua')
 if not ok then dofile'fiddle.lua' end
 --]]
-
+----[[
 local ok = pcall(dofile,'../riddle.lua')
 if not ok then dofile'riddle.lua' end
+--]]
 
 local targetvel = {0,0,0}
 local targetvel_new = {0,0,0}
@@ -37,6 +38,14 @@ local function update(key_code)
     body_ch:send'driveready'
   elseif key_char_lower==("3") then      
     body_ch:send'drive'
+
+
+
+
+
+  elseif key_char_lower==("5") then      
+    arm_ch:send'valverotate'
+
 
   elseif key_char_lower==("j") then      
     steering = steering - 45*math.pi/180

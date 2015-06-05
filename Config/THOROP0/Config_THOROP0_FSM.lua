@@ -216,6 +216,15 @@ fsm.Arm = {
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
 
+
+
+	{'armTeleop', 'valverotate', 'armValveRotate'},
+	{'armTeleopRaw', 'valverotate', 'armValveRotate'},
+
+	{'armValveRotate', 'teleop', 'armTeleop'},
+	{'armValveRotate', 'teleopraw', 'armTeleopRaw'},
+
+
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
 	{'armManipulation', 'ready', 'armManipulation'},

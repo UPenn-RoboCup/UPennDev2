@@ -42,7 +42,7 @@ local function cb(skt)
 end
 
 
-if unix.gethostname()=='surge' then
+if unix.gethostname()=='field' then
 	-- This is on the field computer side
 	for key,stream in pairs(Config.net.streams) do
 		if type(stream.tcp)=='number' then

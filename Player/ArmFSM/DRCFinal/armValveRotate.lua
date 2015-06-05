@@ -28,7 +28,7 @@ function state.update()
   local dt = t - t_update
   t_update = t
 
-  local steering = math.min(math.pi/6, math.max(-2.5*math.pi, hcm.get_teleop_steering() ))
+  local steering = math.min(math.pi*2.5, math.max(-2.5*math.pi, hcm.get_teleop_steering() ))
 
   local qLArm = util.shallow_copy(qLArm0)
   qLArmT = qLArm0[7]+steering

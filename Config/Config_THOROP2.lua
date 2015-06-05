@@ -46,6 +46,7 @@ Config.auto_restart = true
 
 --Config.hybrid_approach = true
 
+Config.roll_adaptation_max = 3.5*DEG_TO_RAD
 
 
 

@@ -39,10 +39,13 @@ fsm.Body = {
   --
   {'bodyInit', 'done', 'bodyStop'},
 	--
-	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
-	{'bodyStop', 'approach', 'bodyApproachMessy'},
+--	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
 	
-	{'bodyStop', 'stepflat', 'bodyStepAlign'},
+--	{'bodyStop', 'stepflat', 'bodyStepAlign'},
+
+	{'bodyStop', 'approach', 'bodyApproachMessy'},
+	{'bodyStop', 'stepflat', 'bodyApproachMessy'},
+
 	{'bodyStop', 'stop', 'bodyStop'},
   --
   {'bodyApproachMessy', 'stop', 'bodyStop'},

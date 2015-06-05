@@ -121,6 +121,14 @@ Config.left_wrist_ft = FT16464
 ---------------------------------
 ---------------------------------
 
+
+--FT BIAS
+Config.left_foot_ft.bias_forceZ = 49
+Config.left_foot_ft.bias_torque = {-6,13.8}
+
+Config.right_foot_ft.bias_forceZ = -20
+Config.right_foot_ft.bias_torque = {-10,18.5}
+ 
 if Config.birdwalk then
 	--swap ft type
 	Config.left_foot_ft = FT16390
@@ -128,6 +136,24 @@ if Config.birdwalk then
 	--swap servo ids
 	Config.left_foot_ft.m_ids = {23, 25}
 	Config.right_foot_ft.m_ids = {24, 26}
+
+--after foot change
+
+
+	Config.left_foot_ft = FT16389
+	Config.right_foot_ft = FT16390
+
+	Config.left_foot_ft.m_ids = {23, 25}
+	Config.right_foot_ft.m_ids = {24, 26}
+
+Config.right_foot_ft.bias_forceZ = 49
+Config.right_foot_ft.bias_torque = {-6,13.8}
+
+Config.left_foot_ft.bias_forceZ = -20
+Config.left_foot_ft.bias_torque = {-10,18.5}
+
+
+
 
 else --normal walk
 	Config.left_foot_ft = FT16389
@@ -138,12 +164,6 @@ end
 
 
 
---FT BIAS
-Config.left_foot_ft.bias_forceZ = 49
-Config.left_foot_ft.bias_torque = {-6,13.8}
-
-Config.right_foot_ft.bias_forceZ = -20
-Config.right_foot_ft.bias_torque = {-10,18.5}
 
 
 
@@ -488,7 +508,8 @@ if Config.birdwalk then
 		-1, -1, 1,  1, 1, -1, --LLeg, mk2, flipped
 		-1, -1,-1, -1,-1, -1, --RLeg, mk2, flipped
 		------
-		-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
+--		-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
+		-1,1,1, -1, 1,-1,1, --RArm, replaced
 		1, 1, -- Waist, mk2
 		-1,1,-1, -- left gripper TODO
 		1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)

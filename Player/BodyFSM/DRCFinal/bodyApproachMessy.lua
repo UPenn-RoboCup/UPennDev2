@@ -166,7 +166,7 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
       end
       local vStep = {uTorsoNext[1],uTorsoNext[2],uTorsoNext[3]}
       last_step=2
-      print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*180/math.pi))
+      print(string.format("approach vel: %.3f %.3f %.2f",vStep[1],vStep[2],vStep[3]*180/math.pi))
       return vStep,true
     elseif last_step==2 then
       return {0,0,0},true
@@ -250,6 +250,8 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
 
 print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*180/math.pi))
 
+
+
   local uTorsoTargetActual = util.pose_global(vStep,uTorsoCurrent)
 
 
@@ -321,6 +323,10 @@ print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*18
     end
   end
 
+  if math.abs(vStep[1])<0.005 and math.abs(vStep[2])<0.005 and math.abs(vStep[3])<1.5*DEG_TO_RAD then
+    print("ARRIVED!")
+    return vStep, true
+  end
 
 
 

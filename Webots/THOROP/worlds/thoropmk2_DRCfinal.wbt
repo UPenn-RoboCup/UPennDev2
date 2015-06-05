@@ -52,7 +52,8 @@ THOROP_mk2_Fullmass_longarm_2 {
   footContactMaterial "feet"
 }
 DEF TASKFLOOR Floor {
-  translation 6 0 0
+  translation 6 0 0  
+  rotation 1 0 0 0.087 #5 degree
   size 16 8
   texture [
     "textures/marble.png"

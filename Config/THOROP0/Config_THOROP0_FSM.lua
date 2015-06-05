@@ -57,10 +57,14 @@ fsm.Body = {
 
 
   --these should NEVER called with mistake at all
+  --FOR DAY 1
+--[[ 
   {'bodyStop', 'stairclimb', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
+--]]
+
   -- Take two slow stops (for precise alignment)
-  {'bodyStepAlign', 'done', 'bodyStop'},
+--  {'bodyStepAlign', 'done', 'bodyStop'},
 
 
 --Driving stuff
@@ -398,7 +402,7 @@ fsm.Motion = {
 	{'motionStance', 'uninit', 'motionUnInit'},
 	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
 	{'motionStance', 'preview', 'motionStepPreview'},
-	{'motionStance', 'slowstep', 'motionSlowStep'},
+--	{'motionStance', 'slowstep', 'motionSlowStep'},
 	{'motionStance', 'stair', 'motionStepPreviewStair'},
 	--
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
@@ -410,7 +414,7 @@ fsm.Motion = {
 	--
 	{'motionStepPreviewStair', 'done', 'motionStance'},
 	--
-	{'motionSlowStep', 'done', 'motionStance'},
+--	{'motionSlowStep', 'done', 'motionStance'},
 
 	--DRIVE
 	{'motionStance', 'driveready', 'motionDriveready'}, --untorque lower body

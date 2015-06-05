@@ -31,14 +31,6 @@ function state.update()
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
 
-  -- TODO: What if exit before first
-  -- read request arrives?
-  qLArm = Body.get_larm_position()
-  qRArm = Body.get_rarm_position()
-
-  Body.set_larm_command_position(qLArm)
-  Body.set_rarm_command_position(qRArm)
-  --print("LArm jangle:",vector.new(qLArm)*RAD_TO_DEG)
 
 end
 

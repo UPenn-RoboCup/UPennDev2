@@ -157,6 +157,9 @@ fsm.Arm = {
 	{'armIdle', 'timeout', 'armIdle'},
 	{'armIdle', 'teleopraw', 'armTeleopRaw'},
 	{'armIdle', 'teleop', 'armTeleop'},
+--
+	{'armTeleopRaw', 'idle', 'armIdle'},
+	{'armTeleop', 'idle', 'armIdle'},
 
 
 	--This should be called JUST ONCE at the beginning

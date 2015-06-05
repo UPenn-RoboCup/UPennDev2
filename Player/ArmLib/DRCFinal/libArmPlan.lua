@@ -362,8 +362,8 @@ function libArmPlan.joint_preplan(self, plan)
 			qArmF[i] = min(max(qMin[i], q), qMax[i])
 		else
 			-- nearest (sanitize)
-			--qArmF[i] = sanitize1(qArmF[i], qArm0[i])
-			qArmF[i] = sanitize2(qArmF[i], qArm0[i])
+			qArmF[i] = sanitize1(qArmF[i], qArm0[i])
+			--qArmF[i] = sanitize2(qArmF[i], qArm0[i])
 
 		end
 	end

@@ -584,7 +584,6 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   zLeft = zLeft - math.tan(global_angle[1])*uRightTorso[2]
   aShiftX[1],aShiftX[2] =aShiftX[1]+global_angle[1],aShiftX[2]+global_angle[1]
 
-
 --pitch adaptation test
 ----[[
   zRight = zRight + math.tan(global_angle[2])*uRightTorso[1]

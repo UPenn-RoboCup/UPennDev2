@@ -59,11 +59,12 @@ end
 
 
 -- Factory
-function libLog.new(prefix, has_raw)
+function libLog.new(prefix, has_raw, dir)
+	dir = dir or LOG_DIR
 	-- Set up log file handles
   local filetime = os.date('%m.%d.%Y.%H.%M.%S')
-  local meta_filename = string.format('%s/%s_m_%s.log',LOG_DIR,prefix,filetime)
-	local raw_filename  = string.format('%s/%s_r_%s.log',LOG_DIR,prefix,filetime)
+  local meta_filename = string.format('%s/%s_m_%s.log',dir,prefix,filetime)
+	local raw_filename  = string.format('%s/%s_r_%s.log',dir,prefix,filetime)
 	local f_meta = io.open(meta_filename,'w')
 	local f_raw, f_raw_c
 	if has_raw then f_raw = io.open(raw_filename,'w') end

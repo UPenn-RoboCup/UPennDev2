@@ -25,3 +25,11 @@ print(string.format( "RWRIST err: %d %d %d",
 	qRArm[7]*RAD_TO_DEG - 90)
 )
 
+
+require'vector'
+local a = vector.new({1,2,3})
+
+c=Body.get_larm_position()
+
+b=vector.slice(c,3,5)
+print(unpack(a+b))

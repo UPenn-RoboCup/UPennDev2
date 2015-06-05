@@ -519,6 +519,45 @@ Body.set_safe_waist_command_position = function(qWaist)
 end
 
 
+--These function should be used instead of set_xarm_command_position, etc
+
+Body.get_safe_larm_position= function()
+  local qLArmRaw = Body.get_larm_position()
+  local armBias = mcm.get_arm_bias()
+  return qLArmRaw - vector.slice(armBias,1,7)
+end
+
+Body.get_safe_rarm_position= function()
+  local qRArmRaw = Body.get_rarm_position()
+  local armBias = vector.new(mcm.get_arm_bias())
+  return qRArmRaw - vector.slice(armBias,8,14)
+end
+
+Body.get_safe_larm_command_position= function()
+  local qLArmRaw = Body.get_larm_command_position()
+  local armBias = mcm.get_arm_bias()
+  return qLArmRaw - vector.slice(armBias,1,7)
+end
+
+Body.get_safe_rarm_command_position= function()
+  local qLArmRaw = Body.get_larm_command_position()
+  local armBias = mcm.get_arm_bias()
+  return qRArmRaw - vector.slice(armBias,8,14)
+end
+
+Body.set_safe_larm_command_position= function(qLArm)
+  local armBias = mcm.get_arm_bias()
+  Body.set_larm_command_position(vector.new(qLArm)+vector.slice(armBias,1,7) )
+end
+
+Body.set_safe_rarm_command_position= function(qRArm)
+  local armBias = mcm.get_arm_bias()
+  Body.set_rarm_command_position(vector.new(qRArm)+vector.slice(armBias,8,14) )
+end
+
+
+
+
 
 
 

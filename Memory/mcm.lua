@@ -46,6 +46,9 @@ shared.stance.COMoffsetPose1 = vector.zeros(3) --com offset for 'default' arm po
 
 shared.arm = {}
 
+--7 larm biases AND 7 rarm biases, 1-7 for larm, 8-14 for rarm
+shared.arm.bias = vector.zeros(14)
+
 --Target arm position (w/o compensation)
 shared.arm.qlarm = vector.zeros(7)
 shared.arm.qrarm = vector.zeros(7)

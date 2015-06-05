@@ -51,6 +51,8 @@ table.insert(arm.init,
 arm.pushdoorup = {}
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.pushdoordown = {}
+
+
 arm.pushdoordown[1] = {
 	left = {
 		via='jacobian_preplan',
@@ -59,15 +61,25 @@ arm.pushdoordown[1] = {
 		weights = {1,1,0}
 	},
 	right = false,
-	--[[
-	right = {
-		via='jacobian_preplan',
-		timeout=8,
-		tr={0.25, -0.285, -0.12, 0*DEG_TO_RAD, 0*DEG_TO_RAD,0},
-		weights = {1,1,0}
-	},
-	--]]
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.valve = {}

@@ -158,16 +158,22 @@ fsm.Arm = {
 	{'armIdle', 'teleopraw', 'armTeleopRaw'},
 	{'armIdle', 'teleop', 'armTeleop'},
 
-	--armInitWalk initializes the arms to walk configuration
-	--This is done in joint-level, and (hopefully) should work with any initial arm configurations
---	{'armIdle', 'init', 'armInitFirst'},
-	{'armIdle', 'init', 'armInitWalk'},
+
+	--This should be called JUST ONCE at the beginning
+	{'armIdle', 'init', 'armInitFirst'},
+--	{'armIdle', 'init', 'armInitWalk'},
+
 
 	{'armIdle', 'bias', 'armInitBias'},
 	{'armIdle', 'ready', 'armManipulation'},
 
 	{'armWalk', 'bias', 'armInitBias'},
 	{'armInitBias', 'done', 'armWalk'},
+
+
+--armInitWalk initializes the arms to walk configuration
+--This is done in joint-level, and (hopefully) should work with any initial arm configurations
+
 
 	-- armWalk does nothing (the arm should be in walk configuration)
 	{'armInitWalk', 'done', 'armWalk'},
@@ -186,6 +192,19 @@ fsm.Arm = {
 	{'armTeleopSJOLDL', 'done', 'armWalk'},
 	{'armTeleopSJOLDR', 'done', 'armWalk'},
 	--]]
+
+
+	--NEW transitions added from SJ
+	{'armWalk', 'pushdoordown', 'armPushDoorDown'},  --THIS WORKS
+	{'armWalk', 'valve', 'armValve'}, --THIS works too!
+	{'armPushDoorDown', 'init', 'armInitWalk'}, --this kinda works too
+
+
+
+
+
+
+
 	
 	-- Teleop IK level
 	{'armTeleop', 'init', 'armInitWalk'},

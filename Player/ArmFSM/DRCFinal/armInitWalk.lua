@@ -66,12 +66,6 @@ function state.entry()
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0},true)
 
-print("L:",qLArmTarget[5]*RAD_TO_DEG)
-print("R:",qRArmTarget[5]*RAD_TO_DEG)
-
-  qLArmTarget = vector.new({110,0,10,-155,90,45,-90})*DEG_TO_RAD
-  qRArmTarget = vector.new({110,0,-10,-160,-90,-40,90})*DEG_TO_RAD
-
   qLArmTarget = vector.new({110,0,10,-155,90,45,-85})*DEG_TO_RAD
   qRArmTarget = vector.new({110,0,-10,-160,-90,-40,85})*DEG_TO_RAD
 
@@ -98,6 +92,20 @@ function state.update()
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
     
   if stage==1 then --Straighten wrist roll and second wrist yaw       
+
+    --check wrist error. do we need to straight the wrist and unscrew?
+
+    local lW5 = qLArmTarget[5] - qLArm[5]
+    local rW5 = qRArmTarget[5] - qRArm[5]
+
+    if math.abs(lW5)<45*DEG_TO_RAD and 
+      math.abs(rW5)<45*DEG_TO_RAD then
+      --don't need to unscrew wrist, directly go to the final angle
+
+      print("DIRECT GO!")
+      stage = 7;
+      return
+    end
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
     t_stage = 1.0
@@ -122,6 +130,22 @@ function state.update()
     t_stage = 1.0
   elseif stage==5 then
     return "done"
+
+
+
+  elseif stage==7 then 
+    --wrist yaw1 error is close to zero for both arm
+    --use the final wrist directly...
+    qLArmTargetC[1],qRArmTargetC[1] = qLArmTarget[1],qRArmTarget[1]
+    qLArmTargetC[4],qRArmTargetC[4] = qLArmTarget[4],qRArmTarget[4]
+    qLArmTargetC[5],qRArmTargetC[5] = qLArmTarget[5],qRArmTarget[5]
+    qLArmTargetC[6],qRArmTargetC[6] = qLArmTarget[6],qRArmTarget[6]
+    qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
+    t_stage = 1
+  elseif stage==8 then
+    qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+  elseif stage==9 then
+    return "done"        
   end
 
 

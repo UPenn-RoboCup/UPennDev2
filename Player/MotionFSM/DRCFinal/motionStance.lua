@@ -95,6 +95,11 @@ function state.update()
     local angle_max = Config.roll_adaptation_max or 2*DEG_TO_RAD
     global_angle[1] = gamma*imu[1] + global_angle[1]
     global_angle[1]=math.max(-angle_max,math.min(angle_max,global_angle[1] ))
+
+
+    global_angle[2] = gamma*imu[2] + global_angle[2]
+    global_angle[2]=math.max(-angle_max,math.min(angle_max,global_angle[2] ))
+
     mcm.set_walk_global_angle(global_angle)
   end
 

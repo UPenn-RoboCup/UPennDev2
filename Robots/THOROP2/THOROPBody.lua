@@ -585,6 +585,13 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   aShiftX[1],aShiftX[2] =aShiftX[1]+global_angle[1],aShiftX[2]+global_angle[1]
 
 
+--pitch adaptation test
+--[[
+  zRight = zRight + math.tan(global_angle[2])*uRightTorso[1]
+  zLeft = zLeft - math.tan(global_angle[2])*uRightTorso[1]
+  aShiftY[1],aShiftY[2] =aShiftY[1]+global_angle[1],aShiftY[2]+global_angle[1]
+--]]
+
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})  
   local count,revise_max = 1,4

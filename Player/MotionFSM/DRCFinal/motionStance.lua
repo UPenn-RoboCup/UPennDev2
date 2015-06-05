@@ -97,9 +97,11 @@ function state.update()
     global_angle[1]=math.max(-roll_adaptation_max,math.min(roll_adaptation_max,global_angle[1] ))
 
     local pitch_adaptation_max = Config.pitch_adaptation_max or 2*DEG_TO_RAD
-    global_angle[2] = gamma*imu[2] + global_angle[2]
-    global_angle[2]=math.max(-pitch_adaptation_max,math.min(pitch_adaptation_max,global_angle[2] ))
-
+    local pitch_threshold = Config.pitch_threshold or  1*DEG_TO_RAD
+    if math.abs(imu[2])>pitch_threshold then
+      global_angle[2] = gamma*imu[2] + global_angle[2]
+      global_angle[2]=math.max(-pitch_adaptation_max,math.min(pitch_adaptation_max,global_angle[2] ))
+    end
     mcm.set_walk_global_angle(global_angle)
   end
 

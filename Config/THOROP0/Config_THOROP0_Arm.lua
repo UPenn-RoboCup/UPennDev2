@@ -58,12 +58,15 @@ arm.pushdoordown[1] = {
 		tr={0.37, 0.285, -0.12, -90*DEG_TO_RAD, 0*DEG_TO_RAD,0},
 		weights = {1,1,0}
 	},
+	right = false,
+	--[[
 	right = {
 		via='jacobian_preplan',
 		timeout=8,
 		tr={0.25, -0.285, -0.12, 0*DEG_TO_RAD, 0*DEG_TO_RAD,0},
 		weights = {1,1,0}
 	},
+	--]]
 }
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist

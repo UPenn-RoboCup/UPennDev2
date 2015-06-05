@@ -119,7 +119,7 @@ end
 
 function state.exit()
 	print(state._NAME..' Exit')
-	head_ch:send'init'
+	--head_ch:send'init'
 end
 
 return state

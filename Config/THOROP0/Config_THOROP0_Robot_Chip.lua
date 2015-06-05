@@ -458,6 +458,7 @@ if Config.birdwalk then
 		0,0,0,  0  ,0,0, --LLeg
 		0,0,0,  0  ,0,0, --RLeg
 		88.8,  89.5,  90,-45,  90,0,0, --RArm
+
 		-180,0, -- Waist flip (for birdwalk)
 		0, 0, 0, -- left gripper/trigger
 		-90, -90, 0, -- right gripper/trigger (UCLA verified)

@@ -40,7 +40,7 @@ Config.use_imu_yaw = true --use imu yaw only for single approach
 
 
 Config.estop_mode = 0 --don't do anything!
---Config.estop_mode = 1 --untorque all the servos 
+Config.estop_mode = 1 --untorque all the servos 
 --Config.estop_mode = 2 --make the robot sit down
 Config.auto_restart = true
 

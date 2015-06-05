@@ -32,12 +32,15 @@ local function cb(skt)
 	if t - log_times[ch_id] < 0.5 then return end
 
 	local meta = munpack(mdata)
-	print(data, type(data)=='table' and #table)
 	if loggers[ch_id].n % 10 then print('Logging '..ch_names[ch_id], loggers[ch_id].n) end
 	if loggers[ch_id].n % 100 == 0 then loggers[ch_id] = libLog.new(ch_names[ch_id], true) end
 	meta.tlog = t
-	meta.rsz = #payload
-	loggers[ch_id]:record(meta, payload, #payload)
+	if payload then
+		meta.rsz = #payload
+		loggers[ch_id]:record(meta, payload, #payload)
+	else
+		loggers[ch_id]:record(meta)
+	end
 	log_times[ch_id] = t
 end
 

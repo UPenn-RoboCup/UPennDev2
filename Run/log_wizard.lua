@@ -50,7 +50,7 @@ if unix.gethostname()=='field' then
 	for key,stream in pairs(Config.net.streams) do
 		if type(stream.tcp)=='number' then
 			print('Logging', key)
-			local r = si.new_subscriber(stream.tcp)
+			local r = si.new_subscriber(stream.tcp, Config.net.robot.wired)
 			r.callback = cb
 			table.insert(channels, r)
 			table.insert(log_times, 0)

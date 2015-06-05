@@ -106,7 +106,7 @@ arm.pushdoordown[1] = {
 	left = {
 		via='jacobian_preplan',
 		timeout=8,
-		tr={0.6, 0.3, -0.07, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		tr={0.1, 0.3, -0.1, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
 		weights = {1,1,0}
 	},
 	right = false,

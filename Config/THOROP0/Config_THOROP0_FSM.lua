@@ -148,6 +148,8 @@ fsm.Head = {
 fsm.Arm = {
 	-- Idle
 	{'armIdle', 'timeout', 'armIdle'},
+	{'armIdle', 'teleopraw', 'armTeleopRaw'},
+	{'armIdle', 'teleop', 'armTeleop'},
 
 	--armInitWalk initializes the arms to walk configuration
 	--This is done in joint-level, and (hopefully) should work with any initial arm configurations

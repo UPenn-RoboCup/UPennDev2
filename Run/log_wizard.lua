@@ -35,8 +35,8 @@ local function cb(skt)
 	print(data, type(data)=='table' and #table)
 	if loggers[ch_id].n % 10 then print('Logging '..ch_names[ch_id], loggers[ch_id].n) end
 	if loggers[ch_id].n % 100 == 0 then loggers[ch_id] = libLog.new(ch_names[ch_id], true) end
-	metadata.tlog = t
-	metadata.rsz = #payload
+	meta.tlog = t
+	meta.rsz = #payload
 	loggers[ch_id]:record(meta, payload, #payload)
 	log_times[ch_id] = t
 end
@@ -50,6 +50,7 @@ if unix.gethostname()=='field' then
 			local r = si.new_subscriber(stream.tcp)
 			r.callback = cb
 			table.insert(channels, r)
+			table.insert(log_times, 0)
 			table.insert(ch_names, key)
 			table.insert(loggers, libLog.new(key, true))
 		end
@@ -62,6 +63,7 @@ else
 			local r = si.new_subscriber(stream.sub)
 			r.callback = cb
 			table.insert(channels, r)
+			table.insert(log_times, 0)
 			table.insert(ch_names, key)
 			table.insert(loggers, libLog.new(key, true))
 		end

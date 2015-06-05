@@ -60,7 +60,7 @@ if IS_WEBOTS then
 			feedback = 'feedback_wizard',
 		slam = 'slam_wizard',
     --head_camera = 'camera_wizard',
-    --chest_lidar = true,
+    chest_lidar = true,
     head_lidar = true,
     --kinect = 'kinect2_wizard',
 			mesh = 'mesh_wizard',

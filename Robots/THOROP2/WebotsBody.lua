@@ -545,7 +545,7 @@ function WebotsBody.update(Body)
 			uComp[3] = 0
 
 			local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
-			local pose = wcm.get_robot_pose()
+			local pose = wcm.get_robot_odometry()
 			local torsoG = util.pose_global(torso0, pose)
 			local bh = mcm.get_stance_bodyHeight()
 
@@ -553,7 +553,7 @@ function WebotsBody.update(Body)
         id='lidar0', n=n,res=res,t=t,angle=Body.get_lidar_position(),
 				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
 				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
-				qWaist = Body.get_waist_position()
+				qWaist = Body.get_safe_waist_position()
       }
 			metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
 			metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))
@@ -572,7 +572,7 @@ function WebotsBody.update(Body)
 			uComp[3] = 0
 
 			local torso0 = util.pose_global(uComp, mcm.get_status_bodyOffset())
-			local pose = wcm.get_robot_pose()
+			local pose = wcm.get_robot_odometry()
 			local torsoG = util.pose_global(torso0, pose)
 			local bh = mcm.get_stance_bodyHeight()
 
@@ -580,7 +580,7 @@ function WebotsBody.update(Body)
         id='lidar1', n=n,res=res,t=t,angle=Body.get_head_position(),
 				tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a},
 				tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a},
-			qWaist = Body.get_waist_position()
+			qWaist = Body.get_safe_waist_position()
       }
 			metadata.tfL16 = T.flatten(T.transform6D(metadata.tfL6))
 			metadata.tfG16 = T.flatten(T.transform6D(metadata.tfG6))

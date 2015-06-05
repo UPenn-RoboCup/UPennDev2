@@ -141,7 +141,9 @@ function walk.update()
 -------------------------------------------------------
 -- Adaptive timing support
 
-    if roll>stop_threshold_angle or roll<-stop_threshold_angle then
+    if roll>stop_threshold_angle or roll<-stop_threshold_angle 
+      and iStep>5
+	then
       emergency_stop = true
       print"EMERGENCY STOP!!!!"
       print"EMERGENCY STOP!!!!"

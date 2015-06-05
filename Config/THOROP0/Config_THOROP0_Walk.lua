@@ -137,6 +137,11 @@ else
   walk.velLimitX = {-.05,.08}
   walk.velLimitY = {-.03,.03}
   walk.velLimitY = {-.02,.02}
+
+--after retightning
+  walk.hipRollCompensation = {2.3*DEG_TO_RAD, 1.3*DEG_TO_RAD}
+
+
 end
 ------------------------------------
 -- Associate with the table

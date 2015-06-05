@@ -77,6 +77,8 @@ function state.entry()
 
   mcm.set_status_temp_tZMP(Config.walk.tZMP)
 
+  mcm.set_walk_global_angle({0,0})
+
 end
 
 function state.update()

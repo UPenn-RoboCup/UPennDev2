@@ -48,7 +48,7 @@ Config.auto_restart = true
 
 Config.roll_adaptation_max = 3.5*DEG_TO_RAD
 Config.pitch_adaptation_max = 2*DEG_TO_RAD
-Config.pitch_adaptation_max = 0*DEG_TO_RAD --disabled
+--Config.pitch_adaptation_max = 0*DEG_TO_RAD --disabled
 Config.pitch_threshold = 1*DEG_TO_RAD
 
 -- Tune for Webots

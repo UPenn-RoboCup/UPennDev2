@@ -203,7 +203,8 @@ local right_leg = {
 	name = 'rleg',
 	ttyname = '/dev/ttyUSB2',
 	-- waist pitch
-	m_ids = {15,17,19, 21, 23,25, 27},
+--	m_ids = {15,17,19, 21, 23,25, 27},
+	m_ids = {16,17,19, 21, 23,25, 27},
 	enable_read = true,
 }
 
@@ -211,7 +212,8 @@ local left_leg = {
 	name = 'lleg',
 	ttyname = '/dev/ttyUSB3',
 	-- waist yaw
-	m_ids = {16,18,20, 22, 24,26},
+--	m_ids = {16,18,20, 22, 24,26},
+	m_ids = {15,18,20, 22, 24,26},
 	enable_read = true,
 }
 
@@ -224,13 +226,15 @@ if Config.birdwalk then
 	name = 'lleg',
 	ttyname = '/dev/ttyUSB2',
 	-- waist pitch
-	m_ids = {15,17,19, 21, 23,25, 27},
+--	m_ids = {15,17,19, 21, 23,25, 27},
+	m_ids = {16,17,19, 21, 23,25, 27},
 	enable_read = true,
   }
   right_leg = {
 	name = 'rleg',
 	ttyname = '/dev/ttyUSB3',
-	m_ids = {16,18,20, 22, 24,26},
+--	m_ids = {16,18,20, 22, 24,26},
+	m_ids = {15,18,20, 22, 24,26},
 	enable_read = true,
   }
 end
@@ -491,8 +495,8 @@ if Config.birdwalk then
 		29,30,  --Head yaw/pitch
 		2,4,6,8,10,12,14, --LArm
 
-		15,17,19,21,23,25, -- right leg as left leg
-		16,18,20,22,24,26, -- left leg as right leg
+		16,17,19,21,23,25, -- right leg as left leg
+		15,18,20,22,24,26, -- left leg as right leg
 
 		1,3,5,7,9,11,13,  --RArm
 		28,27, --Waist yaw/pitch (mk2 is inverted)

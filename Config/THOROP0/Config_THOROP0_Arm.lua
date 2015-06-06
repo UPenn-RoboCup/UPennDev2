@@ -66,13 +66,13 @@ arm.pushdoordown[1] = {
 
 arm.down = {}
 arm.down[1] = {
-	left = {
+	left = false,
+	right = {
 		via='jacobian_preplan',
 		timeout=5,
-		tr={0.2, 0.285, -0.15, 0*DEG_TO_RAD, 0*DEG_TO_RAD,0},
+		tr={0.16, -0.285, -0.15, 0*DEG_TO_RAD, 0*DEG_TO_RAD,0},
 		weights = {1,1,0}
 	},
-	right = false,
 }
 
 arm.plug = {}

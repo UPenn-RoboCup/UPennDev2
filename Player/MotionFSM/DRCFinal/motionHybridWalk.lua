@@ -228,6 +228,16 @@ function walk.update()
         print("torsoYExt:",torsoYExt)
         print("supportModY:",uSupportModY)
       end
+--quick hack for front walking
+      if velCurrent[1]>0.03 then
+        if supportLeg==0 then
+          uSupportModY = uSupportModY - 0.02
+        else
+          uSupportModY = uSupportModY + 0.02
+        end
+      end
+
+      print("supportModY:",uSupportModY)
       uSupport = util.pose_global({0,uSupportModY,0},uSupport)
     end
 

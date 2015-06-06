@@ -54,48 +54,9 @@ local last_velocity=vector.zeros(3)
 
 
 local rotate_only = false
+local forward_only = false
 
 
-
-local function longdistance_approach()
-  local target_pose = wcm.get_step_pose()
-  local current_pose = wcm.get_robot_pose()
-  local target_relative = util.pose_relative(target_pose, current_pose)
-  local target_distance = math.sqrt(target_relative[1]^2+target_relative[2]^2)
-
-  local target_angle = math.atan2(target_relative[2],target_relative[1])
-
-  local vx,vy,va
-  local maxStep = 0.06
-  vx = util.procFunc(target_relative[1]*0.5, 0, maxStep)
-  vy = util.procFunc(target_relative[2]*0.5, 0, maxStep)
-
-  if math.abs(target_angle)>math.pi/2 then 
-    --do not rotate backwards, just walk back
-    target_angle = target_angle+math.pi
-
-  end
-
-
-  local aStep = math.min(1,  math.max(0,   (target_distance-0.5)/(1.0-0.5)  ))
-  va = aStep* ( target_angle*0.5) + (1-aStep)* target_relative[3]*0.5
-
-  local vStep={vx,vy,va}
-    --don't turn and sidestep at once
-  if math.abs(vStep[3])>0.05 then
-    vStep[2] = 0
-    vStep[1] = util.procFunc(vStep[1],0,0.04)
-  end
-  if math.abs(vStep[1])>0.025 then
-    vStep[2] = 0
-  end
-
-
-
-  print(string.format("LD approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*180/math.pi))
-
-  return vStep, false  
-end
 
 
 local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
@@ -214,6 +175,9 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   vStep[2] = math.min(Config.walk.velLimitY[2],math.max(Config.walk.velLimitY[1],vStepTarget[2]))
   vStep[3] = math.min(Config.walk.velLimitA[2],math.max(Config.walk.velLimitA[1],vStepTarget[3]))
 
+
+  if forward_only then vStep[2]=0 end
+
   velMag = math.sqrt(vStep[1]^2+vStep[2]^2)
   vStep[1]=vStep[1]/velMag * math.min(maxStep,velMag)
   vStep[2]=vStep[2]/velMag * math.min(maxStep,velMag)
@@ -323,7 +287,15 @@ print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*18
     end
   end
 
-  if math.abs(vStep[1])<0.005 and math.abs(vStep[2])<0.005 and math.abs(vStep[3])<1.5*DEG_TO_RAD then
+
+  if forward_only then
+    if math.abs(vStep[1])<0.02 and math.abs(vStep[3])<2*DEG_TO_RAD then
+      print("ARRIVED!")
+      return vStep, true
+    end
+  end
+
+  if math.abs(vStep[1])<0.02 and math.abs(vStep[2])<0.02 and math.abs(vStep[3])<2*DEG_TO_RAD then
     print("ARRIVED!")
     return vStep, true
   end
@@ -400,6 +372,10 @@ function state.entry()
     if move_target[1]==0 and move_target[2]==0 then
       rotate_only = true
     end
+    if move_target[2]==0 and move_target[3]==0 then
+      forward_only = true
+    end
+
     print('bodyApproach2 | Waypoint', move_target)
     local pose = wcm.get_robot_pose()
     local global_target_pose = util.pose_global(move_target,pose)

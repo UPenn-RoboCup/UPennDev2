@@ -229,11 +229,11 @@ function walk.update()
         print("supportModY:",uSupportModY)
       end
 --quick hack for front walking
-      if velCurrent[1]>0.03 then
+      if velCurrent[1]>0.04 then
         if supportLeg==0 then
-          uSupportModY = uSupportModY - 0.02
+          uSupportModY = uSupportModY - 0.01
         else
-          uSupportModY = uSupportModY + 0.02
+          uSupportModY = uSupportModY + 0.01
         end
       end
 

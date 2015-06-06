@@ -52,6 +52,9 @@ function state.entry()
   mcm.set_walk_supportX(Config.walk.supportX)
   mcm.set_walk_supportY(Config.walk.supportY)
 
+  mcm.set_stance_COMoffsetBias(Config.COMoffsetBias or 0)
+
+
   mcm.set_walk_hipRollCompensation(Config.walk.hipRollCompensation)
 
   mcm.set_motion_state(0)

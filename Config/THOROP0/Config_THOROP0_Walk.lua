@@ -142,6 +142,12 @@ else
   walk.hipRollCompensation = {2.3*DEG_TO_RAD, 1.3*DEG_TO_RAD}
 
 
+-- after hip swap
+
+  walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
+
+
+
 end
 ------------------------------------
 -- Associate with the table

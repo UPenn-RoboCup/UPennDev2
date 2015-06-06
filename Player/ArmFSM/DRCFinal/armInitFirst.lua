@@ -73,8 +73,8 @@ print("R:",qRArmTarget[5]*RAD_TO_DEG)
   qRArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, -90*DEG_TO_RAD,-40*DEG_TO_RAD,90*DEG_TO_RAD}
 
 
-  qLArmTarget = vector.new({110,0,10,-155,90,45,-90})*DEG_TO_RAD
-  qRArmTarget = vector.new({110,0,-10,-160,-90,-40,90})*DEG_TO_RAD
+  qLArmTarget = vector.new({110,0,10,-155,90,45,-76})*DEG_TO_RAD
+  qRArmTarget = vector.new({110,0,-10,-160,-90,-40,76})*DEG_TO_RAD
 
 
   t_last_debug=t_entry

@@ -57,13 +57,34 @@ arm.pushdoordown[1] = {
 	left = {
 		via='jacobian_preplan',
 		timeout=8,
-		tr={0.37, 0.285, -0.12, -90*DEG_TO_RAD, 0*DEG_TO_RAD,0},
+		tr={0.37, 0.31, -0.05, -90*DEG_TO_RAD, 0*DEG_TO_RAD,0},
 		weights = {1,1,0}
 	},
 	right = false,
 }
 
 
+arm.down = {}
+arm.down[1] = {
+	left = {
+		via='jacobian_preplan',
+		timeout=5,
+		tr={0.2, 0.285, -0.15, 0*DEG_TO_RAD, 0*DEG_TO_RAD,0},
+		weights = {1,1,0}
+	},
+	right = false,
+}
+
+arm.plug = {}
+arm.plug[1] = {
+	right = {
+		via='jacobian_preplan',
+		timeout=8,
+		tr={0.25, -0.285, 0.12, 0*DEG_TO_RAD, -90*DEG_TO_RAD,0*DEG_TO_RAD},
+		weights = {1,1,0}
+	},
+	right = false,
+}
 
 
 

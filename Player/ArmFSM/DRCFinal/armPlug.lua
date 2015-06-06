@@ -24,7 +24,7 @@ function state.entry()
 	t_entry = Body.get_time()
 	t_update = t_entry
 
-	sequence = {unpack(Config.arm.pushdoordown)}
+	sequence = {unpack(Config.arm.plug)}
 
 	--head_ch:send'teleopik'
 

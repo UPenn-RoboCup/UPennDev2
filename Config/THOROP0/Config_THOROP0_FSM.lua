@@ -250,16 +250,21 @@ fsm.Arm = {
 	{'armPushDoorDown', 'teleop', 'armTeleop'},
 	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
 
-	-- PushDoor positioning
-	--[[
-	{'armWalk', 'pushdoor', 'armPushDoorUp'},
-	{'armPushDoorUp', 'done', 'armManipulation'},
+	-- Down arm positioning ( just the left for now
+	{'armWalk', 'down', 'armDown'},
 	--
-	{'armTeleop', 'pushdoor', 'armPushDoorUp'},
-	{'armTeleopRaw', 'pushdoor', 'armPushDoorUp'},
-	{'armPushDoorUp', 'teleop', 'armTeleop'},
-	{'armPushDoorUp', 'teleopraw', 'armTeleopRaw'},
-	--]]
+	{'armTeleop', 'down', 'armDown'},
+	{'armTeleopRaw', 'down', 'armDown'},
+	{'armDown', 'teleop', 'armTeleop'},
+	{'armDown', 'teleopraw', 'armTeleopRaw'},
+
+	-- Plug positioning
+	{'armWalk', 'plug', 'armPlug'},
+	--
+	{'armTeleop', 'plug', 'armPlug'},
+	{'armTeleopRaw', 'plug', 'armPlug'},
+	{'armPlug', 'teleop', 'armTeleop'},
+	{'armPlug', 'teleopraw', 'armTeleopRaw'},
 
 	-- Valve positioning
 	{'armWalk', 'valve', 'armValve'},

@@ -80,7 +80,7 @@ arm.plug[1] = {
 	right = {
 		via='jacobian_preplan',
 		timeout=8,
-		tr={0.25, -0.285, 0.12, 0*DEG_TO_RAD, -90*DEG_TO_RAD,0*DEG_TO_RAD},
+		tr={0.28, -0.285, 0.35, 0*DEG_TO_RAD, -90*DEG_TO_RAD,0*DEG_TO_RAD},
 		weights = {1,1,0}
 	},
 	right = false,

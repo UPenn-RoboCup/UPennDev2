@@ -202,7 +202,8 @@ fsm.Arm = {
 	{'armWalk', 'valve', 'armValve'}, --THIS works too!
 	{'armPushDoorDown', 'init', 'armInitWalk'}, --this kinda works too
 
-
+{'armWalk', 'plug', 'armPlug'},
+	{'armPlug', 'init', 'armInitWalk'},
 
 
 
@@ -233,8 +234,9 @@ fsm.Arm = {
 	{'armManipulation', 'ready', 'armManipulation'},
 	{'armManipulation', 'pushdoordown', 'armPushDoorDown'},
 	{'armManipulation', 'drill', 'armDrill'},
-	{'armManipulation', 'shower', 'armShower'},
+	--{'armManipulation', 'shower', 'armShower'},
 	{'armManipulation', 'valve', 'armValve'},
+	{'armManipulation', 'plug', 'armPlug'},
 	--
 	{'armTeleop', 'ready', 'armManipulation'},
 	{'armTeleopRaw', 'ready', 'armManipulation'},

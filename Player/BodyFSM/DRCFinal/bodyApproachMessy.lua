@@ -289,6 +289,7 @@ print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*18
 
 
   if forward_only then
+print("FORWARD ONLY")
     if math.abs(vStep[1])<0.02 and math.abs(vStep[3])<2*DEG_TO_RAD then
       print("ARRIVED!")
       return vStep, true
@@ -364,6 +365,7 @@ function state.entry()
   finished=false
   last_velocity=vector.zeros(3)
   rotate_only = false
+  forward_only = false
   local move_target = vector.pose(hcm.get_teleop_waypoint())
   if move_target[1]==0 and move_target[2]==0 and move_target[3]==0 then
     finished = true --don't need to walk, just exit
@@ -373,6 +375,7 @@ function state.entry()
       rotate_only = true
     end
     if move_target[2]==0 and move_target[3]==0 then
+      print("FORWARD ONLY",move_target[2],move_target[3])
       forward_only = true
     end
 

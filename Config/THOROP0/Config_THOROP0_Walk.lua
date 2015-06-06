@@ -146,6 +146,9 @@ else
 
   walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
 
+-- after loading battery
+
+  walk.hipRollCompensation = {2*DEG_TO_RAD, 1.5*DEG_TO_RAD}
 
 
 end

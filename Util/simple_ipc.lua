@@ -61,6 +61,14 @@ if type(udp)=='table' and not udp.ffi then
 		return self.sender:send_all(data, uuid)
 		--]]
 	end
+
+	local function udp_send_triple(self, data)
+		-- Double send since packet loss is a possibility
+		local ret, uuid = self.sender:send_all(data)
+		self.sender:send_all(data, uuid)
+		return self.sender:send_all(data, uuid)
+	end
+
 	local function udp_receive(self)
 		return self.receiver:receive()
 	end
@@ -84,6 +92,7 @@ if type(udp)=='table' and not udp.ffi then
 			port = port,
 			fd = sender:descriptor(),
 			send = udp_send,
+			send_triple = udp_send_triple,
 			close = close,
 		}
 		return obj

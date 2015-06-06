@@ -30,6 +30,7 @@ local function sanitizeAll(iqArm, qArm0)
 	local iqArm2 = {}
 	for i, qNow in ipairs(qArm0) do
 		if (i==5 or i==7) then
+			-- TODO: Find the nearest
 			iqArm2[i] = iqArm[i]
 		else
 			iqArm2[i] = sanitize(iqArm[i], qNow)
@@ -56,9 +57,9 @@ local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
 
 	-- infinte rotation
-	----[[
+	--[[
 	for i, v in ipairs(qRange) do
-		if v == math.pi*2 then
+		if i==5 or i==7 then
 			qMin[i] = -2 * math.pi
 			qMax[i] = 2 * math.pi
 			qRange[i] = 4 * math.pi

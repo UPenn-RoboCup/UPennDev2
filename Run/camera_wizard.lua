@@ -112,7 +112,7 @@ local t_debug = 0
 local buffer = {}
 local hz_buffer = 1
 local dt_buffer = 1/hz_buffer
-local nbuffer = 3
+local nbuffer = 1
 --
 local hz_open_send = 0.5
 local dt_open_send = 1/hz_open_send
@@ -148,7 +148,8 @@ local function check_send(msg)
 
 	for i,m in ipairs(buffer) do
 		if camera_ch then camera_ch:send(m) end
-		if udp_ch then udp_ret, udp_err = udp_ch:send(table.concat(m)) end
+		--if udp_ch then udp_ret, udp_err = udp_ch:send(table.concat(m)) end
+		if udp_ch then udp_ret, udp_err = udp_ch:send_triple(table.concat(m)) end
 	end
 
 end

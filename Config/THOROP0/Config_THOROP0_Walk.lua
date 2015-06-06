@@ -128,6 +128,10 @@ else
   walk.velLimitX = {-.10,.20}
   walk.velLimitY = {-.06,.06}
   walk.delay_threshold_angle = 2.5*math.pi/180
+
+  walk.stop_threshold_angle = 4*math.pi/180
+
+
   Config.supportY_preview = 0.0 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0
   walk.supportY = 0.0

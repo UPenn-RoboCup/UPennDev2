@@ -100,6 +100,23 @@ local function unroll_meta(self)
 	return metadata
 end
 
+local function unroll_meta2(self)
+	-- Read the metadata
+	local f_m = assert(io.open(self.m_name,'r'))
+	local m = f_m:read('*all')
+	f_m:close()
+	local unpacker = require'msgpack.MessagePack'.unpacker
+	local it = unpacker(m)
+	local metadata = {}
+	for i, v in it do
+		table.insert(metadata, v)
+		--print(i, v)
+	end
+	self.metadata = metadata
+	return metadata
+end
+
+
 local function log_iter(self)
 	local metadata, buf_t = self.metadata
 	local f_r = io.open(self.r_name,'r')
@@ -131,6 +148,7 @@ function libLog.open(dir,date,prefix)
 	t.m_name = dir..'/'..prefix..'_m_'..date..'.log'
 	t.r_name = dir..'/'..prefix..'_r_'..date..'.log'
 	t.unroll_meta = unroll_meta
+	t.unroll_meta2 = unroll_meta2
 	t.log_iter = log_iter
 	return t
 end

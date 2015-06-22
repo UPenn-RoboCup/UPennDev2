@@ -226,13 +226,13 @@ fsm.Motion = {
 	{'motionStance', 'slowstep', 'motionSlowStep'},
 	{'motionStance', 'stair', 'motionStepPreviewStair'},
 	----- ADD BY HJ JUN 3rd 2015
-	{'motionStance', 'getup', 'motionGetupFront2'},  
- 	{'motionGetupFront2', 'done', 'motionInit'},
+	{'motionStance', 'getup', 'motionGetupFront'},  
+ 	{'motionGetupFront', 'done', 'motionInit'},
 	-----
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
-	--{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
+	{'motionHybridWalk', 'stand', 'motionHybridWalkEnd'},
 	--
 	{'motionStepPreview', 'done', 'motionStance'},
 	--

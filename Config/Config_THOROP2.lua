@@ -38,11 +38,11 @@ if IS_WEBOTS then
 	  	Config.sensors = {
 			ft = true,
 			feedback = 'feedback_wizard',
-		--slam = true,
-    --head_camera = 'camera_wizard',
-    --chest_lidar = true,
-    --head_lidar = true,
-    --kinect = 'kinect2_wizard',
+			slam = true,
+    		head_camera = 'camera_wizard',
+    		chest_lidar = true,
+    		head_lidar = true,
+    		kinect = 'kinect2_wizard',
 			mesh = 'mesh_wizard',
 		 	world = 'world_wizard',
 	  }

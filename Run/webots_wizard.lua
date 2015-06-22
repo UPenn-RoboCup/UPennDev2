@@ -19,7 +19,7 @@ end
 
 local util = require'util'
 local vector = require'vector'
-local Body   = require'Body'
+--local Body   = require'Body'
 require'mcm'
 local lW, uOdometry0
 if not IS_WEBOTS then

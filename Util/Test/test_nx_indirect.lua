@@ -50,7 +50,7 @@ os.exit()
 
 
 local arm_regs = {'position','temperature', 'data', 'command_position', 'position_p'}
---
+--[[
 local larm = Config.chain.larm
 local larm_ok = lD.check_indirect_address(larm.m_ids, arm_regs, left_arm)
 print('LArm Check', larm_ok)

@@ -99,6 +99,8 @@ local function adaptive_support(velocity, uTorso,uLeft,uRight,uLeftNext,uRightNe
   local sideFactor = 0.03 / 0.08
   supportYMod =supportYMod + (-uLeftMove[2] - uRightMove[2])*sideFactor
 
+print("SupportY MOD:",supportYMod)
+
   return supportYMod
 end
 

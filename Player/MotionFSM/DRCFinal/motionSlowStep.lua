@@ -22,7 +22,7 @@ local t_entry, t_update, t_last_step
 
 --Gait parameters
 local tStep
-local stepHeight  = Config.walk.stepHeight
+local stepHeight  = Config.walk.stepHeightSlow or 0.03
 
 local zLeft,zRight --Step landing heights
 local zLeft0,zRight0

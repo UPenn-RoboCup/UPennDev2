@@ -39,10 +39,13 @@ fsm.Body = {
   --
   {'bodyInit', 'done', 'bodyStop'},
 	--
-	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
-	{'bodyStop', 'approach', 'bodyApproachMessy'},
+--	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
 	
-	{'bodyStop', 'stepflat', 'bodyStepAlign'},
+--	{'bodyStop', 'stepflat', 'bodyStepAlign'},
+
+	{'bodyStop', 'approach', 'bodyApproachMessy'},
+	{'bodyStop', 'stepflat', 'bodyApproachMessy'},
+
 	{'bodyStop', 'stop', 'bodyStop'},
   --
   {'bodyApproachMessy', 'stop', 'bodyStop'},
@@ -54,18 +57,21 @@ fsm.Body = {
 
 
   --these should NEVER called with mistake at all
+  --FOR DAY 1
+--[[ 
   {'bodyStop', 'stairclimb', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
+--]]
+
   -- Take two slow stops (for precise alignment)
-  {'bodyStepAlign', 'done', 'bodyStop'},
+--  {'bodyStepAlign', 'done', 'bodyStop'},
 
 
 --Driving stuff
   {'bodyStop', 'driveready', 'bodyDriveready'},   --untorques leg and arm, rotate the head back, centers lidar
   {'bodyDriveready', 'drive', 'bodyDrive'}, -- torques all servos and enable foot and arm control
-
-  {'bodyDrive', 'driveready', 'bodyUndrive'}, -- untorques arm and leg for egress
-  {'bodyUndrive', 'init', 'bodyInit'}, --re-inits leg
+  {'bodyDrive', 'driveready', 'bodyDriveready'}, -- untorques arm and leg for egress
+  {'bodyDriveready', 'init', 'bodyInit'}, --re-inits leg
 
 
   --SOFT E-stop handling
@@ -133,7 +139,7 @@ fsm.Head = {
 	{'headTeleop', 'drive', 'headDrive'},
 	{'headTrackLeft', 'drive', 'headDrive'},
 	{'headTrackRight', 'drive', 'headDrive'},
-	{'headDrive', 'undrive', 'headCenter'}, --unscrew the head safelty
+	{'headDrive', 'init', 'headCenter'}, --unscrew the head safelty
 
 --E-stop handling
 	{'headCenter', 'estop', 'headIdle'}, --go to 180 deg rotated position
@@ -149,18 +155,32 @@ fsm.Head = {
 fsm.Arm = {
 	-- Idle
 	{'armIdle', 'timeout', 'armIdle'},
+	{'armIdle', 'teleopraw', 'armTeleopRaw'},
+	{'armIdle', 'teleop', 'armTeleop'},
+--
+	{'armTeleopRaw', 'idle', 'armIdle'},
+	{'armTeleop', 'idle', 'armIdle'},
 
-	--armInitWalk initializes the arms to walk configuration
-	--This is done in joint-level, and (hopefully) should work with any initial arm configurations
-	{'armIdle', 'init', 'armInitWalk'},
+
+	--This should be called JUST ONCE at the beginning
+	{'armIdle', 'init', 'armInitFirst'},
+--	{'armIdle', 'init', 'armInitWalk'},
+
+
 	{'armIdle', 'bias', 'armInitBias'},
 	{'armIdle', 'ready', 'armManipulation'},
 
 	{'armWalk', 'bias', 'armInitBias'},
 	{'armInitBias', 'done', 'armWalk'},
 
+
+--armInitWalk initializes the arms to walk configuration
+--This is done in joint-level, and (hopefully) should work with any initial arm configurations
+
+
 	-- armWalk does nothing (the arm should be in walk configuration)
 	{'armInitWalk', 'done', 'armWalk'},
+	{'armInitFirst', 'done', 'armWalk'},
 
 	-- From the walk state
 	--{'armWalk', 'pushdoor', 'armPushDoorUp'},
@@ -175,6 +195,20 @@ fsm.Arm = {
 	{'armTeleopSJOLDL', 'done', 'armWalk'},
 	{'armTeleopSJOLDR', 'done', 'armWalk'},
 	--]]
+
+
+	--NEW transitions added from SJ
+	{'armWalk', 'pushdoordown', 'armPushDoorDown'},  --THIS WORKS
+	{'armWalk', 'valve', 'armValve'}, --THIS works too!
+	{'armPushDoorDown', 'init', 'armInitWalk'}, --this kinda works too
+
+{'armWalk', 'plug', 'armPlug'},
+	{'armPlug', 'init', 'armInitWalk'},
+
+
+
+
+
 	
 	-- Teleop IK level
 	{'armTeleop', 'init', 'armInitWalk'},
@@ -186,13 +220,23 @@ fsm.Arm = {
 	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
 	{'armTeleopRaw', 'teleop', 'armTeleop'},
 
+
+
+	{'armTeleop', 'valverotate', 'armValveRotate'},
+	{'armTeleopRaw', 'valverotate', 'armValveRotate'},
+
+	{'armValveRotate', 'teleop', 'armTeleop'},
+	{'armValveRotate', 'teleopraw', 'armTeleopRaw'},
+
+
 	--When raising is done, arm state remains in armManipulation	
 	{'armManipulation', 'init', 'armInitWalk'},
 	{'armManipulation', 'ready', 'armManipulation'},
 	{'armManipulation', 'pushdoordown', 'armPushDoorDown'},
 	{'armManipulation', 'drill', 'armDrill'},
-	{'armManipulation', 'shower', 'armShower'},
+	--{'armManipulation', 'shower', 'armShower'},
 	{'armManipulation', 'valve', 'armValve'},
+	{'armManipulation', 'plug', 'armPlug'},
 	--
 	{'armTeleop', 'ready', 'armManipulation'},
 	{'armTeleopRaw', 'ready', 'armManipulation'},
@@ -208,16 +252,21 @@ fsm.Arm = {
 	{'armPushDoorDown', 'teleop', 'armTeleop'},
 	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
 
-	-- PushDoor positioning
-	--[[
-	{'armWalk', 'pushdoor', 'armPushDoorUp'},
-	{'armPushDoorUp', 'done', 'armManipulation'},
+	-- Down arm positioning ( just the left for now
+	{'armWalk', 'down', 'armDown'},
 	--
-	{'armTeleop', 'pushdoor', 'armPushDoorUp'},
-	{'armTeleopRaw', 'pushdoor', 'armPushDoorUp'},
-	{'armPushDoorUp', 'teleop', 'armTeleop'},
-	{'armPushDoorUp', 'teleopraw', 'armTeleopRaw'},
-	--]]
+	{'armTeleop', 'down', 'armDown'},
+	{'armTeleopRaw', 'down', 'armDown'},
+	{'armDown', 'teleop', 'armTeleop'},
+	{'armDown', 'teleopraw', 'armTeleopRaw'},
+
+	-- Plug positioning
+	{'armWalk', 'plug', 'armPlug'},
+	--
+	{'armTeleop', 'plug', 'armPlug'},
+	{'armTeleopRaw', 'plug', 'armPlug'},
+	{'armPlug', 'teleop', 'armTeleop'},
+	{'armPlug', 'teleopraw', 'armTeleopRaw'},
 
 	-- Valve positioning
 	{'armWalk', 'valve', 'armValve'},
@@ -248,6 +297,7 @@ fsm.Arm = {
 	{'armDrill', 'teleopraw', 'armTeleopRaw'},
 
 	-- Drill positioning (right)
+	--[[
 	{'armDrillRight', 'done', 'armCarry'},
 	{'armDrillRight', 'ready', 'armManipulation'},
 	--
@@ -256,7 +306,7 @@ fsm.Arm = {
 	{'armDrillRight', 'teleop', 'armTeleop'},
 	{'armDrillRight', 'teleopraw', 'armTeleopRaw'},
 
-	-- Drill positioning (right)
+	-- Drill positioning (left)
 	{'armDrillLeft', 'done', 'armCarry'},
 	{'armDrillLeft', 'ready', 'armManipulation'},
 	--
@@ -264,6 +314,7 @@ fsm.Arm = {
 	{'armTeleopRaw', 'drill', 'armDrillLeft'},
 	{'armDrillLeft', 'teleop', 'armTeleop'},
 	{'armDrillLeft', 'teleopraw', 'armTeleopRaw'},
+	--]]
 
 	-- Shower positioning
 	{'armShower', 'done', 'armTeleop'},
@@ -296,11 +347,11 @@ fsm.Arm = {
 	--]]
 
 
-
+	{'armTeleopRaw', 'driveready', 'armDriveready'},
 	{'armWalk', 'driveready', 'armDriveready'},
 	{'armDriveready', 'drive', 'armDrive'},
-	{'armDrive', 'undrive', 'armUndrive'},
-	{'armUndrive', 'init', 'armInitWalk'},
+	{'armDrive', 'driveready', 'armDriveready'},
+	{'armDriveready', 'init', 'armInitWalk'},
 }
 
 -- E-stop handling
@@ -389,25 +440,25 @@ fsm.Motion = {
 	{'motionStance', 'uninit', 'motionUnInit'},
 	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
 	{'motionStance', 'preview', 'motionStepPreview'},
-	{'motionStance', 'slowstep', 'motionSlowStep'},
+--	{'motionStance', 'slowstep', 'motionSlowStep'},
 	{'motionStance', 'stair', 'motionStepPreviewStair'},
 	--
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
+	{'motionHybridWalk', 'emergency', 'motionStance'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
 	--
 	{'motionStepPreview', 'done', 'motionStance'},
 	--
 	{'motionStepPreviewStair', 'done', 'motionStance'},
 	--
-	{'motionSlowStep', 'done', 'motionStance'},
+--	{'motionSlowStep', 'done', 'motionStance'},
 
 	--DRIVE
 	{'motionStance', 'driveready', 'motionDriveready'}, --untorque lower body
 	{'motionDriveready', 'drive', 'motionDrive'}, --torque the body, enable foot control
-	
-	{'motionDrive', 'undrive', 'motionUndrive'}, --untorque lower body again
-	{'motionUndrive', 'stand', 'motionInit'}, --torque all the legs and make the robot stand up
+	{'motionDrive', 'driveready', 'motionDriveready'}, --untorque lower body again
+	{'motionDriveready', 'stand', 'motionInit'}, --torque all the legs and make the robot stand up
 
 
 }

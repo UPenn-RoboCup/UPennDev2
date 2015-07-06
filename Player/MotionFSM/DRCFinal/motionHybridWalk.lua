@@ -26,10 +26,12 @@ local stepHeight  = Config.walk.stepHeight
 -- They are filtered.  TODO: Use dt in the filters
 local angleShift = vector.new{0,0,0,0}
 
-local iStep,ph_last
-
+local iStep,ph_last,roll_max
 
 local zmp_param_set = false
+
+local emergency_stop = false
+
 
 -- What foot trajectory are we using?
 
@@ -60,6 +62,10 @@ end
 -- State machine methods --
 ---------------------------
 function walk.entry()
+
+  emergency_stop = false
+
+
   print(walk._NAME..' Entry' )
   mcm.set_status_stabilization_mode(0) --We're in single support
   if Config.use_heeltoe_walk then 
@@ -111,6 +117,7 @@ function walk.entry()
   end
   mcm.set_motion_state(4)
   zmp_param_set = false
+  roll_max = 0
 end
 
 function walk.update()
@@ -127,11 +134,22 @@ function walk.update()
     local rpy = Body.get_rpy()
     local roll = rpy[1]
     local delay_threshold_angle = Config.walk.delay_threshold_angle or math.huge
+    local stop_threshold_angle = Config.walk.stop_threshold_angle or math.huge
     local delay_factor = Config.walk.delay_factor or {0.8,1.7}
 
 
 -------------------------------------------------------
 -- Adaptive timing support
+
+    if roll>stop_threshold_angle or roll<-stop_threshold_angle 
+      and iStep>5
+	then
+      emergency_stop = true
+      print"EMERGENCY STOP!!!!"
+      print"EMERGENCY STOP!!!!"
+      print"EMERGENCY STOP!!!!"
+      print"EMERGENCY STOP!!!!"
+    end
 
     if supportLeg==0 then
 --      print("Right landing, roll angle",roll*RAD_TO_DEG)
@@ -164,6 +182,10 @@ function walk.update()
   ph_last = ph
   
   if is_next_step then
+    if emergency_stop then 
+      mcm.set_walk_ismoving(0) --no more moving (body FSM can check this)
+      return "emergency" 
+    end
     --Should we stop now?
     local stoprequest = mcm.get_walk_stoprequest()
     local steprequest = mcm.get_walk_steprequest()    
@@ -182,10 +204,12 @@ function walk.update()
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
 
+
     local uTorsoVelCurrent = mcm.get_status_uTorsoVel()
     if Config.variable_support then
       local torsoVelYMin = 0.20
       local torsoVelYFactor = 0.5 
+      local torsoVelYFactor = 0 
 
       local torsoVelXMin = 0.07
       local torsoVelXFactor = 0.1
@@ -204,6 +228,32 @@ function walk.update()
         print("torsoYExt:",torsoYExt)
         print("supportModY:",uSupportModY)
       end
+
+
+      if velCurrent[2]>0 and 	supportLeg ==0 then
+          uSupportModY = uSupportModY - 0.01
+      end
+
+      if velCurrent[2]>0 and 	supportLeg ~=0 then
+          uSupportModY = uSupportModY + 0.01
+      end
+
+
+
+
+
+
+
+--quick hack for front walking
+      if velCurrent[1]>0.04 then
+        if supportLeg==0 then
+          uSupportModY = uSupportModY - 0.01
+        else
+          uSupportModY = uSupportModY + 0.01
+        end
+      end
+
+      print("supportModY:",uSupportModY)
       uSupport = util.pose_global({0,uSupportModY,0},uSupport)
     end
 
@@ -287,7 +337,7 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit') 
-  print("Total time: ",Body.get_time()-t_entry) 
+--  print("Total time: ",Body.get_time()-t_entry) 
   if zmp_param_set then
     local uTorsoVel = zmp_solver:get_com_vel(1)   --Get the final COM velocity
     mcm.set_status_uTorsoVel(uTorsoVel)

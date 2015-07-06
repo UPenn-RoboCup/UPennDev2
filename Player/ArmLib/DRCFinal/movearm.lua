@@ -61,7 +61,11 @@ function movearm.goto(l, r)
 
 	local lplan = type(l)=='table' and P[l.via]
 	if type(lplan)=='function' then
-		lco = coroutine.create(lplan)
+		--lco = coroutine.create(lplan)
+
+		-- must copy the plan to keep the wait ok
+		l = util.shallow_copy(l)
+
 		if l.q then vector.new(l.q) end
 		if l.weights then vector.new(l.weights) end
 		if l.qWaistGuess then vector.new(l.qWaistGuess) end
@@ -77,8 +81,14 @@ function movearm.goto(l, r)
 		l.qArm0 = vector.new(l.qLArm0 or qcLArm)
 		l.qWaist0 = vector.new(l.qWaist0 or qcWaist)
 	end
+
+
 	local rplan = type(r)=='table' and P[r.via]
 	if type(rplan)=='function' then
+
+		-- must copy the plan to keep the wait ok
+		r = util.shallow_copy(r)
+
 		-- Check the various formats
 		if r.tr then
 			if #r.tr==6 then

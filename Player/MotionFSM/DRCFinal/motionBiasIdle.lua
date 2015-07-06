@@ -31,6 +31,9 @@ function state.update()
 
   Body.set_lleg_command_position(qLLegTarget)
   Body.set_rleg_command_position(qRLegTarget)
+
+ mcm.set_walk_global_angle({0,0})
+
 end
 
 function state.exit()

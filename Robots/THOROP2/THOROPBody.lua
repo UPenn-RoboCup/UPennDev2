@@ -519,6 +519,45 @@ Body.set_safe_waist_command_position = function(qWaist)
 end
 
 
+--These function should be used instead of set_xarm_command_position, etc
+
+Body.get_safe_larm_position= function()
+  local qLArmRaw = Body.get_larm_position()
+  local armBias = mcm.get_arm_bias()
+  return qLArmRaw - vector.slice(armBias,1,7)
+end
+
+Body.get_safe_rarm_position= function()
+  local qRArmRaw = Body.get_rarm_position()
+  local armBias = vector.new(mcm.get_arm_bias())
+  return qRArmRaw - vector.slice(armBias,8,14)
+end
+
+Body.get_safe_larm_command_position= function()
+  local qLArmRaw = Body.get_larm_command_position()
+  local armBias = mcm.get_arm_bias()
+  return qLArmRaw - vector.slice(armBias,1,7)
+end
+
+Body.get_safe_rarm_command_position= function()
+  local qLArmRaw = Body.get_larm_command_position()
+  local armBias = mcm.get_arm_bias()
+  return qRArmRaw - vector.slice(armBias,8,14)
+end
+
+Body.set_safe_larm_command_position= function(qLArm)
+  local armBias = mcm.get_arm_bias()
+  Body.set_larm_command_position(vector.new(qLArm)+vector.slice(armBias,1,7) )
+end
+
+Body.set_safe_rarm_command_position= function(qRArm)
+  local armBias = mcm.get_arm_bias()
+  Body.set_rarm_command_position(vector.new(qRArm)+vector.slice(armBias,8,14) )
+end
+
+
+
+
 
 
 
@@ -545,6 +584,12 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   zLeft = zLeft - math.tan(global_angle[1])*uRightTorso[2]
   aShiftX[1],aShiftX[2] =aShiftX[1]+global_angle[1],aShiftX[2]+global_angle[1]
 
+--pitch adaptation test
+----[[
+  zRight = zRight + math.tan(global_angle[2])*uRightTorso[1]
+  zLeft = zLeft - math.tan(global_angle[2])*uRightTorso[1]
+  aShiftY[1],aShiftY[2] =aShiftY[1]+global_angle[2],aShiftY[2]+global_angle[2]
+--]]
 
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
   local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})  
@@ -597,6 +642,12 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
+  local comX_bias = mcm.get_stance_COMoffsetBias()
+  uCOM[1]=uCOM[1]+comX_bias
+
+
+
+
    uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
    uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
    local pTorso = vector.new({
@@ -606,6 +657,9 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
           qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
    count = count+1
   end
+
+
+
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
   return {uTorsoOffset[1],uTorsoOffset[2]}, qLegs, com[3]/com[4]
 end

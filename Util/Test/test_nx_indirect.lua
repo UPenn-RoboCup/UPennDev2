@@ -18,8 +18,13 @@ if not one_chain then
   else
     right_arm = lD.new_bus('/dev/ttyUSB0')
     left_arm  = lD.new_bus'/dev/ttyUSB1'
+if Config.birdwalk then
+    right_leg = lD.new_bus'/dev/ttyUSB3'
+    left_leg  = lD.new_bus'/dev/ttyUSB2'
+else
     right_leg = lD.new_bus'/dev/ttyUSB2'
     left_leg  = lD.new_bus'/dev/ttyUSB3'
+end
     chain = right_leg
   end
 end
@@ -29,23 +34,21 @@ local nx_registers = lD.nx_registers
 local mx_registers = lD.mx_registers
 
 local leg_regs = {'position','temperature', 'data', 'command_position', 'position_p'}
-----[[
 local lleg = Config.chain.lleg
 local lleg_ok = lD.check_indirect_address(lleg.m_ids, leg_regs, left_leg)
 print('LLeg Check', lleg_ok)
---if not lleg_ok then
+if not lleg_ok then
   lD.set_indirect_address(lleg.m_ids, leg_regs, left_leg)
---end
---]]
---
+end
 local rleg = Config.chain.rleg
 local rleg_ok = lD.check_indirect_address(rleg.m_ids, leg_regs, right_leg)
 print('RLeg Check', rleg_ok)
---if not rleg_ok then
+if not rleg_ok then
   lD.set_indirect_address(rleg.m_ids, leg_regs, right_leg)
---end
---]]
+end
 os.exit()
+
+
 local arm_regs = {'position','temperature', 'data', 'command_position', 'position_p'}
 --[[
 local larm = Config.chain.larm

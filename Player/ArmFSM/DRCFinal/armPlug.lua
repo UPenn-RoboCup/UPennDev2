@@ -24,7 +24,7 @@ function state.entry()
 	t_entry = Body.get_time()
 	t_update = t_entry
 
-	sequence = {unpack(Config.arm.carry)}
+	sequence = {unpack(Config.arm.plug)}
 
 	--head_ch:send'teleopik'
 
@@ -111,7 +111,7 @@ function state.update()
 			okL = type(lco)=='thread' or lco==false
 			okR = type(rco)=='thread' or rco==false
 		else
-			return doneWaist and 'done'
+			return 'done'
 		end
 	end
 

@@ -31,7 +31,7 @@ local streams = Config.net.streams
 local h0 = libHokuyo.new_hokuyo(10) -- chest on mk2
 h0.name = 'chest'
 h0.ch = si.new_publisher(streams.lidar0.sub)
-h0.tcp_ch = si.new_publisher(streams.lidar0.tcp)
+--h0.tcp_ch = si.new_publisher(streams.lidar0.tcp)
 h0.metadata = {
 	id='lidar0'
 }
@@ -64,10 +64,11 @@ local cb = function(self, data)
 	local uComp = mcm.get_stance_uTorsoComp()
 	uComp[3] = 0
 	local torso0 = pose_global(uComp, mcm.get_status_bodyOffset())
-	local pose = wcm.get_robot_pose()
+	--local pose = wcm.get_robot_pose()
+	local pose = mcm.get_status_odometry()
 	local torsoG = pose_global(torso0, pose)
 	local bh = mcm.get_stance_bodyHeight()
-	local qW = Body.get_waist_position()
+	local qW = Body.get_safe_waist_command_position()
 
 	metadata.tfL6 = {torso0.x, torso0.y, bh, rpy[1], rpy[2], torso0.a}
 	metadata.tfG6 = {torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
@@ -80,7 +81,7 @@ local cb = function(self, data)
 
 	local send_data = {mpack(metadata), data}
 	local ret = self.ch:send(send_data)
-	local ret = self.tcp_ch:send(send_data)
+--	local ret = self.tcp_ch:send(send_data)
 
 	if ENABLE_LOG then
 		self.logger:record(metadata, data)

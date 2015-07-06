@@ -82,6 +82,24 @@ function process_keyinput()
       legBias[selected_servo+6]=legBias[selected_servo+6]+bias_mag
       bias_edited = true      
 
+
+    elseif byte==string.byte("x") then    
+      local cob = mcm.get_stance_COMoffsetBias()
+      cob=cob+0.005
+      print("COM offset bias:",cob)
+      mcm.set_stance_COMoffsetBias(cob)
+
+    elseif byte==string.byte("z") then 
+      local cob = mcm.get_stance_COMoffsetBias()
+      cob=cob-0.005
+      print("COM offset bias:",cob)
+      mcm.set_stance_COMoffsetBias(cob)
+
+
+
+
+
+
     elseif byte==string.byte("0") then
       print(string.format("Current bias: \n%.2f %.2f %.2f %.2f %.2f %.2f\n%.2f %.2f %.2f %.2f %.2f %.2f ",
       unpack(vector.new(legBias)*RAD_TO_DEG)))

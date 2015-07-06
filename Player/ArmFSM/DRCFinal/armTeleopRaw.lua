@@ -15,6 +15,7 @@ local default_plan_timeout = 30
 
 local teleopLArm, teleopRArm, teleopWaist
 
+local doneWaist
 function state.entry()
   print(state._NAME..' Entry')
   -- Update the time of entry
@@ -48,7 +49,7 @@ function state.entry()
 	qRWaypoint = nil
 	qLWaistpoint = nil
 	qRWaistpoint = nil
-
+	doneWaist = true
 end
 
 function state.update()
@@ -83,8 +84,7 @@ function state.update()
 		--teleopLArm = vector.copy(teleopLArm1)
 		teleopLArm = teleopLArm1
 		teleopWaist = teleopWaist1
-
-
+		doneWaist = true
 		local via = wChange and 'joint_waist_preplan' or 'joint_preplan'
 		local lco1, rco1 = movearm.goto({
 			q = teleopLArm,
@@ -97,6 +97,7 @@ function state.update()
 	if rChange then
 		teleopRArm = teleopRArm1
 		teleopWaist = teleopWaist1
+		doneWaist = true
 		print(state._NAME, 'R target', teleopRArm)
 		local via = wChange and 'joint_waist_preplan' or 'joint_preplan'
 		local lco1, rco1 = movearm.goto(false, {
@@ -106,6 +107,22 @@ function state.update()
 			timeout = default_plan_timeout
 		})
 		rco = rco1
+	end
+	if wChange and not (lChange or rChange) then
+		teleopWaist = teleopWaist1
+		print(state._NAME, 'W target', teleopWaist)
+		doneWaist = false
+	end
+
+	if not doneWaist then
+		local qWaist = Body.get_safe_waist_command_position()
+		local qWaist_approach
+		qWaist_approach, doneWaist = util.approachTol(qWaist, teleopWaist, {10 * DEG_TO_RAD, 10 * DEG_TO_RAD}, dt, {1*DEG_TO_RAD, 1*DEG_TO_RAD})
+		Body.set_safe_waist_command_position(qWaist_approach)
+		-- finish the waist before moving anywhere else next
+		-- Cancel the other plans
+		lco, rco = false, false
+		return
 	end
 
 	local lStatus = type(lco)=='thread' and coroutine.status(lco) or 'dead'

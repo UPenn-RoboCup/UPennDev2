@@ -15,7 +15,7 @@ local IP = {
 
 -- Who do we use?
 local WHO = IP.CHIP2
-local ROBOT_IP = IP.DALE
+local ROBOT_IP = IP.CHIP
 local TEAM_NUMBER = 8
 
 local net = {
@@ -50,6 +50,7 @@ net.rpc = {
 streams.feedback = {
 	ws = 9002,
 	udp = 2002,
+	--tcp = 43200,
 	sub = 'feedback'
 }
 streams.ittybitty0 = {
@@ -78,13 +79,13 @@ streams.camera1 = {
 streams.lidar0 = {
 	ws = 9010,
 	udp = 17010,
-	tcp = 43310,
+	--tcp = 43310,
 	sub = 'lidar0'
 }
 streams.lidar1 = {
 	ws = 9011,
 	udp = 17011,
-	tcp = 43311,
+	--tcp = 43311,
 	sub = 'lidar1'
 }
 streams.mesh0 = {
@@ -99,6 +100,7 @@ streams.mesh1 = {
 	tcp = 43301,
 	sub = 'mesh1'
 }
+--[[
 streams.kinect2_depth = {
 	ws = 9046,
 	udp = 17046,
@@ -111,6 +113,7 @@ streams.kinect2_color = {
 	tcp = 43347,
 	sub = 'kinect2_color'
 }
+--]]
 --[[
 streams.audio = {
 ws = 9014,

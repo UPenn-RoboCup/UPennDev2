@@ -25,7 +25,9 @@ function state.update()
   t_update = t
 
   local estop = hcm.get_teleop_estop()
-  if t-t_entry>2.0 and estop==0 then return "init" end
+  if Config.auto_restart and t-t_entry>2.0 
+	and estop==0 
+	then return "init" end
 
 --[[
   local gamestate = gcm.get_game_state()

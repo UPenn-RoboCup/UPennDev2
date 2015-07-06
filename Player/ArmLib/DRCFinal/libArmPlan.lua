@@ -15,32 +15,8 @@ local min, max = require'math'.min, require'math'.max
 local INFINITY = require'math'.huge
 local EPSILON = 1e-2 * DEG_TO_RAD
 
-local function qDiff(iq, q0)
-	local diff_use = {}
-	local diff, mod_diff
-	for i, q in ipairs(q0) do
-		diff = iq[i] - q
-		mod_diff = mod_angle(diff)
-		diff_use[i] = (fabs(diff) > fabs(mod_diff)) and mod_diff or diff
-	end
-	return diff_use
-end
-
-local function qDiff2(iq, q0, qMin, qMax)
-	local qD0 = iq - q0
-	local qD1 = qDiff(iq, q0)
-	local qD = {}
-	for i, v in ipairs(qD0) do
-		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
-			qD[i] = qD1[i]
-		else
-			qD[i] = qD0[i]
-		end
-	end
-	return qD
-end
-
-local function sanitize0(qPlanned, qNow)
+-- Does not work for the infinite turn motors
+local function sanitize(qPlanned, qNow)
 	local qDiff = qPlanned - qNow
 	local qDiffEffective = mod_angle(qDiff)
 	if fabs(qDiffEffective) < fabs(qDiff) then
@@ -50,29 +26,25 @@ local function sanitize0(qPlanned, qNow)
 	end
 end
 
--- Get the real planned q for infinite turn
-local function sanitize1(qPlanned, qNow)
-	local qNowEffective = mod_angle(qNow)
-	local qPlannedEffective = mod_angle(qPlanned)
-	local qDiff = qPlannedEffective - qNowEffective
-	local qDiffEffective = mod_angle(qDiff)
-	if fabs(qDiffEffective) < fabs(qDiff) then
-		return qNow + qDiffEffective
-	else
-		return qNow + qDiff
-	end
-end
-
-local function sanitizeAll1(iqArm, cur_qArm)
+local function sanitizeAll(iqArm, qArm0)
 	local iqArm2 = {}
-	for i, qNow in ipairs(cur_qArm) do
-		if i==5 or i==7 then
-			iqArm2[i] = sanitize1(iqArm[i], qNow)
+	for i, qNow in ipairs(qArm0) do
+		if (i==5 or i==7) then
+			-- TODO: Find the nearest
+			iqArm2[i] = iqArm[i]
 		else
-			iqArm2[i] = sanitize0(iqArm[i], qNow)
+			iqArm2[i] = sanitize(iqArm[i], qNow)
 		end
 	end
 	return iqArm2
+end
+
+local function qDiff(iqArm, qArm0, qMin, qMax)
+	local qD = {}
+	for i, q0 in ipairs(qArm0) do
+		qD[i] = (i==5 or i==7) and (iqArm[i] - q0) or sanitize(iqArm[i], q0)
+	end
+	return qD
 end
 
 -- Use the Jacobian
@@ -85,9 +57,9 @@ local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
 
 	-- infinte rotation
-	----[[
+	--[[
 	for i, v in ipairs(qRange) do
-		if v == math.pi*2 then
+		if i==5 or i==7 then
 			qMin[i] = -2 * math.pi
 			qMax[i] = 2 * math.pi
 			qRange[i] = 4 * math.pi
@@ -158,6 +130,7 @@ local function co_play(path, callback)
 	if type(callback)=='function' then
 		callback(qArmSensed, qWaistSensed)
 	end
+
 	for i, qArmPlanned in ipairs(path) do
 		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
 		if type(callback)=='function' then
@@ -219,8 +192,8 @@ local defaultWeights = {0, 0, 0, 0, 2}
 --
 local function valid_cost(iq, qMin, qMax)
 	for i, q in ipairs(iq) do
-		if qMin[i]==-180*DEG_TO_RAD and qMax[i]==180*DEG_TO_RAD then --inf turn
-		elseif q<qMin[i] or q>qMax[i] then return INFINITY end
+		if i==5 or i==7 then --inf turn
+		elseif q<qMin[i]-EPSILON or q>qMax[i]+EPSILON then return INFINITY end
 	end
 	return 0
 end
@@ -233,12 +206,12 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	local iqArms = {}
 	for i, q in ipairs(self.shoulderAngles) do
 		local iq = self.inverse(tr, qArm, q, 0, qWaist)
-		--local iq2 = sanitizeAll0(iq, qArm)
-		local iq2 = sanitizeAll1(iq, qArm)
+		local iq2 = sanitizeAll(iq, qArm)
 		tinsert(iqArms, vector.new(iq2))
 	end
 	-- Form the FKs
 	local fks = {}
+
 	for ic, iq in ipairs(iqArms) do
 		fks[ic] = self.forward(iq, qWaist)
 	end
@@ -261,7 +234,8 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	local cdiff = {}
 	for ic, iq in ipairs(iqArms) do
 		--tinsert(cdiff, fabs(iq[3] - qArm[3]))
-		tinsert(cdiff, vnorm(qDiff2(iq, qArm, qMin, qMax)))
+		tinsert(cdiff, vnorm(qDiff(iq, qArm, qMin, qMax)))
+		--tinsert(cdiff, vnorm(iq - qArm))
 	end
 	-- Cost for being tight (Percentage)
 	local ctight, wtight = {}, weights[3] or 0
@@ -334,7 +308,10 @@ function libArmPlan.joint_preplan(self, plan)
 	local qMin, qMax = self.qMin, self.qMax
 	local dq_limit = self.dq_limit
 	for i, q in ipairs(qArmF) do
-		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+		if i==5 or i==7 then
+			-- No limit for infinite rotation :P
+			--qArmF[i] = sanitize(qArmF[i], qArm0[i])
+		else
 			--[[
 			assert(q+EPSILON>=qMin[i],
 				string.format('%s Below qMin[%d] %g < %g', prefix, i, q, qMin[i]))
@@ -342,9 +319,6 @@ function libArmPlan.joint_preplan(self, plan)
 				string.format('%s Above qMax[%d] %g > %g', prefix, i, q, qMax[i]))
 			--]]
 			qArmF[i] = min(max(qMin[i], q), qMax[i])
-		else
-			-- nearest (sanitize)
-			qArmF[i] = sanitize1(qArmF[i], qArm0[i])
 		end
 	end
 	-- Set the timeout
@@ -428,11 +402,16 @@ function libArmPlan.joint_waist_preplan(self, plan)
 	local qWaistArm0 = {qWaist0[1], unpack(qArm0)}
 	-- Set the limits and check compliance
 	local hz, dt = self.hz, self.dt
-	local qMin = {-math.pi, unpack(self.qMin)}
-	local qMax = {math.pi, unpack(self.qMax)}
+	local qMin = {-math.pi/3, unpack(self.qMin)}
+	local qMax = {math.pi/3, unpack(self.qMax)}
 	local dq_limit = {8*DEG_TO_RAD*dt, unpack(self.dq_limit)}
+
+	-- Fix up the joint preplan
+	-- TODO: this does not look right
 	for i, q in ipairs(qWaistArmF) do
-		if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+		if i==5 or i==7 then
+			--qArmF[i] = sanitize1(qArmF[i], qArm0[i])
+		else
 			--[[
 			assert(q+EPSILON>=qMin[i],
 				string.format('%s Below qMin[%d] %g < %g', prefix, i, q, qMin[i]))
@@ -522,6 +501,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	-- Grab our limits
 	local dq_limit = self.dq_limit
 	local qMin, qMax = self.qMin, self.qMax
+
 	-- Set the timing
 	local timeout = assert(plan.timeout, prefix..'No timeout')
 	local hz, dt = self.hz, self.dt
@@ -557,8 +537,8 @@ function libArmPlan.jacobian_preplan(self, plan)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
 		if qArmFGuess then
-			local dqdtNull = nullspace * torch.Tensor(qDiff2(qArm, qArmFGuess, qMin, qMax))
-			--local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+			--local dqdtNull = nullspace * torch.Tensor(qDiff(qArm, qArmFGuess, qMin, qMax))
+			local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
 			dqdtCombo = dqdtArm - dqdtNull
 		else
 			dqdtCombo = dqdtArm
@@ -582,10 +562,10 @@ function libArmPlan.jacobian_preplan(self, plan)
 		--print('qArm', qOld)
 		-- Check joint limit compliance
 		for i, q in ipairs(qArm) do
-			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
-				qArm[i] = min(max(qMin[i], q), qMax[i])
+			if i==5 or i==7 then
+				--qArm[i] = sanitize(q, qOld[i])
 			else
-				qArm[i] = sanitize1(q, qOld[i])
+				qArm[i] = min(max(qMin[i], q), qMax[i])
 			end
 		end
 		-- Add to the path
@@ -598,7 +578,8 @@ function libArmPlan.jacobian_preplan(self, plan)
 	end
 	-- Play the plan
 	local qArmF = co_play(path)
-	if #path==0 then return qArm end
+	if Config.debug.armplan then print(prefix..'qArmF', qArmF) end
+	if not qArmF then return qArm end
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
 		if Config.debug.armplan then
@@ -608,18 +589,23 @@ function libArmPlan.jacobian_preplan(self, plan)
 		return qArmF
 	end
 	-- Goto the final
+	if Config.debug.armplan then print(prefix..'Final find_shoulder') end
 	local qArmF1 = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0)
-	if not qArmF1 then
-		if Config.debug.armplan then print(prefix..'No final solution found') end
-		return qArmF
-	end
-	-- Use the pre-existing planner
-	return libArmPlan.joint_preplan(self, {
+	if Config.debug.armplan then print(prefix..'Final solution', qArmF1) end
+	if not qArmF1 then return qArmF end
+
+	local final_plan = {
 		q = qArmF1,
 		qArm0 = qArmF,
 		qWaist0 = qWaist0,
 		duration = 1
-	})
+	}
+	if Config.debug.armplan then
+	  print(prefix..'Final joint preplan')
+		util.ptable(final_plan)
+	end
+	-- Use the pre-existing planner
+	return libArmPlan.joint_preplan(self, final_plan)
 end
 
 -- Plan via Jacobian for waist and arm
@@ -707,7 +693,9 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 		qWaistArm = qWaistArm + dqCombo
 		-- Check joint limit compliance
 		for i, q in ipairs(qWaistArm) do
-			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+			if i==5 or i==7 then
+				-- TODO: sanitize
+			else
 				qWaistArm[i] = min(max(qMin[i], q), qMax[i])
 			end
 		end
@@ -780,7 +768,9 @@ function libArmPlan.jacobian_velocity(self, plan)
 		qArm = qArm + dqCombo
 		-- Check joint limit compliance
 		for i, q in ipairs(qArm) do
-			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+			if i==5 or i==7 then
+					-- TODO: Add sanitize
+			else
 				qArm[i] = min(max(qMin[i], q), qMax[i])
 			end
 		end
@@ -831,7 +821,9 @@ function libArmPlan.jacobian_wasit_velocity(self, plan)
 		qWaistArm = qWaistArm + dqCombo
 		-- Check joint limit compliance
 		for i, q in ipairs(qWaistArm) do
-			if qMin[i]~=-180*DEG_TO_RAD or qMax[i]~=180*DEG_TO_RAD then
+			if i==5 or i==7 then
+					-- TODO: Add sanitize
+			else
 				qWaistArm[i] = min(max(qMin[i], q), qMax[i])
 			end
 		end
@@ -852,6 +844,13 @@ end
 local function set_limits(self, qMin, qMax, dqdt_limit)
 	self.qMin = assert(qMin)
 	self.qMax = assert(qMax)
+
+	-- TODO: Check with SJ on the proper limits
+	if self.id:lower():find'left' then
+		print('left fix')
+		qMin[2] = max(qMin[2], 0)
+	end
+
 	self.dqdt_limit = assert(dqdt_limit)
 	self.qRange = qMax - qMin
   return self

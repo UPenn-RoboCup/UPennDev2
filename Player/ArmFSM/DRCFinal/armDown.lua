@@ -24,7 +24,7 @@ function state.entry()
 	t_entry = Body.get_time()
 	t_update = t_entry
 
-	sequence = {unpack(Config.arm.pushdoorup)}
+	sequence = {unpack(Config.arm.down)}
 
 	--head_ch:send'teleopik'
 
@@ -111,7 +111,7 @@ function state.update()
 			okL = type(lco)=='thread' or lco==false
 			okR = type(rco)=='thread' or rco==false
 		else
-			return doneWaist and 'done'
+			return 'done'
 		end
 	end
 
@@ -119,7 +119,7 @@ end
 
 function state.exit()
 	print(state._NAME..' Exit')
-	head_ch:send'init'
+	--head_ch:send'init'
 end
 
 return state

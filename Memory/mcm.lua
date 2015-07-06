@@ -40,11 +40,16 @@ shared.stance.COMoffset = vector.zeros(3)--relative COM position from waist join
 shared.stance.COMoffsetPose1 = vector.zeros(3) --com offset for 'default' arm pose
 
 
+shared.stance.COMoffsetBias = vector.zeros(1)
+
 
 
 --Arm info
 
 shared.arm = {}
+
+--7 larm biases AND 7 rarm biases, 1-7 for larm, 8-14 for rarm
+shared.arm.bias = vector.zeros(14)
 
 --Target arm position (w/o compensation)
 shared.arm.qlarm = vector.zeros(7)

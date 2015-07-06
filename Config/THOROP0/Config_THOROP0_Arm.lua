@@ -48,100 +48,63 @@ table.insert(arm.init,
 	}
 })
 --]]
-
--- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.pushdoorup = {}
-arm.pushdoorup[1] = {
-	left = {
-		via='jacobian_preplan',
-		--via='jacobian_waist_preplan',
-		--qWaistGuess = {-10*DEG_TO_RAD,0},
-		timeout=8,
-		tr={0.6, 0.3, -0.09, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		weights = {1,1,0}
-	},
-	right = false,
-	--ikhead = {0.65, 0.25, -0.12}
-}
-arm.pushdoorup[2] = {
-	left = {
-		via='jacobian_preplan',
-		timeout=8,
-		tr={0.6, 0.33, -0.04, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		--weights = {1,1,0}
-	},
-	right = false,
-}
-arm.pushdoorup[3] = {
-	left = {
-		via='jacobian_waist_preplan',
-		timeout=8,
-		tr={0.65, 0.33, -0.04, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		--weights = {1,1,0}
-	},
-	right = false,
-}
-arm.pushdoorup[4] = {
-	left = {
-		via='jacobian_waist_preplan',
-		qWaistGuess = {-10*DEG_TO_RAD,0},
-		timeout=8,
-		tr={0.55, 0.3, -0.08, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-		--weights = {1,1,0}
-	},
-	right = false,
-}
-arm.pushdoorup[5] = {
-	left = {
-		via='jacobian_waist_preplan',
-		qWaistGuess = {0*DEG_TO_RAD,0},
-		timeout=8,
-		tr={0.4, 0.3, -0.12, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-	},
-	right = false,
-}
-
+-- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.pushdoordown = {}
+
+
 arm.pushdoordown[1] = {
 	left = {
 		via='jacobian_preplan',
 		timeout=8,
-		tr={0.6, 0.3, -0.07, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		tr={0.37, 0.31, -0.05, -90*DEG_TO_RAD, 0*DEG_TO_RAD,0},
 		weights = {1,1,0}
 	},
 	right = false,
-	--ikhead = {0.65, 0.25, -0.12}
 }
---[[
-arm.pushdoordown[2] = {
-	left = {
+
+
+arm.down = {}
+arm.down[1] = {
+	left = false,
+	right = {
+		via='jacobian_preplan',
+		timeout=5,
+		tr={0.16, -0.285, -0.15, 0*DEG_TO_RAD, 0*DEG_TO_RAD,0},
+		weights = {1,1,0}
+	},
+}
+
+arm.plug = {}
+arm.plug[1] = {
+	right = {
 		via='jacobian_preplan',
 		timeout=8,
-		tr={0.6, 0.32, -0.10, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
+		tr={0.28, -0.285, 0.35, 0*DEG_TO_RAD, -90*DEG_TO_RAD,0*DEG_TO_RAD},
+		weights = {1,1,0}
 	},
 	right = false,
 }
-arm.pushdoordown[3] = {
-	left = {
-		via='jacobian_waist_preplan',
-		timeout=8,
-		tr={0.65, 0.32, -0.10, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-	},
-	right = false,
-}
-arm.pushdoordown[4] = {
-	left = {
-		via='jacobian_waist_preplan',
-		qWaistGuess = {-10*DEG_TO_RAD,0},
-		timeout=8,
-		tr={0.55, 0.3, -0.07, 0, 0*DEG_TO_RAD,0}, --6D is accepted and converted to tr :)
-	},
-	right = false,
-}
---]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 arm.valve = {}
+--[[
 table.insert(arm.valve, {
 	right = false,
 	left = {
@@ -153,14 +116,15 @@ table.insert(arm.valve, {
 		--weights = {0,1,0,1},
 	}
 })
+--]]
 table.insert(arm.valve, {
 	right = false,
 	left = {
 		timeout=10,
 		via='jacobian_preplan',
-		tr={0.45, 0.3, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.45, 0.246, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
-		--weights = {0,1,0,1},
+		weights = {1,1,1},
 	}
 })
 --[[
@@ -217,21 +181,23 @@ table.insert(arm.drill, {
 		--via='joint_preplan',
 		--q = vector.new{0, 75, 90, -90, -90, -45, 0}*DEG_TO_RAD,
 		via='jacobian_preplan',
-		tr={0.345, 0.03, 0.25, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -75*DEG_TO_RAD},
+--		tr={0.345, 0.03, 0.25, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -75*DEG_TO_RAD},
+		tr={0.31, 0.03, 0.25, 0*DEG_TO_RAD, 0*DEG_TO_RAD, -75*DEG_TO_RAD},
 		qArmGuess = vector.new{0, 60, 90, -120, -90, -15, 0}*DEG_TO_RAD,
 		weights = {0,1, 0, 1, 2},
 	},
 	right = false
 })
 
+--1.22m
 table.insert(arm.drill, {
 	left = false,
 	right = {
 		timeout=10,
 		via='jacobian_preplan',
 		--tr={0.28, -0.3, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 30*DEG_TO_RAD},
-		tr={0.46, -0.27, 0.27, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
-		qArmGuess = vector.new{0, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
+		tr={0.46, -0.27, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		qArmGuess = vector.new{-20, -60, -90, -120, 0, -45, 0}*DEG_TO_RAD,
 		weights = {1,1,-1,1, 0},
 	}
 })

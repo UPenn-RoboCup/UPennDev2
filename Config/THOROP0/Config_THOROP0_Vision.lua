@@ -126,11 +126,16 @@ camera[1] = {
 	quality = 40,
 	downsampling = 2,
 	--crop = {640/2+1, 360/2+1, 640/2, 360/2},
+
+	-- cameraRoll, cameraPitch, cameraYaw
 	mountOffset = {
-		-- cameraRoll, cameraPitch, cameraYaw
-		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0}, -- RPY
-		-- Translation offset from the neck
+		--[[
+		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0},
 		{0.02,0,0.14}
+		--]]
+		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0},
+		{0.01,0,0.1}
+
 	},
 	cx_offset = 0,
 	cy_offset = 0,
@@ -164,7 +169,7 @@ camera[2] = {
 	format = 'yuyv',
 	w = 320,
 	h = 240,
-	fps = 15,
+	fps = 5,
 	jpeg_quality = 50,
 	quality = 50,
 	downsampling = 1,

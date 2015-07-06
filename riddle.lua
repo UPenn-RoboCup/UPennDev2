@@ -102,49 +102,57 @@ for _,mem in ipairs(listing) do
 end
 _G.dcm = setmetatable({shm='dcm'},{__index=shm_send})
 
-_G.Body = {}
--- Be *super* careful here
-local actuators = require'libDynamixel'.nx_registers
-for actuator in pairs(actuators) do
-	for part, jlist in pairs(Config.parts) do
-		local idx1, idx2 = jlist[1], jlist[#jlist]
-		Body['get_'..part:lower()..'_'..actuator] = function()
-			local vals = dcm['get_actuator_'..actuator]()
-			return vector.new{unpack(vals, idx1, idx2)}
-		end
-		Body['set_'..part:lower()..'_'..actuator] = function(vals)
-			return dcm['set_actuator_'..actuator](vals)
-		end
+_G.Body = setmetatable({},{
+		__index = function(t, k)
+			if k:find'get' then
+				return function()
+					local cmd = 'Body.'..k..'()'
+					print('Sending',cmd)
+					local msg = mp.pack({raw = cmd})
+					rpc_req:send(msg)
+					local data = unpack(rpc_req:receive())
+					if type(data)~='string' then return end
+					return mp.unpack(data)
+				end
+			elseif k:find'set' then
+				return function(v)
+					if type(v)~='table' then return end
+					local cmd = 'Body.'..k..'('..tostring(vector.new(v))..')'
+					print('Sending',cmd)
+					local msg = mp.pack({raw = cmd})
+					rpc_req:send(msg)
+					local data = unpack(rpc_req:receive())
+					if type(data)~='string' then return end
+					return mp.unpack(data)
+				end
+			end
 	end
-end
-local sensors = require'libDynamixel'.registers_sensor
-for _, sensor in ipairs(sensors) do
-	for part, jlist in pairs(Config.parts) do
-		local idx1, idx2 = jlist[1], jlist[#jlist]
-		Body['get_'..part:lower()..'_'..sensor] = function()
-			local vals = dcm['get_sensor_'..sensor]()
-			return vector.new{unpack(vals, idx1, idx2)}
-		end -- Get
-	end
-end
-
-function sstart(scriptname, ...)
-	if scriptname=='rpc' then return end
-	local argss = {...}
-	local msg = mp.pack({
-		raw = 'sstart("'..scriptname..'"'..(argss[1] and ', '..argss[1] or '')..')'
 	})
+
+function pstart(scriptname, idx)
+	if scriptname=='rpc' then return end
+	local request
+	if tostring(idx) then
+		request = string.format('pstart("%s", %d)', scriptname, idx)
+	else
+		request = string.format('pstart("%s")', scriptname)
+	end
+	local msg = mp.pack({raw = request})
 	rpc_req:send(msg)
   local data = unpack(rpc_req:receive())
 	if type(data)~='string' then return end
 	return mp.unpack(data)
 end
 
-function pkill(scriptname)
+function pkill(scriptname, idx)
 	if scriptname:find'rpc' then return end
-	local msg = mp.pack({
-		raw = 'pkill("'..scriptname..'")'
-	})
+	local request
+	if tostring(idx) then
+		request = string.format('pkill("%s", %d)', scriptname, idx)
+	else
+		request = string.format('pkill("%s")', scriptname)
+	end
+	local msg = mp.pack({raw = request})
 	rpc_req:send(msg)
   local data = unpack(rpc_req:receive())
 	if type(data)~='string' then return end

@@ -50,6 +50,15 @@ local uLeftGlobalTarget, uRightGlobalTarget
 
 local last_velocity=vector.zeros(3)
 
+
+
+
+local rotate_only = false
+local forward_only = false
+
+
+
+
 local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
@@ -118,7 +127,7 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
       end
       local vStep = {uTorsoNext[1],uTorsoNext[2],uTorsoNext[3]}
       last_step=2
-      print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*180/math.pi))
+      print(string.format("approach vel: %.3f %.3f %.2f",vStep[1],vStep[2],vStep[3]*180/math.pi))
       return vStep,true
     elseif last_step==2 then
       return {0,0,0},true
@@ -166,9 +175,35 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   vStep[2] = math.min(Config.walk.velLimitY[2],math.max(Config.walk.velLimitY[1],vStepTarget[2]))
   vStep[3] = math.min(Config.walk.velLimitA[2],math.max(Config.walk.velLimitA[1],vStepTarget[3]))
 
+
+  if forward_only then vStep[2]=0 end
+
   velMag = math.sqrt(vStep[1]^2+vStep[2]^2)
   vStep[1]=vStep[1]/velMag * math.min(maxStep,velMag)
   vStep[2]=vStep[2]/velMag * math.min(maxStep,velMag)
+
+  if rotate_only then
+    vStep[1]=0
+    vStep[2]=0
+  end
+
+
+
+  --don't turn and sidestep at once
+  if math.abs(vStep[3])>0.05 then
+    vStep[2] = 0
+    vStep[1] = util.procFunc(vStep[1],0,0.04)
+  end
+  if math.abs(vStep[2])>0.02 then
+    vStep[1] = util.procFunc(vStep[1],0,0.03)
+  end
+  if math.abs(vStep[1])>0.025 then
+    vStep[2] = 0
+  end
+
+
+
+
 
   local velDiff = vector.new(vStep) - last_velocity
   velDiff[1] = util.procFunc(velDiff[1],0,velDelta[1])
@@ -178,6 +213,8 @@ local function step_approach(uLeftGlobalTarget, uRightGlobalTarget)
   last_velocity=vStep
 
 print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*180/math.pi))
+
+
 
   local uTorsoTargetActual = util.pose_global(vStep,uTorsoCurrent)
 
@@ -250,33 +287,28 @@ print(string.format("approach vel: %.3f %.3f %.1f",vStep[1],vStep[2],vStep[3]*18
     end
   end
 
+
+  if forward_only then
+print("FORWARD ONLY")
+    if math.abs(vStep[1])<0.02 and math.abs(vStep[3])<2*DEG_TO_RAD then
+      print("ARRIVED!")
+      return vStep, true
+    end
+  end
+
+  if math.abs(vStep[1])<0.02 and math.abs(vStep[2])<0.02 and math.abs(vStep[3])<2*DEG_TO_RAD then
+    print("ARRIVED!")
+    return vStep, true
+  end
+
+
+
   return vStep,false
 end
 
 
 
 local function update_target()
---[[
-
-  local pose = wcm.get_robot_pose()
-  local pose_0 = {0,0,0}
---  print("pose:",pose[1],pose[2])
-
-  local ballx, bally = 0,0 --This should be the relative position of the blocks
-  local approachTargetX, approachTargetY = 0.03,0
-
-
-
-  uLeftGlobalTarget = util.pose_global({
-    ballx - approachTargetX - Config.walk.supportX,
-    bally + approachTargetY + Config.walk.footY,
-    0},pose_0)
-  uRightGlobalTarget = util.pose_global({
-    ballx - approachTargetX - Config.walk.supportX,
-    bally + approachTargetY- Config.walk.footY,
-    0},pose_0)
---]]
-
 --Stationary target case
   uLeftGlobalTarget = util.pose_global({-Config.walk.supportX,Config.walk.footY,0},wcm.get_step_pose() )
   uRightGlobalTarget = util.pose_global({-Config.walk.supportX,-Config.walk.footY,0},wcm.get_step_pose() )
@@ -287,7 +319,26 @@ local finished=false
 
 local function update_velocity()
   update_target()
-  local vStep,arrived = step_approach(uLeftGlobalTarget, uRightGlobalTarget)
+
+  local target_pose = wcm.get_step_pose()
+  local current_pose = wcm.get_robot_pose()
+  local target_relative = util.pose_relative(target_pose, current_pose)
+  local target_distance = math.sqrt(target_relative[1]^2+target_relative[2]^2)
+
+
+--  local vStep,arrived = step_approach(uLeftGlobalTarget, uRightGlobalTarget)
+  local vStep, arrived
+
+  if Config.hybrid_approach then
+
+    if target_distance<0.5 then
+      vStep,arrived = step_approach(uLeftGlobalTarget, uRightGlobalTarget)
+    else
+      vStep = longdistance_approach()
+    end  
+  else
+    vStep,arrived = step_approach(uLeftGlobalTarget, uRightGlobalTarget)
+  end
   mcm.set_walk_vel(vStep)
   if arrived then
     mcm.set_walk_stoprequest(1)
@@ -313,11 +364,21 @@ function state.entry()
   wcm.set_robot_etastep(-1) --we're in approach
   finished=false
   last_velocity=vector.zeros(3)
+  rotate_only = false
+  forward_only = false
   local move_target = vector.pose(hcm.get_teleop_waypoint())
   if move_target[1]==0 and move_target[2]==0 and move_target[3]==0 then
     finished = true --don't need to walk, just exit
     pose0 = wcm.get_robot_pose()
   else
+    if move_target[1]==0 and move_target[2]==0 then
+      rotate_only = true
+    end
+    if move_target[2]==0 and move_target[3]==0 then
+      print("FORWARD ONLY",move_target[2],move_target[3])
+      forward_only = true
+    end
+
     print('bodyApproach2 | Waypoint', move_target)
     local pose = wcm.get_robot_pose()
     local global_target_pose = util.pose_global(move_target,pose)
@@ -335,14 +396,15 @@ function state.entry()
 end
 
 function state.update()
-  if finished then
-    if mcm.get_walk_ismoving()==0 then return "done" end
-    return
+  local t  = Body.get_time() 
+  if mcm.get_walk_ismoving()==0 then 
+    if finished or t-t_entry>3 then
+    return "done" end
   end
   --print(state._NAME..' Update' )
   -- Get the time of update
   local ret = nil
-  local t  = Body.get_time()
+  
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
@@ -361,6 +423,8 @@ function state.exit()
 --  print("Reached pose:",unpack(wcm.get_robot_pose())  )
 
   local movement = util.pose_relative(wcm.get_robot_pose(),pose0)
+
+  print("Time spent:",Body.get_time()-t_entry)
   print(string.format("Final movement: %.3f %.3f %.1f",movement[1],movement[2],movement[3]*180/math.pi))
   print(state._NAME..' Exit' )
   wcm.set_robot_etastep(0) --out of approach

@@ -19,7 +19,7 @@ function state.entry()
 
   for i=1,5 do
     Body.set_larm_torque_enable({1,0,0,0,0,0,0})
-    Body.set_rarm_torque_enable({1,1,1,0,0,0,0})
+    Body.set_rarm_torque_enable({1,1,0,0,0,0,0})
     unix.usleep(1e5)
 
     local vel = 2000
@@ -27,10 +27,7 @@ function state.entry()
       unix.usleep(1e6*0.01);
      Body.set_larm_command_velocity(vector.ones(7)*vel)
       unix.usleep(1e6*0.01);
-
   end
-
-
 end
 
 function state.update()
@@ -56,7 +53,7 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   for i=1,10 do
-    Body.set_larm_torque_enable(1)
+    Body.set_larm_torque_enable({1,0,0,0,0,0,1})--only enable final one
     Body.set_rarm_torque_enable(1)
     unix.usleep(1e5)
   end

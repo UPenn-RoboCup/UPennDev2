@@ -111,7 +111,7 @@ function state.update()
 			okL = type(lco)=='thread' or lco==false
 			okR = type(rco)=='thread' or rco==false
 		else
-			return doneWaist and 'done'
+			return 'done'
 		end
 	end
 
@@ -119,7 +119,7 @@ end
 
 function state.exit()
 	print(state._NAME..' Exit')
-	head_ch:send'init'
+	--head_ch:send'init'
 end
 
 return state

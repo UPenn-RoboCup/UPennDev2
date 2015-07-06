@@ -107,12 +107,17 @@ local function update(key_code)
 
 	elseif key_char_lower==("0") then      body_ch:send'uninit'
 
+--[[
   elseif key_char_lower==("2") then  arm_ch:send'teleopoldl'  
   elseif key_char_lower==("3") then  arm_ch:send'teleopoldr'  
+--]]
 
 
+  elseif key_char_lower==("2") then  arm_ch:send'ready'  
 
-  elseif key_char_lower==("4") then  arm_ch:send'ready'  
+  elseif key_char_lower==("3") then  arm_ch:send'pushdoordown'  
+  elseif key_char_lower==("4") then  arm_ch:send'valve'  
+  elseif key_char_lower==("5") then  arm_ch:send'drill'
 
 
 

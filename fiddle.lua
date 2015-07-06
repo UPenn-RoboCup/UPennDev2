@@ -63,13 +63,15 @@ local function gen_screen(name, script, ...)
 			'-L',
 			'-dm',
 			'luajit',
-			script,
-			...
+			script
 		},' ')
 end
-function pkill(name)
-	local ret = io.popen("pkill -f "..name)
-	--for pid in ret:lines() do print('Killed Process', pid) end
+function pkill(name, idx)
+	if tostring(idx) then
+		local ret = io.popen("pkill -f "..name)
+	else
+		local ret = io.popen("pkill -f "..name..' '..tostring(idx))
+	end
 end
 
 -- Start script
@@ -89,18 +91,16 @@ for _,fname in ipairs(unix.readdir(ROBOT_HOME)) do
 		runnable[name] = 'robot'
 	end
 end
-function sstart(scriptname, ...)
-	local args = {...}
+function pstart(scriptname, idx)
 	local kind = runnable[scriptname]
 	if not kind then return false end
 	local script = kind=='wizard' and scriptname..'_wizard.lua' or 'run_'..scriptname..'.lua'
-	if #args>0 then
-		pkill(script..' '..table.concat(args,' '))
-	else
-		pkill(script)
+	if tostring(idx) then
+		script = script..' '..tostring(idx)
 	end
+	pkill(script)
 	unix.chdir(kind=='wizard' and HOME..'/Run' or ROBOT_HOME)
-	local screen = gen_screen(scriptname, script, ...)
+	local screen = gen_screen(scriptname, script, idx)
 	print('screen', screen)
 	local status = os.execute(screen)
 	unix.usleep(1e6/4)

@@ -32,19 +32,11 @@ local function update(key_code)
   local key_char = string.char(key_code)
   local key_char_lower = string.lower(key_char)
 
-  if key_char_lower==("1") then      
-    body_ch:send'init'
-  elseif key_char_lower==("2") then      
-    body_ch:send'driveready'
-  elseif key_char_lower==("3") then      
-    body_ch:send'drive'
 
-
-
-
-
-  elseif key_char_lower==("5") then      
+  if key_char_lower==("5") then
+    print("VALVE ROTATE STATE")      
     arm_ch:send'valverotate'
+    hcm.set_teleop_steering{0}
 
 
   elseif key_char_lower==("j") then      

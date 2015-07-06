@@ -35,6 +35,26 @@ Config.walktraj.hybridwalk = "foot_trajectory_softfast"
 Config.variable_tstep = true
 Config.variable_support = true
 Config.arm_init_timeout = true
+Config.use_imu_yaw = true
+
+Config.estop_mode = 0 --don't do anything!
+Config.estop_mode = 1 --untorque all the servos 
+--Config.estop_mode = 2 --make the robot sit down
+Config.auto_restart = true
+
+--Config.hybrid_approach = true
+
+Config.roll_adaptation_max = 3.5*DEG_TO_RAD
+Config.pitch_adaptation_max = 2*DEG_TO_RAD
+--Config.pitch_adaptation_max = 0*DEG_TO_RAD --disabled
+
+Config.pitch_threshold = 1*DEG_TO_RAD
+Config.pitch_adaptation_max = 3*DEG_TO_RAD --disabled
+
+
+
+
+Config.comX_bias = 0
 
 
 -- Tune for Webots
@@ -44,19 +64,22 @@ if IS_WEBOTS then
 		Config.debug.armplan = true
 
 	  Config.sensors = {
-			ft = true,
+			--ft = true,
 			feedback = 'feedback_wizard',
-		slam = 'slam_wizard',
+		--slam = 'slam_wizard',
     --head_camera = 'camera_wizard',
-    --chest_lidar = true,
-    head_lidar = true,
+    chest_lidar = true,
+    --head_lidar = true,
     --kinect = 'kinect2_wizard',
 			mesh = 'mesh_wizard',
-		 	world = 'world_wizard',
+		 	--world = 'world_wizard',
 	  }
 	else
 		--Config.testfile = 'test_testbed'		
-		Config.testfile = 'test_walkstuff'		
+--		Config.testfile = 'test_walkstuff'		
+
+		Config.testfile = 'test_testbed'		
+
 		Config.debug.armplan = false		
 		Config.use_jacobian_arm_planning = true
 		Config.enable_jacobian_test = false
@@ -67,6 +90,8 @@ if IS_WEBOTS then
 			feedback = 'feedback_wizard',
 		 	world = 'world_wizard',
 	  }
+
+		Config.use_imu_yaw = false --use imu yaw only for single approach
 	end
 end
 
@@ -103,5 +128,24 @@ for sm, en in pairs(Config.fsm.enabled) do
 		end
 	end
 end
+
+
+
+
+if IS_WEBOTS then
+	Config.world.odomDrift = 0
+else
+	Config.world.odomDrift = -0.0001
+end
+
+
+--robot drifts backwards
+--Config.world.odomScale = {0.8,1,1} -- For now IMU not in use
+Config.world.use_imu_yaw = true
+
+
+Config.slowstep_duration =2.5
+Config.supportYSS = -0.03
+Config.walk.stepHeightSlow = 0.02
 
 return Config

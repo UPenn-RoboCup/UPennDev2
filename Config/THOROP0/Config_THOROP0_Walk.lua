@@ -74,6 +74,7 @@ walk.hipImuParamY  ={1, 0.5*gyroFactorY,  2*DEG_TO_RAD, 5*DEG_TO_RAD}
 
 --timing adjustment stabilization
 walk.delay_threshold_angle = 2.5*math.pi/180
+walk.stop_threshold_angle = 5*math.pi/180
 walk.delay_factor = {0.8,1.7}
 
 walk.ankleRollCompensation = 0*DEG_TO_RAD  
@@ -121,18 +122,39 @@ walk.footY = 0.110 --wider
   --for non birdwalk 
   walk.hipRollCompensation = {2.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
   walk.supportY = -0.01
-  walk.delay_threshold_angle = 2.5*math.pi/180
-  walk.stop_threshold_angle = 5*math.pi/180
 else
   --CHIP CHIP CHIP CHiP
   print("CHIP CHIP CHIP")
   walk.velLimitX = {-.10,.20}
   walk.velLimitY = {-.06,.06}
   walk.delay_threshold_angle = 2.5*math.pi/180
+
+  walk.stop_threshold_angle = 4*math.pi/180
+
+
   Config.supportY_preview = 0.0 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0
   walk.supportY = 0.0
   walk.hipRollCompensation = {2.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
+  walk.velocityBias = {0.01,0,0} --To get rid of drifting
+
+  walk.velLimitX = {-.04,.08}
+  walk.velLimitY = {-.03,.03}
+  walk.velLimitY = {-.02,.02}
+
+--after retightning
+  walk.hipRollCompensation = {2.3*DEG_TO_RAD, 1.3*DEG_TO_RAD}
+
+
+-- after hip swap
+
+  walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
+
+-- after loading battery
+
+  walk.hipRollCompensation = {2*DEG_TO_RAD, 1.5*DEG_TO_RAD}
+
+
 end
 ------------------------------------
 -- Associate with the table

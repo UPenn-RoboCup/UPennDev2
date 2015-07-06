@@ -3,37 +3,73 @@ dofile'../include.lua'
 local mp = require'msgpack.MessagePack'
 local libLog = require'libLog'
 local ptable = require'util'.ptable
+local util = require'util'
 local si = require'simple_ipc'
 
+local LOG_DATE_CAMERA0 = {
+--'06.06.2015.13.46.27',
+'06.06.2015.13.47.22',
+'06.06.2015.13.48.21',
+'06.06.2015.13.49.21',
+'06.06.2015.13.50.21',
+'06.06.2015.14.04.20',
+}
+local camera0_ch = si.new_publisher('camera0')
+
+local co_camera0 = coroutine.create(function()
+	for j, date in ipairs(LOG_DATE_CAMERA0) do
+		local replay_itty0 = libLog.open(HOME..'Tools/Matlab/logs2', date, 'camera0')
+		local metadata = replay_itty0:unroll_meta()
+		--print('Unlogging', #metadata, 'points from', LOG_DATE)
+		local itty0_iter = replay_itty0:log_iter()
+
+		for i, meta, payload in itty0_iter do
+			coroutine.yield(meta, payload)
+			--local id = (j-1)*100 + i
+			--local fname = string.format('ittybitty0_%03d.jpeg', id)
+			--ptable(meta)
+			--print(name, #payload)
+			--local f = io.open('ittybitty0/'..fname, 'w')
+			--f:write(payload)
+			--f:close()
+		end
+	end
+end)
+
 -- ffmpeg -start_number 0 -i ittybitty0_%03d.jpeg -vcodec mpeg4 ittybitty0.mp4
---[[
-local LOG_DATE = {
+local LOG_DATE_ITTY0 = {
 	'06.06.2015.13.27.21',
 	'06.06.2015.13.54.41',
 	'06.06.2015.13.59.11',
 	'06.06.2015.14.05.13'
 }
-for j, date in ipairs(LOG_DATE) do
-	local replay_itty0 = libLog.open(HOME..'Tools/Matlab/logs2', date, 'ittybitty0')
-	local metadata = replay_itty0:unroll_meta()
-	print('Unlogging', #metadata, 'points from', LOG_DATE)
-	local itty0_iter = replay_itty0:log_iter()
+local itty0_ch = si.new_publisher('ittybitty0')
 
-	for i, meta, payload in itty0_iter do
-		local id = (j-1)*100 + i
-		local fname = string.format('ittybitty0_%03d.jpeg', id)
-		--ptable(meta)
-		--print(name, #payload)
-		local f = io.open('ittybitty0/'..fname, 'w')
-		f:write(payload)
-		f:close()
+local co_itty0 = coroutine.create(function()
+	for j, date in ipairs(LOG_DATE_ITTY0) do
+		local replay_itty0 = libLog.open(HOME..'Tools/Matlab/logs2', date, 'ittybitty0')
+		local metadata = replay_itty0:unroll_meta()
+		--print('Unlogging', #metadata, 'points from', LOG_DATE)
+		local itty0_iter = replay_itty0:log_iter()
+
+		for i, meta, payload in itty0_iter do
+			coroutine.yield(meta, payload)
+			--local id = (j-1)*100 + i
+			--local fname = string.format('ittybitty0_%03d.jpeg', id)
+			--ptable(meta)
+			--print(name, #payload)
+			--local f = io.open('ittybitty0/'..fname, 'w')
+			--f:write(payload)
+			--f:close()
+		end
 	end
-end
+end)
 
-local LOG_DATE = {
+local LOG_DATE_ITTY1 = {
 	'06.06.2015.13.27.18'
 }
-for j, date in ipairs(LOG_DATE) do
+--[[
+for j, date in ipairs(LOG_DATE_ITTY1) do
 	local replay_itty1 = libLog.open(HOME..'Tools/Matlab/logs2', date, 'ittybitty1')
 	local metadata = replay_itty1:unroll_meta()
 	print('Unlogging', #metadata, 'points from', LOG_DATE)
@@ -51,8 +87,8 @@ for j, date in ipairs(LOG_DATE) do
 end
 --]]
 
---[[
-local LOG_DATE = {
+
+local LOG_DATE_FB = {
 --'06.06.2015.13.25.18',
 --'06.06.2015.13.26.58',
 --'06.06.2015.13.28.39',
@@ -74,31 +110,32 @@ local LOG_DATE = {
 '06.06.2015.14.01.09',
 }
 local fb_ch = si.new_publisher('feedback')
-for j, date in ipairs(LOG_DATE) do
-	print(j, date)
-	local replay = libLog.open(HOME..'Tools/Matlab/logs2', date, 'feedback')
-	local metadata = replay:unroll_meta()
-	print('Unlogging', #metadata, 'points from', LOG_DATE)
-	local iter = replay:log_iter()
-	local t0 = metadata[1].tlog
-	for i, meta in iter do
-		local id = (j-1)*100 + i
-		--local fname = string.format('ittybitty1_%03d.jpeg', id)
-		print()
-		print(id)
-		ptable(meta)
-
-		unix.usleep((meta.tlog - t0)*1e6 / 10)
-		t0 = meta.tlog
-		fb_ch:send(mp.pack(meta))
-		--local f = io.open('ittybitty1/'..fname, 'w')
-		--f:write(payload)
-		--f:close()
+local co_fb = coroutine.create(function()
+	for j, date in ipairs(LOG_DATE_FB) do
+		--print(j, date)
+		local replay = libLog.open(HOME..'Tools/Matlab/logs2', date, 'feedback')
+		local metadata = replay:unroll_meta()
+		--print('Unlogging', #metadata, 'points from', LOG_DATE)
+		local iter = replay:log_iter()
+		local t0 = metadata[1].tlog
+		for i, meta in iter do
+			coroutine.yield(meta)
+			--local id = (j-1)*100 + i
+			--local fname = string.format('ittybitty1_%03d.jpeg', id)
+			--print()
+			--print(id)
+			--ptable(meta)
+			--unix.usleep((meta.tlog - t0)*1e6 / 10)
+			--t0 = meta.tlog
+			--fb_ch:send(mp.pack(meta))
+			--local f = io.open('ittybitty1/'..fname, 'w')
+			--f:write(payload)
+			--f:close()
+		end
 	end
-end
---]]
+end)
 
-local LOG_DATE = {
+local LOG_DATE_MESH0 = {
 --'06.06.2015.13.25.18',
 --'06.06.2015.13.25.19',
 --'06.06.2015.13.26.59',
@@ -119,44 +156,99 @@ local LOG_DATE = {
 '06.06.2015.13.57.58',
 
 }
-local mesh_ch = si.new_publisher('mesh0')
-local avg = {}
-for j, date in ipairs(LOG_DATE) do
-	print(j, date)
-	local replay = libLog.open(HOME..'Tools/Matlab/logs2', date, 'mesh0')
-	local metadata = replay:unroll_meta2()
-	--print('Unlogging', #metadata, 'points from', LOG_DATE)
-	local iter = replay:log_iter()
-	--local t0 = metadata[1].tlog
-	for i, meta, payload in iter do
-		local id = (j-1)*100 + i
-		--local fname = string.format('ittybitty1_%03d.jpeg', id)
-		--print()
-		--print(id, #payload)
-		--ptable(meta)
+local mesh0_ch = si.new_publisher('mesh0')
 
-		--if id>30 and id<75 then
-		--unix.usleep((meta.tlog - (t0 or meta.tlog))*1e6)
+local co_mesh0 = coroutine.create(function()
+	for j, date in ipairs(LOG_DATE_MESH0) do
+		print(j, date)
+		local replay = libLog.open(HOME..'Tools/Matlab/logs2', date, 'mesh0')
+		local metadata = replay:unroll_meta2()
+		--print('Unlogging', #metadata, 'points from', LOG_DATE)
+		local iter = replay:log_iter()
+		--local t0 = metadata[1].tlog
+		for i, meta, payload in iter do
+			coroutine.yield(meta, payload)
+			--local id = (j-1)*100 + i
+			--local fname = string.format('ittybitty1_%03d.jpeg', id)
+			--print()
+			--print(id, #payload)
+			--ptable(meta)
 
-		if id>150 and id<225 then
+			--if id>30 and id<75 then
 			--unix.usleep((meta.tlog - (t0 or meta.tlog))*1e6)
-			local dt = meta.tlog - (t0 or meta.tlog)
-			t0 = meta.tlog
-			if dt>=1 then
-				print(id, dt)
-				table.insert(avg, dt)
-			end
-			--unix.usleep(1e6)
-			--mesh_ch:send({mp.pack(meta), payload})
 
+			--if id>150 and id<225 then
+				--unix.usleep((meta.tlog - (t0 or meta.tlog))*1e6)
+				--local dt = meta.tlog - (t0 or meta.tlog)
+			--	t0 = meta.tlog
+		--		if dt>=1 then
+	--				print(id, dt)
+--					table.insert(avg, dt)
+				--end
+				--unix.usleep(1e6)
+				--mesh_ch:send({mp.pack(meta), payload})
+			--end
 
+			--local f = io.open('ittybitty1/'..fname, 'w')
+			--f:write(payload)
+			--f:close()
 		end
-
-		--local f = io.open('ittybitty1/'..fname, 'w')
-		--f:write(payload)
-		--f:close()
 	end
+end)
+
+
+local coro = {
+	co_itty0, co_fb, co_mesh0, co_camera0
+}
+local ch = {
+	itty0_ch, fb_ch, mesh0_ch, camera0_ch
+}
+local names = {
+	'itty0', 'fb', 'mesh0', 'camera0'
+}
+local t_next = {}
+local data_next = {}
+for i, co in ipairs(coro) do
+	local ok, meta, payload = coroutine.resume(co)
+	t_next[i] = meta.tlog
+	--ptable(meta)
+	data_next[i] = {mp.pack(meta), payload}
 end
-local sum = 0
-for ii,vv in ipairs(avg) do sum = sum + vv end
-print(sum / #avg)
+local t_cursor = math.min(unpack(t_next))
+
+local cnt = 0
+local done
+while not done do
+	cnt = cnt + 1
+	local t_n, i = util.min(t_next)
+	local dt = (t_n - t_cursor)
+	t_cursor = t_n
+	print(i, dt, names[i])
+	if cnt > 10 then
+		print('Time:',t_n)
+		dt = math.min(dt, 10)
+	else
+		dt = math.min(dt, 1)
+	end
+	dt = dt / 2
+	unix.usleep( dt * 1e6 )
+	-- Send
+	local data = data_next[i]
+	if i==0 then break end
+	ch[i]:send(data)
+	-- Repopulate
+	local ok, meta, payload = coroutine.resume(coro[i])
+	if not ok then done = true end
+	if meta then
+		t_next[i] = meta.tlog
+		data_next[i] = {mp.pack(meta), payload}
+	else
+		t_next[i] = math.huge
+	end
+	--[[
+	for i, co in ipairs(coro) do
+		local ok, meta, payload = coroutine.resume(co)
+		if not ok then done = true end
+	end
+	--]]
+end

@@ -25,7 +25,12 @@ Config.debug = {
 }
 
 
-Config.birdwalk = 1 
+--NO BIRDWALK FOR ROBOCUP
+--Config.birdwalk = 1 
+
+
+
+
 Config.raise_body = true
 Config.use_exact_tZMP = true
 Config.use_heeltoe_walk = true

@@ -14,7 +14,6 @@ local LOG_DATE_CAMERA0 = {
 '06.06.2015.13.50.21',
 '06.06.2015.14.04.20',
 }
-local camera0_ch = si.new_publisher('camera0')
 
 local co_camera0 = coroutine.create(function()
 	for j, date in ipairs(LOG_DATE_CAMERA0) do
@@ -43,7 +42,7 @@ local LOG_DATE_ITTY0 = {
 	'06.06.2015.13.59.11',
 	'06.06.2015.14.05.13'
 }
-local itty0_ch = si.new_publisher('ittybitty0')
+
 
 local co_itty0 = coroutine.create(function()
 	for j, date in ipairs(LOG_DATE_ITTY0) do
@@ -109,7 +108,7 @@ local LOG_DATE_FB = {
 '06.06.2015.13.59.29',
 '06.06.2015.14.01.09',
 }
-local fb_ch = si.new_publisher('feedback')
+
 local co_fb = coroutine.create(function()
 	for j, date in ipairs(LOG_DATE_FB) do
 		--print(j, date)
@@ -156,14 +155,16 @@ local LOG_DATE_MESH0 = {
 '06.06.2015.13.57.58',
 
 }
-local mesh0_ch = si.new_publisher('mesh0')
+
 
 local co_mesh0 = coroutine.create(function()
 	for j, date in ipairs(LOG_DATE_MESH0) do
 		print(j, date)
 		local replay = libLog.open(HOME..'Tools/Matlab/logs2', date, 'mesh0')
+		print('mesh2 replay', replay)
+		ptable(replay)
 		local metadata = replay:unroll_meta2()
-		--print('Unlogging', #metadata, 'points from', LOG_DATE)
+		print('Unlogging', #metadata, 'points from', LOG_DATE)
 		local iter = replay:log_iter()
 		--local t0 = metadata[1].tlog
 		for i, meta, payload in iter do
@@ -198,21 +199,32 @@ end)
 
 
 local coro = {
-	co_itty0, co_fb, co_mesh0, co_camera0
+	co_itty0, co_fb, co_camera0,
+	--co_mesh0
 }
+
+local itty0_ch = si.new_publisher('ittybitty0')
+local fb_ch = si.new_publisher('feedback')
+local camera0_ch = si.new_publisher('camera0')
+--local mesh0_ch = si.new_publisher('mesh0')
+
 local ch = {
-	itty0_ch, fb_ch, mesh0_ch, camera0_ch
+	itty0_ch, fb_ch, camera0_ch,
+	--mesh0_ch
 }
 local names = {
-	'itty0', 'fb', 'mesh0', 'camera0'
+	'itty0', 'fb', 'camera0',
+	--'mesh0'
 }
 local t_next = {}
 local data_next = {}
 for i, co in ipairs(coro) do
+	print(names[i])
 	local ok, meta, payload = coroutine.resume(co)
+	ptable(meta)
 	t_next[i] = meta.tlog
-	--ptable(meta)
 	data_next[i] = {mp.pack(meta), payload}
+	print()
 end
 local t_cursor = math.min(unpack(t_next))
 
@@ -221,21 +233,23 @@ local done
 while not done do
 	cnt = cnt + 1
 	local t_n, i = util.min(t_next)
+	print(i, 'Time:', t_n)
 	local dt = (t_n - t_cursor)
 	t_cursor = t_n
 	print(i, dt, names[i])
 	if cnt > 10 then
-		print('Time:',t_n)
 		dt = math.min(dt, 10)
 	else
 		dt = math.min(dt, 1)
 	end
 	dt = dt / 2
-	unix.usleep( dt * 1e6 )
 	-- Send
 	local data = data_next[i]
 	if i==0 then break end
-	ch[i]:send(data)
+	if t_cursor >= 1433624312.668 then
+		unix.usleep( dt * 1e6 )
+		ch[i]:send(data)
+	end
 	-- Repopulate
 	local ok, meta, payload = coroutine.resume(coro[i])
 	if not ok then done = true end
@@ -245,10 +259,4 @@ while not done do
 	else
 		t_next[i] = math.huge
 	end
-	--[[
-	for i, co in ipairs(coro) do
-		local ok, meta, payload = coroutine.resume(co)
-		if not ok then done = true end
-	end
-	--]]
 end

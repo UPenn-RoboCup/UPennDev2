@@ -7,12 +7,22 @@ local util = require'util'
 local si = require'simple_ipc'
 
 local LOG_DATE_CAMERA0 = {
---'06.06.2015.13.46.27',
+
+-- Car
+	'06.06.2015.13.29.07',
+	'06.06.2015.13.35.49',
+
+	-- Reset
+'06.06.2015.13.46.27',
+
+-- After reset
 '06.06.2015.13.47.22',
 '06.06.2015.13.48.21',
 '06.06.2015.13.49.21',
 '06.06.2015.13.50.21',
 '06.06.2015.14.04.20',
+
+
 }
 
 local co_camera0 = coroutine.create(function()
@@ -159,12 +169,12 @@ local LOG_DATE_MESH0 = {
 
 local co_mesh0 = coroutine.create(function()
 	for j, date in ipairs(LOG_DATE_MESH0) do
-		print(j, date)
+		--print(j, date)
 		local replay = libLog.open(HOME..'Tools/Matlab/logs2', date, 'mesh0')
-		print('mesh2 replay', replay)
-		ptable(replay)
+		--print('mesh2 replay', replay)
+		--ptable(replay)
 		local metadata = replay:unroll_meta2()
-		print('Unlogging', #metadata, 'points from', LOG_DATE)
+		--print('Unlogging', #metadata, 'points from', LOG_DATE)
 		local iter = replay:log_iter()
 		--local t0 = metadata[1].tlog
 		for i, meta, payload in iter do
@@ -197,25 +207,30 @@ local co_mesh0 = coroutine.create(function()
 	end
 end)
 
-
-local coro = {
-	co_itty0, co_fb, co_camera0,
-	--co_mesh0
-}
-
 local itty0_ch = si.new_publisher('ittybitty0')
 local fb_ch = si.new_publisher('feedback')
 local camera0_ch = si.new_publisher('camera0')
---local mesh0_ch = si.new_publisher('mesh0')
+local mesh0_ch = si.new_publisher('mesh0')
 
 local ch = {
-	itty0_ch, fb_ch, camera0_ch,
+	--itty0_ch,
+	--fb_ch,
+	camera0_ch,
 	--mesh0_ch
 }
 local names = {
-	'itty0', 'fb', 'camera0',
+	--'itty0',
+	--'fb',
+	'camera0',
 	--'mesh0'
 }
+local coro = {
+	--co_itty0,
+	--co_fb,
+	co_camera0,
+	--co_mesh0
+}
+
 local t_next = {}
 local data_next = {}
 for i, co in ipairs(coro) do
@@ -233,10 +248,8 @@ local done
 while not done do
 	cnt = cnt + 1
 	local t_n, i = util.min(t_next)
-	print(i, 'Time:', t_n)
 	local dt = (t_n - t_cursor)
 	t_cursor = t_n
-	print(i, dt, names[i])
 	if cnt > 10 then
 		dt = math.min(dt, 10)
 	else
@@ -246,7 +259,9 @@ while not done do
 	-- Send
 	local data = data_next[i]
 	if i==0 then break end
-	if t_cursor >= 1433624312.668 then
+	if t_cursor >= 1433624372 then
+		print(i, 'Time:', t_n)
+		print(i, dt, names[i])
 		unix.usleep( dt * 1e6 )
 		ch[i]:send(data)
 	end

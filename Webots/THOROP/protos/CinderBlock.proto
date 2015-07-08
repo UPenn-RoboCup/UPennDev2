@@ -15,11 +15,11 @@ Solid {
   children [
 		DEF block Transform{			
 			rotation 0 0 1 0
-			translation 0	0.075 0  #15 deg	
+			translation 0	0.125 0  #15 deg	
 			children[
 			  DEF cinderblock Shape {
 			     appearance Appearance {material Material {diffuseColor IS diffuseColor}}
-			     geometry Box { size 0.40 0.15 0.40 }
+			     geometry Box { size 0.40 0.25 0.40 }
 			  }
 			]			
 		}

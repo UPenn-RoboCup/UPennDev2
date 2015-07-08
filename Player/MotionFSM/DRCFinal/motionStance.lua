@@ -92,7 +92,7 @@ function state.update()
   local gyro_th = 0.04
   local gamma = 0.01
 
-  if math.abs(imu[4])<gyro_th and math.abs(imu[5])<gyro_th then
+  if math.abs(imu[4])<gyro_th and math.abs(imu[5])<gyro_th and Config.adapt_surface_angle then
     local global_angle = mcm.get_walk_global_angle()
     local roll_adaptation_max = Config.roll_adaptation_max or 2*DEG_TO_RAD
     global_angle[1] = gamma*imu[1] + global_angle[1]
@@ -157,7 +157,10 @@ function state.update()
   local leftRatio = distL/(distL+distR)
   local z_min = math.min(zLeg[1],zLeg[2])
   local raiseVelDS = 0.10
-  if z_min>0 and leftRatio>centTh and leftRatio<1-centTh then
+
+
+
+  if  z_min>0 and leftRatio>centTh and leftRatio<1-centTh then
     leg_raise = math.min(z_min,raiseVelDS*t_diff)
     zLeg[1] = zLeg[1] - leg_raise
     zLeg[2] = zLeg[2] - leg_raise        

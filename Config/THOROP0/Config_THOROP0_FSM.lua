@@ -58,9 +58,10 @@ fsm.Body = {
 
   --these should NEVER called with mistake at all
   --FOR DAY 1
---[[ 
-  {'bodyStop', 'stairclimb', 'bodyStep'},
+--
+  {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
+  {'bodyStep', 'nextstep', 'bodyStep'},
 --]]
 
   -- Take two slow stops (for precise alignment)

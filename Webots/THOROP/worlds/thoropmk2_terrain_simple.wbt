@@ -16,8 +16,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.155611 -0.97117 -0.180596 1.78469
-  position -8.17845 3.98494 -1.80186
+  orientation -0.153908 -0.983478 -0.0953025 1.19085
+  position -8.20184 2.4599 2.81962
 }
 Background {
   skyColor [
@@ -45,26 +45,17 @@ THOROP_mk2_Fullmass_longarm_2 {
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
-  max_torque_400w 135 #50% extra than catalogue value
-   #max_torque_200w 67.5
-  max_torque_200w 90 #hip roll requires LOTS of torque...
+  max_torque_400w 135
+  max_torque_200w 90
   max_torque_100w 20
   damping_constant 0
   footContactMaterial "feet"
 }
 CinderBlock {
-  translation 0.2 0.05 0.4
+  translation 0.2 -0 -0.8
   diffuseColor 0.5 0.9 0.5
 }
 CinderBlock {
-  translation -0.2 0.05 0.4
-  diffuseColor 0.9 0.5 0.5
-}
-CinderBlock {
-  translation 0.2 0.05 -0.4
+  translation -0.2 -0 -0.8
   diffuseColor 0.5 0.9 0.5
-}
-CinderBlock {
-  translation -0.2 0.05 -0.4
-  diffuseColor 0.9 0.5 0.5
 }

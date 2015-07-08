@@ -50,8 +50,9 @@ THOROP_mk2_Fullmass_longarm_2 {
 
 
 DEF TASKFLOOR Floor {
-  translation 0 -0.012 0
-  rotation 0 0 1 -0.03
+#  translation 0 -0.012 0
+#  rotation 0 0 1 -0.03
+  translation 0 0 0
   texture [
     "textures/texture_grid.png"
   ]

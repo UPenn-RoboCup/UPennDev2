@@ -36,6 +36,93 @@ local ready_for_input = true
 local is_possible = true
 
 
+local deg15 = 0.26179938779915
+
+
+--DRC Terrain steps
+local step_ut ={
+  {0, {0.30,0.02,0}, {0.20,-deg15 ,0}},
+  {1, {0.40,-0.02,0},{0.18,0,-deg15}},
+
+  {0, {0.45,-0.0,0},{0,0,deg15}},
+  {1, {0.40,-0.0,0},{0.04,-deg15,0}},
+
+  {0, {0.35,-0.0,0},{0.20,0,0}},
+  {1, {0.55,-0.0,0},{0.17,0,0}},
+  
+
+  {0, {0.50,-0.0,0},{-0.16,0,-deg15}},
+  {1, {0.35,-0.0,0},{-0.18,deg15,0}},
+
+  {0, {0.55,-0.0,0},{0.02,-deg15 ,0}},
+  {1, {0.45,-0.0,0},{0,0,-deg15}},
+
+  {0, {0.35,-0.0,0},{-0.22,0,0}},
+  {1, {0.45,-0.0,0},{-0.18,0,0}},
+}
+
+
+
+
+--take two
+local step_ut ={
+  {0, {0.30,0.02,0}, {0.20,-deg15 ,0}},
+  {1, {0.40,-0.02,0},{0.18,0,-deg15}},
+
+  {0, {0.45,-0.0,0},{0,0,deg15}},
+  {1, {0.45,-0.0,0},{0.05,-deg15,0}},--------------
+
+  {0, {0.35,-0.0,0},{0.20,0,0}},
+  {1, {0.50,-0.0,0},{0.17,0,0}},--------------
+  
+
+
+
+
+  --{0, {0.50,-0.0,0},{-0.16,0,-deg15}}, 
+  --{1, {0.35,-0.0,0},{-0.18,deg15,0}},
+  {0, {0.50,-0.0,0},{-0.14,0,-deg15}}, 
+  {1, {0.35,-0.0,0},{-0.16,deg15,0}},
+
+--  {0, {0.55,-0.0,0},{0.02,-deg15 ,0}},
+--  {1, {0.45,-0.0,0},{-0.01,0,-deg15}},
+
+  {0, {0.55,-0.0,0},{0.02,-deg15 ,0}},
+  --{1, {0.45,-0.0,0},{-0.01,0,-deg15}},
+
+  {1, {0.50,-0.0,0},{-0.01,0,-deg15}},
+
+  
+  
+  
+  
+  {0, {0.40,-0.0,0},{-0.22,0,0}},
+  {1, {0.40,-0.0,0},{-0.19,0,0}},
+}
+
+
+
+--[[
+--DRC staircase steps
+local step_ut ={
+  {0, {0.40,0.02,0}, {0.225,0,0}},
+  {1, {0.40,-0.02,0},{0.225,0,0}},
+
+  {0, {0.30,0,0}, {0.225,0,0}},
+  {1, {0.30,0,0},{0.225,0,0}},
+
+  {0, {0.30,0,0}, {0.225,0,0}},
+  {1, {0.30,0,0},{0.225,0,0}},
+
+  {0, {0.30,0,0}, {0.225,0,0}},
+  {1, {0.30,0,0},{0.225,0,0}},
+}
+--]]
+
+
+
+
+
 
 
 local function calculate_footsteps(stage)
@@ -95,6 +182,19 @@ function state.entry()
 
   is_possible = true
   hcm.set_step_nosolution(0)
+
+  local step_count = hcm.get_step_stepcount()       
+  if #step_ut>=step_count then
+    hcm.set_step_supportLeg(step_ut[step_count][1])
+    hcm.set_step_relpos(step_ut[step_count][2])
+    hcm.set_step_zpr(step_ut[step_count][3])
+    step_count=step_count+1
+    hcm.set_step_stepcount(step_count)
+  else
+    is_possible = false
+    return
+  end
+
   supportLeg=hcm.get_step_supportLeg()
 
 
@@ -108,11 +208,23 @@ function state.entry()
   end
 
   local step_min = 0.05
+
+
+  local step_min = 0.06
+
+
+  local step_min = 0.08
+
+
   step_relpos = hcm.get_step_relpos() 
   step_zpr = hcm.get_step_zpr()
-  if step_zpr[1]>0 then sh1,sh2 = step_zpr[1]+step_min, step_zpr[1]
+  if step_zpr[1]>=0.03 then 
+    sh1,sh2 = step_zpr[1]+step_min, step_zpr[1]
+    sh1=math.max(0.15,sh1)
   else sh1,sh2 = step_min, step_zpr[1]
   end
+
+  
 
   local st,wt = 1.0,3.0
 
@@ -292,7 +404,7 @@ function state.update()
       --return 'nextstep'
       hcm.set_step_dir(0)
       return 'done'
-
+--      return 'nextstep'
 
     elseif hcm.get_state_proceed()==1 then     
 

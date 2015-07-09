@@ -21,15 +21,19 @@ local TEAM_NUMBER = 8
 local net = {
 	robot = {
 		wireless = '192.168.123.'..ROBOT_IP,
+		wired = '192.168.123.'..ROBOT_IP,
 	},
 	operator = {
 		wireless = '192.168.123.'..WHO,
+		wired = '192.168.123.'..WHO,
 	},
 	broadcast = {
-		wireless = '192.168.123.255'
+		wireless = '192.168.123.255',
+		wired = '192.168.123.255',
 	}
 }
 
+--[[
 net.field_computer = '10.'..TEAM_NUMBER..'.3.'..IP.FIELD
 -- Robot IP
 net.robot.wired = '10.'..TEAM_NUMBER..'.3.'..ROBOT_IP
@@ -37,7 +41,7 @@ net.robot.wired = '10.'..TEAM_NUMBER..'.3.'..ROBOT_IP
 net.operator.wired = '10.'..TEAM_NUMBER..'.2.'..WHO
 -- Broadcast from the robot to the operator(s)
 net.broadcast.wired = '10.'..TEAM_NUMBER..'.2.'..WHO
-
+--]]
 
 local streams = {}
 net.streams = streams

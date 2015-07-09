@@ -1,6 +1,8 @@
-datestamp = '01.26.2015.17.47.34'
+datestamp = '07.08.2015.10.36.25'
 % Metadata
-fid = fopen(sprintf('Data/yuyv_m_%s.log',datestamp));
+%fid = fopen(sprintf('Data/yuyv_m_%s.log',datestamp));
+fid = fopen(sprintf('camera0_m_%s.log',datestamp));
+
 yuyvMeta = fread(fid,Inf,'*uint8');
 fclose(fid);
 clear fid;

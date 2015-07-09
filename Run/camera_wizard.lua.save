@@ -1,6 +1,6 @@
 #!/usr/bin/env luajit
 local ENABLE_NET = true
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 -----------------------------------
 -- Camera manager
 -- (c) Stephen McGill, 2014
@@ -83,7 +83,7 @@ local field_tcp_ch = si.new_publisher(stream.tcp);
 print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
 -- Metadata for the operator for compressed image data
-local c_meta = {
+22local c_meta = {
 	-- Required for rendering
 	sz = 0,
 	c = 'jpeg',
@@ -223,8 +223,8 @@ end
 -- Open the camera
 print('Opening', metadata.dev)
 local camera = require'uvc'.init(metadata.dev, w, h, metadata.format, 1, metadata.fps)
-
---os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto 1"')
+--[[
+os.execute('uvcdynctrl -d'..metadata.dev..' -s "Exposure, Auto 1"')
 -- Set the params
 for i, param in ipairs(metadata.auto_param) do
 	local name, value = unpack(param)

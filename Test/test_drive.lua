@@ -5,7 +5,7 @@
 local ok = pcall(dofile,'../fiddle.lua')
 if not ok then dofile'fiddle.lua' end
 --]]
-----[[
+--[[
 local ok = pcall(dofile,'../riddle.lua')
 if not ok then dofile'riddle.lua' end
 --]]

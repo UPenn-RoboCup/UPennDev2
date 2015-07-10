@@ -7,7 +7,7 @@ local dtrCamera = T.trans(unpack(Config.head.cameraPos or {0,0,0}))
   * T.rotY(Config.head.cameraPitch or 0)
   * T.rotX(Config.head.cameraRoll or 0)
 local trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
-* T.rotY(Config.vision.bodyTilt)
+* T.rotY(Config.vision.bodyTilt or 0)
 * T.trans(Config.head.neckX, 0, Config.head.neckZ)
 local cam_z = Config.head.cameraPos[3]
 local trNeck, trHead
@@ -28,6 +28,11 @@ local function update_head()
 	local cameraYaw = headBias[4]
   
   local rpy = Body.get_rpy()
+
+
+print("Body rpy:",unpack(rpy))
+
+
   trNeck0 = T.trans(-Config.walk.footX, 0, Config.walk.bodyHeight)
   * T.rotY(rpy[2])
   * T.trans(Config.head.neckX, 0, Config.head.neckZ)

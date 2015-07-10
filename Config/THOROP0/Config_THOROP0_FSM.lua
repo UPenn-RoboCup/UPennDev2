@@ -14,35 +14,144 @@ fsm.enabled = {
 	Body = true,
 	Head = true,
 	Motion = true,
-	Gripper = true,
-	Lidar = true,
+	Gripper = false,
+	Lidar = false,
 }
 
 --SJ: now we can have multiple FSM options
 fsm.select = {
-	Arm = 'DRCFinal',
-	Body = 'DRCFinal', 
+	Arm = 'RoboCup2015', 
+	Body = 'RoboCup2015', 
 	Gripper = 'DRCFinal',
-	Head = 'DRCFinal', 
-	Motion = 'DRCFinal'
+	Head = 'RoboCup2015', 
+	Motion = 'RoboCup2015'
 }
 
 -- Custom libraries
 fsm.libraries = {
 	MotionLib = 'DRCFinal',
 	ArmLib = 'DRCFinal', --Now steve's libs are merged into one 
-	World = 'DRCFinal'
+	World = 'RoboCup2015'
 }
+
+
+fsm.Arm = {
+  {'armIdle', 'timeout', 'armIdle'},
+  {'armIdle', 'init', 'armInit'},
+  {'armInit', 'done', 'armPose1'},
+}
+
+fsm.Head = {
+  {'headIdle', 'scan', 'headBackScan'},
+  {'headIdle', 'teleop', 'headTeleop'},
+  {'headIdle', 'scanobs', 'headObstacleScan'},
+  --
+
+  {'headScan', 'ballfound', 'headTrack'},
+  {'headScan', 'noball', 'headBackScan'},
+  {'headScan', 'teleop', 'headTeleop'},
+  {'headScan', 'scanobs', 'headObstacleScan'},
+  -- 
+  {'headTeleop', 'scan', 'headBackScan'},
+  {'headTeleop', 'scanobs', 'headObstacleScan'},
+  -- 
+  
+  {'headObstacleScan', 'done', 'headTrack'},
+  {'headObstacleScan', 'backscan', 'headBackScan'},
+  {'headObstacleScan', 'teleop', 'headTeleop'},
+ 
+
+  {'headBackScan', 'ballfound', 'headTrack'},
+  {'headBackScan', 'noball', 'headBackScan'},
+  {'headBackScan', 'teleop', 'headTeleop'},
+  {'headBackScan', 'scanobs', 'headObstacleScan'},
+  
+  --
+  {'headTrack', 'balllost', 'headScan'},
+  {'headTrack', 'timeout', 'headLookGoal'},
+  {'headTrack', 'teleop', 'headTeleop'},
+  {'headTrack', 'scanobs', 'headObstacleScan'},
+  {'headTrack', 'kickfollow', 'headKickFollow'},
+  --
+  {'headKickFollow', 'done', 'headTrack'},
+
+  {'headLookGoal', 'timeout', 'headTrack'},
+  {'headLookGoal', 'scanobs', 'headObstacleScan'},  
+}
+
+
+
+
+--RC body FSM
+--[[
+fsm.Body = {
+  {'bodyIdle', 'init', 'bodyInit'},
+  {'bodyInit', 'done', 'bodyStop'},
+
+  {'bodyStop', 'footrace', 'bodyFootRace'},
+  {'bodyFootRace', 'done', 'bodyStop'},
+
+
+  {'bodyStop', 'stepinplace', 'bodyStepPlace'},
+--  {'bodyStop', 'stepwaypoint', 'bodyStepWaypoint'},
+  {'bodyStop', 'kick', 'bodyRobocupKick'},
+  {'bodyStop', 'play', 'bodyRobocupIdle'},
+  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
+
+  {'bodyStop', 'approach', 'bodyRobocupApproach'},
+
+--test stuff
+  {'bodyStepPlace',   'done', 'bodyStop'},
+--  {'bodyStepWaypoint',   'done', 'bodyStop'},
+
+  -------------------------------
+  --ATTACKER SMs-----------------------------
+  -------------------------------
+  
+  {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
+  {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
+  {'bodyRobocupIdle','stop','bodyStop'},
+  {'bodyRobocupIdle','goalie','bodyRobocupGoalieIdle'},
+
+  {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
+  {'bodyRobocupFollow', 'ballclose', 'bodyRobocupApproach'},
+  {'bodyRobocupFollow','stop','bodyStop'},
+  
+  {'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
+  {'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
+  {'bodyRobocupApproach','stop','bodyStop'},
+--  {'bodyRobocupApproach', 'done', 'bodyStop'}, --we just stop in front of the ball to test code
+
+  {'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupKick', 'testdone', 'bodyStop'},
+
+
+  -------------------------------
+  --Goalie SMs-----------------------------
+  -------------------------------
+
+  {'bodyRobocupGoalieIdle', 'attacker', 'bodyRobocupIdle'},
+  {'bodyRobocupGoalieIdle', 'timeout', 'bodyRobocupGoalieIdle'},
+  {'bodyRobocupGoalieIdle', 'ballfound', 'bodyRobocupGoalieAnticipate'},
+
+  {'bodyRobocupGoalieAnticipate', 'timeout', 'bodyRobocupGoalieAnticipate'},
+  {'bodyRobocupGoalieAnticipate', 'reposition', 'bodyRobocupGoalieReposition'},
+  {'bodyRobocupGoalieAnticipate', 'stop', 'bodyStop'},
+
+
+  {'bodyRobocupGoalieReposition', 'done', 'bodyRobocupGoalieAnticipate'},
+  {'bodyRobocupGoalieReposition', 'stop', 'bodyStop'},
+
+
+}
+--]]
+
 
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
-  --
   {'bodyInit', 'done', 'bodyStop'},
 	--
---	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
-	
---	{'bodyStop', 'stepflat', 'bodyStepAlign'},
-
 	{'bodyStop', 'approach', 'bodyApproachMessy'},
 	{'bodyStop', 'stepflat', 'bodyApproachMessy'},
 
@@ -50,10 +159,6 @@ fsm.Body = {
   --
   {'bodyApproachMessy', 'stop', 'bodyStop'},
 	{'bodyApproachMessy', 'done', 'bodyStop'},
-  --
-  {'bodyApproachBuggy', 'stop', 'bodyStop'},
-	{'bodyApproachBuggy', 'done', 'bodyStop'},
-  --
 
 
   --these should NEVER called with mistake at all
@@ -68,362 +173,8 @@ fsm.Body = {
 --  {'bodyStepAlign', 'done', 'bodyStop'},
 
 
---Driving stuff
-  {'bodyStop', 'driveready', 'bodyDriveready'},   --untorques leg and arm, rotate the head back, centers lidar
-  {'bodyDriveready', 'drive', 'bodyDrive'}, -- torques all servos and enable foot and arm control
-  {'bodyDrive', 'driveready', 'bodyDriveready'}, -- untorques arm and leg for egress
-  {'bodyDriveready', 'init', 'bodyInit'}, --re-inits leg
-
-
-  --SOFT E-stop handling
-  {'bodyInit', 'estop', 'bodyEStop'},
-  {'bodyStop', 'estop', 'bodyEStop'},
-  {'bodyApproachMessy', 'estop', 'bodyEStop'},
-  {'bodyStep', 'estop', 'bodyEStop'},
-  {'bodyStepAlign', 'estop', 'bodyEStop'},
-  {'bodyDrive', 'estop', 'bodyEStop'}, -- untorques arm and leg for egress
-  {'bodyDriveready', 'estop', 'bodyEStop'}, -- untorques arm and leg for egress
-  {'bodyUndrive', 'estop', 'bodyEStop'}, --re-inits leg
-  {'bodyEStop', 'done', 'bodyInit'},
 }
 
--- Anything can fall!
-local allbody = {}
-for i,v in ipairs(fsm.Body) do allbody[v[1]] = true end
-for k, v in pairs(allbody) do table.insert(fsm.Body, {k, 'fall', 'bodyFall'}) end
--- Maybe just restart state_wizard at this point...
-
-
-
-fsm.Head = {
-	{'headIdle', 'init', 'headCenter'},
-	{'headIdle', 'teleop', 'headTeleop'},
-	--
-	{'headCenter', 'trackleft', 'headTrackLeft'},
-	{'headCenter', 'trackright', 'headTrackRight'},
-	{'headCenter', 'mesh', 'headMesh'},
-	{'headCenter', 'teleop', 'headTeleop'},
-	{'headCenter', 'teleopik', 'headTeleopIK'},
-	--
-	{'headTeleop', 'init', 'headCenter'},
-	{'headTeleop', 'trackleft', 'headTrackLeft'},
-	{'headTeleop', 'trackright', 'headTrackRight'},
-	{'headTeleop', 'mesh', 'headMesh'},
-	{'headTeleop', 'teleopik', 'headTeleopIK'},
-	--
-	{'headTeleopIK', 'init', 'headCenter'},
-	{'headTeleopIK', 'trackleft', 'headTrackLeft'},
-	{'headTeleopIK', 'trackright', 'headTrackRight'},
-	{'headTeleopIK', 'mesh', 'headMesh'},
-	{'headTeleopIK', 'teleop', 'headTeleop'},
-	--
-	{'headTrackLeft', 'init', 'headCenter'},
-	{'headTrackLeft', 'mesh', 'headMesh'},
-	{'headTrackLeft', 'trackright', 'headTrackRight'},
-	{'headTrackLeft', 'teleop', 'headTeleop'},
-	{'headTrackLeft', 'teleopik', 'headTeleopIK'},
-	--
-	{'headTrackRight', 'init', 'headCenter'},
-	{'headTrackRight', 'mesh', 'headMesh'},
-	{'headTrackRight', 'trackleft', 'headTrackLeft'},
-	{'headTrackRight', 'teleop', 'headTeleop'},
-	{'headTrackRight', 'teleopik', 'headTeleopIK'},
-	--
-	{'headMesh', 'trackleft', 'headTrackLeft'},
-	{'headMesh', 'trackright', 'headTrackRight'},
-	{'headMesh', 'init', 'headCenter'},
-	{'headMesh', 'teleop', 'headTeleop'},
-	{'headMesh', 'teleopik', 'headTeleopIK'},
-
---Driving stuff
-	{'headCenter', 'drive', 'headDrive'}, --go to 180 deg rotated position
-	{'headTeleop', 'drive', 'headDrive'},
-	{'headTrackLeft', 'drive', 'headDrive'},
-	{'headTrackRight', 'drive', 'headDrive'},
-	{'headDrive', 'init', 'headCenter'}, --unscrew the head safelty
-
---E-stop handling
-	{'headCenter', 'estop', 'headIdle'}, --go to 180 deg rotated position
-	{'headTeleop', 'estop', 'headIdle'},
-	{'headTrackLeft', 'estop', 'headIdle'},
-	{'headTrackRight', 'estop', 'headIdle'},
-	{'headDrive', 'estop', 'headIdle'}, --unscrew the head safelty
-
-}
-
-
-
-fsm.Arm = {
-	-- Idle
-	{'armIdle', 'timeout', 'armIdle'},
-	{'armIdle', 'teleopraw', 'armTeleopRaw'},
-	{'armIdle', 'teleop', 'armTeleop'},
---
-	{'armTeleopRaw', 'idle', 'armIdle'},
-	{'armTeleop', 'idle', 'armIdle'},
-
-
-	--This should be called JUST ONCE at the beginning
-	{'armIdle', 'init', 'armInitFirst'},
---	{'armIdle', 'init', 'armInitWalk'},
-
-
-	{'armIdle', 'bias', 'armInitBias'},
-	{'armIdle', 'ready', 'armManipulation'},
-
-	{'armWalk', 'bias', 'armInitBias'},
-	{'armInitBias', 'done', 'armWalk'},
-
-
---armInitWalk initializes the arms to walk configuration
---This is done in joint-level, and (hopefully) should work with any initial arm configurations
-
-
-	-- armWalk does nothing (the arm should be in walk configuration)
-	{'armInitWalk', 'done', 'armWalk'},
-	{'armInitFirst', 'done', 'armWalk'},
-
-	-- From the walk state
-	--{'armWalk', 'pushdoor', 'armPushDoorUp'},
-	{'armWalk', 'ready', 'armManipulation'},
-	{'armWalk', 'teleop', 'armTeleop'},
-	{'armWalk', 'teleopraw', 'armTeleopRaw'},
-
-	--Old teleop code
-	----[[
-	{'armWalk', 'teleopoldl', 'armTeleopSJOLDL'},
-	{'armWalk', 'teleopoldr', 'armTeleopSJOLDR'},
-	{'armTeleopSJOLDL', 'done', 'armWalk'},
-	{'armTeleopSJOLDR', 'done', 'armWalk'},
-	--]]
-
-
-	--NEW transitions added from SJ
-	{'armWalk', 'pushdoordown', 'armPushDoorDown'},  --THIS WORKS
-	{'armWalk', 'valve', 'armValve'}, --THIS works too!
-	{'armPushDoorDown', 'init', 'armInitWalk'}, --this kinda works too
-
-{'armWalk', 'plug', 'armPlug'},
-	{'armPlug', 'init', 'armInitWalk'},
-
-
-
-
-
-	
-	-- Teleop IK level
-	{'armTeleop', 'init', 'armInitWalk'},
-	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
-	{'armTeleop', 'teleop', 'armTeleop'},
-
-	-- Teleop Joint level
-	{'armTeleopRaw', 'init', 'armInitWalk'},
-	{'armTeleopRaw', 'teleopraw', 'armTeleopRaw'},
-	{'armTeleopRaw', 'teleop', 'armTeleop'},
-
-
-
-	{'armTeleop', 'valverotate', 'armValveRotate'},
-	{'armTeleopRaw', 'valverotate', 'armValveRotate'},
-
-	{'armValveRotate', 'teleop', 'armTeleop'},
-	{'armValveRotate', 'teleopraw', 'armTeleopRaw'},
-
-
-	--When raising is done, arm state remains in armManipulation	
-	{'armManipulation', 'init', 'armInitWalk'},
-	{'armManipulation', 'ready', 'armManipulation'},
-	{'armManipulation', 'pushdoordown', 'armPushDoorDown'},
-	{'armManipulation', 'drill', 'armDrill'},
-	--{'armManipulation', 'shower', 'armShower'},
-	{'armManipulation', 'valve', 'armValve'},
-	{'armManipulation', 'plug', 'armPlug'},
-	--
-	{'armTeleop', 'ready', 'armManipulation'},
-	{'armTeleopRaw', 'ready', 'armManipulation'},
-	{'armManipulation', 'teleop', 'armTeleop'},
-	{'armManipulation', 'teleopraw', 'armTeleopRaw'},
-
-	-- PushDoor positioning
-	{'armPushDoorDown', 'ready', 'armManipulation'},
-	--{'armPushDoorDown', 'done', 'armManipulation'},
-	--
-	{'armTeleop', 'pushdoordown', 'armPushDoorDown'},
-	{'armTeleopRaw', 'pushdoordown', 'armPushDoorDown'},
-	{'armPushDoorDown', 'teleop', 'armTeleop'},
-	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
-
-	-- Down arm positioning ( just the left for now
-	{'armWalk', 'down', 'armDown'},
-	--
-	{'armTeleop', 'down', 'armDown'},
-	{'armTeleopRaw', 'down', 'armDown'},
-	{'armDown', 'teleop', 'armTeleop'},
-	{'armDown', 'teleopraw', 'armTeleopRaw'},
-
-	-- Plug positioning
-	{'armWalk', 'plug', 'armPlug'},
-	--
-	{'armTeleop', 'plug', 'armPlug'},
-	{'armTeleopRaw', 'plug', 'armPlug'},
-	{'armPlug', 'teleop', 'armTeleop'},
-	{'armPlug', 'teleopraw', 'armTeleopRaw'},
-
-	-- Valve positioning
-	{'armWalk', 'valve', 'armValve'},
-	{'armValve', 'done', 'armTeleop'},
-	--
-	{'armTeleop', 'valve', 'armValve'},
-	{'armTeleopRaw', 'valve', 'armValve'},
-	{'armValve', 'teleop', 'armTeleop'},
-	{'armValve', 'teleopraw', 'armTeleopRaw'},
-
-	-- Valve turning
-	--[[
-	{'armChopstickTurn', 'done', 'armTeleop'},
-	--
-	{'armTeleop', 'turn', 'armChopstickTurn'},
-	{'armTeleopRaw', 'turn', 'armChopstickTurn'},
-	{'armChopstickTurn', 'teleop', 'armTeleop'},
-	{'armChopstickTurn', 'teleopraw', 'armTeleopRaw'},
-	--]]
-
-	-- Drill positioning
-	--{'armDrill', 'done', 'armCarry'},
-	{'armDrill', 'drillright', 'armDrillRight'},
-	{'armDrill', 'drillleft', 'armDrillLeft'},
-	{'armDrill', 'ready', 'armManipulation'},
-	--
-	{'armDrill', 'teleop', 'armTeleop'},
-	{'armDrill', 'teleopraw', 'armTeleopRaw'},
-
-	-- Drill positioning (right)
-	--[[
-	{'armDrillRight', 'done', 'armCarry'},
-	{'armDrillRight', 'ready', 'armManipulation'},
-	--
-	{'armTeleop', 'drill', 'armDrillRight'},
-	{'armTeleopRaw', 'drill', 'armDrillRight'},
-	{'armDrillRight', 'teleop', 'armTeleop'},
-	{'armDrillRight', 'teleopraw', 'armTeleopRaw'},
-
-	-- Drill positioning (left)
-	{'armDrillLeft', 'done', 'armCarry'},
-	{'armDrillLeft', 'ready', 'armManipulation'},
-	--
-	{'armTeleop', 'drill', 'armDrillLeft'},
-	{'armTeleopRaw', 'drill', 'armDrillLeft'},
-	{'armDrillLeft', 'teleop', 'armTeleop'},
-	{'armDrillLeft', 'teleopraw', 'armTeleopRaw'},
-	--]]
-
-	-- Shower positioning
-	{'armShower', 'done', 'armTeleop'},
-	{'armShower', 'ready', 'armManipulation'},
-	--
-	{'armTeleop', 'shower', 'armShower'},
-	{'armTeleopRaw', 'shower', 'armShower'},
-	{'armShower', 'teleop', 'armTeleop'},
-	{'armShower', 'teleopraw', 'armTeleopRaw'},
-
-	-- armPullDoor
-	--[[
-	{'armPullDoor', 'done', 'armTeleop'},
-	{'armPullDoor', 'ready', 'armManipulation'},
-	{'armPullDoor', 'pulldoor', 'armPullDoor'},
-	{'armPullDoor', 'teleop', 'armTeleop'},
-	{'armPullDoor', 'teleopraw', 'armTeleopRaw'},
-	--]]
-
-	-- armJacobian is for testing purposes only!
-	--[[
-	{'armInit', 'jacobian', 'armJacobian'},
-	{'armJacobian', 'done', 'armTeleop'},
-	{'armReady', 'jacobian', 'armJacobian'},
-	{'armJacobian', 'teleopraw', 'armTeleopRaw'},
-	{'armJacobian', 'timeout', 'armJacobian'},
-	{'armJacobian', 'done', 'armTeleop'},
-	{'armJacobian', 'ready', 'armReady'},
-	{'armJacobian', 'pulldoor', 'armPullDoor'},
-	--]]
-
-
-	{'armTeleopRaw', 'driveready', 'armDriveready'},
-	{'armWalk', 'driveready', 'armDriveready'},
-	{'armDriveready', 'drive', 'armDrive'},
-	{'armDrive', 'driveready', 'armDriveready'},
-	{'armDriveready', 'init', 'armInitWalk'},
-}
-
--- E-stop handling
-local allarm = {}
-for i,v in ipairs(fsm.Arm) do allarm[v[1]] = true end
-for k, v in pairs(allarm) do table.insert(fsm.Arm, {k, 'estop', 'armIdle'}) end
-
-
-
-
-
-fsm.Gripper = {
-	{'gripperIdle', 'close', 'gripperClose'},
-	{'gripperIdle', 'open', 'gripperOpen'},
-	{'gripperIdle', 'center', 'gripperCenter'},
-	{'gripperIdle', 'clench', 'gripperClench'},
-	{'gripperIdle', 'teleop', 'gripperTeleopTorque'},
-	{'gripperIdle', 'teleoppos', 'gripperTeleopPosition'},
-	--
-	{'gripperClose', 'idle', 'gripperIdle'},
-	{'gripperClose', 'center', 'gripperCenter'},
-	{'gripperClose', 'clench', 'gripperClench'},
-	{'gripperClose', 'open', 'gripperOpen'},
-	{'gripperClose', 'teleop', 'gripperTeleopTorque'},
-	{'gripperClose', 'teleoppos', 'gripperTeleopPosition'},
-	--
-	{'gripperCenter', 'idle', 'gripperIdle'},
-	{'gripperCenter', 'close', 'gripperClose'},
-	{'gripperCenter', 'clench', 'gripperClench'},
-	{'gripperCenter', 'open', 'gripperOpen'},
-	{'gripperCenter', 'teleop', 'gripperTeleopTorque'},
-	{'gripperCenter', 'teleoppos', 'gripperTeleopPosition'},
-	--
-	{'gripperClench', 'idle', 'gripperIdle'},
-	{'gripperClench', 'close', 'gripperClose'},
-	{'gripperClench', 'center', 'gripperCenter'},
-	{'gripperClench', 'open', 'gripperOpen'},
-	{'gripperClench', 'teleop', 'gripperTeleopTorque'},
-	{'gripperClench', 'teleoppos', 'gripperTeleopPosition'},
-	--
-	{'gripperOpen', 'idle', 'gripperIdle'},
-	{'gripperOpen', 'close', 'gripperClose'},
-	{'gripperOpen', 'clench', 'gripperClench'},
-	{'gripperOpen', 'center', 'gripperCenter'},
-	{'gripperOpen', 'teleop', 'gripperTeleopTorque'},
-	{'gripperOpen', 'teleoppos', 'gripperTeleopPosition'},
-	--
-	{'gripperTeleopTorque', 'idle', 'gripperIdle'},
-	{'gripperTeleopTorque', 'close', 'gripperClose'},
-	{'gripperTeleopTorque', 'clench', 'gripperClench'},
-	{'gripperTeleopTorque', 'open', 'gripperOpen'},
-	{'gripperTeleopTorque', 'center', 'gripperCenter'},
-	{'gripperTeleopTorque', 'teleoppos', 'gripperTeleopPosition'},
-	--
-	{'gripperTeleopPosition', 'idle', 'gripperIdle'},
-	{'gripperTeleopPosition', 'close', 'gripperClose'},
-	{'gripperTeleopPosition', 'clench', 'gripperClench'},
-	{'gripperTeleopPosition', 'open', 'gripperOpen'},
-	{'gripperTeleopPosition', 'center', 'gripperCenter'},
-	{'gripperTeleopPosition', 'teleop', 'gripperTeleopTorque'},
-}
-
-fsm.Lidar = {
-	{'lidarIdle', 'pan', 'lidarPan'},
-	{'lidarPan', 'switch', 'lidarPan'},
-	{'lidarPan', 'stop', 'lidarIdle'},
-
-	--while driving chest lidar should be keep centered
-	{'lidarPan', 'drive', 'lidarDrive'},
-	{'lidarDrive', 'pan', 'lidarPan'},
-}
 
 fsm.Motion = {
 	{'motionIdle', 'timeout', 'motionIdle'},
@@ -434,7 +185,6 @@ fsm.Motion = {
 	{'motionBiasIdle', 'stand', 'motionInit'},
 	--
 	{'motionInit', 'done', 'motionStance'},
-	--
 	{'motionUnInit', 'done', 'motionIdle'},
 	--
 	{'motionStance', 'bias', 'motionBiasInit'},
@@ -452,24 +202,62 @@ fsm.Motion = {
 	{'motionStepPreview', 'done', 'motionStance'},
 	--
 	{'motionStepPreviewStair', 'done', 'motionStance'},
-	--
---	{'motionSlowStep', 'done', 'motionStance'},
-
-	--DRIVE
-	{'motionStance', 'driveready', 'motionDriveready'}, --untorque lower body
-	{'motionDriveready', 'drive', 'motionDrive'}, --torque the body, enable foot control
-	{'motionDrive', 'driveready', 'motionDriveready'}, --untorque lower body again
-	{'motionDriveready', 'stand', 'motionInit'}, --torque all the legs and make the robot stand up
-
 
 }
 
 
--- E-stop handling
-local allmotion = {}
-for i,v in ipairs(fsm.Motion) do allmotion[v[1]] = true end
-for k, v in pairs(allmotion) do table.insert(fsm.Motion, {k, 'estop', 'motionIdle'}) end
 
+fsm.dqNeckLimit = {
+  60 * DEG_TO_RAD, 60 * DEG_TO_RAD
+}
+
+fsm.headScan = {
+  pitch0 = 30 * DEG_TO_RAD,
+  pitchMag = 20 * DEG_TO_RAD,
+  --yawMag = 80 * DEG_TO_RAD,
+  yawMag = 40 * DEG_TO_RAD,
+  tScan = 5, --sec
+}
+
+--HeadReady
+fsm.headReady = {
+  dist = 3
+}
+
+--HeadTrack
+fsm.headTrack = {
+  tLost = 5,
+  timeout = 6,
+	dist_th = 0.5,
+}
+
+--HeadLookGoal: Look up to see the goal
+fsm.headLookGoal = {
+  yawSweep = 80*DEG_TO_RAD,
+}
+
+--HeadSweep: Look around to find the goal
+fsm.headSweep = {
+  tScan = 2.0,
+  tWait = 0.25,
+}
+
+fsm.headObstacleScan = {
+  yawMag = 55*DEG_TO_RAD,
+  pitchUp = 25*DEG_TO_RAD,
+  pitchDown = 35*DEG_TO_RAD,
+}
+
+fsm.bodyRobocupFollow = {
+  th_lfoot = 0.001,
+  th_rfoot = 0.001,
+  th_dist = 0.08,  --TODO
+}
+
+fsm.bodyRobocupApproach = {
+  target={0.30,0.12} ,
+  th = {0.34, 0.02}
+}
 
 Config.fsm = fsm
 

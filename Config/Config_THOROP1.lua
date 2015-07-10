@@ -10,7 +10,6 @@ local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 --Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
 --exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}
 
-
 -- Printing of debug messages
 Config.debug = {
   webots_wizard = false,
@@ -24,12 +23,8 @@ Config.debug = {
   armplan = true,
 }
 
-
 --NO BIRDWALK FOR ROBOCUP
 --Config.birdwalk = 1 
-
-
-
 
 Config.raise_body = true
 Config.use_exact_tZMP = true

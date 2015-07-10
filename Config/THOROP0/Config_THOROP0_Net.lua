@@ -33,6 +33,7 @@ local net = {
 	}
 }
 
+-- DRC Finals Specific
 --[[
 net.field_computer = '10.'..TEAM_NUMBER..'.3.'..IP.FIELD
 -- Robot IP
@@ -79,6 +80,12 @@ streams.camera1 = {
 	udp = 17004,
 	tcp = 43304,
 	sub = 'camera1',
+}
+streams.vision0 = {
+	ws = 9013,
+	udp = 17013,
+	tcp = 43313,
+	sub = 'vision0',
 }
 streams.lidar0 = {
 	ws = 9010,

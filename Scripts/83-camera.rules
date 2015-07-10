@@ -1,6 +1,19 @@
 # sudo udevadm trigger -v /dev/video1
 # udevadm test /sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.4/1-2.4:1.0/video4linux/video1 2>/dev/null | ag -i seria
 
+#  idVendor           0x046d Logitech, Inc.
+#  idProduct          0x082d HD Pro Webcam C920
+
+# dmesg:
+#[ 4281.445734] usb 1-1.2.4: New USB device found, idVendor=046d, idProduct=082d
+#[ 4281.445742] usb 1-1.2.4: New USB device strings: Mfr=0, Product=2, SerialNumber=1
+#[ 4281.445746] usb 1-1.2.4: Product: HD Pro Webcam C920
+#[ 4281.445749] usb 1-1.2.4: SerialNumber: E27733EF
+#[ 4281.446431] uvcvideo: Found UVC 1.00 device HD Pro Webcam C920 (046d:082d)
+#[ 4281.447232] input: HD Pro Webcam C920 as /devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1.2/1-1.2.4/1-1.2.4:1.0/input/input16
+
+
+
 # C920
 KERNEL=="video[0-9]*", SUBSYSTEM=="video4linux", ACTION=="add", ATTRS{serial}=="E27733EF", SYMLINK+="video-headcamera"
 # C905

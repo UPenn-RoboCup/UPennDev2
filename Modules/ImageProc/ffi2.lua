@@ -13,7 +13,7 @@ local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3, [16] = 4, [32] = 5, [64] = 6}
 --[[
 filename: LUT file of 262144 bytes
 --]]
-function ImageProc.load_lut(self, filename)
+local function load_lut(self, filename)
   local f_lut = io.open(filename)
   -- We know the size of the LUT, so load the storage
   local lut_s = f_lut:read('*a')
@@ -26,6 +26,7 @@ function ImageProc.load_lut(self, filename)
 	print('Loaded', filename)
   return lut_d, #self.luts
 end
+ImageProc.load_lut = load_lut
 
 --[[
 yuyv_ptr: YUYV image as string, lightuserdata, or cdata
@@ -34,7 +35,7 @@ lut_ptr: Lookup table as string, lightuserdata, or cdata
 returns: labelA array
 --]]
 -- Assumes a subscale of 2 (i.e. drop every other column and row)
-function ImageProc.yuyv_to_labelA(self, yuyv_ptr, lut_ptr)
+function yuyv_to_labelA(self, yuyv_ptr, lut_ptr)
   -- The yuyv pointer changes each time
   -- Cast the lightuserdata to cdata
   local yuyv_d = ffi.cast("uint32_t*", yuyv_ptr)
@@ -69,7 +70,9 @@ function ImageProc.yuyv_to_labelA(self, yuyv_ptr, lut_ptr)
   --
   return self.labelA_d
 end
-function ImageProc.rgb_to_labelA(self, rgb_ptr, lut_ptr)
+ImageProc.yuyv_to_labelA = yuyv_to_labelA
+
+function rgb_to_labelA(self, rgb_ptr, lut_ptr)
   -- The yuyv pointer changes each time
   -- Cast the lightuserdata to cdata
   local rgb_d = ffi.cast("uint8_t*", rgb_ptr)
@@ -111,6 +114,7 @@ function ImageProc.rgb_to_labelA(self, rgb_ptr, lut_ptr)
   --
   return self.labelA_d
 end
+ImageProc.rgb_to_labelA = rgb_to_labelA
 
 -- Bit OR on blocks of NxN to get to labelB from labelA
 local function block_bitorN(self)
@@ -154,17 +158,18 @@ local function block_bitor2(self)
   end
   return labelB_d
 end
-function ImageProc.block_bitor(self)
+function block_bitor(self)
 	if self.scaleB==2 then
 	  return block_bitor2(self)
 	else
 	  return block_bitorN(self)
 	end
 end
+ImageProc.block_bitor = block_bitor
 
-function ImageProc.color_countA(self)
+function color_countA(self)
   -- Reset the color count
-  ffi.fill(ccA_d, ffi.sizeof(ccA_d))
+  ffi.fill(self.ccA_d, ffi.sizeof(self.ccA_d))
   -- Loop variables
   local l_ptr = self.labelA_d
   for i=1,self.wa*self.ha do
@@ -173,7 +178,8 @@ function ImageProc.color_countA(self)
   end
   return self.ccA_d
 end
-function ImageProc.color_countB(self)
+ImageProc.color_countA = color_countA
+function color_countB(self)
   -- Reset the color count
   ffi.fill(ccB_d, ffi.sizeof(ccB_d))
   -- Loop variables
@@ -184,6 +190,7 @@ function ImageProc.color_countB(self)
   end
   return self.ccB_d
 end
+ImageProc.color_countB = color_countB
 
 local RegionProps_mt = {}
 function RegionProps_mt.__lt(r1, r2)
@@ -400,7 +407,7 @@ function ImageProc.connected_regions(image, m, n, mask)
 			-- Note: TraverseLinks() must be called before grabbing the label
       label = equiv_table.m_table[ label_array[i][j] ]
       if (label > 0) then
-				prop = props[label]				
+				prop = props[label]
 			  prop.area = prop.area + 1
 			  prop.sumI = prop.sumI + i
 			  prop.sumJ = prop.sumJ + j
@@ -415,7 +422,7 @@ function ImageProc.connected_regions(image, m, n, mask)
 			end
     end
   end
-		
+
 	-- double for
 	-- Sort by area
 	table.sort(props)
@@ -460,6 +467,11 @@ function ImageProc.new(w, h, scaleA, scaleB)
 		ccA_d = ffi.new('int[256]'),
 		luts = {},
 		-- TODO: Functions?
+    load_lut = load_lut,
+    yuyv_to_labelA = yuyv_to_labelA,
+    block_bitor = block_bitor,
+    color_countA = color_countA,
+    color_countB = color_countB,
 	}
 end
 

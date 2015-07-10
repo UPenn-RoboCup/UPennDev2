@@ -74,9 +74,10 @@ local dt_monitor = 1/hz_monitor
 local t_send = -math.huge
 
 local ptable = require'util'.ptable
-local function update(meta, ranges)
+local function update(meta, img)
 	ptable(meta)
-	Vision.update()
+	local detection = Vision.update(meta, img)
+	vision_ch:send(mpack(detected))
 end
 
 local function entry()

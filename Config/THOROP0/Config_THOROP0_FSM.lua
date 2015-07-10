@@ -77,6 +77,14 @@ fsm.Head = {
 
   {'headLookGoal', 'timeout', 'headTrack'},
   {'headLookGoal', 'scanobs', 'headObstacleScan'},  
+
+
+
+
+
+
+
+
 }
 
 

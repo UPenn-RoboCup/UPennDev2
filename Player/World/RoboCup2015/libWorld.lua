@@ -131,6 +131,38 @@ function libWorld.update(uOdom, detection)
     update_odometry(uOdom)
     print_pose()   
   end
+
+  update_vision(detection)
+  if Config.use_gps_pose then
+    wcm.set_robot_pose(wcm.get_robot_pose_gps())
+    wcm.set_obstacle_num(2)
+    wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
+    wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
+
+    local pose = wcm.get_robot_pose_gps()
+    local ballglobal = wcm.get_robot_gpsball()
+    wcm.set_robot_ballglobal(ballglobal)
+
+    local balllocal = util.pose_relative({ballglobal[1],ballglobal[2],0},pose)
+    wcm.set_ball_x(balllocal[1])
+    wcm.set_ball_y(balllocal[2])
+    wcm.set_ball_t(Body.get_time())
+
+--    print("global ball:",unpack(ballglobal))
+  else
+
+    local pose =wcm.get_robot_pose()
+    local ball_x = wcm.get_ball_x()
+    local ball_y = wcm.get_ball_y()
+
+    local ballglobal = util.pose_global({ball_x,ball_y,0},pose)
+
+    wcm.set_robot_ballglobal(ballglobal)
+    -- Update pose in wcm
+    wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
+  end
+
+
   -- Increment the process count
   count = count + 1
 end

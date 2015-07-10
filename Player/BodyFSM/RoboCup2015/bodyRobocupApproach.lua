@@ -173,6 +173,7 @@ local function update_velocity()
   local bally = wcm.get_ball_y() 
 
 print("ball:",ballx,bally)
+print("Pose:",unpack(pose))
 
   local kicktype = mcm.get_walk_kicktype()
 
@@ -314,7 +315,7 @@ function state.update()
   t_update = t
 
 --not playing?
-  if gcm.get_game_state()~=3 and gcm.get_game_state()~=5 and gcm.get_game_state()~=6 then return'stop' end
+--  if gcm.get_game_state()~=3 and gcm.get_game_state()~=5 and gcm.get_game_state()~=6 then return'stop' end
 
   local check_ph = 0.95
   local ph = mcm.get_status_ph()

@@ -29,12 +29,13 @@ function state.entry()
   if Config.disable_kick or not Config.use_walkkick then
     mcm.set_walk_kickphase(0)
     mcm.set_walk_stoprequest(1)
+    print("STOP FOR KICK")
   else
-
+    print("WALKKICK REQUESTED")
     if mcm.get_walk_kicktype()==1 then --strong kick default
       mcm.set_walk_stoprequest(1)
+      print("STOP FOR KICK")
     end
-
     mcm.set_walk_kickphase(0)    
   end
 
@@ -42,7 +43,7 @@ end
 
 function state.update()
   if Config.disable_kick then
-
+    print("APPROACHED AT THE BALL")
     local ballx = wcm.get_ball_x() - Config.fsm.bodyRobocupApproach.target[1]
     local bally = wcm.get_ball_y()
     local ballr = math.sqrt(ballx*ballx+bally*bally)
@@ -65,9 +66,11 @@ function state.update()
 
   if mcm.get_walk_kickphase()==0 then
     if Config.use_walkkick and mcm.get_walk_kicktype()~=1 then 
+      print("WALKKICK START")
       mcm.set_walk_steprequest(1)
       mcm.set_walk_kickphase(1)
     elseif mcm.get_walk_ismoving()==0 then
+      print("STOPPED, KICK START")
       mcm.set_walk_steprequest(1)
       mcm.set_walk_kickphase(1)
     end

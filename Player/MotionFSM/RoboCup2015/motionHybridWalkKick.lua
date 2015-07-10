@@ -296,21 +296,23 @@ function walk.update()
     local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
     local uLeft, uRight = uLeft_now, uRight_now
 
+
+
     if supportLeg == 0 then  -- Left support    
       if walkParam[1]==-1 then --WalkKick phase
-        uRight,zRight = walkkick_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
+        uRight,zRight = walkkick_traj_func(phSingle,uRight_now,uRight_next,walkParam[2])
       elseif walkParam[1] == -2 then --Longkick phase
-        uRight,zRight = kick_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
+        uRight,zRight = kick_traj_func(phSingle,uRight_now,uRight_next,walkParam[2])    
       else
-        uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight,walkParam)    
+        uRight,zRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight)
       end
     elseif supportLeg==1 then    -- Right support    
       if walkParam[1]==-1 then --Kick phase
-        uLeft,zLeft = walkkick_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
+        uLeft,zLeft = walkkick_traj_func(phSingle,uLeft_now,uLeft_next,walkParam[2])    
       elseif walkParam[1]==-2 then --Kick phase
-        uLeft,zLeft = kick_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)            
+        uLeft,zLeft = kick_traj_func(phSingle,uLeft_now,uLeft_next,walkParam[2])            
       else
-        uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight,walkParam)    
+        uLeft,zLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    
       end
     elseif supportLeg == 2 then --Double support
     end
@@ -352,6 +354,7 @@ function walk.update()
       hcm.set_motion_estop(1)
     end
 --]]
+
 
 
 print(math.max(zLeft,zRight))

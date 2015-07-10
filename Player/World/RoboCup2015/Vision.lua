@@ -156,7 +156,8 @@ local function find_ball(Image)
     local bboxA = bboxB2A(propsB.boundingBox, Image.scaleB)
     local bboxAarea = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
     if bboxAarea < b_bbox_area then
-      return string.format('Box area: %d<%d\n',bboxAarea, b_bbox_area)
+      check_fail = true
+      --return string.format('Box area: %d<%d\n',bboxAarea, b_bbox_area)
     end
 
     -- New
@@ -173,12 +174,14 @@ local function find_ball(Image)
     local area = propsA.area
     -- If no pixels then return
     if area < b_area then
-      return string.format('Area: %d < %d \n', area, b_area)
+      check_fail = true
+      --return string.format('Area: %d < %d \n', area, b_area)
     end
     -- Get the fill rate
     local fill_rate = area / (propsA.axisMajor * propsA.axisMinor)
     if fill_rate < b_fill_rate then
-      return string.format('Fill rate: %.2f < %.2f\n', fill_rate, b_fill_rate)
+      check_fail = true
+      --return string.format('Fill rate: %.2f < %.2f\n', fill_rate, b_fill_rate)
     end
 
     if type(propsA)=='string' then
@@ -196,58 +199,33 @@ local function find_ball(Image)
         scale,
       }
 
-      local v = Image.tf * (v0 / v0[4])
+      -- Put into the local frame
+      --local v = Image.tfL * (v0 / v0[4])
+      -- Put into the global frame
+      local v = Image.tfG * (v0 / v0[4])
+      local pHead = T.position(Image.tfG)
 
       local dist_sq = v[1]^2 + v[2]^2
       local maxH = (b_height0 and b_height1) and b_height0 + math.sqrt(dist_sq) * b_height1
 
       -- Check the distance
       if dist_sq > b_dist^2 then
-        return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
+        check_fail = true
+        --return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
       elseif maxH and v[3] > maxH then
-        return string.format("Height: %.2f > %.2f", v[3], maxH)
+        check_fail = true
+        --return string.format("Height: %.2f > %.2f", v[3], maxH)
       end
-
-      -----------------------------------------
-      --[[
-      local v = check_coordinateA(
-      propsA.centroid, scale, b_dist, b_height0, b_height1,true
-      )
-
-      -- Yield coordinates in the labelA space
-      -- Returns an error message if max limits are given
-      local function check_coordinateA(centroid, scale, maxD, maxH1, maxH2)
-      	local v = HT.project({
-          focalA,
-          -(centroid[1] - x0A),
-          -(centroid[2] - y0A),
-          scale,
-        })
-
-      	local dist_sq = v[1]^2 + v[2]^2
-        local maxH = maxH1 and maxH2 and maxH1 + math.sqrt(dist_sq) * maxH2
-
-        -- Check the distance
-        if maxD and dist_sq > maxD^2 then
-          return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
-        elseif maxH and v[3] > maxH then
-          return string.format("Height: %.2f > %.2f", v[3], maxH)
-        end
-        return v
-      end
---]]
-      -----------------------------------------------
-
-
-
 
       if type(v)=='string' then
         check_fail = true
         --debug_ball(v)
-      else
+      end
+      if not check_fail then
 --			print(string.format('ball height:%.2f, thr: %.2f', v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2])))
 
-        ---[[ Field bounds check
+        -- TODO: Field bounds check
+        --[[
         if not check_fail and math.sqrt(v[1]*v[1]+v[2]*v[2])>3 then
 					local margin = 0.85 --TODO
           local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
@@ -259,27 +237,31 @@ local function find_ball(Image)
 				--]]
 
         -- Ground check
-        if not check_fail and Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
+        if Image.qHead[2] < Config.vision.ball.th_ground_head_pitch then
           local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
           local ballCentroid = propsA.centroid
-          local vmargin = ha-ballCentroid[2]
+          local vmargin = ha - ballCentroid[2]
           --When robot looks down they may fail to pass the green check
           --So increase the bottom margin threshold
           if vmargin > dArea * 2.0 then
             -- Bounding box in labelA below the ball
-            local fieldBBox = {}
-            fieldBBox[1] = ballCentroid[1] + th_ground_boundingbox[1]
-            fieldBBox[2] = ballCentroid[1] + th_ground_boundingbox[2]
-            fieldBBox[3] = ballCentroid[2] + .5*dArea
-                       + th_ground_boundingbox[3]
-            fieldBBox[4] = ballCentroid[2] + .5*dArea
-                        + th_ground_boundingbox[4]
-            -- color stats for the bbox
-            local fieldBBoxStats = ImageProc.color_stats(labelA_t, colors.field, fieldBBox)
+            local fieldBBox = {
+              ballCentroid[1] + th_ground_boundingbox[1],
+              ballCentroid[1] + th_ground_boundingbox[2],
+              ballCentroid[2] + dArea/2 + th_ground_boundingbox[3],
+              ballCentroid[2] + dArea/2 + th_ground_boundingbox[4],
+            }
+            -- color stats for the bbox of the field
+            local fieldBBoxStats = ImageProc2.color_stats(
+              Image.labelA_d, Image.wa, Image.ha, colors.field, fieldBBox
+            )
+
             if (fieldBBoxStats.area < Config.vision.ball.th_ground_green) then
               -- if there is no field under the ball
               -- it may be because its on a white line
-              local whiteBBoxStats = ImageProc.color_stats(labelA_t, colors.white,fieldBBox)
+              local whiteBBoxStats = ImageProc2.color_stats(
+                Image.labelA_d, Image.wa, Image.ha, colors.white, fieldBBox
+              )
               if (whiteBBoxStats.area < Config.vision.ball.th_ground_white) then
                 debug_ball("Green check fail\n")
                 check_fail = true
@@ -288,24 +270,48 @@ local function find_ball(Image)
           end
         end --end bottom margin check
 
-        if not check_fail then
-          -- Project the ball to the ground
-          propsA.v = projectGround(v,b_diameter/2)
-          propsA.t = Body and Body.get_time() or 0
-  				-- For ballFilter
-  			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
-  				propsA.dr = 0.25*propsA.r --TODO: tweak
-  				propsA.da = 10*math.pi/180
+        -- Project the ball to the ground
+        propsA.v = projectGround(v, b_diameter/2)
+        --[[
+        local function projectGround(v, target_height)
+        	target_height = target_height or 0
+          -- Grab head angles
+          local trHead = get_head_transform()
+        	local vHead_homo = T.position4(trHead)
+
+          -- Project to plane
+          if vHead[3] ~= target_height then
+        		local scale = (vHead[3] - target_height) / (vHead[3] - v[3])
+            return vHead_homo + scale * (v - vHead_homo)
+        	else
+        		return vector.copy(v)
+          end
+
         end
+        --]]
+
+
+        propsA.t = Image.t
+				-- For ballFilter
+			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
+				propsA.dr = 0.25*propsA.r --TODO: tweak
+				propsA.da = 10*DEG_TO_RAD
+
       end
 
     end -- end of the check on a single propsA
 
     -- Did we succeed in finding a ball?
-    if check_fail==false then
+    if not check_fail then
       debug_ball(string.format('Ball detected at %.2f, %.2f (z = %.2f)',propsA.v[1],propsA.v[2], propsA.v[3]))
       return tostring(propsA.v), propsA
     end
+
+
+
+
+
+
   end  -- end of loop
 
   -- Assume failure
@@ -552,7 +558,10 @@ function Vision.update(meta, img)
   --HeadImage:rgb_to_labelA(img)
   HeadImage:yuyv_to_labelA(img)
   HeadImage:block_bitor()
-  HeadImage.tf = T.from_flat(meta.tfL16)
+  HeadImage.tfL = T.from_flat(meta.tfL16)
+  HeadImage.tfG = T.from_flat(meta.tfG16)
+  HeadImage.qHead = vector.new(head)
+  HeadImage.t = meta.t
 
   local cc_d = HeadImage:color_countA()
 	if cc_d[colors.magenta]>0 or cc_d[colors.cyan]>0 then

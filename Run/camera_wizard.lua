@@ -36,11 +36,6 @@ else
 	end
 end
 
-local t_log = -math.huge
-local LOG_INTERVAL = 1/5
-
-local libLog, logger
-
 -- Extract metadata information
 local w = metadata.w
 local h = metadata.h
@@ -63,6 +58,9 @@ c_yuyv:quality(metadata.quality)
 c_yuyv:downsampling(metadata.downsampling)
 
 -- LOGGING
+local t_log = -math.huge
+local LOG_INTERVAL = 1/5
+local libLog, logger
 if ENABLE_LOG then
 	libLog = require'libLog'
 	logger = libLog.new('yuyv', true)
@@ -118,8 +116,10 @@ local function update(img, sz, cnt, t)
 	local tfL, tfG = get_tf()
 	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
 	local metadata_camera = {
-		t = t,
 		head = Body.get_head_position(),
+		w = w,
+		h = h,
+		t = t,
 		--rpy = Body.get_rpy(),
 		tfL16 = tfL_flat,
 		tfG16 = tfG_flat
@@ -136,8 +136,6 @@ local function update(img, sz, cnt, t)
 	if logger and (t - t_log > LOG_INTERVAL) then
 		t_log = t
 		metadata_camera.rsz = #img_str
-		metadata_camera.w = w
-		metadata_camera.h = h
 		logger:record(metadata_camera, img_str)
 		if logger.n % 10 == 0 then
 			print("# camera logs: ", logger.n)

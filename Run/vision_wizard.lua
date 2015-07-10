@@ -77,7 +77,9 @@ local t_send = -math.huge
 
 local ptable = require'util'.ptable
 local function update(meta, img)
-	--ptable(meta)
+	print('\n=================')
+	ptable(meta)
+	print()
 
 	local Image, detection = Vision.update(meta, img)
 	-- Send labelA and detection information

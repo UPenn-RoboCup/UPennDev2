@@ -50,7 +50,7 @@ all: $(TARGETS)
 	$(MEX) $<
 
 mexshm.$(MEXEXT):
-	$(MEX) mexshm.cc $(LIBRT)
+	$(MEX) mexshm.cc $(LIBRT) -I/usr/local
 	
 cjpeg.$(MEXEXT):
 	$(MEX) cjpeg.cc -ljpeg

@@ -16,8 +16,9 @@ monitor.init();
 
 %% Network
 % Add the UDP network
-fd = udp_recv('new', 33333);
-s_top = zmq('fd', fd);
+%fd = udp_recv('new', 33333);
+%s_top = zmq('fd', fd);
+s_local = zmq('sub', 'vision0');
 
 %% Loop
 running = 1;

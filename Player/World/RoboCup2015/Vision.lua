@@ -21,12 +21,6 @@ local ptable = require'util'.ptable
 
 -- Important local variables
 local colors
-local w, h, wa, wb, ha, scaleA, scaleB
-local labelA_d, labelB_d
--- Camera information
-local focal_length, focal_base
-local x0A, y0A, focalA
-local x0B, y0B, focalB
 -- Detection thresholds
 local b_diameter, b_dist, b_height0, b_height1, b_fill_rate, b_bbox_area, b_area
 local th_nPostB
@@ -42,25 +36,6 @@ local goalWidth = Config.vision.goal.goalWidth
 
 -- Debug printing in terminal
 local DEBUG = Config.debug.obstacle
-
-function Vision.get_metadata()
-end
-
--- Should have a common API (meta/raw)
-function Vision.send()
-  local lA_raw = c_zlib(ImageProc2.labelA_d, ImageProc2.labelA_n)
-  local lA_meta = {
-    w = wa,
-    h = ha,
-    sz = #lA_raw,
-    c = 'zlib',
-    id = 'labelA',
-  }
-  return {
-  	{lA_meta, lA_raw},
-		{detected},
-	}
-end
 
 local function bboxB2A(bboxB, scaleB)
 	return {
@@ -189,7 +164,6 @@ local function find_ball(Image)
       Image.labelA_d, Image.wa, Image.ha, colors.orange,
       bboxA
     )
-
     -- old
     --[[
     local propsA = check_prop(
@@ -199,7 +173,6 @@ local function find_ball(Image)
     local area = propsA.area
     -- If no pixels then return
     if area < b_area then
-      print('b_area fail', b_area)
       return string.format('Area: %d < %d \n', area, b_area)
     end
     -- Get the fill rate
@@ -209,7 +182,7 @@ local function find_ball(Image)
     end
 
     if type(propsA)=='string' then
-      debug_ball(propsA)
+      --debug_ball(propsA)
       check_fail = true
     else
       -- Check the coordinate on the field
@@ -217,11 +190,58 @@ local function find_ball(Image)
       local dArea = math.sqrt((4/math.pi) * propsA.area)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
 
-      local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
+      local v = HT.project({
+        focalA,
+        -(propsA.centroid[1] - Image.x0A),
+        -(propsA.centroid[2] - Image.y0A),
+        scale,
+      })
+      local dist_sq = v[1]^2 + v[2]^2
+      local maxH = (b_height0 and b_height1) and b_height0 + math.sqrt(dist_sq) * b_height1
+
+      -- Check the distance
+      if dist_sq > b_dist^2 then
+        return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
+      elseif maxH and v[3] > maxH then
+        return string.format("Height: %.2f > %.2f", v[3], maxH)
+      end
+
+      -----------------------------------------
+      --[[
+      local v = check_coordinateA(
+      propsA.centroid, scale, b_dist, b_height0, b_height1,true
+      )
+
+      -- Yield coordinates in the labelA space
+      -- Returns an error message if max limits are given
+      local function check_coordinateA(centroid, scale, maxD, maxH1, maxH2)
+      	local v = HT.project({
+          focalA,
+          -(centroid[1] - x0A),
+          -(centroid[2] - y0A),
+          scale,
+        })
+
+      	local dist_sq = v[1]^2 + v[2]^2
+        local maxH = maxH1 and maxH2 and maxH1 + math.sqrt(dist_sq) * maxH2
+
+        -- Check the distance
+        if maxD and dist_sq > maxD^2 then
+          return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
+        elseif maxH and v[3] > maxH then
+          return string.format("Height: %.2f > %.2f", v[3], maxH)
+        end
+        return v
+      end
+--]]
+      -----------------------------------------------
+
+
+
 
       if type(v)=='string' then
         check_fail = true
-        debug_ball(v)
+        --debug_ball(v)
       else
 --			print(string.format('ball height:%.2f, thr: %.2f', v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2])))
 
@@ -291,6 +311,7 @@ local function find_ball(Image)
 end
 
 -- TODO: Allow the loop to run many times
+--[[
 local function find_goal()
   -- Form the initial goal check
   local postB = ImageProc.goal_posts(
@@ -380,7 +401,7 @@ local function find_goal()
 		-- Convert to body coordinate
 		for i=1,nPosts do
       goalStats[i] = {}
-			local good_postB = postB[i_validB[1]]
+			local good_postB = postB[ i_validB[1] ]
 			local good_post = valid_posts[i]
 
 			local scale1 = good_post.axisMinor / postDiameter
@@ -475,12 +496,11 @@ local function find_goal()
   -- Yield the failure messages and the success tables
   return table.concat(failures, ',')
 end
+--]]
 
 -- Set the variables based on the config file
 function Vision.entry(cfg)
   colors = cfg.vision.colors
-  focal_length, focal_base = cfg.focal_length, cfg.focal_base
-  --scaleA, scaleB = cfg.vision.scaleA, cfg.vision.scaleB
 
 	HeadImage = ImageProc2.new(
     cfg.w, cfg.h, cfg.vision.scaleA, cfg.vision.scaleB
@@ -488,12 +508,14 @@ function Vision.entry(cfg)
 	HeadImage:load_lut(table.concat{HOME, "/Data/", "lut_", cfg.lut, ".raw"})
 
   -- Center should be calibrated and saved in Config
-  --[[
-  x0A, y0A = 0.5*(wa-1)+cfg.cx_offset, 0.5*(ha-1)+cfg.cy_offset
-  x0B, y0B = 0.5*(wb-1)+cfg.cx_offset/scaleB, 0.5*(hb-1)+cfg.cy_offset/scaleB
-  focalA = focal_length / (focal_base / wa)
-  focalB = focalA / scaleB
-  --]]
+  local focal_length, focal_base = cfg.focal_length, cfg.focal_base
+  HeadImage.x0A = (HeadImage.wa-1)/2 + cfg.cx_offset
+  HeadImage.y0A = (HeadImage.ha-1)/2 + cfg.cy_offset
+  HeadImage.x0B = (HeadImage.wb-1)/2 + cfg.cx_offset / HeadImage.scaleB
+  HeadImage.y0B = (HeadImage.hb-1)/2 + cfg.cy_offset / HeadImage.scaleB
+  HeadImage.focalA = focal_length / (focal_base / HeadImage.wa)
+  HeadImage.focalB = HeadImage.focalA / HeadImage.scaleB
+
 
   -- Ball thresholds
   if cfg.vision.ball then
@@ -542,15 +564,13 @@ function Vision.update(meta, img)
 
   --local post_fails, posts = find_goal()
 
-  -- Save the detection information
-  detected.posts = posts
-
-  detected.debug = {
-		post = post_fails or ' ',
-	}
-
   -- Send the detected stuff over the channel every cycle
-  return detected
+  return {
+    ball = ball,
+    posts = posts,
+    lines = lines,
+    corners = corners,
+  }, HeadImage
 
 end
 

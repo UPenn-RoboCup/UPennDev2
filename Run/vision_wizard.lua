@@ -1,6 +1,6 @@
 #!/usr/bin/env luajit
 local ENABLE_NET = true
-local ENABLE_LOG = true
+local ENABLE_LOG = false
 -----------------------------------
 -- Camera manager
 -- (c) Stephen McGill, 2014
@@ -55,7 +55,7 @@ operator = Config.net.operator.wired
 local vision_identifier = 'vision'..(camera_id-1)
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[vision_identifier]
-local udp_ch = stream and stream.udp and si.new_sender(operator, stream.udp)
+local udp_ch = ENABLE_NET and stream and stream.udp and si.new_sender(operator, stream.udp)
 local vision_ch = stream and stream.sub and si.new_publisher(stream.sub)
 --
 print('Vision | ', operator, vision_identifier, stream.udp, udp_ch)
@@ -63,7 +63,7 @@ print('Vision | ', operator, vision_identifier, stream.udp, udp_ch)
 -- LOGGING
 if ENABLE_LOG then
 	libLog = require'libLog'
-	logger = libLog.new('yuyv', true)
+	logger = libLog.new('vision', true)
 end
 --
 local t0 = get_time()
@@ -76,8 +76,24 @@ local t_send = -math.huge
 local ptable = require'util'.ptable
 local function update(meta, img)
 	ptable(meta)
-	local detection = Vision.update(meta, img)
-	vision_ch:send(mpack(detected))
+	local Image, detection = Vision.update(meta, img)
+	-- Send labelA and detection information
+	local lA_raw = c_zlib(Image.labelA_d, Image.labelA_n)
+  local lA_meta = {
+    w = Image.wa,
+    h = Image.ha,
+    sz = #lA_raw,
+    c = 'zlib',
+    id = 'labelA',
+  }
+	local lA_msg = {mpack(lA_meta), lA_raw}
+	local detection_msg = mpack(detection)
+	vision_ch:send(lA_msg)
+	vision_ch:send(detection_msg)
+	if udp_ch then
+		udp_ch:send(table.concat(lA_msg))
+		udp_ch:send(detection_msg)
+	end
 end
 
 local function entry()

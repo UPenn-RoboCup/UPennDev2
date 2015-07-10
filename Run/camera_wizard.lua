@@ -117,7 +117,7 @@ local function update(img, sz, cnt, t)
 
 	local tfL, tfG = get_tf()
 	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
-	local metadata = {
+	local metadata_camera = {
 		t = t,
 		head = Body.get_head_position(),
 		--rpy = Body.get_rpy(),
@@ -129,14 +129,16 @@ local function update(img, sz, cnt, t)
 	-- Send on the channel
 	if camera_ch then
 		--print(type(img), sz, #str)
-		camera_ch:send({mpack(metadata), img_str})
+		camera_ch:send({mpack(metadata_camera), img_str})
 	end
 
 	-- Log raw frames
 	if logger and (t - t_log > LOG_INTERVAL) then
 		t_log = t
-		metadata.rsz = #img_str
-		logger:record(metadata, img_str)
+		metadata_camera.rsz = #img_str
+		metadata_camera.w = w
+		metadata_camera.h = h
+		logger:record(metadata_camera, img_str)
 		if logger.n % 10 == 0 then
 			print("# camera logs: ", logger.n)
 			if logger.n % 100 == 0 then

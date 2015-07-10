@@ -550,8 +550,6 @@ end
 
 function moveleg.foot_trajectory_walkkick(phSingle,uStart,uEnd,stepHeight)
 
-
-
 local breaksTX={0.300000,0.600000,0.700000,0.800000,0.900000,1.000000,}
 local breaksTY={0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
 local coefsX={

@@ -353,6 +353,9 @@ function walk.update()
     end
 --]]
 
+
+print(math.max(zLeft,zRight))
+
     --Check if torso crossed the center position
     local relL = util.pose_relative(uLeft,uTorso)
     local relR = util.pose_relative(uRight,uTorso)

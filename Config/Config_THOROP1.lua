@@ -66,6 +66,7 @@ if IS_WEBOTS then
 		--for SJ's testing in webots
 		--Config.testfile = 'test_testbed'		
 		Config.testfile = 'test_robocup'		
+		Config.testfile = 'test_walk_robocup'		
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
@@ -164,14 +165,10 @@ if IS_WEBOTS then
   }
 end
 
-
 --  Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
 Config.approachTargetY= {-0.07,0.02}  --L/R aiming offsets
 Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
 Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick
-
---  Config.use_walkkick = true
-Config.use_walkkick = false
 
 --Config.torque_legs = false
 Config.torque_legs = true
@@ -180,7 +177,6 @@ Config.disable_goal_vision = false
 
 --  Config.auto_state_advance = true
 Config.auto_state_advance = false
-Config.enable_single_goalpost_detection = false
 Config.enable_single_goalpost_detection = true
 
 -- Config.enable_weaker_kick = true
@@ -188,12 +184,9 @@ Config.use_walkkick = true
 --  Config.use_walkkick = false
 
 Config.disable_ball_when_lookup = true
-
 Config.maxStepApproachTh = 0.30
 Config.maxStepApproach1 = 0.10
 Config.maxStepApproach2 = 0.06
-Config.supportY_preview = -0.02
-Config.supportY_preview2 = -0.01
 
 
 --final config update

@@ -84,6 +84,27 @@ local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
   end
 	-- Calculate the pseudo inverse
 	--print('self.jacobian', qArm, qWaist)
+    --[[
+    Thus, the damped least squares solution is equal to
+    ∆θ = (J^T * J + λ^2 * I)^−1 * J^T * e
+    --]]
+    --[[
+    TODO:
+    It is easy to show that (J T J + λ 2 I) −1 J T = J T (JJ T + λ 2 I) −1 . Thus,
+    ∆θ = J^T *(J * J^T + λ^2 * I)^−1 *e
+    --]]
+    --[[
+    TODO:
+    Additionally, (11) can be computed without needing to carry out the
+matrix inversion, instead row operations can find f such that (JJ T +λ 2 I) f =
+e and then J T f is the solution.
+    --]]
+		--[[
+		-- TODO: Robot subtask performance with singularity robustness using optimal damped least-squares
+		While (1) is not defined for λ = 0, (2) is as the
+matrix (J*JT + λI) is invertible for λ = 0 provided J
+has full row rank.
+		--]]
 	local J = torch.Tensor(self.jacobian(qArm, qWaist))
 	local JT = J:t():clone()
 	local lambda = torch.Tensor(l)

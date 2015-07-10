@@ -51,7 +51,10 @@ Config.pitch_adaptation_max = 2*DEG_TO_RAD
 Config.pitch_threshold = 1*DEG_TO_RAD
 Config.pitch_adaptation_max = 3*DEG_TO_RAD --disabled
 
-
+--NO adaptation!
+Config.adapt_surface_angle =false
+Config.roll_adaptation_max = 0*DEG_TO_RAD
+Config.pitch_adaptation_max = 0*DEG_TO_RAD
 
 
 Config.comX_bias = 0
@@ -65,20 +68,21 @@ if IS_WEBOTS then
 
 	  Config.sensors = {
 			--ft = true,
-			feedback = 'feedback_wizard',
+			--feedback = 'feedback_wizard',
 		--slam = 'slam_wizard',
     --head_camera = 'camera_wizard',
-    chest_lidar = true,
+    --chest_lidar = true,
     --head_lidar = true,
     --kinect = 'kinect2_wizard',
-			mesh = 'mesh_wizard',
+			--mesh = 'mesh_wizard',
 		 	--world = 'world_wizard',
 	  }
 	else
 		--Config.testfile = 'test_testbed'		
 --		Config.testfile = 'test_walkstuff'		
 
-		Config.testfile = 'test_testbed'		
+		--Config.testfile = 'test_testbed'		
+		Config.testfile = 'test_terrain'		
 
 		Config.debug.armplan = false		
 		Config.use_jacobian_arm_planning = true

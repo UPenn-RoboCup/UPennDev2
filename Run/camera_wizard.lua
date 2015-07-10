@@ -201,7 +201,7 @@ local function update(img, sz, cnt, t)
 		metadata.rsz = sz
 		metadata.head = Body.get_head_position()
 		metadata.rpy = Body.get_rpy() 
-		for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
+		--for pname, p in pairs(pipeline) do metadata[pname] = p.get_metadata() end
 		logger:record(metadata, img, sz)
 		if nlog % 10 == 0 then
 			print("# camera logs: "..nlog)

@@ -116,7 +116,7 @@ function state.exit()
 
   lidar_ch:send'pan' --start lidar when init is over
   gripper_ch:send'idle'
-
+  hcm.set_step_stepcount(1)
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()
 end

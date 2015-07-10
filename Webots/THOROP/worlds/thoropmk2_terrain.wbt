@@ -1,11 +1,11 @@
-#VRML_SIM V6.0 utf8
+#VRML_SIM V7.4.3 utf8
 WorldInfo {
   info [
     "Default world for the THOR-OP"
   ]
   title "handletest"
-  basicTimeStep 4
-  FPS 10
+  basicTimeStep 8
+  FPS 15
   contactProperties [
     ContactProperties {
       material1 "feet"
@@ -16,8 +16,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.0828432 -0.988846 -0.123779 2.0257
-  position -8.158 3.93252 -2.27488
+  orientation -0.221954 -0.945077 -0.239931 1.73245
+  position -8.05667 5.03006 0.0191728
 }
 Background {
   skyColor [
@@ -25,7 +25,7 @@ Background {
   ]
 }
 DirectionalLight {
-  ambientIntensity .8
+  ambientIntensity 0.8
   direction -0.5 -2 -0.5
   intensity 0.3
   castShadows TRUE
@@ -35,37 +35,48 @@ DirectionalLight {
   intensity 0.5
 }
 DEF TASKFLOOR Floor {
-  size 10 10
   texture [
     "textures/texture_grid.png"
   ]
 }
-#THOROP_mk15_Fullmass_longarm_2 {
 THOROP_mk2_Fullmass_longarm_2 {
-  translation 0 1.17 0
+  translation 0 1.17 0.05
   rotation 0 1 0 3.1415
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
-  footContactMaterial "feet" 
-  max_torque_400w 135 #50% more than catalogue value 
-  #max_torque_200w 67.5
-  max_torque_200w 90 #hip roll requires LOTS of torque...max_torque_100w 20
+  max_torque_400w 135
+  max_torque_200w 90
   damping_constant 0
- }
-
-
-CinderRampF { translation 0.2125 0.0 2.12}
-CinderRampR { translation -0.2125 0.0 2.12}
-
-CinderRampR { translation 0.2125 0 1.69}
-CinderRampB { translation -0.2125 0.0 1.69}
-
-CinderBlock {  translation 0.2125 0.15 1.245}
-CinderBlock {  translation -0.2125 0.15 1.245}
-
-CinderRampL {  translation 0.2125 0 0.83}
-CinderRampF {  translation -0.2125 0 0.83}
-
-CinderRampF {  translation 0.2125 0 0.4}
-CinderRampR {  translation -0.2125 0 0.4}
+  footContactMaterial "feet"
+}
+CinderRampF {
+  translation 0.2125 0 2.12
+}
+CinderRampR {
+  translation -0.2125 0 2.12
+}
+CinderRampR {
+  translation 0.2125 0 1.69
+}
+CinderRampB {
+  translation -0.2125 0 1.69
+}
+CinderBlock {
+  translation 0.2125 0.15 1.245
+}
+CinderBlock {
+  translation -0.2125 0.15 1.245
+}
+CinderRampL {
+  translation 0.2125 0 0.83
+}
+CinderRampF {
+  translation -0.2125 0 0.83
+}
+CinderRampF {
+  translation 0.2125 0 0.4
+}
+CinderRampR {
+  translation -0.2125 0 0.4
+}

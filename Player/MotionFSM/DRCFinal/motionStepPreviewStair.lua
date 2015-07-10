@@ -225,6 +225,10 @@ function walk.update()
     local lowerVelDS = 0.50
 
 
+--hack for sim
+    local lowerVelMax = 0.90
+    local lowerVelDS = 0.90
+
 
 
 
@@ -281,11 +285,10 @@ function walk.update()
 --      print("foot z vel:",z_vel )
 -- Max  Z lowering speed: 0.53 (at the peak)
 
-
+--print(phSingle,liftp,landp)
 
       zLeftOld = zLeft
       zRightOld = zRight
-
 
       local aShiftY = {aShiftY0[1],liftp*aShiftY0[2] + (landp)*zpr_target[2]}
       local aShiftX = {aShiftX0[1],liftp*aShiftX0[2] + (landp)*zpr_target[3]}
@@ -309,6 +312,9 @@ function walk.update()
 
       uLeft,zLeft,liftp, landp = foot_traj_func(
         phSingle,uLeft_now,uLeft_next,stepHeight,wparam, zLeg[1], l_ft[3],touched)    
+
+
+--print(phSingle,liftp,landp)
           
       zLeg0[1] = zLeg0[1] - leg_raise
       zLeg0[2] = zLeg0[2] - leg_raise
@@ -317,6 +323,8 @@ function walk.update()
       zLeft = zLeft +zLeg0[1]
       local aShiftY = {liftp*aShiftY0[1] + landp*zpr_target[2],aShiftY0[2]}
       local aShiftX = {liftp*aShiftX0[1] + landp*zpr_target[3],aShiftX0[2]}
+
+
 
       mcm.set_walk_aShiftX(aShiftX)
       mcm.set_walk_aShiftY(aShiftY)

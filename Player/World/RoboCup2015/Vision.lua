@@ -190,6 +190,8 @@ local function find_ball(Image)
       local dArea = math.sqrt((4/math.pi) * propsA.area)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
 
+      local v = (trHead * v0) / v0[4]
+
       local v = HT.project({
         focalA,
         -(propsA.centroid[1] - Image.x0A),
@@ -550,6 +552,7 @@ function Vision.update(meta, img)
   --HeadImage:rgb_to_labelA(img)
   HeadImage:yuyv_to_labelA(img)
   HeadImage:block_bitor()
+  HeadImage.tf =
 
   local cc_d = HeadImage:color_countA()
 	if cc_d[colors.magenta]>0 or cc_d[colors.cyan]>0 then

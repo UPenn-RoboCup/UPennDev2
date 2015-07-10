@@ -178,7 +178,7 @@ local camera = require'uvc'.init(
 
 local dev_raw
 do
-	local f = io.popen("ls -l /dev/video-headcamera")
+	local f = io.popen("ls -l "..metadata.dev)
 	dev_raw = f:read("*all"):match'video%d'
 end
 -- Set the auto params

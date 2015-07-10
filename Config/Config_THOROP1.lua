@@ -1,5 +1,5 @@
 --Now the Config file is entirely identical over two robots (using hostname)
-IS_STEVE = true
+IS_STEVE = false
 IS_COMPETING = false
 
 if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end

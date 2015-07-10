@@ -298,15 +298,27 @@ function h = show_monitor_thorwin
       end
 
     elseif strcmp(msg_id,'head_camera')
-        nr = 320;
-        nc = 180;
-        % Assume always JPEG
-        cam.yuyv = djpeg(raw);
-        yuyv_scaled = imresize(cam.yuyv, [nr nc]);
-        set(cam.im_yuyv,'Cdata', yuyv_scaled);
-        % Set limits always, should not cost much CPU
-        xlim(cam.f_yuyv,[0 nc]);
-        ylim(cam.f_yuyv,[0 nr]);
+        nr = metadata.w;
+        nc = metadata.h;
+        %disp(metadata);
+        compression = char(metadata.c);
+        if strcmp(compression, 'jpeg')
+            % Assume always JPEG
+            cam.yuyv = djpeg(raw);
+            yuyv_scaled = imresize(cam.yuyv, [nr nc]);
+            set(cam.im_yuyv,'Cdata', yuyv_scaled);
+            % Set limits always, should not cost much CPU
+            xlim(cam.f_yuyv,[0 nc]);
+            ylim(cam.f_yuyv,[0 nr]);
+        elseif strcmp(compression, 'yuyv')
+            [ycbcr, rgb] = yuyv2rgb(typecast(raw,'uint32'));
+            rgb = reshape(rgb, [metadata.w / 2, metadata.h, 3]);
+            cam.yuyv = rgb;
+            yuyv_scaled = imresize(cam.yuyv, [nr nc]);
+            set(cam.im_yuyv,'Cdata', yuyv_scaled);
+            xlim(cam.f_yuyv,[0 nc]);
+            ylim(cam.f_yuyv,[0 nr]);
+        end
         needs_draw = 1;
     elseif strcmp(msg_id,'labelA')
         cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'

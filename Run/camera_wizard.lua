@@ -111,6 +111,7 @@ local function get_tf()
 	return tfTorsoLocal * tfCom, tfTorsoGlobal * tfCom
 end
 
+local camera_name = name..'_camera'
 local function update(img, sz, cnt, t)
 
 	local tfL, tfG = get_tf()
@@ -120,6 +121,8 @@ local function update(img, sz, cnt, t)
 		w = w,
 		h = h,
 		t = t,
+		c = 'yuyv',
+		id = camera_name,
 		--rpy = Body.get_rpy(),
 		tfL16 = tfL_flat,
 		tfG16 = tfG_flat
@@ -156,7 +159,7 @@ local function update(img, sz, cnt, t)
 			c = 'jpeg',
 			-- Extra information
 			t = t,
-			id = name..'_camera',
+			id = camera_name,
 			n = cnt,
 		}), c_img}
 		local udp_ret, udp_err = udp_ch:send(table.concat(msg))

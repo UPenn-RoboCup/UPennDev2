@@ -574,14 +574,22 @@ function Vision.update(meta, img)
   local ball = find_ball(HeadImage)
   print('Ball', ball)
 
+  local debug = {
+    ball = 'ball',
+    post = 'goal',
+    obstacle = 'obstacle',
+  }
+
   --local post_fails, posts = find_goal()
 
   -- Send the detected stuff over the channel every cycle
   return HeadImage, {
-    ball = ball,
-    posts = posts,
-    lines = lines,
-    corners = corners,
+    id = 'detect',
+    --ball = ball,
+    --posts = posts,
+    --lines = lines,
+    --corners = corners,
+    debug = debug
   }
 
 end

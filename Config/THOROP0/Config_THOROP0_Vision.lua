@@ -105,7 +105,7 @@ local m308_param = {
 local grasp_afternoon_param = {
 	{'White Balance Temperature', 3300},
 	{'Exposure (Absolute)', 170},
-	{'Focus', 0},
+	--{'Focus', 0},
 	{'Brightness', 128},
 	{'Contrast', 128},
 	{'Saturation', 150},

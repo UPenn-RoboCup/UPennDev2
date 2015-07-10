@@ -219,19 +219,21 @@ fsm.Motion = {
 	{'motionStance', 'bias', 'motionBiasInit'},
 	{'motionStance', 'uninit', 'motionUnInit'},
 	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-	{'motionStance', 'preview', 'motionStepPreview'},
 --	{'motionStance', 'slowstep', 'motionSlowStep'},
-	{'motionStance', 'stair', 'motionStepPreviewStair'},
+
 	--
 	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
 	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
 	{'motionHybridWalk', 'emergency', 'motionStance'},
 	{'motionHybridWalkEnd', 'done', 'motionStance'},
+
+	--kick handlings
+  {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
+  {'motionHybridWalkKick', 'done', 'motionStance'},
+  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
+
 	--
 	{'motionStepPreview', 'done', 'motionStance'},
-	--
-	{'motionStepPreviewStair', 'done', 'motionStance'},
-
 }
 
 

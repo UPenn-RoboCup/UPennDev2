@@ -32,6 +32,7 @@ PROTO THORwIn_Dale [
   # We may want wider FOV for head lidar	
   field SFString   name "THOR-OP"
   field SFString   footContactMaterial "default"
+  field SFInt32    channel 0
 ]
 {
 Robot {

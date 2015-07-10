@@ -147,7 +147,7 @@ fsm.Body = {
 }
 --]]
 
-
+--[[
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   {'bodyInit', 'done', 'bodyStop'},
@@ -160,20 +160,41 @@ fsm.Body = {
   {'bodyApproachMessy', 'stop', 'bodyStop'},
 	{'bodyApproachMessy', 'done', 'bodyStop'},
 
-
-  --these should NEVER called with mistake at all
-  --FOR DAY 1
---
   {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
   {'bodyStep', 'nextstep', 'bodyStep'},
+}
 --]]
 
-  -- Take two slow stops (for precise alignment)
---  {'bodyStepAlign', 'done', 'bodyStop'},
+fsm.Body = {
+  {'bodyIdle', 'init', 'bodyInit'},
+  {'bodyInit', 'done', 'bodyStop'},
 
+--  {'bodyStop', 'footrace', 'bodyFootRace'},
+--  {'bodyFootRace', 'done', 'bodyStop'},
 
+  {'bodyStop', 'kick', 'bodyRobocupKick'},
+--  {'bodyStop', 'play', 'bodyRobocupIdle'},
+--  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
+  {'bodyStop', 'approach', 'bodyRobocupApproach'},
+
+	{'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
+  {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
+  {'bodyRobocupIdle','stop','bodyStop'},
+
+  {'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
+  {'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
+  {'bodyRobocupApproach','stop','bodyStop'},
+
+  {'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
+  {'bodyRobocupFollow', 'ballclose', 'bodyRobocupApproach'},
+  {'bodyRobocupFollow','stop','bodyStop'},
+
+	{'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
+  {'bodyRobocupKick', 'testdone', 'bodyStop'},
 }
+
 
 
 fsm.Motion = {

@@ -54,13 +54,16 @@ DEF BALL BallGPS {
   translation 2.4 0.109919 2
   radius 0.11
   color 1.0 1.0 1.0
+  controller "ballGPS"
 }
 DEF OBS1 ObjectGPS {
   translation -2.56736 0.45 -3.27277
+  controller "objectGPS"
   controllerArgs "1"
 }
 DEF OBS2 ObjectGPS {
   translation -2.5 0.45 2
+  controller "objectGPS"
   controllerArgs "2"
 }
 DEF OPPONENT Block {

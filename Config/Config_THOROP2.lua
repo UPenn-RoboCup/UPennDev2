@@ -8,7 +8,7 @@ if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 --local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
 Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
-exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}
+exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
 
 -- Printing of debug messages
@@ -68,13 +68,13 @@ if IS_WEBOTS then
 
 	  Config.sensors = {
 			--ft = true,
-			feedback = 'feedback_wizard',
+			--feedback = 'feedback_wizard',
 		--slam = 'slam_wizard',
     --head_camera = 'camera_wizard',
-    chest_lidar = true,
+    --chest_lidar = true,
     --head_lidar = true,
     --kinect = 'kinect2_wizard',
-			mesh = 'mesh_wizard',
+			--mesh = 'mesh_wizard',
 		 	--world = 'world_wizard',
 	  }
 	else

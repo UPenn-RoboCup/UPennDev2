@@ -1,4 +1,5 @@
-local torch = require'libtorch'
+local libtorch = require'libtorch'
+--local torch = require'libtorch'
 torch.Tensor = torch.DoubleTensor
 
 --[[

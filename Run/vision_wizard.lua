@@ -14,6 +14,8 @@ local jpeg = require'jpeg'
 local Body = require'Body'
 local get_time = Body.get_time
 local Vision = require'Vision'
+local c_zlib = require'zlib.ffi'.compress
+local ok, ffi = pcall(require,'ffi')
 
 -- Grab the metadata for this camera
 local metadata
@@ -75,10 +77,11 @@ local t_send = -math.huge
 
 local ptable = require'util'.ptable
 local function update(meta, img)
-	ptable(meta)
+	--ptable(meta)
+
 	local Image, detection = Vision.update(meta, img)
 	-- Send labelA and detection information
-	local lA_raw = c_zlib(Image.labelA_d, Image.labelA_n)
+	local lA_raw = c_zlib(Image.labelA_d, ffi.sizeof(Image.labelA_d))
   local lA_meta = {
     w = Image.wa,
     h = Image.ha,

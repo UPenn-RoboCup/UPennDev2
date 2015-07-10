@@ -189,15 +189,15 @@ local function find_ball(Image)
 
       local dArea = math.sqrt((4/math.pi) * propsA.area)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
-
-      local v = (trHead * v0) / v0[4]
-
-      local v = HT.project({
-        focalA,
+      local v0 = vector.new{
+        Image.focalA,
         -(propsA.centroid[1] - Image.x0A),
         -(propsA.centroid[2] - Image.y0A),
         scale,
-      })
+      }
+
+      local v = Image.tf * (v0 / v0[4])
+
       local dist_sq = v[1]^2 + v[2]^2
       local maxH = (b_height0 and b_height1) and b_height0 + math.sqrt(dist_sq) * b_height1
 
@@ -552,7 +552,7 @@ function Vision.update(meta, img)
   --HeadImage:rgb_to_labelA(img)
   HeadImage:yuyv_to_labelA(img)
   HeadImage:block_bitor()
-  HeadImage.tf =
+  HeadImage.tf = T.from_flat(meta.tfL16)
 
   local cc_d = HeadImage:color_countA()
 	if cc_d[colors.magenta]>0 or cc_d[colors.cyan]>0 then
@@ -568,12 +568,12 @@ function Vision.update(meta, img)
   --local post_fails, posts = find_goal()
 
   -- Send the detected stuff over the channel every cycle
-  return {
+  return HeadImage, {
     ball = ball,
     posts = posts,
     lines = lines,
     corners = corners,
-  }, HeadImage
+  }
 
 end
 

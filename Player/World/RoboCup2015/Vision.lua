@@ -17,6 +17,7 @@ local si = require'simple_ipc'
 require'wcm'
 require'hcm'
 require'gcm'
+local ptable = require'util'.ptable
 
 -- Important local variables
 local colors
@@ -27,7 +28,9 @@ local focal_length, focal_base
 local x0A, y0A, focalA
 local x0B, y0B, focalB
 -- Detection thresholds
-local th_nPostB, g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
+local b_diameter, b_dist, b_height0, b_height1, b_fill_rate, b_bbox_area, b_area
+local th_nPostB
+local g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
 -- Store information about what was detected
 local detected = {
   id = 'detect',
@@ -59,7 +62,7 @@ function Vision.send()
 	}
 end
 
-local function bboxB2A(bboxB)
+local function bboxB2A(bboxB, scaleB)
 	return {
 		scaleB * bboxB[1],
 		scaleB * bboxB[2] + scaleB - 1,
@@ -82,7 +85,7 @@ local function bboxStats(label, color, bbox)
   return stats, (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
 end
 
-local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
+local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_d)
   -- Grab the statistics in labelA
   local stats, box_area = bboxStats('a', color, prop.boundingBox)
   --TODO: bbox area check seems redundant
@@ -95,7 +98,7 @@ local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_t)
     return string.format('Area: %d < %d \n', area, th_area)
   end
   -- Get the fill rate
-	-- TODO: depend on ball or goal
+	-- TODO: depends on ball or goal
   --local fill_rate = area / box_area
 	local fill_rate = area / (stats.axisMajor * stats.axisMinor)
   if fill_rate < th_fill then
@@ -147,11 +150,151 @@ local function check_coordinateB(centroid, scale, maxD, maxH)
   return v
 end
 
+local function find_ball(Image)
+  if type(Image)~='table' then return end
+  --print('\n=========\n')
+  --ptable(Image)
+  --debug_ball_clear()
+
+  local cc = Image.ccA_d[colors.orange]
+  if cc<6 then return'Color count' end
+  -- Connect the regions in labelB
+  local ballPropsB = ImageProc.connected_regions(
+    tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
+    Image.wb,
+    Image.hb,
+    colors.orange
+  )
+
+  if not ballPropsB then return'No connected regions' end
+  local nProps = #ballPropsB
+  if nProps==0 then return'0 connected regions' end
+  --
+  local failures, successes = {}, {}
+  for i=1,math.min(5, nProps) do
+    --debug_ball("Checking "..i.." / "..nProps.."\n")
+    local check_fail = false
+    -- Check the image properties
+    local propsB = ballPropsB[i]
+
+    -- TODO: Verify the bounding box!
+    local bboxA = bboxB2A(propsB.boundingBox, Image.scaleB)
+    local bboxAarea = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
+    if bboxAarea < b_bbox_area then
+      return string.format('Box area: %d<%d\n',bboxAarea, b_bbox_area)
+    end
+
+    -- New
+    local propsA = ImageProc2.color_stats(
+      Image.labelA_d, Image.wa, Image.ha, colors.orange,
+      bboxA
+    )
+
+    -- old
+    --[[
+    local propsA = check_prop(
+      colors.orange, propsB, b_bbox_area, b_area, b_fill_rate, labelA_t
+    )
+    --]]
+    local area = propsA.area
+    -- If no pixels then return
+    if area < b_area then
+      print('b_area fail', b_area)
+      return string.format('Area: %d < %d \n', area, b_area)
+    end
+    -- Get the fill rate
+    local fill_rate = area / (propsA.axisMajor * propsA.axisMinor)
+    if fill_rate < b_fill_rate then
+      return string.format('Fill rate: %.2f < %.2f\n', fill_rate, b_fill_rate)
+    end
+
+    if type(propsA)=='string' then
+      debug_ball(propsA)
+      check_fail = true
+    else
+      -- Check the coordinate on the field
+
+      local dArea = math.sqrt((4/math.pi) * propsA.area)
+      local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
+
+      local v = check_coordinateA(propsA.centroid, scale, b_dist, b_height0,b_height1,true)
+
+      if type(v)=='string' then
+        check_fail = true
+        debug_ball(v)
+      else
+--			print(string.format('ball height:%.2f, thr: %.2f', v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2])))
+
+        ---[[ Field bounds check
+        if not check_fail and math.sqrt(v[1]*v[1]+v[2]*v[2])>3 then
+					local margin = 0.85 --TODO
+          local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
+          if math.abs(global_v[1])>xMax+margin or math.abs(global_v[2])>yMax+margin then
+            check_fail = true
+            debug_ball('OUTSIDE FIELD!\n')
+          end
+        end
+				--]]
+
+        -- Ground check
+        if not check_fail and Body.get_head_position()[2] < Config.vision.ball.th_ground_head_pitch then
+          local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
+          local ballCentroid = propsA.centroid
+          local vmargin = ha-ballCentroid[2]
+          --When robot looks down they may fail to pass the green check
+          --So increase the bottom margin threshold
+          if vmargin > dArea * 2.0 then
+            -- Bounding box in labelA below the ball
+            local fieldBBox = {}
+            fieldBBox[1] = ballCentroid[1] + th_ground_boundingbox[1]
+            fieldBBox[2] = ballCentroid[1] + th_ground_boundingbox[2]
+            fieldBBox[3] = ballCentroid[2] + .5*dArea
+                       + th_ground_boundingbox[3]
+            fieldBBox[4] = ballCentroid[2] + .5*dArea
+                        + th_ground_boundingbox[4]
+            -- color stats for the bbox
+            local fieldBBoxStats = ImageProc.color_stats(labelA_t, colors.field, fieldBBox)
+            if (fieldBBoxStats.area < Config.vision.ball.th_ground_green) then
+              -- if there is no field under the ball
+              -- it may be because its on a white line
+              local whiteBBoxStats = ImageProc.color_stats(labelA_t, colors.white,fieldBBox)
+              if (whiteBBoxStats.area < Config.vision.ball.th_ground_white) then
+                debug_ball("Green check fail\n")
+                check_fail = true
+              end
+            end --end white line check
+          end
+        end --end bottom margin check
+
+        if not check_fail then
+          -- Project the ball to the ground
+          propsA.v = projectGround(v,b_diameter/2)
+          propsA.t = Body and Body.get_time() or 0
+  				-- For ballFilter
+  			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
+  				propsA.dr = 0.25*propsA.r --TODO: tweak
+  				propsA.da = 10*math.pi/180
+        end
+      end
+
+    end -- end of the check on a single propsA
+
+    -- Did we succeed in finding a ball?
+    if check_fail==false then
+      debug_ball(string.format('Ball detected at %.2f, %.2f (z = %.2f)',propsA.v[1],propsA.v[2], propsA.v[3]))
+      return tostring(propsA.v), propsA
+    end
+  end  -- end of loop
+
+  -- Assume failure
+  return ball_debug
+end
+
 -- TODO: Allow the loop to run many times
 local function find_goal()
   -- Form the initial goal check
   local postB = ImageProc.goal_posts(
-		tonumber(ffi.cast('intptr_t', ffi.cast('void *', ImageProc2.labelB_d))),
+		tonumber(ffi.cast('intptr_t', ffi.cast('void *', HeadImage.labelB_d))),
 		wb,
 		hb,
 		colors.magenta)
@@ -352,6 +495,18 @@ function Vision.entry(cfg)
   focalB = focalA / scaleB
   --]]
 
+  -- Ball thresholds
+  if cfg.vision.ball then
+
+    b_diameter = cfg.vision.ball.diameter
+    b_dist = cfg.vision.ball.max_distance
+    b_height0 = cfg.vision.ball.max_height0
+    b_height1 = cfg.vision.ball.max_height1
+    b_fill_rate = cfg.vision.ball.th_min_fill_rate
+    b_bbox_area = cfg.vision.ball.th_min_bbox_area
+    b_area = cfg.vision.ball.th_min_area
+  end
+
   -- Goal thresholds
   if cfg.vision.goal then
     g_bbox_area = cfg.vision.goal.th_min_bbox_area
@@ -378,8 +533,12 @@ function Vision.update(meta, img)
 	if cc_d[colors.magenta]>0 or cc_d[colors.cyan]>0 then
 		print('Magenta, Cyan', cc_d[colors.magenta], cc_d[colors.cyan])
 	end
+
   -- Debug the color count
   --for i=0,255 do if cc_d[i]~=0 then print(i, cc_d[i]) end end
+
+  local ball = find_ball(HeadImage)
+  print('Ball', ball)
 
   --local post_fails, posts = find_goal()
 

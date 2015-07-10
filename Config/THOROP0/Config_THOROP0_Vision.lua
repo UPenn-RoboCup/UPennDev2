@@ -44,6 +44,26 @@ local vision_k2 = {
 	scaleB = 2,
 }
 
+vision.ball = {
+  diameter = 0.22,
+  th_min_bbox_area = 40, --50
+  th_min_area = 20, --10,
+  th_min_fill_rate = 0.35,
+
+  --TODO: to test on real robot
+  max_height0 = 0.3,    --Max height = max_height0 + dist*max_height1
+  max_height1 = 0.12,
+
+  max_distance = 9,
+  th_ground_head_pitch = 50*DEG_TO_RAD,
+  th_ground_boundingbox = {-30,30,0,20},
+  th_ground_green = 400,  --TODO
+  th_ground_white = 150,  --TODO
+  check_for_ground = 1,
+  check_for_field = 1,
+  field_margin = 2.0,
+}
+
 vision.goal = {
 	th_min_bbox_area = 80, --100,
 	th_nPostB = 15,

@@ -125,7 +125,7 @@ camera[1] = {
 	vision = vision,
 	-- Run the standard RoboCup vision processing
 	--detection = 'libVision',
-	--lut = 'ucla1',
+	lut = 'grasp_green_lines',
 	--Logitech C920
 	-- f = 640/2/tan(78/180*pi / 2)
 	--fov = 2*arctan(d/2f)

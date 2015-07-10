@@ -13,6 +13,7 @@ local mpack = require'msgpack.MessagePack'.pack
 local jpeg = require'jpeg'
 local Body = require'Body'
 local get_time = Body.get_time
+local Vision = require'Vision'
 
 -- Grab the metadata for this camera
 local metadata
@@ -75,11 +76,14 @@ local t_send = -math.huge
 local ptable = require'util'.ptable
 local function update(meta, ranges)
 	ptable(meta)
+	Vision.update()
 end
 
 local function entry()
+	Vision.entry(metadata)
 end
 local function exit()
+	Vision.exit()
 end
 
 -- If required from Webots, return the table

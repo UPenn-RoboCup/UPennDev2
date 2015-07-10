@@ -20,7 +20,7 @@ Config.debug = {
   goalpost = false,
   world = false,
   feedback = false,
-  armplan = true,
+  armplan = false,
 }
 
 --NO BIRDWALK FOR ROBOCUP
@@ -48,7 +48,7 @@ if IS_WEBOTS then
 			ft = true,
 			--feedback = 'feedback_wizard',
 			--slam = 'slam_wizard',
-    	--head_camera = 'camera_wizard',
+    	head_camera = 'camera_wizard',
     	--chest_lidar = true,
     	--head_lidar = true,
 			--kinect = 'kinect2_wizard',
@@ -57,19 +57,15 @@ if IS_WEBOTS then
 	  }
 
 	else
+		--for SJ's testing in webots
 		--Config.testfile = 'test_testbed'		
 		Config.testfile = 'test_walkstuff'		
-		Config.debug.armplan = false		
-		Config.use_jacobian_arm_planning = true
-		Config.enable_jacobian_test = false
-		Config.enable_jacobian_test = true
-		Config.enable_touchdown = false
-		Config.raise_body = false
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
 			feedback = 'feedback_wizard',
 		 	world = 'world_wizard',
+--	 		head_camera = 'camera_wizard',
 	  }
 	end
 end

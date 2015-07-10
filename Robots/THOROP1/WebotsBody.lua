@@ -45,6 +45,7 @@ if tags.receiver>0 then
 	webots.wb_receiver_set_channel(tags.receiver, 13)
 end
 
+
 -- Ability to turn on/off items
 local t_last_keypress = get_time()
 webots.wb_robot_keyboard_enable(100)

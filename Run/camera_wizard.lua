@@ -94,8 +94,8 @@ local function get_tf()
 	local pose = wcm.get_robot_pose()
 	local bh = mcm.get_walk_bodyHeight()
 	local bo = mcm.get_status_bodyOffset()
-	local qHead = Body.get_head_command_position()
-	--local qHead = Body.get_head_position()
+	--local qHead = Body.get_head_command_position()
+	local qHead = Body.get_head_position()
 	local uComp = mcm.get_stance_uTorsoComp()
 	uComp[3] = 0
 	-- Poses with the compensation
@@ -120,6 +120,7 @@ local function update(img, sz, cnt, t)
 	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
 	local metadata_camera = {
 		head = Body.get_head_position(),
+		--head = Body.get_head_command_position(),
 		w = w,
 		h = h,
 		t = t,

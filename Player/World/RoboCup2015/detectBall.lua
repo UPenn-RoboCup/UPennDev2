@@ -5,6 +5,9 @@ local ImageProc2 = require'ImageProc.ffi2'
 local T = require'Transform'
 local vector = require'vector'
 local util = require'util'
+local ENABLE_COORDINATE_CHECK = true                                            
+local ENABLE_FIELD_CHECK = true                                                 
+local ENABLE_GROUND_CHECK = true
 local function bboxB2A(bboxB, scaleB)
 	return {
 		scaleB * bboxB[1],

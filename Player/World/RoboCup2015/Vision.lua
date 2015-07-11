@@ -16,9 +16,6 @@ require'hcm'
 require'gcm'
 
 local HeadImage
-local ENABLE_COORDINATE_CHECK = true
-local ENABLE_FIELD_CHECK = true
-local ENABLE_GROUND_CHECK = true
 local detectBall
 local detectPost
 local detectObstacle

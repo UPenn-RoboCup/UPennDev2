@@ -276,6 +276,85 @@ function ImageProc.color_stats(image, width, height, color, bbox)
 		}, RegionProps_mt)
 end
 
+-- Get the color stats for a bounding box
+-- TODO: Add tilted color stats if needed
+-- TODO: use the bbox in the for loop
+local max = require'math'.max
+local sqrt = require'math'.sqrt
+local atan2 = require'math'.atan2
+local min = require'math'.min
+local max = require'math'.max
+function ImageProc.color_stats_exact(image, width, height, color, bbox)
+  local i0 = 0
+  local i1 = width - 1
+  local j0 = 0
+  local j1 = height - 1
+  if bbox then
+    i0 = max(i0, bbox[1])
+    i1 = min(i1, bbox[2])
+    j0 = max(j0, bbox[3])
+    j1 = min(j1, bbox[4])
+  end
+	-- Move pointer to the bbox start
+	image = image + j0 * width
+	color = color or 1
+	-- RegionProps based statistics
+	local area = 0
+	local minI, maxI = width - 1, 0
+	local minJ, maxJ = height - 1, 0
+	local sumI, sumJ = 0, 0
+	local sumII, sumJJ, sumIJ = 0, 0, 0
+  for j=j0,j1 do
+    for i=i0,i1 do
+			-- If our color, then update the RegionProps
+			if image[i] == color then
+			--if band(image[i], color)>0 then
+				-- Increment area size
+				area = area + 1
+				-- Update min/max row/column values
+				if i < minI then minI = i end
+				if i > maxI then maxI = i end
+				if j < minJ then minJ = j end
+				if j > maxJ then maxJ = j end
+				-- Update the sums
+				sumI = sumI + i
+				sumJ = sumJ + j
+				sumII = sumII + i^2
+				sumJJ = sumJJ + j^2
+				sumIJ = sumIJ + i * j
+      end
+      -- If
+    end
+    image = image + width
+  end
+	if area==0 then return { area = area } end
+	--
+  local centroidI = sumI / area
+  local centroidJ = sumJ / area
+	--
+	local covII = sumII/area - centroidI^2
+	local covJJ = sumJJ/area - centroidJ^2
+	local covIJ = sumIJ/area - centroidI*centroidJ
+	local covTrace = covII + covJJ
+	local covDet = covII*covJJ - covIJ^2
+	local covFactor = sqrt(max(covTrace^2 - 4*covDet, 0))
+	local covAdd = (covTrace + covFactor) / 2
+	local covSubtract = max((covTrace - covFactor), 0) / 2
+	--
+	local axisMajor = sqrt(12 * covAdd) + 0.5
+	local axisMinor = sqrt(12 * covSubtract) + 0.5
+	local orientation = atan2(covJJ-covIJ-covSubtract, covII-covIJ-covSubtract)
+	--
+	return setmetatable({
+		area = area,
+		centroid = {centroidI, centroidJ},
+		boundingBox = {minI,maxI,minJ,maxJ},
+		axisMajor = axisMajor,
+		axisMinor = axisMinor,
+		orientation = orientation,
+		}, RegionProps_mt)
+end
+
 --[[
 image: labeled image
 m: width of labeled image

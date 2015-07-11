@@ -47,19 +47,21 @@ function detectObstacle.update(Image)
   local horizonB = (Image.hb/2.0) - Image.focalB*math.tan(pa - 10*DEG_TO_RAD)
   horizonB = math.min(Image.hb, math.max(math.floor(horizonB), 0))
   --TODO: plot it in monitor
+ --print("HORIZON: ", horizonB, 'hb:', Image.hb)
 
 	-- Done in b...
-	-- TODO: No tensor this time!
 	local obsProps = ImageProc.obstacles(
 		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
+		Image.wb, Image.hb,
 		config.min_width, config.max_width, horizonB
 	)
-
-  -- print("HORIZON: ", horizonB, 'hb:', hb)
 
   if #obsProps == 0 then
 		return false, 'None'
 	end
+
+	-- Position of the head now
+	local pHead4 = T.position4(Image.tfG)
 
   --for i=1,math.min(30, #obsProps) do
 	local msgs = {}
@@ -67,37 +69,89 @@ function detectObstacle.update(Image)
     local passed = true
 		local v
 		local obstacle_dist
-		-- Black check
-		local black_box = {
+
+		-- Form the bounding boxes to inspect
+		local black_bboxB = {
 			obsProps[i].position[1] - obsProps[i].width/2,
 			obsProps[i].position[1] + obsProps[i].width/2,
 			obsProps[i].position[2] - 2*obsProps[i].width,
 			obsProps[i].position[2],
 		}
-		-- Make we know the difference between b and a....
-		local blackStats = ImageProc2.color_stats(
-			Image.labelB_d, Image.wb, Image.hb, colors.black, black_box
+		local blackStatsB = ImageProc2.color_stats_exact(
+			Image.labelB_d, Image.wb, Image.hb, colors.black, black_bboxB
 		)
-		local bboxA = bboxB2A(black_box, Image.scaleB)
-		local box_area = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
+		util.ptable(blackStatsB)
 
-    local black_fill_rate = blackStats.area / box_area
-		if black_fill_rate < min_black_fill_rate then
+		-- TODO: Use labelA?
+		local black_bboxA = bboxB2A(black_bboxB, Image.scaleB)
+		local blackStatsA = ImageProc2.color_stats_exact(
+			Image.labelA_d, Image.wa, Image.ha, colors.black, black_bboxA
+		)
+		util.ptable(blackStatsA)
+
+		-- Black area check
+		if blackStatsB.area < 1 then
 			passed = false
-			msgs[i] = string.format(
-				"black fillrate: %.2f<%.2f", black_fill_rate, min_black_fill_rate)
+			msgs[i] = '0 B area'
 		end
 
+		-- Black Fill rate check
+		if passed then
+			local blackA_fill_rate
+			local blackB_fill_rate
+			-- Find the area
+			if blackStatsA then
+				local box_areaA = (black_bboxA[2] - black_bboxA[1] + 1) *
+					(black_bboxA[4] - black_bboxA[3] + 1)
+				blackA_fill_rate = blackStatsA.area / box_areaA
+			end
+			if blackStatsB then
+				local box_areaB = (black_bboxB[2] - black_bboxB[1] + 1) *
+					(black_bboxB[4] - black_bboxB[3] + 1)
+				blackB_fill_rate = blackStatsB.area / box_areaB
+			end
+
+			if blackA_fill_rate < min_black_fill_rate then
+				passed = false
+				msgs[i] = string.format(
+					"black_fill_rate: A: %.2f<%.2f B: %.2f<%.2f",
+					blackA_fill_rate, min_black_fill_rate, blackB_fill_rate, min_black_fill_rate
+				)
+			end
+		end
     -- Convert to local frame
 		if passed then
+			-- TODO: place the diameter in entry
+			-- This is in labelB coordinates
     	local scale = math.max(1, obsProps[i].width / Config.world.obsDiameter)
-    --Instead of the width-based distance
-    --Let's just project the bottom position to the ground
-      v = check_coordinateB(
-        { obsProps[i].position[1],  obsProps[i].position[2]}, 0.1)
-      v = projectGround(v,0)
-    	obstacle_dist = math.sqrt(v[1]*v[1]+v[2]*v[2])
+    	-- Instead of the width-based distance
+    	-- Let's just project the bottom position to the ground
+			local centroid = obsProps[i].position
+			-- TODO: Why this scale?
+			local scale = 0.1
+			local v0 = vector.new{
+		    Image.focalB,
+		    -(centroid[1] - Image.x0B),
+		    -(centroid[2] - Image.y0B),
+		    scale,
+		  }
+			-- Put into the local and global frames
+      local vL = Image.tfL * (v0 / v0[4])
+			local vG = Image.tfG * (v0 / v0[4])
+			v = vG
+
+			-- Project to the ground
+			local target_height = 0
+			if pHead4[3]==target_height then
+				obsProps[i].v = vector.copy(v)
+			else
+				local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
+				obsProps[i].v = pHead4 + scale * (v - pHead4)
+			end
+
+    	obstacle_dist = math.sqrt(obsProps[i].v[1]^2+obsProps[i].v[2]^2)
 		end
+
 
     -- TODO: Field bounds check
 		--[[
@@ -118,19 +172,28 @@ function detectObstacle.update(Image)
     end
 
     -- Ground check
-    if passed and hb-obsProps[i].position[2]>10 then
-      local left_x = obsProps[i].position[1] - obsProps[i].width/2
-      local right_x = obsProps[i].position[1] + obsProps[i].width/2
-      local top_y = obsProps[i].position[2]
-      local bot_y = math.min(hb, obsProps[i].position[2]+20)
+    if passed and Image.hb-obsProps[i].position[2]>10 then
 
-      local ground_bbox = {left_x, right_x, top_y, bot_y}
-      local groundStats, bbox_area = bboxStats('b', colors.field, ground_bbox)
-      if groundStats.area/bbox_area < min_ground_fill_rate then  --TODO
+			-- Bounding box in labelB below the ball
+			-- {left_x, right_x, top_y, bot_y}
+			local fieldBBox = {
+				obsProps[i].position[1] - obsProps[i].width/2,
+				obsProps[i].position[1] + obsProps[i].width/2,
+				obsProps[i].position[2],
+				math.min(Image.hb, obsProps[i].position[2]+20),
+			}
+			-- Area of the labelB bbox
+			local fieldBBoxArea = (fieldBBox[2] - fieldBBox[1] + 1)
+				* (fieldBBox[4] - fieldBBox[3] + 1)
+			-- Color stats for the bbox of the field
+			local fieldBBoxStats = ImageProc2.color_stats(
+				Image.labelB_d, Image.wb, Image.hb, colors.field, fieldBBox
+			)
+			if fieldBBoxStats.area/fieldBBoxArea < min_ground_fill_rate then
         passed = false
         msgs[i] = string.format(
-					'GROUND CHECK FAIL: %.2f < %.2f\n',
-					groundStats.area/bbox_area, min_ground_fill_rate
+					'Ground Check: %.2f < %.2f',
+					fieldBBoxStats.area/bbox_area, min_ground_fill_rate
 				)
       end
     end
@@ -138,11 +201,11 @@ function detectObstacle.update(Image)
     if passed then
       obs_count = obs_count + 1
       table.insert(obstacle.dist, obstacle_dist)
-      obstacle.iv[obstacle_dist] = vector.new(obsProps[i].position)*scaleB
+      obstacle.iv[obstacle_dist] = Image.scaleB * vector.new(obsProps[i].position)
       obstacle.axisMinor[obstacle_dist] = obsProps[i].width
       obstacle.axisMajor[obstacle_dist] = obsProps[i].width
 
-      obstacle.v[obstacle_dist] = v
+      obstacle.v[obstacle_dist] = obsProps[i].v
       obstacle.detect = 1
       obstacle.count = obs_count
     end

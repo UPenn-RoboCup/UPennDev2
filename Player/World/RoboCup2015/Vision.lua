@@ -80,6 +80,7 @@ function Vision.update(meta, img)
     ball, b_debug = detectBall.update(HeadImage)
   end
 
+	print()
   local obs, o_debug
   if detectObstacle then
     obs, o_debug = detectObstacle.update(HeadImage)

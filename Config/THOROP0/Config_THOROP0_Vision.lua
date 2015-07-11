@@ -163,7 +163,7 @@ camera[1] = {
 	-- Use the default vision parameters
 	vision = vision,
 	-- Run the standard RoboCup vision processing
-	lut = 'morning',
+	lut = 'test',
 	--Logitech C920
 	-- f = 640/2/tan(78/180*pi / 2)
 	--fov = 2*arctan(d/2f)

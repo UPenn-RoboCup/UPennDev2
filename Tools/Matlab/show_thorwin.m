@@ -16,8 +16,10 @@ monitor.init();
 s_local = zmq('subscribe', 'ipc', 'vision0');
 s_stream = zmq('subscribe', 'ipc', 'camera0');
 % Add the UDP network
-fd = udp_recv('new', 17013);
-s_top = zmq('fd', fd);
+f_img = udp_recv('new', 17003);
+f_detect = udp_recv('new', 17013);
+s_img = zmq('fd', f_img);
+s_detect = zmq('fd', f_detect);
 
 %% Loop
 running = 1;
@@ -66,7 +68,10 @@ while running
         [meta, has_more] = zmq( 'receive', s_idx );
         [metadata, offset] = msgpack('unpack', meta);
         %disp(metadata);
-        msg_id = char(metadata.id);
+        msg_id = 'unknown';
+        if numel(metadata)>1
+            msg_id = char(metadata.id);
+        end
         if has_more>0
             [raw, has_more] = zmq( 'receive', s_idx );
         end
@@ -95,9 +100,24 @@ while running
             data_yuyv.recv = true;
         end
         
-        while udp_recv('getQueueSize', fd) > 0
+        while udp_recv('getQueueSize', f_img) > 0
             recv_items = recv_items + 1;
-            udp_data = udp_recv('receive',fd);
+            udp_data = udp_recv('receive',f_img);
+            [metadata, offset] = msgpack('unpack', udp_data);
+            msg_id = char(metadata.id);
+            % This must be uint8
+            raw = udp_data(offset+1:end);
+            if strcmp(msg_id,'head_camera')
+                count_cam = count_cam + 1;
+                data_yuyv.meta = metadata;
+                data_yuyv.raw = raw;
+                data_yuyv.recv = true;
+            end
+        end
+        
+        while udp_recv('getQueueSize', f_detect) > 0
+            recv_items = recv_items + 1;
+            udp_data = udp_recv('receive',f_detect);
             [metadata, offset] = msgpack('unpack', udp_data);
             msg_id = char(metadata.id);
             % This must be uint8
@@ -119,12 +139,6 @@ while running
                 data_labelA.meta = metadata;
                 data_labelA.raw = raw;
                 data_labelA.recv = true;
-            end
-            if strcmp(msg_id,'head_camera')
-                count_cam = count_cam + 1;
-                data_yuyv.meta = metadata;
-                data_yuyv.raw = raw;
-                data_yuyv.recv = true;
             end
         end
     end

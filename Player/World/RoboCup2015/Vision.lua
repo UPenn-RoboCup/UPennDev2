@@ -21,6 +21,7 @@ local ENABLE_FIELD_CHECK = true
 local ENABLE_GROUND_CHECK = true
 local detectBall
 local detectPost
+local detectObstacle
 
 -- Set the variables based on the config file
 function Vision.entry(cfg)
@@ -39,13 +40,19 @@ function Vision.entry(cfg)
   HeadImage.focalA = focal_length / (focal_base / HeadImage.wa)
   HeadImage.focalB = HeadImage.focalA / HeadImage.scaleB
 
-  -- Ball thresholds
+  -- Ball
   if cfg.vision.ball then
     detectBall = require'detectBall'
     detectBall.entry(cfg.vision.ball, HeadImage)
   end
 
-  -- Goal thresholds
+	-- Obstacles
+	if cfg.vision.obstacle and false then
+		detectObstacle = require'detectObstacle'
+		detectObstacle.entry(cfg.vision.obstacle, HeadImage)
+	end
+
+  -- Goal
   if cfg.vision.goal and false then
     detectPost = require'detectPost'
     detectPost.entry(cfg.vision.goal, HeadImage)
@@ -73,7 +80,12 @@ function Vision.update(meta, img)
     ball, b_debug = detectBall.update(HeadImage)
   end
 
-  local post, p_debug
+  local obs, o_debug
+  if detectObstacle then
+    obs, o_debug = detectObstacle.update(HeadImage)
+  end
+
+	local post, p_debug
   if detectPost then
     post, p_debug = detectPost.update(HeadImage)
   end

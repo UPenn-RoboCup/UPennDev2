@@ -65,15 +65,38 @@ int lua_obstacles(lua_State *L) {
 	double tiltAngle;
   // int mask;
   uint8_t mask_g, mask_r, mask_w;
-  
+
   if (lua_islightuserdata(L, 1)) {
     im_ptr = (uint8_t *) lua_touserdata(L, 1);
     m = luaL_checkint(L, 2);
     n = luaL_checkint(L, 3);
-    mask_g = luaL_optinteger(L, 4, 8); //black
-    tiltAngle = luaL_optnumber(L, 5, 0.0);
-    max_gap = luaL_optinteger(L, 6, 1 );
+		//
+		widthMin = luaL_optinteger(L, 4, 5);
+		widthMax = luaL_optinteger(L, 5, 25);
+    horizon = luaL_optinteger(L, 6, 22);
+    tiltAngle = luaL_optnumber(L, 7, 0.0);
+    // No need to input args
+    mask_g = luaL_optinteger(L, 8, 8); // field green
+    mask_r = luaL_optinteger(L, 9, 1); // orange ball
+    mask_w = luaL_optinteger(L, 10, 16); // line white
   }
+	else if( lua_type(L, 1) == LUA_TNUMBER ){
+		im_ptr = (uint8_t *)luaL_optlong(L, 1, 0);
+    if (im_ptr == NULL) {
+      return luaL_error(L, "Input image bad");
+    }
+		m = luaL_checkint(L, 2);
+    n = luaL_checkint(L, 3);
+		//
+		widthMin = luaL_optinteger(L, 4, 5);
+		widthMax = luaL_optinteger(L, 5, 25);
+    horizon = luaL_optinteger(L, 6, 22);
+    tiltAngle = luaL_optnumber(L, 7, 0.0);
+    // No need to input args
+    mask_g = luaL_optinteger(L, 8, 8); // field green
+    mask_r = luaL_optinteger(L, 9, 1); // orange ball
+    mask_w = luaL_optinteger(L, 10, 16); // line white
+	}
   #ifdef TORCH
   else if(luaT_isudata(L,1,"torch.ByteTensor")) {
     THByteTensor* b_t =
@@ -85,7 +108,7 @@ int lua_obstacles(lua_State *L) {
 		widthMax = luaL_optinteger(L, 3, 25);
     horizon = luaL_optinteger(L, 4, 22);
     tiltAngle = luaL_optnumber(L, 5, 0.0);
-    
+
     // No need to input args
     mask_g = luaL_optinteger(L, 6, 8); //field green
     mask_r = luaL_optinteger(L, 7, 1); //orange ball
@@ -137,7 +160,7 @@ int lua_obstacles(lua_State *L) {
       } // check if in image
     } // scan j
   } // scan i
-  
+
   // A threshold for filtering obstacles
   int sumJ = 0;
   int lowest = 0;
@@ -148,7 +171,7 @@ int lua_obstacles(lua_State *L) {
   int threshold = (int) sumJ/m*1; //TODO
   threshold = (threshold<n)? threshold:n;
 	//printf("THRESHOLD: %d\n", threshold);
-	
+
   int obstacleW[NOBS];
   int obstacleI[NOBS];
   int obstacleJ[NOBS];
@@ -169,7 +192,7 @@ int lua_obstacles(lua_State *L) {
       obs_count = obs_count + 1;
       if (obs_count==NOBS) break;
     } else {
-      j0 = minJ[i];	
+      j0 = minJ[i];
     }
   }
 

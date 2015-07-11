@@ -329,9 +329,7 @@ function walk.update()
       0,
       t_diff)
 
-  
-
-  moveleg.set_leg_positions()       
+    moveleg.set_leg_positions()       
   update_odometry(uTorso)--Update the odometry variable
 end -- walk.update
 

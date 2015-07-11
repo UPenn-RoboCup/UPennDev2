@@ -35,8 +35,11 @@ local iStep
 -- What foot trajectory are we using?
 
 local foot_traj_func  
-if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
-else foot_traj_func = moveleg.foot_trajectory_square end
+--if Config.walk.foot_traj==1 then foot_traj_func = moveleg.foot_trajectory_base
+--else foot_traj_func = moveleg.foot_trajectory_square end
+
+
+foot_traj_func = moveleg.foot_trajectory_base
 kick_traj_func = moveleg.foot_trajectory_kick
 walkkick_traj_func = moveleg.foot_trajectory_walkkick
 
@@ -240,8 +243,6 @@ function walk.entry()
     local zmp_mod = {footQueue[offset+8],footQueue[offset+9],footQueue[offset+10]}
     local footparam = {footQueue[offset+11],footQueue[offset+12],footQueue[offset+13]}    
 
-
-
     if supportLeg==0 then
       zmp_mod[2] = zmp_mod[2] + (Config.supportY_preview2 or 0)
     elseif supportLeg==1 then
@@ -316,7 +317,10 @@ function walk.update()
       end
     elseif supportLeg == 2 then --Double support
     end
-    step_planner:save_stance(uLeft,uRight,uTorso)  
+
+
+
+    step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
     --Update the odometry variable
     update_odometry(uTorso)
@@ -335,29 +339,22 @@ function walk.update()
 
   -- Grab gyro feedback for these joint angles
     local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-    delta_legs, angleShift = moveleg.get_leg_compensation_new(supportLeg,ph,gyro_rpy, angleShift,supportRatio,t_diff)
+   
 
-    --Move legs
-    local uTorsoComp = mcm.get_stance_uTorsoComp()
-    local uTorsoCompensated = util.pose_global({uTorsoComp[1],uTorsoComp[2],0},uTorso)
-    moveleg.set_leg_positions(uTorsoCompensated,uLeft,uRight,zLeft,zRight,delta_legs)    
-    local rpy = Body.get_rpy()
-    local roll = rpy[1] * RAD_TO_DEG
-    
-    if math.abs(roll)>roll_max then roll_max = math.abs(roll) end
-    local roll_threshold = 10 --this is degree
+    moveleg.ft_compensate(t_diff)
 
---[[
-    if roll_max>roll_threshold and hcm.get_motion_estop()==0 then
-      print("EMERGENCY STOPPING")
-      print("IMU roll angle:",roll_max)
-      hcm.set_motion_estop(1)
-    end
---]]
+    delta_legs, angleShift = moveleg.get_leg_compensation_new(
+      supportLeg,
+      ph,
+      gyro_rpy, 
+      angleShift,
+      supportRatio)
+
+    moveleg.set_leg_positions()    
 
 
 
-print(math.max(zLeft,zRight))
+--print(math.max(zLeft,zRight))
 
     --Check if torso crossed the center position
     local relL = util.pose_relative(uLeft,uTorso)

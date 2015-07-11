@@ -41,19 +41,21 @@ function Vision.entry(cfg)
 
   -- Ball
   if cfg.vision.ball and ENABLE_BALL then
+		print('Ball detection enabled')
     detectBall = require'detectBall'
     detectBall.entry(cfg.vision.ball, HeadImage)
   end
 
 	-- Obstacles
 	if cfg.vision.obstacle and ENABLE_OBSTACLE then
-		print('enable obstacle')
+		print('Obstacle detection enabled')
 		detectObstacle = require'detectObstacle'
 		detectObstacle.entry(cfg.vision.obstacle, HeadImage)
 	end
 
   -- Goal
   if cfg.vision.goal and ENABLE_POST then
+		print('Post detection enabled')
     detectPost = require'detectPost'
     detectPost.entry(cfg.vision.goal, HeadImage)
   end
@@ -80,7 +82,6 @@ function Vision.update(meta, img)
     ball, b_debug = detectBall.update(HeadImage)
   end
 
-	print()
   local obs, o_debug
   if detectObstacle then
     obs, o_debug = detectObstacle.update(HeadImage)

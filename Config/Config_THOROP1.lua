@@ -66,16 +66,16 @@ if IS_WEBOTS then
 	else
 		--for SJ's testing in webots
 		--Config.testfile = 'test_testbed'
-		Config.testfile = 'test_robocup'
+		--Config.testfile = 'test_robocup'
 		Config.testfile = 'test_walk_robocup'
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
-      head_camera = 'camera_wizard',
-      vision = 'vision_wizard',
+      --head_camera = 'camera_wizard',
+      --vision = 'vision_wizard',
+      --world = 'world_wizard',
+      
 			--feedback = 'feedback_wizard',
-		 	--world = 'world_wizard',
-
 	  }
 	end
 end

@@ -1,7 +1,7 @@
 % Clear the environment
 clear all;
 close all;
-startup;
+%startup;
 
 %% Camera Figure
 
@@ -69,11 +69,11 @@ while running
         [metadata, offset] = msgpack('unpack', meta);
         %disp(metadata);
         msg_id = 'unknown';
-        if numel(metadata)>1
+        if ~isempty(metadata)
             msg_id = char(metadata.id);
-        end
-        if has_more>0
-            [raw, has_more] = zmq( 'receive', s_idx );
+            if has_more>0
+                [raw, has_more] = zmq( 'receive', s_idx );
+            end
         end
         if strcmp(msg_id,'world')
             count_world = count_world + 1;
@@ -99,49 +99,49 @@ while running
             data_yuyv.raw = raw;
             data_yuyv.recv = true;
         end
-        
-        while udp_recv('getQueueSize', f_img) > 0
-            recv_items = recv_items + 1;
-            udp_data = udp_recv('receive',f_img);
-            [metadata, offset] = msgpack('unpack', udp_data);
-            msg_id = char(metadata.id);
-            % This must be uint8
-            raw = udp_data(offset+1:end);
-            if strcmp(msg_id,'head_camera')
-                count_cam = count_cam + 1;
-                data_yuyv.meta = metadata;
-                data_yuyv.raw = raw;
-                data_yuyv.recv = true;
-            end
-        end
-        
-        while udp_recv('getQueueSize', f_detect) > 0
-            recv_items = recv_items + 1;
-            udp_data = udp_recv('receive',f_detect);
-            [metadata, offset] = msgpack('unpack', udp_data);
-            msg_id = char(metadata.id);
-            % This must be uint8
-            raw = udp_data(offset+1:end);
-            if strcmp(msg_id,'world')
-                count_world = count_world + 1;
-                data_world.meta = metadata;
-                data_world.raw = raw;
-                data_world.recv = true;
-            end
-            if strcmp(msg_id,'detect')
-                count_detect = count_detect + 1;
-                data_detect.meta = metadata;
-                data_detect.raw = raw;
-                data_detect.recv = true;
-            end
-            if strcmp(msg_id,'labelA')
-                count_labelA = count_labelA + 1;
-                data_labelA.meta = metadata;
-                data_labelA.raw = raw;
-                data_labelA.recv = true;
-            end
+    end
+    while udp_recv('getQueueSize', f_img) > 0
+        recv_items = recv_items + 1;
+        udp_data = udp_recv('receive',f_img);
+        [metadata, offset] = msgpack('unpack', udp_data);
+        msg_id = char(metadata.id);
+        % This must be uint8
+        raw = udp_data(offset+1:end);
+        if strcmp(msg_id,'head_camera')
+            count_cam = count_cam + 1;
+            data_yuyv.meta = metadata;
+            data_yuyv.raw = raw;
+            data_yuyv.recv = true;
         end
     end
+    
+    while udp_recv('getQueueSize', f_detect) > 0
+        recv_items = recv_items + 1;
+        udp_data = udp_recv('receive',f_detect);
+        [metadata, offset] = msgpack('unpack', udp_data);
+        msg_id = char(metadata.id);
+        % This must be uint8
+        raw = udp_data(offset+1:end);
+        if strcmp(msg_id,'world')
+            count_world = count_world + 1;
+            data_world.meta = metadata;
+            data_world.raw = raw;
+            data_world.recv = true;
+        end
+        if strcmp(msg_id,'detect')
+            count_detect = count_detect + 1;
+            data_detect.meta = metadata;
+            data_detect.raw = raw;
+            data_detect.recv = true;
+        end
+        if strcmp(msg_id,'labelA')
+            count_labelA = count_labelA + 1;
+            data_labelA.meta = metadata;
+            data_labelA.raw = raw;
+            data_labelA.recv = true;
+        end
+    end
+    
     t=toc;
     %fprintf('recv time: %.2f ms %d items\n',(t-t_last)*1000, recv_items);
     t_last = t;

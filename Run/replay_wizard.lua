@@ -36,6 +36,7 @@ logs.yuyv = {
 for name, log in pairs(logs) do
 	log.co = coroutine.create(function()
 		for j, date in ipairs(log) do
+			print(name,'opening',date)
 			local log = libLog.open(HOME..'Data', date, name)
 			local metadata = log:unroll_meta()
 			local it = log:log_iter()
@@ -62,6 +63,7 @@ for name, log in pairs(logs) do
 end
 -- Begin sending
 local t_cursor = pairmin(t_next)
+local t0 = t_cursor
 local cnt = 0
 print('Sending!')
 while true do
@@ -74,7 +76,7 @@ while true do
 	local data = data_next[i]
 	-- Custom start time...
 	if t_cursor >= 0 then
-		print(i, 'Time:', t_n)
+		print(i, 'Time:', t_n - t0)
 		--print(i, dt, names[i])
 		local speedup = 1
 		unix.usleep( dt * 1e6 / speedup )

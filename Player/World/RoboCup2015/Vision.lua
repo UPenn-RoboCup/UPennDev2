@@ -18,6 +18,9 @@ local HeadImage
 local detectBall
 local detectPost
 local detectObstacle
+local ENABLE_BALL = true
+local ENABLE_OBSTACLE = true
+local ENABLE_POST = false
 
 -- Set the variables based on the config file
 function Vision.entry(cfg)
@@ -37,19 +40,19 @@ function Vision.entry(cfg)
   HeadImage.focalB = HeadImage.focalA / HeadImage.scaleB
 
   -- Ball
-  if cfg.vision.ball then
+  if cfg.vision.balland ENABLE_BALL then
     detectBall = require'detectBall'
     detectBall.entry(cfg.vision.ball, HeadImage)
   end
 
 	-- Obstacles
-	if cfg.vision.obstacle and false then
+	if cfg.vision.obstacle and ENABLE_OBSTACLE then
 		detectObstacle = require'detectObstacle'
 		detectObstacle.entry(cfg.vision.obstacle, HeadImage)
 	end
 
   -- Goal
-  if cfg.vision.goal and false then
+  if cfg.vision.goal and ENABLE_POST then
     detectPost = require'detectPost'
     detectPost.entry(cfg.vision.goal, HeadImage)
   end

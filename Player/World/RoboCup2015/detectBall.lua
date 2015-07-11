@@ -109,11 +109,14 @@ function detectBall.update(Image)
       -- Put into the global frame
       local vL = Image.tfL * (v0 / v0[4])
 			local vG = Image.tfG * (v0 / v0[4])
-			local v = vG
+			-- Save the position
+			v = vG
 			--util.ptable(Image)
+			--[[
 			print('v0', v0)
 			print('vG', vG)
 			print('vL', vL)
+			--]]
 
       -- Check the distance
       local dist_sq = v[1]^2 + v[2]^2

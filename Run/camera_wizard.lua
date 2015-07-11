@@ -169,6 +169,8 @@ local function update(img, sz, cnt, t)
 		t_monitor = t
 	end
 
+	return metadata_camera, img_str
+
 end
 
 -- If required from Webots, return the table

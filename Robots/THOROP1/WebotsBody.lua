@@ -1,5 +1,5 @@
 local WebotsBody = {}
-local ww, cw, mw, kw, sw, fw, rw, kb
+local ww, cw, mw, kw, sw, fw, rw, vw, kb
 local ffi = require'ffi'
 require'wcm'
 local util = require'util'
@@ -49,7 +49,7 @@ end
 -- Ability to turn on/off items
 local t_last_keypress = get_time()
 webots.wb_robot_keyboard_enable(100)
- 
+
 local key_action = {
 		h = function(override)
 			if override~=nil then en=override else en=ENABLE_HEAD_LIDAR==false end
@@ -204,7 +204,7 @@ function WebotsBody.entry(Body)
 	tags.gps = webots.wb_robot_get_device("GPS")
 	tags.compass = webots.wb_robot_get_device("Compass")
 	tags.inertialunit = webots.wb_robot_get_device("InertialUnit")
-  
+
   if Config.sensors.head_camera then tags.head_camera = webots.wb_robot_get_device("HeadCamera") end
   if Config.sensors.chest_lidar then tags.chest_lidar = webots.wb_robot_get_device("ChestLidar") end
   if Config.sensors.head_lidar then tags.head_lidar = webots.wb_robot_get_device("HeadLidar") end
@@ -257,6 +257,7 @@ function WebotsBody.entry(Body)
 	Body.tags = tags
 
 	cw = Config.sensors.head_camera and require(Config.sensors.head_camera)
+	vw = Config.sensors.vision and require(Config.sensors.vision)
   kw = Config.sensors.kinect and require(Config.sensors.kinect)
 	--
 	fw = Config.sensors.feedback and require(Config.sensors.feedback)
@@ -276,6 +277,7 @@ function WebotsBody.entry(Body)
   if rw then rw.entry() end
 	if mw then mw.entry() end
 	if sw then sw.entry() end
+	if vw and vw.entry then vw.entry() end
   if kw and kw.entry then kw.entry() end
 end
 
@@ -297,7 +299,14 @@ function WebotsBody.update_chest_kinect(rgb, depth)
 	if kw then kw.update(rgb, depth) end
 end
 
-function WebotsBody.update_head_camera(img, sz, cnt, t) if cw then cw.update(img, sz, cnt, t) end end
+function WebotsBody.update_head_camera(img, sz, cnt, t)
+	if cw then
+		local meta, raw = cw.update(img, sz, cnt, t)
+		-- Then run vision
+		if vw then vw.update(meta, raw) end
+	end
+
+end
 function WebotsBody.update_head_lidar(metadata, ranges)
 	if sw then sw.update(metadata, ranges) end
 	if mw then mw.update(metadata, ranges) end
@@ -340,7 +349,7 @@ function WebotsBody.update(Body)
         --SJ: if torque enable is set to 2, it's torque control mode
         if en==1 then
           set_pos(jtag, rad)
-        elseif en==2 then 
+        elseif en==2 then
 --          webots.wb_motor_set_torque(jtag,servo.direction[idx]*cmdt[idx])
 
 --for whatever reason the torque direction is inverted
@@ -386,7 +395,7 @@ function WebotsBody.update(Body)
     if ENABLE_FT then
           local l_ft = Body.get_lfoot()
         local r_ft = Body.get_rfoot()
-        if Config.birdwalk then 
+        if Config.birdwalk then
         --LR FT sensors are flipped
         --And their values are inverted
         l_ft[2], l_ft[3], l_ft[1] = unpack(webots.wb_touch_sensor_get_values(tags.r_ft))
@@ -416,10 +425,10 @@ function WebotsBody.update(Body)
       --find immediate zmp error
       local zf_touchdown = 30
       local lzmp,rzmp={0,0},{0,0}
-      if l_ft[3]>zf_touchdown then 
+      if l_ft[3]>zf_touchdown then
         lzmp={l_ft[5]/l_ft[3],-l_ft[4]/l_ft[3]}
       end
-      if r_ft[3]>zf_touchdown then 
+      if r_ft[3]>zf_touchdown then
         rzmp={r_ft[5]/r_ft[3],-r_ft[4]/r_ft[3]}
       end
       dcm.set_sensor_lzmp(lzmp)
@@ -432,7 +441,7 @@ function WebotsBody.update(Body)
     if ENABLE_POSE then
       local gps     = webots.wb_gps_get_values(tags.gps)
       local compass = webots.wb_compass_get_values(tags.compass)
---      if Config.use_gps_pose and Config.debug.world then         
+--      if Config.use_gps_pose and Config.debug.world then
 --        print("raw gps:",unpack(gps))
 --      end
 			--local angle   = math.atan2( compass[3], compass[1] )

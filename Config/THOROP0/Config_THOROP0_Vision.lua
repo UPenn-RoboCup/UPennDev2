@@ -75,9 +75,9 @@ vision.obstacle = {
 	th_min_height = -0.2,
 	th_min_orientation = 60/180*math.pi,
 	th_green_black_ratio = 2,
-	min_ground_fill_rate = 0.4,  
+	min_ground_fill_rate = 0.4,
 	--
-	min_width = 5, 
+	min_width = 5,
 	max_width = 16,
 }
 
@@ -230,9 +230,9 @@ if IS_WEBOTS then
 	camera[1].h = 180
 	camera[1].cx_offset = 0
 	camera[1].cy_offset = 0
-	camera[1].lut = 'multi_valve'
-	camera[1].focal_length = 395.17
-	camera[1].focal_base = 640
+	camera[1].lut = 'webots'
+	camera[1].focal_length = 190
+	camera[1].focal_base = 320
 
 	-- Kinect width and height
 	kinect.w, kinect.h = 256, 212

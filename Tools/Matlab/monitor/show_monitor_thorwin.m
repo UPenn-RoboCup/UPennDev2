@@ -312,6 +312,7 @@ function h = show_monitor_thorwin
             nc = metadata.h;
             [ycbcr, rgb] = yuyv2rgb(typecast(raw,'uint32'));
             rgb = reshape(rgb, [metadata.w / 2, metadata.h, 3]);
+            rgb = permute(rgb,[2,1,3]);
             cam.yuyv = rgb;
             yuyv_scaled = imresize(cam.yuyv, [nr nc]);
             set(cam.im_yuyv,'Cdata', yuyv_scaled);

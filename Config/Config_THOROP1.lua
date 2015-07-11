@@ -24,7 +24,7 @@ Config.debug = {
 }
 
 --NO BIRDWALK FOR ROBOCUP
---Config.birdwalk = 1 
+--Config.birdwalk = 1
 
 Config.raise_body = true
 Config.use_exact_tZMP = true
@@ -52,27 +52,30 @@ if IS_WEBOTS then
 
 	  Config.sensors = {
 			ft = true,
+      head_camera = 'camera_wizard',
+      vision = 'vision_wizard',
+      world = 'world_wizard',
 			--feedback = 'feedback_wizard',
 			--slam = 'slam_wizard',
-    	head_camera = 'camera_wizard',
     	--chest_lidar = true,
     	--head_lidar = true,
 			--kinect = 'kinect2_wizard',
 			--mesh = 'mesh_wizard',
-		 	--world = 'world_wizard',
 	  }
 
 	else
 		--for SJ's testing in webots
-		--Config.testfile = 'test_testbed'		
-		Config.testfile = 'test_robocup'		
-		Config.testfile = 'test_walk_robocup'		
+		--Config.testfile = 'test_testbed'
+		Config.testfile = 'test_robocup'
+		Config.testfile = 'test_walk_robocup'
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
-			feedback = 'feedback_wizard',
-		 	world = 'world_wizard',
---	 		head_camera = 'camera_wizard',
+      head_camera = 'camera_wizard',
+      vision = 'vision_wizard',
+			--feedback = 'feedback_wizard',
+		 	--world = 'world_wizard',
+
 	  }
 	end
 end
@@ -133,17 +136,17 @@ Config.use_gps_pose= true
 --Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then
 
---  Config.vision.ball.th_min_fill_rate = 0.25 
+--  Config.vision.ball.th_min_fill_rate = 0.25
 
   Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
   Config.fsm.headLookGoal.tScan = 2.0
   Config.fsm.bodyRobocupFollow.circleR = 1
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
-  Config.fsm.bodyRobocupApproach.target={0.25,0.12}  
+  Config.fsm.bodyRobocupApproach.target={0.25,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
   Config.world.use_imu_yaw = true
-  Config.walk.velLimitX = {-.10,.10} 
-  Config.walk.velLimitX = {-.10,.15} 
+  Config.walk.velLimitX = {-.10,.10}
+  Config.walk.velLimitX = {-.10,.15}
   Config.walk.velLimitY = {-.04,.04}
   Config.walk.velDelta  = {0.04,0.02,0.1}
   Config.stop_after_score = false
@@ -153,11 +156,11 @@ end
 
 
 Config.stop_at_neutral = true --false for walk testing
-Config.fsm.headTrack.timeout = 3  
+Config.fsm.headTrack.timeout = 3
 Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
 Config.approachTargetX = {0.45,0.28,0.35} --for first walkkick, long stationary kick, weak walkkick\
 
-if IS_WEBOTS then 
+if IS_WEBOTS then
 	Config.approachTargetX = {
     0.35, --for kick 0 (walkkick)
     0.30, --for kick 1 (st kick)

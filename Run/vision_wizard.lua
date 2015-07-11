@@ -122,6 +122,7 @@ local function update(meta, img)
 end
 
 local function entry()
+	print('vw entry...')
 	Vision.entry(metadata)
 end
 local function exit()
@@ -130,7 +131,7 @@ end
 
 -- If required from Webots, return the table
 if ... and type(...)=='string' and not tonumber(...) then
-	return {entry=nil, update=update, exit=nil}
+	return {entry=entry, update=update, exit=exit}
 end
 
 local poller

@@ -157,7 +157,6 @@ function h = show_monitor_thorwin
 % Process each type of message
     msg_id = char(metadata.id);
     needs_draw = 0;
-    
     if strcmp(msg_id,'detect')
         % Clear graphics objects
         % ball
@@ -174,8 +173,6 @@ function h = show_monitor_thorwin
         set(cam.a_debug_ball, 'String', char(metadata.debug.ball));
         set(cam.a_debug_goal, 'String', char(metadata.debug.post));
         set(cam.a_debug_obstacle, 'String', char(metadata.debug.obstacle));
-
-
 
         % Process the ball detection result
         if isfield(metadata,'ball')

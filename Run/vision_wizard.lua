@@ -82,6 +82,9 @@ local function update(meta, img)
 	print()
 
 	local Image, detection = Vision.update(meta, img)
+	if detection.ball then
+		ptable(detection.ball)
+	end
 	-- Send labelA and detection information
 	local lA_raw = c_zlib(Image.labelA_d, ffi.sizeof(Image.labelA_d))
   local lA_meta = {

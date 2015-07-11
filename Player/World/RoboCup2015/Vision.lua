@@ -23,7 +23,7 @@ local ptable = require'util'.ptable
 local colors
 -- Detection thresholds
 local b_diameter, b_dist, b_height0, b_height1, b_fill_rate, b_bbox_area, b_area
-local b_ground_head_pitch, b_ground_boundingbox, b_ground_white
+local b_ground_head_pitch, b_ground_boundingbox, b_ground_white, b_ground_green
 local th_nPostB
 local g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
 
@@ -128,13 +128,16 @@ local function check_coordinateB(centroid, scale, maxD, maxH)
 end
 
 local function find_ball(Image)
-  if type(Image)~='table' then return end
+  if type(Image)~='table' then
+    return false, 'Bad Image'
+  end
   --print('\n=========\n')
   --ptable(Image)
-  --debug_ball_clear()
 
   local cc = Image.ccA_d[colors.orange]
-  if cc<6 then return'Color count' end
+  if cc<6 then
+    return false, 'Color count'
+  end
   -- Connect the regions in labelB
   local ballPropsB = ImageProc.connected_regions(
     tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
@@ -143,60 +146,58 @@ local function find_ball(Image)
     colors.orange
   )
 
-  if not ballPropsB then return'No connected regions' end
+  if not ballPropsB then
+    return false, 'No connected regions'
+  end
   local nProps = #ballPropsB
-  if nProps==0 then return'0 connected regions' end
+  if nProps==0 then
+    return false, '0 connected regions'
+  end
 
-
+  -- Position of the head now
   local pHead4 = T.position4(Image.tfG)
 
-  --
-  local failures, successes = {}, {}
-  for i=1,math.min(5, nProps) do
-    --debug_ball("Checking "..i.." / "..nProps.."\n")
-    local check_fail = false
+  -- Run the checks
+  local msgs = {}
+  local nCheck = math.min(5, nProps)
+  for i=1, nCheck do
+    local passed = true
     -- Check the image properties
-    local propsB = ballPropsB[i]
-
     -- TODO: Verify the bounding box!
+    local propsB = ballPropsB[i]
     local bboxA = bboxB2A(propsB.boundingBox, Image.scaleB)
     local bboxAarea = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
     if bboxAarea < b_bbox_area then
-      check_fail = true
-      --return string.format('Box area: %d<%d\n',bboxAarea, b_bbox_area)
+      passed = false
+      msgs[i] = string.format('Box area: %d<%d\n', bboxAarea, b_bbox_area)
     end
 
-    -- New
-    local propsA = ImageProc2.color_stats(
-      Image.labelA_d, Image.wa, Image.ha, colors.orange,
-      bboxA
-    )
-    -- old
-    --[[
-    local propsA = check_prop(
-      colors.orange, propsB, b_bbox_area, b_area, b_fill_rate, labelA_t
-    )
-    --]]
-    local area = propsA.area
-    -- If no pixels then return
-    if area < b_area then
-      check_fail = true
-      --return string.format('Area: %d < %d \n', area, b_area)
-    end
-    -- Get the fill rate
-    local fill_rate = area / (propsA.axisMajor * propsA.axisMinor)
-    if fill_rate < b_fill_rate then
-      check_fail = true
-      --return string.format('Fill rate: %.2f < %.2f\n', fill_rate, b_fill_rate)
+    -- labelA area check
+    local propsA
+    if passed then
+      propsA = ImageProc2.color_stats(
+        Image.labelA_d, Image.wa, Image.ha, colors.orange,
+        bboxA
+      )
+      if propsA.area < b_area then
+        passed = false
+        msgs[i] = string.format('Area: %d < %d \n', propsA.area, b_area)
+      end
     end
 
-    if type(propsA)=='string' then
-      --debug_ball(propsA)
-      check_fail = true
-    else
-      -- Check the coordinate on the field
+    -- Fill rate check
+    if passed then
+      local fill_rate = propsA.area / (propsA.axisMajor * propsA.axisMinor)
+      if fill_rate < b_fill_rate then
+        passed = false
+        msgs[i] = string.format('Fill rate: %.2f < %.2f\n', fill_rate, b_fill_rate)
+      end
+    end
 
-      local dArea = math.sqrt((4/math.pi) * propsA.area)
+    -- Check the coordinate on the field
+    local v, dArea
+    if passed then
+      dArea = math.sqrt((4/math.pi) * propsA.area)
       local scale = math.max(dArea/b_diameter, propsA.axisMajor/b_diameter);
       local v0 = vector.new{
         Image.focalA,
@@ -204,106 +205,103 @@ local function find_ball(Image)
         -(propsA.centroid[2] - Image.y0A),
         scale,
       }
-
       -- Put into the local frame
-      --local v = Image.tfL * (v0 / v0[4])
+      --v = Image.tfL * (v0 / v0[4])
       -- Put into the global frame
-      local v = Image.tfG * (v0 / v0[4])
-
-      local dist_sq = v[1]^2 + v[2]^2
-      local maxH = (b_height0 and b_height1) and b_height0 + math.sqrt(dist_sq) * b_height1
+      v = Image.tfG * (v0 / v0[4])
 
       -- Check the distance
+      local dist_sq = v[1]^2 + v[2]^2
+      local maxH = (b_height0 and b_height1) and
+        (b_height0 + math.sqrt(dist_sq) * b_height1)
       if dist_sq > b_dist^2 then
-        check_fail = true
-        --return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
+        passed = false
+        msgs[i] = string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
       elseif maxH and v[3] > maxH then
-        check_fail = true
-        --return string.format("Height: %.2f > %.2f", v[3], maxH)
+        passed = false
+        msgs[i] = string.format("Height: %.2f > %.2f", v[3], maxH)
       end
-
-      if type(v)=='string' then
-        check_fail = true
-        --debug_ball(v)
-      end
-      if not check_fail then
---			print(string.format('ball height:%.2f, thr: %.2f', v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2])))
-
-        -- TODO: Field bounds check
-        --[[
-        if not check_fail and math.sqrt(v[1]*v[1]+v[2]*v[2])>3 then
-					local margin = 0.85 --TODO
-          local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
-          if math.abs(global_v[1])>xMax+margin or math.abs(global_v[2])>yMax+margin then
-            check_fail = true
-            debug_ball('OUTSIDE FIELD!\n')
-          end
-        end
-				--]]
-        -- Ground check
-        if Image.qHead[2] < b_ground_head_pitch then
-          local th_ground_boundingbox = b_ground_boundingbox
-          local ballCentroid = propsA.centroid
-          local vmargin = Image.ha - ballCentroid[2]
-          --When robot looks down they may fail to pass the green check
-          --So increase the bottom margin threshold
-          if vmargin > dArea * 2.0 then
-            -- Bounding box in labelA below the ball
-            local fieldBBox = {
-              ballCentroid[1] + th_ground_boundingbox[1],
-              ballCentroid[1] + th_ground_boundingbox[2],
-              ballCentroid[2] + dArea/2 + th_ground_boundingbox[3],
-              ballCentroid[2] + dArea/2 + th_ground_boundingbox[4],
-            }
-            -- color stats for the bbox of the field
-            local fieldBBoxStats = ImageProc2.color_stats(
-              Image.labelA_d, Image.wa, Image.ha, colors.field, fieldBBox
-            )
-
-            if (fieldBBoxStats.area < Config.vision.ball.th_ground_green) then
-              -- if there is no field under the ball
-              -- it may be because its on a white line
-              local whiteBBoxStats = ImageProc2.color_stats(
-                Image.labelA_d, Image.wa, Image.ha, colors.white, fieldBBox
-              )
-              if (whiteBBoxStats.area < b_ground_white) then
-                debug_ball("Green check fail\n")
-                check_fail = true
-              end
-            end --end white line check
-          end
-        end --end bottom margin check
-
-        -- Project the ball to the ground
-        local target_height = b_diameter / 2
-        if pHead4[3]==target_height then
-          propsA.v = vector.copy(v)
-        else
-          local scale = (pHead4[3] - target_height) / (pHead4[3]-v[3])
-          propsA.v = pHead4 + scale * (v - pHead4)
-        end
-
-        propsA.t = Image.t
-				-- For ballFilter
-			  propsA.r = math.sqrt(v[1]^2+v[2]^2)
-				propsA.dr = 0.25 * propsA.r --TODO: tweak
-				propsA.da = 10 * DEG_TO_RAD
-
-      end
-
-    end -- end of the check on a single propsA
-
-    -- Did we succeed in finding a ball?
-    if not check_fail then
-      local msg = string.format('Ball detected at %.2f, %.2f (z = %.2f)', unpack(propsA.v,1,3))
-      --debug_ball(msg)
-      return tostring(propsA.v), propsA
     end
 
+    -- TODO: Field bounds check
+    --[[
+    if passed then
+      if math.sqrt(v[1]*v[1]+v[2]*v[2])>3 then
+        local margin = 0.85 --TODO
+        local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
+        if math.abs(global_v[1])>xMax+margin or math.abs(global_v[2])>yMax+margin then
+          check_fail = true
+          debug_ball('OUTSIDE FIELD!\n')
+        end
+      end
+    end
+    --]]
+
+    -- Ground Check
+    --			print(string.format(
+    --'ball height:%.2f, thr: %.2f'
+    -- v[3], b_height0+b_height1*math.sqrt(v[1]*v[1]+v[2]*v[2]
+    --)))
+    if passed then
+      -- Only when looking down
+      if Image.qHead[2] < b_ground_head_pitch then
+        local th_ground_boundingbox = b_ground_boundingbox
+        local ballCentroid = propsA.centroid
+        local vmargin = Image.ha - ballCentroid[2]
+        -- When robot looks down, it may fail to pass the green check
+        -- So increase the bottom margin threshold
+        if vmargin > dArea * 2.0 then
+          -- Bounding box in labelA below the ball
+          local fieldBBox = {
+            ballCentroid[1] + th_ground_boundingbox[1],
+            ballCentroid[1] + th_ground_boundingbox[2],
+            ballCentroid[2] + dArea/2 + th_ground_boundingbox[3],
+            ballCentroid[2] + dArea/2 + th_ground_boundingbox[4],
+          }
+          -- color stats for the bbox of the field
+          local fieldBBoxStats = ImageProc2.color_stats(
+            Image.labelA_d, Image.wa, Image.ha, colors.field, fieldBBox
+          )
+          if fieldBBoxStats.area < b_ground_green then
+            -- if there is no field under the ball
+            -- it may be because its on a white line
+            local whiteBBoxStats = ImageProc2.color_stats(
+              Image.labelA_d, Image.wa, Image.ha, colors.white, fieldBBox
+            )
+            if whiteBBoxStats.area < b_ground_white then
+              passed = false
+              msgs[i] = "Green check fail"
+            end
+          end -- end green
+        end -- end margin
+      end -- end qHead check
+    end
+
+
+    -- If passed the checks
+    -- Project the ball to the ground
+    if passed then
+      local target_height = b_diameter / 2
+      if pHead4[3]==target_height then
+        propsA.v = vector.copy(v)
+      else
+        local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
+        propsA.v = pHead4 + scale * (v - pHead4)
+      end
+
+      propsA.t = Image.t
+			-- For ballFilter
+		  propsA.r = math.sqrt(v[1]^2+v[2]^2)
+			propsA.dr = 0.25 * propsA.r --TODO: tweak
+			propsA.da = 10 * DEG_TO_RAD
+
+      msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(propsA.v,1,3))
+      return propsA, msgs[i]
+    end
   end  -- end of loop
 
   -- Assume failure
-  return ball_debug
+  return false, table.concat(msgs, '\n')
 end
 
 -- TODO: Allow the loop to run many times
@@ -512,7 +510,6 @@ function Vision.entry(cfg)
   HeadImage.focalA = focal_length / (focal_base / HeadImage.wa)
   HeadImage.focalB = HeadImage.focalA / HeadImage.scaleB
 
-
   -- Ball thresholds
   if cfg.vision.ball then
 
@@ -526,7 +523,7 @@ function Vision.entry(cfg)
     b_ground_head_pitch = cfg.vision.ball.th_ground_head_pitch
     b_ground_boundingbox = cfg.vision.ball.th_ground_boundingbox
     b_ground_white = cfg.vision.ball.th_ground_white
-
+    b_ground_green = cfg.vision.ball.th_ground_green
   end
 
   -- Goal thresholds
@@ -563,26 +560,23 @@ function Vision.update(meta, img)
   -- Debug the color count
   --for i=0,255 do if cc_d[i]~=0 then print(i, cc_d[i]) end end
 
-  local ball = find_ball(HeadImage)
+  local ball, b_debug = find_ball(HeadImage)
   print('Ball', ball)
 
   local debug = {
-    ball = 'ball',
+    ball = b_debug or 'ball',
     post = 'goal',
     obstacle = 'obstacle',
   }
-
+  local detect = {
+    id = 'detect',
+    debug = debug
+  }
+  if ball then detect.ball = ball end
   --local post_fails, posts = find_goal()
 
   -- Send the detected stuff over the channel every cycle
-  return HeadImage, {
-    id = 'detect',
-    --ball = ball,
-    --posts = posts,
-    --lines = lines,
-    --corners = corners,
-    debug = debug
-  }
+  return HeadImage, detect
 
 end
 

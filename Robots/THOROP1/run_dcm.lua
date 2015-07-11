@@ -349,7 +349,8 @@ local function form_arm_read_cmd(bus)
 	if has_mx and has_nx then
 		bus.read_loop_cmd_str = lD.get_bulk(char(unpack(used_ids)), rd_addrs)
 	elseif has_nx then
-		bus.read_loop_cmd_str = lD.get_indirect_data(used_ids, arm_packet_reg)
+		--bus.read_loop_cmd_str = lD.get_indirect_data(used_ids, arm_packet_reg)
+		bus.read_loop_cmd_str = lD.get_nx_position(used_ids)
 	elseif has_mx then
 		-- Sync read with just MX does not work for some reason
 		-- bus.read_loop_cmd_str = lD.get_mx_position(bus.m_ids)
@@ -387,7 +388,8 @@ local function parse_read_arm(pkt, bus)
 
 	if not bus.has_nx_id[m_id] then return end
 
-	if #pkt.parameter ~= arm_packet_sz then return end
+	if #pkt.parameter < arm_packet_offsets[1] then return end
+	--if #pkt.parameter ~= arm_packet_sz then return end
 	-- Set Position in SHM
 	local read_val = p_parse(unpack(pkt.parameter, 1, arm_packet_offsets[1]))
 	local read_rad = step_to_radian(read_j_id, read_val)
@@ -395,6 +397,7 @@ local function parse_read_arm(pkt, bus)
 		p_ptr[read_j_id - 1] = read_rad
 		p_ptr_t[read_j_id - 1] = t_read
 	end
+	if #pkt.parameter < arm_packet_offsets[2] then return end
 	-- Set Current in SHM
 	local read_temp = temp_parse(unpack(pkt.parameter, arm_packet_offsets[1]+1, arm_packet_offsets[2]))
 	temp_ptr[read_j_id - 1] = read_temp

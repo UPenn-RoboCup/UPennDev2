@@ -28,11 +28,10 @@ function detectBall.entry(cfg, Image)
   colors = Image.colors
 end
 function detectBall.update(Image)
+	print()
   if type(Image)~='table' then
     return false, 'Bad Image'
   end
-  --print('\n=========\n')
-  --ptable(Image)
 
   local cc = Image.ccA_d[colors.orange]
   if cc<6 then
@@ -108,10 +107,11 @@ function detectBall.update(Image)
       -- Put into the local frame
       --v = Image.tfL * (v0 / v0[4])
       -- Put into the global frame
-			print('v0', v0)
       local vL = Image.tfL * (v0 / v0[4])
 			local vG = Image.tfG * (v0 / v0[4])
-			local v = vL
+			local v = vG
+			--util.ptable(Image)
+			print('v0', v0)
 			print('vG', vG)
 			print('vL', vL)
 

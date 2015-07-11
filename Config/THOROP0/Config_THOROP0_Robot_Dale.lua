@@ -151,17 +151,14 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-		1,3,5,7,9,11,13,
-
---		1,3,5,7,9,11,
-
-
+		1,3,
+--		1,3,5,7,9,11,13,
 		-- waist
 		28,
 		--head
 		29, 30,
 		-- gripper
-		63, 65, 67
+--		63, 65, 67
 	},
 	enable_read = true,
 }
@@ -230,8 +227,9 @@ else
 	--
 	table.insert(Config.chain, right_arm)
 	Config.chain[right_arm.name] = right_arm
-	table.insert(Config.chain, left_arm)
-	Config.chain[left_arm.name] = left_arm
+	-- Not for RoboCup
+	--table.insert(Config.chain, left_arm)
+	--Config.chain[left_arm.name] = left_arm
 	--
 	one_chain = nil
 end

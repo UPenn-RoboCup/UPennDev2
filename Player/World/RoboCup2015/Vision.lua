@@ -23,8 +23,10 @@ local ptable = require'util'.ptable
 local colors
 -- Detection thresholds
 local b_diameter, b_dist, b_height0, b_height1, b_fill_rate, b_bbox_area, b_area
+local b_ground_head_pitch, b_ground_boundingbox, b_ground_white
 local th_nPostB
 local g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
+
 -- Store information about what was detected
 local detected = {
   id = 'detect',
@@ -144,6 +146,10 @@ local function find_ball(Image)
   if not ballPropsB then return'No connected regions' end
   local nProps = #ballPropsB
   if nProps==0 then return'0 connected regions' end
+
+
+  local pHead4 = T.position4(Image.tfG)
+
   --
   local failures, successes = {}, {}
   for i=1,math.min(5, nProps) do
@@ -203,7 +209,6 @@ local function find_ball(Image)
       --local v = Image.tfL * (v0 / v0[4])
       -- Put into the global frame
       local v = Image.tfG * (v0 / v0[4])
-      local pHead = T.position(Image.tfG)
 
       local dist_sq = v[1]^2 + v[2]^2
       local maxH = (b_height0 and b_height1) and b_height0 + math.sqrt(dist_sq) * b_height1
@@ -235,12 +240,11 @@ local function find_ball(Image)
           end
         end
 				--]]
-
         -- Ground check
-        if Image.qHead[2] < Config.vision.ball.th_ground_head_pitch then
-          local th_ground_boundingbox = Config.vision.ball.th_ground_boundingbox
+        if Image.qHead[2] < b_ground_head_pitch then
+          local th_ground_boundingbox = b_ground_boundingbox
           local ballCentroid = propsA.centroid
-          local vmargin = ha - ballCentroid[2]
+          local vmargin = Image.ha - ballCentroid[2]
           --When robot looks down they may fail to pass the green check
           --So increase the bottom margin threshold
           if vmargin > dArea * 2.0 then
@@ -262,7 +266,7 @@ local function find_ball(Image)
               local whiteBBoxStats = ImageProc2.color_stats(
                 Image.labelA_d, Image.wa, Image.ha, colors.white, fieldBBox
               )
-              if (whiteBBoxStats.area < Config.vision.ball.th_ground_white) then
+              if (whiteBBoxStats.area < b_ground_white) then
                 debug_ball("Green check fail\n")
                 check_fail = true
               end
@@ -271,31 +275,19 @@ local function find_ball(Image)
         end --end bottom margin check
 
         -- Project the ball to the ground
-        propsA.v = projectGround(v, b_diameter/2)
-        --[[
-        local function projectGround(v, target_height)
-        	target_height = target_height or 0
-          -- Grab head angles
-          local trHead = get_head_transform()
-        	local vHead_homo = T.position4(trHead)
-
-          -- Project to plane
-          if vHead[3] ~= target_height then
-        		local scale = (vHead[3] - target_height) / (vHead[3] - v[3])
-            return vHead_homo + scale * (v - vHead_homo)
-        	else
-        		return vector.copy(v)
-          end
-
+        local target_height = b_diameter / 2
+        if pHead4[3]==target_height then
+          propsA.v = vector.copy(v)
+        else
+          local scale = (pHead4[3] - target_height) / (pHead4[3]-v[3])
+          propsA.v = pHead4 + scale * (v - pHead4)
         end
-        --]]
-
 
         propsA.t = Image.t
 				-- For ballFilter
-			  propsA.r = math.sqrt(v[1]*v[1]+v[2]*v[2])
-				propsA.dr = 0.25*propsA.r --TODO: tweak
-				propsA.da = 10*DEG_TO_RAD
+			  propsA.r = math.sqrt(v[1]^2+v[2]^2)
+				propsA.dr = 0.25 * propsA.r --TODO: tweak
+				propsA.da = 10 * DEG_TO_RAD
 
       end
 
@@ -303,14 +295,10 @@ local function find_ball(Image)
 
     -- Did we succeed in finding a ball?
     if not check_fail then
-      debug_ball(string.format('Ball detected at %.2f, %.2f (z = %.2f)',propsA.v[1],propsA.v[2], propsA.v[3]))
+      local msg = string.format('Ball detected at %.2f, %.2f (z = %.2f)', unpack(propsA.v,1,3))
+      --debug_ball(msg)
       return tostring(propsA.v), propsA
     end
-
-
-
-
-
 
   end  -- end of loop
 
@@ -535,6 +523,10 @@ function Vision.entry(cfg)
     b_fill_rate = cfg.vision.ball.th_min_fill_rate
     b_bbox_area = cfg.vision.ball.th_min_bbox_area
     b_area = cfg.vision.ball.th_min_area
+    b_ground_head_pitch = cfg.vision.ball.th_ground_head_pitch
+    b_ground_boundingbox = cfg.vision.ball.th_ground_boundingbox
+    b_ground_white = cfg.vision.ball.th_ground_white
+
   end
 
   -- Goal thresholds
@@ -560,7 +552,7 @@ function Vision.update(meta, img)
   HeadImage:block_bitor()
   HeadImage.tfL = T.from_flat(meta.tfL16)
   HeadImage.tfG = T.from_flat(meta.tfG16)
-  HeadImage.qHead = vector.new(head)
+  HeadImage.qHead = vector.new(meta.head)
   HeadImage.t = meta.t
 
   local cc_d = HeadImage:color_countA()

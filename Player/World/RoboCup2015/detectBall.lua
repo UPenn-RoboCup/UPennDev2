@@ -5,8 +5,8 @@ local ImageProc2 = require'ImageProc.ffi2'
 local T = require'Transform'
 local vector = require'vector'
 local util = require'util'
-local ENABLE_COORDINATE_CHECK = true                                            
-local ENABLE_FIELD_CHECK = true                                                 
+local ENABLE_COORDINATE_CHECK = true
+local ENABLE_FIELD_CHECK = true
 local ENABLE_GROUND_CHECK = true
 local function bboxB2A(bboxB, scaleB)
 	return {
@@ -108,7 +108,12 @@ function detectBall.update(Image)
       -- Put into the local frame
       --v = Image.tfL * (v0 / v0[4])
       -- Put into the global frame
-      v = Image.tfG * (v0 / v0[4])
+			print('v0', v0)
+      local vL = Image.tfL * (v0 / v0[4])
+			local vG = Image.tfG * (v0 / v0[4])
+			local v = vL
+			print('vG', vG)
+			print('vL', vL)
 
       -- Check the distance
       local dist_sq = v[1]^2 + v[2]^2
@@ -119,7 +124,7 @@ function detectBall.update(Image)
         msgs[i] = string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
       elseif maxH and v[3] > maxH then
         passed = false
-        msgs[i] = string.format("Height: %.2f > %.2f", v[3], maxH)
+        msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", maxH, unpack(v,1,3))
       end
     end
 

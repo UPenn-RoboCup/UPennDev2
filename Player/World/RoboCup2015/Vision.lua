@@ -7,7 +7,6 @@ local ImageProc = require'ImageProc'
 local ImageProc2 = require'ImageProc.ffi2'
 local ok, ffi = pcall(require, 'ffi')
 local T = require'Transform'
-local HT = require'libHeadTransform'
 local vector = require'vector'
 local util = require'util'
 local ptable = require'util'.ptable

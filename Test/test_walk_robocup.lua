@@ -111,6 +111,7 @@ elseif key_char_lower==("5") then
 
 	elseif key_char_lower==("8") then  
 		body_ch:send'stop'
+		mcm.set_walk_stoprequest(1)
 		
 	elseif key_char_lower==("9") then  
 		motion_ch:send'hybridwalk'	

@@ -1,6 +1,7 @@
 #!/usr/bin/env luajit
 local ENABLE_NET = true
 local ENABLE_LOG = false
+
 -----------------------------------
 -- Camera manager
 -- (c) Stephen McGill, 2014

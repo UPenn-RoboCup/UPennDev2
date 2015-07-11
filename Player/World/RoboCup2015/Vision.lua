@@ -84,7 +84,6 @@ function Vision.update(meta, img)
   local obs, o_debug
   if detectObstacle then
     obs, o_debug = detectObstacle.update(HeadImage)
-		print('OBS', o_debug)
 	end
 
 	local post, p_debug
@@ -105,6 +104,7 @@ function Vision.update(meta, img)
   }
   if ball then detect.ball = ball end
   if post then detect.post = post end
+	if obs then detect.obstacles = obs end
 
   -- Send the detected stuff over the channel every cycle
   return HeadImage, detect

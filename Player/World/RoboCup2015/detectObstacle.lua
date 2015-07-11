@@ -69,7 +69,7 @@ function detectObstacle.update(Image)
     local passed = true
 		local v
 		local obstacle_dist
-
+		msgs[i] = 'unknown'
 		-- Form the bounding boxes to inspect
 		local black_bboxB = {
 			obsProps[i].position[1] - obsProps[i].width/2,
@@ -80,14 +80,14 @@ function detectObstacle.update(Image)
 		local blackStatsB = ImageProc2.color_stats_exact(
 			Image.labelB_d, Image.wb, Image.hb, colors.black, black_bboxB
 		)
-		util.ptable(blackStatsB)
+		--util.ptable(blackStatsB)
 
 		-- TODO: Use labelA?
 		local black_bboxA = bboxB2A(black_bboxB, Image.scaleB)
 		local blackStatsA = ImageProc2.color_stats_exact(
 			Image.labelA_d, Image.wa, Image.ha, colors.black, black_bboxA
 		)
-		util.ptable(blackStatsA)
+		--util.ptable(blackStatsA)
 
 		-- Black area check
 		if blackStatsB.area < 1 then
@@ -193,7 +193,7 @@ function detectObstacle.update(Image)
         passed = false
         msgs[i] = string.format(
 					'Ground Check: %.2f < %.2f',
-					fieldBBoxStats.area/bbox_area, min_ground_fill_rate
+					fieldBBoxStats.area/fieldBBoxArea, min_ground_fill_rate
 				)
       end
     end
@@ -208,6 +208,7 @@ function detectObstacle.update(Image)
       obstacle.v[obstacle_dist] = obsProps[i].v
       obstacle.detect = 1
       obstacle.count = obs_count
+			msgs[i] = 'Found!'
     end
 
   end -- end loop

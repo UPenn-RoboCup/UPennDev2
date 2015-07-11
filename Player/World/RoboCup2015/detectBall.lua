@@ -103,7 +103,7 @@ function detectBall.update(Image)
         -(propsA.centroid[2] - Image.y0A),
         scale,
       }
-      -- Put into the local and globals frames
+      -- Put into the local and global frames
       local vL = Image.tfL * (v0 / v0[4])
 			local vG = Image.tfG * (v0 / v0[4])
 			-- Save the position

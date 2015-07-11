@@ -6,20 +6,20 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
-local constant = 458
+--local constant = 458
 
 local function pairmin(t)
-  -- find the minimum element in the array table
-  -- returns the min value and its index
-  local imin = nil
-  local tmin = math.huge
-  for i, v in pairs(t)  do
-    if v < tmin then
-      tmin = v
-      imin = i
-    end
-  end
-  return tmin, imin
+	-- find the minimum element in the array table
+	-- returns the min value and its index
+	local imin = nil
+	local tmin = math.huge
+	for i, v in pairs(t)  do
+		if v < tmin then
+			tmin = v
+			imin = i
+		end
+	end
+	return tmin, imin
 end
 
 -- In lab Saturday
@@ -37,14 +37,14 @@ logs.yuyv = {
 -- Initialize the coroutines
 for name, log in pairs(logs) do
 	log.co = coroutine.create(function()
-    local counter = 0
+		local counter = 0
 		for j, date in ipairs(log) do
 			print(name,'opening',date)
 			local log = libLog.open(HOME..'Data', date, name)
 			local metadata = log:unroll_meta()
 			local it = log:log_iter()
 			for i, meta, payload in it do
-        counter = counter + 1
+				counter = counter + 1
 				coroutine.yield(counter, meta, payload)
 			end
 		end
@@ -82,11 +82,11 @@ while true do
 		print(cnt, i, counter, 'Time:', t_n - t0)
 		--print(i, dt, names[i])
 		local speedup = 1
-    -- Temporary loop hack
-    while constant==cnt do
-		    unix.usleep( dt * 1e6 / speedup )
-		    logs[i].ch:send(data)
-    end
+		-- Temporary loop hack
+		repeat
+			unix.usleep( dt * 1e6 / speedup )
+			logs[i].ch:send(data)
+		until constant~=cnt
 	end
 	-- Repopulate
 	local ok, counter, meta, payload = coroutine.resume(logs[i].co)

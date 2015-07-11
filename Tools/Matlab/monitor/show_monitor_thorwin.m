@@ -161,7 +161,7 @@ function h = show_monitor_thorwin
         % Clear graphics objects
         % ball
         set(cam.p_ball,'Xdata', [],'Ydata', []);
-        %TODO: assume up to 3 obstacls for now
+        % TODO: assume up to 3 obstacles for now
         for i=1:2 
           % posts
           set(cam.p_post{i},'Xdata', [],'Ydata', []);

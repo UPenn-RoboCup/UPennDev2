@@ -91,7 +91,17 @@ local function update(meta, img)
 		print(detection.debug.ball)
 	end
 	--]]
-	
+	----[[
+
+	if detection.obstacles then
+		print('Obstacles found!')
+		ptable(detection.obstacles)
+	elseif detection.debug.obstacles then
+		print('No Obstacles...')
+		print(detection.debug.obstacle)
+	end
+	--]]
+
 	-- Send labelA and detection information
 	local lA_raw = c_zlib(Image.labelA_d, ffi.sizeof(Image.labelA_d))
   local lA_meta = {

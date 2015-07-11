@@ -44,13 +44,13 @@ function detectObstacle.update(Image)
 
   -- Update horizon
   local pa = Image.qHead[2]   -- + Config.walk.bodyTilt
-  local horizonB = (hb/2.0) - focalB*math.tan(pa - 10*DEG_TO_RAD)
-  horizonB = math.min(hb, math.max(math.floor(horizonB), 0))
+  local horizonB = (Image.hb/2.0) - Image.focalB*math.tan(pa - 10*DEG_TO_RAD)
+  horizonB = math.min(Image.hb, math.max(math.floor(horizonB), 0))
   --TODO: plot it in monitor
 
 	-- Done in b...
 	-- TODO: No tensor this time!
-	local postB = ImageProc.obstacles(
+	local obsProps = ImageProc.obstacles(
 		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
 		config.min_width, config.max_width, horizonB
 	)
@@ -78,7 +78,7 @@ function detectObstacle.update(Image)
 		local blackStats = ImageProc2.color_stats(
 			Image.labelB_d, Image.wb, Image.hb, colors.black, black_box
 		)
-		local bboxA = bboxB2A(black_box)
+		local bboxA = bboxB2A(black_box, Image.scaleB)
 		local box_area = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
 
     local black_fill_rate = blackStats.area / box_area

@@ -31,8 +31,9 @@ function detectBall.update(Image)
   if type(Image)~='table' then
     return false, 'Bad Image'
   end
-
-  local cc = Image.ccA_d[colors.orange]
+	--local ball_color = colors.orange
+	local ball_color = colors.white
+  local cc = Image.ccA_d[ball_color]
   if cc<6 then
     return false, 'Color count'
   end
@@ -41,7 +42,7 @@ function detectBall.update(Image)
     tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
     Image.wb,
     Image.hb,
-    colors.orange
+    ball_color
   )
 
   if not ballPropsB then
@@ -74,7 +75,7 @@ function detectBall.update(Image)
     local propsA
     if passed then
       propsA = ImageProc2.color_stats(
-        Image.labelA_d, Image.wa, Image.ha, colors.orange,
+        Image.labelA_d, Image.wa, Image.ha, ball_color,
         bboxA
       )
       if propsA.area < config.th_min_area then

@@ -28,7 +28,6 @@ function detectBall.entry(cfg, Image)
   colors = Image.colors
 end
 function detectBall.update(Image)
-	print()
   if type(Image)~='table' then
     return false, 'Bad Image'
   end

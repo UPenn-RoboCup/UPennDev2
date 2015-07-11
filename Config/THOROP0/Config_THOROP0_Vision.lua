@@ -45,23 +45,40 @@ local vision_k2 = {
 }
 
 vision.ball = {
-  diameter = 0.22,
-  th_min_bbox_area = 40, --50
-  th_min_area = 20, --10,
-  th_min_fill_rate = 0.35,
+	diameter = 0.22,
+	th_min_bbox_area = 40, --50
+	th_min_area = 20, --10,
+	th_min_fill_rate = 0.35,
 
-  --TODO: to test on real robot
-  max_height0 = 0.3,    --Max height = max_height0 + dist*max_height1
-  max_height1 = 0.12,
+	--TODO: to test on real robot
+	max_height0 = 0.3,    --Max height = max_height0 + dist*max_height1
+	max_height1 = 0.12,
 
-  max_distance = 9,
-  th_ground_head_pitch = 50*DEG_TO_RAD,
-  th_ground_boundingbox = {-30,30,0,20},
-  th_ground_green = 400,  --TODO
-  th_ground_white = 150,  --TODO
-  check_for_ground = 1,
-  check_for_field = 1,
-  field_margin = 2.0,
+	max_distance = 9,
+	th_ground_head_pitch = 50*DEG_TO_RAD,
+	th_ground_boundingbox = {-30,30,0,20},
+	th_ground_green = 400,  --TODO
+	th_ground_white = 150,  --TODO
+	check_for_ground = 1,
+	check_for_field = 1,
+	field_margin = 2.0,
+}
+
+vision.obstacle = {
+	label = 'b',
+	grid_x = 40, --32,
+	grid_y = 20, --18,
+	th_min_area = 40,
+	min_black_fill_rate = 0.48,
+	th_aspect_ratio = {1.8, 10},
+	th_max_height = 1.3,
+	th_min_height = -0.2,
+	th_min_orientation = 60/180*math.pi,
+	th_green_black_ratio = 2,
+	min_ground_fill_rate = 0.4,  
+	--
+	min_width = 5, 
+	max_width = 16,
 }
 
 vision.goal = {
@@ -95,7 +112,7 @@ vision.goal = {
 local grasp920_param = {
 	{'White Balance Temperature', 2400},
 	{'Exposure (Absolute)', 120},
---	{'Focus (absolute)', 0},
+	--	{'Focus (absolute)', 0},
 	{'Brightness', 128},
 	{'Contrast', 0},
 	{'Saturation', 255},

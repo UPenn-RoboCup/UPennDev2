@@ -4,6 +4,7 @@ assert(Config, 'Need a pre-existing Config table!')
 local IP = {
 	STEVE = 23,
 	SJ = 100,
+	ASUS = 200,
 	BHORAM = 57,
 	JQ = 150,
 	--
@@ -14,7 +15,7 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.CHIP2
+local WHO = IP.ASUS
 local ROBOT_IP = IP.CHIP
 local TEAM_NUMBER = 8
 

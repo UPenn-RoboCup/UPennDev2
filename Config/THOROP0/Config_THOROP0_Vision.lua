@@ -92,17 +92,17 @@ vision.goal = {
 	postDiameter = 0.1,
 }
 
-local m308_param = {
-	{'White Balance Temperature', 2300},
-	{'Exposure (Absolute)', 112},
+local grasp920_param = {
+	{'White Balance Temperature', 2400},
+	{'Exposure (Absolute)', 120},
 --	{'Focus (absolute)', 0},
 	{'Brightness', 128},
-	{'Contrast', 128},
-	{'Saturation', 220},
+	{'Contrast', 0},
+	{'Saturation', 255},
 	{'Gain', 0},
 	{'Sharpness', 0},
 }
-local grasp_afternoon_param = {
+local grasp900_param = {
 	{'White Balance Temperature', 0},
 	{'Exposure (Absolute)', 170},
 	--{'Focus', 0},
@@ -117,17 +117,16 @@ local grasp_afternoon_param = {
 local camera = {}
 camera[1] = {
 	name = 'head',
-	--dev = '/dev/video-headcamera',
-	--w = 640,
-	--h = 360,
-	dev = '/dev/video-wristcamera',
+	dev = '/dev/video-headcamera',
 	w = 640,
-	h = 480,
+	h = 360,
+	--dev = '/dev/video-wristcamera',
+	--w = 640,
+	--h = 480,
 	format = 'yuyv',
-	fps = 15,
-	jpeg_quality = 40,
-	quality = 40,
-	downsampling = 2,
+	fps = 30,
+	quality = 80,
+	downsampling = 1,
 	--crop = {640/2+1, 360/2+1, 640/2, 360/2},
 
 	-- cameraRoll, cameraPitch, cameraYaw
@@ -164,7 +163,7 @@ camera[1] = {
 		{'Exposure, Auto Priority', 1},
 		{'Focus, Auto', 0}
 	},
-	param = grasp_afternoon_param,
+	param = grasp920_param,
 }
 
 camera[2] = {

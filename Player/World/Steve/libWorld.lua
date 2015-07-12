@@ -69,7 +69,6 @@ local function update_vision(detected)
 	if ball then
 		ballFilter.observation_xy(
     ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
-    print('Updating the ball...')
 	end
 
 end

@@ -73,7 +73,7 @@ if IS_WEBOTS then
 			ft = true,
       head_camera = 'camera_wizard',
       vision = 'vision_wizard',
-      --world = 'world_wizard',
+      world = 'world_wizard',
 
 			--feedback = 'feedback_wizard',
 	  }

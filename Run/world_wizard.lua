@@ -13,7 +13,7 @@ local util = require'util'
 -- Cache some functions
 local get_time = Body.get_time
 -- Subscribe to important messages
-local vision_ch = si.new_subscriber'vision'
+local vision_ch = si.new_subscriber'vision0'
 -- UDP channel
 local operator
 if Config.net.use_wireless then
@@ -30,14 +30,7 @@ require'mcm'
 require'hcm'
 
 -- Cleanly exit on Ctrl-C
-local running, signal = true, nil
-
-local signal = require'signal'
-local function shutdown()
-	running = false
-end
-signal.signal("SIGINT", shutdown)
-signal.signal("SIGTERM", shutdown)
+local running = true
 
 local uOdometry0, uOdometry
 local t_send, send_interval = 0
@@ -46,6 +39,7 @@ vision_ch.callback = function(skt)
 	local detections = skt:recv_all()
 	-- Only use the last vision detection
 	local detection = mp.unpack(detections[#detections])
+	--print('DETECTION', detection)
 
 	-- Update localization based onodometry and vision
 	--Should use the differential of odometry!
@@ -80,7 +74,7 @@ local function update()
 			wcm.set_robot_pose(lW.get_pose())
 		else
 			-- general world
-			--  SJ: now pose update is done in libworld, not here  
+			--  SJ: now pose update is done in libworld, not here
 			lW.update(dOdometry)
 		end
 
@@ -104,9 +98,9 @@ end
 	if t-t_debug>debug_interval and Config.debug.wolrld then
 		t_debug = t
 		local step_pose = util.pose_relative(wcm.get_step_pose(), wcm.get_robot_pose())
-		print(string.format('HURDLE: %.2f %.2f %.1f', 
+		print(string.format('HURDLE: %.2f %.2f %.1f',
 		step_pose[1], step_pose[2], step_pose[3]*RAD_TO_DEG))
-	end  
+	end
 
 end
 
@@ -114,6 +108,14 @@ if ... and type(...)=='string' then
 	TIMEOUT = 0
 	return {entry=lW.entry, update=update, exit=lW.exit}
 end
+
+local signal = require'signal'
+local function shutdown()
+	running = false
+end
+signal.signal("SIGINT", shutdown)
+signal.signal("SIGTERM", shutdown)
+
 
 lW.entry()
 while running do

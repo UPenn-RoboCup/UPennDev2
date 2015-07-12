@@ -8,13 +8,12 @@ local libWorld = {}
 local Body   = require'Body'
 local vector = require'vector'
 local util = require'util'
-local odomScale = Config.world.odomScale 
+local odomScale = Config.world.odomScale
 local ballFilter = require'ballFilter'
 
 require'wcm'
 require'gcm'
 require'mcm'
-
 
 -- Timestamps
 local t_entry
@@ -32,7 +31,7 @@ local t_resample = 0
 
 
 local yaw0 = 0
-local function update_odometry(uOdometry)  
+local function update_odometry(uOdometry)
   -- Scale the odometry
   uOdometry[1] = odomScale[1] * uOdometry[1]
   uOdometry[2] = odomScale[2] * uOdometry[2]
@@ -61,14 +60,16 @@ local function update_odometry(uOdometry)
 --  poseFilter.odometry(unpack(uOdometry))
 end
 
-local function update_vision(detected)  
+local function update_vision(detected)
 
 
   -- If the ball is detected
   ball = detected.ball
 
 	if ball then
-		ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
+		ballFilter.observation_xy(
+    ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
+    print('Updating the ball...')
 	end
 
 end
@@ -93,8 +94,8 @@ end
 
 function libWorld.entry()
   t_entry = unix.time()
-  -- Initialize the pose filter  
---TODO: init pose  
+  -- Initialize the pose filter
+--TODO: init pose
 --  poseFilter.initialize()
 
   -- Save this resampling time
@@ -125,7 +126,7 @@ function libWorld.update(uOdom, detection)
   -- Run the updates
   if wcm.get_robot_reset_pose()==1 then
     print("libWorld | POSE RESET!")
-    libWorld.pose_reset()    
+    libWorld.pose_reset()
   end
 
   if IS_WEBOTS and Config.world.use_gps_pose then
@@ -135,7 +136,7 @@ function libWorld.update(uOdom, detection)
     wcm.set_robot_pose(gpspose)
   else
     update_odometry(uOdom)
-    print_pose()   
+    print_pose()
   end
   -- Increment the process count
   count = count + 1

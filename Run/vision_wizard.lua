@@ -72,7 +72,7 @@ local t0 = get_time()
 local t_debug = 0
 --
 local hz_monitor = 1
-local dt_monitor = 1/hz_monitor
+local dt_monitor = 1 / hz_monitor
 local t_send = -math.huge
 
 local ptable = require'util'.ptable
@@ -84,7 +84,7 @@ local function update(meta, img)
 	--]]
 
 	local Image, detection = Vision.update(meta, img)
-	----[[
+	--[[
 	print('\n=Ball=')
 	if detection.ball then
 		ptable(detection.ball)

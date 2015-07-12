@@ -53,7 +53,7 @@ if IS_WEBOTS then
 	  Config.sensors = {
 			ft = true,
       head_camera = 'camera_wizard',
-      vision = 'vision_wizard',
+      --vision = 'vision_wizard',
       world = 'world_wizard',
 			--feedback = 'feedback_wizard',
 			--slam = 'slam_wizard',
@@ -72,7 +72,7 @@ if IS_WEBOTS then
 	  Config.sensors = {
 			ft = true,
       head_camera = 'camera_wizard',
-      vision = 'vision_wizard',
+      --vision = 'vision_wizard',
       world = 'world_wizard',
 
 			--feedback = 'feedback_wizard',

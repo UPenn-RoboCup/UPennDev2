@@ -132,7 +132,7 @@ end
 -- ROBOCUP config variables
 
 Config.use_gps_pose = true
-Config.use_gps_vision = false
+Config.use_gps_vision = true
 
 --Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then

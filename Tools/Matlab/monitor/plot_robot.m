@@ -11,12 +11,12 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
   cla(h_field);
   plot_field(h_field,2);
   gca;
-  
+
   x0 = robot_struct.pose(1);
   y0 = robot_struct.pose(2);
   ca = cos(robot_struct.pose(3));
   sa = sin(robot_struct.pose(3));
-  
+
   hold on;
 
 
@@ -48,7 +48,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       plot_info(robot_struct,scale,2,'');
     end
   else
-    if drawlevel==1 
+    if drawlevel==1
       %simple position and pose
       plot_robot(robot_struct, scale);
       % plot_info(robot_struct,scale,1);
@@ -68,8 +68,8 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
         plot_line(robot_struct, scale);
       end
       plot_gps_robot(robot_struct,scale);
-      
-    elseif drawlevel==2 
+
+    elseif drawlevel==2
       %additional simple vision info for team monitor
 
       plot_robot(robot_struct,scale);
@@ -80,7 +80,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       plot_corner_team(robot_struct,scale);
       plot_gps_robot(robot_struct,scale);
       plot_obstacle(robot_struct,scale);
-    elseif drawlevel==5 
+    elseif drawlevel==5
       %additional simple vision info for team monitor
 
       plot_robot(robot_struct,scale);
@@ -92,7 +92,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       plot_gps_robot(robot_struct,scale);
       plot_obstacle(robot_struct,scale);
 
-    elseif drawlevel==3 
+    elseif drawlevel==3
       %Full vision info
       plot_robot(robot_struct,scale);
       plot_info(robot_struct,scale,1);
@@ -140,14 +140,14 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
     teamColors = ['b', 'r'];
     hr = fill(xr, yr, teamColors(max(1,robot.teamColor+1)));
 
-    if robot.role>1 
+    if robot.role>1
       h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role});
       set(h_role,'LineWidth',3);
     end
   end
 
   function plot_gps_robot(robot,scale)
-  
+
     if (~isfield(robot, 'gpspose'))
       return
     end
@@ -160,7 +160,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
 
     xr  = xRobot*ca1 - yRobot*sa1 + robot.gpspose(1);
     yr =  xRobot*sa1 + yRobot*ca1 + robot.gpspose(2);
-   
+
     hr = plot(xr, yr, 'b');
     set(hr,'LineWidth',3);
 
@@ -189,13 +189,17 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
     hr = fill(xr, yr, 'b');
     % set(hr, 'XData', xr, 'YData', yr);
 
-    if robot.role>1 
-      h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role+1});
-      set(h_role,'LineWidth',3);
+    if isfield(robot,'role')
+      if robot.role>1
+        h_role=plot([xr xr(1)],[yr yr(1)],roleColors{robot.role+1});
+        set(h_role,'LineWidth',3);
+      end
+    %else
+      %Nothing
     end
 
   end
-  
+
   function plot_info(robot,angle,plottype,name)
     if plottype==1
       infostr=robot_info(robot,0,1);
@@ -214,7 +218,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
     if (~isempty(robot.ball))
       ball = [robot.ball.x robot.ball.y robot.time-robot.ball.t];
       ballt=ball(3);
-      xb = x0 + ball(1)*ca - ball(2)*sa;   
+      xb = x0 + ball(1)*ca - ball(2)*sa;
       yb = y0 + ball(1)*sa + ball(2)*ca;
 
       hb = plot(xb, yb, 'O',...
@@ -243,7 +247,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
 
     hg1 = plot(x1, y1, marker1,'MarkerSize',12/scale);
     hrg1 = plot([x0 x1],[y0 y1], marker2);
-    
+
     if goal.type == 3
       marker1 = strcat(marker,'>');%Left post
       x2 = goal.v2(1)*ca - goal.v2(2)*sa + robot_struct.pose(1);
@@ -251,7 +255,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       hg2 = plot(x2, y2, marker1,'MarkerSize',12/scale);
       hrg2 = plot([x0 x2],[y0 y2], marker2);
     end
-    
+
   end
 
   function plot_landmark_team(robot,scale)
@@ -274,7 +278,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       corner = robot.corner;
       if (corner>0)
         marker='k';
-        if corner==1 
+        if corner==1
           marker2 = strcat(marker,'s');
         else
           marker2 = strcat(marker,'p');
@@ -293,7 +297,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% Monitor struct based plots (optional)
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  
+
   function plot_fov(fov)  %draw fov boundary
     x1 = fov.TL(1)*ca - fov.TL(2)*sa + x0;
     y1 = fov.TL(1)*sa + fov.TL(2)*ca + y0;
@@ -342,7 +346,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
         marker='r';
       else
         marker='b';
-      end     
+      end
 
       v=corner.v;
       v1=corner.v1;
@@ -411,7 +415,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       quiver(x, y, U(1,:), U(2,:));
     end
   end
-  
+
   function plot_obstacle(obstacle, scale)
     % We are receiving global position of obstacles
     for cnt = 1 : numel(obstacle)
@@ -422,7 +426,7 @@ function h = plot_robot_monitor_struct(h_field, robot_struct,r_mon,scale,drawlev
       % Print out the local position
       px = xob - x0;
       py = yob - y0;
-      pa = 0 - robot_struct.pose(3); 
+      pa = 0 - robot_struct.pose(3);
       xob_l = ca*px + sa*py;
       yob_l = -sa*px + ca*py;
 

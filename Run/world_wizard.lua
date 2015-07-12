@@ -24,7 +24,7 @@ operator = Config.net.operator.wired
 
 local stream = Config.net.streams.world
 local udp_ch = ENABLE_NET and stream and stream.udp and si.new_sender(operator, stream.udp)
---local world_ch = stream and stream.sub and si.new_publisher(stream.sub)
+local world_ch = stream and stream.sub and si.new_publisher(stream.sub)
 
 -- SHM
 require'wcm'
@@ -96,6 +96,7 @@ local function update()
 		id = 'world',
 		world = lW.send(),
 	}
+	--util.ptable(metadata.world)
 	if world_ch then
 		world_ch:send(mp.pack(metadata))
 	end

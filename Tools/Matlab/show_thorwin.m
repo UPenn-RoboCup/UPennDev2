@@ -43,11 +43,11 @@ data_yuyv.raw = [];
 
 data_world=[];
 data_world.meta = [];
-data_world.raw = [];
+%data_world.raw = [];
 
 data_detect=[];
 data_detect.meta = [];
-data_detect.raw = [];
+%data_detect.raw = [];
 
 data_labelA=[];
 data_labelA.meta = [];
@@ -87,13 +87,13 @@ while running
         if strcmp(msg_id,'world')
             count_world = count_world + 1;
             data_world.meta = metadata;
-            data_world.raw = raw;
+            %data_world.raw = raw;
             data_world.recv = true;
         end
         if strcmp(msg_id,'detect')
             count_detect = count_detect + 1;
             data_detect.meta = metadata;
-            data_detect.raw = raw;
+            %data_detect.raw = raw;
             data_detect.recv = true;
         end
         if strcmp(msg_id,'labelA')
@@ -140,7 +140,7 @@ while running
         if strcmp(msg_id,'detect')
             count_detect = count_detect + 1;
             data_detect.meta = metadata;
-            data_detect.raw = raw;
+            %data_detect.raw = raw;
             data_detect.recv = true;
         end
         if strcmp(msg_id,'labelA')
@@ -161,7 +161,7 @@ while running
         if strcmp(msg_id,'world')
             count_world = count_world + 1;
             data_world.meta = metadata;
-            data_world.raw = raw;
+            %data_world.raw = raw;
             data_world.recv = true;
         end
     end
@@ -173,8 +173,8 @@ while running
 
     if (t>last_draw_time+0.066) && (data_world.recv || data_detect.recv || data_labelA.recv || data_labelB.recv || data_yuyv.recv)
 
-        if data_world.recv, monitor.process_msg(data_world.meta,data_world.raw,cam); end
-        if data_detect.recv, monitor.process_msg(data_detect.meta,data_detect.raw,cam); end
+        if data_world.recv, monitor.process_msg(data_world.meta,[],cam); end
+        if data_detect.recv, monitor.process_msg(data_detect.meta,[],cam); end
         if data_labelA.recv, monitor.process_msg(data_labelA.meta,data_labelA.raw,cam); end
         if data_labelB.recv, monitor.process_msg(data_labelB.meta,data_labelB.raw,cam); end
         if data_yuyv.recv, monitor.process_msg(data_yuyv.meta,data_yuyv.raw,cam); end

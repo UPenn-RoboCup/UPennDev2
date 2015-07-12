@@ -102,7 +102,7 @@ function Vision.update(meta, img)
 
 	local line, l_debug
   if detectLine then
-    line, p_debug = detectLine.update(HeadImage)
+    line, l_debug = detectLine.update(HeadImage)
   end
 
   local debug = {

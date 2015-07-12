@@ -61,7 +61,8 @@ function detectObstacle.update(Image)
 	end
 
 	-- Position of the head now
-	local pHead4 = T.position4(Image.tfG)
+	local pHead4 = T.position4(Image.tfL)
+	--local pHead4 = T.position4(Image.tfG)
 
   --for i=1,math.min(30, #obsProps) do
 	local msgs = {}

@@ -9,9 +9,9 @@
 #ifdef __cplusplus
 extern "C"
 {
-#endif
-#include <torch/TH/TH.h>
-#ifdef __cplusplus
+  #endif
+  #include <torch/TH/TH.h>
+  #ifdef __cplusplus
 }
 #endif
 #endif
@@ -24,10 +24,10 @@ static int widthMin = 2;  //TODO
 static int widthMax = 10;
 
 /*
-  Simple state machine for field line detection:
-  ==colorField -> &colorLine -> ==colorField
-  Use lineState(0) to initialize, then call with color labels
-  Returns width of line when detected, otherwise 0
+Simple state machine for field line detection:
+==colorField -> &colorLine -> ==colorField
+Use lineState(0) to initialize, then call with color labels
+Returns width of line when detected, otherwise 0
 */
 int lineState(uint8_t label)
 {
@@ -112,9 +112,9 @@ void segment_refresh(){
   for(int i=0;i<num_segments;i++){
     if ((segments[i].state==1) && (segments[i].updated==0)){
       if (segments[i].gap>0)
-	segments[i].gap--;
+      segments[i].gap--;
       else
-        segments[i].state=2;
+      segments[i].state=2;
     }
     segments[i].updated=0;
   }
@@ -166,20 +166,20 @@ void addHorizontalPixel(int i, int j, double connect_th, int max_gap, int width)
     if(segments[k].state==1){
       double yProj = segments[k].yMean + segments[k].grad*(i-segments[k].xMean);
       double yErr = j-yProj;if (yErr<0) yErr=-yErr;
-	//printf("Checking segment %d\n",k);
-	//printf("xmean %.1f, ymean %.1f, grad %.2f, yErr %.2f\n",
-	//segments[k].xMean, segments[k].yMean, segments[k].grad, yErr);
+      //printf("Checking segment %d\n",k);
+      //printf("xmean %.1f, ymean %.1f, grad %.2f, yErr %.2f\n",
+      //segments[k].xMean, segments[k].yMean, segments[k].grad, yErr);
       if (yErr<connect_th){
-	updateStat(&segments[k],i,j,max_gap);
-	segments[k].count++;
+        updateStat(&segments[k],i,j,max_gap);
+        segments[k].count++;
         segments[k].grad=(double)
-		(segments[k].xy- segments[k].x*segments[k].y/segments[k].count)
-		/(segments[k].xx-segments[k].x*segments[k].x/segments[k].count);
+        (segments[k].xy- segments[k].x*segments[k].y/segments[k].count)
+        /(segments[k].xx-segments[k].x*segments[k].x/segments[k].count);
         if ((segments[k].grad>1.0) ||(segments[k].grad<-1.0)){
-	  segments[k].state=2; //kill anything that exceeds 45 degree
-	  segments[k].count=0;
-	}
-	segments[k].updated=1;
+          segments[k].state=2; //kill anything that exceeds 45 degree
+          segments[k].count=0;
+        }
+        segments[k].updated=1;
         segments[k].x1=i;
         segments[k].y1=j;
         if (width > segments[k].max_width) {
@@ -206,17 +206,17 @@ void addVerticalPixel(int i, int j, double connect_th, int max_gap, int width){
       double xProj = segments[k].xMean + segments[k].invgrad*(j-segments[k].yMean);
       double xErr = i-xProj;if (xErr<0) xErr=-xErr;
       if (xErr<connect_th){
-	updateStat(&segments[k],i,j,max_gap);
-	segments[k].count++;
+        updateStat(&segments[k],i,j,max_gap);
+        segments[k].count++;
         segments[k].invgrad=(double)
-		(segments[k].xy- segments[k].x*segments[k].y/segments[k].count)
-		/(segments[k].yy-segments[k].y*segments[k].y/segments[k].count);
+        (segments[k].xy- segments[k].x*segments[k].y/segments[k].count)
+        /(segments[k].yy-segments[k].y*segments[k].y/segments[k].count);
 
         if ((segments[k].invgrad>1.0) ||(segments[k].invgrad<-1.0)){
-	  segments[k].state=2; //kill anything that exceeds 45 degree
-	  segments[k].count=0;
-	}
-	segments[k].updated=1;
+          segments[k].state=2; //kill anything that exceeds 45 degree
+          segments[k].count=0;
+        }
+        segments[k].updated=1;
         segments[k].x1=i;
         segments[k].y1=j;
         seg_updated=seg_updated+1;
@@ -248,10 +248,10 @@ int lua_field_lines(lua_State *L) {
   int max_gap;
   int min_length;
 
-	if( lua_islightuserdata(L,1) ){
-		im_ptr = (uint8_t *) lua_touserdata(L, 1);
-		ni = luaL_checkint(L, 2);
-		nj = luaL_checkint(L, 3);
+  if( lua_islightuserdata(L,1) ){
+    im_ptr = (uint8_t *) lua_touserdata(L, 1);
+    ni = luaL_checkint(L, 2);
+    nj = luaL_checkint(L, 3);
 
     if (lua_gettop(L) >= 4){
       widthMax = luaL_checkint(L, 4);
@@ -261,7 +261,7 @@ int lua_field_lines(lua_State *L) {
     max_gap = luaL_optinteger(L, 6, 1);
     min_length = luaL_optinteger(L, 7, 3);
 
-	}
+  }
   else if( lua_type(L, 1) == LUA_TNUMBER ){
     im_ptr = (uint8_t *)luaL_optlong(L, 1, 0);
     if (im_ptr == NULL) {
@@ -278,13 +278,13 @@ int lua_field_lines(lua_State *L) {
     max_gap = luaL_optinteger(L, 6, 1);
     min_length = luaL_optinteger(L, 7, 3);
   }
-#ifdef TORCH
-	else if(luaT_isudata(L,1,"torch.ByteTensor")){
-		THByteTensor* b_t =
-			(THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
-		im_ptr = b_t->storage->data;
-		nj = b_t->size[0];
-		ni = b_t->size[1];
+  #ifdef TORCH
+  else if(luaT_isudata(L,1,"torch.ByteTensor")){
+    THByteTensor* b_t =
+    (THByteTensor *) luaT_checkudata(L, 1, "torch.ByteTensor");
+    im_ptr = b_t->storage->data;
+    nj = b_t->size[0];
+    ni = b_t->size[1];
 
     if (lua_gettop(L) >= 2){
       widthMax = luaL_checkint(L, 2);
@@ -294,13 +294,11 @@ int lua_field_lines(lua_State *L) {
     max_gap = luaL_optinteger(L, 4, 1);
     min_length = luaL_optinteger(L, 5, 3);
 
-	}
-#endif
-	else {
-		return luaL_error(L, "Input image invalid");
-	}
-
-
+  }
+  #endif
+  else {
+    return luaL_error(L, "Input image invalid");
+  }
 
   segment_init();
   // Scan for vertical line pixels:
@@ -308,10 +306,15 @@ int lua_field_lines(lua_State *L) {
     uint8_t *im_col = im_ptr + ni*j;
     for (int i = 0; i < ni; i++) {
       uint8_t label = *im_col++;
-			int width = lineState(label);
-      if ((width >= widthMin) && (width <= widthMax)) {
-	int iline = i - (width+1)/2;
-	addVerticalPixel(iline,j,connect_th,max_gap,width);
+      int width = lineState(label);
+
+      //if (width >= widthMax){ printf("big v width: %d\n", width); }
+
+      if (
+        (width >= widthMin) //&& (width <= widthMax)
+      ) {
+        int iline = i - (width+1)/2;
+        addVerticalPixel(iline,j,connect_th,max_gap,width);
       }
     }
     segment_refresh();
@@ -324,9 +327,14 @@ int lua_field_lines(lua_State *L) {
       uint8_t label = *im_row;
       im_row += ni;
       int width = lineState(label);
-      if ((width >= widthMin) && (width <= widthMax)) {
-	int jline = j - (width+1)/2;
-	addHorizontalPixel(i,jline,connect_th,max_gap, width);
+
+      //if (width >= widthMax){ printf("big h width: %d\n", width); }
+
+      if (
+        (width >= widthMin) //&& (width <= widthMax)
+      ) {
+        int jline = j - (width+1)/2;
+        addHorizontalPixel(i,jline,connect_th,max_gap, width);
       }
     }
     segment_refresh();

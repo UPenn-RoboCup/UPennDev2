@@ -22,6 +22,8 @@ function detectLine.entry(cfg, Image)
   config = cfg
   colors = Image.colors
 end
+
+-- TODO: Needs to know the ball centroid, so as to avoid categorizing that one
 function detectLine.update(Image)
   if type(Image)~='table' then
     return false, 'Bad Image'
@@ -40,6 +42,10 @@ function detectLine.update(Image)
   if #linePropsB==0 then
     return false, 'None'
   end
+
+	-- Position of the head now
+	local pHead4 = T.position4(Image.tfL)
+	--local pHead4 = T.position4(Image.tfG)
 
   lines.propsB = linePropsB
   lines.v, lines.endpoint = {},{}
@@ -60,42 +66,95 @@ function detectLine.update(Image)
   local bestlength = 0
   local linecount = 0
 
-  local length, vendpoint, vHeight = 0, {}, 0
-  for i=1, #linePropsB do
-    length = math.sqrt(
-    	(lines.propsB[i].endpoint[1]-lines.propsB[i].endpoint[2])^2+
-    	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2);
+  local vendpoint, vHeight = {}, 0
+  for i=1, math.min(num_line, #linePropsB) do
 
-      vendpoint[1] = check_coordinateB(vector.new(
-    		{lines.propsB[i].endpoint[1],lines.propsB[i].endpoint[3]}),1);
-      vendpoint[2] = check_coordinateB(vector.new(
-    		{lines.propsB[i].endpoint[2],lines.propsB[i].endpoint[4]}),1);
+		local passed = true
+
+    local length = math.sqrt(
+    	(lines.propsB[i].endpoint[1]-lines.propsB[i].endpoint[2])^2 +
+    	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2
+		)
+
+		print('found line...')
+		util.ptable(lines.propsB[i])
+		print('length', length)
+		print('endpoint',unpack(lines.propsB[i].endpoint))
+		print('===')
+		--print('length', length)
+
+		-- TODO: Why this scale?
+		local scale = 1
+		local v01 = vector.new{
+	    Image.focalB,
+	    -(lines.propsB[i].endpoint[1] - Image.x0B),
+	    -(lines.propsB[i].endpoint[3] - Image.y0B),
+	    scale,
+	  }
+		-- Put into the local and global frames
+    vendpoint[1] = Image.tfL * (v01 / v01[4])
+		--vendpoint[1] = Image.tfG * (v0 / v0[4])
+
+		local v02 = vector.new{
+	    Image.focalB,
+			-(lines.propsB[i].endpoint[2] - Image.x0B),
+	    -(lines.propsB[i].endpoint[4] - Image.y0B),
+	    scale,
+	  }
+		-- Put into the local and global frames
+    vendpoint[2] = Image.tfL * (v02 / v02[4])
+		--vendpoint[2] = Image.tfG * (v02 / v02[4])
 
     vHeight = (vendpoint[1][3]+vendpoint[2][3]) / 2
 
-    local vHeightMax = 0.50 --TODO
+		-- TODO: Place in the config
+    local vHeightMax = 0.50
 
-    --TODO: added debug message
-    if length>config.min_length and linecount<num_line and vHeight<vHeightMax then
+		if length<config.min_length then
+			passed = false
+			msgs[i] = string.format('min_length: %.2f<%.2f', length, config.min_length)
+		end
+		if linecount>num_line then
+			passed = false
+			msgs[i] = string.format('linecount: %.2f>%.2f', linecount, num_line)
+		end
+		if vHeight>vHeightMax then
+			passed = false
+			msgs[i] = string.format('vHeight: %.2f>%.2f', vHeight, vHeightMax)
+		end
+
+    if passed then
+			lines.detect = 1
       linecount = linecount + 1
       lines.length[linecount] = length
-      lines.endpoint[linecount] = vector.new(lines.propsB[i].endpoint)*scaleB
-      vendpoint[1] = projectGround(vendpoint[1],0)
-      vendpoint[2] = projectGround(vendpoint[2],0)
-      lines.v[linecount] = {}
-      lines.v[linecount][1] = vendpoint[1]
-      lines.v[linecount][2] = vendpoint[2]
-      lines.angle[linecount]=math.abs(math.atan2(vendpoint[1][2]-vendpoint[2][2],
-			    vendpoint[1][1]-vendpoint[2][1]));
+      lines.endpoint[linecount] = Image.scaleB * vector.new(lines.propsB[i].endpoint)
+
+			-- Project to the ground
+			local target_height = 0
+			if pHead4[3]==target_height then
+				vendpoint[1] = vector.copy(vendpoint[1])
+			else
+				local scale = (pHead4[3] - target_height) / (pHead4[3] - vendpoint[1][3])
+				vendpoint[1] = pHead4 + scale * (vendpoint[1] - pHead4)
+			end
+			if pHead4[3]==target_height then
+				vendpoint[2] = vector.copy(vendpoint[2])
+			else
+				local scale = (pHead4[3] - target_height) / (pHead4[3] - vendpoint[2][3])
+				vendpoint[2] = pHead4 + scale * (vendpoint[2] - pHead4)
+			end
+
+      lines.v[linecount] = { unpack(vendpoint, 1, 2) }
+      lines.angle[linecount] = math.abs(
+				math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1])
+			)
+			msgs[i] = 'Passed checks'
     end
-  end
+  end -- end for
 
   lines.nLines = linecount
-  if lines.nLines>0 then
-    lines.detect = 1
-    -- print('line v:', unpack(lines.v[1][1]), unpack(lines.v[1][2]))
-  end
-  return 'blah', lines
+
+  return lines, table.concat(msgs, '\n')
 end
 function detectLine.exit()
 end

@@ -53,8 +53,9 @@ function detectBall.update(Image)
     return false, '0 connected regions'
   end
 
-  -- Position of the head now
-  local pHead4 = T.position4(Image.tfG)
+	-- Position of the head now
+	local pHead4 = T.position4(Image.tfL)
+	--local pHead4 = T.position4(Image.tfG)
 
   -- Run the checks
   local msgs = {}

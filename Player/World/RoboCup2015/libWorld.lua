@@ -35,6 +35,25 @@ local uOdometry0 = vector.zeros(3)
 -- Save the resampling times
 local t_resample = 0
 
+local game_state_names={
+  "Initial",
+  "Ready",
+  "Set",
+  "Playing",
+  "Finished",
+  "Untorqued",
+  "Testing"
+}
+
+local motion_state_names={
+  "Idle",
+  "Init",
+  "Stance",
+  "WalkInit",
+  "Walk",
+  "WalkEnd",
+  "WalkKick"
+}
 
 local obstacles={}
 local function reset_obstacles()
@@ -327,7 +346,6 @@ function libWorld.update(uOdom, detection)
 
   update_vision(detection)
 
-
   if Config.use_gps_pose then
     wcm.set_robot_pose(wcm.get_robot_pose_gps())
     wcm.set_obstacle_num(2)
@@ -346,7 +364,7 @@ function libWorld.update(uOdom, detection)
 --    print("global ball:",unpack(ballglobal))
   else
 
-    local pose =wcm.get_robot_pose()
+    local pose = wcm.get_robot_pose()
     local ball_x = wcm.get_ball_x()
     local ball_y = wcm.get_ball_y()
 
@@ -364,14 +382,117 @@ end
 
 
 function libWorld.send()
-  local to_send = {}
-  to_send.info = ''
-  -- Robot info
-  to_send.pose = vector.new(wcm.get_robot_pose())
-  to_send.time = Body.get_time()
-  to_send.info = to_send.info..string.format(
-    'Pose: %.2f %.2f (%.1f)\n', to_send.pose[1], to_send.pose[2], to_send.pose[3]*RAD_TO_DEG)
-  to_send.time = Body.get_time()
+
+  -- Formatted data to send
+  local info = {}
+  local to_send = {
+    time = Body.get_time(),
+  }
+
+  -- Pose
+  local pose = wcm.get_robot_pose()
+  to_send.pose = pose
+  table.insert(info, string.format(
+    'Pose: %.2f %.2f (%.1f)\n',
+    pose[1], pose[2], pose[3]*RAD_TO_DEG
+  ))
+
+  -- Show the role
+  local role = gcm.get_game_role()
+  if role==0 then
+    table.insert(info, "Role: Goalie")
+  elseif role==1 then
+    table.insert(info, "Role: Attacker")
+  else
+    table.insert(info, "Role: Idle")
+  end
+  to_send.role = role
+
+  -- Game
+  to_send.gamestate = gcm.get_game_state()
+  table.insert(info, "Game: "..game_state_names[to_send.gamestate+1])
+
+  -- TODO: Motion
+  --to_send.motionstate = mcm.get_motion_state()
+  --table.insert(info, "Motion: "..motion_state_names[to_send.motionstate+1])
+
+  -- Ball info
+  if ball then
+    to_send.ball = {
+      x = wcm.get_ball_x(),
+      y = wcm.get_ball_y(),
+      t = wcm.get_ball_t(),
+    }
+    table.insert(info, string.format(
+      'Ball: %.2f %.2f', to_send.ball.x, to_send.ball.y)
+    )
+  end
+
+  -- Obstacles
+  if wcm.get_obstacle_num()>0 then
+    local obs = {}
+    for i=1,wcm.get_obstacle_num() do
+      obs[i] = wcm['get_obstacle_v'..i]()
+      table.insert(info,string.format(
+        'Obstacle: %.2f %.2f', unpack(obs[i]))
+      )
+    end
+    to_send.obstacle = obs
+  else
+    -- TODO: WE HAVE TO CLEAR OBSTACLE
+    to_send.obstacle = {}
+  end
+
+  -- TODO: Lines
+  if line and gcm.get_game_role()==0 then
+    wcm.set_line_detect(1)
+  end
+
+  -- TODO: Goal info
+  --[[
+  if goal then
+    to_send.goal = {}
+    to_send.goal.type = goal[1].type
+    to_send.info = to_send.info..string.format(
+      'Post type: %d \n', goal[1].type )
+
+    to_send.goal.v1 = goal[1].v
+    to_send.info = to_send.info..string.format(
+      'Post1: %.2f %.2f\n', to_send.goal.v1[1], to_send.goal.v1[2])
+
+    if goal[1].type==3 then
+      to_send.goal.v2 = goal[2].v
+      to_send.info = to_send.info..string.format(
+        'Post2: %.2f %.2f\n', to_send.goal.v2[1], to_send.goal.v2[2])
+    end
+  end
+  --]]
+
+  --TRAJECTORY INFO
+  local traj = {
+    num = wcm.get_robot_traj_num(),
+    x = wcm.get_robot_trajx(),
+    y = wcm.get_robot_trajy(),
+
+    goalto = wcm.get_robot_goalto(),
+    goal1 = wcm.get_robot_goal1(),
+    goal2 = wcm.get_robot_goal2(),
+
+    ballglobal = wcm.get_robot_ballglobal()  ,
+
+    kickneeded = wcm.get_robot_kickneeded(),
+    kickangle1 = wcm.get_robot_kickangle1(),
+    kickangle2 = wcm.get_robot_kickangle2(),
+    ballglobal2 = wcm.get_robot_ballglobal2() ,
+    ballglobal3 = wcm.get_robot_ballglobal3(),
+
+    goalangles={},
+  }
+
+  to_send.traj = traj
+
+  -- Format the info
+  to_send.info = table.concat(info, '\n')
   return to_send
 end
 

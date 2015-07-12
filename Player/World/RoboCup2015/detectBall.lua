@@ -84,6 +84,15 @@ function detectBall.update(Image)
       end
     end
 
+		-- Ball width/height
+		if passed then
+			local axisRatio = propsA.axisMajor / propsA.axisMinor
+			if axisRatio > 2 or axisRatio < 0.5 then
+				passed = false
+				msgs[i] = string.format('axisRatio: %d < %d < %d', 0.5, axisRatio, 2)
+			end
+		end
+
     -- Fill rate check
     if passed then
       local fill_rate = propsA.area / (propsA.axisMajor * propsA.axisMinor)

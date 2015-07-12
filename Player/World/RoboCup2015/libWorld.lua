@@ -356,11 +356,10 @@ function libWorld.update(uOdom, detection)
 
   update_vision(detection)
 
-  if Config.use_gps_vision then
+  if IS_WEBOTS and Config.use_gps_vision then
     wcm.set_obstacle_num(2)
     wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
     wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
-
 
     local ballglobal = wcm.get_robot_gpsball()
     wcm.set_robot_ballglobal(ballglobal)
@@ -384,9 +383,15 @@ function libWorld.update(uOdom, detection)
     local ballglobal = util.pose_global({ball_x,ball_y,0},pose)
 
     wcm.set_robot_ballglobal(ballglobal)
-    -- Update pose in wcm
-    wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
+
+    if not (IS_WEBOTS and Config.use_gps_pose) then
+      -- Update pose in wcm
+      wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
+    end
+
   end
+
+
 
 
   -- Increment the process count

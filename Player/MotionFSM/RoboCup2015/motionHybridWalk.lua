@@ -252,8 +252,9 @@ function walk.update()
           uSupportModY = uSupportModY + 0.01
         end
       end
-
-      print("supportModY:",uSupportModY)
+			if Config.debug.walk then
+				print("supportModY:",uSupportModY)
+			end
       uSupport = util.pose_global({0,uSupportModY,0},uSupport)
     end
 

@@ -52,7 +52,7 @@ int lineState(uint8_t label)
   case STATE_LINE:
     // if ( !(label & colorField) ) {
     if (label & colorField){
-      
+
       state = STATE_FIELD;
       return width;
     }
@@ -85,7 +85,7 @@ struct SegmentStats {
   int x,y,xy,xx,yy; //for gradient stats
   int updated;
   int length;  //TODO: double?
-  int max_width; 
+  int max_width;
 };
 
 static struct SegmentStats segments[MAX_SEGMENTS];
@@ -110,7 +110,7 @@ void segment_init(){
 void segment_refresh(){
   //end active segments if they were not updated for one line scan
   for(int i=0;i<num_segments;i++){
-    if ((segments[i].state==1) && (segments[i].updated==0)){ 
+    if ((segments[i].state==1) && (segments[i].updated==0)){
       if (segments[i].gap>0)
 	segments[i].gap--;
       else
@@ -167,12 +167,12 @@ void addHorizontalPixel(int i, int j, double connect_th, int max_gap, int width)
       double yProj = segments[k].yMean + segments[k].grad*(i-segments[k].xMean);
       double yErr = j-yProj;if (yErr<0) yErr=-yErr;
 	//printf("Checking segment %d\n",k);
-	//printf("xmean %.1f, ymean %.1f, grad %.2f, yErr %.2f\n", 
+	//printf("xmean %.1f, ymean %.1f, grad %.2f, yErr %.2f\n",
 	//segments[k].xMean, segments[k].yMean, segments[k].grad, yErr);
       if (yErr<connect_th){
 	updateStat(&segments[k],i,j,max_gap);
 	segments[k].count++;
-        segments[k].grad=(double) 
+        segments[k].grad=(double)
 		(segments[k].xy- segments[k].x*segments[k].y/segments[k].count)
 		/(segments[k].xx-segments[k].x*segments[k].x/segments[k].count);
         if ((segments[k].grad>1.0) ||(segments[k].grad<-1.0)){
@@ -208,7 +208,7 @@ void addVerticalPixel(int i, int j, double connect_th, int max_gap, int width){
       if (xErr<connect_th){
 	updateStat(&segments[k],i,j,max_gap);
 	segments[k].count++;
-        segments[k].invgrad=(double) 
+        segments[k].invgrad=(double)
 		(segments[k].xy- segments[k].x*segments[k].y/segments[k].count)
 		/(segments[k].yy-segments[k].y*segments[k].y/segments[k].count);
 
@@ -243,11 +243,41 @@ void addVerticalPixel(int i, int j, double connect_th, int max_gap, int width){
 int lua_field_lines(lua_State *L) {
   uint8_t *im_ptr;
   int ni, nj;
+
+  double connect_th;
+  int max_gap;
+  int min_length;
+
 	if( lua_islightuserdata(L,1) ){
 		im_ptr = (uint8_t *) lua_touserdata(L, 1);
 		ni = luaL_checkint(L, 2);
 		nj = luaL_checkint(L, 3);
+
+    if (lua_gettop(L) >= 4){
+      widthMax = luaL_checkint(L, 4);
+    }
+
+    connect_th = luaL_optnumber(L, 5, 1.4);
+    max_gap = luaL_optinteger(L, 6, 1);
+    min_length = luaL_optinteger(L, 7, 3);
+
 	}
+  else if( lua_type(L, 1) == LUA_TNUMBER ){
+    im_ptr = (uint8_t *)luaL_optlong(L, 1, 0);
+    if (im_ptr == NULL) {
+      return luaL_error(L, "Input image bad");
+    }
+    ni = luaL_checkint(L, 2);
+    nj = luaL_checkint(L, 3);
+    //
+    if (lua_gettop(L) >= 4){
+      widthMax = luaL_checkint(L, 4);
+    }
+
+    connect_th = luaL_optnumber(L, 5, 1.4);
+    max_gap = luaL_optinteger(L, 6, 1);
+    min_length = luaL_optinteger(L, 7, 3);
+  }
 #ifdef TORCH
 	else if(luaT_isudata(L,1,"torch.ByteTensor")){
 		THByteTensor* b_t =
@@ -255,18 +285,22 @@ int lua_field_lines(lua_State *L) {
 		im_ptr = b_t->storage->data;
 		nj = b_t->size[0];
 		ni = b_t->size[1];
+
+    if (lua_gettop(L) >= 2){
+      widthMax = luaL_checkint(L, 2);
+    }
+
+    connect_th = luaL_optnumber(L, 3, 1.4);
+    max_gap = luaL_optinteger(L, 4, 1);
+    min_length = luaL_optinteger(L, 5, 3);
+
 	}
 #endif
 	else {
 		return luaL_error(L, "Input image invalid");
 	}
-  
-  if (lua_gettop(L) >= 2)
-    widthMax = luaL_checkint(L, 2);
 
-  double connect_th = luaL_optnumber(L, 3, 1.4);
-  int max_gap = luaL_optinteger(L, 4, 1);
-  int min_length = luaL_optinteger(L, 5, 3);
+
 
   segment_init();
   // Scan for vertical line pixels:
@@ -326,7 +360,7 @@ int lua_field_lines(lua_State *L) {
       lua_pushstring(L, "max_width");
       lua_pushnumber(L, segments[k].max_width);
       lua_settable(L, -3);
-      
+
       // endpoint field
       lua_pushstring(L, "endpoint");
       lua_createtable(L, 4, 0);

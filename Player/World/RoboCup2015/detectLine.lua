@@ -1,4 +1,4 @@
-local detectObstacle = {}
+local detectLine = {}
 local ok, ffi = pcall(require, 'ffi')
 local ImageProc = require'ImageProc'
 local ImageProc2 = require'ImageProc.ffi2'
@@ -18,41 +18,36 @@ local th_aspect_ratio, th_max_height, th_min_height, th_min_orientation
 local min_ground_fill_rate
 local colors
 local config
-function detectObstacle.entry(cfg, Image)
+function detectLine.entry(cfg, Image)
   config = cfg
-	label_flag = config.label
-	grid_x = config.grid_x
-	grid_y = config.grid_y
-	th_min_area = config.th_min_area
-	min_black_fill_rate = config.min_black_fill_rate
-	th_aspect_ratio = config.th_aspect_ratio
-	th_max_height = config.th_max_height
-	th_min_height = config.th_min_height
-	th_min_orientation = config.th_min_orientation
-	min_ground_fill_rate = config.min_ground_fill_rate
   colors = Image.colors
 end
-function detectObstacle.update(Image)
+function detectLine.update(Image)
   if type(Image)~='table' then
     return false, 'Bad Image'
   end
-	local line_cfg = Config.vision.line
-  local lines, line_debug = {}, ''
+  local lines = {}
+
 
   lines.detect = 0
-  local linePropsB = ImageProc.field_lines(labelB_t, line_cfg.max_width,
-      line_cfg.connect_th, line_cfg.max_gap, line_cfg.min_length)
+  local linePropsB = ImageProc.field_lines(
+		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
+		Image.wb, Image.hb,
+		config.max_width,
+    config.connect_th, config.max_gap, config.min_length
+	)
 
   if #linePropsB==0 then
-    return 'no linePropsB'
+    return false, 'None'
   end
 
   lines.propsB = linePropsB
   lines.v, lines.endpoint = {},{}
   lines.angle, lines.length= {},{}
 
+	local msgs = {}
   local num_line = 4
-  for i = 1,num_line do
+  for i = 1, num_line do
     lines.endpoint[i] = vector.zeros(4)
     lines.v[i] = {
       vector.zeros(4),
@@ -76,12 +71,12 @@ function detectObstacle.update(Image)
       vendpoint[2] = check_coordinateB(vector.new(
     		{lines.propsB[i].endpoint[2],lines.propsB[i].endpoint[4]}),1);
 
-    vHeight = 0.5*(vendpoint[1][3]+vendpoint[2][3])
+    vHeight = (vendpoint[1][3]+vendpoint[2][3]) / 2
 
     local vHeightMax = 0.50 --TODO
 
     --TODO: added debug message
-    if length>line_cfg.min_length and linecount<num_line and vHeight<vHeightMax then
+    if length>config.min_length and linecount<num_line and vHeight<vHeightMax then
       linecount = linecount + 1
       lines.length[linecount] = length
       lines.endpoint[linecount] = vector.new(lines.propsB[i].endpoint)*scaleB
@@ -102,6 +97,6 @@ function detectObstacle.update(Image)
   end
   return 'blah', lines
 end
-function detectObstacle.exit()
+function detectLine.exit()
 end
-return detectObstacle
+return detectLine

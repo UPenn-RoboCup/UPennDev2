@@ -109,6 +109,21 @@ vision.goal = {
 	postDiameter = 0.1,
 }
 
+vision.line = {
+  -- min_white_pixel = 300,
+  -- min_green_pixel = 5000,
+  max_width = 15,
+  connect_th = 1.4,
+  max_gap = 1,
+  -- labelB space
+  min_count = 20,
+  min_length = 5,--10,
+  max_height = 0.3,
+  min_aspect_ratio = 2.5,
+  min_angle_diff = 10,
+  max_angle_diff = 85,
+}
+
 local grasp920_param = {
 	{'White Balance Temperature', 2400},
 	{'Exposure (Absolute)', 120},

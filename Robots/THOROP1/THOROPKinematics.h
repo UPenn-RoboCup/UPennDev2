@@ -110,8 +110,12 @@ const double g = 9.81;
 // MK2 mass and com values
 
 const double MassBody[2]={
-	9.802+0.490, //torso and waist
-	4.540,  //pelvis	
+	
+//	9.802+0.490, //torso and waist
+		9.802+0.490-1.03, //torso and waist, shoulder pitch swap, 200W: 855gr, 20W: 340gr
+	
+//	4.540,  //pelvis	
+	4.540 - 0.485,  //pelvis, waist pitch swap, real one: 855gr, mockup: 370gr
 };
 //torso com: (-0.0042 -0.0007 0.2378), waist com (0 0 0.0579)
 const double bodyCom[2][3]={
@@ -123,7 +127,7 @@ const double bodyCom[2][3]={
 const double MassArmL[7]={
 //	0.940, 0.752, 1.806, 1.124, 0.441, 0.077,0.474
 //  0.940, 0.752, 1.806, 1.124, 0.441, 0.077,0.574
-	  0.940, 0.752, 0, 0, 0, 0, 0,//for RC
+	0.050, 0.00, 0, 0, 0, 0, 0,//for RC
 };
 
 //extender mass 400g, gripper mass 1200gr (w/last servo)
@@ -131,8 +135,10 @@ const double MassArmR[7]={
 //	0.940, 0.752, 1.806, 1.124,       0.441, 0.077,0.474 
 //	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.200 //extender and hand mass added
 //	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.600 //extender and hand mass added
-	0.940, 0.752, 0, 0, 0, 0, 0,//for RC
+	0.050, 0.00, 0, 0, 0, 0, 0,//for RC
 };
+
+
 
 
 const double InertiaArm[7][6]={
@@ -188,8 +194,12 @@ const double armComR[7][3]={
 	{0.0953,0,0} //after wrist yaw 2
 };
 
+
+//Leg mass with smaller battery:
+//11Ah:1.29kg (inside), 22Ah:2.58kg (center)
 const double MassLeg[6]={
-	0.935,0.911,3.322,4.165,0.911,1.616
+//	0.935,0.911,3.322,4.165,0.911,1.616
+		0.935,0.911,2.032,4.165,0.911,1.616
 };
 
 const double legLink[7][3]={
@@ -209,7 +219,9 @@ const double legCom[12][3]={
 	//left
 	{-0.0280,0.0003,0.0504},	//after hip yaw
 	{-0.0002,-0.0111,0.0000},	//after hip roll
-	{0.0119,-0.0122,-0.1500},	//after hip pitch (upper leg)
+//	{0.0119,-0.0122,-0.1500},	//after hip pitch (upper leg)
+	{0.0119,-0.031,-0.1500},	//after hip pitch (upper leg), small battery	
+
 	{0.0066,-0.0157,-0.1001},	//after knee (lower leg)
 	{-0.0111,0.0002,0}, //after ankle pitch
 	{0.0113,0.0018,-0.0828}, //after ankle pitch	
@@ -217,7 +229,9 @@ const double legCom[12][3]={
 	//right
 	{-0.0280,-0.0003,0.0504},	//after hip yaw
 	{-0.0002,0.0111,0.0000},	//after hip roll
-	{0.0119,0.0122,-0.1500},	//after hip pitch (upper leg)
+//	{0.0119,0.0122,-0.1500},	//after hip pitch (upper leg)
+	{0.0119,0.031,-0.1500},	//after hip pitch (upper leg), small battery	
+
 	{0.0066,0.0157,-0.1001},	//after knee (lower leg)
 	{-0.0111,-0.0002,0}, //after ankle pitch
 	{0.0113,-0.0018,-0.0828}, //after ankle pitch	

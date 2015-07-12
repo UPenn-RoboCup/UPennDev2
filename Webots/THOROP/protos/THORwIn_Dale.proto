@@ -212,8 +212,8 @@ Robot {
                 physics Physics {
                 #################################################################
                  #upper leg mass
-                  density -1 mass 3.322
-																	centerOfMass [0.0122 -0.150 -0.0119] #mk2
+                  density -1 mass 2.032
+																	centerOfMass [0.031 -0.150 -0.0119] #mk2
  	 												  		#################################################################
                 }
 
@@ -425,8 +425,8 @@ Robot {
 																physics Physics {
 															##############################################################
                #upper leg mass
-                density -1 mass 3.322
-																centerOfMass [-0.0122 -0.150 -0.0119] #mk2
+                density -1 mass 2.032
+																centerOfMass [-0.031 -0.150 -0.0119] #mk2
 															##############################################################
 																}
 																children [
@@ -675,46 +675,12 @@ Robot {
           children [Box {size 0.05 0.05 0.05}]
         }
         physics Physics {
-        	density -1 mass 0.940
+        	density -1 mass 0.050
 	     			centerOfMass [0 0 0] #mk2
       	}
         ##############################################################
         children [
-          RIGHT_SHOULDER_PITCH {
-            scale 0.001 0.001 0.001
-            translation 0.05 0 0
-            rotation 0 0 1 -1.5708
-          }
-          DEF Right_shoulder_roll HingeJoint {
-            device RotationalMotor {
-              name "ArmUpperR"
-              maxVelocity 2.9216811678
-														maxTorque 44.2
-              minPosition -2.92343 maxPosition 2.92343
-            } # End of the ArmUpperR RotationalMotor
-            jointParameters HingeJointParameters {
-              axis 0 0 -1
-              dampingConstant IS damping_constant
-            } # End of the ArmUpperR HingeJointParameters
-            endPoint Solid {
-            #########################################################
-              boundingObject Transform {
-          			translation 0.01 0 0
-          			children [Box {size 0.085 0.066 0.15}]
-        			}
-              physics Physics {
-	             	density -1 mass 0.752
-															#centerOfMass [0.0549 -0.0282 0.0001] #mk2, arm low posture
-															centerOfMass [0.0 -0.0282 0] #mk2, simplified (no shoulder pad)
-              }
- 				 		##############################################################
-             ## Begin Shoulder Yaw
-              children [
-                SHOULDER_ROLL {scale 0.001 0.001 0.001 translation 0 0 0.024}
-                ARM_THORwIn {translation 0 -0.30 0}
-              ] # End the solid children
-            } # End of the Shoulder Roll endpoint
-          } # End of the Shoulder Roll HingeJoint
+    #      ARM_THORwIn {translation 0 -0.30 0}          
         ] # End the solid children
         ## End Shoulder Roll
       } # End of the Shoulder Pitch endpoint
@@ -747,45 +713,12 @@ Robot {
 
         }
         physics Physics {
-        	density -1 mass 0.940
+        	density -1 mass 0.050
 	     			centerOfMass [0 0 0] #mk2
         }
         ##############################################################
         children [
-          LEFT_SHOULDER_PITCH {
-            scale 0.001 0.001 0.001
-            translation -0.05 0 0
-            rotation 0 0 1 1.5708
-          }
-          DEF Left_shoulder_roll HingeJoint {
-            device RotationalMotor {
-              name "ArmUpperL"
-              minPosition -2.92343 maxPosition 2.92343
-            }
-            jointParameters HingeJointParameters {
-              axis 0 0 -1
-              dampingConstant 0
-              staticFriction 0
-            }
-            endPoint Solid {
-            ##############################################################
-            	boundingObject Transform {
-		          			translation -0.01 0 0
-		          			children [Box {size 0.085 0.066 0.15}]
-		        			}
-             physics Physics {
-             	density -1 mass 0.752
-														centerOfMass [0.0 -0.0282 0] #mk2, arm low posture
-             }
-              ##############################################################
-              ## Begin Shoulder Yaw
-              children [
-                SHOULDER_ROLL {scale 0.001 0.001 0.001 translation 0 0 0.024}
-                ARM_THORwIn {translation 0 -0.30 0}
-              ] # End the solid children
-              ## End Shoulder Yaw
-            } # End of the Shoulder Roll endpoint
-          } # End of the Shoulder Roll HingeJoint
+   #       ARM_THORwIn {translation 0 -0.30 0}                
         ] # End the solid children
         ## End Shoulder Roll
       } # End of the Shoulder Pitch endpoint

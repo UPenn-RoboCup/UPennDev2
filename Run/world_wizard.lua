@@ -37,8 +37,15 @@ local t_send, send_interval = 0
 
 vision_ch.callback = function(skt)
 	local detections = skt:recv_all()
+	--print('#detections', #detections)
 	-- Only use the last vision detection
-	local detection = mp.unpack(detections[#detections])
+	local detection
+	for k, v in ipairs(detections) do
+		local uv = mp.unpack(v)
+		if type(uv)=='table' then
+			detection = uv
+		end
+	end
 	--print('DETECTION', detection)
 
 	-- Update localization based onodometry and vision

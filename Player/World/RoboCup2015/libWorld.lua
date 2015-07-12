@@ -248,9 +248,19 @@ end
 function libWorld.entry()
 	wcm.set_robot_use_imu_yaw(Config.world.use_imu_yaw and 1 or 0)
 	t_entry = unix.time()
+  -- Initialize the pose filter
+  -- poseFilter.initialize_unified()
+  poseFilter.initialize()
   -- Save this resampling time
   t_resample = t_entry
+
   -- Set the initial odometry
+  wcm.set_robot_pose({0,0,0})
+  wcm.set_robot_odometry({0,0,0})
+  wcm.set_robot_traj_num(0)
+  wcm.set_obstacle_num(0)
+  wcm.set_ball_notvisible(0)
+
   libWorld.pose_reset()
   -- Processing count
   count = 0
@@ -288,7 +298,28 @@ function libWorld.update(uOdom, detection)
     gpspose = util.pose_global(comoffset,gpspose)
     wcm.set_robot_pose(gpspose)
     print_pose()
+  elseif wcm.get_robot_reset_pose()==1 or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then
+    if gcm.get_game_role()==0 then
+      --Goalie initial pos
+      local factor2 = 0.99
+      poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
+      wcm.set_robot_pose({-Config.world.xBoundary*factor2,0,0})
+      wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
+    else --Attacker initial pos
+      poseFilter.initialize({0,0,0},{0,0,0})
+      wcm.set_robot_pose({0,0,0})
+      wcm.set_robot_odometry({0,0,0})
+    end
 
+    if use_imu_yaw then
+      if IS_WEBOTS then
+        gps_pose = wcm.get_robot_pose_gps()
+        yaw0 = gps_pose[3]
+      else
+        local yaw = Body.get_rpy()[3]
+        yaw0 = yaw
+      end
+    end
   else
     update_odometry(uOdom)
     print_pose()

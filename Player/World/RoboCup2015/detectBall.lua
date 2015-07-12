@@ -117,7 +117,7 @@ function detectBall.update(Image)
       local vL = Image.tfL * (v0 / v0[4])
 			local vG = Image.tfG * (v0 / v0[4])
 			-- Save the position
-			v = vG
+			v = vL
 			--[[
 			print('v0', v0)
 			print('vG', vG)

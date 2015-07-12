@@ -263,6 +263,7 @@ local function update_vision(detected)
 end
 
 function libWorld.pose_reset()
+  print("libWorld | POSE RESET!")
   wcm.set_robot_reset_pose(0)
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
@@ -274,9 +275,23 @@ function libWorld.pose_reset()
   end
 end
 
+local function print_pose()
+  if not Config.debug.world then return end
+  local pose = wcm.get_robot_pose()
+  local gpspose1 = wcm.get_robot_pose_gps()
+  local gpspose0 = wcm.get_robot_pose_gps0()
+  local gpspose = util.pose_relative(gpspose1,gpspose0)
+  print(string.format(
+    "pose: %.3f %.3f %d gps: %.3f %.3f %d",
+    pose[1],pose[2],pose[3]*RAD_TO_DEG,
+    gpspose[1],gpspose[2],gpspose[3]*180/math.pi))
+  local uTorso = mcm.get_status_uTorso()
+  print("libWorld | uTorso:",unpack(uTorso))
+end
+
 function libWorld.entry()
 	wcm.set_robot_use_imu_yaw(Config.world.use_imu_yaw and 1 or 0)
-	t_entry = unix.time()
+	t_entry = Body.get_time()
   -- Initialize the pose filter
   -- poseFilter.initialize_unified()
   poseFilter.initialize()
@@ -295,27 +310,12 @@ function libWorld.entry()
   count = 0
 end
 
-local function print_pose()
-  if not Config.debug.world then return end
-  local pose = wcm.get_robot_pose()
-  local gpspose1 = wcm.get_robot_pose_gps()
-  local gpspose0 = wcm.get_robot_pose_gps0()
-  local gpspose = util.pose_relative(gpspose1,gpspose0)
-  print(string.format(
-    "pose: %.3f %.3f %d gps: %.3f %.3f %d",
-    pose[1],pose[2],pose[3]*RAD_TO_DEG,
-    gpspose[1],gpspose[2],gpspose[3]*180/math.pi))
-  local uTorso = mcm.get_status_uTorso()
-  print("libWorld | uTorso:",unpack(uTorso))
-end
-
 function libWorld.update(uOdom, detection)
-  local t = unix.time()
+  local t = Body.get_time()
   -- Run the updates
-  if wcm.get_robot_reset_pose()==1 then
-    print("libWorld | POSE RESET!")
-    libWorld.pose_reset()
-  end
+  if wcm.get_robot_reset_pose()==1 then libWorld.pose_reset() end
+
+  local updated_pose
   if IS_WEBOTS and Config.use_gps_pose then
     local gpspose1 = wcm.get_robot_pose_gps()
     local gpspose0 = wcm.get_robot_pose_gps0()
@@ -324,20 +324,26 @@ function libWorld.update(uOdom, detection)
     --subtract automatic compensation
     comoffset = mcm.get_stance_COMoffset()
     comoffset[3]=0
-    gpspose = util.pose_global(comoffset,gpspose)
-    wcm.set_robot_pose(gpspose)
+    gpspose = util.pose_global(comoffset, gpspose)
+    updated_pose = vector.copy(gpspose)
+
     print_pose()
-  elseif wcm.get_robot_reset_pose()==1 or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then
+  elseif wcm.get_robot_reset_pose()==1 or
+    (gcm.get_game_state()~=3 and gcm.get_game_state()~=6)
+  then
     if gcm.get_game_role()==0 then
       -- Goalie initial pos
       local factor2 = 0.99
       poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
-      wcm.set_robot_pose({-Config.world.xBoundary*factor2,0,0})
+
+      updated_pose = {-Config.world.xBoundary*factor2,0,0}
+
       wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
     else --Attacker initial pos
       poseFilter.initialize({0,0,0},{0,0,0})
-      wcm.set_robot_pose({0,0,0})
       wcm.set_robot_odometry({0,0,0})
+
+      updated_pose = {0,0,0}
     end
 
     if use_imu_yaw then
@@ -353,6 +359,8 @@ function libWorld.update(uOdom, detection)
     update_odometry(uOdom)
     print_pose()
   end
+
+  wcm.set_robot_pose(updated_pose)
 
   update_vision(detection)
 
@@ -376,11 +384,12 @@ function libWorld.update(uOdom, detection)
 --    print("global ball:",unpack(ballglobal))
   else
 
+    -- Local ball
     local ball_x = wcm.get_ball_x()
     local ball_y = wcm.get_ball_y()
 
-    local pose = wcm.get_robot_pose()
-    local ballglobal = util.pose_global({ball_x,ball_y,0},pose)
+    -- Global ball
+    local ballglobal = util.pose_global({ball_x,ball_y,0}, updated_pose)
 
     wcm.set_robot_ballglobal(ballglobal)
 

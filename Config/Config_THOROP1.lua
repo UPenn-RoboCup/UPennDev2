@@ -21,6 +21,7 @@ Config.debug = {
   world = false,
   feedback = false,
   armplan = false,
+  walk = false,
 }
 
 --NO BIRDWALK FOR ROBOCUP
@@ -131,7 +132,7 @@ end
 -- ROBOCUP config variables
 
 Config.use_gps_pose = true
-Config.use_gps_vision = true
+Config.use_gps_vision = false
 
 --Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then

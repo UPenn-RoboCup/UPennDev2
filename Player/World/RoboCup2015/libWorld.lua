@@ -55,6 +55,17 @@ local motion_state_names={
   "WalkKick"
 }
 
+local goal_type_to_filter = {
+  -- Single unknown post
+  [0] = poseFilter.post_unknown,
+  -- Left
+  [1] = poseFilter.post_left,
+  -- Right
+  [2] = poseFilter.post_right,
+  -- Both
+  [3] = poseFilter.post_both,
+}
+
 local obstacles={}
 local function reset_obstacles()
   obstacles={}
@@ -151,24 +162,26 @@ local function update_odometry(uOdometry)
   local pose = wcm.get_robot_pose()
   wcm.set_robot_pose(util.pose_global(uOdometry,pose))
 
+  -- Update the filters based on the new odometry
+  ballFilter.odometry(unpack(uOdometry))
+  poseFilter.odometry(unpack(uOdometry))
+
   --TODO: slam or wall detection-based pose
 
 
 end
 
 local function update_vision(detected)
-
   if not detected then return end
 
-  local t = unix.time()
+  local t = Body.get_time()
   if t - t_resample > RESAMPLE_PERIOD or count%RESAMPLE_COUNT==0 then
     poseFilter.resample()
     if mcm.get_walk_ismoving()==1 then poseFilter.addNoise() end
   end
-  -- If the ball is detected
+
+  -- If the ball is detected on this frame
 	ball = detected.ball
-
-
   if Config.disable_ball_when_lookup and wcm.get_ball_disable()>0 then
 --    print("BALL DISABLED")
   else
@@ -177,20 +190,17 @@ local function update_vision(detected)
     end
   end
 
-
   -- We cannot find the ball.
-  --add fake observation at behind the robot so that robot can start turning
+  -- Add fake observation at behind the robot so that robot can start turning
   if wcm.get_ball_notvisible()==1 then
     wcm.set_ball_notvisible(0)
     if gcm.get_game_role()==1 then
-      ballFilter.observation_xy(-0.5,0, 0.5, 20*math.pi/180, t)
+      ballFilter.observation_xy(-0.5,0, 0.5, 20*DEG_TO_RAD, t)
     end
   end
 
-
-
 --------------------------------------------------------------------------------
--- TODO: fix nan bug with this
+  -- TODO: fix nan bug with this
   -- If the goal is detected
 	goal = detected.posts
   if goal then
@@ -293,10 +303,10 @@ local function print_pose()
   local gpspose = util.pose_relative(gpspose1,gpspose0)
   print(string.format(
     "pose: %.3f %.3f %d gps: %.3f %.3f %d",
-    pose[1],pose[2],pose[3]*180/math.pi,
+    pose[1],pose[2],pose[3]*RAD_TO_DEG,
     gpspose[1],gpspose[2],gpspose[3]*180/math.pi))
   local uTorso = mcm.get_status_uTorso()
-  print("uTOrso:",unpack(uTorso))
+  print("libWorld | uTorso:",unpack(uTorso))
 end
 
 function libWorld.update(uOdom, detection)
@@ -319,7 +329,7 @@ function libWorld.update(uOdom, detection)
     print_pose()
   elseif wcm.get_robot_reset_pose()==1 or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then
     if gcm.get_game_role()==0 then
-      --Goalie initial pos
+      -- Goalie initial pos
       local factor2 = 0.99
       poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
       wcm.set_robot_pose({-Config.world.xBoundary*factor2,0,0})
@@ -346,17 +356,20 @@ function libWorld.update(uOdom, detection)
 
   update_vision(detection)
 
-  if Config.use_gps_pose then
-    wcm.set_robot_pose(wcm.get_robot_pose_gps())
+  if Config.use_gps_vision then
     wcm.set_obstacle_num(2)
     wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
     wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
 
-    local pose = wcm.get_robot_pose_gps()
+
     local ballglobal = wcm.get_robot_gpsball()
     wcm.set_robot_ballglobal(ballglobal)
 
-    local balllocal = util.pose_relative({ballglobal[1],ballglobal[2],0},pose)
+    local pose = wcm.get_robot_pose_gps()
+    local balllocal = util.pose_relative(
+      {ballglobal[1],ballglobal[2],0},
+      pose
+    )
     wcm.set_ball_x(balllocal[1])
     wcm.set_ball_y(balllocal[2])
     wcm.set_ball_t(Body.get_time())
@@ -364,10 +377,10 @@ function libWorld.update(uOdom, detection)
 --    print("global ball:",unpack(ballglobal))
   else
 
-    local pose = wcm.get_robot_pose()
     local ball_x = wcm.get_ball_x()
     local ball_y = wcm.get_ball_y()
 
+    local pose = wcm.get_robot_pose()
     local ballglobal = util.pose_global({ball_x,ball_y,0},pose)
 
     wcm.set_robot_ballglobal(ballglobal)
@@ -448,25 +461,25 @@ function libWorld.send()
     wcm.set_line_detect(1)
   end
 
-  -- TODO: Goal info
-  --[[
+  -- Goal info
   if goal then
-    to_send.goal = {}
-    to_send.goal.type = goal[1].type
-    to_send.info = to_send.info..string.format(
+    to_send.goal = {
+      type = goal[1].type,
+      v1 = goal[1].v
+    }
+    table.insert(info, string.format(
       'Post type: %d \n', goal[1].type )
-
-    to_send.goal.v1 = goal[1].v
-    to_send.info = to_send.info..string.format(
+    )
+    table.insert(info, string.format(
       'Post1: %.2f %.2f\n', to_send.goal.v1[1], to_send.goal.v1[2])
-
+    )
     if goal[1].type==3 then
       to_send.goal.v2 = goal[2].v
-      to_send.info = to_send.info..string.format(
+      table.insert(info, string.format(
         'Post2: %.2f %.2f\n', to_send.goal.v2[1], to_send.goal.v2[2])
+      )
     end
   end
-  --]]
 
   --TRAJECTORY INFO
   local traj = {

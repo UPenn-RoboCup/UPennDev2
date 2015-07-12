@@ -13,13 +13,16 @@ monitor.init();
 
 
 %% Network
-s_local = zmq('subscribe', 'ipc', 'vision0');
-s_stream = zmq('subscribe', 'ipc', 'camera0');
+s_camera = zmq('subscribe', 'ipc', 'camera0');
+s_vision = zmq('subscribe', 'ipc', 'vision0');
+s_world = zmq('subscribe', 'ipc', 'world');
 % Add the UDP network
-f_img = udp_recv('new', 17003);
-f_detect = udp_recv('new', 17013);
-s_img = zmq('fd', f_img);
-s_detect = zmq('fd', f_detect);
+f_camera = udp_recv('new', 17003);
+f_vision = udp_recv('new', 17013);
+f_world = udp_recv('new', 17023);
+s_camera_udp = zmq('fd', f_camera);
+s_vision_udp = zmq('fd', f_vision);
+s_world_udp = zmq('fd', f_world);
 
 %% Loop
 running = 1;
@@ -29,6 +32,7 @@ t0 = toc;
 count_world = 0;
 count_detect = 0;
 count_labelA = 0;
+count_labelB = 0;
 count_cam = 0;
 
 t_last = toc;
@@ -49,6 +53,10 @@ data_labelA=[];
 data_labelA.meta = [];
 data_labelA.raw = [];
 
+data_labelB=[];
+data_labelB.meta = [];
+data_labelB.raw = [];
+
 last_draw_time = toc;
 last_draw_duration = 0;
 
@@ -56,6 +64,7 @@ data_yuyv.recv = false;
 data_world.recv = false;
 data_detect.recv = false;
 data_labelA.recv = false;
+data_labelB.recv = false;
 
 while running
     % 100ms timeout
@@ -93,6 +102,12 @@ while running
             data_labelA.raw = raw;
             data_labelA.recv = true;
         end
+        if strcmp(msg_id,'labelB')
+            count_labelB = count_labelB + 1;
+            data_labelB.meta = metadata;
+            data_labelB.raw = raw;
+            data_labelB.recv = true;
+        end
         if strcmp(msg_id,'head_camera')
             count_cam = count_cam + 1;
             data_yuyv.meta = metadata;
@@ -100,9 +115,9 @@ while running
             data_yuyv.recv = true;
         end
     end
-    while udp_recv('getQueueSize', f_img) > 0
+    while udp_recv('getQueueSize', f_camera) > 0
         recv_items = recv_items + 1;
-        udp_data = udp_recv('receive',f_img);
+        udp_data = udp_recv('receive',f_camera);
         [metadata, offset] = msgpack('unpack', udp_data);
         msg_id = char(metadata.id);
         % This must be uint8
@@ -114,20 +129,14 @@ while running
             data_yuyv.recv = true;
         end
     end
-    
-    while udp_recv('getQueueSize', f_detect) > 0
+
+    while udp_recv('getQueueSize', f_vision) > 0
         recv_items = recv_items + 1;
-        udp_data = udp_recv('receive',f_detect);
+        udp_data = udp_recv('receive',f_vision);
         [metadata, offset] = msgpack('unpack', udp_data);
         msg_id = char(metadata.id);
         % This must be uint8
         raw = udp_data(offset+1:end);
-        if strcmp(msg_id,'world')
-            count_world = count_world + 1;
-            data_world.meta = metadata;
-            data_world.raw = raw;
-            data_world.recv = true;
-        end
         if strcmp(msg_id,'detect')
             count_detect = count_detect + 1;
             data_detect.meta = metadata;
@@ -141,17 +150,33 @@ while running
             data_labelA.recv = true;
         end
     end
-    
+
+    while udp_recv('getQueueSize', f_world) > 0
+        recv_items = recv_items + 1;
+        udp_data = udp_recv('receive',f_world);
+        [metadata, offset] = msgpack('unpack', udp_data);
+        msg_id = char(metadata.id);
+        % This must be uint8
+        raw = udp_data(offset+1:end);
+        if strcmp(msg_id,'world')
+            count_world = count_world + 1;
+            data_world.meta = metadata;
+            data_world.raw = raw;
+            data_world.recv = true;
+        end
+    end
+
     t=toc;
     %fprintf('recv time: %.2f ms %d items\n',(t-t_last)*1000, recv_items);
     t_last = t;
     last_draw_duration = 0;
-    
-    if (t>last_draw_time+0.066) && (data_world.recv || data_detect.recv || data_labelA.recv || data_yuyv.recv)
-        
+
+    if (t>last_draw_time+0.066) && (data_world.recv || data_detect.recv || data_labelA.recv || data_labelB.recv || data_yuyv.recv)
+
         if data_world.recv, monitor.process_msg(data_world.meta,data_world.raw,cam); end
         if data_detect.recv, monitor.process_msg(data_detect.meta,data_detect.raw,cam); end
         if data_labelA.recv, monitor.process_msg(data_labelA.meta,data_labelA.raw,cam); end
+        if data_labelB.recv, monitor.process_msg(data_labelB.meta,data_labelB.raw,cam); end
         if data_yuyv.recv, monitor.process_msg(data_yuyv.meta,data_yuyv.raw,cam); end
         drawnow;
         t1=toc;
@@ -160,6 +185,8 @@ while running
         data_world.recv = false;
         data_detect.recv = false;
         data_labelA.recv = false;
+        data_labelB.recv = false;
+        data_yuyv.recv = false;
         last_draw_time = t1;
     end
 end

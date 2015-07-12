@@ -49,6 +49,7 @@ local libLog, logger
 local w = metadata.w
 local h = metadata.h
 local name = metadata.name
+
 -- Who to send to
 local operator
 --operator = Config.net.operator.wireless
@@ -116,6 +117,8 @@ local function update(meta, img)
 	local detection_msg = mpack(detection)
 	vision_ch:send(lA_msg)
 	vision_ch:send(detection_msg)
+
+	-- TODO: How often to send over UDP?
 	if udp_ch then
 		udp_ch:send(table.concat(lA_msg))
 		udp_ch:send(detection_msg)

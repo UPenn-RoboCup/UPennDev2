@@ -1,4 +1,6 @@
 #!/usr/bin/env luajit
+local ENABLE_NET = true
+local ENABLE_LOG = false
 ---------------------------
 -- World Manager --
 -- (c) Stephen McGill 2014    --
@@ -14,16 +16,16 @@ local util = require'util'
 local get_time = Body.get_time
 -- Subscribe to important messages
 local vision_ch = si.new_subscriber'vision0'
--- UDP channel
-local operator
-if Config.net.use_wireless then
-	operator = Config.net.operator.wireless
-else
-	operator = Config.net.operator.wired_broadcast
-end
 
-local ENABLE_SEND = false
---local udp_ch = si.new_sender(operator, Config.net.streams.camera0.udp)
+-- Who to send to
+local operator
+--operator = Config.net.operator.wireless
+operator = Config.net.operator.wired
+
+local stream = Config.net.streams.world
+local udp_ch = ENABLE_NET and stream and stream.udp and si.new_sender(operator, stream.udp)
+--local world_ch = stream and stream.sub and si.new_publisher(stream.sub)
+
 -- SHM
 require'wcm'
 require'mcm'
@@ -68,6 +70,9 @@ local debug_interval, t_debug = 1, t0
 local function update()
 	send_interval = 1 / hcm.get_monitor_fps()
 	npoll = poller:poll(TIMEOUT)
+
+	t = get_time()
+
 	if npoll==0 then
 		-- If no frames, then just update by odometry
 		--Should use the differential of odometry!
@@ -86,17 +91,19 @@ local function update()
 		end
 
 	end
-	t = get_time()
-	if ENABLE_SEND and t-t_send > send_interval then
-		-- Send localization info to monitor
-		local metadata = {}
-		metadata.id = 'world'
-		metadata.world = lW.send()
-		-- Send!
-if udp_ch then
-		local ret, err = udp_ch:send(mp.pack(metadata))
-end
-		if err and Config.debug.world then print(ret, err) end
+	-- Send localization info
+	local metadata = {
+		id = 'world',
+		world = lW.send(),
+	}
+	if world_ch then
+		world_ch:send(mp.pack(metadata))
+	end
+	if ENABLE_NET and t-t_send > send_interval then
+		if udp_ch then
+				local ret, err = udp_ch:send(mp.pack(metadata))
+				if err and Config.debug.world then print(ret, err) end
+		end
 		t_send = t
 	end
 

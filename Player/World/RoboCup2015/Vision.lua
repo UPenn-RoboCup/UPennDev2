@@ -21,6 +21,7 @@ local detectObstacle
 local ENABLE_BALL = true
 local ENABLE_OBSTACLE = true
 local ENABLE_POST = false
+local ENABLE_LINE = false
 
 -- Set the variables based on the config file
 function Vision.entry(cfg)
@@ -60,6 +61,13 @@ function Vision.entry(cfg)
     detectPost.entry(cfg.vision.goal, HeadImage)
   end
 
+	-- Line
+  if cfg.vision.line and ENABLE_LINE then
+		print('Line detection enabled')
+    detectLine = require'detectLine'
+    detectLine.entry(cfg.vision.line, HeadImage)
+  end
+
 end
 
 function Vision.update(meta, img)
@@ -92,12 +100,16 @@ function Vision.update(meta, img)
     post, p_debug = detectPost.update(HeadImage)
   end
 
-  --local post_fails, posts = find_goal()
+	local line, l_debug
+  if detectLine then
+    line, p_debug = detectLine.update(HeadImage)
+  end
 
   local debug = {
     ball = b_debug or '?',
     post = p_debug or '?',
     obstacle = o_debug or '?',
+		line = l_debug or '?',
   }
   local detect = {
     id = 'detect',
@@ -106,6 +118,7 @@ function Vision.update(meta, img)
   if ball then detect.ball = ball end
   if post then detect.post = post end
 	if obs then detect.obstacles = obs end
+	if line then detect.line = line end
 
   -- Send the detected stuff over the channel every cycle
   return HeadImage, detect

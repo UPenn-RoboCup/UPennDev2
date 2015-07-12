@@ -88,6 +88,12 @@ streams.vision0 = {
 	tcp = 43313,
 	sub = 'vision0',
 }
+streams.world = {
+	ws = 9023,
+	udp = 17023,
+	tcp = 43323,
+	sub = 'world',
+}
 streams.lidar0 = {
 	ws = 9010,
 	udp = 17010,

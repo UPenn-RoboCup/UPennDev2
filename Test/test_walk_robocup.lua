@@ -11,7 +11,7 @@ local t_last = Body.get_time()
 local tDelay = 0.005*1E6
 local role_names={
   util.color('Goalie','green'),
-  util.color('Attacker','red'),  
+  util.color('Attacker','red'),
   'Test'}
 local gcm_names={
   util.color('Initial','green'),
@@ -19,11 +19,11 @@ local gcm_names={
   util.color('Set','green'),
   util.color('Playing','blue'),
   util.color('Finished','green'),
-  util.color('Untorqued','red'),    
-  util.color('Test','blue'),    
+  util.color('Untorqued','red'),
+  util.color('Test','blue'),
 }
 
-local command1, command2 = '',''  
+local command1, command2 = '',''
 
 local function show_status()
 
@@ -45,76 +45,82 @@ local function update(key_code)
 	local ltorso = hcm.get_legdebug_torso()
 
 
-
 	local torsoangle = hcm.get_legdebug_torso_angle()
-	 if key_char_lower==("i") then      targetvel_new[1]=targetvel[1]+0.01;
-    elseif key_char_lower==("j") then  targetvel_new[3]=targetvel[3]+0.1;
-    elseif key_char_lower==("k") then  targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
-    elseif key_char_lower==("l") then  targetvel_new[3]=targetvel[3]-0.1;
-    elseif key_char_lower==(",") then  targetvel_new[1]=targetvel[1]-0.02;
-    elseif key_char_lower==("h") then  targetvel_new[2]=targetvel[2]+0.02;
-    elseif key_char_lower==(";") then  targetvel_new[2]=targetvel[2]-0.02;
+	if key_char_lower==("i") then    targetvel_new[1]=targetvel[1]+0.01;
+  elseif key_char_lower==("j") then targetvel_new[3]=targetvel[3]+0.1;
+  elseif key_char_lower==("k") then targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
+  elseif key_char_lower==("l") then targetvel_new[3]=targetvel[3]-0.1;
+  elseif key_char_lower==(",") then targetvel_new[1]=targetvel[1]-0.02;
+  elseif key_char_lower==("h") then targetvel_new[2]=targetvel[2]+0.02;
+  elseif key_char_lower==(";") then targetvel_new[2]=targetvel[2]-0.02;
 
 
 
-	elseif key_char_lower==("1") then			
+	elseif key_char_lower=="1" then
 		body_ch:send'init'
 
-	elseif key_char_lower==("5") then			
+  elseif key_char_lower=="2" then
+		head_ch:send'scan'
+  elseif key_char_lower=="0" then
+		head_ch:send'teleop'
+
+  elseif key_char_lower=="g" then
+    body_ch:send'approach'
+
+	elseif key_char_lower==("5") then
  		mcm.set_walk_kickfoot(0)--left foot kick
     mcm.set_walk_steprequest(1)
     mcm.set_walk_kickphase(1)
 
-	elseif key_char_lower==("6") then			
+	elseif key_char_lower==("6") then
  		mcm.set_walk_kickfoot(1)--left foot kick
     mcm.set_walk_steprequest(1)
     mcm.set_walk_kickphase(1)
 
 
-	elseif key_char_lower==("g") then			
-		body_ch:send'approach'
+
 
 
 --[[
-	elseif key_char_lower==("3") then 
+	elseif key_char_lower==("3") then
 		hcm.set_step_supportLeg(0)
 		hcm.set_step_relpos({0.08,0,0})
 		hcm.set_step_zpr({0.00,0,0})
-		body_ch:send'stepflat'		
+		body_ch:send'stepflat'
 
-	elseif key_char_lower==("4") then      
+	elseif key_char_lower==("4") then
 		hcm.set_step_supportLeg(1)
 		hcm.set_step_relpos({0.08,0,0})
 		hcm.set_step_zpr({0.00,0,0})
 		body_ch:send'stepflat'
 
 
-elseif key_char_lower==("5") then 
+elseif key_char_lower==("5") then
 		hcm.set_step_supportLeg(0)
 		hcm.set_step_relpos({0.16,0,0})
 		hcm.set_step_zpr({0.00,0,0})
-		body_ch:send'stepflat'		
+		body_ch:send'stepflat'
 
-	elseif key_char_lower==("6") then      
+	elseif key_char_lower==("6") then
 		hcm.set_step_supportLeg(1)
 		hcm.set_step_relpos({0.16,0,0})
 		hcm.set_step_zpr({0.00,0,0})
 		body_ch:send'stepflat'
 
 
-	
 
-	elseif key_char_lower==("=") then      
+
+	elseif key_char_lower==("=") then
 		hcm.set_state_proceed(1)
 --]]
 
 
-	elseif key_char_lower==("8") then  
+	elseif key_char_lower==("8") then
 		body_ch:send'stop'
 		mcm.set_walk_stoprequest(1)
-		
-	elseif key_char_lower==("9") then  
-		motion_ch:send'hybridwalk'	
+
+	elseif key_char_lower==("9") then
+		motion_ch:send'hybridwalk'
 	end
 
 

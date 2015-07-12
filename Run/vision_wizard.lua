@@ -84,15 +84,16 @@ local function update(meta, img)
 	--]]
 
 	local Image, detection = Vision.update(meta, img)
-	--[[
+	----[[
+	print('\n=Ball=')
 	if detection.ball then
 		ptable(detection.ball)
 	elseif detection.debug.ball then
 		print(detection.debug.ball)
 	end
 	--]]
-	----[[
-
+	--[[
+	print('\n=Obstacles=')
 	if detection.obstacles then
 		print('Obstacles found!')
 		ptable(detection.obstacles)

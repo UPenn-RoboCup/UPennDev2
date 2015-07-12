@@ -71,10 +71,10 @@ if IS_WEBOTS then
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
-      --head_camera = 'camera_wizard',
-      --vision = 'vision_wizard',
+      head_camera = 'camera_wizard',
+      vision = 'vision_wizard',
       --world = 'world_wizard',
-      
+
 			--feedback = 'feedback_wizard',
 	  }
 	end

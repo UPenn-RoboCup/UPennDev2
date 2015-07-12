@@ -152,7 +152,7 @@ camera[1] = {
 		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0},
 		{0.02,0,0.14}
 		--]]
-		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0},
+		{0*DEG_TO_RAD,0*DEG_TO_RAD,0},
 		{0.05,0,0.14}
 
 	},
@@ -231,7 +231,12 @@ if IS_WEBOTS then
 	camera[1].cx_offset = 0
 	camera[1].cy_offset = 0
 	camera[1].lut = 'webots'
-	camera[1].focal_length = 190
+	--[[
+	camera[1].focal_length = 730
+	camera[1].focal_base = 640
+	--]]
+
+	camera[1].focal_length = 365
 	camera[1].focal_base = 320
 
 	-- Kinect width and height
@@ -240,10 +245,12 @@ if IS_WEBOTS then
 	vision.scaleA = 2
 	vision.scaleB = 2
 
+--[[
 	head.neckX = 0 --From CoM to neck joint
 	head.cameraPitch = 0
 	head.cameraRoll = 0
 	head.yawBias = 0
+--]]
 
 	vision.goal = {
 		th_min_bbox_area = 80,

@@ -51,7 +51,7 @@ DEF YELLOW_GOAL TeenGoal {
   postColor 1.0 1.0 1.0
 }
 DEF BALL BallGPS {
-  translation 2.4 0.109919 2
+  translation 2.4 0.109919 2.2
   radius 0.11
   color 1.0 1.0 1.0
   controller "ballGPS"

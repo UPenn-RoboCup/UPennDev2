@@ -617,7 +617,7 @@ Robot {
 									name "HeadCamera"
 									width 320
 									height 180
-									translation 0 0.10 0.03
+									translation 0 0.14 0.05
 									rotation 0 1 0 3.14159265
 									pixelSize 0
 								}

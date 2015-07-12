@@ -68,7 +68,7 @@ function detectBall.update(Image)
     local bboxArea = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
     if bboxArea < config.th_min_bbox_area then
       passed = false
-      msgs[i] = string.format('Box area: %d<%d\n', bboxArea, config.th_min_bbox_area)
+      msgs[i] = string.format('Box area: %d<%d', bboxArea, config.th_min_bbox_area)
     end
 
     -- labelA area check
@@ -80,7 +80,7 @@ function detectBall.update(Image)
       )
       if propsA.area < config.th_min_area then
         passed = false
-        msgs[i] = string.format('Area: %d < %d \n', propsA.area, config.th_min_area)
+        msgs[i] = string.format('Area: %d < %d', propsA.area, config.th_min_area)
       end
     end
 
@@ -89,7 +89,7 @@ function detectBall.update(Image)
       local fill_rate = propsA.area / (propsA.axisMajor * propsA.axisMinor)
       if fill_rate < config.th_min_fill_rate then
         passed = false
-        msgs[i] = string.format('Fill rate: %.2f < %.2f\n', fill_rate, config.th_min_fill_rate)
+        msgs[i] = string.format('Fill rate: %.2f < %.2f', fill_rate, config.th_min_fill_rate)
       end
     end
 
@@ -97,19 +97,18 @@ function detectBall.update(Image)
     local v = vector.new{0,0,0,1}
     local dArea = passed and math.sqrt((4/math.pi) * propsA.area)
     if passed and ENABLE_COORDINATE_CHECK then
-      local scale = math.max(dArea/config.diameter, propsA.axisMajor/config.diameter);
+      local scale = math.max(dArea, propsA.axisMajor) / config.diameter
       local v0 = vector.new{
         Image.focalA,
         -(propsA.centroid[1] - Image.x0A),
         -(propsA.centroid[2] - Image.y0A),
-        scale,
+        scale
       }
       -- Put into the local and global frames
       local vL = Image.tfL * (v0 / v0[4])
 			local vG = Image.tfG * (v0 / v0[4])
 			-- Save the position
 			v = vG
-			--util.ptable(Image)
 			--[[
 			print('v0', v0)
 			print('vG', vG)
@@ -118,14 +117,18 @@ function detectBall.update(Image)
 
       -- Check the distance
       local dist_sq = v[1]^2 + v[2]^2
+			local minZ = 0
       local maxH = (config.max_height0 and config.max_height1) and
         (config.max_height0 + math.sqrt(dist_sq) * config.max_height1)
       if dist_sq > config.max_distance^2 then
         passed = false
-        msgs[i] = string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
+        msgs[i] = string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), config.max_distance)
       elseif maxH and v[3] > maxH then
         passed = false
         msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", maxH, unpack(v,1,3))
+			elseif minZ and v[3] < minZ then
+				passed = false
+				msgs[i] = string.format("minZ: %.2f (%.2f, %.2f, %.2f)", minZ, unpack(v,1,3))
       end
     end
 
@@ -137,7 +140,7 @@ function detectBall.update(Image)
         local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
         if math.abs(global_v[1])>xMax+margin or math.abs(global_v[2])>yMax+margin then
           check_fail = true
-          debug_ball('OUTSIDE FIELD!\n')
+          debug_ball('OUTSIDE FIELD!')
         end
       end
     end
@@ -202,6 +205,9 @@ function detectBall.update(Image)
       propsA.da = 10 * DEG_TO_RAD
 
       msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(propsA.v,1,3))
+
+			--head_ch:send'teleop'
+
       return propsA, table.concat(msgs, '\n')
     end
   end  -- end of loop

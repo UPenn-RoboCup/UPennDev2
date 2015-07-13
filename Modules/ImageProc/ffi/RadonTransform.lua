@@ -176,6 +176,44 @@ function RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox, angle_pri
   return props
 end
 
+function RadonTransform.radon_lines_label(edge_t, use_horiz, use_vert, bbox, angle_prior)
+  -- Use pixel directions
+  local j, i, label_nw, label_ne, label_sw, label_se
+  -- Take care of noise with a threshold, relating to the standard deviation
+  local THRESH = 2 * std(edge_t)
+  local x_sz, y_sz = edge_t:size(2), edge_t:size(1)
+  -- Loop is -2 since we do not hit the boundary
+  local ni, nj = x_sz - 2, y_sz - 2
+  -- Start the pointers
+  local e_ptr_l = edge_t:data()
+  local e_ptr_r = e_ptr_l + x_sz
+  -- Clear out any old transform
+  init(x_sz, y_sz, angle_prior)
+  for j=0, nj do
+    for i=0, ni do
+      label_nw = e_ptr_l[0]
+      e_ptr_l = e_ptr_l + 1
+      label_ne = e_ptr_l[0]
+      label_sw = e_ptr_r[0]
+      e_ptr_r = e_ptr_r + 1
+      label_se = e_ptr_r[0]
+      -- Strong zero crossings
+      -- TODO: Add both j and j+1 (nw and sw pixels are edges, maybe?)
+      if use_horiz and fabs(label_nw - label_sw) > THRESH then
+        addHorizontalPixel(i, j+.5)
+      end
+      if use_vert and fabs(label_nw - label_ne) > THRESH then
+        addVerticalPixel(i+.5, j)
+      end
+    end
+    -- Must have one more increment to get to the next line
+    e_ptr_l = e_ptr_l + 1
+    e_ptr_r = e_ptr_r + 1
+  end
+  -- Yield the Radon Transform
+  return props
+end
+
 -- Converts to torch
 function RadonTransform.get_population ()
   --Int

@@ -192,6 +192,14 @@ function color_countB(self)
 end
 ImageProc.color_countB = color_countB
 
+-- Field lines
+--[[
+local RadonTransform = require'ImageProc.ffi.RadonTransform'
+function field_lines(Image)
+  local props = RadonTransform.radon_lines_label(edge_t, true, true)
+end
+--]]
+
 local RegionProps_mt = {}
 function RegionProps_mt.__lt(r1, r2)
 	return r1.area > r2.area

@@ -103,6 +103,16 @@ local function update(meta, img)
 		print(detection.debug.obstacle)
 	end
 	--]]
+	if detection.line then
+		print('\n=Line=')
+		ptable(detection.line)
+		for i,v in ipairs(detection.line.endpoint) do
+			print('line', i, unpack(v))
+		end
+	--elseif detection.debug.ball then
+--		print(detection.debug.ball)
+	end
+	--]]
 
 	-- Send labelA and detection information
 	local lA_raw = c_zlib(Image.labelA_d, ffi.sizeof(Image.labelA_d))
@@ -114,8 +124,20 @@ local function update(meta, img)
     id = 'labelA',
   }
 	local lA_msg = {mpack(lA_meta), lA_raw}
+	--
+	local lB_raw = c_zlib(Image.labelB_d, ffi.sizeof(Image.labelB_d))
+  local lB_meta = {
+    w = Image.wb,
+    h = Image.hb,
+    sz = #lB_raw,
+    c = 'zlib',
+    id = 'labelB',
+  }
+	local lB_msg = {mpack(lB_meta), lB_raw}
+
 	local detection_msg = mpack(detection)
 	vision_ch:send(lA_msg)
+	--vision_ch:send(lB_msg)
 	vision_ch:send(detection_msg)
 
 	-- TODO: How often to send over UDP?

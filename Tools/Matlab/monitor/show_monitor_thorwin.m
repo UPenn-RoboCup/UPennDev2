@@ -1,11 +1,11 @@
 function h = show_monitor_thorwin
-  global cam 
+  global cam
 
   h = []
   h.init = @init;
   h.process_msg = @process_msg;
 
-  
+
 
 
 
@@ -37,7 +37,7 @@ function h = show_monitor_thorwin
     % Remove from the plot
     set(p_ball,'Xdata', []);
     set(p_ball,'Ydata', []);
-    r_ball = rectangle('Position', [0 0 1 1],... 
+    r_ball = rectangle('Position', [0 0 1 1],...
       'Curvature',[1,1], 'EdgeColor', 'b', 'LineWidth', 2);
     p_post = cell(2,1);
     for i=1:numel(p_post)
@@ -54,8 +54,15 @@ function h = show_monitor_thorwin
         set(h_obstacle{i},'Xdata', []);
         set(h_obstacle{i},'Ydata', []);
     end
-    h_line = plot([0], [0], 'm--', 'LineWidth', 3);
-    set(h_line, 'Xdata',[], 'Ydata', []);
+
+    % Assume up to 4 obstacles
+    h_line = cell(4,1);
+    for i=1:numel(h_obstacle)
+        h_line{i} = plot([0], [0], 'm--', 'LineWidth', 3);
+        % Remove from the plot
+        set(h_line{i},'Xdata', []);
+        set(h_line{i},'Ydata', []);
+    end
 
     % yuyv
     set(gcf,'CurrentAxes',f_yuyv);
@@ -63,20 +70,25 @@ function h = show_monitor_thorwin
 
     % Show the field here
     %set(gcf,'CurrentAxes',f_field);
-    
+
     cam.h_field = f_field;
     hold on;
- 
+
     % Camera 1 Debug messages
 
 
-    set(gcf,'CurrentAxes',f_mainA);    
+    set(gcf,'CurrentAxes',f_mainA);
     cam.a_debug_ball=uicontrol('Style','text','Units','Normalized',...
        'Position',[0.6 0.3 0.13 0.7],'FontSize',10, ...
        'BackgroundColor',[0.9  0.9 0.9],...
         'FontName','Arial');
 
     cam.a_debug_goal=uicontrol('Style','text','Units','Normalized',...
+       'Position',[0.73 0.3 0.13 0.7],'FontSize',10, ...
+       'BackgroundColor',[0.9  0.9 0.9],...
+        'FontName','Arial');
+
+    cam.a_debug_line=uicontrol('Style','text','Units','Normalized',...
        'Position',[0.73 0.3 0.13 0.7],'FontSize',10, ...
        'BackgroundColor',[0.9  0.9 0.9],...
         'FontName','Arial');
@@ -125,7 +137,7 @@ function h = show_monitor_thorwin
         'LineWidth',2,...
         'BackgroundColor',[0.9  0.9 0.9],...
         'Color',[0.84 0.16 0]);
- 
+
     % World debug
     cam.w_debug = annotation('textbox',...
         [0 0 0.3 0.5],...
@@ -133,9 +145,9 @@ function h = show_monitor_thorwin
         'FontSize',12,...
         'FontName','Arial'...
     );
-%}  
+%}
     % Save the camera handles
-    
+
     cam.f_lA = f_lA;
     cam.im_lA = im_lA;
     cam.f_yuyv = f_yuyv;
@@ -144,7 +156,7 @@ function h = show_monitor_thorwin
     cam.p_ball = p_ball;
     cam.r_ball = r_ball;
     cam.p_post = p_post;
-    cam.h_obstacle = h_obstacle;    
+    cam.h_obstacle = h_obstacle;
     cam.h_line = h_line;
     % Plot scale
     % Default: labelA is half size, so scale twice
@@ -162,16 +174,23 @@ function h = show_monitor_thorwin
         % ball
         set(cam.p_ball,'Xdata', [],'Ydata', []);
         % TODO: assume up to 3 obstacles for now
-        for i=1:2 
-          % posts
-          set(cam.p_post{i},'Xdata', [],'Ydata', []);
+        for i=1:numel(cam.h_obstacle)
           % obstacles
           set(cam.h_obstacle{i}, 'Xdata', [], 'Ydata', []);
-        end      
-      
+        end
+        for i=1:numel(cam.p_post)
+          % posts
+          set(cam.p_post{i},'Xdata', [],'Ydata', []);
+        end
+        for i=1:numel(cam.h_line)
+          % obstacles
+          set(cam.h_line{i}, 'Xdata', [], 'Ydata', []);
+        end
+
         % Set the debug information
         set(cam.a_debug_ball, 'String', char(metadata.debug.ball));
-        set(cam.a_debug_goal, 'String', char(metadata.debug.post));
+        %set(cam.a_debug_goal, 'String', char(metadata.debug.post));
+        set(cam.a_debug_line, 'String', char(metadata.debug.line));
         set(cam.a_debug_obstacle, 'String', char(metadata.debug.obstacle));
 
         % Process the ball detection result
@@ -207,18 +226,18 @@ function h = show_monitor_thorwin
             % TODO: array of plot handles, for two goal posts
             for i=1:numel(metadata.posts)
               postStats = metadata.posts{i};
-              
+
               % Plot on YUYV image
               % post_c = postStats.centroid * cam.scale;
               % w0 = postStats.axisMajor / 2 * cam.scale;
               % h0 = postStats.axisMinor / 2 * cam.scale;
-              
+
               % Plot on label image
               post_c = postStats.post.centroid;
               w0 = postStats.post.axisMajor / 2;
               h0 = postStats.post.axisMinor / 2;
               post_o = postStats.post.orientation;
-              
+
               rot = [cos(post_o) sin(post_o); -sin(post_o) cos(post_o)]'; %'
               x11 = post_c + [w0 h0] * rot;
               x12 = post_c + [-w0 h0] * rot;
@@ -229,7 +248,7 @@ function h = show_monitor_thorwin
               set(cam.p_post{i}, 'XData', post_box(:,1), 'YData', post_box(:,2));
             end
         end
-        
+
         if isfield(metadata, 'obstacles')
           obstacles = metadata.obstacles;
           for i=1:min(2, numel(obstacles.iv))
@@ -237,7 +256,7 @@ function h = show_monitor_thorwin
             wo = obstacles.axisMajor(i)/2;
             ho = obstacles.axisMinor(i)/2;
             obs_o = obstacles.orientation(i);
-            
+
             obs_rot = [cos(obs_o) sin(obs_o); -sin(obs_o) cos(obs_o)]';%'
             x11 = obs_c + [wo ho] * obs_rot;
             x12 = obs_c + [-wo ho] * obs_rot;
@@ -248,14 +267,17 @@ function h = show_monitor_thorwin
             set(cam.h_obstacle{i}, 'XData', obs_box(:,1), 'YData', obs_box(:,2));
           end
         end
-        
+
         if isfield(metadata, 'line')
-          %TODO: for now just plot one line?
-          endpoint = metadata.line.endpoint{1};  %+0.5
-          set(cam.h_line,'Xdata', [endpoint(1) endpoint(2)]);
-          set(cam.h_line,'Ydata', [endpoint(3) endpoint(4)]);
+          %metadata
+          for i=1:metadata.line.nLines
+            endpoint = metadata.line.endpoint{i};  %+0.5
+            set(cam.h_line{i},'Xdata', [endpoint(1), endpoint(2)]);
+            set(cam.h_line{i},'Ydata', [endpoint(3), endpoint(4)]);
+          end
+
         end
-        
+
     elseif strcmp(msg_id,'world')
       if isfield(metadata, 'world')
         % msg_struct, vision_struct, scale, drawlevel, name
@@ -272,7 +294,7 @@ function h = show_monitor_thorwin
             trajy = metadata.world.traj.y;
             plot(trajx(1:num),trajy(1:num),'r');
 
-            kickneeded = metadata.world.traj.kickneeded;            
+            kickneeded = metadata.world.traj.kickneeded;
             goal1 = metadata.world.traj.goal1;
             goal2 = metadata.world.traj.goal2;
             ballglobal = metadata.world.traj.ballglobal;
@@ -282,7 +304,7 @@ function h = show_monitor_thorwin
             plot([ballglobal(1) ballglobal2(1) ballglobal3(1)],...
                 [ballglobal(2) ballglobal2(2) ballglobal3(2)],...
                 'b','LineWidth',2);
-            
+
             plot([ballglobal2(1) goal1(1)],[ballglobal2(2) goal1(2)],'k--');
             plot([ballglobal2(1) goal2(1)],[ballglobal2(2) goal2(2)],'k--');
           end
@@ -295,7 +317,7 @@ function h = show_monitor_thorwin
       end
 
     elseif strcmp(msg_id,'head_camera')
-        
+
         %disp(metadata);
         compression = char(metadata.c);
         if strcmp(compression, 'jpeg')
@@ -322,15 +344,15 @@ function h = show_monitor_thorwin
         needs_draw = 1;
     elseif strcmp(msg_id,'labelA')
         cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'
-        set(cam.im_lA,'Cdata', cam.labelA);
-        xlim(cam.f_lA,[0 metadata.w]);
-        ylim(cam.f_lA,[0 metadata.h]);
+        set(cam.im_lA, 'Cdata', cam.labelA);
+        xlim(cam.f_lA, [0 metadata.w]);
+        ylim(cam.f_lA, [0 metadata.h]);
         needs_draw = 1;
     elseif strcmp(msg_id,'labelB')
         cam.labelB = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'
-        set(cam.im_lB,'Cdata', cam.labelB);
-        xlim(cam.f_lB,[0 metadata.w]);
-        ylim(cam.f_lB,[0 metadata.h]);
+        set(cam.im_lA,'Cdata', cam.labelB);
+        xlim(cam.f_lA,[0 metadata.w]);
+        ylim(cam.f_lA,[0 metadata.h]);
         needs_draw = 1;
     end
   end

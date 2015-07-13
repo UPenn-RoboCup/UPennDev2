@@ -20,7 +20,7 @@ local detectPost
 local detectObstacle
 local ENABLE_BALL = true
 local ENABLE_OBSTACLE = true
-local ENABLE_POST = false
+local ENABLE_POST = true
 local ENABLE_LINE = true
 
 -- Set the variables based on the config file
@@ -116,7 +116,7 @@ function Vision.update(meta, img)
     debug = debug
   }
   if ball then detect.ball = ball end
-  if post then detect.post = post end
+  if post then detect.posts = post end
 	if obs then detect.obstacles = obs end
 	if line then detect.line = line end
 

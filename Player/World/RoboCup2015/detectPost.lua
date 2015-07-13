@@ -14,35 +14,6 @@ local function bboxB2A(bboxB, scaleB)
 	}
 end
 
--- Yield coordinates in the labelB space
--- Returns an error message if max limits are given
-local function check_coordinateB(centroid, scale, maxD, maxH)
-
-	local v = HT.project({
-    focalB,
-    -(centroid[1] - x0B),
-    -(centroid[2] - y0B),
-    scale,
-  })
-
-  -- Check the distance
-	local dist_sq = v[1]^2 + v[2]^2
-  if maxD and dist_sq > maxD^2 then
-    return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
-  elseif maxH and v[3] > maxH then
-    return string.format("Height: %.2f > %.2f", v[3], maxH)
-  end
-  return v
-end
-
-
-
-
-
-
-
-
-
 -- TODO: World config
 local postDiameter = Config.vision.goal.postDiameter
 local postHeight = Config.vision.goal.goalHeight
@@ -82,9 +53,9 @@ function detectPost.update(Image)
 	local nPosts, i_validB, valid_posts = 0, {}, {}
 
 	--for i=1, math.min(#postB, th_nPostB) do
+	local msgs = {}
 	for i=1, #postB do
 		local passed = true
-		local msgs = {}
 
 		local post = postB[i]
 
@@ -103,10 +74,13 @@ function detectPost.update(Image)
 			Image.labelA_d, Image.wa, Image.ha, colors.white, post_bboxA
 		)
 
+		local postStats = postStatsA
+		--local postStats = postStatsB
+
 		-- If no pixels then return
-		if postStatsA.area < g_area then
+		if postStats.area < g_area then
 			passed = false
-			msgs[i] = string.format('Area: %d < %d', stats.area, g_area)
+			msgs[i] = string.format('Area: %d < %d', postStats.area, g_area)
 		end
 
 
@@ -124,12 +98,9 @@ function detectPost.update(Image)
 
 			if box_areaA < g_bbox_area then
 				passed = false
-				msgs[i] = string.format('Box area: %d < %d',box_area,g_bbox_area)
+				msgs[i] = string.format('Box area: %d < %d', box_areaA, g_bbox_area)
 			end
 		end
-
-		local postStats = postStatsA
-		--local postStats = postStatsB
 
 		-- Get the fill rate
 		if passed then
@@ -235,15 +206,20 @@ function detectPost.update(Image)
 				--This post is touching the top, so we can only use diameter
 				scale = scale1
 			else
-			  scale = math.max(scale1,scale2,scale3)
+			  scale = math.max(scale1, scale2, scale3)
 			end
-			if scale == scale1 then
-				goalStats[i].v = postStats.vL
-			elseif scale == scale2 then
-				goalStats[i].v = check_coordinateA(good_post.centroid, scale2)
-			else
-				goalStats[i].v = check_coordinateA(good_post.centroid, scale3)
-			end
+			-- coords A
+			local v0 = vector.new{
+				Image.focalA,
+				-(good_post.centroid[1] - Image.x0A),
+				-(good_post.centroid[2] - Image.y0A),
+				scale,
+			}
+			-- Put into the local and global frames
+			local vL = Image.tfL * (v0 / v0[4])
+			local vG = Image.tfG * (v0 / v0[4])
+			goalStats[i].v = vL
+
 			-- TODO: distanceFactor
 			goalStats[i].post = good_post
 			goalStats[i].postB = good_postB
@@ -282,9 +258,13 @@ function detectPost.update(Image)
         local rightX = goalStats[1].post.boundingBox[2]+5*postWidth
         local topY = goalStats[1].post.boundingBox[3]-5*postWidth
         local bottomY = goalStats[1].post.boundingBox[3]+5*postWidth
-        local bboxA = {leftX, rightX, topY, bottomY}
+        -- TODO: Is this the right bbox?
+				local bboxA = {leftX, rightX, topY, bottomY}
+				local crossbarStats = ImageProc2.color_stats(
+					Image.labelA_d, Image.wa, Image.ha, colors.white, bboxA
+				)
 
-        local crossbarStats = ImageProc2.color_stats('a', colors.magenta, bboxA)
+
         dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
         crossbar_ratio = dxCrossbar / postWidth
       end
@@ -295,7 +275,7 @@ function detectPost.update(Image)
       else
         -- Eliminate small post without cross bars
         if goalStats[1].post.area < th_min_area_unknown_post then
-          return table.insert(fail_msg, 'single post size too small')
+          return false, table.insert(fail_msg, 'single post size too small')
         end
         -- unknown post
         goalStats[1].type = 0
@@ -313,11 +293,11 @@ function detectPost.update(Image)
 	end
 
 	if post_detected then
-		return table.concat(failures, ','), goalStats
+		return goalStats, table.concat(failures, ',')
 	end
 
   -- Yield the failure messages and the success tables
-  return table.concat(failures, ',')
+  return false, table.concat(failures, ',')
 end
 function detectPost.exit()
 end

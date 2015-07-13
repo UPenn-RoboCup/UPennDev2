@@ -309,6 +309,8 @@ function libWorld.entry()
   wcm.set_obstacle_num(0)
   wcm.set_ball_notvisible(0)
 
+  reset_obstacles()
+
   libWorld.pose_reset()
   -- Processing count
   count = 0

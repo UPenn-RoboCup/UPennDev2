@@ -216,7 +216,7 @@ fsm.Motion = {
 	{'motionStance', 'bias', 'motionBiasInit'},
 	{'motionStance', 'uninit', 'motionUnInit'},
 	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-  {'motionStance', 'hybridwalkkick', 'motionHybridWalkKick'},
+  {'motionStance', 'done_step', 'motionHybridWalkKick'},
 --	{'motionStance', 'slowstep', 'motionSlowStep'},
 
 	--

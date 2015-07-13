@@ -2,6 +2,7 @@ assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
 Config.enable_log = false
+Config.enable_log = true
 
 local monitor = {
 	minFPS = 1,
@@ -149,11 +150,22 @@ local grasp900_param = {
 	{'Sharpness', 0},
 }
 
+local ucla_param = {
+	{'White Balance Temperature', 3350},
+	{'Exposure (Absolute)', 120},
+	--	{'Focus (absolute)', 0},
+	{'Brightness', 128},
+	{'Contrast', 128},
+	{'Saturation', 173},
+	{'Gain', 0},
+	{'Sharpness', 0},
+}
 -- Cameras
 local camera = {}
 camera[1] = {
 	name = 'head',
-	dev = '/dev/video-headcamera',
+	--dev = '/dev/video-headcamera',
+	dev = '/dev/video1',
 	w = 640,
 	h = 360,
 	--dev = '/dev/video-wristcamera',
@@ -194,10 +206,11 @@ camera[1] = {
 		{'Exposure, Auto', 0},
 		{'White Balance Temperature, Auto', 0},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 1},
+		{'Exposure, Auto Priority', 1},		
 		{'Focus, Auto', 0}
 	},
 	param = grasp920_param,
+	--param = ucla_param,
 }
 
 camera[2] = {

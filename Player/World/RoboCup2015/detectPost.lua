@@ -17,25 +17,6 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
-local function bboxB2A(bboxB, scaleB)
-	return {
-		scaleB * bboxB[1],
-		scaleB * bboxB[2] + scaleB - 1,
-		scaleB * bboxB[3],
-		scaleB * bboxB[4] + scaleB - 1,
-	}
-end
-
 -- Simple bbox with no tilted color stats
 -- Assume always input bboxB
 local function bboxStats(label, color, bbox)
@@ -134,7 +115,7 @@ local colors
 local config
 function detectPost.entry(cfg, Image)
   config = cfg
-  g_bbox_area = cconfig.th_min_bbox_area
+  g_bbox_area = config.th_min_bbox_area
   g_area = config.th_min_area
   g_fill_rate = config.th_min_fill_rate
   g_orientation = config.th_min_orientation
@@ -151,9 +132,9 @@ function detectPost.update(Image)
   end
   -- Form the initial goal check
   local postB = ImageProc.goal_posts(
-		tonumber(ffi.cast('intptr_t', ffi.cast('void *', HeadImage.labelB_d))),
-		wb,
-		hb,
+		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
+		Image.wb,
+		Image.hb,
 		colors.magenta)
   if not postB then return'None detected' end
   -- Now process each goal post

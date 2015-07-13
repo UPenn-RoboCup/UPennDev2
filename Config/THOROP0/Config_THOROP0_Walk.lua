@@ -106,12 +106,6 @@ stance.sitHeight = 0.75
 stance.dHeight = 0.04 --4cm per sec
 
 
-
-
-
-
-
-
 local kick = {}
 
 local tSlope1 = walk.tStep*walk.phSingle[1]
@@ -227,64 +221,51 @@ kick.stepqueue["null"]=
 
 
 if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
---or Config.PLATFORM_NAME == "THOROP1" then -- or Config.PLATFORM_NAME = "THOROP1" then
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
 
-walk.footY = 0.110 --wider
-
-
---  walk.tZMP = 0.33   
---  walk.footY = 0.115 --teddy, even wider
---  walk.supportX = 0.02 
-
-  --for non birdwalk 
-  walk.hipRollCompensation = {2.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
-  walk.supportY = -0.01
-else
-  --CHIP CHIP CHIP CHiP
-  print("CHIP CHIP CHIP")
-  walk.velLimitX = {-.10,.20}
-  walk.velLimitY = {-.06,.06}
   walk.delay_threshold_angle = 2.5*math.pi/180
-
   walk.stop_threshold_angle = 4*math.pi/180
 
+  walk.velLimitX = {-.10,.20}
+  walk.velLimitY = {-.06,.06}
 
   Config.supportY_preview = 0.0 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0
-  walk.supportY = 0.0
-  walk.hipRollCompensation = {2.5*DEG_TO_RAD, 1.5*DEG_TO_RAD}
-  walk.velocityBias = {0.01,0,0} --To get rid of drifting
+  walk.supportY = 0.0  
 
-  walk.velLimitX = {-.04,.08}
-  walk.velLimitY = {-.03,.03}
-  walk.velLimitY = {-.02,.02}
-
---after retightning
-  walk.hipRollCompensation = {2.3*DEG_TO_RAD, 1.3*DEG_TO_RAD}
-
-
--- after hip swap
-
+  walk.velocityBias = {0.0,0,0} --To get rid of drifting
   walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
 
--- after loading battery
+  
+  if IS_WEBOTS then
+    walk.stepHeight = 0.04 
+    walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
+  else
+    walk.stepHeight = 0.02 
+    walk.supportY = 0.01
+  end 
+  
+else
+  --CHIP CHIP CHIP CHiP
+  print("CHIP CHIP CHIP")
 
-  walk.hipRollCompensation = {2*DEG_TO_RAD, 1.5*DEG_TO_RAD}
+  walk.delay_threshold_angle = 999*math.pi/180 --disabled
+  walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
 
+  walk.delay_threshold_angle = 2.5*math.pi/180
+  walk.stop_threshold_angle = 4*math.pi/180
 
+  walk.velLimitX = {-.10,.20}
+  walk.velLimitY = {-.06,.06}
+
+  Config.supportY_preview = 0.0 --this smooths out first step a bit
+  Config.supportY_preview2 = 0.0
+  walk.supportY = 0.0  
+
+  walk.velocityBias = {0.0,0,0} --To get rid of drifting
+  walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
 end
-
-
-
-
---Robocup settings
-if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
-  walk.stepHeight = 0.02 
-  walk.supportY = 0.01
-end
-
 
 
 ------------------------------------

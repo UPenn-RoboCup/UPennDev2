@@ -42,13 +42,15 @@ vision_ch.callback = function(skt)
 	--print('#detections', #detections)
 	-- Only use the last vision detection
 	local detection
-	for k, v in ipairs(detections) do
-		local uv = mp.unpack(v)
-		if type(uv)=='table' then
-			detection = uv
+	for k, d in ipairs(detections) do
+		local detect = mp.unpack(d)
+		--print('DETECTION', detect)
+		if type(detect)=='table' then
+
+			if detect.id=='detect' then detection = detect end
 		end
 	end
-	--print('DETECTION', detection)
+
 
 	-- Update localization based onodometry and vision
 	--Should use the differential of odometry!
@@ -56,7 +58,10 @@ vision_ch.callback = function(skt)
 	dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
 	uOdometry0 = vector.copy(uOdometry)
 
-	lW.update(dOdometry, detection)
+	if detection then
+		--util.ptable(detection)
+		lW.update(dOdometry, detection)
+	end
 
 end
 
@@ -107,7 +112,6 @@ local function update()
 		end
 		t_send = t
 	end
-
 
 	--Print the local position of step
 	if t-t_debug>debug_interval and Config.debug.wolrld then

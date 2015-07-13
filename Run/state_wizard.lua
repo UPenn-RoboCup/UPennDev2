@@ -11,16 +11,12 @@ local get_time, usleep = unix.time, unix.usleep
 local running = true
 local function shutdown() running = false end
 
-local lW, uOdometry0
-
 if not IS_WEBOTS then
 	local signal = require'signal'
 	signal.signal("SIGINT", shutdown)
 	signal.signal("SIGTERM", shutdown)
 	-- TODO: Check this out
 	require'mcm'
-  lW=require'libWorld'
-  lW.entry()
 end
 
 local function co_fsm(sm, en)
@@ -82,13 +78,6 @@ repeat
 		end
 	end
 
-	if lW then
-		local uOdometry = mcm.get_status_odometry()
-    dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
-		uOdometry0 = vector.copy(uOdometry)
-    lW.update(dOdometry)
-  end
-
 	--print('Total',get_time()-t_start)
 
 	-- If time for debug
@@ -133,7 +122,7 @@ until not running
 
 print'Exiting state wizard...'
 
-if lW then lW.exit() end
+
 
 if IS_WEBOTS then
 	wb_supervisor_simulation_revert()

@@ -44,12 +44,12 @@ if IS_WEBOTS then
 			--feedback = 'feedback_wizard',
 	  }
 	if IS_STEVE then		
-		Config.use_gps_pose = false
-		Config.use_gps_vision = false
-	else
 		Config.use_gps_pose = true
 		Config.use_gps_vision = true
-
+	else
+		
+		Config.use_gps_pose = false
+		Config.use_gps_vision = false
 	end
 end
 

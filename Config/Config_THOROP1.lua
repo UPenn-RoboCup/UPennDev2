@@ -1,5 +1,5 @@
 --Now the Config file is entirely identical over two robots (using hostname)
-IS_STEVE = false
+IS_STEVE = true
 IS_COMPETING = false
 
 if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
@@ -39,33 +39,12 @@ Config.variable_support = true
 Config.arm_init_timeout = true
 Config.use_imu_yaw = false --use odometry for yaw
 
-
-
-
-
 -----------------------------------
 
 -- Tune for Webots
 if IS_WEBOTS then
-	if IS_STEVE then
-		Config.testfile = 'test_teleop'
-		Config.debug.armplan = true
 
-	  Config.sensors = {
-			ft = true,
-      head_camera = 'camera_wizard',
-      vision = 'vision_wizard',
-      world = 'world_wizard',
-			--feedback = 'feedback_wizard',
-			--slam = 'slam_wizard',
-    	--chest_lidar = true,
-    	--head_lidar = true,
-			--kinect = 'kinect2_wizard',
-			--mesh = 'mesh_wizard',
-	  }
-
-	else
-		--for SJ's testing in webots
+	--for SJ's testing in webots
 		--Config.testfile = 'test_testbed'
 		--Config.testfile = 'test_robocup'
 		Config.testfile = 'test_walk_robocup'
@@ -78,6 +57,16 @@ if IS_WEBOTS then
 
 			--feedback = 'feedback_wizard',
 	  }
+
+	if IS_STEVE then
+		
+		Config.use_gps_pose = false
+		Config.use_gps_vision = false
+
+	else
+		Config.use_gps_pose = true
+		Config.use_gps_vision = true
+
 	end
 end
 
@@ -131,8 +120,6 @@ end
 ------------------------------------
 -- ROBOCUP config variables
 
-Config.use_gps_pose = true
-Config.use_gps_vision = true
 
 --Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then

@@ -193,10 +193,38 @@ end
 ImageProc.color_countB = color_countB
 
 -- Field lines
---[[
+----[[
+local ptable = require'util'.ptable
 local RadonTransform = require'ImageProc.ffi.RadonTransform'
-function field_lines(Image)
-  local props = RadonTransform.radon_lines_label(edge_t, true, true)
+function ImageProc.field_lines(label, w, h)
+
+  -- Have a minimum width of the line (in pixel space)
+  local min_width = 1
+  local i_monotonic_max, monotonic_max, val
+  local ithMax, irMax1, irMax2
+  local cntMax1, cntMax2 = 0, 0
+  local found = false
+
+  local props = RadonTransform.radon_lines_label(label, w, h, true, true)
+  local count_d = props.count_d
+  local line_sum_d = props.line_sum_d
+  local line_min_d = props.line_min_d
+  local line_max_d = props.line_max_d
+  local NTH = props.NTH
+  local NR = props.NR
+  local cos_d = props.cos_d
+  local sin_d = props.sin_d
+  local th_d = props.th_d
+  local i0 = props.i0
+  local j0 = props.j0
+  local r0 = props.r0
+
+  for ith=0, NTH-1 do
+    for ir=0, NR-1 do
+
+    end
+  end
+
 end
 --]]
 

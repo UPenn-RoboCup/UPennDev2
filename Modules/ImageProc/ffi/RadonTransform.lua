@@ -6,6 +6,8 @@ local torch = require'torch'
 -- Cache
 local std, cos, sin = torch.std, math.cos, math.sin
 local fabs, min, max, floor = math.abs, math.min, math.max, math.floor
+local band = require'bit'.band
+local bor = require'bit'.bor
 
 -- These are the integer constants for avoiding floating point precision
 -- Max radius: the diagonal of the image
@@ -15,8 +17,8 @@ local fabs, min, max, floor = math.abs, math.min, math.max, math.floor
 local MAXR, NR = 222
 
 --local NTH = 90 -- Number of angles (2 degree res)
-local NTH = 45 -- Number of angles (4 degree res)
---local NTH = 36 -- 5 degree resolution
+--local NTH = 45 -- Number of angles (4 degree res)
+local NTH = 36 -- 5 degree resolution
 --local NTH = 180 -- (1 degree res)
 
 local i0, j0, r0, th0 = 0, 0, 0, 0
@@ -101,7 +103,8 @@ end
 local function addPixelToRay (i, j, ith)
   local s, c = sin_d[ith], cos_d[ith]
   -- Counts and Line statistics
-  local ir, iline = fabs(c * i + s * j), -s * i + c * j
+  local ir = fabs(c * i + s * j)
+  local iline = -s * i + c * j
   count_d[ith][ir] = count_d[ith][ir] + 1
   line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
   if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
@@ -176,19 +179,27 @@ function RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox, angle_pri
   return props
 end
 
-function RadonTransform.radon_lines_label(edge_t, use_horiz, use_vert, bbox, angle_prior)
+local colors = {
+	black = 0,
+	orange = 1,
+	yellow = 2,
+	blue = 4,
+	green = 8,
+	white = 16,
+	cyan = 32,
+	magenta = 64,
+}
+function RadonTransform.radon_lines_label(label_d, w, h, use_horiz, use_vert)
   -- Use pixel directions
   local j, i, label_nw, label_ne, label_sw, label_se
-  -- Take care of noise with a threshold, relating to the standard deviation
-  local THRESH = 2 * std(edge_t)
-  local x_sz, y_sz = edge_t:size(2), edge_t:size(1)
+  local x_sz, y_sz = w, h
   -- Loop is -2 since we do not hit the boundary
   local ni, nj = x_sz - 2, y_sz - 2
   -- Start the pointers
-  local e_ptr_l = edge_t:data()
+  local e_ptr_l = label_d
   local e_ptr_r = e_ptr_l + x_sz
   -- Clear out any old transform
-  init(x_sz, y_sz, angle_prior)
+  init(x_sz, y_sz)
   for j=0, nj do
     for i=0, ni do
       label_nw = e_ptr_l[0]
@@ -199,11 +210,17 @@ function RadonTransform.radon_lines_label(edge_t, use_horiz, use_vert, bbox, ang
       label_se = e_ptr_r[0]
       -- Strong zero crossings
       -- TODO: Add both j and j+1 (nw and sw pixels are edges, maybe?)
-      if use_horiz and fabs(label_nw - label_sw) > THRESH then
-        addHorizontalPixel(i, j+.5)
+      if use_horiz then
+        --if fabs(label_nw - label_sw) > THRESH then
+        if band(label_nw, 16) and band(label_sw, 16) then
+          addHorizontalPixel(i, j+.5)
+        end
       end
-      if use_vert and fabs(label_nw - label_ne) > THRESH then
-        addVerticalPixel(i+.5, j)
+      --if use_vert and fabs(label_nw - label_ne) > THRESH then
+      if use_vert then
+        if band(label_nw, 16) and band(label_ne, 16) then
+          addVerticalPixel(i+.5, j)
+        end
       end
     end
     -- Must have one more increment to get to the next line

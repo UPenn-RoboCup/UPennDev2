@@ -30,7 +30,6 @@ function detectLine.update(Image)
   end
   local lines = {}
 
-
   lines.detect = 0
   local linePropsB = ImageProc.field_lines(
 		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
@@ -38,6 +37,12 @@ function detectLine.update(Image)
 		config.max_width,
     config.connect_th, config.max_gap, config.min_length
 	)
+
+	--[[
+	local linePropsB2 = ImageProc2.field_lines(
+		Image.labelB_d, Image.wb, Image.hb
+	)
+	--]]
 
   if #linePropsB==0 then
     return false, 'None'
@@ -76,12 +81,14 @@ function detectLine.update(Image)
     	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2
 		)
 
+--[[
 		print('found line...')
 		util.ptable(lines.propsB[i])
 		print('length', length)
 		print('endpoint',unpack(lines.propsB[i].endpoint))
 		print('===')
 		--print('length', length)
+		--]]
 
 		-- TODO: Why this scale?
 		local scale = 1

@@ -46,7 +46,7 @@ function detectPost.update(Image)
 		Image.wb,
 		Image.hb,
 		colors.white)
-  if not postB then return'None detected' end
+  if not postB then return false, 'None detected' end
   -- Now process each goal post
   -- Store failures in the array
   local failures, successes = {}, {}

@@ -88,7 +88,7 @@ function detectBall.update(Image)
 		-- Ball width/height
 		if passed then
 			local axisRatio = propsA.axisMajor / propsA.axisMinor
-			if axisRatio > 2 or axisRatio < 0.5 then
+			if axisRatio > 1.5 or axisRatio < 0.65 then
 				passed = false
 				msgs[i] = string.format('axisRatio: %d < %d < %d', 0.5, axisRatio, 2)
 			end
@@ -126,16 +126,17 @@ function detectBall.update(Image)
 			--]]
 
       -- Check the distance
-      local dist_sq = v[1]^2 + v[2]^2
+      local dist = math.sqrt(v[1]^2 + v[2]^2)
+			--print(dist)
 			local minZ = 0
-      local maxH = (config.max_height0 and config.max_height1) and
-        (config.max_height0 + math.sqrt(dist_sq) * config.max_height1)
-      if dist_sq > config.max_distance^2 then
+      --local maxH = (config.max_height0 and config.max_height1) and (config.max_height0 + dist * config.max_height1)
+      if dist > config.max_distance then
         passed = false
-        msgs[i] = string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), config.max_distance)
-      elseif maxH and v[3] > maxH then
+        msgs[i] = string.format("Distance: %.2f > %.2f", dist_sq, config.max_distance)
+      --elseif maxH and v[3] > maxH then
+			elseif v[3] > config.max_height then
         passed = false
-        msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", maxH, unpack(v,1,3))
+        msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", config.max_height, unpack(v,1,3))
 			elseif minZ and v[3] < minZ then
 				passed = false
 				msgs[i] = string.format("minZ: %.2f (%.2f, %.2f, %.2f)", minZ, unpack(v,1,3))

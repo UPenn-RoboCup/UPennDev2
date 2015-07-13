@@ -60,6 +60,9 @@ local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[vision_identifier]
 local udp_ch = ENABLE_NET and stream and stream.udp and si.new_sender(operator, stream.udp)
 local vision_ch = stream and stream.sub and si.new_publisher(stream.sub)
+local lstream = Config.net.streams.label
+local udp_label_ch = ENABLE_NET and lstream and lstream.udp and si.new_sender(operator, lstream.udp)
+local label_ch = lstream and lstream.sub and si.new_publisher(lstream.sub)
 --
 print('Vision | ', operator, vision_identifier, stream.udp, udp_ch)
 
@@ -85,7 +88,7 @@ local function update(meta, img)
 	--]]
 
 	local Image, detection = Vision.update(meta, img)
-	--[[
+	----[[
 	if detection.ball then
 		print('\n=Ball=')
 		ptable(detection.ball)
@@ -125,7 +128,12 @@ local function update(meta, img)
     id = 'labelA',
   }
 	local lA_msg = {mpack(lA_meta), lA_raw}
-	--
+
+	local detection_msg = mpack(detection)
+	vision_ch:send(detection_msg)
+	label_ch:send(lA_msg)
+
+	--[[
 	local lB_raw = c_zlib(Image.labelB_d, ffi.sizeof(Image.labelB_d))
   local lB_meta = {
     w = Image.wb,
@@ -135,16 +143,14 @@ local function update(meta, img)
     id = 'labelB',
   }
 	local lB_msg = {mpack(lB_meta), lB_raw}
-
-	local detection_msg = mpack(detection)
-	vision_ch:send(lA_msg)
-	--vision_ch:send(lB_msg)
-	vision_ch:send(detection_msg)
+	label_ch:send(lB_msg)
+	--]]
 
 	-- TODO: How often to send over UDP?
 	if udp_ch then
-		udp_ch:send(table.concat(lA_msg))
-		udp_ch:send(detection_msg)
+		--udp_ch:send(detection_msg)
+		udp_label_ch:send(table.concat(lA_msg))
+		if lB_msg then label_udp_ch:send(table.concat(lB_msg)) end
 	end
 end
 

@@ -15,13 +15,17 @@ monitor.init();
 %% Network
 s_camera = zmq('subscribe', 'ipc', 'camera0');
 s_vision = zmq('subscribe', 'ipc', 'vision0');
+s_label = zmq('subscribe', 'ipc', 'label');
 s_world = zmq('subscribe', 'ipc', 'world');
 % Add the UDP network
 f_camera = udp_recv('new', 17003);
 f_vision = udp_recv('new', 17013);
+f_label = udp_recv('new', 17014);
 f_world = udp_recv('new', 17023);
+%
 s_camera_udp = zmq('fd', f_camera);
 s_vision_udp = zmq('fd', f_vision);
+s_label_udp = zmq('fd', f_label);
 s_world_udp = zmq('fd', f_world);
 
 %% Loop
@@ -143,11 +147,26 @@ while running
             %data_detect.raw = raw;
             data_detect.recv = true;
         end
+    end
+    
+    while udp_recv('getQueueSize', f_label) > 0
+        recv_items = recv_items + 1;
+        udp_data = udp_recv('receive', f_label);
+        [metadata, offset] = msgpack('unpack', udp_data);
+        msg_id = char(metadata.id);
+        % This must be uint8
+        raw = udp_data(offset+1:end);
         if strcmp(msg_id,'labelA')
             count_labelA = count_labelA + 1;
             data_labelA.meta = metadata;
             data_labelA.raw = raw;
             data_labelA.recv = true;
+        end
+        if strcmp(msg_id,'labelB')
+            count_labelB = count_labelB + 1;
+            data_labelB.meta = metadata;
+            data_labelB.raw = raw;
+            data_labelB.recv = true;
         end
     end
 

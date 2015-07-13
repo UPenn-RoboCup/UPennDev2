@@ -61,8 +61,7 @@ THORwIn_Dale_halfmass {
 }
 SoccerField {
 }
-Walls {
-}
+#Walls {}
 DEF BLUE_GOAL TeenGoal {
   translation 4.5 0 0
   postColor 1.0 1.0 1.0

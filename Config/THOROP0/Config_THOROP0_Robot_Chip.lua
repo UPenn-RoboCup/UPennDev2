@@ -162,13 +162,15 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-	1,3,5,7,9,11,13,
+--	1,3,5,7,9,11,13,
 		-- waist
+	1,2,
+
 	28,
 	--head
 	29, 30,
 	-- gripper
-	63, 65, 67
+--	63, 65, 67
 	},
 	enable_read = true,
 }
@@ -177,9 +179,9 @@ local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
-	2,4,6,8,10,12,14,
+--	2,4,6,8,10,12,14,
 	-- lidar
-	37,
+--	37,
 	--no gripper
 	},
 	enable_read = true
@@ -190,7 +192,7 @@ local right_leg = {
 	ttyname = '/dev/ttyUSB2',
 	-- waist pitch
 --	m_ids = {15,17,19, 21, 23,25, 27},
-	m_ids = {16,17,19, 21, 23,25, 27},
+	m_ids = {15,17,19, 21, 23,25},
 	enable_read = true,
 }
 
@@ -198,8 +200,7 @@ local left_leg = {
 	name = 'lleg',
 	ttyname = '/dev/ttyUSB3',
 	-- waist yaw
---	m_ids = {16,18,20, 22, 24,26},
-	m_ids = {15,18,20, 22, 24,26},
+	m_ids = {16,18,20, 22, 24,26},
 	enable_read = true,
 }
 
@@ -335,7 +336,6 @@ servo.steps = 2 * vector.new({
 
 
 
---[[
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head, mk2
@@ -399,7 +399,6 @@ servo.max_rad = vector.new({
 	60, -- Lidar pan
 })*DEG_TO_RAD
 
---]]
 
 
 

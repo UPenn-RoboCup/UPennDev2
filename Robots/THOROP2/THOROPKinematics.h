@@ -106,7 +106,8 @@ const double MassBody[2]={
 };
 //torso com: (-0.0042 -0.0007 0.2378), waist com (0 0 0.0579)
 const double bodyCom[2][3]={
-	{-0.0040, 0, 0.2292},	 //combined com for torso and waist
+//	{-0.0040, 0, 0.2292},	 //combined com for torso and waist
+	{-0.030, 0, 0.2292},	 //combined com for torso and waist
 	{-0.0212, 0.0002, 0.0032}
 };
 

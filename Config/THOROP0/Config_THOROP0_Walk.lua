@@ -142,6 +142,11 @@ else
   walk.delay_threshold_angle = 2.5*math.pi/180
   walk.stop_threshold_angle = 4*math.pi/180
 
+
+  walk.delay_threshold_angle = 5*math.pi/180
+  walk.stop_threshold_angle = 99*math.pi/180
+
+
   walk.velLimitX = {-.10,.20}
   walk.velLimitY = {-.06,.06}
 
@@ -157,8 +162,12 @@ else
     walk.stepHeight = 0.04 
     walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
   else
-    walk.stepHeight = 0.02 
-    walk.supportY = 0.01
+    walk.stepHeight = 0.03 
+    walk.supportY = 0.0
+
+    walk.tZMP = 0.30
+    walk.supportY = -0.01
+
   end 
 
 end

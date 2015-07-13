@@ -32,6 +32,7 @@ Config.use_heeltoe_walk = true
 Config.heeltoe_angle = 0*DEG_TO_RAD
 Config.walktraj={}
 Config.walktraj.hybridwalk = "foot_trajectory_softfast"
+Config.walktraj.hybridwalk = "foot_trajectory_base"
 Config.variable_tstep = true
 Config.variable_support = true
 Config.arm_init_timeout = true

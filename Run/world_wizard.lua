@@ -38,7 +38,7 @@ local uOdometry0, uOdometry
 local t_send, send_interval = 0
 
 vision_ch.callback = function(skt)
-	local detections = skt:recv_all()
+	local detections = skt:recv_all(true)
 	--print('#detections', #detections)
 	-- Only use the last vision detection
 	local detection
@@ -46,11 +46,9 @@ vision_ch.callback = function(skt)
 		local detect = mp.unpack(d)
 		--print('DETECTION', detect)
 		if type(detect)=='table' then
-
-			if detect.id=='detect' then detection = detect end
+			detection = detect
 		end
 	end
-
 
 	-- Update localization based onodometry and vision
 	--Should use the differential of odometry!

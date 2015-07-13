@@ -47,7 +47,7 @@ if IS_WEBOTS then
 	  }
 
 	if IS_STEVE then
-		
+
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false
 

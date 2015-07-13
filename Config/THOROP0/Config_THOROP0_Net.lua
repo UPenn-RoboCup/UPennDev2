@@ -88,6 +88,12 @@ streams.vision0 = {
 	tcp = 43313,
 	sub = 'vision0',
 }
+streams.label = {
+	ws = 9014,
+	udp = 17014,
+	tcp = 43314,
+	sub = 'label',
+}
 streams.world = {
 	ws = 9023,
 	udp = 17023,
@@ -134,7 +140,7 @@ streams.kinect2_color = {
 --]]
 --[[
 streams.audio = {
-ws = 9014,
+ws = 9017,
 tcp= 55557,
 }
 --]]

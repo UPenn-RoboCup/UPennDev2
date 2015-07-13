@@ -79,7 +79,7 @@ DEF BALL BallGPS {
   controller "ballGPS"
 }
 DEF OBS1 ObjectGPS {
-  translation -2.56736 0.45 -3.27277
+  translation -2 0.45 -1.5
   controller "objectGPS"
   controllerArgs "1"
 }

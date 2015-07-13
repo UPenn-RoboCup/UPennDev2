@@ -32,8 +32,8 @@ local angleShift = vector.new{0,0,0,0}
 local iStep
 
 local foot_traj_name = "foot_trajectory_base2"
-if Config.walktraj and Config.walktraj.hybridwalk then
-  foot_traj_name = Config.walktraj.hybridwalk 
+if Config.walk.traj and Config.walk.traj.hybridwalk then
+  foot_traj_name = Config.walk.traj.hybridwalk 
 end
 local foot_traj_func   = moveleg[foot_traj_name]
 

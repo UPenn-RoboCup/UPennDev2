@@ -597,6 +597,11 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
     local uCOM = util.pose_global(
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
+
+  local comX_bias = mcm.get_stance_COMoffsetBias()
+  uCOM[1]=uCOM[1]+comX_bias
+
+
    uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
    uTorsoAdapt[2] = uTorsoAdapt[2]+ adapt_factor * (uTorso[2]-uCOM[2])
    local pTorso = vector.new({

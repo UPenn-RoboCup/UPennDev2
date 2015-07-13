@@ -221,7 +221,7 @@ function walk.update()
 
 
     local leg_raise = 0
-    if Config.raise_body then
+    if Config.walk.raise_body then
       if zLeft>0 and zRight>0 then
         --we are climbing, and left support foot is already on the block
 

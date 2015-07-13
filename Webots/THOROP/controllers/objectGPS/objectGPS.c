@@ -18,13 +18,16 @@ int main(int argc, char **argv)
 
   double* gps_value;
   char message[32];
+  
 
   while (wb_robot_step(time_step) != -1){
    gps_value = wb_gps_get_values(gps);
    //Something's wrong with deserialization 
    //So we make a fixed width string here
-   sprintf(message,"{%0.3f,%0.3f,%0.3f}",
-	gps_value[0]/2+5.0,-gps_value[2]/2+5.0,gps_value[1]/2+5.0);
+//   sprintf(message,"{%0.3f,%0.3f,%d}",	gps_value[0]/2+5.0,-gps_value[2]/2+5.0);
+   sprintf(message,"{%0.3f,%0.3f,%d}",  
+    -gps_value[0]/2+5.0, gps_value[2]/2+5.0 , atoi(argv[1])
+    );   
    wb_emitter_send(emitter,message,strlen(message)+1);
 //   printf("%s\n",message);
   }

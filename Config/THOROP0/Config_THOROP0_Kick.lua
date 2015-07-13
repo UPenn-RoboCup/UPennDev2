@@ -117,7 +117,10 @@ kick.stepqueue["null"]=
 
 
 
-
+kick.traj={}
+kick.traj.walk = "foot_trajectory_base"
+kick.traj.kick = "foot_trajectory_kick"
+kick.traj.walkkick = "foot_trajectory_walkkick"
 
 
 

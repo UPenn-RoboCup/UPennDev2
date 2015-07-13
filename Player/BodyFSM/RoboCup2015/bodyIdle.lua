@@ -24,10 +24,10 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  local estop = hcm.get_teleop_estop()
-  if Config.auto_restart and t-t_entry>2.0 
-	and estop==0 
-	then return "init" end
+  mcm.set_walk_kicktype(0) --Walkkick 
+
+
+
 
 --[[
   local gamestate = gcm.get_game_state()

@@ -290,6 +290,9 @@ function state.entry()
 
   --Determine kick types here!
 
+
+--print("ball global:",ballGlobal[1],ballGlobal[2])
+--print("game state:",gcm.get_game_state())
   if gcm.get_game_state()==3 then  --Only during actual playing
     if ballGlobal[1]<ballX_threshold1 then
         mcm.set_walk_kicktype(0) --Walkkick 

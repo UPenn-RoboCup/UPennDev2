@@ -43,6 +43,21 @@ foot_traj_func = moveleg.foot_trajectory_base
 kick_traj_func = moveleg.foot_trajectory_kick
 walkkick_traj_func = moveleg.foot_trajectory_walkkick
 
+
+local foot_traj_name = "foot_trajectory_base"
+local kick_traj_name = "foot_trajectory_kick"
+local walkkick_traj_name = "foot_trajectory_walkkick"
+if Config.kick.traj then  
+  foot_traj_name = Config.kick.traj.walk or foot_traj_name
+  kick_traj_name = Config.kick.traj.kick or kick_traj_name
+  walkkick_traj_name = Config.kick.traj.walkkick or walkkick_traj_name
+end
+local foot_traj_func   = moveleg[foot_traj_name]
+local kick_traj_func   = moveleg[kick_traj_name]
+local walkkick_traj_func   = moveleg[walkkick_traj_name]
+
+
+
 --kick_traj_func = moveleg.foot_trajectory_base
 
 local crossing_num

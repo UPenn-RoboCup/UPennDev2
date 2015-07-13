@@ -237,10 +237,10 @@ function detectPost.update(Image)
       local dist = math.sqrt(dx*dx+dy*dy)
       if dist > goalWidth * 3 then --TODO: put into Config
         local fail_str = string.format("Goal too wide: %.1f > %.1f\n", dist, goalWidth*3)
-        return table.insert(fail_msg, fail_str)
+        return false, table.insert(fail_msg, fail_str)
       elseif dist<goalWidth * 0.2 then
         local fail_str = string.format("Goal too wide: %.1f < %.1f\n", dist, goalWidth*0.2)
-        return table.insert(fail_msg, fail_str)
+        return false, table.insert(fail_msg, fail_str)
       end
 
     else  -- Only single post is detected

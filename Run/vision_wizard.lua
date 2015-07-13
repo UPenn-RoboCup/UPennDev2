@@ -96,6 +96,14 @@ local function update(meta, img)
 --		print(detection.debug.ball)
 	end
 	--]]
+	----[[
+	if detection.posts then
+		print('\n=Posts=')
+		ptable(detection.posts)
+	--elseif detection.debug.ball then
+--		print(detection.debug.ball)
+	end
+	--]]
 	--[[
 	print('\n=Obstacles=')
 	if detection.obstacles then

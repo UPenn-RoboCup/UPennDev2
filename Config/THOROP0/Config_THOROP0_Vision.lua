@@ -206,7 +206,7 @@ camera[1] = {
 		{'Exposure, Auto', 0},
 		{'White Balance Temperature, Auto', 0},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 1},		
+		{'Exposure, Auto Priority', 1},
 		{'Focus, Auto', 0}
 	},
 	param = grasp920_param,
@@ -262,7 +262,7 @@ if IS_WEBOTS then
 	camera[1].h = 180
 	camera[1].cx_offset = 0
 	camera[1].cy_offset = 0
-	camera[1].lut = 'webots'
+	camera[1].lut = 'webots2'
 	--[[
 	camera[1].focal_length = 730
 	camera[1].focal_base = 640

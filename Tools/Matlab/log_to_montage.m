@@ -1,42 +1,33 @@
-datestamp = '07.11.2015.19.16.15'
-% Metadata
-fid = fopen(sprintf('Data/yuyv_m_%s.log',datestamp));
-yuyvMeta = fread(fid,Inf,'*uint8');
-fclose(fid);
-clear fid;
-yuyvMeta = msgpack('unpacker',yuyvMeta,'uint8');
+function [] = log_to_montage(logname)
 
-% Setup the colortable item
-% Grab the YUYV logged information
-f_raw = fopen(sprintf('Data/yuyv_r_%s.log',datestamp));
-yuyvMontage = fread(f_raw,Inf,'*uint32');
-%disp(yuyvMeta{1}.w)
-%disp( yuyvMeta{1}.h)
-%disp( numel(yuyvMeta))
-yuyvMontage = reshape( ...
-    yuyvMontage, ...
-    [yuyvMeta{1}.w/2, yuyvMeta{1}.h, 1, numel(yuyvMeta)] ...
-    );
-save(sprintf('Data/yuyv_%s.mat',datestamp),'yuyvMontage');
+    logname = 'webots';
 
-% Individual reading
-%{
-f_raw = fopen(sprintf('Data/yuyv_r_%s.log',datestamp));
-for i=1:numel(yuyvMeta)
-    meta = yuyvMeta{i};
-    rsz = meta.w * meta.h * 2;
-    if rsz ~= meta.rsz
-        disp('Bad metadata!');
+    log_dir = strcat('Data/',logname);
+
+    log_list = get_log_list2(log_dir, 'yuyv_m_');
+
+    prefix = strcat(log_dir, '/yuyv_m_');
+
+    for i=1:numel(log_list)
+
+        filename = log_list(i).name;
+        datestamp = filename(numel(prefix)+1:end-4);
+
+        % Metadata
+        fid = fopen(filename);
+        yuyvMeta = fread(fid,Inf,'*uint8');
+        fclose(fid);
+        clear fid;
+        yuyvMeta = msgpack('unpacker',yuyvMeta,'uint8');
+
+        % Setup the colortable item
+        % Grab the YUYV logged information
+        f_raw = fopen(sprintf('%s/yuyv_r_%s.log',log_dir,datestamp));
+        yuyvMontage = fread(f_raw,Inf,'*uint32');
+        yuyvMontage = reshape( ...
+            yuyvMontage, ...
+            [yuyvMeta{1}.w/2, yuyvMeta{1}.h, 1, numel(yuyvMeta)] ...
+            );
+        save(sprintf('%s/yuyv_%s.mat',log_dir,datestamp),'yuyvMontage');
     end
-    yuyv = fread(f_raw, rsz, '*uint8');
-    yuyv = typecast(yuyv,'uint32');
-    yuyv = reshape( yuyv, meta.w/2, meta.h );
-    yuv = yuyv2yuv(yuyv);
-    rgb = ycbcr2rgb(yuv);
-    imagesc(rgb);
-    pause;
 end
-clear yuyv yuv rgb;
-fclose(f_raw);
-clear f_raw;
-%}

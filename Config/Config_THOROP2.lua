@@ -8,7 +8,7 @@ if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 --local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
 Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
-exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
+exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm','Kick'}
 
 
 -- Printing of debug messages
@@ -25,7 +25,7 @@ Config.debug = {
 }
 
 
-Config.birdwalk = 1 		
+--Config.birdwalk = 1
 Config.raise_body = true
 Config.use_exact_tZMP = true
 Config.use_heeltoe_walk = true

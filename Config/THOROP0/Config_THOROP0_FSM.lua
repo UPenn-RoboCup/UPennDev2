@@ -16,6 +16,7 @@ fsm.enabled = {
 	Motion = true,
 	Gripper = false,
 	Lidar = false,
+  Game = true,
 }
 
 --SJ: now we can have multiple FSM options
@@ -34,11 +35,13 @@ fsm.libraries = {
 	World = 'RoboCup2015'
 }
 
+fsm.Game = {
+ {'gameIdle', 'initial', 'gameInitial'},
+-- {'gameInitial', 'set', 'gameSet'}, 
+}
 
 fsm.Arm = {
-  {'armIdle', 'timeout', 'armIdle'},
-  {'armIdle', 'init', 'armInit'},
-  {'armInit', 'done', 'armPose1'},
+  {'armDetect', 'timeout', 'armDetect'},  
 }
 
 fsm.Head = {
@@ -78,14 +81,8 @@ fsm.Head = {
   {'headLookGoal', 'timeout', 'headTrack'},
   {'headLookGoal', 'scanobs', 'headObstacleScan'},  
 
-
-
-
-
-
-
-
 }
+
 
 
 
@@ -219,6 +216,7 @@ fsm.Motion = {
 	{'motionStance', 'bias', 'motionBiasInit'},
 	{'motionStance', 'uninit', 'motionUnInit'},
 	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
+  {'motionStance', 'hybridwalkkick', 'motionHybridWalkKick'},
 --	{'motionStance', 'slowstep', 'motionSlowStep'},
 
 	--
@@ -289,6 +287,7 @@ fsm.bodyRobocupApproach = {
   target={0.30,0.12} ,
   th = {0.34, 0.02}
 }
+
 
 Config.fsm = fsm
 

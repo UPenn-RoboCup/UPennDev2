@@ -12,18 +12,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-
-
-print("INITING FSMS")
-
   -- Initialize all other state machines
-  arm_ch:send'init'
   motion_ch:send'stand'
   head_ch:send'init'
-  gripper_ch:send'close'
 
-	-- TODO: This should be somewhere else...
-  hcm.set_step_dir(0)
 end
 
 function state.update()
@@ -33,16 +25,9 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   t_update = t
-  --if t-t_entry > timeout then return'timeout' end
-
   --TODO: Check whether all FSMs have done initialzing 
   local body_init = mcm.get_status_body_init()
-  local arm_init = mcm.get_status_arm_init()
-  if body_init==1 and arm_init==1 then return "done" end
-
-  --TODO
---  return 'done'
-
+  if body_init==1  then return "done" end
 end
 
 function state.exit()
@@ -114,8 +99,6 @@ function state.exit()
     end
   end
 
-  lidar_ch:send'pan' --start lidar when init is over
-  gripper_ch:send'idle'
   hcm.set_step_stepcount(1)
   print(state._NAME..' Exit' )
   t_exit = Body.get_time()

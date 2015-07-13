@@ -106,120 +106,6 @@ stance.sitHeight = 0.75
 stance.dHeight = 0.04 --4cm per sec
 
 
-local kick = {}
-
-local tSlope1 = walk.tStep*walk.phSingle[1]
-local tSlope2 = walk.tStep*(1-walk.phSingle[2])
-local tStepMid =walk.tStep-tSlope1-tSlope2
-
-kick.stepqueue={}
-
-
---Walkkick #1
-
-kick.stepqueue["LeftKick0"]=
-  {
---    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {-0.02,0.02,0},{0,walk.stepHeight,0}}, --ls
---    {{0.18,0,0},1,  tSlope1, 1.2, tSlope2,   {-0.02,0.04,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
-
-
-    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {-0.02,0.02,0},{0,walk.stepHeight,0}}, --ls
-    {{0.16,0,0},1,  tSlope1, 1.2, tSlope2,   {-0.02,-0.02,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
-
-    {{0.06,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}},
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
-
-kick.stepqueue["RightKick0"]=
-  {
---    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {-0.02,-0.02,0},{0,walk.stepHeight,0}}, --ls
---    {{0.18,0,0},0,  tSlope1, 1.2, tSlope2,   {-0.02,-0.04,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
-
-    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {-0.02,-0.02,0},{0,walk.stepHeight,0}}, --ls
-    {{0.16,0,0},0,  tSlope1, 1.2, tSlope2,   {-0.02,0.02,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
-
-    {{0.06,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, --ls
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
-
-
-
-
---Stronger kick
---Works nice! 
-
-local kickdur = 2.0
-local yShift = 0.03
-
-kick.stepqueue["LeftKick1"]=
-  {
-    {{0.12,0,0},1,  0.3,kickdur,0.3,   {0.0,yShift,0},{-2,walk.stepHeight*1,0}}, --rf kick    
-    {{0,0,0,},  2,   0.1, 3, 0.1,     {-0.01,0.0,0},  {0, 0, 0}},                  
-    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
-
-kick.stepqueue["RightKick1"]=
-  {
-    {{0.12,0,0},0,  0.3,kickdur,0.3,   {0.00,-yShift,0},{-2,walk.stepHeight*1,0}}, --rf kick    
-    {{0,0,0,},  2,   0.1, 3, 0.1,     {-0.01,0.0,0},  {0, 0, 0}},                  
-    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
-
------------------------------------------------------------------------------
-
-
---Walkkick #2
-
-kick.stepqueue["LeftKick2"]=
-  {
-    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {-0.02,0.02,0},{0,walk.stepHeight,0}}, --ls
-    {{0.12,0,0},1,  tSlope1, 1.2, tSlope2,   {-0.02,0.04,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
-    {{0.00,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}},
-    {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
-
-kick.stepqueue["RightKick2"]=
-  {
-    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {-0.02,-0.02,0},{0,walk.stepHeight,0}}, --ls
-    {{0.12,0,0},0,  tSlope1, 1.2, tSlope2,   {-0.02,-0.04,0},{-1,1.5*walk.stepHeight,0}}, --rf kick    
-    {{0.00,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, --ls
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-    {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
-  }
-
-kick.stepqueue["null"]=
-  {
-    {{0.0,0,0},2,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,0,0}}, 
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
   walk.anklePitchLimit=vector.new{-40,40}*DEG_TO_RAD --teddy has ankle ROM limitation
@@ -265,6 +151,16 @@ else
 
   walk.velocityBias = {0.0,0,0} --To get rid of drifting
   walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
+
+  
+  if IS_WEBOTS then
+    walk.stepHeight = 0.04 
+    walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
+  else
+    walk.stepHeight = 0.02 
+    walk.supportY = 0.01
+  end 
+
 end
 
 
@@ -281,7 +177,7 @@ if c.cal[HOSTNAME].headBias then walk.headBias = c.cal[HOSTNAME].headBias end
 --Now we keep a lookup table file rather than specifying here
 local zparam = require'zmpparam'
 Config.zmpparam = zparam.zmpparam
-Config.kick = kick
+--Config.kick = kick
 
 return Config
 

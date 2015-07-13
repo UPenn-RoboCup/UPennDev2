@@ -5,7 +5,7 @@ IS_COMPETING = false
 if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 -- Global Config
 Config = {PLATFORM_NAME = 'THOROP1',demo = false,}
-local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
+local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm', 'Kick'}
 
 --Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
 --exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}

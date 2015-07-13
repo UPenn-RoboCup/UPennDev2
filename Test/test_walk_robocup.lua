@@ -68,15 +68,40 @@ local function update(key_code)
     body_ch:send'approach'
 
 	elseif key_char_lower==("5") then
- 		mcm.set_walk_kickfoot(0)--left foot kick
+		mcm.set_walk_kicktype(0)
+		mcm.set_walk_kickfoot(0)--left foot kick
     mcm.set_walk_steprequest(1)
     mcm.set_walk_kickphase(1)
+		if mcm.get_walk_ismoving()==0 then
+			motion_ch:send'hybridwalkkick'
+		end
 
 	elseif key_char_lower==("6") then
+		mcm.set_walk_kicktype(0)
  		mcm.set_walk_kickfoot(1)--left foot kick
     mcm.set_walk_steprequest(1)
     mcm.set_walk_kickphase(1)
+		if mcm.get_walk_ismoving()==0 then
+			motion_ch:send'hybridwalkkick'
+		end
 
+	elseif key_char_lower==("t") then
+		mcm.set_walk_kicktype(1)
+		mcm.set_walk_kickfoot(0)--left foot kick
+    mcm.set_walk_steprequest(1)
+    mcm.set_walk_kickphase(1)
+		if mcm.get_walk_ismoving()==0 then
+			motion_ch:send'hybridwalkkick'
+		end
+
+	elseif key_char_lower==("y") then
+		mcm.set_walk_kicktype(1)
+ 		mcm.set_walk_kickfoot(1)--left foot kick
+    mcm.set_walk_steprequest(1)
+    mcm.set_walk_kickphase(1)
+		if mcm.get_walk_ismoving()==0 then
+			motion_ch:send'hybridwalkkick'
+		end
 
 
 

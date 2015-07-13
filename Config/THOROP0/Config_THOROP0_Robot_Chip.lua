@@ -144,39 +144,10 @@ Config.left_foot_ft.bias_torque = {-6,13.8}
 Config.right_foot_ft.bias_forceZ = -20
 Config.right_foot_ft.bias_torque = {-10,18.5}
  
-if Config.birdwalk then
-	--swap ft type
-	Config.left_foot_ft = FT16390
-	Config.right_foot_ft = FT16389
-	--swap servo ids
-	Config.left_foot_ft.m_ids = {23, 25}
-	Config.right_foot_ft.m_ids = {24, 26}
-
---after foot change
-
-
-	Config.left_foot_ft = FT16389
-	Config.right_foot_ft = FT16390
-
-	Config.left_foot_ft.m_ids = {23, 25}
-	Config.right_foot_ft.m_ids = {24, 26}
-
-Config.right_foot_ft.bias_forceZ = 49
-Config.right_foot_ft.bias_torque = {-6,13.8}
-
-Config.left_foot_ft.bias_forceZ = -20
-Config.left_foot_ft.bias_torque = {-10,18.5}
-
-
-
-
-else --normal walk
-	Config.left_foot_ft = FT16389
-	Config.right_foot_ft = FT16390
-	Config.left_foot_ft.m_ids = {24, 26}
-	Config.right_foot_ft.m_ids = {23, 25}
-end
-
+Config.left_foot_ft = FT16389
+Config.right_foot_ft = FT16390
+Config.left_foot_ft.m_ids = {24, 26}
+Config.right_foot_ft.m_ids = {23, 25}
 
 
 
@@ -231,35 +202,6 @@ local left_leg = {
 	m_ids = {15,18,20, 22, 24,26},
 	enable_read = true,
 }
-
---------------------------------------------
---for birdwalk, swap chain names too
---------------------------------------------
-if Config.birdwalk then
-
-  left_leg = {
-	name = 'lleg',
-	ttyname = '/dev/ttyUSB2',
-	-- waist pitch
---	m_ids = {15,17,19, 21, 23,25, 27},
-	m_ids = {16,17,19, 21, 23,25, 27},
-	enable_read = true,
-  }
-  right_leg = {
-	name = 'rleg',
-	ttyname = '/dev/ttyUSB3',
---	m_ids = {16,18,20, 22, 24,26},
-	m_ids = {15,18,20, 22, 24,26},
-	enable_read = true,
-  }
-end
-
-
-
-
-
-
-
 
 
 if OPERATING_SYSTEM=='darwin' then
@@ -355,31 +297,6 @@ local jointNames = {
 	"ChestLidarPan",
 }
 
---SJ: those joint names are only used for webots joint referencing
---here I swap them to enable birdwalk without modifying the hardware
-
-if Config.birdwalk then
-  jointNames = {
-	"Neck","Head", -- Head (Yaw,pitch)
-	-- Left Arm
-	"ShoulderL", "ArmUpperL", "LeftShoulderYaw",
-	"ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
-	-- Left leg (with waist flipped)
-	"PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
-	-- Right leg (with waist flipped)
-	"PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
-	--Right arm
-	"ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
-	"RightWristYaw","RightWristRoll","RightWristYaw2",
-	-- Waist
-	"TorsoYaw","TorsoPitch",
-	-- Gripper
-	"l_grip", "l_trigger", "l_extra",
-	"r_grip", "r_trigger", "r_extra",
-	-- lidar movement
-	"ChestLidarPan",
-}
-end
 
 Config.jointNames = jointNames
 
@@ -484,95 +401,6 @@ servo.max_rad = vector.new({
 
 --]]
 
---------------------------------------------
---for birdwalk
---------------------------------------------
-
-if Config.birdwalk then
-
---ACTUAL STUFF
-
-	servo.rad_offset = vector.new({
-		0,0, -- Head
---		-90.4,  -88.4 ,  -90,45,  -90,0,0, --LArm
-	--	-91,  -91.4 ,  -90,46.5,  -90,0,0, --LArm
-		-90.2,  -91.4 ,  -90,46.5,  -90,0,0, --LArm
-
-		0,0,0,  0  ,0,0, --LLeg
-		0,0,0,  0  ,0,0, --RLeg
---		88.8,  89.5,  90,-45,  90,0,0, --RArm
---		88.8,  88,  86,-45,  90,0,0, --RArm
-		88.8,  88,  89,-45,  90,0,0, --RArm
-
-		-180,0, -- Waist flip (for birdwalk)
-		0, 0, 0, -- left gripper/trigger
-		-90, -90, 0, -- right gripper/trigger (UCLA verified)
-		0, -- Lidar pan
-	})*DEG_TO_RAD
-
-
-	servo.joint_to_motor={
-		29,30,  --Head yaw/pitch
-		2,4,6,8,10,12,14, --LArm
-
-		16,17,19,21,23,25, -- right leg as left leg
-		15,18,20,22,24,26, -- left leg as right leg
-
-		1,3,5,7,9,11,13,  --RArm
-		28,27, --Waist yaw/pitch (mk2 is inverted)
-		64,66,68, -- left gripper/trigger (This is the order)
-		63,67,65, -- right gripper/trigger/extra
-		37, -- Lidar pan
-	}
-
-	servo.direction = vector.new({
-		1,1, -- Head, mk2
-
---		1,1,1, 1, 1,1,1, --LArm, mk2 reassembled 
-		1,1,1, 1, 1,1,1, --LArm
-		------
-		-1, -1, 1,  1, 1, -1, --LLeg, mk2, flipped
-		-1, -1,-1, -1,-1, -1, --RLeg, mk2, flipped
-		------
---		-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
-		-1,1,1, -1, 1,-1,1, --RArm, replaced
-		1, 1, -- Waist, mk2
-		-1,1,-1, -- left gripper TODO
-		1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
-		-1, -- Lidar pan
-	})
-
-
-
-servo.min_rad = vector.new({
-	-90,-80, -- Head
-	-90, -30, -120,    -160,   -360,-87,-540, --LArm
-	-175,-25,-175,-175,-175,-175, --LLeg
-	-175,-175,-175,-175,-175,-175, --RLeg
-	-90,-87,-90,    -160,      -360,-87,-360, --RArm
-	-540,-45, -- Waist
-	-60, -55, -60,
-	-90, -120, -55, -- right gripper/trigger (UCLA verified)
-	-60, -- Lidar pan
-})*DEG_TO_RAD
-
-servo.max_rad = vector.new({
-	--90,80, -- Head
-	270,80, -- Head
-	230,87,120,   0,     360,87,360, --LArm
-	175,25,175,175,175,175, --LLeg
-	175,175,175,175,175,175, --RLeg
-	160,-0,90,   0,     360,87,360, --RArm
-	540,45, -- Waist
-	65,65,55, -- lgrip
-	105,110,105, -- right gripper/trigger (UCLA verified)
-	60, -- Lidar pan
-})*DEG_TO_RAD
-
-
-
-
-end
 
 
 if Config.USE_DUMMY_ARMS then
@@ -758,45 +586,6 @@ if IS_WEBOTS then
 	})*DEG_TO_RAD
 
 
-
-	if Config.birdwalk then
-print("BIRDWALK")
-
-print("BIRDWALK")
-
-print("BIRDWALK")
-		servo.direction = vector.new({
-			1,1, -- Head
-			1,-1,-1,  1,  -1,-1,1, --LArm
---			1, 1, --[[3 Pitch:]] 1,1, 1, 1, --LLeg
---			1, 1, --[[3 Pitch:]] 1,1, 1, 1, --RLeg
-
---flipped waist: roll and pitch direction flipped
-			1, -1, -1,-1, -1, -1, --LLeg
-			1, -1, -1,-1, -1, -1, --RLeg
-
-			1,-1,-1,  -1,  -1,-1,1, --RArm
-			-- TODO: Check the gripper
-		  -1,1, -- Waist
-		1,1,1, -- left gripper
-		-1,-1,-1, -- right gripper
-
-		1, -- Lidar pan
-	})
-
-	servo.rad_offset = vector.new({
-		0,0, -- head
-		-90,0,0,  0,  0,0,0,
-		0,0,0,0,0,0,
-		0,0,0,0,0,0,
-		-90,0,0,  0,  0,0,0,
-		-180,0, --flip waist
-		0,0,0,
-		0,0,0,
-		0,
-	})*DEG_TO_RAD
-
-	end
 end
 
 

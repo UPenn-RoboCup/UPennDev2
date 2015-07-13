@@ -132,6 +132,9 @@ end
 
 local yaw0 = 0
 local function update_odometry(uOdometry)
+
+  --print('dOdom', unpack(uOdometry))
+
   -- Scale the odometry
 
   --odometry update is called every frame (~120hz)
@@ -160,7 +163,6 @@ local function update_odometry(uOdometry)
 
   --Update pose using odometry info for now
   local pose = wcm.get_robot_pose()
-  wcm.set_robot_pose(util.pose_global(uOdometry,pose))
 
   -- Update the filters based on the new odometry
   ballFilter.odometry(unpack(uOdometry))
@@ -168,6 +170,8 @@ local function update_odometry(uOdometry)
 
   --TODO: slam or wall detection-based pose
 
+  local new_pose = util.pose_global(uOdometry, pose)
+  return new_pose
 
 end
 
@@ -328,8 +332,8 @@ function libWorld.update(uOdom, detection)
     updated_pose = vector.copy(gpspose)
 
     print_pose()
-  elseif wcm.get_robot_reset_pose()==1 or
-    (gcm.get_game_state()~=3 and gcm.get_game_state()~=6)
+  elseif wcm.get_robot_reset_pose()==1
+    --or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6)
   then
     if gcm.get_game_role()==0 then
       -- Goalie initial pos
@@ -356,8 +360,8 @@ function libWorld.update(uOdom, detection)
       end
     end
   else
-    update_odometry(uOdom)
     print_pose()
+    updated_pose = update_odometry(uOdom)
   end
 
   wcm.set_robot_pose(updated_pose)

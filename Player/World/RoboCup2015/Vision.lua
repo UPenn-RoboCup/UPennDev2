@@ -20,7 +20,7 @@ local detectPost
 local detectObstacle
 local ENABLE_BALL = true
 local ENABLE_OBSTACLE = true
-local ENABLE_POST = false
+local ENABLE_POST = true
 local ENABLE_LINE = true
 
 -- Set the variables based on the config file

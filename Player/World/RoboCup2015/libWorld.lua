@@ -207,7 +207,7 @@ local function update_vision(detected)
   -- TODO: fix nan bug with this
   -- If the goal is detected
 	goal = detected.posts
-  if goal then
+  if type(goal)=='table' and #goal>0 then
     if goal[1].type == 3 then
       if Config.debug.goalpost then
         print(string.format("Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
@@ -482,7 +482,7 @@ function libWorld.send()
   end
 
   -- Goal info
-  if goal then
+  if type(goal)=='table' and #goal>0 then
     to_send.goal = {
       type = goal[1].type,
       v1 = goal[1].v

@@ -105,6 +105,7 @@ stance.dqLegLimit = vector.new{10,10,45,90,45,10}*DEG_TO_RAD
 stance.sitHeight = 0.75
 stance.dHeight = 0.04 --4cm per sec
 
+walk.COMoffsetBias = 0.00 --default COM offset 
 
 if HOSTNAME=="teddy2" or HOSTNAME=="dale" then 
   walk.delay_threshold_angle = 999*math.pi/180 --disabled
@@ -142,21 +143,24 @@ else
   walk.stop_threshold_angle = 99*math.pi/180
 
 
-  walk.velLimitX = {-.10,.20}
+  walk.velLimitX = {-.10,.15}
   walk.velLimitY = {-.06,.06}
-
   Config.supportY_preview = 0.0 --this smooths out first step a bit
   Config.supportY_preview2 = 0.0
   walk.supportY = 0.0  
-
   walk.velocityBias = {0.0,0,0} --To get rid of drifting
   walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
 
-  
-  walk.stepHeight = 0.03 
-  walk.supportY = 0.0
+  walk.stepHeight = 0.04 
   walk.tZMP = 0.30
   walk.supportY = -0.01
+
+  walk.COMoffsetBias = 0.0 --default COM offset 
+  walk.COMoffsetBias = -0.01 --default COM offset 
+
+  walk.supportY = -0.0
+
+  walk.stepHeight = 0.05 
 
 end
 
@@ -169,13 +173,13 @@ walk.use_exact_tZMP = false
 walk.traj={}
 walk.traj.hybridwalk = "foot_trajectory_softfast"
 walk.traj.hybridwalk = "foot_trajectory_base2"
+walk.traj.hybridwalk = "foot_trajectory_base"
 
 walk.variable_tstep = false
 walk.variable_support = false
 walk.use_heeltoe_walk = false
 walk.heeltoe_angle = 0*DEG_TO_RAD
 
-walk.COMoffsetBias = 0.00 --default COM offset 
 
 
 

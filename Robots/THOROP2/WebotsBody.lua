@@ -593,6 +593,7 @@ function WebotsBody.update(Body)
 	    -- get first message on the queue
 	    ndata = webots.wb_receiver_get_data_size(tags.receiver)
 	    msg = webots.wb_receiver_get_data(tags.receiver)
+--      print(#msg)
 	    if #msg==14 then
 	    	local ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2
 	    	local ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2

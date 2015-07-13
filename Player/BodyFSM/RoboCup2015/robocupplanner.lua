@@ -38,11 +38,22 @@ function evaluate_goal_kickangle(ballGlobal)
   max_obstacle_angle = 0
   max_obstacle_angle_kickangle = nil
 
+
+--[[
+for i=1,obstacle_num do   
+  local v =wcm['get_obstacle_v'..i]()
+  print("obstacle ",i,":",v[1],v[2])
+end
+--]]
+
   for a=0,10 do 
     local angle = goalAngleR +  (a/10) * (goalAngleL-goalAngleR)
     local obs_angle_min = math.pi
     for i=1,obstacle_num do   
       local v =wcm['get_obstacle_v'..i]()
+
+
+
       local rel_obs_x = v[1]-ballGlobal[1]
       local rel_obs_y = v[2]-ballGlobal[2]
       local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)

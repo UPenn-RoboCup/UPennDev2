@@ -13,7 +13,7 @@ Viewpoint {
 }
 Background {
   skyColor [
-    0.678431 0.847059 0.901961
+    0.7 0.3 0.3
   ]
 }
 DirectionalLight {
@@ -24,8 +24,30 @@ DirectionalLight {
 }
 DirectionalLight {
   direction 0.5 -0.5 0.5
-  intensity 0.5
+  intensity 0.3
 }
+
+DirectionalLight {
+  direction 0.5 -0.2 0.5
+  intensity 0.3
+}
+
+DirectionalLight {
+  direction 0.5 -0.2 -0.5
+  intensity 0.3
+}
+
+DirectionalLight {
+  direction -0.5 -0.2 0.5
+  intensity 0.3
+}
+
+DirectionalLight {
+  direction -0.5 -0.2 -0.5
+  intensity 0.3
+}
+
+
 THORwIn_Dale_halfmass {
   translation 0 1.14 0
   rotation 0 1 0 -1.5708

@@ -90,7 +90,7 @@ function walk.entry()
   tStep = Config.walk.tStep
 
 
-  if Config.use_exact_tZMP then
+  if Config.walk.use_exact_tZMP then
     -- Initiate the ZMP solver
     zmp_solver = libZMP.new_solver({
       ['tStep'] = Config.walk.tStep,
@@ -232,7 +232,7 @@ function walk.update()
 
 
 
-    if Config.raise_body then
+    if Config.walk.raise_body then
       if zLeft<0 or zRight<0 then
          leg_raise = math.min(zLeft,zRight)
          if supportLeg == 2 or phSingle==1 then

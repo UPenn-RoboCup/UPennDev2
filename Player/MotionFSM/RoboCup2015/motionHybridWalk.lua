@@ -36,8 +36,8 @@ local emergency_stop = false
 -- What foot trajectory are we using?
 
 local foot_traj_name = "foot_trajectory_base2"
-if Config.walktraj and Config.walktraj.hybridwalk then
-  foot_traj_name = Config.walktraj.hybridwalk 
+if Config.walk.traj and Config.walk.traj.hybridwalk then
+  foot_traj_name = Config.walk.traj.hybridwalk 
 end
 local foot_traj_func   = moveleg[foot_traj_name]
 
@@ -206,7 +206,7 @@ function walk.update()
 
 
     local uTorsoVelCurrent = mcm.get_status_uTorsoVel()
-    if Config.variable_support then
+    if Config.walk.variable_support then
       local torsoVelYMin = 0.20
       local torsoVelYFactor = 0.5 
       local torsoVelYFactor = 0 
@@ -238,12 +238,6 @@ function walk.update()
           uSupportModY = uSupportModY + 0.01
       end
 
-
-
-
-
-
-
 --quick hack for front walking
       if velCurrent[1]>0.04 then
         if supportLeg==0 then
@@ -266,7 +260,7 @@ function walk.update()
     local y_dist_mag = y_dist/(Config.walk.footY+Config.walk.supportY)/2
      
     local tStepNew = Config.walk.tStep
-    if Config.variable_tstep then
+    if Config.walk.variable_tstep then
 --      print("DIST:",y_dist, y_dist_mag)    
       tStepNew = Config.walk.tStep*y_dist_mag
       tStepNew = Config.walk.tStep* y_dist_mag

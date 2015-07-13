@@ -124,13 +124,8 @@ if HOSTNAME=="teddy2" or HOSTNAME=="dale" then
   walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
 
   
-  if IS_WEBOTS then
-    walk.stepHeight = 0.04 
-    walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
-  else
-    walk.stepHeight = 0.02 
-    walk.supportY = 0.01
-  end 
+  walk.stepHeight = 0.02 
+  walk.supportY = 0.01
   
 else
   --CHIP CHIP CHIP CHiP
@@ -158,19 +153,42 @@ else
   walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.5*DEG_TO_RAD}
 
   
-  if IS_WEBOTS then
-    walk.stepHeight = 0.04 
-    walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
-  else
-    walk.stepHeight = 0.03 
-    walk.supportY = 0.0
-
-    walk.tZMP = 0.30
-    walk.supportY = -0.01
-
-  end 
+  walk.stepHeight = 0.03 
+  walk.supportY = 0.0
+  walk.tZMP = 0.30
+  walk.supportY = -0.01
 
 end
+
+
+--uneven terrain related---
+walk.raise_body = false
+walk.use_exact_tZMP = false 
+-----------------------------
+
+walk.traj={}
+walk.traj.hybridwalk = "foot_trajectory_softfast"
+walk.traj.hybridwalk = "foot_trajectory_base2"
+
+walk.variable_tstep = false
+walk.variable_support = false
+walk.use_heeltoe_walk = false
+walk.heeltoe_angle = 0*DEG_TO_RAD
+
+walk.COMoffsetBias = 0.00 --default COM offset 
+
+
+
+
+if IS_WEBOTS then
+  walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
+  walk.traj.hybridwalk = "foot_trajectory_softfast"
+  walk.stepHeight = 0.06 
+
+--  walk.COMoffsetBias = -0.03 --default COM offset 
+end
+
+
 
 
 ------------------------------------

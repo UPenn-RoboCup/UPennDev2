@@ -25,80 +25,34 @@ Config.debug = {
 }
 
 
---Config.birdwalk = 1
-Config.raise_body = true
-Config.use_exact_tZMP = true
-Config.use_heeltoe_walk = true
-Config.heeltoe_angle = 0*DEG_TO_RAD
-Config.walktraj={}
-Config.walktraj.hybridwalk = "foot_trajectory_softfast"
-Config.walktraj.hybridwalk = "foot_trajectory_base"
-Config.variable_tstep = true
-Config.variable_support = true
 Config.arm_init_timeout = true
 Config.use_imu_yaw = true
-
-Config.estop_mode = 0 --don't do anything!
-Config.estop_mode = 1 --untorque all the servos 
---Config.estop_mode = 2 --make the robot sit down
-Config.auto_restart = true
-
---Config.hybrid_approach = true
-
-Config.roll_adaptation_max = 3.5*DEG_TO_RAD
-Config.pitch_adaptation_max = 2*DEG_TO_RAD
---Config.pitch_adaptation_max = 0*DEG_TO_RAD --disabled
-
-Config.pitch_threshold = 1*DEG_TO_RAD
-Config.pitch_adaptation_max = 3*DEG_TO_RAD --disabled
-
---NO adaptation!
-Config.adapt_surface_angle =false
-Config.roll_adaptation_max = 0*DEG_TO_RAD
-Config.pitch_adaptation_max = 0*DEG_TO_RAD
-
-
-Config.comX_bias = 0
 
 
 -- Tune for Webots
 if IS_WEBOTS then
-	if IS_STEVE then
-		Config.testfile = 'test_teleop'
-		Config.debug.armplan = true
 
-	  Config.sensors = {
-			--ft = true,
-			--feedback = 'feedback_wizard',
-		--slam = 'slam_wizard',
-    --head_camera = 'camera_wizard',
-    --chest_lidar = true,
-    --head_lidar = true,
-    --kinect = 'kinect2_wizard',
-			--mesh = 'mesh_wizard',
-		 	--world = 'world_wizard',
-	  }
-	else
-		--Config.testfile = 'test_testbed'		
---		Config.testfile = 'test_walkstuff'		
-
-		--Config.testfile = 'test_testbed'		
-		Config.testfile = 'test_terrain'		
-
-		Config.debug.armplan = false		
-		Config.use_jacobian_arm_planning = true
-		Config.enable_jacobian_test = false
-		--Config.enable_jacobian_test = true
-		Config.enable_touchdown = false
+	--for SJ's testing in webots
+		Config.testfile = 'test_walk_robocup'
+		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
-			feedback = 'feedback_wizard',
-		 	world = 'world_wizard',
-	  }
+      head_camera = 'camera_wizard',
+      vision = 'vision_wizard',
+      world = 'world_wizard',
 
-		Config.use_imu_yaw = false --use imu yaw only for single approach
+			--feedback = 'feedback_wizard',
+	  }
+	if IS_STEVE then		
+		Config.use_gps_pose = false
+		Config.use_gps_vision = false
+	else
+		Config.use_gps_pose = true
+		Config.use_gps_vision = true
+
 	end
 end
+
 
 -----------------------------------
 -- Load Paths and Configurations --

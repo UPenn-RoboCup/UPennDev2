@@ -24,18 +24,6 @@ Config.debug = {
   walk = false,
 }
 
---NO BIRDWALK FOR ROBOCUP
---Config.birdwalk = 1
-
-Config.raise_body = true
-Config.use_exact_tZMP = true
-Config.use_heeltoe_walk = true
-Config.heeltoe_angle = 0*DEG_TO_RAD
-Config.walktraj={}
-Config.walktraj.hybridwalk = "foot_trajectory_softfast"
---Config.walktraj.hybridwalk = "foot_trajectory_base"
-Config.variable_tstep = true
-Config.variable_support = true
 Config.arm_init_timeout = true
 Config.use_imu_yaw = false --use odometry for yaw
 

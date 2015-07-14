@@ -23,15 +23,17 @@ local function pairmin(t)
 end
 
 -- In lab Saturday
-local logs = {}
+local logs = {
+}
 logs.yuyv = {
-	'07.11.2015.09.51.10',
-	'07.11.2015.09.51.20',
-	'07.11.2015.09.51.30',
-	'07.11.2015.09.51.40',
-	'07.11.2015.09.51.49',
-	'07.11.2015.09.51.57',
-	ch = si.new_publisher('camera0')
+	'07.13.2015.17.03.14',
+	'07.13.2015.17.03.26',
+	'07.13.2015.17.03.38',
+	'07.13.2015.17.03.50',
+	'07.13.2015.17.04.02',
+	'07.13.2015.17.04.14',
+	ch = si.new_publisher'camera0',
+	dir = HOME..'Data'..'/ucla1',
 }
 
 -- Initialize the coroutines
@@ -40,7 +42,7 @@ for name, log in pairs(logs) do
 		local counter = 0
 		for j, date in ipairs(log) do
 			print(name,'opening',date)
-			local log = libLog.open(HOME..'Data', date, name)
+			local log = libLog.open(log.dir, date, name)
 			local metadata = log:unroll_meta()
 			local it = log:log_iter()
 			for i, meta, payload in it do

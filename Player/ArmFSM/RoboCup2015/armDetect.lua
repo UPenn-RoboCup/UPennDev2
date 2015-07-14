@@ -3,11 +3,13 @@ state._NAME = ...
 local vector = require'vector'
 
 local Body = require'Body'
-local t_entry, t_update, t_finish
+local t_entry, t_update, t_finish, tLastUpdate
 local timeout = 10.0
 require'mcm'
 
 local qLArm, qRArm
+
+local mode = 0
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -24,6 +26,7 @@ function state.entry()
     Body.set_rarm_torque_enable(0)
     unix.usleep(1e6*0.01);
   end
+  tLastUpdate = t_entry
 end
 
 function state.update()
@@ -37,6 +40,41 @@ function state.update()
   --Read arm positions (for switching roles purpose)
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()  
+
+  local threshold = 45*DEG_TO_RAD
+
+
+  local qL = util.mod_angle(qLArm[1])
+  local qR = util.mod_angle(qRArm[1])
+
+  local newmode = mode
+  if qL>threshold and qR>threshold then
+    mode = 1
+  elseif qL<-threshold and qR<-threshold then
+    mode = 2
+  else
+    mode = 0
+  end
+
+  if t-tLastUpdate>0.2 then
+    if mode==0 then
+      Body.set_head_led_red(0)
+      Body.set_head_led_green(128)
+      Body.set_head_led_blue(0)
+
+    elseif mode==1 then
+      Body.set_head_led_red(255)
+      Body.set_head_led_green(0)
+      Body.set_head_led_blue(0)
+    elseif mode==2 then
+      Body.set_head_led_red(0)
+      Body.set_head_led_green(0)
+      Body.set_head_led_blue(255)
+
+    end
+  tLastUpdate = t
+  end
+
 end
 
 function state.exit()

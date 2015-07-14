@@ -132,7 +132,7 @@ function detectBall.update(Image)
       --local maxH = (config.max_height0 and config.max_height1) and (config.max_height0 + dist * config.max_height1)
       if dist > config.max_distance then
         passed = false
-        msgs[i] = string.format("Distance: %.2f > %.2f", dist_sq, config.max_distance)
+        msgs[i] = string.format("Distance: %.2f > %.2f", dist, config.max_distance)
       --elseif maxH and v[3] > maxH then
 			elseif v[3] > config.max_height then
         passed = false

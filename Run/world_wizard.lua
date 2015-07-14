@@ -82,16 +82,7 @@ local function update()
 		local uOdometry = mcm.get_status_odometry()
 		dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
 		uOdometry0 = vector.copy(uOdometry)
-
-		--Hack for robocup
-		if Config.fsm.libraries.World=='RoboCup' then
-			lW.update_odometry(dOdometry)
-			wcm.set_robot_pose(lW.get_pose())
-		else
-			-- general world
-			--  SJ: now pose update is done in libworld, not here
-			lW.update(dOdometry)
-		end
+		lW.update(dOdometry)
 
 	end
 	-- Send localization info

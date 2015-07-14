@@ -188,6 +188,8 @@ walk.heeltoe_angle = -5*DEG_TO_RAD
 walk.heeltoe_angle = 0*DEG_TO_RAD
 
 --walk.heeltoe_angle = 5*DEG_TO_RAD
+walk.stepHeight = 0.03 
+
 
 
 if IS_WEBOTS then
@@ -216,7 +218,7 @@ if IS_WEBOTS then
   walk.stepHeight = 0.06
 end
 
-walk.stepHeight = 0.03 
+
 --walk.heeltoe_angle = -5*DEG_TO_RAD
 
 

@@ -216,9 +216,23 @@ if IS_WEBOTS then
   walk.stepHeight = 0.06
 end
 
+---------kinda works
+walk.traj.hybridwalk = "foot_trajectory_base"--sin wave
 walk.stepHeight = 0.03 
---walk.heeltoe_angle = -5*DEG_TO_RAD
+------------------------------
 
+
+
+--test
+
+walk.phSingle = {0.2,0.8}
+walk.phZmp = {0.2,0.8}
+walk.stepHeight = 0.04 
+
+
+walk.tZMP = 0.30
+
+walk.hipRollCompensation = {1.3*DEG_TO_RAD, 1.3*DEG_TO_RAD}
 
 --[[
 walk.phSingle = {0.15,0.85}

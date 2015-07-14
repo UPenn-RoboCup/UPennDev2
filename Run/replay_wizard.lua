@@ -6,7 +6,7 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
-local constant = 72
+--local constant = 72
 
 local function pairmin(t)
 	-- find the minimum element in the array table

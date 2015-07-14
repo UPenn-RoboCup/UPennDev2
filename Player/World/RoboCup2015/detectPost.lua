@@ -198,14 +198,38 @@ function detectPost.update(Image)
 
 			local scale1 = good_post.axisMinor / postDiameter
 			local scale2 = good_post.axisMajor / postHeight
-			local scale3 = math.sqrt(good_post.area / (postDiameter*postHeight))
+			local scale3 = math.sqrt(good_post.area / (postDiameter * postHeight))
+
+
+			-- Check the bottom of the post, where it is on the ground
+			--[[
+			local xmid = (good_post.boundingBox[1] + good_post.boundingBox[2])/2
+			local yground = good_post.boundingBox[4]
+			local v0 = vector.new{
+				Image.focalA,
+				-(xmid - Image.x0A),
+				-(yground - Image.y0A),
+				1,
+			}
+			-- Put into the local and global frames
+			local vL = Image.tfL * (v0 / v0[4])
+			local vG = Image.tfG * (v0 / v0[4])
+			local pHead4 = T.position4(Image.tfL)
+			local target_height = 0
+			local scale = (pHead4[3] - target_height) / (pHead4[3] - vL[3])
+			local vProj = pHead4 + scale * (vL - pHead4)
+			goalStats[i].v = vProj
+			--]]
+
 			local scale
-			if good_postB.boundingBox[3]<2 then
+			if good_postB.boundingBox[3] < 2 then
 				--This post is touching the top, so we can only use diameter
 				scale = scale1
 			else
 			  scale = math.max(scale1, scale2, scale3)
 			end
+			--print('scale', scale)
+			--print('scales', scale1, scale2, scale3)
 			-- coords A
 			local v0 = vector.new{
 				Image.focalA,

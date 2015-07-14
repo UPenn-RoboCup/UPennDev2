@@ -52,7 +52,7 @@ function state.update()
   if stage==1 then
     dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}
     pitchTarget = 20*DEG_TO_RAD
-    yawTarget = -120*DEG_TO_RAD
+    yawTarget = -90*DEG_TO_RAD
   elseif stage==2 then
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}    
     pitchTarget = 20*DEG_TO_RAD
@@ -63,11 +63,11 @@ function state.update()
     yawTarget = -135*DEG_TO_RAD
   elseif stage==3 then        
     pitchTarget = 60*DEG_TO_RAD
-    yawTarget = -120*DEG_TO_RAD
+    yawTarget = -90*DEG_TO_RAD
   elseif stage==4 then
     dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}    
     pitchTarget = 60*DEG_TO_RAD
-    yawTarget = 120*DEG_TO_RAD
+    yawTarget = 90*DEG_TO_RAD
   elseif stage==5 then
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
     pitchTarget = 60*DEG_TO_RAD
@@ -79,7 +79,7 @@ function state.update()
   elseif stage==6 then
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
     pitchTarget = 20*DEG_TO_RAD            
-    yawTarget = 120*DEG_TO_RAD
+    yawTarget = 90*DEG_TO_RAD
   else
     wcm.set_ball_notvisible(1)
     print("Couldn't find the ball!!!!")

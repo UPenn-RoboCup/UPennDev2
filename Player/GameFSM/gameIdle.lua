@@ -11,7 +11,7 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
-
+  gcm.set_game_state(5)
 end
 
 function state.update()
@@ -19,7 +19,7 @@ function state.update()
   local t = Body.get_time()
   local t_diff = t - t_update
   -- Save this at the last update time
-  gcm.set_game_state(5)
+
   t_update = t
 end
 

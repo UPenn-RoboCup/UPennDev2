@@ -9,7 +9,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local util = require'util'
 local odomScale = Config.world.odomScale
-local odomDrift = Config.world.odomDrift or -0.0001
+local odomDrift = Config.world.odomDrift or 0
 
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
@@ -147,19 +147,17 @@ local function update_odometry(uOdometry)
   -- Next, grab the gyro yaw
 
 --  if Config.use_imu_yaw and mcm.get_walk_ismoving()>0 then
-
   if Config.use_imu_yaw then
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
       uOdometry[3] = gps_pose[3] - yaw0
-      yaw0 = gps_pose[3]
+      yaw0 = gps_pose[3]      
     else
       local yaw = Body.get_rpy()[3]
       uOdometry[3] = yaw - yaw0
       yaw0 = yaw
     end
   end
-  yaw0 = Body.get_rpy()[3] --We need to keep update this (to use the increment only while walking)
 
   --Update pose using odometry info for now
   local pose = wcm.get_robot_pose()
@@ -272,6 +270,9 @@ function libWorld.pose_reset()
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
   yaw0 = Body.get_rpy()[3]
+
+  poseFilter.initialize({0,0,0},{0,0,0})
+  
   if IS_WEBOTS then
     gps_pose = wcm.get_robot_pose_gps()
     yaw0 = gps_pose[3]
@@ -319,7 +320,9 @@ end
 function libWorld.update(uOdom, detection)
   local t = Body.get_time()
   -- Run the updates
-  if wcm.get_robot_reset_pose()==1 then libWorld.pose_reset() end
+  if wcm.get_robot_reset_pose()==1 then 
+    print("reset?")
+    libWorld.pose_reset() end
 
   local updated_pose
   if IS_WEBOTS and Config.use_gps_pose then
@@ -337,7 +340,10 @@ function libWorld.update(uOdom, detection)
   elseif wcm.get_robot_reset_pose()==1
     --or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6)
   then
+
+
     if gcm.get_game_role()==0 then
+      print("goalie pose reset")
       -- Goalie initial pos
       local factor2 = 0.99
       poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
@@ -346,9 +352,9 @@ function libWorld.update(uOdom, detection)
 
       wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
     else --Attacker initial pos
+      print("attacker pose reset")
       poseFilter.initialize({0,0,0},{0,0,0})
       wcm.set_robot_odometry({0,0,0})
-
       updated_pose = {0,0,0}
     end
 
@@ -405,9 +411,6 @@ function libWorld.update(uOdom, detection)
     end
 
   end
-
-
-
 
   -- Increment the process count
   count = count + 1

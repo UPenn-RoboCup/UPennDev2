@@ -49,8 +49,10 @@ if IS_WEBOTS then
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false
 	else
-		Config.use_gps_pose = true
-		Config.use_gps_vision = true
+--		Config.use_gps_pose = true
+--		Config.use_gps_vision = true
+
+
 	end
 end
 
@@ -91,13 +93,6 @@ for sm, en in pairs(Config.fsm.enabled) do
 end
 
 
-
-
-if IS_WEBOTS then
-	Config.world.odomDrift = 0
-else
-	Config.world.odomDrift = -0.0001
-end
 
 
 --robot drifts backwards

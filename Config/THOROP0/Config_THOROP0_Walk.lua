@@ -188,6 +188,8 @@ walk.heeltoe_angle = -5*DEG_TO_RAD
 walk.heeltoe_angle = 0*DEG_TO_RAD
 
 --walk.heeltoe_angle = 5*DEG_TO_RAD
+walk.stepHeight = 0.03 
+
 
 
 if IS_WEBOTS then
@@ -228,18 +230,28 @@ walk.stepHeight = 0.03
 walk.phSingle = {0.2,0.8}
 walk.phZmp = {0.2,0.8}
 walk.stepHeight = 0.04 
-
-
 walk.tZMP = 0.30
-
 walk.hipRollCompensation = {1.3*DEG_TO_RAD, 1.3*DEG_TO_RAD}
+
+
+
+
+walk.tZMP = 0.33
+walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.7*DEG_TO_RAD}
+walk.supportY = 0.01
+
+--This helps a bit (with weird side effect)
+walk.hipPitch0 = -29.21*DEG_TO_RAD
+walk.hipPitchCompensationMag = 1.3
+------------------------------------------
+
+
+
 
 --[[
 walk.phSingle = {0.15,0.85}
 walk.phZmp = {0.15,0.85}
 
-walk.hipPitch0 = -29.21
-walk.hipPitchCompensationMag = 1.5
 walk.hipPitchCompensationMag = 1
 --]]
 
@@ -259,5 +271,3 @@ Config.zmpparam = zparam.zmpparam
 --Config.kick = kick
 
 return Config
-
-

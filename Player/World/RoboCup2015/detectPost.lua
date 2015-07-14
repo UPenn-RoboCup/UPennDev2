@@ -116,7 +116,8 @@ function detectPost.update(Image)
 		if passed then
 			if math.abs(postStats.orientation) < g_orientation then
 				passed = false
-				msgs[i] = string.format('Oriented: %.1f < %.1f', postStats.orientation, g_orientation)
+				msgs[i] = string.format('Oriented: %.1f < %.1f',
+					postStats.orientation*RAD_TO_DEG, g_orientation*RAD_TO_DEG)
 			end
 		end
 

@@ -89,7 +89,7 @@ vision.goal = {
 	th_min_bbox_area = 80, --100,
 	th_nPostB = 15,
 	th_min_area = 40,
-	th_min_orientation = 80*DEG_TO_RAD,
+	th_min_orientation = 75*DEG_TO_RAD,
 	th_min_fill_rate = 0.4, --0.45,
 
 

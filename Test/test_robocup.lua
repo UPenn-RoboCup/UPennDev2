@@ -73,6 +73,8 @@ local function update(key_code)
 
 	elseif key_char_lower==("s") then  
 		head_ch:send'scanobs'		
+	elseif key_char_lower==("l") then  
+		head_ch:send'log'		
 
 
 

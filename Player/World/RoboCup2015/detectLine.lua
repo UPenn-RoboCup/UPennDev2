@@ -23,6 +23,8 @@ function detectLine.entry(cfg, Image)
   colors = Image.colors
 end
 
+--local libLog = require'libLog'
+
 -- TODO: Needs to know the ball centroid, so as to avoid categorizing that one
 function detectLine.update(Image)
   if type(Image)~='table' then
@@ -39,9 +41,16 @@ function detectLine.update(Image)
 	)
 
 	--[[
-	local linePropsB2 = ImageProc2.field_lines(
+	local props = ImageProc2.field_lines(
 		Image.labelB_d, Image.wb, Image.hb
 	)
+	local meta = {nth = props.NTH, maxr = props.MAXR, nr = props.NR, w = Image.wb, h=Image.hb}
+	libLog.one('labelB_d', meta, Image.labelB_d, ffi.sizeof(Image.labelB_d))
+	libLog.one('count_d', meta, props.count_d, ffi.sizeof(props.count_d))
+	libLog.one('line_sum_d', meta, props.line_sum_d, ffi.sizeof(props.line_sum_d))
+	libLog.one('line_min_d', meta, props.line_min_d, ffi.sizeof(props.line_min_d))
+	libLog.one('line_max_d', meta, props.line_max_d, ffi.sizeof(props.line_max_d))
+	os.exit()
 	--]]
 
   if #linePropsB==0 then

@@ -1,0 +1,66 @@
+#VRML_SIM V7.4.3 utf8
+WorldInfo {
+  info [
+    "World for the Adult size soccer league"
+  ]
+  title "THORwIn2 RoboCup"
+  basicTimeStep 8
+  FPS 30
+}
+Viewpoint {
+  orientation -0.810117 0.567092 0.148719 0.577312
+  position 3.67577 5.99298 9.90101
+}
+Background {
+  skyColor [
+    0.7 0.3 0.3
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.3
+}
+
+DirectionalLight {
+  direction 0.5 -0.2 0.5
+  intensity 0.3
+}
+
+DirectionalLight {
+  direction 0.5 -0.2 -0.5
+  intensity 0.3
+}
+
+DirectionalLight {
+  direction -0.5 -0.2 0.5
+  intensity 0.3
+}
+
+DirectionalLight {
+  direction -0.5 -0.2 -0.5
+  intensity 0.3
+}
+
+
+THORwIn_Dale_halfmass {
+  translation 0 1.14 0
+  rotation 0 1 0 -1.5708
+  controller "thorop"
+  controllerArgs "0 32"
+  max_torque_400w 90
+  max_torque_200w 90
+  max_torque_100w 45
+  damping_constant 0
+  footContactMaterial "feet"
+}
+DEF TASKFLOOR Floor {
+  texture [
+    "textures/texture_grid.png"
+  ]
+}

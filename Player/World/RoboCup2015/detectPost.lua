@@ -104,10 +104,12 @@ function detectPost.update(Image)
 		if passed then
 			-- TODO: depends on ball or goal
 			--local fill_rate = postStats.area / box_area
-			local fill_rate = postStats.area / (postStats.axisMajor * postStats.axisMinor)
+			local fill_rate = postStats.area /
+				(postStats.axisMajor * postStats.axisMinor)
 			if fill_rate < g_fill_rate then
 				passed = true
-				msgs[i] = string.format('Fill rate: %.2f < %.2f', fill_rate, g_fill_rate)
+				msgs[i] = string.format('Fill rate: %.2f < %.2f',
+					fill_rate, g_fill_rate)
 			end
 		end
 
@@ -126,7 +128,8 @@ function detectPost.update(Image)
 			local aspect = postStats.axisMajor / postStats.axisMinor
 			if (aspect < g_aspect_ratio[1]) or (aspect > g_aspect_ratio[2]) then
 				passed = false
-				msgs[i] = string.format('Aspect: %.2f [%.2f %.2f]\n', aspect, unpack(g_aspect_ratio))
+				msgs[i] = string.format('Aspect: %.2f [%.2f %.2f]',
+					aspect, unpack(g_aspect_ratio))
 			end
 		end
 
@@ -137,7 +140,7 @@ function detectPost.update(Image)
 			local margin = math.min(leftPoint, Image.wa - rightPoint)
 			if margin <= g_margin then
 				passed = false
-				msgs[i] = string.format('Edge margin:%.1f < %.1f\n', margin, g_margin)
+				msgs[i] = string.format('Edge margin:%.1f < %.1f', margin, g_margin)
 			end
 		end
 
@@ -162,10 +165,12 @@ function detectPost.update(Image)
 			-- This seems totally bogus...
 			if postStats.vL[3] < Config.vision.goal.height_min then
 				passed = false
-				msgs[i] = string.format('Too Low %0.2f < %0.2f', postStats.vL[3], Config.vision.goal.height_min)
+				msgs[i] = string.format('Too Low %0.2f < %0.2f',
+					postStats.vL[3], Config.vision.goal.height_min)
 			elseif postStats.vL[3] > Config.vision.goal.height_max then
 				passed = false
-				msgs[i] = string.format('Too High %.2f > %.2f', postStats.vL[3], Config.vision.goal.height_max)
+				msgs[i] = string.format('Too High %.2f > %.2f',
+					postStats.vL[3], Config.vision.goal.height_max)
 			end
 		end
 
@@ -185,138 +190,143 @@ function detectPost.update(Image)
 	if nPosts>2 or nPosts<1 then
 		post_detected = false
 		msgs[#msgs+1] = 'Bad number of posts'
+		return false, table.concat(msgs, '\n')
+	else
+		msgs[#msgs+1] = "== Checking Posts =="
 	end
 
 	-- 0:unknown 1:left 2:right 3:double
 	local goalStats = {}
-	if post_detected then
-		-- Convert to body coordinate
-		for i=1,nPosts do
-      goalStats[i] = {}
-			local good_postB = postB[ i_validB[1] ]
-			local good_post = valid_posts[i]
+	-- Convert to body coordinate
+	for i=1,nPosts do
+    goalStats[i] = {}
+		local good_postB = postB[ i_validB[1] ]
+		local good_post = valid_posts[i]
 
-			local scale1 = good_post.axisMinor / postDiameter
-			local scale2 = good_post.axisMajor / postHeight
-			local scale3 = math.sqrt(good_post.area / (postDiameter * postHeight))
+		local scale1 = good_post.axisMinor / postDiameter
+		local scale2 = good_post.axisMajor / postHeight
+		local scale3 = math.sqrt(good_post.area / (postDiameter * postHeight))
 
 
-			-- Check the bottom of the post, where it is on the ground
-			--[[
-			local xmid = (good_post.boundingBox[1] + good_post.boundingBox[2])/2
-			local yground = good_post.boundingBox[4]
-			local v0 = vector.new{
-				Image.focalA,
-				-(xmid - Image.x0A),
-				-(yground - Image.y0A),
-				1,
-			}
-			-- Put into the local and global frames
-			local vL = Image.tfL * (v0 / v0[4])
-			local vG = Image.tfG * (v0 / v0[4])
-			local pHead4 = T.position4(Image.tfL)
-			local target_height = 0
-			local scale = (pHead4[3] - target_height) / (pHead4[3] - vL[3])
-			local vProj = pHead4 + scale * (vL - pHead4)
-			goalStats[i].v = vProj
-			--]]
+		-- Check the bottom of the post, where it is on the ground
+		--[[
+		local xmid = (good_post.boundingBox[1] + good_post.boundingBox[2])/2
+		local yground = good_post.boundingBox[4]
+		local v0 = vector.new{
+			Image.focalA,
+			-(xmid - Image.x0A),
+			-(yground - Image.y0A),
+			1,
+		}
+		-- Put into the local and global frames
+		local vL = Image.tfL * (v0 / v0[4])
+		local vG = Image.tfG * (v0 / v0[4])
+		local pHead4 = T.position4(Image.tfL)
+		local target_height = 0
+		local scale = (pHead4[3] - target_height) / (pHead4[3] - vL[3])
+		local vProj = pHead4 + scale * (vL - pHead4)
+		goalStats[i].v = vProj
+		--]]
 
-			local scale
-			if good_postB.boundingBox[3] < 2 then
-				--This post is touching the top, so we can only use diameter
-				scale = scale1
-			else
-			  scale = math.max(scale1, scale2, scale3)
-			end
-			--print('scale', scale)
-			--print('scales', scale1, scale2, scale3)
-			-- coords A
-			local v0 = vector.new{
-				Image.focalA,
-				-(good_post.centroid[1] - Image.x0A),
-				-(good_post.centroid[2] - Image.y0A),
-				scale,
-			}
-			-- Put into the local and global frames
-			local vL = Image.tfL * (v0 / v0[4])
-			local vG = Image.tfG * (v0 / v0[4])
-			goalStats[i].v = vL
-
-			-- TODO: distanceFactor
-			goalStats[i].post = good_post
-			goalStats[i].postB = good_postB
+		local scale
+		if good_postB.boundingBox[3] < 2 then
+			--This post is touching the top, so we can only use diameter
+			scale = scale1
+		else
+		  scale = math.max(scale1, scale2, scale3)
 		end
+		--print('scale', scale)
+		--print('scales', scale1, scale2, scale3)
+		-- coords A
+		local v0 = vector.new{
+			Image.focalA,
+			-(good_post.centroid[1] - Image.x0A),
+			-(good_post.centroid[2] - Image.y0A),
+			scale,
+		}
+		-- Put into the local and global frames
+		local vL = Image.tfL * (v0 / v0[4])
+		local vG = Image.tfG * (v0 / v0[4])
+		goalStats[i].v = vL
 
-		-- Check goal type
-    local fail_msg = {}
-		if nPosts==2 then
-			goalStats[1].type = 3
-      goalStats[2].type = 3
+		-- TODO: distanceFactor
+		goalStats[i].post = good_post
+		goalStats[i].postB = good_postB
+	end
 
-      -- Goal width check in x-y space
-      local dx = goalStats[1].v[1]-goalStats[2].v[1]
-      local dy = goalStats[1].v[2]-goalStats[2].v[2]
-      local dist = math.sqrt(dx*dx+dy*dy)
-      if dist > goalWidth * 3 then --TODO: put into Config
-				msgs[#msgs+1] = string.format("Goal too wide: %.1f > %.1f", dist, goalWidth*3)
-        return false, table.concat(msgs, '\n')
-      elseif dist < goalWidth * 0.2 then
-        msgs[#msgs+1] = string.format("Goal too narrow: %.1f < %.1f", dist, goalWidth*0.2)
-        return false, table.concat(msgs, '\n')
-      end
+	-- Check goal type
+  local fail_msg = {}
+	if nPosts==2 then
+		goalStats[1].type = 3
+    goalStats[2].type = 3
 
-    else  -- Only single post is detected
-      -- look for crossbar stats
-      local dxCrossbar, crossbar_ratio
-      --If the post touches the top, it should be an unknown post
-      if goalStats[1].postB.boundingBox[3]<2 then --touching the top
-        dxCrossbar = 0 --Should be unknown post
-        crossbar_ratio = 0
-      else
-        -- The crossbar should be seen
-        local postWidth = goalStats[1].post.axisMinor
-
-        local leftX = goalStats[1].post.boundingBox[1]-5*postWidth
-        local rightX = goalStats[1].post.boundingBox[2]+5*postWidth
-        local topY = goalStats[1].post.boundingBox[3]-5*postWidth
-        local bottomY = goalStats[1].post.boundingBox[3]+5*postWidth
-        -- TODO: Is this the right bbox?
-				local bboxA = {leftX, rightX, topY, bottomY}
-				local crossbarStats = ImageProc2.color_stats(
-					Image.labelA_d, Image.wa, Image.ha, colors.white, bboxA
-				)
-
-				-- TODO: Error here, as centroid is not defined
-				if type(crossbarStats)~='table' or not crossbarStats.centroid then
-					msgs[#msgs+1] = 'dumb crossbar issue'
-					return false, table.concat(msgs, '\n')
-				end
-        dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
-        crossbar_ratio = dxCrossbar / postWidth
-      end
-      -- Determine left/right/unknown
-      if (math.abs(crossbar_ratio) > min_crossbar_ratio) then
-        if crossbar_ratio>0 then goalStats[1].type = 1
-        else goalStats[1].type = 2 end
-      else
-        -- Eliminate small post without cross bars
-        if goalStats[1].post.area < th_min_area_unknown_post then
-					msgs[#msgs+1] = 'Single post size too small'
-          return false, table.concat(msgs, '\n')
-        end
-        -- unknown post
-        goalStats[1].type = 0
-      end
-
-    end  --End of goal type check
-
-    -- Convert torch tensor to table
-    for i=1,#goalStats do
-      goalStats[i].v = vector.new(goalStats[i].v)
-			msgs[#msgs+1] = string.format('Goal Position: %.2f %.2f', unpack(goalStats[i].v))
+    -- Goal width check in x-y space
+    local dx = goalStats[1].v[1]-goalStats[2].v[1]
+    local dy = goalStats[1].v[2]-goalStats[2].v[2]
+    local dist = math.sqrt(dx*dx+dy*dy)
+    if dist > goalWidth * 3 then --TODO: put into Config
+			msgs[#msgs+1] = string.format("Goal too wide: %.1f > %.1f",
+				dist, goalWidth*3)
+      return false, table.concat(msgs, '\n')
+    elseif dist < goalWidth * 0.2 then
+      msgs[#msgs+1] = string.format("Goal too narrow: %.1f < %.1f",
+				dist, goalWidth*0.2)
+      return false, table.concat(msgs, '\n')
     end
 
-	end
+  else  -- Only single post is detected
+    -- look for crossbar stats
+    local dxCrossbar, crossbar_ratio
+    --If the post touches the top, it should be an unknown post
+    if goalStats[1].postB.boundingBox[3]<2 then --touching the top
+      dxCrossbar = 0 --Should be unknown post
+      crossbar_ratio = 0
+    else
+      -- The crossbar should be seen
+      local postWidth = goalStats[1].post.axisMinor
+
+      local leftX = goalStats[1].post.boundingBox[1]-5*postWidth
+      local rightX = goalStats[1].post.boundingBox[2]+5*postWidth
+      local topY = goalStats[1].post.boundingBox[3]-5*postWidth
+      local bottomY = goalStats[1].post.boundingBox[3]+5*postWidth
+      -- TODO: Is this the right bbox?
+			local bboxA = {leftX, rightX, topY, bottomY}
+			local crossbarStats = ImageProc2.color_stats(
+				Image.labelA_d, Image.wa, Image.ha, colors.white, bboxA
+			)
+
+			-- TODO: Error here, as centroid is not defined
+			if type(crossbarStats)~='table' or not crossbarStats.centroid then
+				msgs[#msgs+1] = 'dumb crossbar issue'
+				return false, table.concat(msgs, '\n')
+			end
+      dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
+      crossbar_ratio = dxCrossbar / postWidth
+    end
+    -- Determine left/right/unknown
+    if math.abs(crossbar_ratio) > min_crossbar_ratio then
+      if crossbar_ratio>0 then goalStats[1].type = 1
+      else goalStats[1].type = 2 end
+    else
+      -- Eliminate small post without cross bars
+      if goalStats[1].post.area < th_min_area_unknown_post then
+				msgs[#msgs+1] = string.format('Single post size %.2f < %.2f',
+					goalStats[1].post.area, th_min_area_unknown_post)
+        return false, table.concat(msgs, '\n')
+      end
+      -- unknown post
+      goalStats[1].type = 0
+    end
+
+  end  --End of goal type check
+
+  -- Convert torch tensor to table
+  for i=1,#goalStats do
+    goalStats[i].v = vector.new(goalStats[i].v)
+		msgs[#msgs+1] = string.format('Goal Position: %.2f %.2f',
+			unpack(goalStats[i].v))
+  end
+
 
 	if post_detected then
 		return goalStats, table.concat(msgs, '\n')

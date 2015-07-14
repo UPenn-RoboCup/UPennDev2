@@ -194,9 +194,50 @@ ImageProc.color_countB = color_countB
 
 -- Field lines
 ----[[
+
+local function radon2ij(props, ir, ith)
+  local s, c = props.sin_d[ith], props.cos_d[ith]
+  local iR = (ir - props.r0) * c
+  local jR = (ir - props.r0) * s
+  local lMean = props.line_sum_d[ith][ir] / props.count_d[ith][ir]
+  local lMin = props.line_min_d[ith][ir]
+  local lMax = props.line_max_d[ith][ir]
+  return {
+    ir = ir,
+    ith = ith,
+    iMean = iR - lMean * s,
+    jMean = jR + lMean * c,
+    iMin = iR - lMin * s,
+    jMin = jR + lMin * c,
+    iMax = iR - lMax * s,
+    jMax = jR + lMax * c,
+  }
+end
+
 local ptable = require'util'.ptable
 local RadonTransform = require'ImageProc.ffi.RadonTransform'
 function ImageProc.field_lines(label, w, h)
+
+  local props = RadonTransform.radon_lines_label(label, w, h, true, true)
+
+  local cmax = 0
+  local irmax = 0
+  local ithmax = 0
+  for ith=0, props.NTH-1 do
+    for ir=0, props.NR-1 do
+      if props.count_d[ith][ir] > cmax then
+        cmax = props.count_d[ith][ir]
+        irmax = ir
+        ithmax = ith
+      end
+    end
+  end
+
+  local ij = radon2ij(props, irmax, ithmax)
+  ij.count = cmax
+
+  return props, ij
+  --[[
 
   -- Have a minimum width of the line (in pixel space)
   local min_width = 1
@@ -205,7 +246,6 @@ function ImageProc.field_lines(label, w, h)
   local cntMax1, cntMax2 = 0, 0
   local found = false
 
-  local props = RadonTransform.radon_lines_label(label, w, h, true, true)
   local count_d = props.count_d
   local line_sum_d = props.line_sum_d
   local line_min_d = props.line_min_d
@@ -224,6 +264,7 @@ function ImageProc.field_lines(label, w, h)
 
     end
   end
+  --]]
 
 end
 --]]

@@ -23,7 +23,7 @@ function detectLine.entry(cfg, Image)
   colors = Image.colors
 end
 
---local libLog = require'libLog'
+local libLog = require'libLog'
 
 -- TODO: Needs to know the ball centroid, so as to avoid categorizing that one
 function detectLine.update(Image)
@@ -40,16 +40,21 @@ function detectLine.update(Image)
     config.connect_th, config.max_gap, config.min_length
 	)
 
-	--[[
-	local props = ImageProc2.field_lines(
+	----[[
+	local props, ij = ImageProc2.field_lines(
 		Image.labelB_d, Image.wb, Image.hb
 	)
-	local meta = {nth = props.NTH, maxr = props.MAXR, nr = props.NR, w = Image.wb, h=Image.hb}
-	libLog.one('labelB_d', meta, Image.labelB_d, ffi.sizeof(Image.labelB_d))
-	libLog.one('count_d', meta, props.count_d, ffi.sizeof(props.count_d))
-	libLog.one('line_sum_d', meta, props.line_sum_d, ffi.sizeof(props.line_sum_d))
-	libLog.one('line_min_d', meta, props.line_min_d, ffi.sizeof(props.line_min_d))
-	libLog.one('line_max_d', meta, props.line_max_d, ffi.sizeof(props.line_max_d))
+	ij.NTH = props.NTH
+	ij.NR = props.NR
+	ij.MAXR = props.MAXR
+	ij.wb = Image.wb
+	ij.hb = Image.hb
+
+	libLog.one('labelB_d', ij, Image.labelB_d, ffi.sizeof(Image.labelB_d))
+	libLog.one('count_d', ij, props.count_d, ffi.sizeof(props.count_d))
+	libLog.one('line_sum_d', ij, props.line_sum_d, ffi.sizeof(props.line_sum_d))
+	libLog.one('line_min_d', ij, props.line_min_d, ffi.sizeof(props.line_min_d))
+	libLog.one('line_max_d', ij, props.line_max_d, ffi.sizeof(props.line_max_d))
 	os.exit()
 	--]]
 

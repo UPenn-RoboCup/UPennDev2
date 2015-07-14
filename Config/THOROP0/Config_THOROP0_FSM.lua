@@ -36,8 +36,12 @@ fsm.libraries = {
 }
 
 fsm.Game = {
- {'gameIdle', 'initial', 'gameInitial'},
--- {'gameInitial', 'set', 'gameSet'}, 
+  {'gamePreinit','init','gameInitial'}, --this is not initial (we manually init the robot)
+  {'gameInitial', 'ready', 'gameReady'},
+  {'gameReady', 'set', 'gameSet'},
+  {'gameSet', 'play', 'gamePlaying'},
+  {'gamePlaying', 'finish', 'gameFinished'},
+
 }
 
 fsm.Arm = {
@@ -182,6 +186,13 @@ fsm.Body = {
 --  {'bodyStop', 'play', 'bodyRobocupIdle'},
 --  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
   {'bodyStop', 'approach', 'bodyRobocupApproach'},
+
+
+
+
+
+  {'bodyStop', 'play', 'bodyRobocupIdle'},
+
 
 	{'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},

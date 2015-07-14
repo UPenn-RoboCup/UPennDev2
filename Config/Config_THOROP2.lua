@@ -33,8 +33,8 @@ if IS_WEBOTS then
 
 	--for SJ's testing in webots
 		--Config.testfile = 'test_testbed'
-		--Config.testfile = 'test_robocup'
-		Config.testfile = 'test_walk_robocup'
+		Config.testfile = 'test_robocup'
+		
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
@@ -45,15 +45,12 @@ if IS_WEBOTS then
 			--feedback = 'feedback_wizard',
 	  }
 
-	if IS_STEVE then
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false
-	else
---		Config.use_gps_pose = true
---		Config.use_gps_vision = true
 
 
-	end
+		Config.use_gps_pose = true
+	Config.use_gps_vision = true
 end
 
 
@@ -105,7 +102,7 @@ Config.supportYSS = -0.03
 Config.walk.stepHeightSlow = 0.02
 
 
-
+Config.use_angle_localization = true
 
 
 

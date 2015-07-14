@@ -42,14 +42,13 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-
-
   --local ball_elapsed = t - wcm.get_ball_t()
   --How long time we have TRIED to look at the ball but couldn't detect the ball?
   local ball_elapsed = wcm.get_ball_tlook() - wcm.get_ball_t()
 
   if ball_elapsed > tLost then --ball lost
-    print "Ball lost"
+
+    print("Ball lost ",ball_elapsed)
     return 'balllost'
   end
 
@@ -80,7 +79,8 @@ function state.update()
 
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
   -- Look at Goal
-  if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then
+--  if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then
+  if not Config.demo and t-t_entry > timeout then    
     -- If robot is close to the ball then do not look up
 --    if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
     if wcm.get_robot_traj_num(count)>=(Config.min_steps_lookdown or 5) then

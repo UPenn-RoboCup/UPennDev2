@@ -22,7 +22,7 @@ local ENABLE_BALL = true
 local ENABLE_OBSTACLE = true
 local ENABLE_POST = true
 local ENABLE_LINE = true
-local ENABLE_LINE = true
+local ENABLE_LINE = false
 
 -- Set the variables based on the config file
 function Vision.entry(cfg)
@@ -87,17 +87,17 @@ function Vision.update(meta, img)
   HeadImage.t = meta.t
 
   local ball, b_debug
-  if detectBall then
+  if detectBall and wcm.get_ball_disable()==0 then
     ball, b_debug = detectBall.update(HeadImage)
   end
 
   local obs, o_debug
-  if detectObstacle then
+  if detectObstacle and wcm.get_obstacle_enable()==1 then
     obs, o_debug = detectObstacle.update(HeadImage)
 	end
 
 	local post, p_debug
-  if detectPost then
+  if detectPost  and wcm.get_goal_disable()==0 then
     post, p_debug = detectPost.update(HeadImage)
   end
 

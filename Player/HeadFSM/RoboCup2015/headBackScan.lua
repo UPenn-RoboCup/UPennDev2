@@ -57,26 +57,26 @@ function state.update()
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}    
     pitchTarget = 20*DEG_TO_RAD
     yawTarget = -135*DEG_TO_RAD
-  elseif stage==2 then
+  elseif stage==3 then
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}    
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = -135*DEG_TO_RAD
-  elseif stage==3 then        
+  elseif stage==4 then        
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = -90*DEG_TO_RAD
-  elseif stage==4 then
+  elseif stage==5 then
     dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}    
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = 90*DEG_TO_RAD
-  elseif stage==5 then
+  elseif stage==6 then
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = 135*DEG_TO_RAD
-  elseif stage==5 then
+  elseif stage==7 then
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
     pitchTarget = 20*DEG_TO_RAD        
     yawTarget = 135*DEG_TO_RAD
-  elseif stage==6 then
+  elseif stage==8 then
     dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
     pitchTarget = 20*DEG_TO_RAD            
     yawTarget = 90*DEG_TO_RAD
@@ -107,6 +107,11 @@ function state.update()
   local ball_elapsed = t - wcm.get_ball_t()
   if ball_elapsed < 0.1 then
     print("Ball found")
+
+    local ballx = wcm.get_ball_x()
+    local bally = wcm.get_ball_y()  
+     print("ball xy:",ballx,bally)
+
     return 'ballfound' --if ball found exit
   end
   

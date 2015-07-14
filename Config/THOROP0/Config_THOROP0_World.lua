@@ -106,6 +106,7 @@ world.use_imu_yaw = true
 
 
 
+world.enable_line = false
 
 
 

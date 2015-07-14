@@ -159,8 +159,22 @@ local function update_odometry(uOdometry)
     end
   end
 
+
+  
   --Update pose using odometry info for now
   local pose = wcm.get_robot_pose()
+
+
+  if IS_WEBOTS and Config.world.use_gps_yaw then
+ 
+
+    local old_pose = wcm.get_robot_pose()
+    local gps_pose = wcm.get_robot_pose_gps()
+    uOdometry[3]=gps_pose[3]-old_pose[3]
+
+    --print(old_pose[3]*180/math.pi, gps_pose[3]*180/math.pi)
+  end
+
 
   -- Update the filters based on the new odometry
   ballFilter.odometry(unpack(uOdometry))
@@ -169,6 +183,10 @@ local function update_odometry(uOdometry)
   --TODO: slam or wall detection-based pose
 
   local new_pose = util.pose_global(uOdometry, pose)
+
+
+
+
   return new_pose
 
 end
@@ -240,6 +258,8 @@ local function update_vision(detected)
         end
       end
     end
+  else
+    goal=nil
   end  --------------------------------------------------------------------------------
 
 
@@ -248,23 +268,25 @@ local function update_vision(detected)
     wcm.set_obstacle_reset(0)
   end
 
-  -- If the obstacle is detected
-  obstacle = detected.obstacles
-  if obstacle then
-    --SJ: we keep polar coordinate statstics of the observed obstacles
-    -- print("detected obstacles:",#obstacle.xs)
-    for i=1,#obstacle.xs do
-      local x, y = obstacle.xs[i], obstacle.ys[i]
-      local r =math.sqrt(x^2+y^2)
-      local a = math.atan2(y,x)
-      --local dr, da = 0.1*r, 15*DEG_TO_RAD -- webots
-      local dr, da = 0.1*r, 5*DEG_TO_RAD -- TODO
-      add_obstacle(a,r, da,dr)
-    end
-    update_obstacles()
+  if wcm.get_obstacle_enable()==1 then
+    -- If the obstacle is detected
+    obstacle = detected.obstacles
+    if obstacle then
+      --SJ: we keep polar coordinate statstics of the observed obstacles
+      -- print("detected obstacles:",#obstacle.xs)
+      for i=1,#obstacle.xs do
+        local x, y = obstacle.xs[i], obstacle.ys[i]
+        local r =math.sqrt(x^2+y^2)
+        local a = math.atan2(y,x)
+        --local dr, da = 0.1*r, 15*DEG_TO_RAD -- webots
+        local dr, da = 0.1*r, 5*DEG_TO_RAD -- TODO
+        add_obstacle(a,r, da,dr)
+      end
+      update_obstacles()
 
-  end  -- end of obstacle
-
+    end  -- end of obstacle
+  end
+  
 end
 
 function libWorld.pose_reset()

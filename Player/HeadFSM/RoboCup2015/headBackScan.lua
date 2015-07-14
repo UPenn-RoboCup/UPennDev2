@@ -29,7 +29,10 @@ function state.entry()
   t_update = t_entry
   stage = 1
   wcm.set_ball_disable(0)
+  wcm.set_ball_backonly(1)
   wcm.set_goal_disable(1)
+  wcm.set_obstacle_enable(0)
+  
 end
 
 function state.update()
@@ -112,6 +115,7 @@ end
 function state.exit()
   print("HeadBackScan time: ",Body.get_time()-t_entry)
   print(state._NAME..' Exit')
+  wcm.set_ball_backonly(0)
 end
 
 return state

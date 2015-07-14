@@ -69,6 +69,14 @@ local function update(key_code)
 		game_ch:send'finish'		
 
 
+
+
+	elseif key_char_lower==("s") then  
+		head_ch:send'scanobs'		
+
+
+
+
 	elseif key_char_lower==("8") then  
 		mcm.set_walk_stoprequest(1)
 	end

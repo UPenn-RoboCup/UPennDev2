@@ -301,7 +301,11 @@ function state.entry()
     else
       mcm.set_walk_kicktype(1) --strong kick default
     end
+
   end
+
+
+
 
   if Config.demo then
    mcm.set_walk_kicktype(0) --Walkkick only for demo

@@ -52,13 +52,11 @@ print('!!!!IS_STEVE!!!!')
 		Config.use_gps_vision = false
 
 	else
-		Config.use_gps_pose = true
-		Config.use_gps_vision = true
-
+		Config.use_gps_pose = false
+		Config.use_gps_vision = false
+		Config.demo = true
 	end
 end
-Config.use_gps_pose = false
-		Config.use_gps_vision = false
 
 
 -----------------------------------

@@ -39,6 +39,7 @@ int lineState(uint8_t label)
     if (label & colorField){
       state = STATE_FIELD;
 		}
+    //else if (label & colorLine){ state = STATE_LINE; width = 1; }
     break;
   case STATE_FIELD:
 		if (label & colorLine) {
@@ -50,17 +51,19 @@ int lineState(uint8_t label)
     }
     break;
   case STATE_LINE:
-  if (label & colorLine){
-    width++;
-    //return width;
-  }
-  else if (label & colorField){
-    state = STATE_FIELD;
-    return width;
-  }
-  else {
-    state = STATE_NONE;
-  }
+  //
+    if (label & colorLine){
+      width++;
+      //return width;
+    }
+    else if (label & colorField){
+      state = STATE_FIELD;
+      return width;
+    }
+    else {
+      state = STATE_NONE;
+    }
+  //
   /*
     // if ( !(label & colorField) ) {
     if (label & colorField){

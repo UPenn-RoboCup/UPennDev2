@@ -14,96 +14,6 @@ local function bboxB2A(bboxB, scaleB)
 	}
 end
 
-
-
-
--- Simple bbox with no tilted color stats
--- Assume always input bboxB
-local function bboxStats(label, color, bbox)
-	local stats
-	if label=='a' then
-		stats = ImageProc2.color_stats(label, color, bbox)
-	else
-		bbox = bboxB2A(bbox)
-		stats = ImageProc2.color_stats(label, color, bbox)
-	end
-	-- return stats and area
-  return stats, (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1)
-end
-
-local function check_prop(color, prop, th_bbox_area, th_area, th_fill, labelA_d)
-  -- Grab the statistics in labelA
-  local stats, box_area = bboxStats('a', color, prop.boundingBox)
-  --TODO: bbox area check seems redundant
-  if box_area < th_bbox_area then
-    return string.format('Box area: %d<%d\n',box_area,th_bbox_area)
-  end
-  local area = stats.area
-  -- If no pixels then return
-  if area < th_area then
-    return string.format('Area: %d < %d \n', area, th_area)
-  end
-  -- Get the fill rate
-	-- TODO: depends on ball or goal
-  --local fill_rate = area / box_area
-	local fill_rate = area / (stats.axisMajor * stats.axisMinor)
-  if fill_rate < th_fill then
-    return string.format('Fill rate: %.2f < %.2f\n', fill_rate, th_fill)
-  end
-  return stats
-end
-
--- Yield coordinates in the labelA space
--- Returns an error message if max limits are given
-local function check_coordinateA(centroid, scale, maxD, maxH1, maxH2)
-	local v = HT.project({
-    focalA,
-    -(centroid[1] - x0A),
-    -(centroid[2] - y0A),
-    scale,
-  })
-
-	local dist_sq = v[1]^2 + v[2]^2
-  local maxH = maxH1 and maxH2 and maxH1 + math.sqrt(dist_sq) * maxH2
-
-  -- Check the distance
-  if maxD and dist_sq > maxD^2 then
-    return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
-  elseif maxH and v[3] > maxH then
-    return string.format("Height: %.2f > %.2f", v[3], maxH)
-  end
-  return v
-end
-
--- Yield coordinates in the labelB space
--- Returns an error message if max limits are given
-local function check_coordinateB(centroid, scale, maxD, maxH)
-
-	local v = HT.project({
-    focalB,
-    -(centroid[1] - x0B),
-    -(centroid[2] - y0B),
-    scale,
-  })
-
-  -- Check the distance
-	local dist_sq = v[1]^2 + v[2]^2
-  if maxD and dist_sq > maxD^2 then
-    return string.format("Distance: %.2f > %.2f", math.sqrt(dist_sq), maxD)
-  elseif maxH and v[3] > maxH then
-    return string.format("Height: %.2f > %.2f", v[3], maxH)
-  end
-  return v
-end
-
-
-
-
-
-
-
-
-
 -- TODO: World config
 local postDiameter = Config.vision.goal.postDiameter
 local postHeight = Config.vision.goal.goalHeight
@@ -135,81 +45,148 @@ function detectPost.update(Image)
 		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
 		Image.wb,
 		Image.hb,
-		colors.magenta)
-  if not postB then return'None detected' end
+		colors.white)
+  if not postB then return false, 'None detected' end
   -- Now process each goal post
   -- Store failures in the array
   local failures, successes = {}, {}
 	local nPosts, i_validB, valid_posts = 0, {}, {}
+
 	--for i=1, math.min(#postB, th_nPostB) do
+	local msgs = {}
 	for i=1, #postB do
+		local passed = true
+
 		local post = postB[i]
-    local fail, has_stats = {}, true
-    local postStats = check_prop(colors.magenta, post, g_bbox_area, g_area, g_fill_rate, labelA_t)
-    if type(postStats)=='string' then
-      table.insert(fail, postStats)
-    else
-			table.insert(fail, string.format('\n Post # %d ', i))
-			local check_passed = true
-      -- TODO: Add lower goal post bbox check
-      -- Orientation check
-      if check_passed and math.abs(postStats.orientation) < g_orientation then
-        table.insert(fail,
-					string.format('Orientation:%.1f < %.1f \n', postStats.orientation, g_orientation) )
-				check_passed = false
-      end
-      -- Aspect Ratio check
-			if check_passed then
-				local aspect = postStats.axisMajor / postStats.axisMinor;
-				if (aspect < g_aspect_ratio[1]) or (aspect > g_aspect_ratio[2]) then
-					table.insert(fail,
-						string.format('Aspect ratio:%.2f, [%.2f %.2f]\n', aspect, unpack(g_aspect_ratio)) )
-					check_passed = false
-				end
-			end
-      -- Edge Margin
-			if check_passed then
-				local leftPoint= postStats.centroid[1] - postStats.axisMinor / 2
-				local rightPoint= postStats.centroid[1] + postStats.axisMinor / 2
-				local margin = math.min(leftPoint, wa - rightPoint)
-				if margin <= g_margin then
-					table.insert(fail, string.format('Edge margin:%.1f < %.1f\n', margin, g_margin))
-					check_passed = false
-				end
-			end
-			-- TODO: Add ground check
 
-			-- Height Check
-			if check_passed then
-				local scale = postStats.axisMinor / postDiameter
-				local v = check_coordinateA(postStats.centroid, scale)
-         --print('GOAL HEIGHT:', v[3])
-				if v[3] < Config.vision.goal.height_min then
-					table.insert(fail, 'TOO LOW\n')
-					check_passed = false
-        elseif v[3]>Config.vision.goal.height_max then
-					table.insert(fail, 'TO HIGH\n')
-					check_passed = false
-				end
+		-- TODO: Use labelB?
+		-- Grab the statistics in labelA
+		local post_bboxB = post.boundingBox
+		--[[
+		-- TODO: Exact and not just bit and?
+		local postStatsB = ImageProc2.color_stats(
+			Image.labelB_d, Image.wb, Image.hb, colors.white, post_bboxB
+		)
+		--]]
+
+		local post_bboxA = bboxB2A(post_bboxB, Image.scaleB)
+		local postStatsA = ImageProc2.color_stats(
+			Image.labelA_d, Image.wa, Image.ha, colors.white, post_bboxA
+		)
+
+		local postStats = postStatsA
+		--local postStats = postStatsB
+
+		-- If no pixels then return
+		if postStats.area < g_area then
+			passed = false
+			msgs[i] = string.format('Area: %d < %d', postStats.area, g_area)
+		end
+
+
+		--TODO: bbox area check seems redundant
+		local box_areaA, box_areaB
+		if passed then
+			if postStatsA then
+				box_areaA = (post_bboxA[2] - post_bboxA[1] + 1) *
+					(post_bboxA[4] - post_bboxA[3] + 1)
+			end
+			if postStatsB then
+				box_areaB = (post_bboxB[2] - post_bboxB[1] + 1) *
+					(post_bboxB[4] - post_bboxB[3] + 1)
 			end
 
-			-- Check # of valid postB
-			if check_passed then
-				table.insert(fail, 'is good\n')
-				nPosts = nPosts + 1
-				i_validB[#i_validB + 1] = i
-				valid_posts[nPosts] = postStats
+			if box_areaA < g_bbox_area then
+				passed = false
+				msgs[i] = string.format('Box area: %d < %d', box_areaA, g_bbox_area)
 			end
-    end  -- End of check on this postB
-		table.insert(failures, table.concat(fail, ',') )
+		end
+
+		-- Get the fill rate
+		if passed then
+			-- TODO: depends on ball or goal
+			--local fill_rate = postStats.area / box_area
+			local fill_rate = postStats.area / (postStats.axisMajor * postStats.axisMinor)
+			if fill_rate < g_fill_rate then
+				passed = true
+				msgs[i] = string.format('Fill rate: %.2f < %.2f', fill_rate, g_fill_rate)
+			end
+		end
+
+		-- TODO: Add lower goal post bbox check
+		-- Orientation check
+		if passed then
+			if math.abs(postStats.orientation) < g_orientation then
+				passed = false
+				msgs[i] = string.format('Oriented: %.1f < %.1f',
+					postStats.orientation, g_orientation)
+			end
+		end
+
+		-- Aspect Ratio check
+		if passed then
+			local aspect = postStats.axisMajor / postStats.axisMinor
+			if (aspect < g_aspect_ratio[1]) or (aspect > g_aspect_ratio[2]) then
+				passed = false
+				msgs[i] = string.format('Aspect: %.2f [%.2f %.2f]\n', aspect, unpack(g_aspect_ratio))
+			end
+		end
+
+		-- Edge Margin
+		if passed then
+			local leftPoint = postStats.centroid[1] - postStats.axisMinor / 2
+			local rightPoint = postStats.centroid[1] + postStats.axisMinor / 2
+			local margin = math.min(leftPoint, Image.wa - rightPoint)
+			if margin <= g_margin then
+				passed = false
+				msgs[i] = string.format('Edge margin:%.1f < %.1f\n', margin, g_margin)
+			end
+		end
+
+		-- TODO: Add ground check
+
+		-- Height Check
+		local v
+		if passed then
+			local scale = postStats.axisMinor / postDiameter
+			-- coords A
+			local v0 = vector.new{
+		    Image.focalA,
+		    -(postStatsA.centroid[1] - Image.x0A),
+		    -(postStatsA.centroid[2] - Image.y0A),
+		    scale,
+		  }
+			-- Put into the local and global frames
+      local vL = Image.tfL * (v0 / v0[4])
+			local vG = Image.tfG * (v0 / v0[4])
+			postStats.vL = vL
+
+
+			if postStats.vL[3] < Config.vision.goal.height_min then
+				passed = false
+				msgs[i] = 'TOO LOW'
+			elseif postStats.vL[3] > Config.vision.goal.height_max then
+				passed = false
+				msgs[i] = 'TO HIGH'
+			end
+		end
+
+		-- Check # of valid postB
+		if passed then
+			msgs[i] = 'GOOD'
+			nPosts = nPosts + 1
+			i_validB[#i_validB + 1] = i
+			valid_posts[nPosts] = postStats
+		end
+
 	end -- End of checks on all postB
 
 	-- Goal type detection
+	-- TODO: this might have problem when robot see goal posts on other fields
 	local post_detected = true
 	if nPosts>2 or nPosts<1 then
-		--TODO: this might have problem when robot see goal posts on other fields
-		table.insert(failures, 'Bad number of posts')
 		post_detected = false
+		msgs[#msgs+1] = 'Bad number of posts'
 	end
 
 	-- 0:unknown 1:left 2:right 3:double
@@ -229,16 +206,21 @@ function detectPost.update(Image)
 				--This post is touching the top, so we can only use diameter
 				scale = scale1
 			else
-			  scale = math.max(scale1,scale2,scale3)
+			  scale = math.max(scale1, scale2, scale3)
 			end
-			if scale == scale1 then
-				goalStats[i].v = check_coordinateA(good_post.centroid, scale1)
-			elseif scale == scale2 then
-				goalStats[i].v = check_coordinateA(good_post.centroid, scale2)
-			else
-				goalStats[i].v = check_coordinateA(good_post.centroid, scale3)
-			end
-			--TODO: distanceFactor
+			-- coords A
+			local v0 = vector.new{
+				Image.focalA,
+				-(good_post.centroid[1] - Image.x0A),
+				-(good_post.centroid[2] - Image.y0A),
+				scale,
+			}
+			-- Put into the local and global frames
+			local vL = Image.tfL * (v0 / v0[4])
+			local vG = Image.tfG * (v0 / v0[4])
+			goalStats[i].v = vL
+
+			-- TODO: distanceFactor
 			goalStats[i].post = good_post
 			goalStats[i].postB = good_postB
 		end
@@ -255,10 +237,10 @@ function detectPost.update(Image)
       local dist = math.sqrt(dx*dx+dy*dy)
       if dist > goalWidth * 3 then --TODO: put into Config
         local fail_str = string.format("Goal too wide: %.1f > %.1f\n", dist, goalWidth*3)
-        return table.insert(fail_msg, fail_str)
+        return false, table.insert(fail_msg, fail_str)
       elseif dist<goalWidth * 0.2 then
         local fail_str = string.format("Goal too wide: %.1f < %.1f\n", dist, goalWidth*0.2)
-        return table.insert(fail_msg, fail_str)
+        return false, table.insert(fail_msg, fail_str)
       end
 
     else  -- Only single post is detected
@@ -276,9 +258,13 @@ function detectPost.update(Image)
         local rightX = goalStats[1].post.boundingBox[2]+5*postWidth
         local topY = goalStats[1].post.boundingBox[3]-5*postWidth
         local bottomY = goalStats[1].post.boundingBox[3]+5*postWidth
-        local bboxA = {leftX, rightX, topY, bottomY}
+        -- TODO: Is this the right bbox?
+				local bboxA = {leftX, rightX, topY, bottomY}
+				local crossbarStats = ImageProc2.color_stats(
+					Image.labelA_d, Image.wa, Image.ha, colors.white, bboxA
+				)
 
-        local crossbarStats = ImageProc2.color_stats('a', colors.magenta, bboxA)
+
         dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
         crossbar_ratio = dxCrossbar / postWidth
       end
@@ -289,7 +275,7 @@ function detectPost.update(Image)
       else
         -- Eliminate small post without cross bars
         if goalStats[1].post.area < th_min_area_unknown_post then
-          return table.insert(fail_msg, 'single post size too small')
+          return false, table.insert(fail_msg, 'single post size too small')
         end
         -- unknown post
         goalStats[1].type = 0
@@ -307,11 +293,11 @@ function detectPost.update(Image)
 	end
 
 	if post_detected then
-		return table.concat(failures, ','), goalStats
+		return goalStats, table.concat(failures, ',')
 	end
 
   -- Yield the failure messages and the success tables
-  return table.concat(failures, ',')
+  return false, table.concat(failures, ',')
 end
 function detectPost.exit()
 end

@@ -88,10 +88,18 @@ local function update(meta, img)
 	--]]
 
 	local Image, detection = Vision.update(meta, img)
-	----[[
+	--[[
 	if detection.ball then
 		print('\n=Ball=')
 		ptable(detection.ball)
+	--elseif detection.debug.ball then
+--		print(detection.debug.ball)
+	end
+	--]]
+	--[[
+	if detection.posts then
+		print('\n=Posts=', detection.posts)
+		ptable(detection.posts)
 	--elseif detection.debug.ball then
 --		print(detection.debug.ball)
 	end

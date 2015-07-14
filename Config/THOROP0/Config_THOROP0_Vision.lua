@@ -121,11 +121,12 @@ vision.line = {
   --connect_th = 1.4,
 	connect_th = 3,
   --max_gap = 1,
-	max_gap = 2,
+	max_gap = 3,
   -- labelB space
-  min_count = 20,
-  --min_length = 5,
-	min_length = 8,
+  --min_count = 20,
+	--min_length = 16,
+	min_count = 24,
+	min_length = 20,
   --max_height = 0.3,
 	max_height = 0.2,
   --min_aspect_ratio = 2.5,
@@ -288,7 +289,8 @@ if IS_WEBOTS then
 	head.cameraRoll = 0
 	head.yawBias = 0
 --]]
-
+	vision.line.min_length = 8
+	vision.line.max_gap = 1
 	vision.goal = {
 		th_min_bbox_area = 80,
 		th_nPostB = 10,

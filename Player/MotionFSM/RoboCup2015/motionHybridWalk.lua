@@ -68,7 +68,7 @@ function walk.entry()
 
   print(walk._NAME..' Entry' )
   mcm.set_status_stabilization_mode(0) --We're in single support
-  if Config.use_heeltoe_walk then 
+  if Config.walk.use_heeltoe_walk then 
     mcm.set_walk_heeltoewalk(1) 
   else
     mcm.set_walk_heeltoewalk(0) 
@@ -287,8 +287,13 @@ function walk.update()
   local uLeft, uRight, zLeft, zRight, aLeft,aRight  = uLeft_now, uRight_now, 0,0, 0,0
   if supportLeg == 0 then 
     uRight,zRight,aRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight) --LS
+
+
+    aRight = moveleg.get_foot_tilt(ph)
   else 
     uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
+
+    aLeft = moveleg.get_foot_tilt(ph)
   end
 
 
@@ -296,9 +301,9 @@ function walk.update()
   --positive aLeft: toe lift
   --negative aLeft: heel lift
 
-  local heeltoe_angle = Config.heeltoe_angle or 5*DEG_TO_RAD
+  local heeltoe_angle = Config.walk.heeltoe_angle or 5*DEG_TO_RAD
 
-  if Config.use_heeltoe_walk then
+  if Config.walk.use_heeltoe_walk then
     mcm.set_walk_footlift({aLeft*heeltoe_angle, aRight*heeltoe_angle})
   else
     mcm.set_walk_footlift({0,0})

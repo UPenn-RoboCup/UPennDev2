@@ -64,7 +64,7 @@ vision_ch.callback = function(skt)
 end
 
 -- Timeout in milliseconds
-local TIMEOUT = 1 / 10 * 1e3
+local TIMEOUT = 1 / 30 * 1e3
 local poller = si.wait_on_channels{vision_ch}
 local npoll
 local t0, t = get_time()

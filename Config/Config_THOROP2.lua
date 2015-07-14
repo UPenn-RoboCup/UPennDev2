@@ -1,5 +1,5 @@
 --Now the Config file is entirely identical over two robots (using hostname)
-IS_STEVE = true
+IS_STEVE = false
 IS_COMPETING = false
 
 if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
@@ -139,10 +139,14 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
   Config.world.use_imu_yaw = true
+
+
+  --[[
   Config.walk.velLimitX = {-.10,.10}
   Config.walk.velLimitX = {-.10,.15}
   Config.walk.velLimitY = {-.04,.04}
   Config.walk.velDelta  = {0.04,0.02,0.1}
+  --]]
   Config.stop_after_score = false
 
 end

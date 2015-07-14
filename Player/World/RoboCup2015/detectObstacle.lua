@@ -139,7 +139,7 @@ function detectObstacle.update(Image)
 			-- Put into the local and global frames
       local vL = Image.tfL * (v0 / v0[4])
 			local vG = Image.tfG * (v0 / v0[4])
-			v = vG
+			v = vL
 
 			-- Project to the ground
 			local target_height = 0

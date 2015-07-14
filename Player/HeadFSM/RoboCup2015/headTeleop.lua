@@ -19,6 +19,7 @@ function state.entry()
   -- Reset the human position
   hcm.set_motion_headangle(Body.get_head_position())
   wcm.set_ball_disable(0)  
+  wcm.set_goal_disable(0)
 end
 
 function state.update()

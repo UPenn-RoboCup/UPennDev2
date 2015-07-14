@@ -76,9 +76,6 @@ function state.entry()
     yaw0 = defendAngle;
   end
 
-
-
-
   stage,scandir = 1,1
   local qNeck = Body.get_head_command_position()
   yaw1 = yaw0-0.5*yawSweep
@@ -94,12 +91,22 @@ function state.entry()
   end
   t_update = Body.get_time()
   wcm.set_ball_disable(1)  
+  wcm.set_goal_disable(1)  
+  wcm.set_obstacle_enable(0)  
 end
 
 function state.update()
+
+
+
   local t = Body.get_time();
   local tpassed=t-t_update
   t_update = t
+
+  if tpassed>( Config.goaldetection_enable_delay or 0.5 ) then
+    wcm.set_goal_disable(0)    
+  end
+
 
   --escape lookgoal if we're about to reach the destination
   if wcm.get_robot_traj_num(count)<(Config.min_steps_lookdown or 5) then
@@ -137,6 +144,7 @@ end
 function state.exit()
   print(state._NAME..' Exit'..' total time:'..Body.get_time()-t_entry  )
   wcm.set_ball_disable(0)
+  wcm.set_goal_disable(1)
 end
 
 return state

@@ -9,7 +9,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local util = require'util'
 local odomScale = Config.world.odomScale
-local odomDrift = Config.world.odomDrift or -0.0001
+local odomDrift = Config.world.odomDrift or 0
 
 local ballFilter = require'ballFilter'
 local poseFilter = require'poseFilter'
@@ -147,22 +147,34 @@ local function update_odometry(uOdometry)
   -- Next, grab the gyro yaw
 
 --  if Config.use_imu_yaw and mcm.get_walk_ismoving()>0 then
-
   if Config.use_imu_yaw then
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
       uOdometry[3] = gps_pose[3] - yaw0
-      yaw0 = gps_pose[3]
+      yaw0 = gps_pose[3]      
     else
       local yaw = Body.get_rpy()[3]
       uOdometry[3] = yaw - yaw0
       yaw0 = yaw
     end
   end
-  yaw0 = Body.get_rpy()[3] --We need to keep update this (to use the increment only while walking)
 
+
+  
   --Update pose using odometry info for now
   local pose = wcm.get_robot_pose()
+
+
+  if IS_WEBOTS and Config.world.use_gps_yaw then
+ 
+
+    local old_pose = wcm.get_robot_pose()
+    local gps_pose = wcm.get_robot_pose_gps()
+    uOdometry[3]=gps_pose[3]-old_pose[3]
+
+    --print(old_pose[3]*180/math.pi, gps_pose[3]*180/math.pi)
+  end
+
 
   -- Update the filters based on the new odometry
   ballFilter.odometry(unpack(uOdometry))
@@ -171,6 +183,10 @@ local function update_odometry(uOdometry)
   --TODO: slam or wall detection-based pose
 
   local new_pose = util.pose_global(uOdometry, pose)
+
+
+
+
   return new_pose
 
 end
@@ -206,40 +222,45 @@ local function update_vision(detected)
 --------------------------------------------------------------------------------
   -- TODO: fix nan bug with this
   -- If the goal is detected
-	goal = detected.posts
-  if goal then
-    if goal[1].type == 3 then
-      if Config.debug.goalpost then
-        print(string.format("Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
-          goal[1].type,
-          goal[1].v[1],goal[1].v[2],
-          goal[2].v[1],goal[2].v[2]
-          ))
-      end
-      if (not Config.disable_goal_vision) then
-        if Config.goalie_odometry_only and gcm.get_game_role()==0 then
-          print("Goalie, goal update disabled")
-        else
-          goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+
+  if wcm.get_goal_disable()==0 then --now disable goal detection unless we look up
+
+  	goal = detected.posts
+    if type(goal)=='table' and #goal>0 then
+      if goal[1].type == 3 then
+        if Config.debug.goalpost then
+          print(string.format("Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
+            goal[1].type,
+            goal[1].v[1],goal[1].v[2],
+            goal[2].v[1],goal[2].v[2]
+            ))
         end
-      end
-    else
-      if Config.debug.goalpost then
-        print(string.format("Single post observation: type %d v(%.2f %.2f)",
-          goal[1].type,
-          goal[1].v[1],goal[1].v[2]
-          ))
-      end
-      if not Config.disable_goal_vision then
-        if Config.goalie_odometry_only and gcm.get_game_role()==0 then
-          print("Goalie, goal update disabled")
-        else
-          goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+        if (not Config.disable_goal_vision) then
+          if Config.goalie_odometry_only and gcm.get_game_role()==0 then
+            print("Goalie, goal update disabled")
+          else
+            goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+          end
+        end
+      else
+        if Config.debug.goalpost then
+          print(string.format("Single post observation: type %d v(%.2f %.2f)",
+            goal[1].type,
+            goal[1].v[1],goal[1].v[2]
+            ))
+        end
+        if not Config.disable_goal_vision then
+          if Config.goalie_odometry_only and gcm.get_game_role()==0 then
+            print("Goalie, goal update disabled")
+          else
+            goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+          end
         end
       end
     end
-  end
---------------------------------------------------------------------------------
+  else
+    goal=nil
+  end  --------------------------------------------------------------------------------
 
 
   if wcm.get_obstacle_reset()==1 then
@@ -247,23 +268,25 @@ local function update_vision(detected)
     wcm.set_obstacle_reset(0)
   end
 
-  -- If the obstacle is detected
-  obstacle = detected.obstacles
-  if obstacle then
-    --SJ: we keep polar coordinate statstics of the observed obstacles
-    -- print("detected obstacles:",#obstacle.xs)
-    for i=1,#obstacle.xs do
-      local x, y = obstacle.xs[i], obstacle.ys[i]
-      local r =math.sqrt(x^2+y^2)
-      local a = math.atan2(y,x)
-      --local dr, da = 0.1*r, 15*DEG_TO_RAD -- webots
-      local dr, da = 0.1*r, 5*DEG_TO_RAD -- TODO
-      add_obstacle(a,r, da,dr)
-    end
-    update_obstacles()
+  if wcm.get_obstacle_enable()==1 then
+    -- If the obstacle is detected
+    obstacle = detected.obstacles
+    if obstacle then
+      --SJ: we keep polar coordinate statstics of the observed obstacles
+      -- print("detected obstacles:",#obstacle.xs)
+      for i=1,#obstacle.xs do
+        local x, y = obstacle.xs[i], obstacle.ys[i]
+        local r =math.sqrt(x^2+y^2)
+        local a = math.atan2(y,x)
+        --local dr, da = 0.1*r, 15*DEG_TO_RAD -- webots
+        local dr, da = 0.1*r, 5*DEG_TO_RAD -- TODO
+        add_obstacle(a,r, da,dr)
+      end
+      update_obstacles()
 
-  end  -- end of obstacle
-
+    end  -- end of obstacle
+  end
+  
 end
 
 function libWorld.pose_reset()
@@ -272,6 +295,9 @@ function libWorld.pose_reset()
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})
   yaw0 = Body.get_rpy()[3]
+
+  poseFilter.initialize({0,0,0},{0,0,0})
+  
   if IS_WEBOTS then
     gps_pose = wcm.get_robot_pose_gps()
     yaw0 = gps_pose[3]
@@ -309,6 +335,8 @@ function libWorld.entry()
   wcm.set_obstacle_num(0)
   wcm.set_ball_notvisible(0)
 
+  reset_obstacles()
+
   libWorld.pose_reset()
   -- Processing count
   count = 0
@@ -317,7 +345,9 @@ end
 function libWorld.update(uOdom, detection)
   local t = Body.get_time()
   -- Run the updates
-  if wcm.get_robot_reset_pose()==1 then libWorld.pose_reset() end
+  if wcm.get_robot_reset_pose()==1 then 
+    print("reset?")
+    libWorld.pose_reset() end
 
   local updated_pose
   if IS_WEBOTS and Config.use_gps_pose then
@@ -335,7 +365,10 @@ function libWorld.update(uOdom, detection)
   elseif wcm.get_robot_reset_pose()==1
     --or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6)
   then
+
+
     if gcm.get_game_role()==0 then
+      print("goalie pose reset")
       -- Goalie initial pos
       local factor2 = 0.99
       poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
@@ -344,9 +377,9 @@ function libWorld.update(uOdom, detection)
 
       wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
     else --Attacker initial pos
+      print("attacker pose reset")
       poseFilter.initialize({0,0,0},{0,0,0})
       wcm.set_robot_odometry({0,0,0})
-
       updated_pose = {0,0,0}
     end
 
@@ -403,9 +436,6 @@ function libWorld.update(uOdom, detection)
     end
 
   end
-
-
-
 
   -- Increment the process count
   count = count + 1
@@ -480,7 +510,7 @@ function libWorld.send()
   end
 
   -- Goal info
-  if goal then
+  if type(goal)=='table' and #goal>0 then
     to_send.goal = {
       type = goal[1].type,
       v1 = goal[1].v

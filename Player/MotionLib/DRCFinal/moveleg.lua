@@ -440,6 +440,10 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 end
 
 
+function moveleg.get_foot_tilt(ph)
+  local aFoot = math.sin(ph*2*math.pi)
+  return aFoot
+end
 
 
 function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
@@ -450,7 +454,7 @@ function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local zFoot = stepHeight * zf
 
   local aFoot = math.sin(phSingle*2*math.pi)
-  aFoot = math.max(0,aFoot) --dont lift heel
+
   
   return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
@@ -481,11 +485,38 @@ function moveleg.foot_trajectory_base2(phSingle,uStart,uEnd,stepHeight)
   local zf=eval_spline(breaksTY, coefsY,phSingle)  
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight*zf
-  local aFoot = math.sin(phSingle*2*math.pi)
-  aFoot = math.max(0,aFoot) --dont lift heel
+  local aFoot = math.sin(phSingle*2*math.pi) 
 
   return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
+
+function moveleg.foot_trajectory_base3(phSingle,uStart,uEnd,stepHeight)
+  --vertical landing 
+  local breaksTX={0.200000,0.500000,0.700000,1.000000,}
+  local breaksTY={0.200000,0.300000,0.400000,0.600000,0.900000,1.000000,}
+  local coefsX={
+    {-1.576577,2.770270,0.009009,0.000000,},
+    {-1.576577,1.824324,0.927928,0.100000,},
+    {-3.198198,0.405405,1.596847,0.500000,},
+    {-3.198198,-1.513514,1.375225,0.810000,},
+  }
+  local coefsY={
+    {3.994134,-9.497067,5.489648,0.000000,},
+    {3.994134,-7.100587,2.170117,0.750000,},
+    {22.041063,-5.902346,0.869824,0.900000,},
+    {-6.064527,0.709972,0.350587,0.950000,},
+    {-7.720842,-2.928744,-0.093168,1.000000,},
+    {-7.720842,-9.877502,-3.935041,0.500000,},
+  }
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight*zf
+  local aFoot = math.sin(phSingle*2*math.pi) 
+
+  return uFoot, zFoot, aFoot, lift_phase, land_phase
+end
+
 
 
 function moveleg.foot_trajectory_soft(phSingle,uStart,uEnd,stepHeight)
@@ -688,6 +719,20 @@ function moveleg.set_leg_positions()
     qLegs[5]=math.min(qLegs[5],Config.walk.anklePitchLimit[2])
     qLegs[11]=math.min(qLegs[11],Config.walk.anklePitchLimit[2])
   end
+
+
+  --hip pitch lag fix
+  if Config.walk.hipPitch0 then
+    if qLegs[3]<Config.walk.hipPitch0 then
+      qLegs[3] = Config.walk.hipPitch0 + (qLegs[3]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+    if qLegs[9]<Config.walk.hipPitch0 then
+      qLegs[9] = Config.walk.hipPitch0 + (qLegs[9]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+  end
+
+
+
 
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))

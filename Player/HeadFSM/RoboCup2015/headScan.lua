@@ -28,6 +28,8 @@ function state.entry()
   t_update = t_entry
   stage = 1
   wcm.set_ball_disable(0)
+  wcm.set_goal_disable(1)
+  wcm.set_obstacle_enable(0)
 end
 
 function state.update()

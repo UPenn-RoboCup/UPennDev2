@@ -116,14 +116,21 @@ if Config.world then
 	--Use this to disable ball detection when robot looks up and scanning around
 	shared.ball.disable = vector.zeros(1)
 
+	--For attacker, ball should be found BEHIND the robot all the time
+	shared.ball.backonly = vector.zeros(1)
+
+
 
 	shared.goal = {}
 	shared.goal.t = vector.zeros(1)
 	shared.goal.attack_angle = vector.zeros(1)
 	shared.goal.defend_angle = vector.zeros(1)
 
+	--Use this to disable false positive when looking down
+	shared.goal.disable = vector.zeros(1)
+
 	shared.obstacle = {}
-	shared.obstacle.enable = vector.zeros(1)
+	shared.obstacle.enable = vector.zeros(1) --only enabled during headobstaclescan
 	shared.obstacle.reset = vector.zeros(1)
 	shared.obstacle.detect = vector.zeros(1)
 
@@ -131,6 +138,10 @@ if Config.world then
 	shared.obstacle.v1 = vector.zeros(2)
 	shared.obstacle.v2 = vector.zeros(2)
 	shared.obstacle.v3 = vector.zeros(2)
+
+
+
+
 
 	-- line for goalie
 	shared.line = {}

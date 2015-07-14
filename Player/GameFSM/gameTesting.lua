@@ -11,15 +11,21 @@ function state.entry()
   -- Update the time of entry
   t_entry = Body.get_time()
   t_update = t_entry
-  gcm.set_game_state(0)
+
+--Gcm variables
+-- 0 for initial / 1 for ready 2 for set / 3 for play / 4 fin
+-- 5: Pre-initialized (idle) 6 for testing
+
+  gcm.set_game_state(6)
 end
 
 function state.update()
+
   local t = Body.get_time()
   local t_diff = t - t_update
   -- Save this at the last update time
-  t_update = t
 
+  t_update = t
 end
 
 function state.exit()

@@ -173,7 +173,8 @@ walk.use_exact_tZMP = false
 walk.traj={}
 walk.traj.hybridwalk = "foot_trajectory_softfast"
 walk.traj.hybridwalk = "foot_trajectory_base2"
-walk.traj.hybridwalk = "foot_trajectory_base"
+walk.traj.hybridwalk = "foot_trajectory_base"--sin wave
+--walk.traj.hybridwalk = "foot_trajectory_base3"
 
 walk.variable_tstep = false
 walk.variable_support = false
@@ -181,16 +182,71 @@ walk.use_heeltoe_walk = false
 walk.heeltoe_angle = 0*DEG_TO_RAD
 
 
+walk.use_heeltoe_walk = true
+walk.heeltoe_angle = 5*DEG_TO_RAD
+walk.heeltoe_angle = -5*DEG_TO_RAD
+walk.heeltoe_angle = 0*DEG_TO_RAD
+
+--walk.heeltoe_angle = 5*DEG_TO_RAD
+walk.stepHeight = 0.03 
 
 
 
 if IS_WEBOTS then
   walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
-  walk.traj.hybridwalk = "foot_trajectory_softfast"
-  walk.stepHeight = 0.06 
+--  walk.traj.hybridwalk = "foot_trajectory_softfast"
+--  walk.stepHeight = 0.06 
 
 --  walk.COMoffsetBias = -0.03 --default COM offset 
+
+  walk.phSingle = {0.2,0.8}
+  walk.phZmp = {0.25,0.75}
+
+
+  walk.phSingle = {0.15,0.85}
+  walk.phZmp = {0.15,0.85}
+
+  walk.velLimitX = {-.10,.30}
+  walk.velLimitY = {-.06,.06}
+
+  walk.velDelta  = {0.05,0.02,0.15}
+
+
+
+  walk.velLimitX = {-.10,.60}
+  walk.stanceLimitX = {-0.60,0.60}
+  walk.stepHeight = 0.06
 end
+
+---------kinda works
+walk.traj.hybridwalk = "foot_trajectory_base"--sin wave
+walk.stepHeight = 0.03 
+------------------------------
+
+
+--kinda works #2
+---------------------------------------------------------------
+walk.phSingle = {0.2,0.8}
+walk.phZmp = {0.2,0.8}
+walk.stepHeight = 0.04 
+walk.tZMP = 0.33
+walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.7*DEG_TO_RAD}
+walk.supportY = 0.01
+
+--This helps a bit (with weird side effect)
+walk.hipPitch0 = -29.21*DEG_TO_RAD
+walk.hipPitchCompensationMag = 1.3
+----------------------------------------------------------------
+
+
+
+
+walk.velLimitX = {-.10,.15}
+walk.velLimitY = {-.03,.03}
+
+
+
+
 
 
 
@@ -211,5 +267,3 @@ Config.zmpparam = zparam.zmpparam
 --Config.kick = kick
 
 return Config
-
-

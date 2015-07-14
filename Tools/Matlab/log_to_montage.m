@@ -1,6 +1,6 @@
 function [] = log_to_montage(logname)
 
-    logname = 'webots';
+    %logname = 'webots';
 
     log_dir = strcat('Data/',logname);
 

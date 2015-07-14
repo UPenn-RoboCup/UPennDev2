@@ -35,7 +35,7 @@ if IS_WEBOTS then
 	--for SJ's testing in webots
 		--Config.testfile = 'test_testbed'
 		--Config.testfile = 'test_robocup'
-		Config.testfile = 'test_walk_robocup'
+		Config.testfile = 'test_robocup'
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
@@ -57,6 +57,8 @@ print('!!!!IS_STEVE!!!!')
 
 	end
 end
+Config.use_gps_pose = false
+		Config.use_gps_vision = false
 
 
 -----------------------------------
@@ -118,9 +120,19 @@ if IS_WEBOTS then
   Config.walk.velDelta  = {0.04,0.02,0.1}
   Config.stop_after_score = false
 
+	Config.world.use_gps_yaw = true
+
 end
 
+Config.goaldetection_enable_delay = 0.3 --we look up, wait for this time and enable goal detection
 
+
+
+
+
+
+
+Config.use_angle_localization = true
 
 Config.stop_at_neutral = true --false for walk testing
 Config.fsm.headTrack.timeout = 3

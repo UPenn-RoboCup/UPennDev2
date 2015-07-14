@@ -132,7 +132,7 @@ function detectBall.update(Image)
       --local maxH = (config.max_height0 and config.max_height1) and (config.max_height0 + dist * config.max_height1)
       if dist > config.max_distance then
         passed = false
-        msgs[i] = string.format("Distance: %.2f > %.2f", dist_sq, config.max_distance)
+        msgs[i] = string.format("Distance: %.2f > %.2f", dist, config.max_distance)
       --elseif maxH and v[3] > maxH then
 			elseif v[3] > config.max_height then
         passed = false
@@ -218,6 +218,15 @@ function detectBall.update(Image)
       msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(propsA.v,1,3))
 
 			--head_ch:send'teleop'
+
+
+      if wcm.get_ball_backonly()==1 then
+        if propsA.v[1]>0 then
+          msgs[#msgs+1]="Ball found front, false positive"
+          return false,table.concat(msgs, '\n')
+        end
+      end
+
 
       return propsA, table.concat(msgs, '\n')
     end

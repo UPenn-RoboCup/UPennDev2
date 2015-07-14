@@ -77,6 +77,7 @@ local init_odometry = function(uTorso)
   wcm.set_robot_utorso1(uTorso)
 end
 
+--[[
 local update_odometry = function(uTorso_in)
   local uTorso1 = wcm.get_robot_utorso1()
 
@@ -94,7 +95,7 @@ local update_odometry = function(uTorso_in)
   --updae odometry variable
   wcm.set_robot_utorso1(uTorso_in)
 end
-
+--]]
 
 local function calculate_footsteps()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
@@ -338,7 +339,7 @@ function walk.update()
     step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
     --Update the odometry variable
-    update_odometry(uTorso)
+    --update_odometry(uTorso)
 
     local uZMP = zmp_solver:get_zmp()
     mcm.set_status_uTorso(uTorso)

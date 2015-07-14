@@ -47,67 +47,38 @@ local function update(key_code)
 
 
 	local torsoangle = hcm.get_legdebug_torso_angle()
-	 if key_char_lower==("i") then      targetvel_new[1]=targetvel[1]+0.01;
-    elseif key_char_lower==("j") then  targetvel_new[3]=targetvel[3]+0.1;
-    elseif key_char_lower==("k") then  targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
-    elseif key_char_lower==("l") then  targetvel_new[3]=targetvel[3]-0.1;
-    elseif key_char_lower==(",") then  targetvel_new[1]=targetvel[1]-0.02;
-    elseif key_char_lower==("h") then  targetvel_new[2]=targetvel[2]+0.02;
-    elseif key_char_lower==(";") then  targetvel_new[2]=targetvel[2]-0.02;
 
 
 
-	elseif key_char_lower==("1") then			
-		body_ch:send'init'
 
 
+
+--Gcm variables
+-- 0 for initial / 1 for ready 2 for set / 3 for play / 4 fin
+-- 5: Pre-initialized (idle) 6 for testing
+
+	 if  key_char_lower==("1") then			
+	 	game_ch:send'init'
 	elseif key_char_lower==("2") then			
-		head_ch:send'scan'
+	 	game_ch:send'ready'
+	elseif key_char_lower==("3") then			
+		game_ch:send'set'
+	elseif key_char_lower==("4") then  
+		game_ch:send'play'
+	elseif key_char_lower==("5") then  
+		game_ch:send'finish'		
 
 
-	elseif key_char_lower==("5") then			
-		body_ch:send'approach'
 
 
---[[
-	elseif key_char_lower==("3") then 
-		hcm.set_step_supportLeg(0)
-		hcm.set_step_relpos({0.08,0,0})
-		hcm.set_step_zpr({0.00,0,0})
-		body_ch:send'stepflat'		
-
-	elseif key_char_lower==("4") then      
-		hcm.set_step_supportLeg(1)
-		hcm.set_step_relpos({0.08,0,0})
-		hcm.set_step_zpr({0.00,0,0})
-		body_ch:send'stepflat'
+	elseif key_char_lower==("s") then  
+		head_ch:send'scanobs'		
 
 
-elseif key_char_lower==("5") then 
-		hcm.set_step_supportLeg(0)
-		hcm.set_step_relpos({0.16,0,0})
-		hcm.set_step_zpr({0.00,0,0})
-		body_ch:send'stepflat'		
-
-	elseif key_char_lower==("6") then      
-		hcm.set_step_supportLeg(1)
-		hcm.set_step_relpos({0.16,0,0})
-		hcm.set_step_zpr({0.00,0,0})
-		body_ch:send'stepflat'
-
-
-	
-
-	elseif key_char_lower==("=") then      
-		hcm.set_state_proceed(1)
---]]
 
 
 	elseif key_char_lower==("8") then  
-		body_ch:send'stop'
-		
-	elseif key_char_lower==("9") then  
-		motion_ch:send'hybridwalk'	
+		mcm.set_walk_stoprequest(1)
 	end
 
 

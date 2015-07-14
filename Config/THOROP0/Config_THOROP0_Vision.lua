@@ -89,11 +89,15 @@ vision.goal = {
 	th_min_bbox_area = 80, --100,
 	th_nPostB = 15,
 	th_min_area = 40,
-	th_min_orientation = 80*DEG_TO_RAD,
+	th_min_orientation = 75*DEG_TO_RAD,
 	th_min_fill_rate = 0.4, --0.45,
+
+
 	-- TODO: need to test on real robot
-	height_min = 1,
+	height_min = 0.5,
 	height_max = 2,
+
+	--
 	th_aspect_ratio = {13,120},
 	th_edge_margin = 5,
 	th_bottom_boundingbox = 0.9,
@@ -200,7 +204,7 @@ camera[1] = {
 	-- Use the default vision parameters
 	vision = vision,
 	-- Run the standard RoboCup vision processing
-	lut = 'test',
+	lut = 'grasp2',
 	--Logitech C920
 	-- f = 640/2/tan(78/180*pi / 2)
 	--fov = 2*arctan(d/2f)
@@ -297,7 +301,6 @@ if IS_WEBOTS then
 		th_min_area = 35,
 		th_min_orientation = 80*DEG_TO_RAD,
 		th_min_fill_rate = 0.28, --0.28,
-		height_min = -0.9,  --TODO
 		th_aspect_ratio = {2.5,110},
 		th_edge_margin = 5,
 		th_bottom_boundingbox = 0.9,
@@ -311,7 +314,12 @@ if IS_WEBOTS then
 		use_centerpost = 1,
 		min_crossbar_ratio = 0.6,
 		check_for_ground = 1,
+
+
+		-- TODO
+		height_min = -0.9,
 		height_max = 9,
+
 		-- Metric properties
 		goalHeight = 1.8,
 		goalWidth = 3.1, --3.0 for I-I, 3.1 for C-C

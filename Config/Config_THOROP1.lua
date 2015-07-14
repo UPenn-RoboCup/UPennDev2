@@ -120,7 +120,15 @@ if IS_WEBOTS then
   Config.walk.velDelta  = {0.04,0.02,0.1}
   Config.stop_after_score = false
 
+	Config.world.use_gps_yaw = true
+
 end
+
+Config.goaldetection_enable_delay = 0.3 --we look up, wait for this time and enable goal detection
+
+
+
+
 
 
 

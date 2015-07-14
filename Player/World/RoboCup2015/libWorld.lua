@@ -159,8 +159,22 @@ local function update_odometry(uOdometry)
     end
   end
 
+
+  
   --Update pose using odometry info for now
   local pose = wcm.get_robot_pose()
+
+
+  if IS_WEBOTS and Config.world.use_gps_yaw then
+ 
+
+    local old_pose = wcm.get_robot_pose()
+    local gps_pose = wcm.get_robot_pose_gps()
+    uOdometry[3]=gps_pose[3]-old_pose[3]
+
+    --print(old_pose[3]*180/math.pi, gps_pose[3]*180/math.pi)
+  end
+
 
   -- Update the filters based on the new odometry
   ballFilter.odometry(unpack(uOdometry))
@@ -169,6 +183,10 @@ local function update_odometry(uOdometry)
   --TODO: slam or wall detection-based pose
 
   local new_pose = util.pose_global(uOdometry, pose)
+
+
+
+
   return new_pose
 
 end

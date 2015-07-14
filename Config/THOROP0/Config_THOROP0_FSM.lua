@@ -52,6 +52,9 @@ fsm.Head = {
   {'headIdle', 'scan', 'headBackScan'},
   {'headIdle', 'teleop', 'headTeleop'},
   {'headIdle', 'scanobs', 'headObstacleScan'},
+
+
+  {'headTeleop', 'log', 'headLog'},
   --
 
   {'headScan', 'ballfound', 'headTrack'},

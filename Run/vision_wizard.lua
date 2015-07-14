@@ -155,7 +155,7 @@ local function update(meta, img)
 
 	-- TODO: How often to send over UDP?
 	if udp_ch then
-		--udp_ch:send(detection_msg)
+		udp_ch:send(detection_msg)
 		udp_label_ch:send(table.concat(lA_msg))
 		if lB_msg then label_udp_ch:send(table.concat(lB_msg)) end
 	end

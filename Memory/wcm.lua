@@ -128,7 +128,7 @@ if Config.world then
 	shared.goal.disable = vector.zeros(1)
 
 	shared.obstacle = {}
-	shared.obstacle.enable = vector.zeros(1)
+	shared.obstacle.enable = vector.zeros(1) --only enabled during headobstaclescan
 	shared.obstacle.reset = vector.zeros(1)
 	shared.obstacle.detect = vector.zeros(1)
 
@@ -136,6 +136,10 @@ if Config.world then
 	shared.obstacle.v1 = vector.zeros(2)
 	shared.obstacle.v2 = vector.zeros(2)
 	shared.obstacle.v3 = vector.zeros(2)
+
+
+
+
 
 	-- line for goalie
 	shared.line = {}

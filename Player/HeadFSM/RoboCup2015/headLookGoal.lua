@@ -91,7 +91,8 @@ function state.entry()
   end
   t_update = Body.get_time()
   wcm.set_ball_disable(1)  
-  wcm.set_goal_disable(1)    
+  wcm.set_goal_disable(1)  
+  wcm.set_obstacle_enable(0)  
 end
 
 function state.update()

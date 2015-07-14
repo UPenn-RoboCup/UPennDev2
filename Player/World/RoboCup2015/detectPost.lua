@@ -287,6 +287,10 @@ function detectPost.update(Image)
 				)
 
 				-- TODO: Error here, as centroid is not defined
+				if type(crossbarStats)~='table' or not crossbarStats.centroid then
+					msgs[i] = 'dumb crossbar issue'
+					return false, table.concat(msgs, '\n')
+				end
         dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
         crossbar_ratio = dxCrossbar / postWidth
       end

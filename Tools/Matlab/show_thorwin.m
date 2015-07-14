@@ -82,7 +82,7 @@ while running
         [metadata, offset] = msgpack('unpack', meta);
         %disp(metadata);
         msg_id = 'unknown';
-        if ~isempty(metadata)
+        if ~isempty(metadata) && metadata ~= 0
             msg_id = char(metadata.id);
             if has_more>0
                 [raw, has_more] = zmq( 'receive', s_idx );

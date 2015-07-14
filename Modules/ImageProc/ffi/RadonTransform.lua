@@ -103,8 +103,23 @@ end
 local function addPixelToRay (i, j, ith)
   local s, c = sin_d[ith], cos_d[ith]
   -- Counts and Line statistics
-  local ir = fabs(c * i + s * j)
   local iline = -s * i + c * j
+  local ir = fabs(c * i + s * j)
+
+  ----[[
+  local ir = c * i + s * j
+  local iline
+  if ir<0 then
+    --ir = NR + ir
+    ir = -1*ir
+    ith = (ith >= NTH / 2) and (ith - NTH / 2) or (ith + NTH / 2)
+
+    iline = s * i - c * j
+  else
+    iline = -s * i + c * j
+  end
+  --]]
+
   count_d[ith][ir] = count_d[ith][ir] + 1
   line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
   if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end

@@ -1,11 +1,15 @@
+close all;
+
+logdir = strcat('Data/', 'lines3', '/');
+
 % Grab the common metadata
-fid = fopen('Data/lines1/count_d_m.log');
+fid = fopen(strcat(logdir,'count_d_m.log'));
 meta = fread(fid, Inf,'*int8');
 metadata = msgpack('unpack', meta);
 fclose(fid);
 
 % counts
-fid = fopen('Data/lines1/count_d_r.log');
+fid = fopen(strcat(logdir,'count_d_r.log'));
 cnt = fread(fid,Inf,'*int');
 cnt = reshape(cnt, [metadata.MAXR, metadata.NTH]);
 fclose(fid);
@@ -13,7 +17,7 @@ figure(1);
 imagesc(cnt);
 
 % Read the labelB image
-fid = fopen('Data/lines1/labelB_d_r.log');
+fid = fopen(strcat(logdir,'labelB_d_r.log'));
 labelB = fread(fid,Inf,'*uint8');
 labelB = reshape(labelB, [metadata.wb, metadata.hb]);
 fclose(fid);

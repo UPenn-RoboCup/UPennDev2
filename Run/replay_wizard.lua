@@ -6,7 +6,7 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
---local constant = 72
+local constant = 200
 
 local function pairmin(t)
 	-- find the minimum element in the array table
@@ -26,9 +26,9 @@ end
 local logs = {
 }
 logs.yuyv = {
-	'07.14.2015.10.16.41',
-	'07.14.2015.10.17.03',
-	'07.14.2015.10.17.25',
+	'07.14.2015.10.53.08',
+	'07.14.2015.10.53.29',
+	'07.14.2015.10.53.51',
 	ch = si.new_publisher'camera0',
 	dir = HOME..'Data'..'/grasp2',
 }

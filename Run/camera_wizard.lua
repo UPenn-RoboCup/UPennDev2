@@ -205,6 +205,7 @@ if dev_raw then
 		--]]
 		local ext = string.format('uvcdynctrl -d %s -s %s %d', dev_raw, name, value)
 		os.execute('uvcdynctrl -d'..dev_raw..' -s "Exposure, Auto" 1')
+		unix.usleep(1e3)
 	end
 end
 

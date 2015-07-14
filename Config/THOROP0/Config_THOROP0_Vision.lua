@@ -137,7 +137,7 @@ vision.line = {
 
 local grasp920_param = {
 	{'White Balance Temperature', 2400},
-	{'Exposure (Absolute)', 120},
+	{'Exposure (Absolute)', 200},
 	--	{'Focus (absolute)', 0},
 	{'Brightness', 128},
 	{'Contrast', 0},
@@ -170,8 +170,8 @@ local ucla_param = {
 local camera = {}
 camera[1] = {
 	name = 'head',
-	--dev = '/dev/video-headcamera',
-	dev = '/dev/video1',
+	dev = '/dev/video-headcamera',
+	--dev = '/dev/video1',
 	w = 640,
 	h = 360,
 	--dev = '/dev/video-wristcamera',

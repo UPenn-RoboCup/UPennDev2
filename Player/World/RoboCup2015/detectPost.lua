@@ -48,8 +48,6 @@ function detectPost.update(Image)
 		colors.white)
   if not postB then return false, 'None detected' end
   -- Now process each goal post
-  -- Store failures in the array
-  local failures, successes = {}, {}
 	local nPosts, i_validB, valid_posts = 0, {}, {}
 
 	--for i=1, math.min(#postB, th_nPostB) do
@@ -119,7 +117,7 @@ function detectPost.update(Image)
 			if math.abs(postStats.orientation) < g_orientation then
 				passed = false
 				msgs[i] = string.format('Oriented: %.1f < %.1f',
-					postStats.orientation, g_orientation)
+					postStats.orientation*RAD_TO_DEG, g_orientation*RAD_TO_DEG)
 			end
 		end
 
@@ -161,13 +159,13 @@ function detectPost.update(Image)
 			local vG = Image.tfG * (v0 / v0[4])
 			postStats.vL = vL
 
-
+			-- This seems totally bogus...
 			if postStats.vL[3] < Config.vision.goal.height_min then
 				passed = false
-				msgs[i] = 'TOO LOW'
+				msgs[i] = string.format('Too Low %0.2f < %0.2f', postStats.vL[3], Config.vision.goal.height_min)
 			elseif postStats.vL[3] > Config.vision.goal.height_max then
 				passed = false
-				msgs[i] = 'TO HIGH'
+				msgs[i] = string.format('Too High %.2f > %.2f', postStats.vL[3], Config.vision.goal.height_max)
 			end
 		end
 
@@ -236,11 +234,11 @@ function detectPost.update(Image)
       local dy = goalStats[1].v[2]-goalStats[2].v[2]
       local dist = math.sqrt(dx*dx+dy*dy)
       if dist > goalWidth * 3 then --TODO: put into Config
-        local fail_str = string.format("Goal too wide: %.1f > %.1f\n", dist, goalWidth*3)
-        return false, table.insert(fail_msg, fail_str)
-      elseif dist<goalWidth * 0.2 then
-        local fail_str = string.format("Goal too wide: %.1f < %.1f\n", dist, goalWidth*0.2)
-        return false, table.insert(fail_msg, fail_str)
+				msgs[#msgs+1] = string.format("Goal too wide: %.1f > %.1f", dist, goalWidth*3)
+        return false, table.concat(msgs, '\n')
+      elseif dist < goalWidth * 0.2 then
+        msgs[#msgs+1] = string.format("Goal too narrow: %.1f < %.1f", dist, goalWidth*0.2)
+        return false, table.concat(msgs, '\n')
       end
 
     else  -- Only single post is detected
@@ -264,7 +262,7 @@ function detectPost.update(Image)
 					Image.labelA_d, Image.wa, Image.ha, colors.white, bboxA
 				)
 
-
+				-- TODO: Error here, as centroid is not defined
         dxCrossbar = crossbarStats.centroid[1] - goalStats[1].post.centroid[1]
         crossbar_ratio = dxCrossbar / postWidth
       end
@@ -275,7 +273,8 @@ function detectPost.update(Image)
       else
         -- Eliminate small post without cross bars
         if goalStats[1].post.area < th_min_area_unknown_post then
-          return false, table.insert(fail_msg, 'single post size too small')
+					msgs[#msgs+1] = 'Single post size too small'
+          return false, table.concat(msgs, '\n')
         end
         -- unknown post
         goalStats[1].type = 0
@@ -286,18 +285,17 @@ function detectPost.update(Image)
     -- Convert torch tensor to table
     for i=1,#goalStats do
       goalStats[i].v = vector.new(goalStats[i].v)
-			table.insert(failures, table.concat({'\n\n Goal Position',
-				string.format('%.2f %.2f', goalStats[i].v[1], goalStats[i].v[2])},'\n') )
+			msgs[#msgs+1] = string.format('Goal Position: %.2f %.2f', unpack(goalStats[i].v))
     end
 
 	end
 
 	if post_detected then
-		return goalStats, table.concat(failures, ',')
+		return goalStats, table.concat(msgs, '\n')
 	end
 
   -- Yield the failure messages and the success tables
-  return false, table.concat(failures, ',')
+  return false, table.concat(msgs, '\n')
 end
 function detectPost.exit()
 end

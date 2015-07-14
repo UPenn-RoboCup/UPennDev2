@@ -35,7 +35,7 @@ if IS_WEBOTS then
 	--for SJ's testing in webots
 		--Config.testfile = 'test_testbed'
 		--Config.testfile = 'test_robocup'
-		Config.testfile = 'test_walk_robocup'
+		Config.testfile = 'test_robocup'
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
@@ -57,6 +57,8 @@ print('!!!!IS_STEVE!!!!')
 
 	end
 end
+Config.use_gps_pose = false
+		Config.use_gps_vision = false
 
 
 -----------------------------------
@@ -121,6 +123,8 @@ if IS_WEBOTS then
 end
 
 
+
+Config.use_angle_localization = true
 
 Config.stop_at_neutral = true --false for walk testing
 Config.fsm.headTrack.timeout = 3

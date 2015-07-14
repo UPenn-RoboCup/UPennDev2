@@ -31,6 +31,9 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
+  if gcm.get_game_state()==3 then
+    return "play"
+  end
 end
 
 function state.exit()

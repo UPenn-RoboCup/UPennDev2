@@ -720,6 +720,20 @@ function moveleg.set_leg_positions()
     qLegs[11]=math.min(qLegs[11],Config.walk.anklePitchLimit[2])
   end
 
+
+  --hip pitch lag fix
+  if Config.walk.hipPitch0 then
+    if qLegs[3]<Config.walk.hipPitch0 then
+      qLegs[3] = Config.walk.hipPitch0 + (qLegs[3]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+    if qLegs[9]<Config.walk.hipPitch0 then
+      qLegs[9] = Config.walk.hipPitch0 + (qLegs[9]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+  end
+
+
+
+
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))
 

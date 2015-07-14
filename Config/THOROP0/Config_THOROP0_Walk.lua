@@ -174,7 +174,7 @@ walk.traj={}
 walk.traj.hybridwalk = "foot_trajectory_softfast"
 walk.traj.hybridwalk = "foot_trajectory_base2"
 walk.traj.hybridwalk = "foot_trajectory_base"--sin wave
-walk.traj.hybridwalk = "foot_trajectory_base3"
+--walk.traj.hybridwalk = "foot_trajectory_base3"
 
 walk.variable_tstep = false
 walk.variable_support = false
@@ -216,8 +216,18 @@ if IS_WEBOTS then
   walk.stepHeight = 0.06
 end
 
+walk.stepHeight = 0.03 
+--walk.heeltoe_angle = -5*DEG_TO_RAD
 
 
+--[[
+walk.phSingle = {0.15,0.85}
+walk.phZmp = {0.15,0.85}
+
+walk.hipPitch0 = -29.21
+walk.hipPitchCompensationMag = 1.5
+walk.hipPitchCompensationMag = 1
+--]]
 
 ------------------------------------
 -- Associate with the table

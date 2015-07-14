@@ -140,7 +140,6 @@ local function update(meta, img)
 	vision_ch:send(detection_msg)
 	label_ch:send(lA_msg)
 
-	--[[
 	local lB_raw = c_zlib(Image.labelB_d, ffi.sizeof(Image.labelB_d))
   local lB_meta = {
     w = Image.wb,
@@ -151,13 +150,12 @@ local function update(meta, img)
   }
 	local lB_msg = {mpack(lB_meta), lB_raw}
 	label_ch:send(lB_msg)
-	--]]
 
 	-- TODO: How often to send over UDP?
 	if udp_ch then
 		udp_ch:send(detection_msg)
 		udp_label_ch:send(table.concat(lA_msg))
-		if lB_msg then label_udp_ch:send(table.concat(lB_msg)) end
+		if lB_msg then udp_label_ch:send(table.concat(lB_msg)) end
 	end
 end
 

@@ -14,13 +14,17 @@ function h = show_monitor_thorwin
     clf;
     set(gcf,'position',[1 1 600 450]);
     f_mainA = gca;
-    f_lA = axes('Units','Normalized','position',[0 0.6 0.3 0.4]);
-    f_yuyv = axes('Units','Normalized','position',[0.3 0.6 0.3 0.4]);
-
-
-    %    f_field = axes('Units','Normalized','position',[0.3 -0.05 0.3 0.5]);
-
-    f_field = axes('Units','Normalized','position',[0 0 0.6 0.6]);
+    f_yuyv  = axes('Units','Normalized','position',[0.0 0.5 1/3 0.5]);
+    f_lA    = axes('Units','Normalized','position',[1/3 0.5 1/3 0.5]);
+    f_lB    = axes('Units','Normalized','position',[2/3 0.5 1/3 0.5]);
+    f_field = axes('Units','Normalized','position',[0.0 0.0 0.5 0.5]);
+    
+    set(findobj(gcf, 'type','axes'), 'Visible','off')
+    
+    %set(f_lA, 'Visible', 'off');
+    %set(f_lB, 'Visible', 'off');
+    %set(f_yuyv, 'Visible', 'off');
+    %set(f_field, 'Visible', 'off');
 
     cam = {};
 
@@ -28,6 +32,11 @@ function h = show_monitor_thorwin
     cbk=[0 0 0];cr=[1 0 0];cg=[0 1 0];cb=[0 0 1];cy=[1 1 0];cw=[1 1 1];
     cam.cmap = [cbk;cr;cy;cy;cb;cb;cb;cb;cg;cg;cg;cg;cg;cg;cg;cg;cw];
 
+    % LABELB
+    set(gcf, 'CurrentAxes', f_lB);
+    im_lB = image(zeros(1));
+    colormap(cam.cmap);
+    
     % LABELA
     set(gcf,'CurrentAxes',f_lA);
     im_lA = image(zeros(1));
@@ -74,34 +83,38 @@ function h = show_monitor_thorwin
     cam.h_field = f_field;
     hold on;
 
-    % Camera 1 Debug messages
-
-
+    % Debug messages
     set(gcf,'CurrentAxes',f_mainA);
+    % top ones
     cam.a_debug_ball=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.6 0.3 0.13 0.7],'FontSize',10, ...
-       'BackgroundColor',[0.9  0.9 0.9],...
+        'Position', [0.5 0.25 1/6 0.25],'FontSize',10, ...
+        'BackgroundColor',[0.9 0.7 0.7],...
         'FontName','Arial');
 
     cam.a_debug_goal=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.73 0.3 0.13 0.7],'FontSize',10, ...
-       'BackgroundColor',[0.9  0.9 0.9],...
+        'Position', [2/3 0.25 1/6 0.25], 'FontSize',10, ...
+        'BackgroundColor',[0.7 0.7 0.9],...
         'FontName','Arial');
 
     cam.a_debug_obstacle=uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.86 0.3 0.14 0.7],'FontSize',10, ...
-       'BackgroundColor',[0.9  0.9 0.9],...
+        'Position', [5/6 .25 1/6 0.25],'FontSize',10, ...
+        'BackgroundColor',[0.7 0.7 0.7], ...
         'FontName','Arial');
-
-    cam.w_debug = uicontrol('Style','text','Units','Normalized',...
-       'Position',[0.6 0 0.4 0.3],'FontSize',10, ...
-       'BackgroundColor',[0.9  0.9 0.9],...
-        'FontName','Arial');
-
+    % bottom ones
     cam.a_debug_line=uicontrol('Style','text','Units','Normalized',...
-     'Position',[0.73 0.4 0.4 0.3],'FontSize',10, ...
-     'BackgroundColor',[0.9  0.9 0.9],...
-      'FontName','Arial');
+        'Position', [0.5 0 1/6 0.25],'FontSize',10, ...
+        'BackgroundColor',[1 1 1],...
+        'FontName','Arial');
+    cam.a_debug_corner = uicontrol('Style','text','Units','Normalized',...
+        'Position', [2/3 0 1/6 0.25], 'FontSize',10, ...
+        'BackgroundColor',[0.9 0.9 0.7],...
+        'FontName','Arial');
+    cam.w_debug = uicontrol('Style','text','Units','Normalized',...
+        'Position', [5/6 0 1/6 0.25], 'FontSize',10, ...
+        'BackgroundColor',[0.7 0.9 0.7],...
+        'FontName','Arial');
+
+    
 
 
 %{
@@ -149,6 +162,8 @@ function h = show_monitor_thorwin
 
     cam.f_lA = f_lA;
     cam.im_lA = im_lA;
+    cam.f_lB = f_lB;
+    cam.im_lB = im_lB;
     cam.f_yuyv = f_yuyv;
     cam.f_field = f_field;
     cam.im_yuyv = im_yuyv;
@@ -342,16 +357,16 @@ function h = show_monitor_thorwin
         end
         needs_draw = 1;
     elseif strcmp(msg_id,'labelA')
-        cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'
+        cam.labelA = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
         set(cam.im_lA, 'Cdata', cam.labelA);
         xlim(cam.f_lA, [0 metadata.w]);
         ylim(cam.f_lA, [0 metadata.h]);
         needs_draw = 1;
     elseif strcmp(msg_id,'labelB')
-        cam.labelB = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';%'
-        set(cam.im_lA,'Cdata', cam.labelB);
-        xlim(cam.f_lA,[0 metadata.w]);
-        ylim(cam.f_lA,[0 metadata.h]);
+        cam.labelB = reshape(zlibUncompress(raw),[metadata.w,metadata.h])';
+        set(cam.im_lB,'Cdata', cam.labelB);
+        xlim(cam.f_lB,[0 metadata.w]);
+        ylim(cam.f_lB,[0 metadata.h]);
         needs_draw = 1;
     end
   end

@@ -204,40 +204,43 @@ local function update_vision(detected)
 --------------------------------------------------------------------------------
   -- TODO: fix nan bug with this
   -- If the goal is detected
-	goal = detected.posts
-  if type(goal)=='table' and #goal>0 then
-    if goal[1].type == 3 then
-      if Config.debug.goalpost then
-        print(string.format("Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
-          goal[1].type,
-          goal[1].v[1],goal[1].v[2],
-          goal[2].v[1],goal[2].v[2]
-          ))
-      end
-      if (not Config.disable_goal_vision) then
-        if Config.goalie_odometry_only and gcm.get_game_role()==0 then
-          print("Goalie, goal update disabled")
-        else
-          goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+
+  if wcm.get_goal_disable()==0 then --now disable goal detection unless we look up
+
+  	goal = detected.posts
+    if type(goal)=='table' and #goal>0 then
+      if goal[1].type == 3 then
+        if Config.debug.goalpost then
+          print(string.format("Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
+            goal[1].type,
+            goal[1].v[1],goal[1].v[2],
+            goal[2].v[1],goal[2].v[2]
+            ))
         end
-      end
-    else
-      if Config.debug.goalpost then
-        print(string.format("Single post observation: type %d v(%.2f %.2f)",
-          goal[1].type,
-          goal[1].v[1],goal[1].v[2]
-          ))
-      end
-      if not Config.disable_goal_vision then
-        if Config.goalie_odometry_only and gcm.get_game_role()==0 then
-          print("Goalie, goal update disabled")
-        else
-          goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+        if (not Config.disable_goal_vision) then
+          if Config.goalie_odometry_only and gcm.get_game_role()==0 then
+            print("Goalie, goal update disabled")
+          else
+            goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
+          end
+        end
+      else
+        if Config.debug.goalpost then
+          print(string.format("Single post observation: type %d v(%.2f %.2f)",
+            goal[1].type,
+            goal[1].v[1],goal[1].v[2]
+            ))
+        end
+        if not Config.disable_goal_vision then
+          if Config.goalie_odometry_only and gcm.get_game_role()==0 then
+            print("Goalie, goal update disabled")
+          else
+            goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
+          end
         end
       end
     end
-  end
---------------------------------------------------------------------------------
+  end  --------------------------------------------------------------------------------
 
 
   if wcm.get_obstacle_reset()==1 then

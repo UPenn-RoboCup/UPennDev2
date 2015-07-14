@@ -17,6 +17,8 @@ function state.entry()
 -- 5: Pre-initialized (idle) 6 for testing
 
   gcm.set_game_state(4)
+  body_ch:send'stop'
+  mcm.set_walk_stoprequest(1)
 end
 
 function state.update()

@@ -117,10 +117,15 @@ if Config.world then
 	shared.ball.disable = vector.zeros(1)
 
 
+
+
 	shared.goal = {}
 	shared.goal.t = vector.zeros(1)
 	shared.goal.attack_angle = vector.zeros(1)
 	shared.goal.defend_angle = vector.zeros(1)
+
+	--Use this to disable false positive when looking down
+	shared.goal.disable = vector.zeros(1)
 
 	shared.obstacle = {}
 	shared.obstacle.enable = vector.zeros(1)

@@ -36,6 +36,7 @@ function state.exit()
 
   if not IS_WEBOTS then
     for i=1,10 do
+--      Body.set_head_command_velocity({6000,6000})
       Body.set_head_command_velocity({6000,6000})
       unix.usleep(1e6*0.01);
 

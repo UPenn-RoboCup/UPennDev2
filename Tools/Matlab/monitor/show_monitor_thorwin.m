@@ -19,8 +19,6 @@ function h = show_monitor_thorwin
     f_lB    = axes('Units','Normalized','position',[2/3 0.5 1/3 0.5]);
     f_field = axes('Units','Normalized','position',[0.0 0.0 0.5 0.5]);
     
-    set(findobj(gcf, 'type','axes'), 'Visible','off')
-    
     %set(f_lA, 'Visible', 'off');
     %set(f_lB, 'Visible', 'off');
     %set(f_yuyv, 'Visible', 'off');
@@ -176,6 +174,11 @@ function h = show_monitor_thorwin
     % Default: labelA is half size, so scale twice
     scale = 2;
     cam.scale = 2;
+    
+    % Turn off all axes
+    % http://stackoverflow.com/questions/16399452/how-to-remove-axis-in-matlab
+    set(findobj(gcf, 'type','axes'), 'Visible','off')
+    
   end
 
 

@@ -153,6 +153,37 @@ function libLog.open(dir,date,prefix)
 	return t
 end
 
+-- Take in a table
+function libLog.one(filename, meta, raw, sz)
+
+	-- Record the metadata
+	local f_meta = io.open('/tmp/'..filename..'_m.log', 'w')
+	f_meta:write(mpack(meta))
+	f_meta:close()
+
+	if not raw then return end
+	local f_raw = io.open('/tmp/'..filename..'_r.log','w')
+
+	-- Record the raw
+	local rtype = type(raw)
+	if rtype=='userdata' or rtype=='cdata' then
+		-- If no FFI, then cannot record userdata
+		-- If no number of raw data, then cannot record
+		-- TODO: Use carray as FFI fallback
+		assert(type(sz)=='number', 'No raw size')
+		if C then
+			local n_written = C.fwrite(raw, 1, sz, f_raw)
+			assert(n_written==sz, 'Bad write size')
+		else
+			f_raw:write(tostring(carray.byte(raw, sz)))
+		end
+	elseif rtype=='string' then
+		f_raw:write(raw)
+	end
+
+	f_raw:close()
+end
+
 -- Fill the metatable
 
 return libLog

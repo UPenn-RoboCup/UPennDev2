@@ -212,13 +212,13 @@ function RadonTransform.radon_lines_label(label_d, w, h, use_horiz, use_vert)
       -- TODO: Add both j and j+1 (nw and sw pixels are edges, maybe?)
       if use_horiz then
         --if fabs(label_nw - label_sw) > THRESH then
-        if band(label_nw, 16) and band(label_sw, 16) then
+        if band(label_nw, 16)>0 and band(label_sw, 16)>0 then
           addHorizontalPixel(i, j+.5)
         end
       end
       --if use_vert and fabs(label_nw - label_ne) > THRESH then
       if use_vert then
-        if band(label_nw, 16) and band(label_ne, 16) then
+        if band(label_nw, 16)>0 and band(label_ne, 16)>0 then
           addVerticalPixel(i+.5, j)
         end
       end

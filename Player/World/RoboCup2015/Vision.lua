@@ -22,6 +22,9 @@ local ENABLE_BALL = true
 local ENABLE_OBSTACLE = true
 local ENABLE_POST = true
 local ENABLE_LINE = true
+local ENABLE_LINE = false --too many false positives with post
+
+
 
 -- Set the variables based on the config file
 function Vision.entry(cfg)

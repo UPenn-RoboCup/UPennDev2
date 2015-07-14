@@ -219,6 +219,15 @@ function detectBall.update(Image)
 
 			--head_ch:send'teleop'
 
+
+      if wcm.get_ball_backonly()==1 then
+        if propsA.v[1]>0 then
+          msgs[#msgs+1]="Ball found front, false positive"
+          return false,table.concat(msgs, '\n')
+        end
+      end
+
+
       return propsA, table.concat(msgs, '\n')
     end
   end  -- end of loop

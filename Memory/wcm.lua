@@ -116,6 +116,8 @@ if Config.world then
 	--Use this to disable ball detection when robot looks up and scanning around
 	shared.ball.disable = vector.zeros(1)
 
+	--For attacker, ball should be found BEHIND the robot all the time
+	shared.ball.backonly = vector.zeros(1)
 
 
 

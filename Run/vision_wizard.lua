@@ -96,7 +96,7 @@ local function update(meta, img)
 --		print(detection.debug.ball)
 	end
 	--]]
-	----[[
+	--[[
 	print('\n=Posts=', detection.post)
 	if detection.posts then
 		ptable(detection.posts)

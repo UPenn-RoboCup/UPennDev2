@@ -18,6 +18,15 @@ local fovMargin = 10*DEG_TO_RAD
 local stage, scandir
 
 
+
+
+
+--slower sweep
+local dqNeckLimit = {60*DEG_TO_RAD, 180*DEG_TO_RAD}
+
+
+
+
 local yaw1,yaw2
 
 
@@ -103,9 +112,14 @@ function state.update()
   local tpassed=t-t_update
   t_update = t
 
-  if tpassed>( Config.goaldetection_enable_delay or 0.5 ) then
-    wcm.set_goal_disable(0)    
+  local qNeckActual = Body.get_head_position()
+  if qNeckActual[2]<5*DEG_TO_RAD then
+    wcm.set_goal_disable(0)  
+  else
+    wcm.set_goal_disable(1)  
   end
+
+
 
 
   --escape lookgoal if we're about to reach the destination
@@ -122,7 +136,6 @@ function state.update()
   if stage==1 then
     local qNeck_approach, doneNeck =util.approachTol( qNeck, {yaw1, pitch}, dqNeckLimit, tpassed )
     Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
-    local qNeckActual = Body.get_head_position()
 
     if doneNeck 
         and math.abs(qNeckActual[1]-yaw1-headBias[1]) <10*math.pi/180 

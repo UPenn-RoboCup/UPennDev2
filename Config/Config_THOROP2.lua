@@ -114,7 +114,7 @@ Config.use_angle_localization = true
 --when ball is not found, we make a false observation so that robot can rotate around
 Config.robot_turnaround = false 
 
-Config.demo = true
+--Config.demo = true
 
 
 ------------------------------------

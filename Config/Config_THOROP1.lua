@@ -22,6 +22,9 @@ Config.debug = {
   feedback = false,
   armplan = false,
   walk = false,
+
+
+  --goalpost = true,
 }
 
 Config.arm_init_timeout = true
@@ -54,7 +57,7 @@ print('!!!!IS_STEVE!!!!')
 	else
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false
-		Config.demo = true
+--		Config.demo = true
 	end
 end
 
@@ -132,6 +135,11 @@ Config.goaldetection_enable_delay = 0.3 --we look up, wait for this time and ena
 
 Config.use_angle_localization = true
 
+
+
+
+
+
 Config.stop_at_neutral = true --false for walk testing
 Config.fsm.headTrack.timeout = 3
 Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
@@ -187,5 +195,11 @@ Config.enemy_goalie_shift_factor = 0.15
 ------------------------------------
 ------------------------------------
 
+
+
+
+
+
+--Config.enable_single_goalpost_detection = false
 
 return Config

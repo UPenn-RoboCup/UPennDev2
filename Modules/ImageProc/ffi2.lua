@@ -197,17 +197,54 @@ ImageProc.color_countB = color_countB
 
 local function radon2ij(props, ith, ir, cnt)
   local s, c = props.sin_d[ith], props.cos_d[ith]
-  local iR = props.RSCALE * (ir) * c -- + props.i0
-  local jR = props.RSCALE * (ir) * s -- + props.j0
+  -- How far down the line
   local lMean = props.line_sum_d[ith][ir] / cnt
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
+
+  if ith > props.NTH/2 then
+    ir = -1*ir
+    --iR = -iR
+    --jR = -jR
+  end
+
+  -- Closest point
+  local iR = props.RSCALE * ir * c -- + props.i0
+  local jR = props.RSCALE * ir * s -- + props.j0
+
+  --[[
+  print()
+  local r, th = props.RSCALE * ir, ith/props.NTH * 180
+  print('r, th', r, th, cnt)
+  local ct = r * math.cos(th*DEG_TO_RAD)
+  local st = r * math.sin(th*DEG_TO_RAD)
+
+  print('iR, jR       ', iR, jR)
+  print('Closest point', ct, st)
+  print('lMean', lMean)
+  print('lMin', lMin)
+  print('lMax', lMax)
+  --print('s, c', s, c)
+
+  --print('iMean', iR - lMean * s)
+  print('iR', iR)
+  print('jR', jR)
+  print('cMean', lMean * c)
+  print('sMean', lMean * s)
+  print('cMin', lMin * c)
+  print('sMin', lMin * s)
+  print('cMax', lMax * c)
+  print('sMax', lMax * s)
+  --]]
+
+
   return {
     ir = ir,
     ith = ith,
     count = cnt,
     iMean = iR - lMean * s,
     jMean = jR + lMean * c,
+    --
     iMin  = iR - lMin * s,
     jMin  = jR + lMin * c,
     iMax  = iR - lMax * s,
@@ -235,7 +272,6 @@ function ImageProc.field_lines(label, w, h)
       end
     end
   end
-
   --]]
 
   --[[
@@ -308,14 +344,18 @@ function ImageProc.field_lines(label, w, h)
     cmaxes[ith+1] = cmx
   end
 
-  local nKeep = 5
+  -- How many extra?
+  local nKeep = 2
   local maxN = {}
   for ith, c in ipairs(cmaxes) do
-    if #maxN<nKeep then
+    if c<100 then
+    elseif #maxN<nKeep then
       table.insert(maxN, {ith-1, irmaxes[ith], c})
+      -- check merge
       table.sort(maxN, function(a,b) return a[3]>b[3] end)
     elseif c>maxN[nKeep][3] then
       maxN[nKeep] = {ith-1, irmaxes[ith], c}
+      -- check merge
       table.sort(maxN, function(a,b) return a[3]>b[3] end)
     end
   end

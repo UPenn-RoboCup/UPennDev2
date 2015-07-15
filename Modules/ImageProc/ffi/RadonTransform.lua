@@ -18,8 +18,8 @@ local MAXR, NR = 222
 local RSCALE = 2
 
 --local NTH = 90 -- Number of angles (2 degree res)
-local NTH = 45 -- Number of angles (4 degree res)
---local NTH = 36 -- 5 degree resolution
+--local NTH = 45 -- Number of angles (4 degree res)
+local NTH = 36 -- 5 degree resolution
 --local NTH = 30 -- 6 degree resolution
 --local NTH = 180 -- (1 degree res)
 
@@ -97,8 +97,16 @@ local function init(w, h, angle_prior)
   ffi.fill(count_d, b_size32)
   ffi.fill(line_sum_d, b_size32)
   -- Fill up the min/max lines
-  ffi.fill(line_min_d, b_size32, 0x7F)
-  ffi.fill(line_max_d, b_size32, 0xFF)
+  for ith=0,NTH-1 do
+    for ir=0,NR-1 do
+      --count_d[ith][ir] = 0
+      --line_sum_d[ith][ir] = 0
+      line_min_d[ith][ir] = 2139062143
+      line_max_d[ith][ir] = -2139062140
+    end
+  end
+  --ffi.fill(line_min_d, b_size32, 0x7F)
+  --ffi.fill(line_max_d, b_size32, 0xFF)
 end
 
 -- TODO: Respect the integer method, since since lua converts back to double
@@ -110,8 +118,8 @@ local function addPixelToRay (i, j, ith)
   -- Rscale by 1/2 to redeuce the search size
   --local ir = fabs(c * (i-i0) + s * (j-j0)) / RSCALE
   --local iline = -s * (i-i0) + c * (j-j0)
-  local ir = fabs(c * (i) + s * (j)) / RSCALE
-  local iline = -s * (i) + c * (j)
+  local ir = fabs(c * i + s * j) / RSCALE
+  local iline = c * j - s * i
   count_d[ith][ir] = count_d[ith][ir] + 1
   line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
   if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end

@@ -46,7 +46,7 @@ plot([1, metadata.wb],[1, metadata.hb],'k-');
 
 % Show the lines
 p_l = {};
-for i=1:2 %numel(metadata.ijs)
+for i=1:numel(metadata.ijs)
     propsLine = metadata.ijs{i};
     l_x = uint8([propsLine.iMin, propsLine.iMean, propsLine.iMax]);
     l_y = uint8([propsLine.jMin, propsLine.jMean, propsLine.jMax]);

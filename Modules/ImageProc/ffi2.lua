@@ -197,8 +197,8 @@ ImageProc.color_countB = color_countB
 
 local function radon2ij(props, ir, ith)
   local s, c = props.sin_d[ith], props.cos_d[ith]
-  local iR = (ir - props.r0) * c
-  local jR = (ir - props.r0) * s
+  local iR = (ir - props.r0) * c -- + props.i0
+  local jR = (ir - props.r0) * s -- + props.j0
   local lMean = props.line_sum_d[ith][ir] / props.count_d[ith][ir]
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
@@ -207,10 +207,10 @@ local function radon2ij(props, ir, ith)
     ith = ith,
     iMean = iR - lMean * s,
     jMean = jR + lMean * c,
-    iMin = iR - lMin * s,
-    jMin = jR + lMin * c,
-    iMax = iR - lMax * s,
-    jMax = jR + lMax * c,
+    iMin  = iR - lMin * s,
+    jMin  = jR + lMin * c,
+    iMax  = iR - lMax * s,
+    jMax  = jR + lMax * c,
   }
 end
 

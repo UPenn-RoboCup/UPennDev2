@@ -35,6 +35,8 @@ p_l = plot([0],[0],'m*-');
 propsLine = metadata;
 l_x = double([propsLine.iMin, propsLine.iMean, metadata.iMax]);
 l_y = double([propsLine.jMin, propsLine.jMean, metadata.jMax]);
-set(p_l, 'Xdata', l_x );
-set(p_l, 'Ydata', l_y );
+%set(p_l, 'Xdata', l_x + metadata.i0);
+%set(p_l, 'Ydata', l_y + metadata.j0);
+set(p_l, 'Xdata', l_x);
+set(p_l, 'Ydata', l_y);
 

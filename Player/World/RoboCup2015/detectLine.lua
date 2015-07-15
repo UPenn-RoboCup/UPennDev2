@@ -49,6 +49,8 @@ function detectLine.update(Image)
 	ij.MAXR = props.MAXR
 	ij.wb = Image.wb
 	ij.hb = Image.hb
+	ij.i0 = props.i0
+	ij.j0 = props.j0
 
 	libLog.one('labelB_d', ij, Image.labelB_d, ffi.sizeof(Image.labelB_d))
 	libLog.one('count_d', ij, props.count_d, ffi.sizeof(props.count_d))

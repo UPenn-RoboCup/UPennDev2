@@ -6,6 +6,7 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
+--local constant = 29
 local constant = 43
 
 local function pairmin(t)

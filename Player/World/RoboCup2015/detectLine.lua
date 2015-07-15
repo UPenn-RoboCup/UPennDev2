@@ -41,22 +41,24 @@ function detectLine.update(Image)
 	)
 
 	----[[
-	local props, ij = ImageProc2.field_lines(
+	local props, ijs = ImageProc2.field_lines(
 		Image.labelB_d, Image.wb, Image.hb
 	)
-	ij.NTH = props.NTH
-	ij.NR = props.NR
-	ij.MAXR = props.MAXR
-	ij.wb = Image.wb
-	ij.hb = Image.hb
-	ij.i0 = props.i0
-	ij.j0 = props.j0
+	local meta = {}
+	meta.NTH = props.NTH
+	meta.NR = props.NR
+	meta.MAXR = props.MAXR
+	meta.wb = Image.wb
+	meta.hb = Image.hb
+	meta.i0 = props.i0
+	meta.j0 = props.j0
+	meta.ijs = ijs
 
-	libLog.one('labelB_d', ij, Image.labelB_d, ffi.sizeof(Image.labelB_d))
-	libLog.one('count_d', ij, props.count_d, ffi.sizeof(props.count_d))
-	libLog.one('line_sum_d', ij, props.line_sum_d, ffi.sizeof(props.line_sum_d))
-	libLog.one('line_min_d', ij, props.line_min_d, ffi.sizeof(props.line_min_d))
-	libLog.one('line_max_d', ij, props.line_max_d, ffi.sizeof(props.line_max_d))
+	libLog.one('labelB_d', meta, Image.labelB_d, ffi.sizeof(Image.labelB_d))
+	libLog.one('count_d', meta, props.count_d, ffi.sizeof(props.count_d))
+	libLog.one('line_sum_d', meta, props.line_sum_d, ffi.sizeof(props.line_sum_d))
+	libLog.one('line_min_d', meta, props.line_min_d, ffi.sizeof(props.line_min_d))
+	libLog.one('line_max_d', meta, props.line_max_d, ffi.sizeof(props.line_max_d))
 	os.exit()
 	--]]
 

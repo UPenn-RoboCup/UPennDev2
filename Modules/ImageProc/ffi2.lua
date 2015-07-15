@@ -195,16 +195,17 @@ ImageProc.color_countB = color_countB
 -- Field lines
 ----[[
 
-local function radon2ij(props, ir, ith)
+local function radon2ij(props, ith, ir, cnt)
   local s, c = props.sin_d[ith], props.cos_d[ith]
-  local iR = (ir - props.r0) * c -- + props.i0
-  local jR = (ir - props.r0) * s -- + props.j0
-  local lMean = props.line_sum_d[ith][ir] / props.count_d[ith][ir]
+  local iR = props.RSCALE * (ir) * c -- + props.i0
+  local jR = props.RSCALE * (ir) * s -- + props.j0
+  local lMean = props.line_sum_d[ith][ir] / cnt
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
   return {
     ir = ir,
     ith = ith,
+    count = cnt,
     iMean = iR - lMean * s,
     jMean = jR + lMean * c,
     iMin  = iR - lMin * s,
@@ -218,8 +219,10 @@ local ptable = require'util'.ptable
 local RadonTransform = require'ImageProc.ffi.RadonTransform'
 function ImageProc.field_lines(label, w, h)
 
-  local props = RadonTransform.radon_lines_label(label, w, h, true, true)
+  local props = RadonTransform.radon_lines_label(label, w, h)
 
+  ----[[
+  -- Find the global max
   local cmax = 0
   local irmax = 0
   local ithmax = 0
@@ -233,10 +236,97 @@ function ImageProc.field_lines(label, w, h)
     end
   end
 
-  local ij = radon2ij(props, irmax, ithmax)
-  ij.count = cmax
+  --]]
 
-  return props, ij
+  --[[
+  local irmaxes = {}
+  local cmaxes = {}
+  local min_width = 2
+  local min_th = 2
+  local ithMax, irMax1, irMax2
+  local cntMax1, cntMax2 = 0, 0
+  for ith=0, props.NTH-1 do
+    local i_monotonic_max = 0
+    local monotonic_max = 0
+    local i_arr, c_arr = {}, {}
+    if ith >= ithmax-min_th and ith<=ithmax+min_th and ith ~= ithmax then
+      i_arr, c_arr = {0,0}, {0,0}
+    else
+      for ir=0, props.NR-1 do
+        local val = props.count_d[ith][ir]
+        if val > monotonic_max then
+          monotonic_max = val
+          i_monotonic_max = ir
+        elseif #c_arr<2 then
+          -- End of monotonicity
+          table.insert(i_arr, i_monotonic_max)
+          table.insert(c_arr, monotonic_max)
+          i_monotonic_max = ir
+          monotonic_max = 0
+        elseif (ir - i_monotonic_max) > min_width then
+          if monotonic_max>c_arr[1]  then
+            c_arr[1] = monotonic_max
+            i_arr[1] = i_monotonic_max
+          elseif monotonic_max>c_arr[#c_arr] then
+            c_arr[#c_arr] = monotonic_max
+            i_arr[#i_arr] = i_monotonic_max
+          end
+          i_monotonic_max = ir
+          monotonic_max = 0
+        end
+      end -- end the inner for
+    end
+    irmaxes[ith+1] = i_arr
+    cmaxes[ith+1] = c_arr
+    print('th:', ith+1, unpack(c_arr))
+  end
+--]]
+
+  ----[[
+  local irmaxes = {}
+  local cmaxes = {}
+  local min_width = 3
+  local min_th = 3
+  local ithMax, irMax1, irMax2
+  local cntMax1, cntMax2 = 0, 0
+  for ith=0, props.NTH-1 do
+    local irmx, cmx = 0, 0
+    if ith < ithmax-min_th or ith>ithmax+min_th then
+      for ir=0, props.NR-1 do
+        local cval = props.count_d[ith][ir]
+        if cval > cmx then irmx = ir; cmx = cval; end
+      end -- end the inner for
+    elseif ith==ithmax then
+      for ir=0, props.NR-1 do
+        if ir < irmax-min_width or ir > irmax+min_width then
+          local cval = props.count_d[ith][ir]
+          if cval > cmx then irmx = ir; cmx = cval; end
+        end
+      end -- end the inner for
+    end
+    irmaxes[ith+1] = irmx
+    cmaxes[ith+1] = cmx
+  end
+
+  local nKeep = 5
+  local maxN = {}
+  for ith, c in ipairs(cmaxes) do
+    if #maxN<nKeep then
+      table.insert(maxN, {ith-1, irmaxes[ith], c})
+      table.sort(maxN, function(a,b) return a[3]>b[3] end)
+    elseif c>maxN[nKeep][3] then
+      maxN[nKeep] = {ith-1, irmaxes[ith], c}
+      table.sort(maxN, function(a,b) return a[3]>b[3] end)
+    end
+  end
+  table.insert(maxN, 1, {ithmax, irmax, cmax})
+  local ijs = {}
+  for i, v in ipairs(maxN) do
+    ijs[i] = radon2ij(props, unpack(v))
+  end
+  --]]
+
+  return props, ijs
   --[[
 
   -- Have a minimum width of the line (in pixel space)

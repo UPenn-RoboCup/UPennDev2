@@ -15,10 +15,12 @@ local bor = require'bit'.bor
 -- TODO: Now just assuming 1 pixel resolution, and just having a constant buffer
 -- so that we do not malloc each time
 local MAXR, NR = 222
+local RSCALE = 2
 
 --local NTH = 90 -- Number of angles (2 degree res)
---local NTH = 45 -- Number of angles (4 degree res)
-local NTH = 36 -- 5 degree resolution
+local NTH = 45 -- Number of angles (4 degree res)
+--local NTH = 36 -- 5 degree resolution
+--local NTH = 30 -- 6 degree resolution
 --local NTH = 180 -- (1 degree res)
 
 local i0, j0, r0, th0 = 0, 0, 0, 0
@@ -35,10 +37,11 @@ local th_d = ffi.new('double[?]', NTH)
 local sin_d, cos_d = ffi.new('double[?]', NTH), ffi.new('double[?]', NTH)
 for i = 0, NTH-1 do
   -- We only need 0 to Pi
+  local th = (math.pi / NTH) * i
   -- TODO: Change based on the prior
-  th_d[i] = math.pi * i / NTH
-  cos_d[i] = cos(th_d[i])
-  sin_d[i] = sin(th_d[i])
+  th_d[i] = th
+  cos_d[i] = cos(th)
+  sin_d[i] = sin(th)
 end
 
 -- Export a bit
@@ -81,9 +84,10 @@ local function init(w, h, angle_prior)
   --flip_center = angle_prior and angle_prior>45 and angle_prior<135
 
   -- Resize for the image
-  NR = math.ceil(math.sqrt(w * w + h * h))
+  NR = math.ceil(math.sqrt(w * w + h * h) / RSCALE)
   -- Update the export
   props.NR = NR
+  props.RSCALE = RSCALE
   props.i0 = i0
   props.j0 = j0
   props.r0 = r0
@@ -103,43 +107,25 @@ end
 local function addPixelToRay (i, j, ith)
   local s, c = sin_d[ith], cos_d[ith]
   -- Counts and Line statistics
-  local ir = fabs(c * i + s * j)
-  local iline = -s * i + c * j
-
+  -- Rscale by 1/2 to redeuce the search size
+  --local ir = fabs(c * (i-i0) + s * (j-j0)) / RSCALE
+  --local iline = -s * (i-i0) + c * (j-j0)
+  local ir = fabs(c * (i) + s * (j)) / RSCALE
+  local iline = -s * (i) + c * (j)
   count_d[ith][ir] = count_d[ith][ir] + 1
-  line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
-  if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
-  if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
-end
-
--- Check our centering...
-local function addPixelToRay2 (i, j, ith)
-  local s, c, ir, iline
-  if flip_center then
-    ith = ith + NTH / 2
-    if ith > NTH then ith = ith - NTH end
-    c, s = sin_d[ith], cos_d[ith]
-  else
-    s, c = sin_d[ith], cos_d[ith]
-  end
-  ir = r0 + c * (i - i0) + s * (j - j0)
-  -- Counts
-  count_d[ith][ir] = count_d[ith][ir] + 1
-  -- Line statistics
-  iline = -s * i + c * j
   line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
   if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
   if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
 end
 
 local function addHorizontalPixel (i, j)
-  for _, ith in ipairs(sin_index_thresh) do addPixelToRay(i, j, ith) end
-  --for _, ith in ipairs(sin_index_thresh) do addPixelToRay2(i, j, ith) end
+  for _, ith in ipairs(sin_index_thresh) do
+    addPixelToRay(i, j, ith)
+  end
 end
 
 local function addVerticalPixel(i, j)
   for _, ith in ipairs(cos_index_thresh) do addPixelToRay(i, j, ith) end
-  --for _, ith in ipairs(cos_index_thresh) do addPixelToRay2(i, j, ith) end
 end
 
 function RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox, angle_prior)
@@ -190,7 +176,8 @@ local colors = {
 	cyan = 32,
 	magenta = 64,
 }
-function RadonTransform.radon_lines_label(label_d, w, h, use_horiz, use_vert)
+local greenwhite = colors.green + colors.white
+function RadonTransform.radon_lines_label(label_d, w, h)
   -- Use pixel directions
   local j, i, label_nw, label_ne, label_sw, label_se
   local x_sz, y_sz = w, h
@@ -209,20 +196,47 @@ function RadonTransform.radon_lines_label(label_d, w, h, use_horiz, use_vert)
       label_sw = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       label_se = e_ptr_r[0]
-      -- Strong zero crossings
-      -- TODO: Add both j and j+1 (nw and sw pixels are edges, maybe?)
-      if use_horiz then
-        --if fabs(label_nw - label_sw) > THRESH then
-        if band(label_nw, 16)>0 and band(label_sw, 16)>0 then
-          addHorizontalPixel(i, j+.5)
+      -- Test the upper left...
+      if band(label_nw, greenwhite)==colors.green then
+        -- upper left is green
+        if band(label_sw, colors.white)>0 then
+          -- lower left is white: horiz line on bottom
+          addHorizontalPixel(i, j+1)
+        elseif band(label_ne, colors.white)>0 then
+          -- upper right is white: vert line on right
+          addVerticalPixel(i+1, j)
+        end
+      elseif band(label_nw, colors.white)>0 then
+        -- upper left is white
+        if band(label_sw, colors.green)==colors.green then
+          -- lower left is green: horiz line on top
+          addHorizontalPixel(i, j)
+        elseif band(label_ne, colors.green)==colors.green then
+          -- upper right is green: vert line on left
+          addVerticalPixel(i, j)
         end
       end
-      --if use_vert and fabs(label_nw - label_ne) > THRESH then
-      if use_vert then
-        if band(label_nw, 16)>0 and band(label_ne, 16)>0 then
-          addVerticalPixel(i+.5, j)
+      -- Test the lower right...
+      if band(label_se, greenwhite)==colors.green then
+        -- lower right is green
+        if band(label_sw, colors.white)>0 then
+          -- lower left is white: vert line on left
+          addVerticalPixel(i, j)
+        elseif band(label_ne, colors.white)>0 then
+          -- upper right is white: horiz line on top
+          addHorizontalPixel(i, j)
+        end
+      elseif band(label_se, colors.white)>0 then
+        -- lower right is white
+        if band(label_sw, colors.green)==colors.green then
+          -- lower left is green: vert line on right
+          addVerticalPixel(i+1, j)
+        elseif band(label_ne, colors.green)==colors.green then
+          -- upper right is green: horiz line on bottom
+          addHorizontalPixel(i, j+1)
         end
       end
+
     end
     -- Must have one more increment to get to the next line
     e_ptr_l = e_ptr_l + 1

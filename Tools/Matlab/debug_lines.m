@@ -1,4 +1,4 @@
-close all;
+%close all;
 
 logdir = strcat('Data/', 'lines3', '/');
 

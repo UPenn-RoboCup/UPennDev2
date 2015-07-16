@@ -326,7 +326,7 @@ local function find_ball_off_line(Image)
 
 	-- Run the checks
 	local msgs = {}
-	local nCheck = math.min(5, nProps)
+	local nCheck = math.min(8, nProps)
 	for i=1, nCheck do
 		local passed = true
 		-- Check the image properties
@@ -355,9 +355,11 @@ local function find_ball_off_line(Image)
 		-- Ball width/height
 		if passed then
 			local axisRatio = propsA.axisMajor / propsA.axisMinor
-			if axisRatio > 1.5 or axisRatio < 0.65 then
+			local axisCheck = 2.1
+			if axisRatio > axisCheck or axisRatio < 1/axisCheck then
 				passed = false
-				msgs[i] = string.format('axisRatio: %d < %d < %d', 0.5, axisRatio, 2)
+				msgs[i] = string.format('axisRatio: %.2f < %.2f < %.2f',
+				1/axisCheck, axisRatio, axisCheck)
 			end
 		end
 

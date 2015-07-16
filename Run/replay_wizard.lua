@@ -17,10 +17,14 @@ local si = require'simple_ipc'
 --local constant = 840
 --local constant = 1280
 
-local constant = 1066
+--local constant = 1066
 
 --local constant = 1176
 --local start_idx = 1100
+
+local start_idx = 1750
+--local constant = 1778
+--local constant = 1820
 
 --local constant = 1062
 --local start_idx = 915

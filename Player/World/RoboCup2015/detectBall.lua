@@ -38,6 +38,7 @@ local function find_ball_on_line(Image)
 	Image.hc,
 	ball_color
 	)
+	--util.ptable(ballPropsB[1])
 
 	if not ballPropsB then
 		return false, 'C No connected regions'
@@ -81,9 +82,21 @@ local function find_ball_on_line(Image)
 			end
 		end
 
-		-- Ball width/height
+		-- labelA area check
+		local propsC2
 		if passed then
-			local maxRatio = 4
+			propsC2 = ImageProc2.color_stats(
+			Image.labelC_d, Image.wc, Image.hc, ball_color,propsB.boundingBox)
+			if propsC2.area < 8 then
+				passed = false
+				msgs[i] = string.format('C2 Area: %d < %d', propsA.area, 8)
+			end
+		end
+
+		-- Ball width/height
+		--[[
+		if passed then
+			local maxRatio = 6
 			local minRatio = 1/maxRatio
 			local axisRatio = propsA.axisMajor / propsA.axisMinor
 			if axisRatio > maxRatio or axisRatio < minRatio then
@@ -92,20 +105,37 @@ local function find_ball_on_line(Image)
 					minRatio, axisRatio, maxRatio)
 			end
 		end
+		--]]
+
+		-- Ball width/height
+		if passed then
+			local maxRatio = 6
+			local minRatio = 1/maxRatio
+			local axisRatio = propsC2.axisMajor / propsC2.axisMinor
+			if axisRatio > maxRatio or axisRatio < minRatio then
+				passed = false
+				msgs[i] = string.format('C2 axisRatio: %.2f < %.2f < %.2f',
+					minRatio, axisRatio, maxRatio)
+			end
+		end
 
 		-- Fill rate check
 		if passed then
 			local fill_rate = propsA.area / (propsA.axisMajor * propsA.axisMinor)
-			if fill_rate < config.th_min_fill_rate then
+			local minFill = 0.29
+			if fill_rate < minFill then
 				passed = false
-				msgs[i] = string.format('C Fill rate: %.2f < %.2f', fill_rate, config.th_min_fill_rate)
+				msgs[i] = string.format('C Fill rate: %.3f < %.3f',
+					fill_rate, minFill)
 			end
 		end
 
 		-- Check the coordinate on the field
 		local v = vector.new{0,0,0,1}
 		local dArea = passed and math.sqrt((4/math.pi) * propsA.area)
+		local dAreaC = passed and math.sqrt((4/math.pi) * propsC2.area)
 		if passed and ENABLE_COORDINATE_CHECK then
+			--[[
 			local scale = math.max(dArea, propsA.axisMajor) / config.diameter
 			local v0 = vector.new{
 				Image.focalA,
@@ -113,6 +143,18 @@ local function find_ball_on_line(Image)
 				-(propsA.centroid[2] - Image.y0A),
 				scale
 			}
+			--]]
+			--util.ptable(propsC2.boundingBox)
+			local scaleC = math.max(dAreaC, propsC2.axisMajor) / config.diameter
+			local v0 = vector.new{
+				Image.focalC,
+				---(propsC2.centroid[1] - Image.x0C),
+				---(propsC2.centroid[2] - Image.y0C),
+				-((propsC2.boundingBox[1]+propsC2.boundingBox[2])/2 - Image.x0C),
+				-(propsC2.boundingBox[4] - Image.y0C),
+				scaleC
+			}
+
 			-- Put into the local and global frames
 			local vL = Image.tfL * (v0 / v0[4])
 			local vG = Image.tfG * (v0 / v0[4])
@@ -129,8 +171,10 @@ local function find_ball_on_line(Image)
 			--print(dist)
 			-- minZ should relate to the distance away...
 			local minZ = -0.08
+			local maxZ = 0.5
 			if dist > 2 then
 				minZ = -0.375
+				maxZ = 0.7
 			end
 			--local maxH = (config.max_height0 and config.max_height1) and (config.max_height0 + dist * config.max_height1)
 			--if dist > config.max_distance then
@@ -139,9 +183,9 @@ local function find_ball_on_line(Image)
 				passed = false
 				msgs[i] = string.format("Distance: %.2f > %.2f", dist, maxDist)
 				--elseif maxH and v[3] > maxH then
-			elseif v[3] > config.max_height then
+			elseif v[3] > maxZ then
 				passed = false
-				msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", config.max_height, unpack(v,1,3))
+				msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", maxZ, unpack(v,1,3))
 			elseif minZ and v[3] < minZ then
 				passed = false
 				msgs[i] = string.format("minZ: %.2f (%.2f, %.2f, %.2f)", minZ, unpack(v,1,3))
@@ -167,6 +211,7 @@ local function find_ball_on_line(Image)
 		--'ball height:%.2f, thr: %.2f'
 		-- v[3], config.max_height0+config.max_height1*math.sqrt(v[1]*v[1]+v[2]*v[2]
 		--)))
+		--[[
 		if passed and ENABLE_GROUND_CHECK then
 			-- Only when looking down
 			if Image.qHead[2] < b_ground_head_pitch then
@@ -201,7 +246,7 @@ local function find_ball_on_line(Image)
 				end -- end margin
 			end -- end qHead check
 		end
-
+		--]]
 
 		-- If passed the checks
 		-- Project the ball to the ground
@@ -213,25 +258,44 @@ local function find_ball_on_line(Image)
 				local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
 				propsA.v = pHead4 + scale * (v - pHead4)
 			end
-
 			propsA.t = Image.t
 			-- For ballFilter
 			propsA.r = math.sqrt(v[1]^2+v[2]^2)
 			propsA.dr = 0.25 * propsA.r --TODO: tweak
 			propsA.da = 10 * DEG_TO_RAD
-
 			msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(propsA.v,1,3))
-
-			--head_ch:send'teleop'
-
 			if wcm.get_ball_backonly()==1 then
 				if propsA.v[1]>0 then
 					msgs[#msgs+1]="Ball found front, false positive"
 					return false,table.concat(msgs, '\n')
 				end
 			end
-
 			propsA.online = true
+			--propsA.centroid = vector.new(propsC2.centroid) * Image.scaleC + vector.ones(2)*(Image.scaleC + 1)
+
+			--[[
+			if pHead4[3]==target_height then
+				propsC2.v = vector.copy(v)
+			else
+				local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
+				propsC2.v = pHead4 + scale * (v - pHead4)
+			end
+			propsC2.t = Image.t
+			-- For ballFilter
+			propsC2.r = math.sqrt(v[1]^2+v[2]^2)
+			propsC2.dr = 0.25 * propsC2.r --TODO: tweak
+			propsC2.da = 10 * DEG_TO_RAD
+			msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(propsC2.v,1,3))
+			if wcm.get_ball_backonly()==1 then
+				if propsC2.v[1]>0 then
+					msgs[#msgs+1]="Ball found front, false positive"
+					return false,table.concat(msgs, '\n')
+				end
+			end
+			propsC2.online = true
+			--]]
+
+			--return propsC2, table.concat(msgs, '\n')
 			return propsA, table.concat(msgs, '\n')
 		end
 	end

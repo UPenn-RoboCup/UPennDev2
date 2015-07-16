@@ -169,7 +169,7 @@ ImageProc.block_bitor = block_bitor
 
 
 -- Bit OR on blocks of NxN to get to labelB from labelA
-local function block_bitandN(self)
+local function block_bitorCN(self)
   -- Zero the downsampled image
 	local a_ptr = self.labelA_d
   local c_ptr = self.labelC_d
@@ -183,32 +183,16 @@ local function block_bitandN(self)
       iy = rshift(ix, log2[scaleC])
       ind_c = iy + off_j
       --c_ptr[ind_c] = band(c_ptr[ind_c], a_ptr[0])
+      c_ptr[ind_c] = bor(c_ptr[ind_c], a_ptr[0])
       c_ptr[ind_c] = a_ptr[0]
       a_ptr = a_ptr + 1
     end
   end
 
-
-  -- Start the second loop
-  c_ptr = self.labelC_d
-  local c_ptr1 = c_ptr + self.wc
-  for jc=1,self.hc-1 do
-    for ic=1,self.wc-1 do
-      -- Erode
-      c_ptr[0] = band(c_ptr[0], c_ptr1[1], c_ptr[0], c_ptr1[1])
-      -- Move c
-      c_ptr = c_ptr + 1
-      c_ptr1 = c_ptr1 + 1
-    end
-    -- Move another row, too
-    --c_ptr = c_ptr + self.wc
-    --c_ptr1 = c_ptr1 + self.wc
-  end
-
   return self.labelC_d
 end
 -- Bit OR on blocks of 2x2 to get to labelB from labelA
-local function block_bitand2(self)
+local function block_bitorC2(self)
   -- Zero the downsampled image
   ffi.fill(self.labelC_d, ffi.sizeof(self.labelC_d))
   local a_ptr = self.labelA_d
@@ -231,63 +215,33 @@ local function block_bitand2(self)
     a_ptr1 = a_ptr1 + self.wa
   end
 
-  -- Start the second loop
-  ----[[
-  c_ptr = self.labelC_d
-  local c_ptr1 = c_ptr + self.wc
-  for jc=1,self.hc-1 do
-    for ic=1,self.wc-1 do
-      -- Erode
-      c_ptr[0] = band(c_ptr[0], c_ptr1[0], c_ptr[1], c_ptr1[1])
-      -- Move c
-      c_ptr = c_ptr + 1
-      c_ptr1 = c_ptr1 + 1
-    end
-    -- Move another row, too
-    --c_ptr = c_ptr + self.wc
-    --c_ptr1 = c_ptr1 + self.wc
-  end
-  --]]
-
-  -- Start the second loop to just subsample
-  --[[
-  c_ptr = self.labelC_d
-  local c_ptr1 = c_ptr + self.wc
-  for jc=1,self.hc do
-    for ic=1,self.wc do
-      -- Erode
-      c_ptr[1] = 0
-      c_ptr1[0] = 0
-      -- Move c
-      c_ptr = c_ptr + 2
-      c_ptr1 = c_ptr1 + 2
-    end
-  end
-  --]]
-
   return labelC_d
 end
 function procC(self)
 	if self.scaleC==2 then
-	  block_bitand2(self)
+	  block_bitorC2(self)
 	else
-	  block_bitandN(self)
+	  block_bitorCN(self)
 	end
   ----[[
-  local c_ptr = self.labelC_d
-  local c_ptr1 = c_ptr + self.wc
-  for jc=1,self.hc-1 do
-    for ic=1,self.wc-1 do
-      -- Erode
-      c_ptr[0] = band(c_ptr[0], c_ptr1[0], c_ptr[1], c_ptr1[1])
-      -- Move c
-      c_ptr = c_ptr + 1
-      c_ptr1 = c_ptr1 + 1
+  -- Erode
+  for i=1,2 do
+    local c_ptr = self.labelC_d
+    local c_ptr1 = c_ptr + self.wc
+    for jc=1,self.hc-1 do
+      for ic=1,self.wc-1 do
+        -- Erode
+        c_ptr[0] = band(c_ptr[0], c_ptr1[0], c_ptr[1], c_ptr1[1])
+        -- Move c
+        c_ptr = c_ptr + 1
+        c_ptr1 = c_ptr1 + 1
+      end
     end
   end
   --]]
   ----[[
-  for i=1,1 do
+  -- Grow
+  for i=1,3 do
     c_ptr = self.labelC_d
     c_ptr1 = c_ptr + self.wc
     local c_tptr = self.tmpC

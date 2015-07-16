@@ -38,8 +38,11 @@ function Vision.entry(cfg)
   HeadImage.y0A = (HeadImage.ha-1)/2 + cfg.cy_offset
   HeadImage.x0B = (HeadImage.wb-1)/2 + cfg.cx_offset / HeadImage.scaleB
   HeadImage.y0B = (HeadImage.hb-1)/2 + cfg.cy_offset / HeadImage.scaleB
+	HeadImage.x0C = (HeadImage.wc-1)/2 + cfg.cx_offset / HeadImage.scaleC
+  HeadImage.y0C = (HeadImage.hc-1)/2 + cfg.cy_offset / HeadImage.scaleC
   HeadImage.focalA = focal_length / (focal_base / HeadImage.wa)
   HeadImage.focalB = HeadImage.focalA / HeadImage.scaleB
+	HeadImage.focalC = HeadImage.focalA / HeadImage.scaleC
 
   -- Ball
   if cfg.vision.ball and ENABLE_BALL then

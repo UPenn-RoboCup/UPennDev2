@@ -59,7 +59,7 @@ function state.entry()
   uRight = mcm.get_status_uRight()
   uTorso = mcm.get_status_uTorso()  
   local zLeg = mcm.get_status_zLeg()
-  print("zLeg:",unpack(zLeg))
+--  print("zLeg:",unpack(zLeg))
 
 --[[
   print("uLeft:",unpack(uLeft))

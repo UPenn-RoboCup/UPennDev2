@@ -37,16 +37,12 @@ local wp = vector.zeros(N) -- weight
 function check_particles(funcname)
   for ip = 1,N do
     if xp[ip]==nil or yp[ip]==nil or ap[ip]==nil then
-      print("POSEFILTER P NIL at "..funcname)
-      print("num:"..ip)
-      print(xp[ip])
-      print(yp[ip])
-      print(ap[ip])
+      print(util.color("POSEFILTER P NIL at "..funcname..ip, 'red'))
       --SJ: quick fix
       --Swap that particle with the best particle for now
-      xp[ip]=xp[1]
-      yp[ip]=yp[1]
-      ap[ip]=ap[1]
+      xp[ip]=xp[1] or 0
+      yp[ip]=yp[1] or 0
+      ap[ip]=ap[1] or 0
 --      return true
     end
   end

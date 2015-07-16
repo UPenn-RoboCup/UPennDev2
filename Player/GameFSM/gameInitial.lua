@@ -29,15 +29,19 @@ function state.update()
 
   if role~=old_role then
     if role==1 then --attacker
-      print( util.color('Attacker','red') )  
-      print( util.color('Attacker','red') )  
-      print( util.color('Attacker','red') )  
+      print( util.color('Attacker Initial','red') )  
+      print( util.color('Attacker Initial','red') )  
+      print( util.color('Attacker Initial','red') )  
     elseif role==0 then
-      print( util.color('GOALIE','blue') )
-      print( util.color('GOALIE','blue') )
-      print( util.color('GOALIE','blue') )
+      print( util.color('GOALIE Initial','blue') )
+      print( util.color('GOALIE Initial','blue') )
+      print( util.color('GOALIE Initial','blue') )
     elseif role==2 then
       print( 'Testing' )
+    elseif role==3 then
+      print( util.color('DEMO Initial','green') )
+      print( util.color('DEMO Initial','green') )
+      print( util.color('DEMO Initial','green') )
     end
     old_role=role
   end

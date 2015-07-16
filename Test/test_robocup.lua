@@ -101,10 +101,11 @@ local state = gcm.get_game_state()
 
 	elseif key_char_lower==("0") then  
 		gcm.set_game_role(2)
-		if state~=6 then 
-	    game_ch:send'forcestop'
-	  end
 
+	elseif key_char_lower==("9") then  
+		--Demo mode on!
+		gcm.set_game_role(3)
+		
 
 	elseif key_char_lower==("s") then  
 		head_ch:send'scanobs'		

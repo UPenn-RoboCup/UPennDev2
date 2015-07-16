@@ -108,36 +108,7 @@ Solid {
 
 
   ]
-  boundingObject Group {
-    children [
-      USE HORIZONTAL_POST_TRANS
-      USE RIGHT_POST_TRANS
-      USE LEFT_POST_TRANS
-      Transform {
-        translation 0.2 0.4 -1.35
-        children [
-          DEF GOAL_SIDE_BOX Box {
-            size 0.4 0.9 0.03
-          }
-        ]
-      }
-      Transform {
-        translation 0.2 0.9 1.35
-        children [
-          USE GOAL_SIDE_BOX
-        ]
-      }
-      Transform {
-        translation 0.4 0.4 0
-        rotation 0 0 1 0
-        children [
-          Box {
-            size 0.2 0.8 2.6
-          }
-        ]
-      }
-    ]
-  }
+  
   locked IS locked
 }
 }

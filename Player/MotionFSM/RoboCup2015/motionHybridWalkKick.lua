@@ -97,6 +97,12 @@ local update_odometry = function(uTorso_in)
 end
 --]]
 
+local kicknames={
+  "walkkick",
+  "longkick",
+  "weakkick"
+}
+
 local function calculate_footsteps()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
   local uTorsoVel = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
@@ -109,10 +115,12 @@ local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
 local tStepMid =Config.walk.tStep-tSlope1-tSlope2
 
   local kicktype = mcm.get_walk_kicktype()
+
+
   if mcm.get_walk_kickfoot()==0 then
-    print("Left kick, type:",kicktype)
+    print("Left "..kicknames[kicktype+1])
   else
-    print("Right kick, type:",kicktype)
+    print("Left "..kicknames[kicktype+1])
   end
   --print("Next support:",supportLeg)
   local step_queue={}

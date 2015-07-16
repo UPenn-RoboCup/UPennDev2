@@ -18,7 +18,7 @@ shared.game.state = vector.zeros(1)
 -- Save the game time
 shared.game.timeleft = vector.zeros(1)
 
--- 0: goalie   1: attacker   2:Force stop and go to Testing
+-- 0: goalie   1: attacker   2:Force stop  3: Demo mode (approach and kick)
 shared.game.role = vector.ones(1)
 
 shared.game.gctime = vector.zeros(1)

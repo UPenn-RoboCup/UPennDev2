@@ -31,8 +31,12 @@ function state.update()
   local t  = Body.get_time()
   local dt = t - t_update
   -- Save this at the last update time
-  if gcm.get_game_state()==3 then
-    print("PLAYING")
+  if gcm.get_game_state()==3 and 
+    (gcm.get_game_role()~=2) then
+     if wcm.get_robot_timestarted()==0 then 
+      wcm.set_robot_timestarted(t)      
+    end
+    print("GAME START!!!")
     return "play"
   end
 end

@@ -582,6 +582,7 @@ function WebotsBody.update(Body)
 	    	local ball_gpsx=(tonumber(string.sub(msg,2,6))-5)*2
 	    	local ball_gpsy=(tonumber(string.sub(msg,8,12))-5)*2
 	    	wcm.set_robot_gpsball({ball_gpsx,ball_gpsy});
+
         local timestarted = wcm.get_robot_timestarted()
         if Config.stop_after_score and timestarted~=0 and ball_gpsx>4.5 then
           print("=========================================")

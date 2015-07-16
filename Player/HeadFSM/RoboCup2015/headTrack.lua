@@ -79,8 +79,9 @@ function state.update()
 
   -- print('Ball dist:', math.sqrt(ballX*ballX + ballY*ballY))
   -- Look at Goal
---  if not Config.demo and not Config.use_gps_pose and t-t_entry > timeout then
-  if not Config.demo and t-t_entry > timeout then    
+
+  --if role is 3 (demo mode) never look up
+  if gcm.get_game_role()~=3 and t-t_entry > timeout then    
     -- If robot is close to the ball then do not look up
 --    if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
 

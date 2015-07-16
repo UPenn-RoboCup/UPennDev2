@@ -43,7 +43,6 @@ end
 
 function state.update()
   if Config.disable_kick then
-    print("APPROACHED AT THE BALL")
     local ballx = wcm.get_ball_x() - Config.fsm.bodyRobocupApproach.target[1]
     local bally = wcm.get_ball_y()
     local ballr = math.sqrt(ballx*ballx+bally*bally)

@@ -184,10 +184,10 @@ local function update_velocity()
 
   if ball_side>0 then --Align to the left foot
     print(string.format("ball(%.2f %.2f) T: (%.2f, %.2f)",
-      ballx,bally, approachTargetX,  Config.walk.footY+approachTargetY[1]))
+      ballx,bally, approachTargetX,  Config.walk.footY -approachTargetY[1]))
   else
     print(string.format("ball(%.2f %.2f) T: (%.2f, %.2f)",
-      ballx,bally, approachTargetX,  -Config.walk.footY+ approachTargetY[2]))  
+      ballx,bally, approachTargetX,  -Config.walk.footY - approachTargetY[2]))  
   end
  
 
@@ -315,7 +315,7 @@ function state.entry()
   end
 
 
-  if Config.demo then
+  if gcm.get_game_role()==3 then --demo mode
    mcm.set_walk_kicktype(0) --Walkkick only for demo
   end
 end

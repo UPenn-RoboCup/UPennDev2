@@ -10,7 +10,10 @@ local si = require'simple_ipc'
 --local constant = 33
 --local constant = 43
 --local constant = 680
-local start_idx = 600
+--local start_idx = 600
+--local start_idx = 800
+--local constant = 840
+local constant = 1280
 
 local function pairmin(t)
 	-- find the minimum element in the array table
@@ -113,16 +116,17 @@ while true do
 		--print(i, dt, names[i])
 		local speedup = 1
 		-- Temporary loop hack
-		unix.usleep( dt * 1e6 / speedup )
-		logs[i].ch:send(data)
-		--[[
-		if constant==cnt then
+		if start_idx and cnt < start_idx then
+
+		elseif not constant then
+			unix.usleep( dt * 1e6 / speedup )
+			logs[i].ch:send(data)
+		elseif constant==cnt then
 			while true do
 				unix.usleep( dt * 1e6 / speedup )
 				logs[i].ch:send(data)
 			end
 		end
-		--]]
 	end
 	-- Repopulate
 	local ok, counter, meta, payload = coroutine.resume(logs[i].co)

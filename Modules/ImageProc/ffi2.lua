@@ -284,11 +284,11 @@ function procC(self)
       c_ptr1 = c_ptr1 + 1
     end
   end
-  local tmpC = ffi.new('uint8_t[?]', self.hc * self.wc)
-  for i=1,2 do
+  ----[[
+  for i=1,1 do
     c_ptr = self.labelC_d
     c_ptr1 = c_ptr + self.wc
-    local c_tptr = tmpC
+    local c_tptr = self.tmpC
     local c_tptr1 = c_tptr + self.wc
     for jc=1,self.hc-1 do
       for ic=1,self.wc-1 do
@@ -305,8 +305,9 @@ function procC(self)
         c_ptr1 = c_ptr1 + 1
       end
     end
-    for i=0,ffi.sizeof(tmpC)-1 do self.labelC_d[i] = tmpC[i] end
+    for i=0,ffi.sizeof(self.tmpC)-1 do self.labelC_d[i] = self.tmpC[i] end
   end
+  --]]
   return self.labelC_d
 end
 ImageProc.block_bitor = block_bitor
@@ -900,6 +901,7 @@ function ImageProc.new(w, h, scaleA, scaleB)
 		labelA_d = ffi.new('uint8_t[?]', ha * wa),
 		labelB_d = ffi.new('uint8_t[?]', hb * wb),
     labelC_d = ffi.new('uint8_t[?]', hc * wc),
+    tmpC = ffi.new('uint8_t[?]', hc * wc),
 		-- Color count allocations
     ccA_d = ffi.new('int[256]'),
 		ccB_d = ffi.new('int[256]'),

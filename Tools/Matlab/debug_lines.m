@@ -40,7 +40,7 @@ colormap(cmap);
 axis image;
 hold on;
 set(a_labelB, 'XLim', [1, metadata.wb], 'YLim', [1, metadata.hb]);
-plot([1, metadata.wb],[1, metadata.hb],'k-');
+%plot([1, metadata.wb],[1, metadata.hb],'k-');
 
 
 

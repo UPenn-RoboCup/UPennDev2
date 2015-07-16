@@ -140,6 +140,7 @@ local function update(meta, img)
 	vision_ch:send(detection_msg)
 	label_ch:send(lA_msg)
 
+	--
 	local lB_raw = c_zlib(Image.labelB_d, ffi.sizeof(Image.labelB_d))
   local lB_meta = {
     w = Image.wb,
@@ -149,7 +150,18 @@ local function update(meta, img)
     id = 'labelB',
   }
 	local lB_msg = {mpack(lB_meta), lB_raw}
-	label_ch:send(lB_msg)
+	--label_ch:send(lB_msg)
+
+	local lC_raw = c_zlib(Image.labelC_d, ffi.sizeof(Image.labelC_d))
+  local lC_meta = {
+    w = Image.wc,
+    h = Image.hc,
+    sz = #lC_raw,
+    c = 'zlib',
+    id = 'labelB',
+  }
+	local lC_msg = {mpack(lC_meta), lC_raw}
+	label_ch:send(lC_msg)
 
 	-- TODO: How often to send over UDP?
 	if udp_ch then

@@ -9,6 +9,7 @@ local si = require'simple_ipc'
 --local constant = 29
 --local constant = 33
 --local constant = 43
+local constant = 675
 
 local function pairmin(t)
 	-- find the minimum element in the array table
@@ -28,12 +29,39 @@ end
 local logs = {
 }
 logs.yuyv = {
+	ch = si.new_publisher'camera0',
+	dir = HOME..'Data'..'/ucla4',
+	'07.14.2015.18.30.36',
+	'07.14.2015.18.30.46',
+	'07.14.2015.18.30.56',
+	'07.14.2015.18.31.06',
+	'07.14.2015.18.31.16',
+	'07.14.2015.18.31.25',
+	'07.14.2015.18.31.34',
+	'07.14.2015.18.31.42',
+	'07.14.2015.18.31.50',
+	'07.14.2015.18.31.58',
+	'07.14.2015.18.32.06',
+	'07.14.2015.18.32.14',
+	'07.14.2015.18.32.22',
+	'07.14.2015.18.32.30',
+	'07.14.2015.18.32.38',
+	'07.14.2015.18.32.46',
+	'07.14.2015.18.32.54',
+	'07.14.2015.18.33.03',
+	'07.14.2015.18.33.13',
+	'07.14.2015.18.33.23',
+	'07.14.2015.18.33.33',
+}
+--[[
+logs.yuyv = {
 	'07.14.2015.10.53.08',
 	'07.14.2015.10.53.29',
 	'07.14.2015.10.53.51',
 	ch = si.new_publisher'camera0',
 	dir = HOME..'Data'..'/grasp2',
 }
+--]]
 
 -- Initialize the coroutines
 for name, log in pairs(logs) do
@@ -84,10 +112,12 @@ while true do
 		--print(i, dt, names[i])
 		local speedup = 1
 		-- Temporary loop hack
-		repeat
-			unix.usleep( dt * 1e6 / speedup )
-			logs[i].ch:send(data)
-		until constant~=cnt
+		if constant==cnt then
+			while true do
+				unix.usleep( dt * 1e6 / speedup )
+				logs[i].ch:send(data)
+			end
+		end
 	end
 	-- Repopulate
 	local ok, counter, meta, payload = coroutine.resume(logs[i].co)

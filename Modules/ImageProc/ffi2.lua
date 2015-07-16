@@ -125,7 +125,7 @@ local function block_bitorN(self)
   local jy, iy, ind_b, off_j
   for jx=0,self.ha-1 do
     jy = rshift(jx, log2[scaleB])
-    off_j = jy * wb
+    off_j = jy * self.wb
     for ix=0,self.wa-1 do
       iy = rshift(ix, log2[scaleB])
       ind_b = iy + off_j
@@ -166,6 +166,99 @@ function block_bitor(self)
 	end
 end
 ImageProc.block_bitor = block_bitor
+
+
+-- Bit OR on blocks of NxN to get to labelB from labelA
+local function block_bitandN(self)
+  -- Zero the downsampled image
+	local a_ptr = self.labelA_d
+  local c_ptr = self.labelC_d
+  ffi.fill(c_ptr, ffi.sizeof(c_ptr))
+	-- Begin the loop
+  local jy, iy, ind_c, off_j
+  for jx=0,self.ha-1 do
+    jy = rshift(jx, log2[scaleC])
+    off_j = jy * self.wc
+    for ix=0,self.wa-1 do
+      iy = rshift(ix, log2[scaleC])
+      ind_c = iy + off_j
+      --c_ptr[ind_c] = band(c_ptr[ind_c], a_ptr[0])
+      c_ptr[ind_c] = a_ptr[0]
+      a_ptr = a_ptr + 1
+    end
+  end
+
+
+  -- Start the second loop
+  c_ptr = self.labelC_d
+  local c_ptr1 = c_ptr + self.wc
+  for jc=1,self.hc-1 do
+    for ic=1,self.wc-1 do
+      -- Erode
+      c_ptr[0] = band(c_ptr[0], c_ptr1[1], c_ptr[0], c_ptr1[1])
+      -- Move c
+      c_ptr = c_ptr + 1
+      c_ptr1 = c_ptr1 + 1
+    end
+    -- Move another row, too
+    --c_ptr = c_ptr + self.wc
+    --c_ptr1 = c_ptr1 + self.wc
+  end
+
+  return self.labelC_d
+end
+-- Bit OR on blocks of 2x2 to get to labelB from labelA
+local function block_bitand2(self)
+  -- Zero the downsampled image
+  ffi.fill(self.labelC_d, ffi.sizeof(self.labelC_d))
+  local a_ptr = self.labelA_d
+  local c_ptr = self.labelC_d
+  -- Offset a row
+  local a_ptr1 = a_ptr + self.wa
+  -- Start the loop
+  for jc=1,self.hc do
+    for ic=1,self.wc do
+      c_ptr[0] = band(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
+      --c_ptr[0] = a_ptr[0] -- straight subsample
+      -- Move c
+      c_ptr = c_ptr + 1
+      -- Move to the next pixel
+      a_ptr = a_ptr + 2
+      a_ptr1 = a_ptr1 + 2
+    end
+    -- Move another row, too
+    a_ptr = a_ptr + self.wa
+    a_ptr1 = a_ptr1 + self.wa
+  end
+
+  -- Start the second loop
+  c_ptr = self.labelC_d
+  local c_ptr1 = c_ptr + self.wc
+  for jc=1,self.hc-1 do
+    for ic=1,self.wc-1 do
+      -- Erode
+      c_ptr[0] = band(c_ptr[0], c_ptr1[1], c_ptr[0], c_ptr1[1])
+      -- Move c
+      c_ptr = c_ptr + 1
+      c_ptr1 = c_ptr1 + 1
+    end
+    -- Move another row, too
+    --c_ptr = c_ptr + self.wc
+    --c_ptr1 = c_ptr1 + self.wc
+  end
+
+  return labelC_d
+end
+function block_bitand(self)
+	if self.scaleC==2 then
+	  return block_bitand2(self)
+	else
+	  return block_bitandN(self)
+	end
+end
+ImageProc.block_bitor = block_bitor
+
+
 
 function color_countA(self)
   -- Reset the color count
@@ -732,8 +825,10 @@ end
 function ImageProc.new(w, h, scaleA, scaleB)
   scaleA = scaleA or 2
   scaleB = scaleB or 2
+  scaleC = scaleC or 2
   local wa, ha = w / scaleA, h / scaleA
   local wb, hb = wa / scaleB, ha / scaleB
+  local wc, hc = wa / scaleC, ha / scaleC
 	return {
 		-- Widths and Heights of Image, LabelA, LabelB
 		w = w,
@@ -742,22 +837,29 @@ function ImageProc.new(w, h, scaleA, scaleB)
 		ha = ha,
 		wb = wb,
 		hb = hb,
+    wc = wc,
+		hc = hc,
 		-- Downsampling scales
 		scaleA = scaleA,
 		scaleB = scaleB,
+    scaleC = scaleC,
 		-- Memory allocation of the labels
 		labelA_d = ffi.new('uint8_t[?]', ha * wa),
 		labelB_d = ffi.new('uint8_t[?]', hb * wb),
+    labelC_d = ffi.new('uint8_t[?]', hc * wc),
 		-- Color count allocations
+    ccA_d = ffi.new('int[256]'),
 		ccB_d = ffi.new('int[256]'),
-		ccA_d = ffi.new('int[256]'),
+		ccC_d = ffi.new('int[256]'),
 		luts = {},
 		-- TODO: Functions?
     load_lut = load_lut,
     yuyv_to_labelA = yuyv_to_labelA,
     block_bitor = block_bitor,
+    block_bitand = block_bitand,
     color_countA = color_countA,
     color_countB = color_countB,
+    color_countC = color_countC,
 	}
 end
 

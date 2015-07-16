@@ -77,6 +77,7 @@ function Vision.update(meta, img)
   --HeadImage:rgb_to_labelA(img)
   HeadImage:yuyv_to_labelA(img)
   HeadImage:block_bitor()
+	HeadImage:block_bitand()
   -- Must always color count
   local cc_d = HeadImage:color_countA()
 

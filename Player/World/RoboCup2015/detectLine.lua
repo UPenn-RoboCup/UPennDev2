@@ -40,7 +40,7 @@ function detectLine.update(Image)
     config.connect_th, config.max_gap, config.min_length
 	)
 
-	----[[
+	--[[
 	local props, ijs = ImageProc2.field_lines(
 		Image.labelB_d, Image.wb, Image.hb
 	)

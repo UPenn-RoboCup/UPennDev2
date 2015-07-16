@@ -27,7 +27,7 @@ local ENABLE_LINE = true
 -- Set the variables based on the config file
 function Vision.entry(cfg)
 	HeadImage = ImageProc2.new(
-    cfg.w, cfg.h, cfg.vision.scaleA, cfg.vision.scaleB
+    cfg.w, cfg.h, cfg.vision.scaleA, 4 --cfg.vision.scaleB
   )
 	HeadImage:load_lut(table.concat{HOME, "/Data/", "lut_", cfg.lut, ".raw"})
   HeadImage.colors = cfg.vision.colors
@@ -77,7 +77,7 @@ function Vision.update(meta, img)
   --HeadImage:rgb_to_labelA(img)
   HeadImage:yuyv_to_labelA(img)
   HeadImage:block_bitor()
-	HeadImage:block_bitand()
+	HeadImage:procC()
   -- Must always color count
   local cc_d = HeadImage:color_countA()
 

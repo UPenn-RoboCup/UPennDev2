@@ -124,10 +124,10 @@ local function block_bitorN(self)
 	-- Begin the loop
   local jy, iy, ind_b, off_j
   for jx=0,self.ha-1 do
-    jy = rshift(jx, log2[scaleB])
+    jy = rshift(jx, log2[self.scaleB])
     off_j = jy * self.wb
     for ix=0,self.wa-1 do
-      iy = rshift(ix, log2[scaleB])
+      iy = rshift(ix, log2[self.scaleB])
       ind_b = iy + off_j
       b_ptr[ind_b] = bor(b_ptr[ind_b], a_ptr[0])
       a_ptr = a_ptr + 1
@@ -218,7 +218,7 @@ local function block_bitand2(self)
   -- Start the loop
   for jc=1,self.hc do
     for ic=1,self.wc do
-      c_ptr[0] = band(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
+      c_ptr[0] = bor(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
       --c_ptr[0] = a_ptr[0] -- straight subsample
       -- Move c
       c_ptr = c_ptr + 1
@@ -232,12 +232,13 @@ local function block_bitand2(self)
   end
 
   -- Start the second loop
+  ----[[
   c_ptr = self.labelC_d
   local c_ptr1 = c_ptr + self.wc
   for jc=1,self.hc-1 do
     for ic=1,self.wc-1 do
       -- Erode
-      c_ptr[0] = band(c_ptr[0], c_ptr1[1], c_ptr[0], c_ptr1[1])
+      c_ptr[0] = band(c_ptr[0], c_ptr1[0], c_ptr[1], c_ptr1[1])
       -- Move c
       c_ptr = c_ptr + 1
       c_ptr1 = c_ptr1 + 1
@@ -246,15 +247,67 @@ local function block_bitand2(self)
     --c_ptr = c_ptr + self.wc
     --c_ptr1 = c_ptr1 + self.wc
   end
+  --]]
+
+  -- Start the second loop to just subsample
+  --[[
+  c_ptr = self.labelC_d
+  local c_ptr1 = c_ptr + self.wc
+  for jc=1,self.hc do
+    for ic=1,self.wc do
+      -- Erode
+      c_ptr[1] = 0
+      c_ptr1[0] = 0
+      -- Move c
+      c_ptr = c_ptr + 2
+      c_ptr1 = c_ptr1 + 2
+    end
+  end
+  --]]
 
   return labelC_d
 end
-function block_bitand(self)
+function procC(self)
 	if self.scaleC==2 then
-	  return block_bitand2(self)
+	  block_bitand2(self)
 	else
-	  return block_bitandN(self)
+	  block_bitandN(self)
 	end
+  local c_ptr = self.labelC_d
+  local c_ptr1 = c_ptr + self.wc
+  for jc=1,self.hc-1 do
+    for ic=1,self.wc-1 do
+      -- Erode
+      c_ptr[0] = band(c_ptr[0], c_ptr1[0], c_ptr[1], c_ptr1[1])
+      -- Move c
+      c_ptr = c_ptr + 1
+      c_ptr1 = c_ptr1 + 1
+    end
+  end
+  local tmpC = ffi.new('uint8_t[?]', self.hc * self.wc)
+  for i=1,2 do
+    c_ptr = self.labelC_d
+    c_ptr1 = c_ptr + self.wc
+    local c_tptr = tmpC
+    local c_tptr1 = c_tptr + self.wc
+    for jc=1,self.hc-1 do
+      for ic=1,self.wc-1 do
+        -- Erode
+        local together = bor(c_ptr[0], c_ptr1[0], c_ptr[1], c_ptr1[1])
+        c_tptr[0] = together
+        c_tptr[1] = together
+        c_tptr1[0] = together
+        c_tptr1[1] = together
+        -- Move c
+        c_tptr = c_tptr + 1
+        c_tptr1 = c_tptr1 + 1
+        c_ptr = c_ptr + 1
+        c_ptr1 = c_ptr1 + 1
+      end
+    end
+    for i=0,ffi.sizeof(tmpC)-1 do self.labelC_d[i] = tmpC[i] end
+  end
+  return self.labelC_d
 end
 ImageProc.block_bitor = block_bitor
 
@@ -825,7 +878,7 @@ end
 function ImageProc.new(w, h, scaleA, scaleB)
   scaleA = scaleA or 2
   scaleB = scaleB or 2
-  scaleC = scaleC or 2
+  scaleC = scaleC or 4
   local wa, ha = w / scaleA, h / scaleA
   local wb, hb = wa / scaleB, ha / scaleB
   local wc, hc = wa / scaleC, ha / scaleC
@@ -856,7 +909,7 @@ function ImageProc.new(w, h, scaleA, scaleB)
     load_lut = load_lut,
     yuyv_to_labelA = yuyv_to_labelA,
     block_bitor = block_bitor,
-    block_bitand = block_bitand,
+    procC = procC,
     color_countA = color_countA,
     color_countB = color_countB,
     color_countC = color_countC,

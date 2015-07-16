@@ -39,9 +39,9 @@ function detectBall.update(Image)
   end
   -- Connect the regions in labelB
   local ballPropsB = ImageProc.connected_regions(
-    tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
-    Image.wb,
-    Image.hb,
+    tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelC_d))),
+    Image.wc,
+    Image.hc,
     ball_color
   )
 

@@ -28,6 +28,7 @@ function detectBall.entry(cfg, Image)
 	colors = Image.colors
 end
 
+-- TODO: Really need information on the last known ball position...
 local function find_ball_on_line(Image)
 	local ball_color = colors.white
 	-- Connect the regions in labelB
@@ -54,13 +55,13 @@ local function find_ball_on_line(Image)
 
 	-- Run the checks
 	local msgs = {}
-	local nCheck = math.min(5, nProps)
+	local nCheck = math.min(8, nProps)
 	for i=1, nCheck do
 		local passed = true
 		-- Check the image properties
 		-- TODO: Verify the bounding box!
 		local propsB = ballPropsB[i]
-		local bboxA = bboxB2A(propsB.boundingBox, Image.scaleB)
+		local bboxA = bboxB2A(propsB.boundingBox, Image.scaleC)
 		local bboxArea = (bboxA[2] - bboxA[1] + 1) * (bboxA[4] - bboxA[3] + 1)
 		if bboxArea < config.th_min_bbox_area then
 			passed = false
@@ -82,10 +83,13 @@ local function find_ball_on_line(Image)
 
 		-- Ball width/height
 		if passed then
+			local maxRatio = 4
+			local minRatio = 1/maxRatio
 			local axisRatio = propsA.axisMajor / propsA.axisMinor
-			if axisRatio > 2 or axisRatio < 0.5 then
+			if axisRatio > maxRatio or axisRatio < minRatio then
 				passed = false
-				msgs[i] = string.format('C axisRatio: %.2f < %.2f < %.2f', 0.5, axisRatio, 2)
+				msgs[i] = string.format('C axisRatio: %.2f < %.2f < %.2f',
+					minRatio, axisRatio, maxRatio)
 			end
 		end
 
@@ -123,12 +127,17 @@ local function find_ball_on_line(Image)
 			-- Check the distance
 			local dist = math.sqrt(v[1]^2 + v[2]^2)
 			--print(dist)
-			local minZ = -0.2
+			-- minZ should relate to the distance away...
+			local minZ = -0.08
+			if dist > 2 then
+				minZ = -0.375
+			end
 			--local maxH = (config.max_height0 and config.max_height1) and (config.max_height0 + dist * config.max_height1)
 			--if dist > config.max_distance then
-			if dist > 5 then
+			local maxDist = 7.5
+			if dist > maxDist then
 				passed = false
-				msgs[i] = string.format("Distance: %.2f > %.2f", dist, 5)
+				msgs[i] = string.format("Distance: %.2f > %.2f", dist, maxDist)
 				--elseif maxH and v[3] > maxH then
 			elseif v[3] > config.max_height then
 				passed = false

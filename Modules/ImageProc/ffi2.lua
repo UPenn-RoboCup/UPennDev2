@@ -273,6 +273,7 @@ function procC(self)
 	else
 	  block_bitandN(self)
 	end
+  ----[[
   local c_ptr = self.labelC_d
   local c_ptr1 = c_ptr + self.wc
   for jc=1,self.hc-1 do
@@ -284,6 +285,7 @@ function procC(self)
       c_ptr1 = c_ptr1 + 1
     end
   end
+  --]]
   ----[[
   for i=1,1 do
     c_ptr = self.labelC_d

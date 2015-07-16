@@ -80,7 +80,7 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   mcm.set_walk_kickphase(0) --now can kick again
-  arm_ch:send'awesome' --we are awesome
+--  arm_ch:send'awesome' --we are awesome
 end
 
 return state

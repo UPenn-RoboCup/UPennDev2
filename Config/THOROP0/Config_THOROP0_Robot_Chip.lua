@@ -276,11 +276,14 @@ Config.parts = {
 	Lidar = vector.count(indexLidar,nJointLidar)
 }
 
-
+print("HEREHERE")
 local jointNames = {
 	"Neck","Head", -- Head (Yaw,pitch)
 	-- Left Arm
-	"ShoulderL", "ArmUpperL", "LeftShoulderYaw",
+--	"ShoulderL", "ArmUpperL", "LeftShoulderYaw",
+
+	"ShoulderL", nil,nil,
+
 	"ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
 	-- Left leg
 	"PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",

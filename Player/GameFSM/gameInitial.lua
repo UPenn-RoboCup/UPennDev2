@@ -4,6 +4,9 @@ state._NAME = ...
 local Body = require'Body'
 local t_entry, t_update
 
+local old_role = nil
+
+
 function state.entry()
   print(state._NAME..' Entry' ) 
   -- When entry was previously called
@@ -12,6 +15,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   gcm.set_game_state(0)
+  old_role = nil
 end
 
 function state.update()
@@ -20,6 +24,23 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+
+  local role = gcm.get_game_role()
+
+  if role~=old_role then
+    if role==1 then --attacker
+      print( util.color('Attacker','red') )  
+      print( util.color('Attacker','red') )  
+      print( util.color('Attacker','red') )  
+    elseif role==0 then
+      print( util.color('GOALIE','blue') )
+      print( util.color('GOALIE','blue') )
+      print( util.color('GOALIE','blue') )
+    elseif role==2 then
+      print( 'Testing' )
+    end
+    old_role=role
+  end
 end
 
 function state.exit()

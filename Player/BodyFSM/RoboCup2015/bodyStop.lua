@@ -32,6 +32,7 @@ function state.update()
   local dt = t - t_update
   -- Save this at the last update time
   if gcm.get_game_state()==3 then
+    print("PLAYING")
     return "play"
   end
 end

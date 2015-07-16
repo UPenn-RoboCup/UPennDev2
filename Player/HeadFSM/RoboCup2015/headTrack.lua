@@ -84,13 +84,12 @@ function state.update()
     -- If robot is close to the ball then do not look up
 --    if math.sqrt(ballX*ballX + ballY*ballY) > Config.fsm.headTrack.dist_th then
 
-print(wcm.get_robot_traj_num())
+    --print(wcm.get_robot_traj_num())
 
     if wcm.get_robot_traj_num(count)>=(Config.min_steps_lookdown or 5) then
       if gcm.get_game_role()==0 then
         --Goalie don't look goals
       else
-        print("timeout")
     	  return 'timeout'
       end
     end
@@ -121,7 +120,8 @@ print(wcm.get_robot_traj_num())
 end
 
 function state.exit()
-  print(state._NAME..' Exit' )
+  local t = Body.get_time()
+  print(state._NAME..' Exit, total time:', t-t_entry )
 end
 
 return state

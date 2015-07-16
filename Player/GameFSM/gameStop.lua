@@ -16,8 +16,8 @@ function state.entry()
 -- 0 for initial / 1 for ready 2 for set / 3 for play / 4 fin
 -- 5: Pre-initialized (idle) 6 for testing
 
-  gcm.set_game_state(3)
-  head_ch:send'scanobs'
+  gcm.set_game_state(6)
+  body_ch:send'stop'
 end
 
 function state.update()
@@ -25,7 +25,7 @@ function state.update()
   local t = Body.get_time()
   local t_diff = t - t_update
   -- Save this at the last update time
-  
+
   t_update = t
 end
 

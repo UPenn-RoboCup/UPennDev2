@@ -289,6 +289,30 @@ local jointNames = {
 }
 
 
+--FOR ROBOCUP
+local jointNames = {
+	"Neck","Head", -- Head (Yaw,pitch)
+	-- Left Arm
+	"ShoulderL", "null","null","null","null","null","null",
+	-- Left leg
+	"PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
+	-- Right leg
+	"PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
+	--Right arm
+	"ShoulderR", "null","null","null","null","null","null",	
+	-- Waist
+	"TorsoYaw","TorsoPitch",
+	-- Gripper
+	"null","null","null",	
+	"null","null","null",	
+	-- lidar movement
+	"null",	
+}
+
+
+
+
+
 
 Config.jointNames = jointNames
 

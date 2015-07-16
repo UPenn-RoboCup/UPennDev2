@@ -351,7 +351,7 @@ function walk.update()
     if current_side~=last_side then
       crossing_num = crossing_num + 1
       last_side=current_side
-      print("Crossing #:",crossing_num)
+--      print("Crossing #:",crossing_num)
       if crossing_num==2 then        
         mcm.set_status_uTorsoVel({zmp_solver.x[2][1],zmp_solver.x[2][2],0})
         return "done" 

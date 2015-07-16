@@ -52,8 +52,10 @@ function state.update()
 
   --5 is the idle state! 
   -- Ready, set, playing states
+
+  --Game playing, get out of teleop state 
   if gcm.get_game_state()==3 then 
-    print("Headteleop: game state",gcm.get_game_state())
+    --print("Headteleop: game state",gcm.get_game_state())
     if Config.enable_obstacle_scan then
       return 'scanobs'
     else
@@ -64,7 +66,9 @@ function state.update()
 end
 
 function state.exit()  
-  print(state._NAME..' Exit' )
+  local t = Body.get_time()
+  
+  print(state._NAME..' Exit, total time ',t-t_entry )
 end
 
 return state

@@ -154,7 +154,9 @@ if IS_WEBOTS then
 end
 
 --  Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
-Config.approachTargetY= {-0.07,0.02}  --L/R aiming offsets
+Config.approachTargetY= {-0.0,0.0}  --L/R aiming offsets
+
+
 Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
 Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick
 
@@ -201,5 +203,11 @@ Config.enemy_goalie_shift_factor = 0.15
 
 
 --Config.enable_single_goalpost_detection = false
+
+
+--Added debug messages
+
+
+
 
 return Config

@@ -181,7 +181,10 @@ function WebotsBody.entry(Body)
 	-- Grab the tags from the joint names
 	tags.joints, tags.jointsByName = {}, {}
 	for i,v in ipairs(jointNames) do
-    local tag = webots.wb_robot_get_device(v)
+    local tag=0
+    if v~="null" then
+      tag = webots.wb_robot_get_device(v)
+    end
 		tags.joints[i] = tag
     tags.jointsByName[v] = tag
 		if tag > 0 then

@@ -82,7 +82,7 @@ end
 function state.exit()
   print("HeadObs time: ",Body.get_time()-t_entry)
 	wcm.set_obstacle_enable(0)
-  print('Obstacle detection disabled?', wcm.get_obstacle_enable())
+--  print('Obstacle detection disabled?', wcm.get_obstacle_enable())
 end
 
 return state

@@ -237,7 +237,7 @@ local function update_vision(detected)
         end
         if (not Config.disable_goal_vision) then
           if Config.goalie_odometry_only and gcm.get_game_role()==0 then
-            print("Goalie, goal update disabled")
+--            print("Goalie, goal update disabled")
           else
             goal_type_to_filter[goal[1].type]({goal[1].v, goal[2].v})
           end
@@ -251,7 +251,7 @@ local function update_vision(detected)
         end
         if not Config.disable_goal_vision then
           if Config.goalie_odometry_only and gcm.get_game_role()==0 then
-            print("Goalie, goal update disabled")
+--            print("Goalie, goal update disabled")
           else
             goal_type_to_filter[goal[1].type]({goal[1].v, vector.zeros(4)})
           end
@@ -289,15 +289,13 @@ local function update_vision(detected)
   
 end
 
-function libWorld.pose_reset()
+function libWorld.pose_reset(pose0)
   print("libWorld | POSE RESET!")
   wcm.set_robot_reset_pose(0)
-  wcm.set_robot_pose({0,0,0})
+  wcm.set_robot_pose(pose0 or {0,0,0})
   wcm.set_robot_odometry({0,0,0})
   yaw0 = Body.get_rpy()[3]
-
-  poseFilter.initialize({0,0,0},{0,0,0})
-  
+  poseFilter.initialize(pose0 or {0,0,0},{0,0,0})
   if IS_WEBOTS then
     gps_pose = wcm.get_robot_pose_gps()
     yaw0 = gps_pose[3]
@@ -342,12 +340,26 @@ function libWorld.entry()
   count = 0
 end
 
+
+local t_last_update=0
+
 function libWorld.update(uOdom, detection)
   local t = Body.get_time()
+--[[
+  if t-t_last_update>2.0 then
+    local pose =  wcm.get_robot_pose()
+    print("Current pose:",pose[1],pose[2],pose[3]*RAD_TO_DEG)
+    t_last_update=t
+  end
+--]]
+
+
   -- Run the updates
   if wcm.get_robot_reset_pose()==1 then 
-    print("reset?")
-    libWorld.pose_reset() end
+    libWorld.pose_reset() 
+    --This is called by motionInit
+    --after init, reset pose to 0,0,0
+  end
 
   local updated_pose
   if IS_WEBOTS and Config.use_gps_pose then
@@ -362,22 +374,22 @@ function libWorld.update(uOdom, detection)
     updated_pose = vector.copy(gpspose)
 
     print_pose()
-  elseif wcm.get_robot_reset_pose()==1
-    --or (gcm.get_game_state()~=3 and gcm.get_game_state()~=6)
-  then
+--  elseif wcm.get_robot_reset_pose()==1
+    --or 
+--  
 
-
+  --we reset pose unless the game state is playing or testing
+  elseif (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then
     if gcm.get_game_role()==0 then
-      print("goalie pose reset")
+--      print("Goalie pose reset!")
       -- Goalie initial pos
       local factor2 = 0.99
       poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
-
       updated_pose = {-Config.world.xBoundary*factor2,0,0}
-
       wcm.set_robot_odometry({-Config.world.xBoundary*factor2,0,0})
+
     else --Attacker initial pos
-      print("attacker pose reset")
+--      print("Attacker pose reset!")
       poseFilter.initialize({0,0,0},{0,0,0})
       wcm.set_robot_odometry({0,0,0})
       updated_pose = {0,0,0}
@@ -398,17 +410,14 @@ function libWorld.update(uOdom, detection)
   end
 
   wcm.set_robot_pose(updated_pose)
-
   update_vision(detection)
 
   if IS_WEBOTS and Config.use_gps_vision then
     wcm.set_obstacle_num(2)
     wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
     wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
-
     local ballglobal = wcm.get_robot_gpsball()
     wcm.set_robot_ballglobal(ballglobal)
-
     local pose = wcm.get_robot_pose_gps()
     local balllocal = util.pose_relative(
       {ballglobal[1],ballglobal[2],0},
@@ -417,7 +426,6 @@ function libWorld.update(uOdom, detection)
     wcm.set_ball_x(balllocal[1])
     wcm.set_ball_y(balllocal[2])
     wcm.set_ball_t(Body.get_time())
-
 --    print("global ball:",unpack(ballglobal))
   else
 
@@ -427,14 +435,11 @@ function libWorld.update(uOdom, detection)
 
     -- Global ball
     local ballglobal = util.pose_global({ball_x,ball_y,0}, updated_pose)
-
     wcm.set_robot_ballglobal(ballglobal)
-
     if not (IS_WEBOTS and Config.use_gps_pose) then
       -- Update pose in wcm
       wcm.set_robot_pose(vector.pose{poseFilter.get_pose()})
     end
-
   end
 
   -- Increment the process count

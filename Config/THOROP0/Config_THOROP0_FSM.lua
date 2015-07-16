@@ -42,6 +42,13 @@ fsm.Game = {
   {'gameSet', 'play', 'gamePlaying'},
   {'gamePlaying', 'finish', 'gameFinished'},
 
+  {'gameInitial', 'forcestop', 'gameStop'},
+  {'gameReady', 'forcestop', 'gameStop'},
+  {'gameSet', 'forcestop', 'gameStop'},
+  {'gamePlaying', 'forcestop', 'gameStop'},
+
+
+  {'gameStop', 'init', 'gameInitial'},
 }
 
 fsm.Arm = {

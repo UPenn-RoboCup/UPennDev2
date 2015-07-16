@@ -37,7 +37,7 @@ function state.entry()
   hcm.set_motion_waistTarget(0) --set target waist to zero
 
   -- Reset the pose
-  wcm.set_robot_reset_pose(1)
+  
 
   Body.enable_read'lleg'
   Body.enable_read'rleg'
@@ -90,7 +90,6 @@ function state.entry()
 
   mcm.set_motion_state(1.03)  
   hcm.set_legdebug_enable_balance({0,0})
-  wcm.set_robot_reset_pose(1)
 
 	-- Let the upper body control this
   --Body.set_waist_command_position({0,0})

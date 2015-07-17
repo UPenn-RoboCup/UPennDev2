@@ -185,6 +185,8 @@ local function block_bitor2_ab(self)
         -- Pure green: Remove background Green
         b_ptr[0] = band(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
       end
+      -- White alway on green...
+      if b_ptr[0] == 16 then b_ptr[0] = 24 end
       -- Move b
       b_ptr = b_ptr + 1
       -- Move to the next pixel
@@ -462,9 +464,6 @@ local function radon2ij(props, ith, ir, flip)
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
 
-  -- Could be + or -
-  if flip then ir = -1*ir end
-
   -- Closest point
   local iR = props.RSCALE * ir * c
   local jR = props.RSCALE * ir * s
@@ -506,6 +505,24 @@ local function radon2ij(props, ith, ir, flip)
     iMax  = iR - lMax * s,
     jMax  = jR + lMax * c,
   }
+
+  -- Could be + or -
+  ----[[
+  if flip then
+    lineProp = {
+      ir = ir,
+      ith = ith,
+      count = cnt,
+      iMean = -1*iR - lMean * s,
+      jMean = -1*jR + lMean * c,
+      --
+      iMin  = -1*iR - lMin * s,
+      jMin  = -1*jR + lMin * c,
+      iMax  = -1*iR - lMax * s,
+      jMax  = -1*jR + lMax * c,
+    }
+  end
+  --]]
 
   lineProp.endpoint = {lineProp.iMin, lineProp.iMax, lineProp.jMin, lineProp.jMax}
 
@@ -580,7 +597,7 @@ function ImageProc.field_lines(label, w, h)
   table.insert(maxN, 1, {ithmax, irmax, cmax})
   local ijs = {}
   for i, v in ipairs(maxN) do
-    table.insert(ijs, radon2ij(props, unpack(v)))
+    table.insert(ijs, radon2ij(props, v[1],v[2], false))
     table.insert(ijs, radon2ij(props, v[1],v[2], true))
   end
   --]]

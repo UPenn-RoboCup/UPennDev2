@@ -17,7 +17,7 @@ cnt = cnt(1:metadata.NR, :);
 fclose(fid);
 figure(1);
 clf;
-cnt(cnt<100)=0;
+%cnt(cnt<100)=0;
 imagesc(cnt);
 a_radon = gca;
 set(a_radon, 'XLim', [1, metadata.NTH], 'YLim', [1, metadata.NR]);
@@ -51,11 +51,18 @@ for i=1:numel(metadata.ijs)
     propsLine = metadata.ijs{i};
     l_x = uint8([propsLine.iMin, propsLine.iMean, propsLine.iMax]+1)
     l_y = uint8([propsLine.jMin, propsLine.jMean, propsLine.jMax]+1)
-    
+
     %l_x = uint8([propsLine.iMean]);
     %l_y = uint8([propsLine.jMean]);
-    
-    plot(l_x,l_y,'m*-');
+
+    if mod(i,2)==0
+      plot(l_x,l_y,'b*-', 'LineWidth', 3);
+      %plot(l_y,l_x,'k*-', 'LineWidth', 3);
+    else
+      disp('other')
+      plot(l_x,l_y,'r*-', 'LineWidth', 3);
+      %plot(l_y,l_x,'y*-', 'LineWidth', 3);
+    end
     %l_y = double([propsLine.iMin, propsLine.iMean, metadata.iMax]);
     %l_x = double([propsLine.jMin, propsLine.jMean, metadata.jMax]);
     %set(p_l, 'Xdata', l_x + 1);

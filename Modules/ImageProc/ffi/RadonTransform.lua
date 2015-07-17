@@ -204,13 +204,13 @@ function RadonTransform.radon_lines_label(label_d, w, h)
       label_sw = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       label_se = e_ptr_r[0]
-      --[[
+      ----[[
       if band(label_ne, colors.white)>0 then
         addHorizontalPixel(i, j)
         addVerticalPixel(i, j)
       end
       --]]
-      ----[[
+      --[[
       -- Test the upper left...
       if band(label_nw, greenwhite)==colors.green then
         -- upper left is green

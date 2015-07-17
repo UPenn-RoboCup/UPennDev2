@@ -137,6 +137,7 @@ local function block_bitorN(self)
 end
 -- Bit OR on blocks of 2x2 to get to labelB from labelA
 local function block_bitor2(self)
+  --print('bit2')
   -- Zero the downsampled image
   ffi.fill(self.labelB_d, ffi.sizeof(self.labelB_d))
   local a_ptr, b_ptr = self.labelA_d, self.labelB_d
@@ -146,6 +147,8 @@ local function block_bitor2(self)
   for jb=1,self.hb do
     for ib=1,self.wb do
       b_ptr[0] = bor(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
+      -- Remove background white
+      if b_ptr[0]==16 then b_ptr[0] = 0 end
       -- Move b
       b_ptr = b_ptr + 1
       -- Move to the next pixel
@@ -159,6 +162,7 @@ local function block_bitor2(self)
   return labelB_d
 end
 function block_bitor(self)
+  --print(self.scaleB)
 	if self.scaleB==2 then
 	  return block_bitor2(self)
 	else

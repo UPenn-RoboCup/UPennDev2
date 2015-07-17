@@ -22,12 +22,12 @@ local ENABLE_BALL = true
 local ENABLE_OBSTACLE = true
 local ENABLE_POST = true
 local ENABLE_LINE = true
-local ENABLE_LINE = true
+local ENABLE_CORNER = false
 
 -- Set the variables based on the config file
 function Vision.entry(cfg)
 	HeadImage = ImageProc2.new(
-    cfg.w, cfg.h, cfg.vision.scaleA, 4 --cfg.vision.scaleB
+    cfg.w, cfg.h, cfg.vision.scaleA, cfg.vision.scaleB
   )
 	HeadImage:load_lut(table.concat{HOME, "/Data/", "lut_", cfg.lut, ".raw"})
   HeadImage.colors = cfg.vision.colors

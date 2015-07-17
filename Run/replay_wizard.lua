@@ -12,7 +12,7 @@ local si = require'simple_ipc'
 --local constant = 680
 --local start_idx = 600
 
-local start_idx = 800
+--local start_idx = 800
 --local constant = 840
 
 --local constant = 1280
@@ -48,6 +48,18 @@ local logs = {
 }
 logs.yuyv = {
 	ch = si.new_publisher'camera0',
+	dir = HOME..'Data'..'/day1a',
+	'07.16.2015.23.54.56',
+	'07.16.2015.23.55.18',
+	'07.16.2015.23.55.40',
+	'07.16.2015.23.56.02',
+	'07.16.2015.23.56.25',
+	'07.16.2015.23.56.47',
+	'07.16.2015.23.57.09',
+}
+--[[
+logs.yuyv = {
+	ch = si.new_publisher'camera0',
 	dir = HOME..'Data'..'/ucla4',
 	'07.14.2015.18.30.36',
 	'07.14.2015.18.30.46',
@@ -71,6 +83,7 @@ logs.yuyv = {
 	'07.14.2015.18.33.23',
 	'07.14.2015.18.33.33',
 }
+--]]
 --[[
 logs.yuyv = {
 	'07.14.2015.10.53.08',

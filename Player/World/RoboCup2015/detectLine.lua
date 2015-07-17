@@ -31,16 +31,18 @@ function detectLine.update(Image)
     return false, 'Bad Image'
   end
   local lines = {}
-
   lines.detect = 0
+
+	--[[
   local linePropsB = ImageProc.field_lines(
 		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
 		Image.wb, Image.hb,
 		config.max_width,
     config.connect_th, config.max_gap, config.min_length
 	)
+	--]]
 
-	--[[
+	----[[
 	local linePropsB, props = ImageProc2.field_lines(
 		Image.labelB_d, Image.wb, Image.hb
 	)
@@ -138,7 +140,8 @@ function detectLine.update(Image)
 
 		-- TODO: Place in the config
     local vHeightMax = 0.50
-
+-- TODO: re-enable
+--[[
 		if length<config.min_length then
 			passed = false
 			msgs[i] = string.format('min_length: %.2f<%.2f', length, config.min_length)
@@ -151,6 +154,7 @@ function detectLine.update(Image)
 			passed = false
 			msgs[i] = string.format('vHeight: %.2f>%.2f', vHeight, vHeightMax)
 		end
+--]]
 
     if passed then
 			lines.detect = 1

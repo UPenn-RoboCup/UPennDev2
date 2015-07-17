@@ -140,6 +140,26 @@ vision.line = {
   max_angle_diff = 85,
 }
 
+local fieldB_C920_param = {
+	{'White Balance Temperature', 2000},
+	{'Exposure (Absolute)', 120},
+	--	{'Focus (absolute)', 0},
+	{'Brightness', 200},
+	{'Contrast', 128},
+	{'Saturation', 255},
+	{'Gain', 0},
+	{'Sharpness', 0},
+}
+local fieldA_C920_param = {
+	{'White Balance Temperature', 3400},
+	{'Exposure (Absolute)', 120},
+	--	{'Focus (absolute)', 0},
+	{'Brightness', 128},
+	{'Contrast', 8},
+	{'Saturation', 255},
+	{'Gain', 0},
+	{'Sharpness', 0},
+}
 local grasp920_param = {
 	{'White Balance Temperature', 2400},
 	{'Exposure (Absolute)', 200},
@@ -175,8 +195,8 @@ local ucla_param = {
 local camera = {}
 camera[1] = {
 	name = 'head',
-	dev = '/dev/video-headcamera',
-	--dev = '/dev/video1',
+	--dev = '/dev/video-headcamera',
+	dev = '/dev/video1',
 	w = 640,
 	h = 360,
 	--dev = '/dev/video-wristcamera',
@@ -205,7 +225,7 @@ camera[1] = {
 	-- Use the default vision parameters
 	vision = vision,
 	-- Run the standard RoboCup vision processing
-	lut = 'ucla4',
+	lut = 'day1',
 	--Logitech C920
 	-- f = 640/2/tan(78/180*pi / 2)
 	--fov = 2*arctan(d/2f)
@@ -214,14 +234,13 @@ camera[1] = {
 	focal_length = 395.17,
 	focal_base = 640,
 	auto_param = {
-		{'Exposure, Auto', 0},
-		{'White Balance Temperature, Auto', 0},
+		--{'Exposure, Auto', 0},
+		--{'White Balance Temperature, Auto', 0},
 		{'Power Line Frequency', 0},
 		{'Exposure, Auto Priority', 1},
 		{'Focus, Auto', 0}
 	},
-	param = grasp920_param,
-	--param = ucla_param,
+	param = fieldA_C920_param,
 }
 
 camera[2] = {

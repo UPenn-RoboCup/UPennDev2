@@ -30,6 +30,10 @@ brew link --force jpeg-turbo
 
 Install the server from [Ubuntu](http://www.ubuntu.com/download/server) with OpennSSH and user of `thor`.
 
+```
+LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libstdc+so.6" matlab
+```
+
 ## Required Packages
 
 ```

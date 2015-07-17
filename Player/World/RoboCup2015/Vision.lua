@@ -18,11 +18,11 @@ local HeadImage
 local detectBall
 local detectPost
 local detectObstacle
-local ENABLE_BALL = true
-local ENABLE_OBSTACLE = true
-local ENABLE_POST = true
+--local ENABLE_BALL = true
+--local ENABLE_OBSTACLE = true
+local ENABLE_POST = false
 local ENABLE_LINE = true
-local ENABLE_CORNER = false
+--local ENABLE_CORNER = false
 
 -- Set the variables based on the config file
 function Vision.entry(cfg)
@@ -79,8 +79,10 @@ function Vision.update(meta, img)
   -- Images to labels
   --HeadImage:rgb_to_labelA(img)
   HeadImage:yuyv_to_labelA(img)
-  HeadImage:block_bitor()
-	HeadImage:procC()
+	--HeadImage:block_bitorw()
+  HeadImage:block_bitor_ab()
+	HeadImage:block_bitor_bc()
+	--HeadImage:procC()
   -- Must always color count
   local cc_d = HeadImage:color_countA()
 

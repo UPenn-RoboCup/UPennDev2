@@ -116,8 +116,33 @@ function rgb_to_labelA(self, rgb_ptr, lut_ptr)
 end
 ImageProc.rgb_to_labelA = rgb_to_labelA
 
+-- Bit OR on blocks of 2x2 to get to labelB from labelA
+local function block_bitor_bc(self)
+  -- Zero the downsampled image
+  ffi.fill(self.labelC_d, ffi.sizeof(self.labelC_d))
+  local c_ptr = self.labelC_d
+  -- Original and Offset a row
+  local b_ptr = self.labelB_d
+  local b_ptr1 = b_ptr + self.wb
+  -- Start the loop
+  for jb=1,self.hc do
+    for ib=1,self.wc do
+      c_ptr[0] = bor(b_ptr[0], b_ptr[1], b_ptr1[0], b_ptr1[1])
+      -- Move to the next pixel
+      c_ptr = c_ptr + 1
+      b_ptr = b_ptr + 2
+      b_ptr1 = b_ptr1 + 2
+    end
+    -- Move another row, too
+    b_ptr = b_ptr + self.wb
+    b_ptr1 = b_ptr1 + self.wb
+  end
+  return labelC_d
+end
+ImageProc.block_bitor_bc = block_bitor_bc
+
 -- Bit OR on blocks of NxN to get to labelB from labelA
-local function block_bitorN(self)
+local function block_bitorN_ab(self)
   -- Zero the downsampled image
 	local a_ptr, b_ptr = self.labelA_d, self.labelB_d
   ffi.fill(b_ptr, ffi.sizeof(b_ptr))
@@ -130,13 +155,15 @@ local function block_bitorN(self)
       iy = rshift(ix, log2[self.scaleB])
       ind_b = iy + off_j
       b_ptr[ind_b] = bor(b_ptr[ind_b], a_ptr[0])
+      -- Remove background white
+      if b_ptr[ind_b]==16 then b_ptr[ind_b] = 0 end
       a_ptr = a_ptr + 1
     end
   end
   return self.labelB_d
 end
 -- Bit OR on blocks of 2x2 to get to labelB from labelA
-local function block_bitor2(self)
+local function block_bitor2_ab(self)
   --print('bit2')
   -- Zero the downsampled image
   ffi.fill(self.labelB_d, ffi.sizeof(self.labelB_d))
@@ -149,6 +176,10 @@ local function block_bitor2(self)
       b_ptr[0] = bor(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
       -- Remove background white
       if b_ptr[0]==16 then b_ptr[0] = 0 end
+      -- if pure green
+      if b_ptr[0]==8 then
+        b_ptr[0] = band(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
+      end
       -- Move b
       b_ptr = b_ptr + 1
       -- Move to the next pixel
@@ -161,15 +192,46 @@ local function block_bitor2(self)
   end
   return labelB_d
 end
-function block_bitor(self)
+function block_bitor_ab(self)
   --print(self.scaleB)
 	if self.scaleB==2 then
-	  return block_bitor2(self)
+	  block_bitor2_ab(self)
 	else
-	  return block_bitorN(self)
+	  block_bitorN_ab(self)
 	end
+
+
+  ----[[
+  -- Grow
+  for i=1,1 do
+    local b_ptr = self.labelB_d
+    local b_ptr1 = b_ptr + self.wb
+    local b_tptr = self.tmpB
+    local b_tptr1 = b_tptr + self.wb
+    for jb=1,self.hb-1 do
+      for ib=1,self.wb-1 do
+        -- Erode
+        local together = bor(b_ptr[0], b_ptr1[0], b_ptr[1], b_ptr1[1])
+        b_tptr[0] = together
+        b_tptr[1] = together
+        b_tptr1[0] = together
+        b_tptr1[1] = together
+        -- Move c
+        b_tptr = b_tptr + 1
+        b_tptr1 = b_tptr1 + 1
+        b_ptr = b_ptr + 1
+        b_ptr1 = b_ptr1 + 1
+      end
+    end
+    -- TODO: Just run a copy
+    for i=0,ffi.sizeof(self.tmpB)-1 do self.labelB_d[i] = self.tmpB[i] end
+  end
+  --]]
+
+
+  return self.labelB_d
 end
-ImageProc.block_bitor = block_bitor
+ImageProc.block_bitor_ab = block_bitor_ab
 
 
 -- Bit OR on blocks of NxN to get to labelB from labelA
@@ -309,11 +371,12 @@ local function radon2ij(props, ith, ir, cnt)
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
 
-  if ith > props.NTH/2 then
-    ir = -1*ir
+  -- Could be + or -
+  --if ith > props.NTH/2 then
+    --ir = -1*ir
     --iR = -iR
     --jR = -jR
-  end
+  --end
 
   -- Closest point
   local iR = props.RSCALE * ir * c -- + props.i0
@@ -384,49 +447,6 @@ function ImageProc.field_lines(label, w, h)
   end
   --]]
 
-  --[[
-  local irmaxes = {}
-  local cmaxes = {}
-  local min_width = 2
-  local min_th = 2
-  local ithMax, irMax1, irMax2
-  local cntMax1, cntMax2 = 0, 0
-  for ith=0, props.NTH-1 do
-    local i_monotonic_max = 0
-    local monotonic_max = 0
-    local i_arr, c_arr = {}, {}
-    if ith >= ithmax-min_th and ith<=ithmax+min_th and ith ~= ithmax then
-      i_arr, c_arr = {0,0}, {0,0}
-    else
-      for ir=0, props.NR-1 do
-        local val = props.count_d[ith][ir]
-        if val > monotonic_max then
-          monotonic_max = val
-          i_monotonic_max = ir
-        elseif #c_arr<2 then
-          -- End of monotonicity
-          table.insert(i_arr, i_monotonic_max)
-          table.insert(c_arr, monotonic_max)
-          i_monotonic_max = ir
-          monotonic_max = 0
-        elseif (ir - i_monotonic_max) > min_width then
-          if monotonic_max>c_arr[1]  then
-            c_arr[1] = monotonic_max
-            i_arr[1] = i_monotonic_max
-          elseif monotonic_max>c_arr[#c_arr] then
-            c_arr[#c_arr] = monotonic_max
-            i_arr[#i_arr] = i_monotonic_max
-          end
-          i_monotonic_max = ir
-          monotonic_max = 0
-        end
-      end -- end the inner for
-    end
-    irmaxes[ith+1] = i_arr
-    cmaxes[ith+1] = c_arr
-    print('th:', ith+1, unpack(c_arr))
-  end
---]]
 
   ----[[
   local irmaxes = {}
@@ -459,7 +479,7 @@ function ImageProc.field_lines(label, w, h)
   local maxN = {}
   for ith, c in ipairs(cmaxes) do
     --if c<100 then
-    if c<150 then
+    if c<125 then
     elseif #maxN<nKeep then
       table.insert(maxN, {ith-1, irmaxes[ith], c})
       -- check merge
@@ -478,34 +498,6 @@ function ImageProc.field_lines(label, w, h)
   --]]
 
   return ijs, props
-  --[[
-
-  -- Have a minimum width of the line (in pixel space)
-  local min_width = 1
-  local i_monotonic_max, monotonic_max, val
-  local ithMax, irMax1, irMax2
-  local cntMax1, cntMax2 = 0, 0
-  local found = false
-
-  local count_d = props.count_d
-  local line_sum_d = props.line_sum_d
-  local line_min_d = props.line_min_d
-  local line_max_d = props.line_max_d
-  local NTH = props.NTH
-  local NR = props.NR
-  local cos_d = props.cos_d
-  local sin_d = props.sin_d
-  local th_d = props.th_d
-  local i0 = props.i0
-  local j0 = props.j0
-  local r0 = props.r0
-
-  for ith=0, NTH-1 do
-    for ir=0, NR-1 do
-
-    end
-  end
-  --]]
 
 end
 --]]
@@ -673,174 +665,10 @@ function ImageProc.color_stats_exact(image, width, height, color, bbox)
 		}, RegionProps_mt)
 end
 
---[[
-image: labeled image
-m: width of labeled image
-n: height of labeled image
-mask: label index (color code)
--- NOTE: 256 is the maximum number of regions
--- TODO: Increase the max
---]]
--- NOTE: the following two are static to the connected regions function!!
-local label_array = ffi.new('int[256][256]')
-local equiv_table = {
-	n_label = 0,
-	m_table = {},
-}
-function equiv_table.ensureAllocated(self, label)
-	local m_table = self.m_table
-	for i=#m_table,label do table.insert(m_table, i) end
-end
-function equiv_table.addEquivalence(self, label1, label2)
-	local m_table = self.m_table
-  while label1 ~= m_table[label1] do label1 = m_table[label1] end
-	while label2 ~= m_table[label2] do label2 = m_table[label2] end
-  if label1 < label2 then
-    m_table[label2] = label1
-	else
-    m_table[label1] = label2
-	end
-end
-function equiv_table.traverseLinks(self)
-	local m_table = self.m_table
-	for i=1,#m_table do m_table[i] = m_table[ m_table[i] ] end
-end
-function equiv_table.removeGaps(self)
-	local m_table = self.m_table
-	local next = 0
-	for i=1,#m_table do
-    m_table[i] = (i == m_table[i]) and next or m_table[m_table[i]]
-		next = (i == m_table[i]) and next + 1 or next
-	end
-	self.n_label = next - 1
-end
-
---[[
-function ImageProc.connected_regions(image, m, n, mask)
-	-- Ensure we have enough room to compute
-  if m > NMAX or n > NMAX then return -1 end
-	-- Clear the Equivelence table
-  equiv_table.m_table = {}
-	local nlabel = 1
-  equiv_table:ensureAllocated(nlabel)
-  -- Iterate over pixels in image:
-  local n_neighbor = 0
-  local label_neighbor = {0, 0, 0, 0}
-	-- Loop over the image
-	local pixel
-  for j=1,n-1 do
-    for i=1,m-1 do
-			-- Grab the pixel
-      pixel = image[0]; image = image + 1
-			-- See if the pixel includes our mask
-      if band(pixel, mask)==0 then
-        label_array[i][j] = 0
-				-- TODO: Fix
-			else
-				-- See if we have any neighbors who are our same mask
-	      n_neighbor = 0
-	      -- Check 4-connected neighboring pixels:
-	      if ((i > 0) and (label_array[i-1][j])) then
-	        label_neighbor[n_neighbor++] = label_array[i-1][j]
-				end
-	      if ((j > 0) and (label_array[i][j-1])) then
-	        label_neighbor[n_neighbor++] = label_array[i][j-1]
-				end
-	      -- Check 8-connected neighboring pixels:
-	      if ((i > 0) and (j > 0) and (label_array[i-1][j-1])) then
-	        label_neighbor[n_neighbor++] = label_array[i-1][j-1]
-				end
-	      if ((i < n-1) and (j > 0) and (label_array[i+1][j-1])) then
-	        label_neighbor[n_neighbor++] = label_array[i+1][j-1]
-				end
-	      local label
-	      if (n_neighbor > 0) then
-	        label = nlabel
-	        -- Determine minimum neighbor label
-	        for i_neighbor = 0,n_neighbor-1 do
-	          if (label_neighbor[i_neighbor] < label) then label = label_neighbor[i_neighbor] end
-					end
-	        -- Update equivalences
-					for i_neighbor = 0,n_neighbor-1 do
-	          if (label ~= label_neighbor[i_neighbor]) then
-	            equiv_table.addEquivalence(label, label_neighbor[i_neighbor])
-						end
-					end
-	      else
-					-- TODO: check the order of operations on the ++
-	        --label = nlabel++
-					nlabel = nlabel + 1; label = nlabel
-	        equiv_table.ensureAllocated(label)
-				end
-	      -- Set label of current pixel
-	      label_array[i][j] = label
-			end
-			-- if
-		end
-	end
-	-- double for
-  -- Clean up equivalence table
-  equiv_table:traverseLinks()
-  equiv_table:removeGaps()
-  --nlabel = equiv_table:numLabel()
-	nlabel = equiv_table.numLabel
-	-- Make the RegionProps array
-	local props = {}
-	for i=1,nlabel do
-		props[i] = setmetatable({
-			area = 0,
-			minI = math.huge,
-			maxI = -math.huge,
-			minJ = math.huge,
-			maxJ = -math.huge,
-			sumI = 0,
-			sumJ = 0,
-		}, RegionProps_mt)
-	end
-	-- TODO: This can be a single loop, not double for
-	local label, prop
-  for i=0,m-1 do
-		for j=0,n-1 do
-			-- Note: TraverseLinks() must be called before grabbing the label
-      label = equiv_table.m_table[ label_array[i][j] ]
-      if (label > 0) then
-				prop = props[label]
-			  prop.area = prop.area + 1
-			  prop.sumI = prop.sumI + i
-			  prop.sumJ = prop.sumJ + j
-			  --if (i < prop.minI) then prop.minI = i end
-			  --if (i > prop.maxI) then prop.maxI = i end
-			  --if (j < prop.minJ) then prop.minJ = j end
-			  --if (j > prop.maxJ) then prop.maxJ = j end
-				prop.minI = i < prop.minI and i or prop.minI
-				prop.maxI = i > prop.maxI and i or prop.maxI
-				prop.minJ = j < prop.minJ and i or prop.minJ
-				prop.maxJ = j > prop.maxJ and i or prop.maxJ
-			end
-    end
-  end
-
-	-- double for
-	-- Sort by area
-	table.sort(props)
-	-- Return in a better format
-	local regions = {}
-	for i, prop in ipairs(props) do
-		if prop.area == 0 then break end
-		table.insert(regions, {
-			area = prop.area,
-			centroid = {props.sumI/props.area, props.sumJ/props.area},
-			boundingBox = {props.minI, props.maxI, props.minJ, props.maxJ}
-		})
-	end
-	return #regions>0 and regions
-end
---]]
-
 -- Setup should be able to quickly switch between cameras
 -- i.e. not much overhead here.
 -- Resize should be expensive at most n_cameras times (if all increase the sz)
-function ImageProc.new(w, h, scaleA, scaleB)
+function ImageProc.new(w, h, scaleA, scaleB, scaleC)
   scaleA = scaleA or 2
   scaleB = scaleB or 2
   scaleC = scaleC or 4
@@ -865,6 +693,8 @@ function ImageProc.new(w, h, scaleA, scaleB)
 		labelA_d = ffi.new('uint8_t[?]', ha * wa),
 		labelB_d = ffi.new('uint8_t[?]', hb * wb),
     labelC_d = ffi.new('uint8_t[?]', hc * wc),
+    tmpA = ffi.new('uint8_t[?]', ha * wa),
+    tmpB = ffi.new('uint8_t[?]', hb * wb),
     tmpC = ffi.new('uint8_t[?]', hc * wc),
 		-- Color count allocations
     ccA_d = ffi.new('int[256]'),
@@ -874,8 +704,9 @@ function ImageProc.new(w, h, scaleA, scaleB)
 		-- TODO: Functions?
     load_lut = load_lut,
     yuyv_to_labelA = yuyv_to_labelA,
-    block_bitor = block_bitor,
-    procC = procC,
+    block_bitor_ab = block_bitor_ab,
+    block_bitor_bc = block_bitor_bc,
+    --procC = procC,
     color_countA = color_countA,
     color_countB = color_countB,
     color_countC = color_countC,

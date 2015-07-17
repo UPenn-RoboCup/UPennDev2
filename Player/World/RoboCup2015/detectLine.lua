@@ -47,6 +47,11 @@ function detectLine.update(Image)
 		Image.labelB_d, Image.wb, Image.hb
 	)
 	--]]
+	--[[
+	local linePropsB, props = ImageProc2.field_lines(
+		Image.labelA_d, Image.wa, Image.ha
+	)
+	--]]
 
 	--[[
 	local meta = {}

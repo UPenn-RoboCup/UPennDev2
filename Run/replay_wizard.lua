@@ -6,26 +6,23 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
---local constant = 29
---local constant = 33
---local constant = 43
+--local constant = 128
+--local constant = 280
+
+
+--local constant = 184
+
 --local constant = 680
 --local start_idx = 600
-
 --local start_idx = 800
 --local constant = 840
-
 --local constant = 1280
-
 --local constant = 1066
-
 --local constant = 1176
 --local start_idx = 1100
-
 --local start_idx = 1750
 --local constant = 1778
 --local constant = 1820
-
 --local constant = 1062
 --local start_idx = 915
 

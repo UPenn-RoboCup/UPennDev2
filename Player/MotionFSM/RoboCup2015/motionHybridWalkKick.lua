@@ -97,6 +97,12 @@ local update_odometry = function(uTorso_in)
 end
 --]]
 
+local kicknames={
+  "walkkick",
+  "longkick",
+  "weakkick"
+}
+
 local function calculate_footsteps()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
   local uTorsoVel = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
@@ -109,9 +115,14 @@ local tSlope2 = Config.walk.tStep*(1-Config.walk.phSingle[2])
 local tStepMid =Config.walk.tStep-tSlope1-tSlope2
 
   local kicktype = mcm.get_walk_kicktype()
-  print("Kick foot:",mcm.get_walk_kickfoot())
-  print("Kick type:",kicktype)
-  print("Next support:",supportLeg)
+
+
+  if mcm.get_walk_kickfoot()==0 then
+    print("Left "..kicknames[kicktype+1])
+  else
+    print("Left "..kicknames[kicktype+1])
+  end
+  --print("Next support:",supportLeg)
   local step_queue={}
 
   local pre_step = nil
@@ -129,7 +140,7 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
     end
   elseif kicktype==10 then
     local spread_angle = util.mod_angle(uLeft_now[3]-uRight_now[3])
-    print("SPREAD ANGLE:",spread_angle)
+    if Config.debug.kick then print("SPREAD ANGLE:",spread_angle) end
     if spread_angle>5*math.pi/180 then
       step_queue=Config.kick.stepqueue["GoalieUnspread"]
     else
@@ -147,10 +158,10 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
 
   local next_support = step_queue[1][2]
   if supportLeg==2 then  --Starting from DS
-    print("Pre stance")
+    if Config.debug.kick then print("Pre stance") end
     pre_step = 2
   elseif supportLeg==next_support then
-    print("Pre step")
+    if Config.debug.kick then print("Pre step") end
     pre_step = 1-supportLeg --Take anonther step
   end
 
@@ -399,7 +410,7 @@ end -- walk.update
 function walk.exit() 
   print(walk._NAME..' Exit') 
   mcm.set_walk_steprequest(0)
-  print("kick is over!!")
+  if Config.debug.kick then print("kick is over!!") end
   mcm.set_walk_kickphase(2) --kick is over
 end
 

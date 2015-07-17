@@ -138,7 +138,8 @@ function state.update()
       print("Attacker start!")
       return'play'
     elseif gcm.get_game_role()==2 then
-      --Tester does nothing
+      --Force stop mode
+      
     end
     wcm.set_robot_timestarted(0)    
   end

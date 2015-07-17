@@ -329,7 +329,7 @@ function robocupplanner.getTargetPose(pose,ballGlobal,kickangle)
   local angleCircle = util.mod_angle(angleRobotBall-kickangle)
   local rotate = 0
 
-  if Config.demo  then 
+  if gcm.get_game_role()==3 then --demo mode
     kickpos = ballGlobal + kickoffset * vector.new({math.cos(angleRobotBall),math.sin(angleRobotBall),0})
     kickpos[3] = util.mod_angle(angleRobotBall+math.pi)
     return kickpos,0 

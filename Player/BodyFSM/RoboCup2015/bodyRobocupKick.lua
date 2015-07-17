@@ -43,7 +43,6 @@ end
 
 function state.update()
   if Config.disable_kick then
-    print("APPROACHED AT THE BALL")
     local ballx = wcm.get_ball_x() - Config.fsm.bodyRobocupApproach.target[1]
     local bally = wcm.get_ball_y()
     local ballr = math.sqrt(ballx*ballx+bally*bally)
@@ -80,7 +79,7 @@ end
 function state.exit()
   print(state._NAME..' Exit' )
   mcm.set_walk_kickphase(0) --now can kick again
-  arm_ch:send'awesome' --we are awesome
+--  arm_ch:send'awesome' --we are awesome
 end
 
 return state

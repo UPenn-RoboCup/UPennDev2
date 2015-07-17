@@ -8,7 +8,10 @@ if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 --local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
 Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
-exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm','Kick'}
+exo = {'Walk','Net','FSM','World',
+--	'Vision',
+	'Vision_UCLA',
+'Robot_Chip', 'Arm','Kick'}
 
 
 -- Printing of debug messages
@@ -108,9 +111,10 @@ Config.use_angle_localization = true
 
 
 
+--when ball is not found, we make a false observation so that robot can rotate around
+Config.robot_turnaround = false 
 
-
-
+--Config.demo = true
 
 
 ------------------------------------

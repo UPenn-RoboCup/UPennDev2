@@ -34,6 +34,8 @@ targetvel={0,0,0}
 targetvel_new={0,0,0}
 
 
+
+
 local function update(key_code)
 	if type(key_code)~='number' or key_code==0 then return end
 	local key_char = string.char(key_code)
@@ -57,25 +59,58 @@ local function update(key_code)
 -- 0 for initial / 1 for ready 2 for set / 3 for play / 4 fin
 -- 5: Pre-initialized (idle) 6 for testing
 
+
+local role = gcm.get_game_role()
+local state = gcm.get_game_state()
+
+
+
 	 if  key_char_lower==("1") then			
-	 	game_ch:send'init'
+	 	if state~=0 then 
+	 	  game_ch:send'init'
+	 	end
+
 	elseif key_char_lower==("2") then			
-	 	game_ch:send'ready'
+		if state~=1 then 
+	 	  game_ch:send'ready'
+	 	end
 	elseif key_char_lower==("3") then			
-		game_ch:send'set'
+		if state~=2 then 
+		  game_ch:send'set'
+		end
 	elseif key_char_lower==("4") then  
-		game_ch:send'play'
+		if state~=3 then 
+		  game_ch:send'play'
+		end
 	elseif key_char_lower==("5") then  
-		game_ch:send'finish'		
+		if state~=4 then 
+		  game_ch:send'finish'		
+		end
 
+	elseif key_char_lower==("=") then  
+		--Only change role at gameInitial or gameTest
+		if (state==0 or state==6) and role~=1 then
+			gcm.set_game_role(1)
+		end
 
+	elseif key_char_lower==("-") then  
+		--Only change role at gameInitial or gameTest
+		if (state==0 or state==6) and role~=0 then
+			gcm.set_game_role(0)
+		end
 
+	elseif key_char_lower==("0") then  
+		gcm.set_game_role(2)
+
+	elseif key_char_lower==("9") then  
+		--Demo mode on!
+		gcm.set_game_role(3)
+		
 
 	elseif key_char_lower==("s") then  
 		head_ch:send'scanobs'		
-
-
-
+	elseif key_char_lower==("l") then  
+		head_ch:send'log'		
 
 	elseif key_char_lower==("8") then  
 		mcm.set_walk_stoprequest(1)

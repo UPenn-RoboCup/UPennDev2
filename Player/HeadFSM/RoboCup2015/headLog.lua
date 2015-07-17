@@ -16,16 +16,6 @@ local DEG_TO_RAD = math.pi/180
 
 local dqNeckLimit = {180*DEG_TO_RAD, 180*DEG_TO_RAD}
 
-
-
-
-local scanVel1 = 180*DEG_TO_RAD
-local scanVel2 = 60*DEG_TO_RAD
-if Config.demo then
-  scanVel1 = 60*DEG_TO_RAD
-end
-
-
 --Pitch: 25 degree down can see up to 5 meters
 -- 25 is not enough from test in webots
 --60 degree down can see ball right in front
@@ -39,12 +29,7 @@ function state.entry()
   t_update = t_entry
   stage = 1
   wcm.set_ball_disable(0)
-  if Config.demo then
-    wcm.set_ball_backonly(0)
-  else
-    wcm.set_ball_backonly(1)
-  end
-  
+  wcm.set_ball_backonly(1)
   wcm.set_goal_disable(1)
   wcm.set_obstacle_enable(0)
   
@@ -65,45 +50,39 @@ function state.update()
 
   local yawTarget, pitchTarget
   if stage==1 then
-    dqNeckLimit = {scanVel1, scanVel1}
+    dqNeckLimit = {60*DEG_TO_RAD, 180*DEG_TO_RAD}
     pitchTarget = 20*DEG_TO_RAD
     yawTarget = -90*DEG_TO_RAD
   elseif stage==2 then
-    dqNeckLimit = {scanVel2, scanVel2}    
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}    
     pitchTarget = 20*DEG_TO_RAD
     yawTarget = -135*DEG_TO_RAD
-  elseif stage==3 then
-    dqNeckLimit = {scanVel2, scanVel2}    
+  elseif stage==2 then
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}    
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = -135*DEG_TO_RAD
-  elseif stage==4 then        
+  elseif stage==3 then        
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = -90*DEG_TO_RAD
-  elseif stage==5 then
-    dqNeckLimit = {scanVel1, scanVel1}    
+  elseif stage==4 then
+    dqNeckLimit = {60*DEG_TO_RAD, 180*DEG_TO_RAD}    
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = 90*DEG_TO_RAD
-  elseif stage==6 then
-    dqNeckLimit = {scanVel2, scanVel2}        
+  elseif stage==5 then
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
     pitchTarget = 60*DEG_TO_RAD
     yawTarget = 135*DEG_TO_RAD
-  elseif stage==7 then
-    dqNeckLimit = {scanVel2, scanVel2}        
+  elseif stage==5 then
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
     pitchTarget = 20*DEG_TO_RAD        
     yawTarget = 135*DEG_TO_RAD
-  elseif stage==8 then
-    dqNeckLimit = {scanVel2, scanVel2}        
+  elseif stage==6 then
+    dqNeckLimit = {60*DEG_TO_RAD, 60*DEG_TO_RAD}        
     pitchTarget = 20*DEG_TO_RAD            
     yawTarget = 90*DEG_TO_RAD
   else
-    if Config.demo then
-      return 'scan'
-    else
-
-      wcm.set_ball_notvisible(1)
-      print("Couldn't find the ball!!!!")
-      return 'noball' --couldn't find the ball. Ball should be right behind the robot!
-    end
+    stage=1
+    return
   end
 
   local qNeckActual = Body.get_head_position()
@@ -122,17 +101,6 @@ function state.update()
   local headBias = hcm.get_camera_bias()  
   Body.set_head_command_position({qNeck_approach[1]+headBias[1],qNeck_approach[2]})
   wcm.set_ball_tlook(t)
-
-	-- Check if we found the ball
-  local ball_elapsed = t - wcm.get_ball_t()
-  if ball_elapsed < 0.1 then
-    local ballx = wcm.get_ball_x()
-    local bally = wcm.get_ball_y()  
-    print("Ball found: :",ballx,bally)
-
-    return 'ballfound' --if ball found exit
-  end
-  
 end
 
 function state.exit()

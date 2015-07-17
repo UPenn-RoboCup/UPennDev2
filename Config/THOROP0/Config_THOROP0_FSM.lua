@@ -42,6 +42,13 @@ fsm.Game = {
   {'gameSet', 'play', 'gamePlaying'},
   {'gamePlaying', 'finish', 'gameFinished'},
 
+  {'gameInitial', 'forcestop', 'gameStop'},
+  {'gameReady', 'forcestop', 'gameStop'},
+  {'gameSet', 'forcestop', 'gameStop'},
+  {'gamePlaying', 'forcestop', 'gameStop'},
+
+
+  {'gameStop', 'init', 'gameInitial'},
 }
 
 fsm.Arm = {
@@ -52,6 +59,9 @@ fsm.Head = {
   {'headIdle', 'scan', 'headBackScan'},
   {'headIdle', 'teleop', 'headTeleop'},
   {'headIdle', 'scanobs', 'headObstacleScan'},
+
+
+  {'headTeleop', 'log', 'headLog'},
   --
 
   {'headScan', 'ballfound', 'headTrack'},
@@ -70,6 +80,7 @@ fsm.Head = {
 
   {'headBackScan', 'ballfound', 'headTrack'},
   {'headBackScan', 'noball', 'headBackScan'},
+  {'headBackScan', 'scan', 'headScan'},
   {'headBackScan', 'teleop', 'headTeleop'},
   {'headBackScan', 'scanobs', 'headObstacleScan'},
   

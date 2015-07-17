@@ -172,15 +172,24 @@ local function update_velocity()
   local ballx = wcm.get_ball_x() 
   local bally = wcm.get_ball_y() 
 
-print("ball:",ballx,bally)
-print("Pose:",unpack(pose))
+
+--print("Pose:",unpack(pose))
 
   local kicktype = mcm.get_walk_kicktype()
 
   approachTargetX = Config.approachTargetX[kicktype+1] or 0.35
   approachTargetY = Config.approachTargetY
 
-  print("Kicktype "..kicktype.."TargetX:"..approachTargetX)
+  
+
+  if ball_side>0 then --Align to the left foot
+    print(string.format("ball(%.2f %.2f) T: (%.2f, %.2f)",
+      ballx,bally, approachTargetX,  Config.walk.footY -approachTargetY[1]))
+  else
+    print(string.format("ball(%.2f %.2f) T: (%.2f, %.2f)",
+      ballx,bally, approachTargetX,  -Config.walk.footY - approachTargetY[2]))  
+  end
+ 
 
   local uLeftGlobalTarget, uRightGlobalTarget
   if ball_side>0 then --Align to the left foot
@@ -245,14 +254,16 @@ function state.entry()
   t_update = t_entry
   
   local bally = wcm.get_ball_y()
-  print(string.format("Initial ball pos:%.2f %.2f",
-    wcm.get_ball_x(), wcm.get_ball_y()
-    ))
+  
   if bally<0 then
-    print("Ball right")
+    print(string.format("Initial ball pos:%.2f %.2f, aligning right foot",
+      wcm.get_ball_x(), wcm.get_ball_y()
+    ))    
     ball_side = -1
   else
-    print("Ball left")
+    print(string.format("Initial ball pos:%.2f %.2f, aligning left foot",
+      wcm.get_ball_x(), wcm.get_ball_y()
+    ))    
     ball_side = 1
   end
 
@@ -295,15 +306,16 @@ function state.entry()
 --print("game state:",gcm.get_game_state())
   if gcm.get_game_state()==3 then  --Only during actual playing
     if ballGlobal[1]<ballX_threshold1 then
-        mcm.set_walk_kicktype(0) --Walkkick 
+      mcm.set_walk_kicktype(0) --Walkkick 
     elseif ballGlobal[1]<ballX_threshold2 then
-        mcm.set_walk_kicktype(2) --Weaker Walkkick 
+      mcm.set_walk_kicktype(2) --Weaker Walkkick 
     else
       mcm.set_walk_kicktype(1) --strong kick default
     end
   end
 
-  if Config.demo then
+
+  if gcm.get_game_role()==3 then --demo mode
    mcm.set_walk_kicktype(0) --Walkkick only for demo
   end
 end

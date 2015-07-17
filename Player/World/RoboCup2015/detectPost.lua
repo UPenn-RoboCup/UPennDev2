@@ -23,6 +23,7 @@ local th_nPostB
 local g_area, g_bbox_area, g_fill_rate, g_orientation, g_aspect_ratio, g_margin
 local colors
 local config
+local post_color
 function detectPost.entry(cfg, Image)
   config = cfg
   g_bbox_area = config.th_min_bbox_area
@@ -35,6 +36,8 @@ function detectPost.entry(cfg, Image)
   min_crossbar_ratio = config.min_crossbar_ratio
   th_min_area_unknown_post = config.th_min_area_unknown_post
   colors = Image.colors
+	--post_color = colors.white
+	post_color = colors.cyan
 end
 function detectPost.update(Image)
   if type(Image)~='table' then
@@ -45,7 +48,7 @@ function detectPost.update(Image)
 		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
 		Image.wb,
 		Image.hb,
-		colors.white)
+		post_color)
   if not postB then return false, 'None detected' end
   -- Now process each goal post
 	local nPosts, i_validB, valid_posts = 0, {}, {}
@@ -63,13 +66,13 @@ function detectPost.update(Image)
 		--[[
 		-- TODO: Exact and not just bit and?
 		local postStatsB = ImageProc2.color_stats(
-			Image.labelB_d, Image.wb, Image.hb, colors.white, post_bboxB
+			Image.labelB_d, Image.wb, Image.hb, post_color, post_bboxB
 		)
 		--]]
 
 		local post_bboxA = bboxB2A(post_bboxB, Image.scaleB)
 		local postStatsA = ImageProc2.color_stats(
-			Image.labelA_d, Image.wa, Image.ha, colors.white, post_bboxA
+			Image.labelA_d, Image.wa, Image.ha, post_color, post_bboxA
 		)
 
 		local postStats = postStatsA
@@ -292,7 +295,7 @@ function detectPost.update(Image)
       -- TODO: Is this the right bbox?
 			local bboxA = {leftX, rightX, topY, bottomY}
 			local crossbarStats = ImageProc2.color_stats(
-				Image.labelA_d, Image.wa, Image.ha, colors.white, bboxA
+				Image.labelA_d, Image.wa, Image.ha, post_color, bboxA
 			)
 
 			-- TODO: Error here, as centroid is not defined

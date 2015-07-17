@@ -18,6 +18,7 @@ local function bboxB2A(bboxB, scaleB)
 end
 local b_ground_head_pitch, b_ground_boundingbox, b_ground_white, b_ground_green
 local colors
+local ball_color
 local config
 function detectBall.entry(cfg, Image)
 	config = cfg
@@ -26,11 +27,12 @@ function detectBall.entry(cfg, Image)
 	b_ground_white = config.th_ground_white
 	b_ground_green = config.th_ground_green
 	colors = Image.colors
+	ball_color = colors.orange
 end
 
 -- TODO: Really need information on the last known ball position...
 local function find_ball_on_line(Image)
-	local ball_color = colors.white
+
 	-- Connect the regions in labelB
 	local ballPropsB = ImageProc.connected_regions(
 	tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelC_d))),
@@ -303,7 +305,6 @@ local function find_ball_on_line(Image)
 end
 
 local function find_ball_off_line(Image)
-	local ball_color = colors.white
 	-- Connect the regions in labelB
 	local ballPropsB = ImageProc.connected_regions(
 	tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
@@ -355,7 +356,7 @@ local function find_ball_off_line(Image)
 		-- Ball width/height
 		if passed then
 			local axisRatio = propsA.axisMajor / propsA.axisMinor
-			local axisCheck = 2.1
+			local axisCheck = 1.8
 			if axisRatio > axisCheck or axisRatio < 1/axisCheck then
 				passed = false
 				msgs[i] = string.format('axisRatio: %.2f < %.2f < %.2f',
@@ -396,16 +397,16 @@ local function find_ball_off_line(Image)
 
 			-- Check the distance
 			local dist = math.sqrt(v[1]^2 + v[2]^2)
-			--print(dist)
-			local minZ = 0
+			--require'util'.ptable(config)
+			local minZ = -0.1
 			--local maxH = (config.max_height0 and config.max_height1) and (config.max_height0 + dist * config.max_height1)
 			if dist > config.max_distance then
 				passed = false
 				msgs[i] = string.format("Distance: %.2f > %.2f", dist, config.max_distance)
 				--elseif maxH and v[3] > maxH then
-			elseif v[3] > config.max_height then
+			elseif v[3] > config.max_height0 then
 				passed = false
-				msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", config.max_height, unpack(v,1,3))
+				msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", config.max_height0, unpack(v,1,3))
 			elseif minZ and v[3] < minZ then
 				passed = false
 				msgs[i] = string.format("minZ: %.2f (%.2f, %.2f, %.2f)", minZ, unpack(v,1,3))
@@ -455,7 +456,7 @@ local function find_ball_off_line(Image)
 						-- if there is no field under the ball
 						-- it may be because its on a white line
 						local whiteBBoxStats = ImageProc2.color_stats(
-						Image.labelA_d, Image.wa, Image.ha, colors.white, fieldBBox
+						Image.labelA_d, Image.wa, Image.ha, ball_color, fieldBBox
 						)
 						if whiteBBoxStats.area < b_ground_white then
 							passed = false
@@ -510,7 +511,6 @@ function detectBall.update(Image)
 		return false, 'Bad Image'
 	end
 	--local ball_color = colors.orange
-	local ball_color = colors.white
 	local cc = Image.ccA_d[ball_color]
 	if cc<6 then return false, 'Color count' end
 	--
@@ -518,9 +518,9 @@ function detectBall.update(Image)
 	if propsA then return propsA, msgOff end
 	--print('Check on line...')
 	local propsA, msgOn = find_ball_on_line(Image)
-	if propsA then return propsA, msgOn end
+	--if propsA then return propsA, msgOn end
 	--print('not online either...')
-	return false, msgOff..'\n=On=\n'..msgOn
+	return false, msgOff..'\n=On=\n'..(msgOn or '')
 end
 function detectBall.exit()
 end

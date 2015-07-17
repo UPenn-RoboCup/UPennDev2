@@ -113,7 +113,7 @@ local function update(meta, img)
 		print(detection.debug.obstacle)
 	end
 	--]]
-	--[[
+	----[[
 	if detection.line then
 		print('\n=Line=')
 		ptable(detection.line)

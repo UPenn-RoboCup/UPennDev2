@@ -19,9 +19,9 @@ local detectBall
 local detectPost
 local detectObstacle
 local ENABLE_BALL = true
---local ENABLE_OBSTACLE = true
-local ENABLE_POST = false
-local ENABLE_LINE = true
+local ENABLE_OBSTACLE = true
+local ENABLE_POST = true
+--local ENABLE_LINE = true
 --local ENABLE_CORNER = false
 
 -- Set the variables based on the config file
@@ -108,7 +108,7 @@ function Vision.update(meta, img)
 	local line, l_debug
   if detectLine then
 		-- Better label for lines
-		--HeadImage:block_bitor_ab()
+		HeadImage:block_bitor_ab()
     line, l_debug = detectLine.update(HeadImage)
   end
 

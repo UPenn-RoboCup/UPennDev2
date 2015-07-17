@@ -48,10 +48,10 @@ vision.ball = {
 	diameter = 0.22,
 	th_min_bbox_area = 40, --50
 	th_min_area = 20, --10,
-	th_min_fill_rate = 0.35,
+	th_min_fill_rate = 0.25,
 
 	--TODO: to test on real robot
-	max_height0 = 0.3,    --Max height = max_height0 + dist*max_height1
+	max_height0 = 0.22,    --Max height = max_height0 + dist*max_height1
 	max_height1 = 0.12,
 
 	max_distance = 9,
@@ -75,9 +75,9 @@ vision.obstacle = {
 	th_min_height = -0.2,
 	th_min_orientation = 60/180*math.pi,
 	th_green_black_ratio = 2,
-	min_ground_fill_rate = 0.4,  
+	min_ground_fill_rate = 0.4,
 	--
-	min_width = 5, 
+	min_width = 5,
 	max_width = 16,
 }
 
@@ -109,7 +109,7 @@ vision.goal = {
 	postDiameter = 0.1,
 }
 
-<<<<<<< HEAD
+
 vision.line = {
   -- min_white_pixel = 300,
   -- min_green_pixel = 5000,
@@ -122,8 +122,8 @@ vision.line = {
   -- labelB space
   --min_count = 20,
 	--min_length = 16,
-	min_count = 24,
-	min_length = 20,
+	min_count = 40,
+	min_length = 40,
   --max_height = 0.3,
 	max_height = 0.2,
   --min_aspect_ratio = 2.5,
@@ -197,7 +197,8 @@ camera[1] = {
 	-- Use the default vision parameters
 	vision = vision,
 	-- Run the standard RoboCup vision processing
-	lut = 'onfield2',
+	--lut = 'onfield2',
+	lut = 'colorized',
 	--Logitech C920
 	-- f = 640/2/tan(78/180*pi / 2)
 	--fov = 2*arctan(d/2f)

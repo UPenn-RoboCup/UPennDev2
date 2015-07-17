@@ -6,8 +6,13 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
---local constant = 175
---local start_idx = 52
+-- This is a bad frame: ball in goalpost.
+-- Fix with localization...
+--local constant = 742
+
+
+--local start_idx = 340
+local start_idx = 720
 
 local function pairmin(t)
 	-- find the minimum element in the array table

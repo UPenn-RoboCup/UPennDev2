@@ -105,6 +105,15 @@ function detectLine.update(Image)
 
 		local passed = true
 
+		if math.max(lines.propsB[i].endpoint[3], lines.propsB[i].endpoint[4]) < 4 then
+			passed = false
+			msgs[i] = string.format('too close to edge y')
+		end
+		if math.max(lines.propsB[i].endpoint[1], lines.propsB[i].endpoint[2]) < 4 then
+			passed = false
+			msgs[i] = string.format('too close to edge x')
+		end
+
     local length = math.sqrt(
     	(lines.propsB[i].endpoint[1]-lines.propsB[i].endpoint[2])^2 +
     	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2
@@ -144,9 +153,9 @@ function detectLine.update(Image)
     vHeight = (vendpoint[1][3]+vendpoint[2][3]) / 2
 
 		-- TODO: Place in the config
-    local vHeightMax = 0.50
+    local vHeightMax = 0.20
 -- TODO: re-enable
---[[
+----[[
 		if length<config.min_length then
 			passed = false
 			msgs[i] = string.format('min_length: %.2f<%.2f', length, config.min_length)
@@ -159,8 +168,12 @@ function detectLine.update(Image)
 			passed = false
 			msgs[i] = string.format('vHeight: %.2f>%.2f', vHeight, vHeightMax)
 		end
---]]
 
+--]]
+local vlen = math.sqrt(
+	(vendpoint[2][1]-vendpoint[1][1])^2 + (vendpoint[2][2]-vendpoint[1][2])^2
+)
+print('vlen', vlen)
     if passed then
 			lines.detect = 1
       linecount = linecount + 1
@@ -181,6 +194,8 @@ function detectLine.update(Image)
 				local scale = (pHead4[3] - target_height) / (pHead4[3] - vendpoint[2][3])
 				vendpoint[2] = pHead4 + scale * (vendpoint[2] - pHead4)
 			end
+
+
 
       lines.v[linecount] = { unpack(vendpoint, 1, 2) }
       lines.angle[linecount] = math.abs(

@@ -9,6 +9,7 @@ local bor = require'bit'.bor
 local ffi = require'ffi'
 local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3, [16] = 4, [32] = 5, [64] = 6}
 local util = require'util'
+local vector = require'vector'
 
 -- Load Lookup Table for Color -> Label
 --[[
@@ -187,7 +188,7 @@ local function block_bitor2_ab(self)
         b_ptr[0] = band(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
       end
       -- White alway on green...
-      if b_ptr[0] == 16 then b_ptr[0] = 24 end
+      --if b_ptr[0] == 16 then b_ptr[0] = 24 end
       -- Move b
       b_ptr = b_ptr + 1
       -- Move to the next pixel
@@ -459,11 +460,33 @@ ImageProc.color_countB = color_countB
 
 local function radon2ij(props, ith, ir, flip)
   local s, c = props.sin_d[ith], props.cos_d[ith]
+  local th = ith/props.NTH * math.pi
+
+
   -- How far down the line
   local cnt = props.count_d[ith][ir]
   local lMean = props.line_sum_d[ith][ir] / cnt
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
+
+  -- Goes clockwise down
+  local flip = false
+  --[[
+  print(cnt, 'ith', ith, props.NTH, ith/props.NTH * 180)
+  if ith<props.NTH/4 then
+    print('flipped1')
+    flip = true
+  end
+  --]]
+  --[[
+  if ith>props.NTH/2 then
+    --print('flipped2', iR, jR)
+    flip = true
+  end
+  --]]
+  --flip = true
+  ir = flip and -ir or ir
+
 
   -- Closest point
   local iR = props.RSCALE * ir * c
@@ -494,6 +517,7 @@ local function radon2ij(props, ith, ir, flip)
   print('sMax', lMax * s)
   --]]
 
+
   local lineProp = {
     ir = ir,
     ith = ith,
@@ -506,6 +530,37 @@ local function radon2ij(props, ith, ir, flip)
     iMax  = iR - lMax * s,
     jMax  = jR + lMax * c,
   }
+
+--[[
+  if flip then
+    --ir = 8
+    --th = 0
+    ir = -ir
+    --th = th + math.pi
+    print('rho', ir, 'theta:', th*RAD_TO_DEG)
+    --print(s,c)
+    s, c = math.sin(th), math.cos(th)
+    --print(s,c)
+    --print('-')
+
+    -- Closest point
+    local iR = props.RSCALE * ir * c
+    local jR = props.RSCALE * ir * s
+    local lineProp11 = {
+      ir = ir,
+      ith = ith,
+      count = cnt,
+      iMean = iR + lMean * s,
+      jMean = jR - lMean * c,
+      --
+      iMin  = iR + lMin * s,
+      jMin  = jR - lMin * c,
+      iMax  = iR + lMax * s,
+      jMax  = jR - lMax * c,
+    }
+
+  end
+--]]
 
   -- Could be + or -
   --[[
@@ -541,13 +596,18 @@ local function radon2ij(props, ith, ir, flip)
 
   lineProp.endpoint = {lineProp.iMin, lineProp.iMax, lineProp.jMin, lineProp.jMax}
 
+  --if flip then
+    --print('ep',vector.new(lineProp.endpoint))
+    --print('-')
+  --end
+
   return lineProp
 end
 
 local ptable = require'util'.ptable
 local RadonTransform = require'ImageProc.ffi.RadonTransform'
 function ImageProc.field_lines(label, w, h)
-
+--print()
   local props = RadonTransform.radon_lines_label(label, w, h)
 
   ----[[
@@ -570,8 +630,8 @@ function ImageProc.field_lines(label, w, h)
   ----[[
   local irmaxes = {}
   local cmaxes = {}
-  local min_width = 3
-  local min_th = 3
+  local min_width = 5
+  local min_th = 5
   local ithMax, irMax1, irMax2
   local cntMax1, cntMax2 = 0, 0
   for ith=0, props.NTH-1 do
@@ -594,12 +654,12 @@ function ImageProc.field_lines(label, w, h)
   end
 
   -- How many extra?
-  local nKeep = 5
+  local nKeep = 1
   local maxN = {}
   for ith, c in ipairs(cmaxes) do
-    --if c<90 then
+    if c<90 then
     --if c<40 then
-    if #maxN<nKeep then
+    elseif #maxN<nKeep then
       table.insert(maxN, {ith-1, irmaxes[ith], c})
       -- check merge
       table.sort(maxN, function(a,b) return a[3]>b[3] end)

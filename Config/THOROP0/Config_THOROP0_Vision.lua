@@ -110,11 +110,11 @@ vision.goal = {
 }
 
 local grasp920_param = {
-	{'White Balance Temperature', 2400},
-	{'Exposure (Absolute)', 120},
+	{'White Balance Temperature', 3600},--2400
+	{'Exposure (Absolute)', 155},--120
 	--	{'Focus (absolute)', 0},
-	{'Brightness', 128},
-	{'Contrast', 0},
+	{'Brightness', 145,},--128
+	{'Contrast', 44},--0
 	{'Saturation', 255},
 	{'Gain', 0},
 	{'Sharpness', 0},
@@ -134,7 +134,8 @@ local grasp900_param = {
 local camera = {}
 camera[1] = {
 	name = 'head',
-	dev = '/dev/video-headcamera',
+--	dev = '/dev/video-headcamera',
+        dev = '/dev/video1',
 	w = 640,
 	h = 360,
 	--dev = '/dev/video-wristcamera',

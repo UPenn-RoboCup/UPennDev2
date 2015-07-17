@@ -340,8 +340,7 @@ local function radon2ij(props, ith, ir, cnt)
   print('sMax', lMax * s)
   --]]
 
-
-  return {
+  local lineProp = {
     ir = ir,
     ith = ith,
     count = cnt,
@@ -353,6 +352,10 @@ local function radon2ij(props, ith, ir, cnt)
     iMax  = iR - lMax * s,
     jMax  = jR + lMax * c,
   }
+
+  lineProp.endpoint = {lineProp.iMin, lineProp.iMax, lineProp.jMin, lineProp.jMax}
+
+  return lineProp
 end
 
 local ptable = require'util'.ptable
@@ -451,7 +454,8 @@ function ImageProc.field_lines(label, w, h)
   local nKeep = 2
   local maxN = {}
   for ith, c in ipairs(cmaxes) do
-    if c<100 then
+    --if c<100 then
+    if c<150 then
     elseif #maxN<nKeep then
       table.insert(maxN, {ith-1, irmaxes[ith], c})
       -- check merge
@@ -469,7 +473,7 @@ function ImageProc.field_lines(label, w, h)
   end
   --]]
 
-  return props, ijs
+  return ijs, props
   --[[
 
   -- Have a minimum width of the line (in pixel space)

@@ -41,9 +41,12 @@ function detectLine.update(Image)
 	)
 
 	--[[
-	local props, ijs = ImageProc2.field_lines(
+	local linePropsB, props = ImageProc2.field_lines(
 		Image.labelB_d, Image.wb, Image.hb
 	)
+	--]]
+
+	--[[
 	local meta = {}
 	meta.NTH = props.NTH
 	meta.NR = props.NR
@@ -65,6 +68,7 @@ function detectLine.update(Image)
   if #linePropsB==0 then
     return false, 'None'
   end
+	--util.ptable(linePropsB[1].endpoint)
 
 	-- Position of the head now
 	local pHead4 = T.position4(Image.tfL)

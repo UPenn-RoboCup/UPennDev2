@@ -108,7 +108,7 @@ function Vision.update(meta, img)
 	local line, l_debug
   if detectLine then
 		-- Better label for lines
-		HeadImage:block_bitor_ab()
+		--HeadImage:block_bitor_ab()
     line, l_debug = detectLine.update(HeadImage)
   end
 

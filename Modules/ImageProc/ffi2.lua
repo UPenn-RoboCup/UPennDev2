@@ -8,6 +8,7 @@ local band = require'bit'.band
 local bor = require'bit'.bor
 local ffi = require'ffi'
 local log2 = {[1] = 0, [2] = 1, [4] = 2, [8] = 3, [16] = 4, [32] = 5, [64] = 6}
+local util = require'util'
 
 -- Load Lookup Table for Color -> Label
 --[[
@@ -507,7 +508,21 @@ local function radon2ij(props, ith, ir, flip)
   }
 
   -- Could be + or -
-  ----[[
+  --[[
+  local flip = false
+
+  print('i, j', util.sign(iR), util.sign(jR), ith, props.NTH/4)
+  if ith<props.NTH/4 then
+    flip = true
+    print('here1')
+  elseif ith<props.NTH/2 then
+    print('here2')
+  elseif ith<3*props.NTH/4 then
+    print('here3')
+  else
+    print('here4')
+  end
+  --if iR<0 and jR>0 then flip = true end
   if flip then
     lineProp = {
       ir = ir,
@@ -582,8 +597,8 @@ function ImageProc.field_lines(label, w, h)
   local nKeep = 5
   local maxN = {}
   for ith, c in ipairs(cmaxes) do
-    --if c<100 then
-    --if c<125 then
+    --if c<90 then
+    --if c<40 then
     if #maxN<nKeep then
       table.insert(maxN, {ith-1, irmaxes[ith], c})
       -- check merge
@@ -597,8 +612,7 @@ function ImageProc.field_lines(label, w, h)
   table.insert(maxN, 1, {ithmax, irmax, cmax})
   local ijs = {}
   for i, v in ipairs(maxN) do
-    table.insert(ijs, radon2ij(props, v[1],v[2], false))
-    table.insert(ijs, radon2ij(props, v[1],v[2], true))
+    table.insert(ijs, radon2ij(props, unpack(v)))
   end
   --]]
 

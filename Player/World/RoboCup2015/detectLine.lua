@@ -53,7 +53,7 @@ function detectLine.update(Image)
 	)
 	--]]
 
-	----[[
+	--[[
 	local meta = {}
 	meta.NTH = props.NTH
 	meta.NR = props.NR

@@ -133,7 +133,9 @@ local function addHorizontalPixel (i, j)
 end
 
 local function addVerticalPixel(i, j)
-  for _, ith in ipairs(cos_index_thresh) do addPixelToRay(i, j, ith) end
+  for _, ith in ipairs(cos_index_thresh) do
+    addPixelToRay(i, j, ith)
+  end
 end
 
 function RadonTransform.radon_lines(edge_t, use_horiz, use_vert, bbox, angle_prior)
@@ -204,24 +206,24 @@ function RadonTransform.radon_lines_label(label_d, w, h)
       label_sw = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       label_se = e_ptr_r[0]
-      ----[[
+      --[[
       if band(label_ne, colors.white)>0 then
         addHorizontalPixel(i, j)
         addVerticalPixel(i, j)
       end
       --]]
-      --[[
+      ----[[
       -- Test the upper left...
-      if band(label_nw, greenwhite)==colors.green then
+      if band(label_nw, colors.green)==colors.green then
         -- upper left is green
-        if band(label_sw, colors.white)>0 then
+        if band(label_sw, colors.white)==colors.white then
           -- lower left is white: horiz line on bottom
           addHorizontalPixel(i, j+1)
-        elseif band(label_ne, colors.white)>0 then
+        elseif band(label_ne, colors.white)==colors.white then
           -- upper right is white: vert line on right
           addVerticalPixel(i+1, j)
         end
-      elseif band(label_nw, colors.white)>0 then
+      elseif band(label_nw, colors.white)==colors.white then
         -- upper left is white
         if band(label_sw, colors.green)==colors.green then
           -- lower left is green: horiz line on top
@@ -229,19 +231,25 @@ function RadonTransform.radon_lines_label(label_d, w, h)
         elseif band(label_ne, colors.green)==colors.green then
           -- upper right is green: vert line on left
           addVerticalPixel(i, j)
+        elseif band(label_ne, colors.white)==colors.white then
+          -- upper right is white: horiz on top
+          addHorizontalPixel(i+.5, j)
+        elseif band(label_sw, colors.white)==colors.white then
+          -- lower left is white: vert on left
+          addVerticalPixel(i, j+.5)
         end
       end
       -- Test the lower right...
-      if band(label_se, greenwhite)==colors.green then
+      if band(label_se, colors.green)==colors.green then
         -- lower right is green
-        if band(label_sw, colors.white)>0 then
+        if band(label_sw, colors.white)==colors.white then
           -- lower left is white: vert line on left
           addVerticalPixel(i, j)
-        elseif band(label_ne, colors.white)>0 then
+        elseif band(label_ne, colors.white)==colors.white then
           -- upper right is white: horiz line on top
           addHorizontalPixel(i, j)
         end
-      elseif band(label_se, colors.white)>0 then
+      elseif band(label_se, colors.white)==colors.white then
         -- lower right is white
         if band(label_sw, colors.green)==colors.green then
           -- lower left is green: vert line on right

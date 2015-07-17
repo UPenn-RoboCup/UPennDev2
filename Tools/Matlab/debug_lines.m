@@ -49,20 +49,22 @@ set(a_labelB, 'XLim', [1, metadata.wb], 'YLim', [1, metadata.hb]);
 % Show the lines
 for i=1:numel(metadata.ijs)
     propsLine = metadata.ijs{i};
-    l_x = uint8([propsLine.iMin, propsLine.iMean, propsLine.iMax]+1)
-    l_y = uint8([propsLine.jMin, propsLine.jMean, propsLine.jMax]+1)
+    l_x = uint8([propsLine.iMin, propsLine.iMean, propsLine.iMax]+1);
+    l_y = uint8([propsLine.jMin, propsLine.jMean, propsLine.jMax]+1);
 
     %l_x = uint8([propsLine.iMean]);
     %l_y = uint8([propsLine.jMean]);
 
-    if mod(i,2)==0
-      plot(l_x,l_y,'b*-', 'LineWidth', 3);
+    plot(l_x,l_y,'r*-', 'LineWidth', 3);
+
+    %if mod(i,2)==0
+    %  plot(l_x,l_y,'b*-', 'LineWidth', 3);
       %plot(l_y,l_x,'k*-', 'LineWidth', 3);
-    else
-      disp('other')
-      plot(l_x,l_y,'r*-', 'LineWidth', 3);
+    %else
+    %  disp('other')
+    %  plot(l_x,l_y,'r*-', 'LineWidth', 3);
       %plot(l_y,l_x,'y*-', 'LineWidth', 3);
-    end
+    %end
     %l_y = double([propsLine.iMin, propsLine.iMean, metadata.iMax]);
     %l_x = double([propsLine.jMin, propsLine.jMean, metadata.jMax]);
     %set(p_l, 'Xdata', l_x + 1);

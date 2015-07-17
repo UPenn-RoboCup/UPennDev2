@@ -22,7 +22,8 @@ function [] = log_to_montage(logname)
 
         % Setup the colortable item
         % Grab the YUYV logged information
-        f_raw = fopen(sprintf('%s/yuyv_r_%s.log',log_dir,datestamp));
+        f_str = sprintf('%s/yuyv_r_%s.log',log_dir,datestamp)
+        f_raw = fopen(f_str)
         yuyvMontage = fread(f_raw,Inf,'*uint32');
         yuyvMontage = reshape( ...
             yuyvMontage, ...

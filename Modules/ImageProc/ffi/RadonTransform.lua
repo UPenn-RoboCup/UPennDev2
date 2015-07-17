@@ -14,12 +14,12 @@ local bor = require'bit'.bor
 -- NR: number of radii (100 of MAXR with 200 of NR is .5 R precision)
 -- TODO: Now just assuming 1 pixel resolution, and just having a constant buffer
 -- so that we do not malloc each time
-local MAXR, NR = 222*4
+local MAXR, NR = 222 --*4
 local RSCALE = 2
 
 --local NTH = 90 -- Number of angles (2 degree res)
-local NTH = 45 -- Number of angles (4 degree res)
---local NTH = 36 -- 5 degree resolution
+--local NTH = 45 -- Number of angles (4 degree res)
+local NTH = 36 -- 5 degree resolution
 --local NTH = 30 -- 6 degree resolution
 --local NTH = 180 -- (1 degree res)
 
@@ -204,11 +204,13 @@ function RadonTransform.radon_lines_label(label_d, w, h)
       label_sw = e_ptr_r[0]
       e_ptr_r = e_ptr_r + 1
       label_se = e_ptr_r[0]
+      --[[
       if band(label_ne, colors.white)>0 then
         addHorizontalPixel(i, j)
         addVerticalPixel(i, j)
       end
-      --[[
+      --]]
+      ----[[
       -- Test the upper left...
       if band(label_nw, greenwhite)==colors.green then
         -- upper left is green

@@ -1,6 +1,7 @@
 %close all;
 
-logdir = strcat('Data/', 'lines3', '/');
+%logdir = strcat('Data/', 'lines3', '/');
+logdir = '/tmp/';
 
 % Grab the common metadata
 fid = fopen(strcat(logdir,'count_d_m.log'));
@@ -45,16 +46,15 @@ set(a_labelB, 'XLim', [1, metadata.wb], 'YLim', [1, metadata.hb]);
 
 
 % Show the lines
-p_l = {};
 for i=1:numel(metadata.ijs)
     propsLine = metadata.ijs{i};
-    l_x = uint8([propsLine.iMin, propsLine.iMean, propsLine.iMax]);
-    l_y = uint8([propsLine.jMin, propsLine.jMean, propsLine.jMax]);
+    l_x = uint8([propsLine.iMin, propsLine.iMean, propsLine.iMax]+1)
+    l_y = uint8([propsLine.jMin, propsLine.jMean, propsLine.jMax]+1)
     
     %l_x = uint8([propsLine.iMean]);
     %l_y = uint8([propsLine.jMean]);
     
-    p_l{i} = plot(l_x + 1,l_y + 1,'m*-');
+    plot(l_x,l_y,'m*-');
     %l_y = double([propsLine.iMin, propsLine.iMean, metadata.iMax]);
     %l_x = double([propsLine.jMin, propsLine.jMean, metadata.jMax]);
     %set(p_l, 'Xdata', l_x + 1);

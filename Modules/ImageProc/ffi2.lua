@@ -157,6 +157,10 @@ local function block_bitorN_ab(self)
       b_ptr[ind_b] = bor(b_ptr[ind_b], a_ptr[0])
       -- Remove background white
       if b_ptr[ind_b]==16 then b_ptr[ind_b] = 0 end
+      -- if pure green
+      --if b_ptr[ind_b]==8 then
+        --b_ptr[ind_b] = band(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
+      --end
       a_ptr = a_ptr + 1
     end
   end
@@ -174,10 +178,11 @@ local function block_bitor2_ab(self)
   for jb=1,self.hb do
     for ib=1,self.wb do
       b_ptr[0] = bor(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
-      -- Remove background white
-      if b_ptr[0]==16 then b_ptr[0] = 0 end
-      -- if pure green
-      if b_ptr[0]==8 then
+      if b_ptr[0]==16 then
+        -- Pure White: Remove background white
+        b_ptr[0] = 0
+      elseif b_ptr[0]==8 then
+        -- Pure green: Remove background Green
         b_ptr[0] = band(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
       end
       -- Move b
@@ -200,17 +205,49 @@ function block_bitor_ab(self)
 	  block_bitorN_ab(self)
 	end
 
-
+  -- Grow2
   ----[[
+  for i=1,3 do
+    local b_ptr = self.labelB_d
+    local b_ptr1 = b_ptr + self.wb
+    local b_ptr2 = b_ptr + self.wb
+    for jb=1,self.hb-2 do
+      for ib=1,self.wb-2 do
+        if b_ptr1[1]==16 then
+          if band(b_ptr1[0],8)>0 and b_ptr1[2]==0 then
+            b_ptr1[0] = 24
+            b_ptr1[2] = 24
+          elseif b_ptr1[0]==0 and band(b_ptr1[2],8)>0 then
+            b_ptr1[0] = 24
+            b_ptr1[2] = 24
+          elseif b_ptr[1]==0 and band(b_ptr2[1], 8)>0 then
+            b_ptr[1] = 24
+            b_ptr2[1] = 24
+          elseif band(b_ptr[1], 8)>0 and b_ptr2[1]==0 then
+            b_ptr[1] = 24
+            b_ptr2[1] = 24
+          end
+        end
+        -- Move c
+        b_ptr = b_ptr + 1
+        b_ptr1 = b_ptr1 + 1
+        b_ptr2 = b_ptr2 + 1
+      end
+    end
+    -- TODO: Just run a copy
+    --for i=0,ffi.sizeof(self.tmpB)-1 do self.labelB_d[i] = self.tmpB[i] end
+  end
+  --]]
+
+  --[[
   -- Grow
-  for i=1,1 do
+  for i=1,2 do
     local b_ptr = self.labelB_d
     local b_ptr1 = b_ptr + self.wb
     local b_tptr = self.tmpB
     local b_tptr1 = b_tptr + self.wb
     for jb=1,self.hb-1 do
       for ib=1,self.wb-1 do
-        -- Erode
         local together = bor(b_ptr[0], b_ptr1[0], b_ptr[1], b_ptr1[1])
         b_tptr[0] = together
         b_tptr[1] = together
@@ -232,6 +269,59 @@ function block_bitor_ab(self)
   return self.labelB_d
 end
 ImageProc.block_bitor_ab = block_bitor_ab
+
+
+-- Bit OR on blocks of NxN to get to labelB from labelA
+local function block_bitorN(self)
+  -- Zero the downsampled image
+	local a_ptr, b_ptr = self.labelA_d, self.labelB_d
+  ffi.fill(b_ptr, ffi.sizeof(b_ptr))
+	-- Begin the loop
+  local jy, iy, ind_b, off_j
+  for jx=0,self.ha-1 do
+    jy = rshift(jx, log2[self.scaleB])
+    off_j = jy * self.wb
+    for ix=0,self.wa-1 do
+      iy = rshift(ix, log2[self.scaleB])
+      ind_b = iy + off_j
+      b_ptr[ind_b] = bor(b_ptr[ind_b], a_ptr[0])
+      a_ptr = a_ptr + 1
+    end
+  end
+  return self.labelB_d
+end
+-- Bit OR on blocks of 2x2 to get to labelB from labelA
+local function block_bitor2(self)
+  --print('bit2')
+  -- Zero the downsampled image
+  ffi.fill(self.labelB_d, ffi.sizeof(self.labelB_d))
+  local a_ptr, b_ptr = self.labelA_d, self.labelB_d
+  -- Offset a row
+  local a_ptr1 = a_ptr + self.wa
+  -- Start the loop
+  for jb=1,self.hb do
+    for ib=1,self.wb do
+      b_ptr[0] = bor(a_ptr[0], a_ptr[1], a_ptr1[0], a_ptr1[1])
+      -- Move b
+      b_ptr = b_ptr + 1
+      -- Move to the next pixel
+      a_ptr = a_ptr + 2
+      a_ptr1 = a_ptr1 + 2
+    end
+    -- Move another row, too
+    a_ptr = a_ptr + self.wa
+    a_ptr1 = a_ptr1 + self.wa
+  end
+  return labelB_d
+end
+function block_bitor(self)
+  --print(self.scaleB)
+	if self.scaleB==2 then
+	  block_bitor2(self)
+	else
+	  block_bitorN(self)
+	end
+end
 
 
 -- Bit OR on blocks of NxN to get to labelB from labelA
@@ -283,7 +373,7 @@ local function block_bitorC2(self)
 
   return labelC_d
 end
-function procC(self)
+function block_bitor_ac(self)
 	if self.scaleC==2 then
 	  block_bitorC2(self)
 	else
@@ -364,23 +454,20 @@ ImageProc.color_countB = color_countB
 -- Field lines
 ----[[
 
-local function radon2ij(props, ith, ir, cnt)
+local function radon2ij(props, ith, ir, flip)
   local s, c = props.sin_d[ith], props.cos_d[ith]
   -- How far down the line
+  local cnt = props.count_d[ith][ir]
   local lMean = props.line_sum_d[ith][ir] / cnt
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
 
   -- Could be + or -
-  --if ith > props.NTH/2 then
-    --ir = -1*ir
-    --iR = -iR
-    --jR = -jR
-  --end
+  if flip then ir = -1*ir end
 
   -- Closest point
-  local iR = props.RSCALE * ir * c -- + props.i0
-  local jR = props.RSCALE * ir * s -- + props.j0
+  local iR = props.RSCALE * ir * c
+  local jR = props.RSCALE * ir * s
 
   --[[
   print()
@@ -475,12 +562,12 @@ function ImageProc.field_lines(label, w, h)
   end
 
   -- How many extra?
-  local nKeep = 2
+  local nKeep = 5
   local maxN = {}
   for ith, c in ipairs(cmaxes) do
     --if c<100 then
-    if c<125 then
-    elseif #maxN<nKeep then
+    --if c<125 then
+    if #maxN<nKeep then
       table.insert(maxN, {ith-1, irmaxes[ith], c})
       -- check merge
       table.sort(maxN, function(a,b) return a[3]>b[3] end)
@@ -493,7 +580,8 @@ function ImageProc.field_lines(label, w, h)
   table.insert(maxN, 1, {ithmax, irmax, cmax})
   local ijs = {}
   for i, v in ipairs(maxN) do
-    ijs[i] = radon2ij(props, unpack(v))
+    table.insert(ijs, radon2ij(props, unpack(v)))
+    table.insert(ijs, radon2ij(props, v[1],v[2], true))
   end
   --]]
 
@@ -671,7 +759,7 @@ end
 function ImageProc.new(w, h, scaleA, scaleB, scaleC)
   scaleA = scaleA or 2
   scaleB = scaleB or 2
-  scaleC = scaleC or 4
+  scaleC = scaleC or 2
   local wa, ha = w / scaleA, h / scaleA
   local wb, hb = wa / scaleB, ha / scaleB
   local wc, hc = wa / scaleC, ha / scaleC
@@ -704,7 +792,9 @@ function ImageProc.new(w, h, scaleA, scaleB, scaleC)
 		-- TODO: Functions?
     load_lut = load_lut,
     yuyv_to_labelA = yuyv_to_labelA,
+    block_bitor = block_bitor,
     block_bitor_ab = block_bitor_ab,
+    block_bitor_ac = block_bitor_ac,
     block_bitor_bc = block_bitor_bc,
     --procC = procC,
     color_countA = color_countA,

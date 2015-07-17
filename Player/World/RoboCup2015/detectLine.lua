@@ -53,7 +53,7 @@ function detectLine.update(Image)
 	)
 	--]]
 
-	--[[
+	----[[
 	local meta = {}
 	meta.NTH = props.NTH
 	meta.NR = props.NR
@@ -62,7 +62,7 @@ function detectLine.update(Image)
 	meta.hb = Image.hb
 	meta.i0 = props.i0
 	meta.j0 = props.j0
-	meta.ijs = ijs
+	meta.ijs = linePropsB
 
 	libLog.one('labelB_d', meta, Image.labelB_d, ffi.sizeof(Image.labelB_d))
 	libLog.one('count_d', meta, props.count_d, ffi.sizeof(props.count_d))

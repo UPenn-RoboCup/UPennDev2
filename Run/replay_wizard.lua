@@ -8,6 +8,7 @@ local si = require'simple_ipc'
 
 --local constant = 128
 --local constant = 280
+local constant = 83
 
 
 --local constant = 184

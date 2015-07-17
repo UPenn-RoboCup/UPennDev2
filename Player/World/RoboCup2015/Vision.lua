@@ -18,7 +18,7 @@ local HeadImage
 local detectBall
 local detectPost
 local detectObstacle
---local ENABLE_BALL = true
+local ENABLE_BALL = true
 --local ENABLE_OBSTACLE = true
 local ENABLE_POST = false
 local ENABLE_LINE = true
@@ -79,10 +79,8 @@ function Vision.update(meta, img)
   -- Images to labels
   --HeadImage:rgb_to_labelA(img)
   HeadImage:yuyv_to_labelA(img)
-	--HeadImage:block_bitorw()
-  HeadImage:block_bitor_ab()
-	HeadImage:block_bitor_bc()
-	--HeadImage:procC()
+	HeadImage:block_bitor()
+	HeadImage:block_bitor_ac()
   -- Must always color count
   local cc_d = HeadImage:color_countA()
 
@@ -109,6 +107,8 @@ function Vision.update(meta, img)
 
 	local line, l_debug
   if detectLine then
+		-- Better label for lines
+		HeadImage:block_bitor_ab()
     line, l_debug = detectLine.update(HeadImage)
   end
 

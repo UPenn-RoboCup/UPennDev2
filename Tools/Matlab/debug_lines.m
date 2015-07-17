@@ -17,6 +17,7 @@ cnt = cnt(1:metadata.NR, :);
 fclose(fid);
 figure(1);
 clf;
+cnt(cnt<100)=0;
 imagesc(cnt);
 a_radon = gca;
 set(a_radon, 'XLim', [1, metadata.NTH], 'YLim', [1, metadata.NR]);

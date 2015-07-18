@@ -151,7 +151,7 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-		1,3,
+		1,2,
 --		1,3,5,7,9,11,13,
 		-- waist
 		28,
@@ -167,9 +167,9 @@ local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
-		2,4,6,8,10,12,14,
+--		2,4,6,8,10,12,14,
 		-- lidar
-		37,
+--		37,
 		-- gripper
 		--	64, 66, 68
 	},

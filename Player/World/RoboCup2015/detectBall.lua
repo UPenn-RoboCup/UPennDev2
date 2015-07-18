@@ -424,14 +424,15 @@ local function find_ball_off_line(Image)
 		-- Field width is 6
 		----[[
 		if passed and ENABLE_FIELD_CHECK then
+			--print('vG', vG)
 			-- only when the ball is far from us
 			local distL = math.sqrt(vL[1]^2+vL[2]^2)
-			if distL>3 then
+			--if distL>3 then
 				if math.abs(vG[1])>3.5 or math.abs(vG[2])>3.5 then
 					passed = false
 					msgs[i] = string.format("Outside field (%.2f, %.2f, %.2f)", unpack(v,1,3))
 				end
-			end
+			--end
 		end
 		--]]
 

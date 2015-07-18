@@ -69,8 +69,8 @@ end
 function poseFilter.get_pose()
   check_particles("get_pose")
   local wmax, imax = util.max(wp)
-	if ap[imax] == nil then 
-		--print('ap?', #ap, 'xp?', #xp) 
+	if ap[imax] == nil then
+		--print('ap?', #ap, 'xp?', #xp)
 		print('IMAX?', imax)
 		print(unpack(ap))
 	end
@@ -79,21 +79,21 @@ end
 
 local function calculate_pose_angle_old(pos,v,pose3,debug)
   --Calculate the closest target pose with same posea
-  local a = math.atan2(v[2], v[1]) --We only use this! 
+  local a = math.atan2(v[2], v[1]) --We only use this!
   local r = math.sqrt(v[2]^2+ v[1]^2)
   local ca = math.cos(a+pose3[3])
   local sa = math.sin(a+pose3[3])
   local x = pos[1] - r*ca
-  local y = pos[2] - r*sa  
+  local y = pos[2] - r*sa
   check_particles("whatever")
   return {x,y,pose3[3]},1
 end
 
 local function calculate_pose_angle(pos,v,pose3,debug)
   --Calculate the closest target pose with same posea
-  local a = math.atan2(v[2], v[1]) --We only use this! 
-  if a==nil or pose3[3] == nil then 
-  	print('pose3', pose3) 
+  local a = math.atan2(v[2], v[1]) --We only use this!
+  if a==nil or pose3[3] == nil then
+  	print('pose3', pose3)
   	print('v', unpack(v))
   end
   local ca = math.cos(a+pose3[3])
@@ -107,8 +107,8 @@ local function calculate_pose_angle(pos,v,pose3,debug)
   local t_min = ca*(pos[1]-pose3[1])+sa*(pos[2]-pose3[2])
   local x_min = pos[1]-t_min*ca
   local y_min = pos[2]-t_min*sa
-  
-  if debug and Config.debug.goal_localization and t_min>0 then    
+
+  if debug and Config.debug.goal_localization and t_min>0 then
     print("Landmark pose:",pos[1],pos[2])
     print("Current pose:",pose3[1],pose3[2])
     print("Calculated pose:",x_min,y_min,pose3[3])
@@ -130,7 +130,7 @@ end
 local function landmark_observation_angle(pos, v, rFilter, aFilter)
   --Update particles only using the landmark angle
   local r = math.sqrt(v[1]^2 + v[2]^2)
-  local a = math.atan2(v[2], v[1]) --We only use this! 
+  local a = math.atan2(v[2], v[1]) --We only use this!
   local rSigma = .15*r -- + 0.10
   local aSigma = 2*math.pi/180
   local rFilter = rFilter or 0.02
@@ -148,10 +148,10 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
     local dy = {}
     local dr = {}
     local da = {}
-    local err = {}    
+    local err = {}
     for ipos = 1,#pos do
-      --Now 
-      local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})      
+      --Now
+      local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})
       local pose_target,t = calculate_pose_angle(pos[ipos],v,pose3,ip==1)
       if t>0 then
         local xx =  pos[ipos][1] - xp[ip]
@@ -168,13 +168,13 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
         --Now we only update along the perpendicular axis (ignore the distance)
         local da = math.atan2(dy0,dx0)
         local y_project = math.cos(global_angle) *dy0 - math.sin(global_angle)*dx0
-        dx[ipos]= y_project *math.sin(global_angle) 
-        dy[ipos]= y_project *math.cos(global_angle) 
+        dx[ipos]= y_project *math.sin(global_angle)
+        dy[ipos]= y_project *math.cos(global_angle)
 
         --angle to the observation based on local observation: a
-        --angle to the observation based on global landmark: 
+        --angle to the observation based on global landmark:
         --math.atan2(pos[2]-yp[ip], pos[1]-xp[ip]) - ap[ip]
-        --angle error: 
+        --angle error:
 
         local angle_error = mod_angle(math.atan2(yy,xx) - (ap[ip] + a))
         err[ipos] = (math.abs(angle_error)/aSigma)^2
@@ -188,10 +188,10 @@ local function landmark_observation_angle(pos, v, rFilter, aFilter)
     --Update particle weights:
     wp[ip] = wp[ip] - errMin
     dxp[ip] = dx[imin]
-    dyp[ip] = dy[imin]    
+    dyp[ip] = dy[imin]
   end
 
-  --Filter toward best matching landmark position:  
+  --Filter toward best matching landmark position:
   for ip = 1,N do
     if dxp[ip] then
       xp[ip] = xp[ip] + rFilter * dxp[ip]
@@ -207,10 +207,10 @@ end
 
 
 local function landmark_observation_angle_old(pos, v, rFilter, aFilter)
-  
+
   --Update particles only using the landmark angle
   local r = math.sqrt(v[1]^2 + v[2]^2)
-  local a = math.atan2(v[2], v[1]) --We only use this! 
+  local a = math.atan2(v[2], v[1]) --We only use this!
   local rSigma = .15*r -- + 0.10
   local aSigma = 2*math.pi/180
   local rFilter = rFilter or 0.02
@@ -228,16 +228,16 @@ local function landmark_observation_angle_old(pos, v, rFilter, aFilter)
     local dy = {}
     local dr = {}
     local da = {}
-    local err = {}    
+    local err = {}
     for ipos = 1,#pos do
-      --Now 
-      local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})      
+      --Now
+      local pose3 = vector.new({xp[ip],yp[ip],ap[ip]})
       local pose_target,t = calculate_pose_angle(pos[ipos],v,pose3,ip==1)
---      local pose_target,t = calculate_pose_angle(pos[ipos],v,{xp[ip],yp[ip],ap[ip]})      
+--      local pose_target,t = calculate_pose_angle(pos[ipos],v,{xp[ip],yp[ip],ap[ip]})
       if t>0 then
         dx[ipos] = pose_target[1] - xp[ip]
         dy[ipos] = pose_target[2] - yp[ip]
-        dr[ipos] = math.sqrt(dx[ipos]^2 + dy[ipos]^2) - r      
+        dr[ipos] = math.sqrt(dx[ipos]^2 + dy[ipos]^2) - r
         da[ipos] = mod_angle(math.atan2(dy[ipos],dx[ipos]) - (ap[ip] + a))
         err[ipos] = (dr[ipos]/rSigma)^2 + (da[ipos]/aSigma)^2
       else
@@ -253,7 +253,7 @@ local function landmark_observation_angle_old(pos, v, rFilter, aFilter)
     dap[ip] = da[imin]
   end
 
-  --Filter toward best matching landmark position:  
+  --Filter toward best matching landmark position:
   for ip = 1,N do
     if dxp[ip] then
       xp[ip] = xp[ip] + rFilter * dxp[ip]
@@ -337,7 +337,38 @@ end
 
 
 
+local function update_via_line(v, a)
 
+---Updates weights of particles according to the detection of a line
+--@param v z and y coordinates of center of line relative to robot
+--@param a angle of line relative to angle of robot
+  -- line center
+  x = v[1];
+  y = v[2];
+  r = math.sqrt(x^2 + y^2);
+
+  w0 = .25 / (1 + r/2.0);
+
+  -- TODO: wrap in loop for lua
+  for ip = 1,n do
+    -- pre-compute sin/cos of orientations
+    ca = math.cos(ap[ip]);
+    sa = math.sin(ap[ip]);
+
+    -- compute line weight
+    local wLine = w0 * (math.cos(4*(ap[ip] + a)) - 1);
+    wp[ip] = wp[ip] + wLine;
+
+    local xGlobal = v[1]*ca - v[2]*sa + xp[ip];
+    local yGlobal = v[1]*sa + v[2]*ca + yp[ip];
+
+    wBounds = math.max(xGlobal - xLineBoundary, 0) +
+              math.max(-xGlobal - xLineBoundary, 0) +
+              math.max(yGlobal - yLineBoundary, 0) +
+              math.max(-yGlobal - yLineBoundary, 0);
+    wp[ip] = wp[ip] - (wBounds/.20);
+  end
+end
 
 
 
@@ -514,7 +545,7 @@ end
 local function goal_triangulate_angle(pos,v,posea,debug)
 --For this triangulation, we PRESEVER pose angle
 --And we use the observaion only as angles (ignore distances)
-  local aPost = {}  
+  local aPost = {}
   aPost[1] = math.atan2(v[1][2], v[1][1])
   aPost[2] = math.atan2(v[2][2], v[2][1])
   --line 1: (pose.x,pose.y) + ( cos(pos.a + aPost[1]), sin(pos.a+aPost[1])*t1
@@ -531,7 +562,7 @@ local function goal_triangulate_angle(pos,v,posea,debug)
     print("t1:",t1)
     print("t2:",t1*c1/c2)
   end
-  
+
   local pose={}
   pose.x = pos[1][1] - c1*t1
   pose.y = pos[1][2] - s1*t1
@@ -547,7 +578,7 @@ local function goal_observation_angle(pos1,pos2,v)
 
   check_particles("twogoal1")
 
-  local rFilter = rGoalFilter  
+  local rFilter = rGoalFilter
   for ip = 1,N do
     local pose1,dGoal1,t1 = goal_triangulate_angle(pos1,v,ap[ip],ip==1)
     local pose2,dGoal2,t2 = goal_triangulate_angle(pos2,v,ap[ip],ip==1)
@@ -563,7 +594,7 @@ local function goal_observation_angle(pos1,pos2,v)
 
     local xErr2 = pose2.x - xp[ip]
     local yErr2 = pose2.y - yp[ip]
-    local rErr2 = math.sqrt(xErr2^2 + yErr2^2)    
+    local rErr2 = math.sqrt(xErr2^2 + yErr2^2)
     local err2 = (rErr2/rSigma2)^2
     if t2<0 then err2 = math.huge end
 

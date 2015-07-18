@@ -82,144 +82,103 @@ function detectLine.update(Image)
 	--local pHead4 = T.position4(Image.tfG)
 
   lines.propsB = linePropsB
-  lines.v, lines.endpoint = {},{}
-  lines.angle, lines.length= {},{}
+  lines.v = {}
+	lines.endpoint = {}
+  lines.angle = {}
+	lines.length = {}
 
 	local msgs = {}
   local num_line = 4
-  for i = 1, num_line do
-    lines.endpoint[i] = vector.zeros(4)
-    lines.v[i] = {
-      vector.zeros(4),
-      vector.zeros(4)
-    }
-    lines.angle[i] = 0
-  end
 
-  local bestindex = 1
-  local bestlength = 0
-  local linecount = 0
-
-  local vendpoint, vHeight = {}, 0
   for i=1, math.min(num_line, #linePropsB) do
 
 		local passed = true
+		local propsB = lines.propsB[i]
+		--util.ptable(propsB)
+		local bendpoint = vector.new(propsB.endpoint)
+		--print('Checking ...', bendpoint)
 
-		if math.max(lines.propsB[i].endpoint[3], lines.propsB[i].endpoint[4]) < 4 then
+		if math.max(bendpoint[3], bendpoint[4]) < 4 then
 			passed = false
-			msgs[i] = string.format('too close to edge y')
-		end
-		if math.max(lines.propsB[i].endpoint[1], lines.propsB[i].endpoint[2]) < 4 then
+			msgs[i] = string.format('Too close to edge y')
+		elseif math.max(bendpoint[1], bendpoint[2]) < 4 then
 			passed = false
-			msgs[i] = string.format('too close to edge x')
+			msgs[i] = string.format('Too close to edge x')
 		end
 
     local length = math.sqrt(
-    	(lines.propsB[i].endpoint[1]-lines.propsB[i].endpoint[2])^2 +
-    	(lines.propsB[i].endpoint[3]-lines.propsB[i].endpoint[4])^2
+    	(bendpoint[1]-bendpoint[2])^2 +
+    	(bendpoint[3]-bendpoint[4])^2
 		)
 
---[[
-		print('found line...')
-		util.ptable(lines.propsB[i])
-		print('length', length)
-		print('endpoint',unpack(lines.propsB[i].endpoint))
-		print('===')
-		--print('length', length)
-		--]]
-
-		-- TODO: Why this scale?
-		local scale = 1
-		local v01 = vector.new{
-	    Image.focalB,
-	    -(lines.propsB[i].endpoint[1] - Image.x0B),
-	    -(lines.propsB[i].endpoint[3] - Image.y0B),
-	    scale,
-	  }
-		-- Put into the local and global frames
-		local vL1 = Image.tfL * (v01 / v01[4])
-		local vG1 = Image.tfG * (v01 / v01[4])
-    vendpoint[1] = vL1
-
-		local v02 = vector.new{
-	    Image.focalB,
-			-(lines.propsB[i].endpoint[2] - Image.x0B),
-	    -(lines.propsB[i].endpoint[4] - Image.y0B),
-	    scale,
-	  }
-		-- Put into the local and global frames
-		local vL2 = Image.tfL * (v02 / v02[4])
-		local vG2 = Image.tfG * (v02 / v02[4])
-    vendpoint[2] = vL2
-
-    vHeight = (vendpoint[1][3]+vendpoint[2][3]) / 2
-
-		-- TODO: Place in the config
-    local vHeightMax = 0.20
--- TODO: re-enable
-----[[
 		if length<config.min_length then
 			passed = false
-			msgs[i] = string.format('min_length: %.2f<%.2f', length, config.min_length)
-		end
-		if linecount>num_line then
-			passed = false
-			msgs[i] = string.format('linecount: %.2f>%.2f', linecount, num_line)
-		end
-		if vHeight>vHeightMax then
-			passed = false
-			msgs[i] = string.format('vHeight: %.2f>%.2f', vHeight, vHeightMax)
+			msgs[i] = string.format('min_length: %.2f < %.2f', length, config.min_length)
 		end
 
---]]
-local vlen = math.sqrt(
-	(vendpoint[2][1]-vendpoint[1][1])^2 + (vendpoint[2][2]-vendpoint[1][2])^2
-)
---[[
-if passed then
-	local d1 = math.sqrt(vG1[1]^2+vG1[2]^2)
-	local d2 = math.sqrt(vG2[1]^2+vG2[2]^2)
-	print('d1,d2', d1, d2)
-	if d1<.2 and d2<.2 then
-		passed = false
-		msgs[i] = string.format('Center circle: %.2f, %.2f', d1, d2)
-	end
-end
---]]
+		local vL_endpoint, vG_endpoint
+		if passed then
+			local scale = 1
+			local v01 = vector.new{
+		    Image.focalB,
+		    -(bendpoint[1] - Image.x0B),
+		    -(bendpoint[3] - Image.y0B),
+		    scale,
+		  }
+			local vL1 = Image.tfL * (v01 / v01[4])
+			local vG1 = Image.tfG * (v01 / v01[4])
 
---print('vlen', vlen)
-    if passed then
-			lines.detect = 1
-      linecount = linecount + 1
-      lines.length[linecount] = length
-      lines.endpoint[linecount] = Image.scaleB * vector.new(lines.propsB[i].endpoint)
+			local v02 = vector.new{
+		    Image.focalB,
+				-(bendpoint[2] - Image.x0B),
+		    -(bendpoint[4] - Image.y0B),
+		    scale,
+		  }
+			local vL2 = Image.tfL * (v02 / v02[4])
+			local vG2 = Image.tfG * (v02 / v02[4])
 
 			-- Project to the ground
-			local target_height = 0
-			if pHead4[3]==target_height then
-				vendpoint[1] = vector.copy(vendpoint[1])
-			else
-				local scale = (pHead4[3] - target_height) / (pHead4[3] - vendpoint[1][3])
-				vendpoint[1] = pHead4 + scale * (vendpoint[1] - pHead4)
+			local zHead = pHead4[3]
+			vL_endpoint = {
+				pHead4 + (vL1 - pHead4) * zHead / (zHead - vL1[3]),
+				pHead4 + (vL2 - pHead4) * zHead / (zHead - vL2[3])
+			}
+			vG_endpoint = {
+				pHead4 + (vG1 - pHead4) * zHead / (zHead - vG1[3]),
+				pHead4 + (vG2 - pHead4) * zHead / (zHead - vG2[3])
+			}
+
+			local d1 = math.sqrt(vG_endpoint[1][1]^2+vG_endpoint[1][2]^2)
+			local d2 = math.sqrt(vG_endpoint[2][1]^2+vG_endpoint[2][2]^2)
+			--print('Line | d1, d2:', d1, d2)
+			if d1<.2 and d2<.2 then
+				passed = false
+				msgs[i] = string.format('Center circle: %.2f, %.2f', d1, d2)
 			end
-			if pHead4[3]==target_height then
-				vendpoint[2] = vector.copy(vendpoint[2])
-			else
-				local scale = (pHead4[3] - target_height) / (pHead4[3] - vendpoint[2][3])
-				vendpoint[2] = pHead4 + scale * (vendpoint[2] - pHead4)
-			end
+			--[[
+				local vlen = math.sqrt(
+					(vendpoint[2][1]-vendpoint[1][1])^2 + (vendpoint[2][2]-vendpoint[1][2])^2
+				)
+			--]]
+		end
 
-
-
-      lines.v[linecount] = { unpack(vendpoint, 1, 2) }
-      lines.angle[linecount] = math.abs(
-				math.atan2(vendpoint[1][2]-vendpoint[2][2], vendpoint[1][1]-vendpoint[2][1])
+    if passed then
+			table.insert(lines.length, length)
+			table.insert(lines.endpoint, Image.scaleB * bendpoint)
+			table.insert(lines.v, vL_endpoint)
+      table.insert(lines.angle,
+				math.abs(math.atan2(
+					vL_endpoint[1][2]-vL_endpoint[2][2],
+					vL_endpoint[1][1]-vL_endpoint[2][1]
+				))
 			)
 			msgs[i] = 'Passed checks'
     end
+
   end -- end for
 
-  lines.nLines = linecount
+  lines.nLines = #lines.endpoint
+	lines.detect = #lines.endpoint > 0 and 1 or 0
 
   return lines, table.concat(msgs, '\n')
 end

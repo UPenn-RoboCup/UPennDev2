@@ -461,15 +461,11 @@ ImageProc.color_countB = color_countB
 local function radon2ij(props, ith, ir, flip)
   local s, c = props.sin_d[ith], props.cos_d[ith]
 
-
   -- How far down the line
   local cnt = props.count_d[ith][ir]
   local lMean = props.line_sum_d[ith][ir] / cnt
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
-
-  -- Goes clockwise down
-  local flip = false
 
   --flip = true
   ir = (flip and -ir or ir) * props.RSCALE
@@ -480,12 +476,12 @@ local function radon2ij(props, ith, ir, flip)
 
   local iMean = iR - lMean * s
   local jMean = jR + lMean * c
-  ----[[
+  --[[
   local th = ith/props.NTH * math.pi
   print('Test line', ir, th*RAD_TO_DEG)
   print('lMean', lMean)
-  --print(lMean + ir, lMean - ir)
-  --print((c - s)*iMean + (c + s)*jMean)
+  print(lMean + ir, lMean - ir)
+  print((c - s)*iMean + (c + s)*jMean)
   --]]
 
   local lineProp = {
@@ -571,11 +567,14 @@ function ImageProc.field_lines(label, w, h)
   end
   table.insert(maxN, 1, {ithmax, irmax, cmax})
 
-  local minCount = 60
+  local minCount = 50
   local ijs = {}
   for i, v in ipairs(maxN) do
+    --print('line....',unpack(v))
     if v[3]>=minCount then
-      table.insert(ijs, radon2ij(props, unpack(v)))
+      -- Check for flipping later...
+      table.insert(ijs, radon2ij(props, v[1], v[2]))
+      table.insert(ijs, radon2ij(props, v[1], v[2], true))
     end
   end
   --]]

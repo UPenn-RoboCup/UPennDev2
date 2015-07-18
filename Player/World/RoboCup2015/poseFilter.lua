@@ -34,7 +34,7 @@ local ap = 2*math.pi*vector.new(util.randu(N)) -- angle
 local wp = vector.zeros(N) -- weight
 
 
-function check_particles(funcname)
+local function check_particles(funcname)
   for ip = 1,N do
     if xp[ip]==nil or yp[ip]==nil or ap[ip]==nil then
       print(util.color("POSEFILTER P NIL at "..funcname..ip, 'red'))
@@ -336,8 +336,10 @@ local function landmark_observation(pos, v, rFilter, aFilter)
 end
 
 
-
-local function update_via_line(v, a)
+local xLineBoundary = Config.world.xBoundary
+local yLineBoundary = Config.world.yBoundary
+function poseFilter.line_observation(v, a)
+  if type(v)~='table' or type(a)~='number' then return end
 
 ---Updates weights of particles according to the detection of a line
 --@param v z and y coordinates of center of line relative to robot
@@ -349,7 +351,7 @@ local function update_via_line(v, a)
   local w0 = 0.25 / (1 + r/2.0);
 
   -- TODO: wrap in loop for lua
-  for ip = 1,n do
+  for ip = 1,N do
     -- pre-compute sin/cos of orientations
     local ca = math.cos(ap[ip])
     local sa = math.sin(ap[ip])
@@ -367,6 +369,7 @@ local function update_via_line(v, a)
               math.max(-yGlobal - yLineBoundary, 0);
     wp[ip] = wp[ip] - (wBounds/.20);
   end
+  check_particles("line")
 end
 
 

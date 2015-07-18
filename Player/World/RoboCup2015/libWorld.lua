@@ -228,7 +228,8 @@ local function update_vision(detected)
     if type(goal)=='table' and #goal>0 then
       if goal[1].type == 3 then
         if Config.debug.goalpost then
-          print(string.format("Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
+          print(string.format(
+            "Two post observation: type %d v1(%.2f %.2f) v2(%.2f %.2f)",
             goal[1].type,
             goal[1].v[1],goal[1].v[2],
             goal[2].v[1],goal[2].v[2]
@@ -259,7 +260,8 @@ local function update_vision(detected)
     end
   else
     goal=nil
-  end  --------------------------------------------------------------------------------
+  end
+  ------------------------------------------------------------------------------
 
 
   if wcm.get_obstacle_reset()==1 then
@@ -284,6 +286,12 @@ local function update_vision(detected)
       update_obstacles()
 
     end  -- end of obstacle
+  end
+
+  if type(detected.line)=='table' then
+    local v = detected.line.v[1][1]
+    local a = detected.line.angle[1]
+    --poseFilter.line_observation(v, a)
   end
 
 end

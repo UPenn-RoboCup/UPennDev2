@@ -23,7 +23,7 @@ local tStepMid =walk.tStep-tSlope1-tSlope2
 
 local height1 = 0.03 --step height
 local height2 = 0.06 --walkkick height
-local height3 = 0.07 --longkick height
+local height3 = 0.04 --longkick height
 
 kick.stepqueue={}
 

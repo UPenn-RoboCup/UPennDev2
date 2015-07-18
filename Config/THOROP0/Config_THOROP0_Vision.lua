@@ -173,7 +173,7 @@ camera[1] = {
 	--w = 640,
 	--h = 480,
 	format = 'yuyv',
-	fps = 15,
+	fps = 30,
 	quality = 80,
 	downsampling = 1,
 	--crop = {640/2+1, 360/2+1, 640/2, 360/2},
@@ -195,8 +195,7 @@ camera[1] = {
 	-- Use the default vision parameters
 	vision = vision,
 	-- Run the standard RoboCup vision processing
-	--lut = 'onfield2',
-	lut = 'colorized',
+	lut = 'colorized3',
 	--Logitech C920
 	-- f = 640/2/tan(78/180*pi / 2)
 	--fov = 2*arctan(d/2f)
@@ -205,8 +204,8 @@ camera[1] = {
 	focal_length = 395.17,
 	focal_base = 640,
 	auto_param = {
-		--{'Exposure, Auto', 0},
-		--{'White Balance Temperature, Auto', 0},
+		{'Exposure, Auto', 0},
+		{'White Balance Temperature, Auto', 0},
 		{'Power Line Frequency', 0},
 		{'Exposure, Auto Priority', 0},
 		{'Focus, Auto', 0}

@@ -109,7 +109,6 @@ vision.goal = {
 	postDiameter = 0.1,
 }
 
-
 vision.line = {
   -- min_white_pixel = 300,
   -- min_green_pixel = 5000,
@@ -132,12 +131,12 @@ vision.line = {
   max_angle_diff = 85,
 }
 
-local fieldA_C920_param = {
-	{'White Balance Temperature', 3400},
-	{'Exposure (Absolute)', 100},
+local field_param = {
+	{'White Balance Temperature', 3400},--2400
+	{'Exposure (Absolute)', 100},--120
 	--	{'Focus (absolute)', 0},
-	{'Brightness', 128},
-	{'Contrast', 128},
+	{'Brightness', 128,},
+	{'Contrast', 128},--0
 	{'Saturation', 255},
 	{'Gain', 128},
 	{'Sharpness', 0},
@@ -167,15 +166,14 @@ local grasp900_param = {
 local camera = {}
 camera[1] = {
 	name = 'head',
-	--dev = '/dev/video-headcamera',
-	dev = '/dev/video1',
+	dev = '/dev/video0',
 	w = 640,
 	h = 360,
 	--dev = '/dev/video-wristcamera',
 	--w = 640,
 	--h = 480,
 	format = 'yuyv',
-	fps = 30,
+	fps = 15,
 	quality = 80,
 	downsampling = 1,
 	--crop = {640/2+1, 360/2+1, 640/2, 360/2},
@@ -210,10 +208,10 @@ camera[1] = {
 		--{'Exposure, Auto', 0},
 		--{'White Balance Temperature, Auto', 0},
 		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 1},
+		{'Exposure, Auto Priority', 0},
 		{'Focus, Auto', 0}
 	},
-	param = fieldA_C920_param,
+	param = field_param,
 }
 
 camera[2] = {

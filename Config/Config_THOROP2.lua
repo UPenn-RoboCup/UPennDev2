@@ -9,8 +9,8 @@ if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 
 Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
 exo = {'Walk','Net','FSM','World',
---	'Vision',
-	'Vision_UCLA',
+	'Vision',
+--	'Vision_UCLA',
 'Robot_Chip', 'Arm','Kick'}
 
 

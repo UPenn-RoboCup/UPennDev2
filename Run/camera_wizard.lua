@@ -1,10 +1,12 @@
 #!/usr/bin/env luajit
 local ENABLE_NET = true
+local ENABLE_LOG = true
+
 if IS_WEBOTS then
 	ENABLE_NET = false
+	ENABLE_LOG = false
 end
 
-local ENABLE_LOG = true
 
 -----------------------------------
 -- Camera manager

@@ -377,10 +377,11 @@ function libWorld.update(uOdom, detection)
     --or
 --
 
-  --we reset pose unless the game state is playing or testing
   elseif (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then
+
+    --Keep resetting pose unless the game state is playing or testing
     if gcm.get_game_role()==0 then
---      print("Goalie pose reset!")
+--     print("Goalie pose reset!")
       -- Goalie initial pos
       local factor2 = 0.99
       poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})
@@ -393,7 +394,6 @@ function libWorld.update(uOdom, detection)
       wcm.set_robot_odometry({0,0,0})
       updated_pose = {0,0,0}
     end
-
     if use_imu_yaw then
       if IS_WEBOTS then
         gps_pose = wcm.get_robot_pose_gps()

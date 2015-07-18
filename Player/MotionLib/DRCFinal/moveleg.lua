@@ -603,8 +603,47 @@ function moveleg.foot_trajectory_walkkick(phSingle,uStart,uEnd,stepHeight)
   local zf=eval_spline(breaksTY, coefsY,phSingle)  
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight * zf*1.5
-  return uFoot, zFoot
+  return uFoot, zFoot,0
 end
+
+function moveleg.foot_trajectory_walkkick2(phSingle,uStart,uEnd,stepHeight)
+
+  local breaksTX={0.300000,0.400000,0.600000,0.800000,0.900000,1.000000,}
+  local breaksTY={0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
+  local breaksA={0.300000,0.500000,0.700000,1.000000,}
+  local coefsX={
+    {8.359213,0.815217,-0.163561,0.000000,},
+    {8.359213,8.338509,2.582557,0.250000,},
+    {-54.257246,10.846273,4.501035,0.600000,},
+    {31.573499,-21.708075,2.328675,1.500000,},
+    {34.213251,-2.763975,-2.565735,1.350000,},
+    {34.213251,7.500000,-2.092133,1.100000,},
+  }
+  local coefsY={
+    {5.646481,-9.517185,5.346972,0.000000,},
+    {5.646481,-4.435352,1.161211,0.900000,},
+    {-8.878887,-1.047463,0.064648,1.000000,},
+    {5.728314,-6.374795,-1.419804,0.900000,},
+    {-1.145663,-4.656301,-2.522913,0.700000,},
+    {-1.145663,-5.000000,-3.488543,0.400000,},
+  }
+  local coefsA={
+    {773.809524,-952.380952,282.738095,0.000000,},
+    {773.809524,-255.952381,-79.761905,20.000000,},
+    {-59.523810,208.333333,-89.285714,0.000000,},
+    {-59.523810,172.619048,-13.095238,-10.000000,},
+  }
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local af=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight * zf*1.5
+  local aFoot = af*DEG_TO_RAD
+  return uFoot, zFoot, aFoot
+end
+
+
+
 
 --csapi([0 0.1 0.3 0.7 0.8 0.9 1],[0 -0.2 -1 2  2 1.4 1])
 function moveleg.foot_trajectory_kick(phSingle,uStart,uEnd,stepHeight)
@@ -634,7 +673,7 @@ function moveleg.foot_trajectory_kick(phSingle,uStart,uEnd,stepHeight)
   local zf=eval_spline(breaksTY, coefsY,phSingle)  
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight * zf*2.5
-  return uFoot, zFoot
+  return uFoot, zFoot,0
 end
 
 

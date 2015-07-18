@@ -375,6 +375,7 @@ local function find_ball_off_line(Image)
 
 		-- Check the coordinate on the field
 		local v = vector.new{0,0,0,1}
+		local vL, vG
 		local dArea = passed and math.sqrt((4/math.pi) * propsA.area)
 		if passed and ENABLE_COORDINATE_CHECK then
 			local scale = math.max(dArea, propsA.axisMajor) / config.diameter
@@ -385,8 +386,8 @@ local function find_ball_off_line(Image)
 				scale
 			}
 			-- Put into the local and global frames
-			local vL = Image.tfL * (v0 / v0[4])
-			local vG = Image.tfG * (v0 / v0[4])
+			vL = Image.tfL * (v0 / v0[4])
+			vG = Image.tfG * (v0 / v0[4])
 			-- Save the position
 			v = vL
 			--[[
@@ -399,7 +400,7 @@ local function find_ball_off_line(Image)
 			local dist = math.sqrt(v[1]^2 + v[2]^2)
 			--require'util'.ptable(config)
 			local minZ = -0.1
-			local maxZ = 0.27
+			local maxZ = 0.5
 			--local minX = 0.02
 			--local minY = 0.02
 			--local maxH = (config.max_height0 and config.max_height1) and (config.max_height0 + dist * config.max_height1)
@@ -420,16 +421,17 @@ local function find_ball_off_line(Image)
 		end
 
 		-- TODO: Field bounds check
-		--[[
+		-- Field width is 6
+		----[[
 		if passed and ENABLE_FIELD_CHECK then
-		if math.sqrt(v[1]*v[1]+v[2]*v[2])>3 then
-		local margin = 0.85 --TODO
-		local global_v = util.pose_global({v[1], v[2], 0}, wcm.get_robot_pose())
-		if math.abs(global_v[1])>xMax+margin or math.abs(global_v[2])>yMax+margin then
-		check_fail = true
-		debug_ball('OUTSIDE FIELD!')
-		end
-		end
+			-- only when the ball is far from us
+			local distL = math.sqrt(vL[1]^2+vL[2]^2)
+			if distL>3 then
+				if math.abs(vG[1])>3.5 or math.abs(vG[2])>3.5 then
+					passed = false
+					msgs[i] = string.format("Outside field (%.2f, %.2f, %.2f)", unpack(v,1,3))
+				end
+			end
 		end
 		--]]
 

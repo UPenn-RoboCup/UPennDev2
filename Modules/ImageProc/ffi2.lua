@@ -471,59 +471,26 @@ local function radon2ij(props, ith, ir, flip)
 
   -- Goes clockwise down
   local flip = false
-  --[[
-  print(cnt, 'ith', ith, props.NTH, ith/props.NTH * 180)
-  if ith<props.NTH/4 then
-    print('flipped1')
-    flip = true
-  end
-  --]]
-  --[[
-  if ith>props.NTH/2 then
-    --print('flipped2', iR, jR)
-    flip = true
-  end
-  --]]
-  --flip = true
-  ir = flip and -ir or ir
 
+  flip = true
+  ir = flip and -ir or ir
 
   -- Closest point
   local iR = props.RSCALE * ir * c
   local jR = props.RSCALE * ir * s
 
-  --[[
-  print()
-  local r, th = props.RSCALE * ir, ith/props.NTH * 180
-  print('r, th', r, th, cnt)
-  local ct = r * math.cos(th*DEG_TO_RAD)
-  local st = r * math.sin(th*DEG_TO_RAD)
-
-  print('iR, jR       ', iR, jR)
-  print('Closest point', ct, st)
-  print('lMean', lMean)
-  print('lMin', lMin)
-  print('lMax', lMax)
-  --print('s, c', s, c)
-
-  --print('iMean', iR - lMean * s)
-  print('iR', iR)
-  print('jR', jR)
-  print('cMean', lMean * c)
-  print('sMean', lMean * s)
-  print('cMin', lMin * c)
-  print('sMin', lMin * s)
-  print('cMax', lMax * c)
-  print('sMax', lMax * s)
-  --]]
-
+  local iMean = iR - lMean * s
+  local jMean = iR + lMean * c
+  print('Test line')
+  print(lMean + iR, lMean - iR)
+  print((c - s)*iMean + (c + s)*jMean)
 
   local lineProp = {
     ir = ir,
     ith = ith,
     count = cnt,
-    iMean = iR - lMean * s,
-    jMean = jR + lMean * c,
+    iMean = iMean,
+    jMean = jMean,
     --
     iMin  = iR - lMin * s,
     jMin  = jR + lMin * c,
@@ -531,75 +498,7 @@ local function radon2ij(props, ith, ir, flip)
     jMax  = jR + lMax * c,
   }
 
---[[
-  if flip then
-    --ir = 8
-    --th = 0
-    ir = -ir
-    --th = th + math.pi
-    print('rho', ir, 'theta:', th*RAD_TO_DEG)
-    --print(s,c)
-    s, c = math.sin(th), math.cos(th)
-    --print(s,c)
-    --print('-')
-
-    -- Closest point
-    local iR = props.RSCALE * ir * c
-    local jR = props.RSCALE * ir * s
-    local lineProp11 = {
-      ir = ir,
-      ith = ith,
-      count = cnt,
-      iMean = iR + lMean * s,
-      jMean = jR - lMean * c,
-      --
-      iMin  = iR + lMin * s,
-      jMin  = jR - lMin * c,
-      iMax  = iR + lMax * s,
-      jMax  = jR - lMax * c,
-    }
-
-  end
---]]
-
-  -- Could be + or -
-  --[[
-  local flip = false
-
-  print('i, j', util.sign(iR), util.sign(jR), ith, props.NTH/4)
-  if ith<props.NTH/4 then
-    flip = true
-    print('here1')
-  elseif ith<props.NTH/2 then
-    print('here2')
-  elseif ith<3*props.NTH/4 then
-    print('here3')
-  else
-    print('here4')
-  end
-  --if iR<0 and jR>0 then flip = true end
-  if flip then
-    lineProp = {
-      ir = ir,
-      ith = ith,
-      count = cnt,
-      iMean = -1*iR - lMean * s,
-      jMean = -1*jR + lMean * c,
-      --
-      iMin  = -1*iR - lMin * s,
-      jMin  = -1*jR + lMin * c,
-      iMax  = -1*iR - lMax * s,
-      jMax  = -1*jR + lMax * c,
-    }
-  end
-  --]]
-
   lineProp.endpoint = {lineProp.iMin, lineProp.iMax, lineProp.jMin, lineProp.jMax}
-
-  --if flip then
-    --print('ep',vector.new(lineProp.endpoint))
-    --print('-')
-  --end
 
   return lineProp
 end

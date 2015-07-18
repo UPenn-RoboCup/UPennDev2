@@ -72,7 +72,7 @@ function detectLine.update(Image)
 	os.exit()
 	--]]
 
-  if #linePropsB==0 then
+  if type(linePropsB)~='table' or #linePropsB==0 then
     return false, 'None'
   end
 	--util.ptable(linePropsB[1].endpoint)
@@ -137,8 +137,9 @@ function detectLine.update(Image)
 	    scale,
 	  }
 		-- Put into the local and global frames
-    vendpoint[1] = Image.tfL * (v01 / v01[4])
-		--vendpoint[1] = Image.tfG * (v0 / v0[4])
+		local vL1 = Image.tfL * (v01 / v01[4])
+		local vG1 = Image.tfG * (v01 / v01[4])
+    vendpoint[1] = vL1
 
 		local v02 = vector.new{
 	    Image.focalB,
@@ -147,8 +148,9 @@ function detectLine.update(Image)
 	    scale,
 	  }
 		-- Put into the local and global frames
-    vendpoint[2] = Image.tfL * (v02 / v02[4])
-		--vendpoint[2] = Image.tfG * (v02 / v02[4])
+		local vL2 = Image.tfL * (v02 / v02[4])
+		local vG2 = Image.tfG * (v02 / v02[4])
+    vendpoint[2] = vL2
 
     vHeight = (vendpoint[1][3]+vendpoint[2][3]) / 2
 
@@ -173,7 +175,19 @@ function detectLine.update(Image)
 local vlen = math.sqrt(
 	(vendpoint[2][1]-vendpoint[1][1])^2 + (vendpoint[2][2]-vendpoint[1][2])^2
 )
-print('vlen', vlen)
+--[[
+if passed then
+	local d1 = math.sqrt(vG1[1]^2+vG1[2]^2)
+	local d2 = math.sqrt(vG2[1]^2+vG2[2]^2)
+	print('d1,d2', d1, d2)
+	if d1<.2 and d2<.2 then
+		passed = false
+		msgs[i] = string.format('Center circle: %.2f, %.2f', d1, d2)
+	end
+end
+--]]
+
+--print('vlen', vlen)
     if passed then
 			lines.detect = 1
       linecount = linecount + 1

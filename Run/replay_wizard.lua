@@ -6,9 +6,8 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
---local constant = 268
---local start_idx = 260
-local start_idx = 201
+--local constant = 41
+--local start_idx = 680
 
 require'wcm'
 wcm.set_goal_disable({0})
@@ -34,6 +33,7 @@ end
 local logs = {
 }
 
+--[[
 logs.yuyv = {
 	ch = si.new_publisher'camera0',
 	dir = HOME..'Data'..'/day2_9am_B',
@@ -63,7 +63,8 @@ logs.yuyv = {
 	'07.17.2015.21.13.19',
 	'07.17.2015.21.13.43',
 }
---[[
+--]]
+----[[
 logs.yuyv = {
 	ch = si.new_publisher'camera0',
 	dir = HOME..'Data'..'/day2_9am',
@@ -77,7 +78,7 @@ logs.yuyv = {
 	--'07.17.2015.20.59.30',
 	--'07.17.2015.20.59.53',
 	--'07.17.2015.21.00.17',
-	'07.17.2015.21.00.40',
+	--'07.17.2015.21.00.40',
 	'07.17.2015.21.01.04',
 	'07.17.2015.21.01.27',
 	'07.17.2015.21.01.51',

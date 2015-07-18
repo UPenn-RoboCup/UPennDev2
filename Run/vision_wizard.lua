@@ -81,13 +81,15 @@ local t_send = -math.huge
 
 local ptable = require'util'.ptable
 local function update(meta, img)
-	--[[
+
 	print('\n=================')
+	--[[
 	ptable(meta)
 	print()
 	--]]
 
 	local Image, detection = Vision.update(meta, img)
+
 	--ptable(detection)
 	--[[
 	if detection.ball then

@@ -108,10 +108,10 @@ function detectPost.update(Image)
 		if passed then
 			-- TODO: depends on ball or goal
 			--local fill_rate = postStats.area / box_area
-			local fill_rate = postStats.area /
-				(postStats.axisMajor * postStats.axisMinor)
+			local fill_rate = postStats.area / (postStats.axisMajor * postStats.axisMinor)
+			--print('fill_rate',fill_rate, g_fill_rate)
 			if fill_rate < g_fill_rate then
-				passed = true
+				passed = false
 				msgs[i] = string.format('Fill rate: %.2f < %.2f',
 					fill_rate, g_fill_rate)
 			end

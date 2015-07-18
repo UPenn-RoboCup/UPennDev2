@@ -62,9 +62,9 @@ function h = show_monitor_thorwin
         set(h_obstacle{i},'Ydata', []);
     end
 
-    % Assume up to 4 obstacles
+    % Assume up to 4 lines
     h_line = cell(4,1);
-    for i=1:numel(h_obstacle)
+    for i=1:numel(h_line)
         h_line{i} = plot([0], [0], 'm--', 'LineWidth', 3);
         % Remove from the plot
         set(h_line{i},'Xdata', []);

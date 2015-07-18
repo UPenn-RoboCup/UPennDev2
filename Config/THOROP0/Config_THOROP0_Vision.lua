@@ -77,8 +77,9 @@ vision.obstacle = {
 	th_green_black_ratio = 2,
 	min_ground_fill_rate = 0.4,
 	--
-	min_width = 5,
-	max_width = 16,
+	min_width = 6,
+	--max_width = 16,
+	max_width = 64,
 }
 
 vision.goal = {

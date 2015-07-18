@@ -399,7 +399,7 @@ local function find_ball_off_line(Image)
 			local dist = math.sqrt(v[1]^2 + v[2]^2)
 			--require'util'.ptable(config)
 			local minZ = -0.1
-			local maxZ = 0.26
+			local maxZ = 0.27
 			--local minX = 0.02
 			--local minY = 0.02
 			--local maxH = (config.max_height0 and config.max_height1) and (config.max_height0 + dist * config.max_height1)
@@ -409,7 +409,7 @@ local function find_ball_off_line(Image)
 				--elseif maxH and v[3] > maxH then
 			elseif v[3] > maxZ then
 				passed = false
-				msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", config.max_height0, unpack(v,1,3))
+				msgs[i] = string.format("maxZ: %.2f (%.2f, %.2f, %.2f)", maxZ, unpack(v,1,3))
 			elseif minZ and v[3] < minZ then
 				passed = false
 				msgs[i] = string.format("minZ: %.2f (%.2f, %.2f, %.2f)", minZ, unpack(v,1,3))

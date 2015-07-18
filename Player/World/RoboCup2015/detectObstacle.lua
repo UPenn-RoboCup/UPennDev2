@@ -75,7 +75,10 @@ function detectObstacle.update(Image)
 		local black_bboxB = {
 			obsProps[i].position[1] - obsProps[i].width/2,
 			obsProps[i].position[1] + obsProps[i].width/2,
+
+			-- Why does this work?
 			obsProps[i].position[2] - 2*obsProps[i].width,
+
 			obsProps[i].position[2],
 		}
 		local blackStatsB = ImageProc2.color_stats_exact(
@@ -111,7 +114,7 @@ function detectObstacle.update(Image)
 					(black_bboxB[4] - black_bboxB[3] + 1)
 				blackB_fill_rate = blackStatsB.area / box_areaB
 			end
-
+--[[
 			if blackA_fill_rate < min_black_fill_rate then
 				passed = false
 				msgs[i] = string.format(
@@ -119,6 +122,7 @@ function detectObstacle.update(Image)
 					blackA_fill_rate, min_black_fill_rate, blackB_fill_rate, min_black_fill_rate
 				)
 			end
+			--]]
 		end
     -- Convert to local frame
 		if passed then

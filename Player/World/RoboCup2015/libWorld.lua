@@ -151,7 +151,7 @@ local function update_odometry(uOdometry)
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
       uOdometry[3] = gps_pose[3] - yaw0
-      yaw0 = gps_pose[3]      
+      yaw0 = gps_pose[3]
     else
       local yaw = Body.get_rpy()[3]
       uOdometry[3] = yaw - yaw0
@@ -160,13 +160,13 @@ local function update_odometry(uOdometry)
   end
 
 
-  
+
   --Update pose using odometry info for now
   local pose = wcm.get_robot_pose()
 
 
   if IS_WEBOTS and Config.world.use_gps_yaw then
- 
+
 
     local old_pose = wcm.get_robot_pose()
     local gps_pose = wcm.get_robot_pose_gps()
@@ -224,7 +224,6 @@ local function update_vision(detected)
   -- If the goal is detected
 
   if wcm.get_goal_disable()==0 then --now disable goal detection unless we look up
-
   	goal = detected.posts
     if type(goal)=='table' and #goal>0 then
       if goal[1].type == 3 then
@@ -286,7 +285,7 @@ local function update_vision(detected)
 
     end  -- end of obstacle
   end
-  
+
 end
 
 function libWorld.pose_reset(pose0)
@@ -355,8 +354,8 @@ function libWorld.update(uOdom, detection)
 
 
   -- Run the updates
-  if wcm.get_robot_reset_pose()==1 then 
-    libWorld.pose_reset() 
+  if wcm.get_robot_reset_pose()==1 then
+    libWorld.pose_reset()
     --This is called by motionInit
     --after init, reset pose to 0,0,0
   end
@@ -375,8 +374,8 @@ function libWorld.update(uOdom, detection)
 
     print_pose()
 --  elseif wcm.get_robot_reset_pose()==1
-    --or 
---  
+    --or
+--
 
   --we reset pose unless the game state is playing or testing
   elseif (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then

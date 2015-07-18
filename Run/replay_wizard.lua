@@ -6,8 +6,15 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
---local constant = 188
---local start_idx = 188
+--local constant = 268
+--local start_idx = 260
+local start_idx = 201
+
+require'wcm'
+wcm.set_goal_disable({0})
+wcm.set_robot_reset_pose({0})
+require'gcm'
+gcm.set_game_state({3})
 
 local function pairmin(t)
 	-- find the minimum element in the array table

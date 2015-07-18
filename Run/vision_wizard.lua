@@ -88,6 +88,7 @@ local function update(meta, img)
 	--]]
 
 	local Image, detection = Vision.update(meta, img)
+	--ptable(detection)
 	--[[
 	if detection.ball then
 		print('\n=Ball=')

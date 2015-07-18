@@ -15,7 +15,7 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.ASUS
+local WHO = IP.STEVE
 local ROBOT_IP = IP.CHIP
 local TEAM_NUMBER = 8
 

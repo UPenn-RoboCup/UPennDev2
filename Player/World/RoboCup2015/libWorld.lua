@@ -147,6 +147,9 @@ local function update_odometry(uOdometry)
   -- Next, grab the gyro yaw
 
 --  if Config.use_imu_yaw and mcm.get_walk_ismoving()>0 then
+
+
+
   if Config.use_imu_yaw then
     if IS_WEBOTS then
       gps_pose = wcm.get_robot_pose_gps()
@@ -293,6 +296,11 @@ function libWorld.pose_reset(pose0)
   wcm.set_robot_reset_pose(0)
   wcm.set_robot_pose(pose0 or {0,0,0})
   wcm.set_robot_odometry({0,0,0})
+
+
+print("yaw0:",yaw0*180/math.pi)
+print("yaw:",Body.get_rpy()[3]*180/math.pi)
+
   yaw0 = Body.get_rpy()[3]
   poseFilter.initialize(pose0 or {0,0,0},{0,0,0})
   if IS_WEBOTS then
@@ -407,6 +415,14 @@ function libWorld.update(uOdom, detection)
     print_pose()
     updated_pose = update_odometry(uOdom)
   end
+
+  --to fix yaw jump 
+  if (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then
+    local yaw = Body.get_rpy()[3]
+    yaw0 = yaw
+  end
+
+
 
   wcm.set_robot_pose(updated_pose)
   update_vision(detection)

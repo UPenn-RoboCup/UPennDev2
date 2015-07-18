@@ -215,5 +215,5 @@ Config.ballX_threshold1 = 4.5 --The threshold we use walkkick
 Config.ballX_threshold2 = 4.5 --The threshold we start using strong kick
 Config.walk.velLimitX = {-.10,.15}
 
-
+Config.use_arm_switch = true
 return Config

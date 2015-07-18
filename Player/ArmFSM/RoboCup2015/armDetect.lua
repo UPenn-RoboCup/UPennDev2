@@ -37,6 +37,9 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+
+
+
   --Read arm positions (for switching roles purpose)
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()  
@@ -61,8 +64,8 @@ function state.update()
       Body.set_head_led_red(0)
       Body.set_head_led_green(128)
       Body.set_head_led_blue(0)
-      if gcm.get_game_state()~=6 then
-        game_ch:send'stop'
+      if gcm.get_game_state()<4 and gcm.get_game_state()>0 and Config.use_arm_switch then
+        game_ch:send'finish'
       end
     elseif mode==1 then
       Body.set_head_led_red(255)
@@ -72,7 +75,6 @@ function state.update()
       Body.set_head_led_red(0)
       Body.set_head_led_green(0)
       Body.set_head_led_blue(255)
-
     end
   tLastUpdate = t
   end

@@ -192,4 +192,6 @@ Config.gamecontroller_timeout = 5.0
 Config.use_walkkick = true
 
 Config.use_arm_switch = true
+  Config.walk.velLimitX = {-.10,.15}
+
 return Config

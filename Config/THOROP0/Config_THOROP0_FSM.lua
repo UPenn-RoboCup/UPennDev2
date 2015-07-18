@@ -38,6 +38,7 @@ fsm.libraries = {
 fsm.Game = {
   {'gamePreinit','init','gameInitial'}, --this is not initial (we manually init the robot)
   {'gameInitial', 'ready', 'gameReady'},
+  {'gameInitial', 'set', 'gameSet'},
   {'gameReady', 'set', 'gameSet'},
   {'gameSet', 'play', 'gamePlaying'},
   {'gamePlaying', 'finish', 'gameStop'},

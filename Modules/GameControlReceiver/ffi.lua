@@ -32,11 +32,11 @@ local gc_constants = [[
 ]]
 
 libGC.state_to_name = {
-  [0] = 'Initial',
-  [1] = 'Ready',
-  [2] = 'Set',
-  [3] = 'Playing',
-  [4] = 'Finished',
+  [0] = 'init',
+  [1] = 'ready',
+  [2] = 'set',
+  [3] = 'play',
+  [4] = 'finish',
 }
 
 gc_constants = gc_constants..[[

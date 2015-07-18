@@ -53,7 +53,7 @@ if IS_WEBOTS then
 
 
 		Config.use_gps_pose = true
-	Config.use_gps_vision = true
+--	Config.use_gps_vision = true
 end
 
 
@@ -95,35 +95,11 @@ end
 
 
 
---robot drifts backwards
---Config.world.odomScale = {0.8,1,1} -- For now IMU not in use
-Config.world.use_imu_yaw = true
-
-
-Config.slowstep_duration =2.5
-Config.supportYSS = -0.03
-Config.walk.stepHeightSlow = 0.02
-
-
-Config.use_angle_localization = true
-
-
-
-
-
---when ball is not found, we make a false observation so that robot can rotate around
-Config.robot_turnaround = false 
-
---Config.demo = true
-
-
 ------------------------------------
 ------------------------------------
 ------------------------------------
 -- ROBOCUP config variables
 
-
---Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then
 
 --  Config.vision.ball.th_min_fill_rate = 0.25
@@ -135,85 +111,85 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
   Config.world.use_imu_yaw = true
-
-
-  --[[
-  Config.walk.velLimitX = {-.10,.10}
   Config.walk.velLimitX = {-.10,.15}
   Config.walk.velLimitY = {-.04,.04}
-  Config.walk.velDelta  = {0.04,0.02,0.1}
-  --]]
-  Config.stop_after_score = false
+  Config.walk.velDelta  = {0.04,0.02,0.2}
+  
 
+  Config.world.use_gps_yaw = true
+  Config.stop_after_score = true
 end
+
+
+
+------------------------------------------------------------
+-- Head/vision parameters
+Config.use_angle_localization = true
+Config.fsm.headTrack.timeout = 3
+Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
+Config.enable_obstacle_scan = true
+Config.disable_goal_vision = false
+Config.auto_state_advance = false
+Config.enable_single_goalpost_detection = true
+Config.disable_ball_when_lookup = true
+------------------------------------------------------------
+
+
 
 
 
 Config.stop_at_neutral = true --false for walk testing
-Config.fsm.headTrack.timeout = 3
-Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
-Config.approachTargetX = {0.45,0.28,0.35} --for first walkkick, long stationary kick, weak walkkick\
-
-if IS_WEBOTS then
-	Config.approachTargetX = {
-    0.35, --for kick 0 (walkkick)
-    0.30, --for kick 1 (st kick)
-    0.35  --for kick 2 (weak walkkick)
-  }
-end
 
 
+----------------------------------------------------
+--Approach parameters
 
 Config.approachTargetX = {0.55,0.40,0.55} --for first walkkick, long stationary kick, weak walkkick\
+Config.approachTargetY= {0.00,0.00}  --L/R aiming offsets
+if IS_WEBOTS then
+  Config.approachTargetX = {0.35, 0.30, 0.35}  --for first walkkick, long stationary kick, weak walkkick
+  Config.approachTargetY= {-0.0,0.0}  --L/R aiming offsets (for robot pose)
+end
 
-
---  Config.approachTargetY= {-0.07,0.05}  --L/R aiming offsets
-Config.approachTargetY= {0.0,0.0}  --L/R aiming offsets
 Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
 Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick
 
---Config.torque_legs = false
-Config.torque_legs = true
-Config.enable_obstacle_scan = true
-Config.disable_goal_vision = false
+--for grass, we keep using walkkick until very close
+Config.ballX_threshold1 = 1.0 --The threshold we use walkkick
+Config.ballX_threshold2 = 2.5 --The threshold we start using strong kick
 
---  Config.auto_state_advance = true
-Config.auto_state_advance = false
-Config.enable_single_goalpost_detection = true
-
--- Config.enable_weaker_kick = true
-Config.use_walkkick = true
---  Config.use_walkkick = false
-
-Config.disable_ball_when_lookup = true
 Config.maxStepApproachTh = 0.30
 Config.maxStepApproach1 = 0.10
 Config.maxStepApproach2 = 0.06
 
+Config.assume_goalie_blocking = true
+Config.enemy_goalie_shift_factor = 0.15
 
---final config update
+
+--faster approach
+Config.maxStepApproach1 = 0.15
+Config.maxStepApproach2 = 0.10
+----------------------------------------------------
+
+
+----------------------------------------------------
+-- Goalie bahavior
 Config.goalieBallX_th = -0.5
 Config.goalie_odometry_only = true
 Config.goaliePosX = 0.40
 Config.ballYFactor = 1.4
-Config.gamecontroller_detect = true
-Config.gamecontroller_timeout = 5.0
 Config.max_goalie_y = 0.7
 Config.goalie_threshold_x = 0.10
 Config.goalie_t_startmove = 10.0
-Config.assume_goalie_blocking = true
-Config.enemy_goalie_shift_factor = 0.15
-
-------------------------------------
-------------------------------------
-------------------------------------
 ------------------------------------
 
+Config.gamecontroller_detect = true
+Config.gamecontroller_timeout = 5.0
 
 
-Config.ballX_threshold1 = 4.5 --The threshold we use walkkick
-Config.ballX_threshold2 = 4.5 --The threshold we start using strong kick
-Config.walk.velLimitX = {-.10,.15}
 
+--Config.disable_kick = true --use this for approach testing
+Config.use_walkkick = true
 
+Config.use_arm_switch = true
 return Config

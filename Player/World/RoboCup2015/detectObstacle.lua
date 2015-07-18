@@ -170,8 +170,11 @@ function detectObstacle.update(Image)
     end
 		--]]
 
+
+
+		--max allowed distance: 3.7m (cannot be inside the goalie box)
     -- TODO: Distance check
-    if passed and obstacle_dist > 7 then
+    if passed and obstacle_dist > 3.5 then
       passed = false
       msgs[i] = string.format('TOO FAR:%.2f >%.2f\n', obstacle_dist, 7)
     end

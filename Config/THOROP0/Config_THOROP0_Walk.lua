@@ -245,6 +245,10 @@ walk.velLimitX = {-.10,.15}
 walk.velLimitY = {-.03,.03}
 
 
+--fast walk testing
+walk.velLimitX = {-.10,.20}
+walk.stepHeight = 0.05 
+
 
 
 

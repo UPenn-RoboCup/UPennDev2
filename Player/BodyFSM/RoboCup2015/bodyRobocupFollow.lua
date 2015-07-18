@@ -83,6 +83,9 @@ local function update_velocity()
   local kickAngleTemp = kickAngle or 0
   local target_pose,rotate = robocupplanner.getTargetPose(pose,ballGlobal,kickAngleTemp)    
   local vStep,reached = robocupplanner.getVelocity(pose,target_pose,rotate)
+  
+print(string.format("Follow angle:(%.2f %.2f %.2f)",
+    vStep[1],vStep[2],vStep[3]))
   mcm.set_walk_vel(vStep)
   
   return reached

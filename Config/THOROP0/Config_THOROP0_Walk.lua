@@ -243,13 +243,13 @@ walk.hipPitchCompensationMag = 1.3
 
 walk.velLimitX = {-.10,.15}
 walk.velLimitY = {-.03,.03}
+walk.velDelta  = {0.05,0.02,0.1}
 
 
 --fast walk testing
 walk.velLimitX = {-.10,.20}
 walk.stepHeight = 0.05 
-
-
+walk.velLimitA = {-.3,.3}
 
 
 

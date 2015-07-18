@@ -16,7 +16,7 @@ function state.entry()
 -- 0 for initial / 1 for ready 2 for set / 3 for play / 4 fin
 -- 5: Pre-initialized (idle) 6 for testing
 
-  gcm.set_game_state(6)
+  gcm.set_game_state(4)
   body_ch:send'stop'
   head_ch:send'teleop'
 

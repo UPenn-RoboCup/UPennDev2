@@ -61,7 +61,9 @@ function state.update()
       Body.set_head_led_red(0)
       Body.set_head_led_green(128)
       Body.set_head_led_blue(0)
-
+      if gcm.get_game_state()~=6 then
+        game_ch:send'stop'
+      end
     elseif mode==1 then
       Body.set_head_led_red(255)
       Body.set_head_led_green(0)

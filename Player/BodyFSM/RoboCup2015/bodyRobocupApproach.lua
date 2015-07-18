@@ -159,6 +159,7 @@ local function robocup_approach2(uLeftGlobalTarget, uRightGlobalTarget)
     math.abs(vStep[2]-vStepTarget[2])<0.005 then
     last_step = 1    
   end
+
   return vStep,false
 end
 
@@ -182,13 +183,6 @@ local function update_velocity()
 
   
 
-  if ball_side>0 then --Align to the left foot
-    print(string.format("ball(%.2f %.2f) T: (%.2f, %.2f)",
-      ballx,bally, approachTargetX,  Config.walk.footY -approachTargetY[1]))
-  else
-    print(string.format("ball(%.2f %.2f) T: (%.2f, %.2f)",
-      ballx,bally, approachTargetX,  -Config.walk.footY - approachTargetY[2]))  
-  end
  
 
   local uLeftGlobalTarget, uRightGlobalTarget
@@ -219,6 +213,21 @@ local function update_velocity()
   local balla = math.atan2(bally,ballx)
   local walk_target_local = {ballx,bally,balla}
   local target_pose = util.pose_global(walk_target_local, pose)
+
+
+ if ball_side>0 then --Align to the left foot
+    print(string.format("ball(%.2f %.2f)T(%.2f, %.2f)V(%.2f,%.2f,%.2f)",
+      ballx,bally, approachTargetX,  Config.walk.footY -approachTargetY[1],
+      vStep[1],vStep[2],vStep[3]
+      ))
+  else
+    print(string.format("ball(%.2f %.2f)T(%.2f, %.2f)V(%.2f,%.2f,%.2f)",
+      ballx,bally, approachTargetX,  -Config.walk.footY - approachTargetY[2],
+      vStep[1],vStep[2],vStep[3]
+      ))  
+  end
+ 
+
 
   mcm.set_walk_vel(vStep)
 

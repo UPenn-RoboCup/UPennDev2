@@ -40,13 +40,12 @@ fsm.Game = {
   {'gameInitial', 'ready', 'gameReady'},
   {'gameReady', 'set', 'gameSet'},
   {'gameSet', 'play', 'gamePlaying'},
-  {'gamePlaying', 'finish', 'gameFinished'},
+  {'gamePlaying', 'finish', 'gameStop'},
 
-  {'gameInitial', 'stop', 'gameStop'},
-  {'gameReady', 'stop', 'gameStop'},
-  {'gameSet', 'stop', 'gameStop'},
-  {'gamePlaying', 'stop', 'gameStop'},
-
+  {'gameInitial', 'finish', 'gameStop'},
+  {'gameReady', 'finish', 'gameStop'},
+  {'gameSet', 'finish', 'gameStop'},
+  {'gamePlaying', 'finish', 'gameStop'},
 
   {'gameStop', 'init', 'gameInitial'},
 }
@@ -92,10 +91,15 @@ fsm.Head = {
   {'headTrack', 'kickfollow', 'headKickFollow'},
   --
   {'headKickFollow', 'done', 'headTrack'},
+  {'headKickFollow', 'teleop', 'headTrack'},
 
   {'headLookGoal', 'timeout', 'headTrack'},
   {'headLookGoal', 'scanobs', 'headObstacleScan'},  
+  {'headLookGoal', 'teleop', 'headTeleop'},
 
+
+  
+  
 }
 
 
@@ -306,6 +310,11 @@ fsm.bodyRobocupFollow = {
   th_lfoot = 0.001,
   th_rfoot = 0.001,
   th_dist = 0.08,  --TODO
+
+
+  rCircle = 0.6,
+  
+
 }
 
 fsm.bodyRobocupApproach = {

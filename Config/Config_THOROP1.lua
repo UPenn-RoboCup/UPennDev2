@@ -102,8 +102,6 @@ end
 ------------------------------------
 -- ROBOCUP config variables
 
-
---Vision parameter hack (robot losing ball in webots)
 if IS_WEBOTS then
 
 --  Config.vision.ball.th_min_fill_rate = 0.25
@@ -117,7 +115,7 @@ if IS_WEBOTS then
   Config.world.use_imu_yaw = true
   Config.walk.velLimitX = {-.10,.15}
   Config.walk.velLimitY = {-.04,.04}
-  Config.walk.velDelta  = {0.04,0.02,0.1}
+  Config.walk.velDelta  = {0.04,0.02,0.2}
   
 
 	Config.world.use_gps_yaw = true
@@ -175,9 +173,9 @@ Config.assume_goalie_blocking = true
 Config.enemy_goalie_shift_factor = 0.15
 
 
-
-
-
+--faster approach
+Config.maxStepApproach1 = 0.15
+Config.maxStepApproach2 = 0.10
 
 
 

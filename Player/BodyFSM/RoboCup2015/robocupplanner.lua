@@ -489,12 +489,25 @@ function robocupplanner.getVelocity(pose,target_pose,rotate)
 
   va = 0.5* (aTurn*util.mod_angle(homeRelative[3])) + (1-aTurn)*aHomeRelative
 
+
+--take two
+
   if rHomeRelative>0.6 then
     if math.abs(va)<0.2 then maxStep,maxA = 0.20,0.05
     else maxStep,maxA = 0, 0.2 end
   elseif rHomeRelative > 0.3 then  maxStep,maxA = 0.10, 0.1
   else  maxStep,maxA = 0.05,0.2 end
 
+--take two
+  if rHomeRelative>0.6 then
+    if math.abs(va)<0.2 then maxStep,maxA = 0.20,0.05
+    else maxStep,maxA = 0, 0.4 end
+  elseif rHomeRelative>0.3 then
+    if math.abs(va)<0.1 then maxStep,maxA = 0.10,0.01
+    else maxStep,maxA = 0.05,0.3 end
+  else
+    maxStep,maxA = 0.05,0.2 
+  end
 
   vx = maxStep * homeRelative[1]/rHomeRelative
   vy = maxStep * homeRelative[2]/rHomeRelative

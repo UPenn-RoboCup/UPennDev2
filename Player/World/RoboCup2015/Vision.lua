@@ -76,6 +76,7 @@ end
 
 function Vision.update(meta, img)
 
+local t0 =unix.time()
   -- Images to labels
   --HeadImage:rgb_to_labelA(img)
   HeadImage:yuyv_to_labelA(img)
@@ -89,7 +90,15 @@ function Vision.update(meta, img)
   HeadImage.tfG = T.from_flat(meta.tfG16)
   HeadImage.qHead = vector.new(meta.head)
   HeadImage.t = meta.t
-
+--[[
+if Config.use_gps_vision then
+  local detect = {
+    id = 'detect',
+    debug = nil
+  }
+ return HeadImage, detect
+end
+--]]
   local ball, b_debug
   if detectBall then
     ball, b_debug = detectBall.update(HeadImage)
@@ -126,6 +135,9 @@ function Vision.update(meta, img)
   if post then detect.posts = post end
 	if obs then detect.obstacles = obs end
 	if line then detect.line = line end
+
+  local t1 =unix.time()
+--  print(t1-t0)
 
   -- Send the detected stuff over the channel every cycle
   return HeadImage, detect

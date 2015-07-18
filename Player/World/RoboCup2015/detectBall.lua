@@ -517,7 +517,7 @@ function detectBall.update(Image)
 	local propsA, msgOff = find_ball_off_line(Image)
 	if propsA then return propsA, msgOff end
 	--print('Check on line...')
-	local propsA, msgOn = find_ball_on_line(Image)
+	--local propsA, msgOn = find_ball_on_line(Image)
 	--if propsA then return propsA, msgOn end
 	--print('not online either...')
 	return false, msgOff..'\n=On=\n'..(msgOn or '')

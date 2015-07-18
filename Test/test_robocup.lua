@@ -99,12 +99,20 @@ local state = gcm.get_game_state()
 			gcm.set_game_role(0)
 		end
 
+	elseif key_char_lower==("8") then  
+		game_ch:send'stop'		
+
+
+
+
+
 	elseif key_char_lower==("0") then  
-		gcm.set_game_role(2)
+		--Demo mode on!
+		body_ch:send'uninit'
+
+
 
 	elseif key_char_lower==("9") then  
-		--Demo mode on!
-		gcm.set_game_role(3)
 		
 
 	elseif key_char_lower==("s") then  

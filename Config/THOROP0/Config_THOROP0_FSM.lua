@@ -42,10 +42,10 @@ fsm.Game = {
   {'gameSet', 'play', 'gamePlaying'},
   {'gamePlaying', 'finish', 'gameFinished'},
 
-  {'gameInitial', 'forcestop', 'gameStop'},
-  {'gameReady', 'forcestop', 'gameStop'},
-  {'gameSet', 'forcestop', 'gameStop'},
-  {'gamePlaying', 'forcestop', 'gameStop'},
+  {'gameInitial', 'stop', 'gameStop'},
+  {'gameReady', 'stop', 'gameStop'},
+  {'gameSet', 'stop', 'gameStop'},
+  {'gamePlaying', 'stop', 'gameStop'},
 
 
   {'gameStop', 'init', 'gameInitial'},
@@ -203,6 +203,9 @@ fsm.Body = {
 
 
   {'bodyStop', 'play', 'bodyRobocupIdle'},
+
+  {'bodyStop', 'uninit', 'bodyUninit'},
+  {'bodyUninit', 'done', 'bodyIdle'},
 
 
 	{'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},

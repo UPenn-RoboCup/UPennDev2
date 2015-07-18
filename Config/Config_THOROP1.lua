@@ -43,7 +43,7 @@ if IS_WEBOTS then
 	  Config.sensors = {
 			ft = true,
       head_camera = 'camera_wizard',
-      vision = 'vision_wizard',
+--      vision = 'vision_wizard',
       world = 'world_wizard',
 
 			--feedback = 'feedback_wizard',
@@ -160,6 +160,12 @@ end
 Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
 Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick
 
+
+--for grass, we keep using walkkick until very close
+Config.ballX_threshold1 = 1.0 --The threshold we use walkkick
+Config.ballX_threshold2 = 2.5 --The threshold we start using strong kick
+
+
 Config.maxStepApproachTh = 0.30
 Config.maxStepApproach1 = 0.10
 Config.maxStepApproach2 = 0.06
@@ -170,10 +176,10 @@ Config.enemy_goalie_shift_factor = 0.15
 
 
 
-Config.disable_kick = true --use this for approach testing
---Config.disable_kick = false --use this for approach testing
-Config.use_walkkick = false
---Config.use_walkkick = true
+
+
+
+
 
 ----------------------------------------------------
 
@@ -202,6 +208,11 @@ end
 
 
 Config.demo = true
+--Config.disable_kick = true --use this for approach testing
+Config.use_walkkick = true
+
+
+
 
 
 return Config

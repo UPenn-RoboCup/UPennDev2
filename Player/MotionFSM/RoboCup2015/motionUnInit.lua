@@ -40,6 +40,25 @@ function state.entry()
   t_update = t_entry
   t_finish = t_entry
   t_last_debug=t_entry
+
+    if not IS_WEBOTS then
+    print('INIT setting params')
+    for i=1,10 do
+      Body.set_head_command_velocity({500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_waist_command_velocity({500,500})
+      unix.usleep(1e6*0.01);
+      Body.set_lleg_command_velocity({vel,vel,vel,vel, vel*2,vel*2})
+      unix.usleep(1e6*0.01);
+      Body.set_rleg_command_velocity({vel,vel,vel,vel, vel*2,vel*2})
+      unix.usleep(1e6*0.01);
+      Body.set_rleg_command_acceleration({50,50,50,50,50,50})
+      unix.usleep(1e6*0.01);
+      Body.set_lleg_command_acceleration({50,50,50,50,50,50})
+      unix.usleep(1e6*0.01);
+    end
+  end
+
 end
 
 --Set actuator commands to resting position, as gotten from joint encoders.
@@ -56,7 +75,7 @@ function state.update()
   local zLeg = mcm.get_status_zLeg()
   
   local bodyHeight_now = mcm.get_stance_bodyHeight()
-  local bodyHeightTarget = 0.90 --lower torso
+  local bodyHeightTarget = 0.80 --lower torso
 
   bodyHeightTarget = math.max(0.75,math.min(Config.walk.bodyHeight,bodyHeightTarget))
   local bodyHeight,done = util.approachTol( bodyHeight_now, bodyHeightTarget, Config.stance.dHeight, t_diff )

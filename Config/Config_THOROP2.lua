@@ -205,4 +205,10 @@ Config.enemy_goalie_shift_factor = 0.15
 ------------------------------------
 
 
+
+Config.ballX_threshold1 = 4.5 --The threshold we use walkkick
+Config.ballX_threshold2 = 4.5 --The threshold we start using strong kick
+Config.walk.velLimitX = {-.10,.15}
+
+
 return Config

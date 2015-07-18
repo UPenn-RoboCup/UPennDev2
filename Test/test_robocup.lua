@@ -113,6 +113,7 @@ local state = gcm.get_game_state()
 
 
 	elseif key_char_lower==("9") then  
+			gcm.set_game_role(2)
 		
 
 	elseif key_char_lower==("s") then  

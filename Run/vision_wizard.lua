@@ -82,7 +82,7 @@ local t_send = -math.huge
 local ptable = require'util'.ptable
 local function update(meta, img)
 
-	print('\n=================')
+	--print('\n=================')
 	--[[
 	ptable(meta)
 	print()
@@ -116,7 +116,7 @@ local function update(meta, img)
 		print(detection.debug.obstacle)
 	end
 	--]]
-	----[[
+	--[[
 	if detection.line then
 		print('\n=Line=')
 		ptable(detection.line)

@@ -481,9 +481,11 @@ local function radon2ij(props, ith, ir, flip)
 
   local iMean = iR - lMean * s
   local jMean = iR + lMean * c
+  --[[
   print('Test line')
   print(lMean + iR, lMean - iR)
   print((c - s)*iMean + (c + s)*jMean)
+  --]]
 
   local lineProp = {
     ir = ir,

@@ -1,5 +1,9 @@
 #!/usr/bin/env luajit
 local ENABLE_NET = true
+if IS_WEBOTS then
+	ENABLE_NET = false
+end
+
 local ENABLE_LOG = true
 local ENABLE_LOG = false
 

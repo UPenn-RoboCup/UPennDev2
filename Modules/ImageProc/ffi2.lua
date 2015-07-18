@@ -482,8 +482,8 @@ local function radon2ij(props, ith, ir, flip)
   local jMean = jR + lMean * c
   ----[[
   local th = ith/props.NTH * math.pi
-  print('Test line', ir, th*RAD_TO_DEG)
-  print('lMean', lMean)
+--  print('Test line', ir, th*RAD_TO_DEG)
+--  print('lMean', lMean)
   --print(lMean + ir, lMean - ir)
   --print((c - s)*iMean + (c + s)*jMean)
   --]]

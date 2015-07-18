@@ -1,10 +1,10 @@
 #!/usr/bin/env luajit
 local ENABLE_NET = true
+if IS_WEBOTS then
+	ENABLE_NET = false
+end
+
 local ENABLE_LOG = true
-local LOG_INTERVAL = 1/5
-
-
-local LOG_INTERVAL = 1/15
 
 -----------------------------------
 -- Camera manager
@@ -64,6 +64,7 @@ c_yuyv:downsampling(metadata.downsampling)
 
 -- LOGGING
 local t_log = -math.huge
+local LOG_INTERVAL = 1/5
 local libLog, logger
 if ENABLE_LOG then
 	libLog = require'libLog'
@@ -198,7 +199,7 @@ if dev_raw then
 	for i, param in ipairs(metadata.auto_param) do
 		local name, value = unpack(param)
 		print('Setting Auto', name, value)
-		--[[
+		----[[
 		local before = camera:get_param(name)
 		local ok = camera:set_param(name, value)
 		local now = camera:get_param(name)
@@ -206,10 +207,15 @@ if dev_raw then
 			print(string.format('Failed %s: from %d to %d', name, before, value))
 		end
 		--]]
-		local ext = string.format('uvcdynctrl -d %s -s %s %d', dev_raw, name, value)
-		os.execute('uvcdynctrl -d'..dev_raw..' -s "Exposure, Auto" 1')
+		--local ext = string.format('uvcdynctrl -d %s -s %s %d', dev_raw, name, value)
+		--os.execute('uvcdynctrl -d'..dev_raw..' -s "Exposure, Auto" 1')
 		unix.usleep(1e3)
 	end
+end
+if dev_raw then
+	-- 1 means off!
+	os.execute('uvcdynctrl -d'..dev_raw..' -s "Exposure, Auto" 1')
+		unix.usleep(1e3)
 end
 
 -- Set the params

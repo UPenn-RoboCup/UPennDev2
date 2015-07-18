@@ -58,6 +58,10 @@ print('!!!!IS_STEVE!!!!')
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false
 
+		Config.use_gps_pose = true
+		Config.use_gps_vision = true
+
+
 	end
 end
 
@@ -112,16 +116,16 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupFollow.kickoffset = 0.5
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
-  Config.world.use_imu_yaw = true
-  Config.walk.velLimitX = {-.10,.15}
-  Config.walk.velLimitY = {-.04,.04}
-  Config.walk.velDelta  = {0.04,0.02,0.2}
-  
 
+  Config.world.use_imu_yaw = true
 	Config.world.use_gps_yaw = true
   Config.stop_after_score = true
 end
 
+Config.walk.velLimitX = {-.10,.15}
+Config.walk.velLimitY = {-.04,.04}
+Config.walk.velDelta  = {0.05,0.02,0.1}
+  
 
 
 ------------------------------------------------------------
@@ -148,7 +152,8 @@ Config.stop_at_neutral = true --false for walk testing
 
 ----------------------------------------------------
 --Approach parameters
-Config.approachTargetX = {0.45,0.28,0.35} --for first walkkick, long stationary kick, weak walkkick\
+
+Config.approachTargetX = {0.55,0.40,0.55} --for first walkkick, long stationary kick, weak walkkick\
 Config.approachTargetY= {0.00,0.00}  --L/R aiming offsets
 if IS_WEBOTS then
 	Config.approachTargetX = {0.35, 0.30, 0.35}  --for first walkkick, long stationary kick, weak walkkick
@@ -198,11 +203,6 @@ Config.goalie_t_startmove = 10.0
 
 Config.gamecontroller_detect = true
 Config.gamecontroller_timeout = 5.0
-
-if IS_WEBOTS then
-	Config.use_gps_pose = true
-	Config.use_gps_vision = true
-end
 
 
 Config.demo = true

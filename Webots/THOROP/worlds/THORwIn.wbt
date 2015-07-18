@@ -71,8 +71,8 @@ DEF BALL BallGPS {
   mass 0.055
   #linearDamping 0.17
   #angularDamping 0.33
-  linearDamping 0.4
-  angularDamping 0.83  
+  linearDamping 0.3
+  angularDamping 0.63  
   controller "ballGPS"
 }
 DEF OBS1 ObjectGPS {

@@ -5,7 +5,6 @@ if IS_WEBOTS then
 end
 
 local ENABLE_LOG = true
-local ENABLE_LOG = false
 
 -----------------------------------
 -- Camera manager

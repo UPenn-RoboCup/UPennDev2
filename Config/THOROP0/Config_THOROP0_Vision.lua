@@ -185,7 +185,7 @@ camera[1] = {
 		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0},
 		{0.02,0,0.14}
 		--]]
-		{0*DEG_TO_RAD,-5*DEG_TO_RAD,0},
+		{0*DEG_TO_RAD,-1*DEG_TO_RAD,0},
 		{0.05,0,0.14}
 
 	},

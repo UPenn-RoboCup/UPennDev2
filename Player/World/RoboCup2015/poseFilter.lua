@@ -343,17 +343,16 @@ local function update_via_line(v, a)
 --@param v z and y coordinates of center of line relative to robot
 --@param a angle of line relative to angle of robot
   -- line center
-  x = v[1];
-  y = v[2];
-  r = math.sqrt(x^2 + y^2);
+  local x, y = unpack(v)
+  local r = math.sqrt(x^2 + y^2)
 
-  w0 = .25 / (1 + r/2.0);
+  local w0 = 0.25 / (1 + r/2.0);
 
   -- TODO: wrap in loop for lua
   for ip = 1,n do
     -- pre-compute sin/cos of orientations
-    ca = math.cos(ap[ip]);
-    sa = math.sin(ap[ip]);
+    local ca = math.cos(ap[ip])
+    local sa = math.sin(ap[ip])
 
     -- compute line weight
     local wLine = w0 * (math.cos(4*(ap[ip] + a)) - 1);
@@ -362,7 +361,7 @@ local function update_via_line(v, a)
     local xGlobal = v[1]*ca - v[2]*sa + xp[ip];
     local yGlobal = v[1]*sa + v[2]*ca + yp[ip];
 
-    wBounds = math.max(xGlobal - xLineBoundary, 0) +
+    local wBounds = math.max(xGlobal - xLineBoundary, 0) +
               math.max(-xGlobal - xLineBoundary, 0) +
               math.max(yGlobal - yLineBoundary, 0) +
               math.max(-yGlobal - yLineBoundary, 0);

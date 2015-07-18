@@ -18,8 +18,8 @@ local MAXR, NR = 222 --*4
 local RSCALE = 2
 
 --local NTH = 90 -- Number of angles (2 degree res)
---local NTH = 45 -- Number of angles (4 degree res)
-local NTH = 36 -- 5 degree resolution
+local NTH = 45 -- Number of angles (4 degree res)
+--local NTH = 36 -- 5 degree resolution
 --local NTH = 30 -- 6 degree resolution
 --local NTH = 180 -- (1 degree res)
 

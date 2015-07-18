@@ -472,7 +472,7 @@ local function radon2ij(props, ith, ir, flip)
   local flip = false
 
   --flip = true
-  ir = (flip and -ir or ir) * 2
+  ir = (flip and -ir or ir) * props.RSCALE
 
   -- Closest point
   local iR = ir * c
@@ -480,11 +480,12 @@ local function radon2ij(props, ith, ir, flip)
 
   local iMean = iR - lMean * s
   local jMean = jR + lMean * c
-  --[[
+  ----[[
   local th = ith/props.NTH * math.pi
   print('Test line', ir, th*RAD_TO_DEG)
-  print(lMean + ir, lMean - ir)
-  print((c - s)*iMean + (c + s)*jMean)
+  print('lMean', lMean)
+  --print(lMean + ir, lMean - ir)
+  --print((c - s)*iMean + (c + s)*jMean)
   --]]
 
   local lineProp = {
@@ -496,6 +497,7 @@ local function radon2ij(props, ith, ir, flip)
     --
     iMin  = iR - lMin * s,
     jMin  = jR + lMin * c,
+    --
     iMax  = iR - lMax * s,
     jMax  = jR + lMax * c,
   }
@@ -526,7 +528,6 @@ function ImageProc.field_lines(label, w, h)
     end
   end
   --]]
-
 
   ----[[
   local irmaxes = {}
@@ -569,9 +570,11 @@ function ImageProc.field_lines(label, w, h)
     end
   end
   table.insert(maxN, 1, {ithmax, irmax, cmax})
+
+  local minCount = 60
   local ijs = {}
   for i, v in ipairs(maxN) do
-    if v[3]>75 then
+    if v[3]>=minCount then
       table.insert(ijs, radon2ij(props, unpack(v)))
     end
   end

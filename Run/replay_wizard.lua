@@ -6,8 +6,10 @@ local ptable = require'util'.ptable
 local util = require'util'
 local si = require'simple_ipc'
 
---local constant = 619
-local start_idx = 1800
+--local constant = 4514
+--local start_idx = 4001
+local constant = 4375
+local start_idx = 4360
 
 require'wcm'
 wcm.set_goal_disable({0})

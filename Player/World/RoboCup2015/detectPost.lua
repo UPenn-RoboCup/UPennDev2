@@ -52,7 +52,7 @@ function detectPost.update(Image)
 		post_color)
   if not postB then return false, 'None detected' end
   -- Now process each goal post
-	local nPosts, i_validB, valid_posts = 0, {}, {}
+	local i_validB, valid_posts = {}, {}
 
 	--for i=1, math.min(#postB, th_nPostB) do
 	local msgs = {}
@@ -181,19 +181,16 @@ function detectPost.update(Image)
 		-- Check # of valid postB
 		if passed then
 			msgs[i] = 'GOOD'
-			nPosts = nPosts + 1
-			i_validB[#i_validB + 1] = i
-			valid_posts[nPosts] = postStats
+			table.insert(i_validB, i)
+			table.insert(valid_posts, postStats)
 		end
 
 	end -- End of checks on all postB
 
 	-- Goal type detection
 	-- TODO: this might have problem when robot see goal posts on other fields
-	local post_detected = true
-	if nPosts>2 or nPosts<1 then
-		post_detected = false
-		msgs[#msgs+1] = 'Bad number of posts'
+	if #valid_posts>2 or #valid_posts<1 then
+		msgs[#msgs+1] = 'Bad number of posts: '..#valid_posts
 		return false, table.concat(msgs, '\n')
 	else
 		msgs[#msgs+1] = "== Checking Posts =="
@@ -202,15 +199,15 @@ function detectPost.update(Image)
 	-- 0:unknown 1:left 2:right 3:double
 	local goalStats = {}
 	-- Convert to body coordinate
-	for i=1,nPosts do
-    goalStats[i] = {}
-		local good_postB = postB[ i_validB[1] ]
+	for i=1,#valid_posts do
+		local passed = true
+
+		local good_postB = postB[ i_validB[i] ]
 		local good_post = valid_posts[i]
 
 		local scale1 = good_post.axisMinor / postDiameter
 		local scale2 = good_post.axisMajor / postHeight
 		local scale3 = math.sqrt(good_post.area / (postDiameter * postHeight))
-
 
 		-- Check the bottom of the post, where it is on the ground
 		--[[
@@ -251,16 +248,37 @@ function detectPost.update(Image)
 		-- Put into the local and global frames
 		local vL = Image.tfL * (v0 / v0[4])
 		local vG = Image.tfG * (v0 / v0[4])
-		goalStats[i].v = vL
+
+		local dMax = 8
+		local d = math.sqrt(vL[1]^2+vL[2]^2)
+		if d > dMax then
+			table.insert(msgs, 'Too far: '..tostring(d))
+			passed = false
+		end
+		if math.abs(vG[1])>3.5 then
+			table.insert(msgs, 'Too far side: '..tostring(vG[1]))
+			passed = false
+		elseif math.abs(vG[2])>5 then
+			table.insert(msgs, 'Too far back: '..tostring(vG[2]))
+			passed = false
+		end
 
 		-- TODO: distanceFactor
-		goalStats[i].post = good_post
-		goalStats[i].postB = good_postB
+		if passed then
+			table.insert(goalStats, {
+				v = vL,
+				vG = vG,
+				post = good_post,
+				postB = good_postB,
+			})
+		end
 	end
 
 	-- Check goal type
-  local fail_msg = {}
-	if nPosts==2 then
+	if #goalStats==0 then
+		msgs[#msgs+1] = 'No valid posts'
+		return false, table.concat(msgs, '\n')
+	elseif #goalStats==2 then
 		goalStats[1].type = 3
     goalStats[2].type = 3
 
@@ -325,19 +343,14 @@ function detectPost.update(Image)
   end  --End of goal type check
 
   -- Convert torch tensor to table
-  for i=1,#goalStats do
-    goalStats[i].v = vector.new(goalStats[i].v)
+  for i, g in ipairs(goalStats) do
+    vector.new(g.v)
 		msgs[#msgs+1] = string.format('Goal Position: %.2f %.2f',
-			unpack(goalStats[i].v))
+			unpack(g.v))
   end
 
+	return goalStats, table.concat(msgs, '\n')
 
-	if post_detected then
-		return goalStats, table.concat(msgs, '\n')
-	end
-
-  -- Yield the failure messages and the success tables
-  return false, table.concat(msgs, '\n')
 end
 function detectPost.exit()
 end

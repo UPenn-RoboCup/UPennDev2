@@ -37,7 +37,8 @@ function detectPost.entry(cfg, Image)
   th_min_area_unknown_post = config.th_min_area_unknown_post
   colors = Image.colors
 	--post_color = colors.white
-	post_color = colors.cyan
+	--post_color = colors.cyan
+	post_color = colors.orange
 end
 function detectPost.update(Image)
   if type(Image)~='table' then

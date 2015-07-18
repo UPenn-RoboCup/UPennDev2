@@ -88,9 +88,9 @@ vision.goal = {
 	th_min_orientation = 80*DEG_TO_RAD,
 	th_min_fill_rate = 0.4, --0.45,
 	-- TODO: need to test on real robot
-	height_min = 1,
+	height_min = 0.5,
 	height_max = 2,
-	th_aspect_ratio = {13,120},
+	th_aspect_ratio = {9,120},
 	th_edge_margin = 5,
 	th_bottom_boundingbox = 0.9,
 	th_ground_boundingbox = {-15,15,-15,10},
@@ -134,7 +134,7 @@ vision.line = {
 local field_param = {
 	{'White Balance Temperature', 3400},--2400
 	{'Exposure (Absolute)', 100},--120
-	--	{'Focus (absolute)', 0},
+	--{'Focus (absolute)', 0},
 	{'Brightness', 128,},
 	{'Contrast', 128},--0
 	{'Saturation', 255},

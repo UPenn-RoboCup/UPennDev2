@@ -36,8 +36,13 @@ function state.update()
      if wcm.get_robot_timestarted()==0 then 
       wcm.set_robot_timestarted(t)      
     end
-    print("GAME START!!!")
-    return "play"
+    if gcm.get_game_role()==0 then --goalie
+      print(util.color("Goalie start!",'blue'))
+      return'goalie'
+    elseif gcm.get_game_role()==1 then
+      print(util.color("Attacker start!",'red'))
+      return'play'
+    end
   end
 end
 

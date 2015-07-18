@@ -8,8 +8,10 @@ local si = require'simple_ipc'
 
 --local constant = 4514
 --local start_idx = 4001
-local constant = 4375
-local start_idx = 4360
+
+--local constant = 4590 -- weird frame for lines
+
+local start_idx = 4500
 
 require'wcm'
 wcm.set_goal_disable({0})

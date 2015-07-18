@@ -460,7 +460,6 @@ ImageProc.color_countB = color_countB
 
 local function radon2ij(props, ith, ir, flip)
   local s, c = props.sin_d[ith], props.cos_d[ith]
-  local th = ith/props.NTH * math.pi
 
 
   -- How far down the line
@@ -472,8 +471,8 @@ local function radon2ij(props, ith, ir, flip)
   -- Goes clockwise down
   local flip = false
 
-  flip = true
-  ir = flip and -ir or ir
+  --flip = true
+  ir = (flip and -ir or ir) * 2
 
   -- Closest point
   local iR = ir * c
@@ -482,8 +481,9 @@ local function radon2ij(props, ith, ir, flip)
   local iMean = iR - lMean * s
   local jMean = jR + lMean * c
   --[[
-  print('Test line')
-  print(lMean + iR, lMean - iR)
+  local th = ith/props.NTH * math.pi
+  print('Test line', ir, th*RAD_TO_DEG)
+  print(lMean + ir, lMean - ir)
   print((c - s)*iMean + (c + s)*jMean)
   --]]
 

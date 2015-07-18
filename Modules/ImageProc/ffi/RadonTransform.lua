@@ -18,13 +18,12 @@ local MAXR, NR = 222 --*4
 local RSCALE = 2
 
 --local NTH = 90 -- Number of angles (2 degree res)
-local NTH = 45 -- Number of angles (4 degree res)
---local NTH = 36 -- 5 degree resolution
+--local NTH = 45 -- Number of angles (4 degree res)
+local NTH = 36 -- 5 degree resolution
 --local NTH = 30 -- 6 degree resolution
 --local NTH = 180 -- (1 degree res)
 
 local i0, j0, r0, th0 = 0, 0, 0, 0
-local flip_center = false
 
 local count_d    = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
 local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
@@ -80,8 +79,6 @@ local function init(w, h, angle_prior)
   j0 = floor(h / 2)
   --r0 = floor(math.sqrt(i0 ^ 2 + j0 ^ 2))
 	r0 = 0
-
-  --flip_center = angle_prior and angle_prior>45 and angle_prior<135
 
   -- Resize for the image
   NR = math.ceil(math.sqrt(w * w + h * h) / RSCALE)

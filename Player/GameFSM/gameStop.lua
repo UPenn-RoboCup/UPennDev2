@@ -18,6 +18,8 @@ function state.entry()
 
   gcm.set_game_state(6)
   body_ch:send'stop'
+  head_ch:send'teleop'
+
 end
 
 function state.update()
@@ -25,6 +27,7 @@ function state.update()
   local t = Body.get_time()
   local t_diff = t - t_update
   -- Save this at the last update time
+  hcm.set_motion_headangle({0,0})--zero headangle
 
   t_update = t
 end

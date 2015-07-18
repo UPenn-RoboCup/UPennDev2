@@ -263,7 +263,8 @@ if IS_WEBOTS then
 	camera[1].h = 180
 	camera[1].cx_offset = 0
 	camera[1].cy_offset = 0
-	camera[1].lut = 'multi_valve'
+--	camera[1].lut = 'multi_valve'
+	camera[1].lut = 'webots2'
 	camera[1].focal_length = 395.17
 	camera[1].focal_base = 640
 

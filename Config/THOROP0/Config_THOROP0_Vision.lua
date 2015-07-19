@@ -268,8 +268,8 @@ if IS_WEBOTS then
 	camera[1].cy_offset = 0
 --	camera[1].lut = 'multi_valve'
 	camera[1].lut = 'webotsNew'
-	camera[1].focal_length = 395.17
-	camera[1].focal_base = 640
+	camera[1].focal_length = 320
+	camera[1].focal_base = 320
 
 	-- Kinect width and height
 	kinect.w, kinect.h = 256, 212

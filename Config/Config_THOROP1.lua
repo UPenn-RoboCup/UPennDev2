@@ -43,7 +43,7 @@ if IS_WEBOTS then
 	  Config.sensors = {
 			ft = true,
       head_camera = 'camera_wizard',
---      vision = 'vision_wizard',
+      vision = 'vision_wizard',
       world = 'world_wizard',
 
 			--feedback = 'feedback_wizard',
@@ -125,7 +125,7 @@ end
 Config.walk.velLimitX = {-.10,.15}
 Config.walk.velLimitY = {-.04,.04}
 Config.walk.velDelta  = {0.05,0.02,0.1}
-  
+
 
 
 ------------------------------------------------------------

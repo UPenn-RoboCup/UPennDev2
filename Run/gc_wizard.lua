@@ -37,6 +37,8 @@ gcm.set_game_state(Config.default_state or 5) --Pre-init
 
 --To stop the head movement for tester role
 local head_ch = require'simple_ipc'.new_publisher('HeadFSM!')
+
+
 local function process_switch(t)
 	if t-t_switch < 1 then return end
 	t_switch = t
@@ -91,6 +93,72 @@ local function process_switch(t)
 		intensity = led_count % 2
 	end
 end
+
+
+local function process_arm_switch(t)
+	if t-t_switch < 1 then return end
+	t_switch = t
+	led_count = led_count +1
+	local cur_position
+
+	qLArm = Body.get_larm_position()
+  qRArm = Body.get_rarm_position()  
+  local threshold = 45*DEG_TO_RAD
+  local qL = util.mod_angle(qLArm[1])
+  local qR = util.mod_angle(qRArm[1])
+  
+  if qL>threshold and qR>threshold then
+    cur_position = 1
+  elseif qL<-threshold and qR<-threshold then
+    cur_position=-1
+  else
+    cur_position = 0
+  end
+
+	-- Check the last position
+	if cur_position~=last_position then
+		last_position = cur_position
+		local role, state
+		if cur_position == 1 then
+			role = 1 -- One: Attacker
+		elseif cur_position == -1 then
+			role = 0 --Zero: goalie
+		else --force stop
+			role = 2
+			if gcm.get_game_state()<4 and gcm.get_game_state()>0 and Config.use_arm_switch then
+				print("STOPSTOPSTOPSTOP")
+			end
+		end
+
+		-- Set in shared memory
+		if gcm.get_game_state()~=3 then
+		  gcm.set_game_role(role)
+		  if role==0 then
+				rgb = {0,0,255}
+			elseif role==1 then
+				rgb = {255,0,0}
+			else
+				rgb = {255,0,255}
+			end
+		end
+	end
+
+		-- Set the LEDs
+	local intensity = 1.0
+	Body.set_head_led_red(rgb[1]*intensity)
+  Body.set_head_led_blue(rgb[3]*intensity)
+  Body.set_head_led_green(rgb[3]*intensity)
+  --[[
+	-- Change the intensity if GC packets received
+	local intensity = 1.0
+	local gamecontroller_timeout = Config.gamecontroller_timeout or 5.0
+	if get_time() - gcm.get_game_gctime() > gamecontroller_timeout then
+		intensity = led_count % 2
+	end
+	--]]
+end
+
+
 
 local function process_packet(pkt, t)
 	if not pkt then return end
@@ -185,7 +253,7 @@ while running do
 --	 	end
 
 --	end
-	--process_switch(t)
+	process_arm_switch(t)
   if ENABLE_COACH and t - t_send > SEND_RATE then
     t_send = t
 		ret, msg = gc:send_coach("go team!")

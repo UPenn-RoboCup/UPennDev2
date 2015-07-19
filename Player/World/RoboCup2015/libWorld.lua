@@ -223,7 +223,9 @@ local function update_vision(detected)
 print("No ball, turn back!")
 
     if gcm.get_game_role()==1 and Config.robot_turnaround then
+      ballFilter.reset(true)
       ballFilter.observation_xy(-2,0, 0.5, 20*DEG_TO_RAD, t)
+      
       wcm.set_robot_ballglobal({-2.0,0})
       wcm.set_ball_observed(1)
     end

@@ -213,24 +213,8 @@ Config.reject_forward_balls = true
 Config.walk.velLimitY = {-.05,.05}
 Config.sideModL = 0.03 
 Config.sideMod2L = -0.01 
-
 Config.sideModR = -0.03 
 Config.sideMod2R = 0.01 
-
-
-
-
-
---low/med/fast speed drift (per step)
-if IS_WEBOTS then 
-	Config.driftFactor = {0,0,0}
-else
-	Config.driftFactor = {0.029,0.026,0.008}
-end
-Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of the foot!)
-Config.reject_forward_balls = true
-
-
 
 Config.dont_look_goals =true
 Config.spin_detect = true

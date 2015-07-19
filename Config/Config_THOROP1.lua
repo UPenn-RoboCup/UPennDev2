@@ -218,4 +218,8 @@ end
 Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of the foot!)
 Config.reject_forward_balls = true
 
+
+
+Config.dont_look_goals =true
+Config.spin_detect = true
 return Config

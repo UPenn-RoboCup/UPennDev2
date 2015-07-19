@@ -90,7 +90,7 @@ function state.update()
     --print(wcm.get_robot_traj_num())
 
     if wcm.get_robot_traj_num(count)>=(Config.min_steps_lookdown or 5) then
-      if gcm.get_game_role()==0 then
+      if gcm.get_game_role()==0 or Config.dont_look_goals then
         --Goalie don't look goals
       else
     	  return 'timeout'

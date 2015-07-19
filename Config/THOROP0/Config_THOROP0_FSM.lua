@@ -224,6 +224,13 @@ fsm.Body = {
   {'bodyUninit', 'done', 'bodyIdle'},
 
 
+  {'bodyRobocupIdle', 'spin', 'bodyRobocupSpin'},
+  {'bodyRobocupSpin', 'ballfound', 'bodyRobocupFollow'},
+
+
+
+
+
 	{'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
   {'bodyRobocupIdle','stop','bodyStop'},

@@ -222,4 +222,6 @@ Config.reject_forward_balls = true
 
 Config.dont_look_goals =true
 Config.spin_detect = true
+
+Config.velThApproach = {0.02,0.02}
 return Config

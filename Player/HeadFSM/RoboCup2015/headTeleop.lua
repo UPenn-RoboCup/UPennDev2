@@ -31,7 +31,12 @@ function state.update()
   t_update = t 
 
   -- Grab the target
-  local neckAngleTarget = hcm.get_motion_headangle()
+ -- local neckAngleTarget = hcm.get_motion_headangle()
+
+  --HACK FOR ROBOCUP
+  local neckAngleTarget = {0,Config.fsm.headObstacleScan.pitchUp}
+
+
   --print('Neck angle',unpack(neckAngleTarget))
   -- Grab where we are
   local qNeck = Body.get_head_command_position()
@@ -42,7 +47,6 @@ function state.update()
   -- Go!
   local qNeck_approach, doneNeck = 
     util.approachTol( qNeck, neckAngleTarget, dqNeckLimit, dt )
-    
   -- Update the motors
 
 

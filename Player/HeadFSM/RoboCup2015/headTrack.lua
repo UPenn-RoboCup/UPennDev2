@@ -42,6 +42,8 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+  if gcm.get_game_state()~=3 then return end
+
   --local ball_elapsed = t - wcm.get_ball_t()
   --How long time we have TRIED to look at the ball but couldn't detect the ball?
   local ball_elapsed = wcm.get_ball_tlook() - wcm.get_ball_t()

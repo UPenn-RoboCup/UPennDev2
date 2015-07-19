@@ -75,6 +75,10 @@ local function calculate_footsteps()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
   local supportLeg = 0
 
+
+print("FINAL UTORSO:",uTorso_next[1])
+
+
   local uTorsoVel = util.pose_relative(mcm.get_status_uTorsoVel(), {0,0,uTorso_now[3]})
   if uTorsoVel[2]>0 then --Torso moving to left
     supportLeg = 1
@@ -337,6 +341,8 @@ end -- walk.update
 
 function walk.exit()
   print(walk._NAME..' Exit')  
+
+
   mcm.set_walk_stoprequest(0) --cancel stop request flag
   mcm.set_walk_ismoving(0) --We stopped moving
 end

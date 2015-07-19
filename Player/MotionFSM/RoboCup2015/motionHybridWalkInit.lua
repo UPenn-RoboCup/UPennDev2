@@ -70,6 +70,9 @@ end
 local function calculate_footsteps()
   local nFootHolds = 4
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
+
+print("INITIAL uTorso:",uTorso_now[1])
+
   local supportLeg = 0
 
   local step_queue={}

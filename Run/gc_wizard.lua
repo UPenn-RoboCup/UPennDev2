@@ -125,8 +125,10 @@ local function process_arm_switch(t)
 			role = 0 --Zero: goalie
 		else --force stop
 			role = 2
-			if gcm.get_game_state()<4 and gcm.get_game_state()>0 and Config.use_arm_switch then
+			if gcm.get_game_state()<4 and gcm.get_game_state()>0 then
 				print("STOPSTOPSTOPSTOP")
+				game_ch:send'finish'
+				return true
 			end
 		end
 
@@ -235,9 +237,11 @@ end
 while running do
   collectgarbage('step')
 	pkt = gc:wait_for_gc()
-  t = get_time()
-	if pkt then
+	  t = get_time()
+	if not process_arm_switch(t) then
+		if pkt then
 		process_packet(pkt, t)
+		end
 	end
 	--print(pkt)
 --	if pkt then
@@ -253,7 +257,6 @@ while running do
 --	 	end
 
 --	end
-	process_arm_switch(t)
   if ENABLE_COACH and t - t_send > SEND_RATE then
     t_send = t
 		ret, msg = gc:send_coach("go team!")

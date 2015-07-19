@@ -18,6 +18,7 @@ function state.entry()
 
   gcm.set_game_state(4)
   body_ch:send'stop'
+  head_ch:send'teleop'
   mcm.set_walk_stoprequest(1)
 end
 

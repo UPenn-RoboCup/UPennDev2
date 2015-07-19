@@ -551,8 +551,12 @@ local function find_ball_off_line(Image)
 			local ignoringBack = Image.HeadFSM=="headBackScan" or
 				Image.HeadFSM=="headBackScanInit" or
 				Image.HeadFSM=="headLog" or
-				Image.HeadFSM=="headObstacleScan" or
-				wcm.get_ball_backonly()==1
+				Image.HeadFSM=="headObstacleScan" --or wcm.get_ball_backonly()==1
+
+			print('ignoringBack', ignoringBack)
+			print('Config.reject_forward_balls', Config.reject_forward_balls)
+			print('projectedV[1]', projectedV[1])
+
 			local minBackX = -0.1
 			if Config.reject_forward_balls and ignoringBack then
 				if projectedV[1] > minBackX then

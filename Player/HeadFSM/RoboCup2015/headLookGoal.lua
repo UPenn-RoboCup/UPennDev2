@@ -112,6 +112,9 @@ function state.update()
   local tpassed=t-t_update
   t_update = t
 
+  if gcm.get_game_state()~=3 then return end
+
+
   local qNeckActual = Body.get_head_position()
   if qNeckActual[2]<5*DEG_TO_RAD then
     wcm.set_goal_disable(0)  

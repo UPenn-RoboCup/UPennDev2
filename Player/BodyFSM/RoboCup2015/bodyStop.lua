@@ -33,9 +33,10 @@ function state.update()
   -- Save this at the last update time
   if gcm.get_game_state()==3 and 
     (gcm.get_game_role()~=2) then
+
      if wcm.get_robot_timestarted()==0 then 
-      wcm.set_robot_timestarted(t)      
-    end
+      wcm.set_robot_timestarted(t) end
+
     if gcm.get_game_role()==0 then --goalie
       print(util.color("Goalie start!",'blue'))
       return'goalie'
@@ -43,6 +44,9 @@ function state.update()
       print(util.color("Attacker start!",'red'))
       return'play'
     end
+
+
+
   end
 end
 

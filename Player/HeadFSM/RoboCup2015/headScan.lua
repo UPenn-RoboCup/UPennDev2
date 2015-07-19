@@ -41,6 +41,9 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+  if gcm.get_game_state()~=3 then return end
+
+
   local qNeck0 = Body.get_head_command_position()
   local headBias = hcm.get_camera_bias()
   qNeck0[1] = qNeck0[1] - headBias[1]  

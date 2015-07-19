@@ -26,6 +26,8 @@ shared.servo.imu = vector.zeros(17)
 shared.leg={}
 shared.leg.bias=vector.zeros(12)
 
+
+
 -- Storing current stance info
 shared.stance = {}
 shared.stance.bodyTilt   = vector.zeros(1)
@@ -41,6 +43,10 @@ shared.stance.COMoffsetPose1 = vector.zeros(3) --com offset for 'default' arm po
 
 
 shared.stance.COMoffsetBias = vector.zeros(1)
+
+
+
+
 
 
 

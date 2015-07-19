@@ -25,6 +25,10 @@ local height1 = 0.03 --step height
 local height2 = 0.06 --walkkick height
 local height3 = 0.04 --longkick height
 
+
+
+
+
 kick.stepqueue={}
 
 
@@ -56,13 +60,19 @@ kick.stepqueue["RightKick0"]=
 --Stronger kick
 --Works nice! 
 
+
+local height3 = 0.06 --longkick height
+local height3 = 0.03 
+local kickfd = 0.12
+
+
 local kickdur = 2.0
 local yShift = 0.0
 kick.stepqueue["LeftKick1"]=
   {
-    {{0.12,0,0},1,  0.3,kickdur,0.3,   {0.0,yShift,0},{-2,height3,0}}, --rf kick    
+    {{kickfd,0,0},1,  0.3,kickdur,0.3,   {0.0,yShift,0},{-2,height3,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 3, 0.1,     {-0.01,0.0,0},  {0, 0, 0}},                  
-    {{0.12,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{kickfd,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
@@ -70,9 +80,9 @@ kick.stepqueue["LeftKick1"]=
 
 kick.stepqueue["RightKick1"]=
   {
-    {{0.12,0,0},0,  0.3,kickdur,0.3,   {0.00,-yShift,0},{-2,height3,0}}, --rf kick    
+    {{kickfd,0,0},0,  0.3,kickdur,0.3,   {0.00,-yShift,0},{-2,height3,0}}, --rf kick    
     {{0,0,0,},  2,   0.1, 3, 0.1,     {-0.01,0.0,0},  {0, 0, 0}},                  
-    {{0.12,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
+    {{kickfd,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,walk.stepHeight,0}}, --ls
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 

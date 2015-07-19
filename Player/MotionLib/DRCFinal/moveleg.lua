@@ -722,30 +722,30 @@ end
 
 function moveleg.joint_trajectory_kick(phSingle)
 
-local breaksTX={0.070000,0.100000,0.400000,0.750000,1.000000,}
-local breaksTY={0.200000,0.800000,1.000000,}
-local breaksTA={0.100000,0.200000,0.270000,0.800000,1.000000,}
+local breaksTX={0.100000,0.300000,0.340000,0.500000,1.000000,}
+local breaksTY={0.140000,0.450000,0.600000,0.800000,1.000000,}
+local breaksTA={0.120000,0.200000,0.500000,0.750000,1.000000,}
 local coefsX={
-  {-3501.274895,1752.359589,-172.223210,-16.800000,},
-  {-3501.274895,1017.091861,21.638392,-21.470000,},
-  {-1745.965896,701.977121,73.210461,-20.000000,},
-  {1176.803804,-869.392185,22.985942,18.000000,},
-  {1176.803804,366.251809,-153.113190,-30.000000,},
+  {-4719.769765,2558.241239,-203.626426,-16.720000,},
+  {-4719.769765,1142.310310,166.428729,-16.220000,},
+  {6625.988246,-1689.551549,56.980481,25.000000,},
+  {1298.366137,-894.432960,-46.378900,25.000000,},
+  {1298.366137,-271.217214,-232.882927,0.000000,},
 }
 local coefsY={
-  {468.062500,-729.875000,261.702500,33.110000,},
-  {468.062500,-449.037500,25.920000,60.000000,},
-  {468.062500,393.475000,-7.417500,15.000000,},
+  {607.479947,-650.317931,210.495046,33.610000,},
+  {607.479947,-395.176353,64.125846,52.000000,},
+  {-2061.628565,169.779998,-5.747024,52.000000,},
+  {2014.088094,-757.952857,-93.972952,48.000000,},
+  {2014.088094,450.500000,-155.463524,15.000000,},
 }
 local coefsA={
-  {1244.182718,-267.254815,-100.316346,-16.200000,},
-  {1244.182718,106.000000,-116.441827,-27.660000,},
-  {-857.738775,479.254815,-57.916346,-37.000000,},
-  {-290.225665,299.129673,-3.429431,-39.000000,},
-  {-290.225665,-162.329135,69.074854,0.000000,},
+  {-1178.307439,1339.975047,-336.412712,-16.890000,},
+  {-1178.307439,915.784369,-65.721582,-40.000000,},
+  {-1274.936179,632.990584,58.180414,-40.000000,},
+  {685.935970,-514.451977,93.741996,0.000000,},
+  {685.935970,-0.000000,-34.870998,2.000000,},
 }
-
-
   local hip=eval_spline(breaksTX, coefsX,phSingle) *DEG_TO_RAD
   local knee=eval_spline(breaksTY, coefsY,phSingle)  *DEG_TO_RAD
   local ankle=eval_spline(breaksTA, coefsA,phSingle)  *DEG_TO_RAD
@@ -861,18 +861,6 @@ function moveleg.set_leg_positions_hack(supportLeg,phSingle)
     qLegs[5]=math.min(qLegs[5],Config.walk.anklePitchLimit[2])
     qLegs[11]=math.min(qLegs[11],Config.walk.anklePitchLimit[2])
   end
-
-
-  local q1,q2,q3 = moveleg.joint_trajectory_kick(phSingle)
-  if supportLeg==0 then --left support, right kick
-qLegs[9],qLegs[10],qLegs[11] = q1,q2,q3
---    qLegs[9],qLegs[10] = q1,q2
-  else
-    qLegs[3],qLegs[4],qLegs[5] = q1,q2,q3
-    --qLegs[3],qLegs[4],qLegs[5] = q1,q2
-  end
-
-
 --
   --hip pitch lag fix
   if Config.walk.hipPitch0 then
@@ -883,7 +871,17 @@ qLegs[9],qLegs[10],qLegs[11] = q1,q2,q3
       qLegs[9] = Config.walk.hipPitch0 + (qLegs[9]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
     end
   end
---]]
+
+
+  local q1,q2,q3 = moveleg.joint_trajectory_kick(phSingle)
+  if supportLeg==0 then --left support, right kick
+    qLegs[9],qLegs[10],qLegs[11] = q1,q2,q3
+--    qLegs[9],qLegs[10] = q1,q2
+  else
+    qLegs[3],qLegs[4],qLegs[5] = q1,q2,q3
+    --qLegs[3],qLegs[4],qLegs[5] = q1,q2
+  end
+
 
 
 

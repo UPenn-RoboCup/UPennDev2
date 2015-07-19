@@ -4,14 +4,14 @@ close all;
 
 
 %walkkick #2
-breakTX = [0     0.07    0.1   0.4  0.75   1];
-breakX = [-16.8 -21.47  -20    18    -30 -27];
+breakTX = [0      0.10     0.30 0.34   0.5  1];
+breakX = [-16.72  -16.22   25 25        0 -21.95]
 
-breakTY = [0    0.2  0.8    1];
-breakY = [33.11  60  15  33];
+breakTY = [0     0.14    0.45  0.6  0.8  1];
+breakY = [33.61   52  52       48   15 18.04];
 
-breakTA = [0  0.10     0.2 0.27  0.8    1];
-breakA = [-16.2 -27.66 -37 -39    0     5];
+breakTA = [0      0.12  0.20  0.50  0.75     1];
+breakA = [-16.89 -40   -40    0      2 4];
 
 
 
@@ -86,7 +86,7 @@ subplot(2,2,3);
 fnplt(r);
 ylabel('a');
 xlabel('t');
-
+%{
 figure(2);
 subplot(2,2,1);
 plot(kick(:,1),kick(:,2)*180/pi)
@@ -96,3 +96,4 @@ plot(kick(:,1),kick(:,3)*180/pi)
 
 subplot(2,2,3);
 plot(kick(:,1),kick(:,4)*180/pi)
+%}

@@ -383,23 +383,25 @@ function walk.update()
       supportRatio)
 
     
---    local qLLeg = Body.get_lleg_position()
---    if walkParam and walkParam[1]==-2 then
-    if false then
+
+    --local qLLeg = Body.get_lleg_position()
+    if walkParam and walkParam[1]==-2 then
+--if false then
       moveleg.set_leg_positions_hack(supportLeg,phSingle)
+--      moveleg.set_leg_positions()    
+      local qLLeg = Body.get_lleg_command_position()
+      local qRLeg = Body.get_rleg_command_position()
+      if supportLeg==1 then print(phSingle,qLLeg[3],qLLeg[4],qLLeg[5])
+      else print(phSingle,qRLeg[3],qRLeg[4],qRLeg[5])
+      end
     else
       moveleg.set_leg_positions()    
     end
 
-    if walkParam and walkParam[1]==-2 then
-      mcm.set_leg_tempdebug(1)
-      --mcm.set_walk_aShiftY({aLeft,aRight})
---      mcm.set_walk_aShiftY({20*DEG_TO_RAD,0})
-    else
-      mcm.set_leg_tempdebug(0)
-    end
 
 
+
+  
 
 
 --print(math.max(zLeft,zRight))

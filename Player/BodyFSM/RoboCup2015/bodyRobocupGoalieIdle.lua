@@ -23,6 +23,8 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+
+  motion_ch:send'stop'
 end
 
 function state.update()
@@ -62,9 +64,9 @@ function state.update()
   end
 
   -- If in position, then return
-  if not in_position then return'position' end
-
-  mcm.set_walk_vel({vx, vy, va})
+  if not in_position then
+    return'position'
+  end
 
 end
 

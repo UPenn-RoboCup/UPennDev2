@@ -27,6 +27,8 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+
+  motion_ch:send'hybridwalk'
 end
 
 function state.update()
@@ -43,7 +45,8 @@ function state.update()
   local pose = vector.pose(wcm.get_robot_pose())
 
   -- Find the optimal pose
-  local dPose = pose_relative({X_GOAL, ball.y, pose.a}, pose)
+  local goalPose = vector.pose{X_GOAL, ball.y, pose.a}
+  local dPose = pose_relative(goalPose, pose)
 
   local in_position = true
   local vx = 0
@@ -72,9 +75,18 @@ function state.update()
   end
 
   -- If in position, then return
-  if in_position then return'idle' end
+  if in_position then
+    return'idle'
+  end
 
-  mcm.set_walk_vel({vx, vy, va})
+  local vel = vector.new{vx, vy, va}
+  local diff = vector.new{dx, dy, da}
+
+  print('goalPose', goalPose)
+  print('pose', pose)
+  print('diff', diff)
+  print('vel', vel)
+  mcm.set_walk_vel(vel)
 
 end
 

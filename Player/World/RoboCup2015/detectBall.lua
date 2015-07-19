@@ -252,6 +252,8 @@ local function find_ball_on_line(Image)
 
 		-- Check large jumps in the ball position...
 		-- TODO: Should this be in world?
+
+
 		local projectedV
 		if passed then
 			local target_height = config.diameter / 2
@@ -271,8 +273,16 @@ local function find_ball_on_line(Image)
 			-- Large changes are not good
 			if distObs > 4 then
 				passed = false
-				table.insert(msgs, string.format("Big delta: %.2f", distObs))
+				msgs[i] = string.format("Big delta: %.2f", distObs)
 			end
+
+			if Config.reject_forward_balls and wcm.get_ball_backonly()==1 then
+				if projectedV[1]>-0.5 then
+					passed=false
+					msgs[i]="whatever"
+				end
+			end
+		
 		end
 
 		-- Check the time remaining: ball is never int he front half to start
@@ -293,12 +303,7 @@ local function find_ball_on_line(Image)
 		end	
 --]]
 
-		if Config.reject_forward_balls and wcm.get_ball_backonly()==1 then
-			if projectedV[1]>-0.5 then
-				passed=false
-			end
-		end
-		-- If passed the checks
+	-- If passed the checks
 		-- Project the ball to the ground
 		if passed then
 			propsA.v = projectedV
@@ -310,7 +315,7 @@ local function find_ball_on_line(Image)
 			msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(propsA.v,1,3))
 			if wcm.get_ball_backonly()==1 then
 				if propsA.v[1]>0 then
-					msgs[#msgs+1]="Ball found front, false positive"
+					msgs[i]="Ball found front, false positive"
 					return false,table.concat(msgs, '\n')
 				end
 			end
@@ -519,6 +524,42 @@ local function find_ball_off_line(Image)
 		end
 
 
+
+
+		local projectedV
+		if passed then
+			local target_height = config.diameter / 2
+			local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
+			projectedV = pHead4 + scale * (vL - pHead4)
+
+			-- Ball global observation
+			local ballGlobalObs = util.pose_global(
+				{projectedV[1], projectedV[2],0},
+				wcm.get_robot_pose()
+			)
+	    local ballGlobalNow = wcm.get_robot_ballglobal()
+			local distObs = math.sqrt(
+				(ballGlobalObs[1] - ballGlobalNow[1]) ^ 2,
+				(ballGlobalObs[2] - ballGlobalNow[2]) ^ 2
+			)
+			-- Large changes are not good
+			if distObs > 4 then
+				passed = false
+				print("Ball jump,",distObs)
+--		table.insert(msgs, string.format("Big delta: %.2f", distObs))
+			end
+
+			if Config.reject_forward_balls and wcm.get_ball_backonly()==1 then
+				if projectedV[1]>-0.5 then
+					passed=false
+					print("Ball forward")
+				end
+			end
+		end
+
+
+
+
 		-- If passed the checks
 		-- Project the ball to the ground
 		if passed then
@@ -543,7 +584,8 @@ local function find_ball_off_line(Image)
 
 			if wcm.get_ball_backonly()==1 then
 				if propsA.v[1]>0 then
-					msgs[#msgs+1]="Ball found front, false positive"
+					--msgs[#msgs+1]="Ball found front, false positive"
+					print("WTF")
 					return false,table.concat(msgs, '\n')
 				end
 			end
@@ -554,7 +596,7 @@ local function find_ball_off_line(Image)
 	end  -- end of loop
 
 	-- Assume failure
-	return false, table.concat(msgs, '\n')
+	return false, "" --table.concat(msgs, '\n')
 end
 
 function detectBall.update(Image)

@@ -13,7 +13,7 @@ Viewpoint {
 }
 Background {
   skyColor [
-    0.7 0.3 0.3
+    0.1 0.5 1
   ]
 }
 DirectionalLight {
@@ -57,22 +57,22 @@ SoccerField {
 }
 DEF BLUE_GOAL TeenGoal {
   translation 4.5 0 0
-  netColor 0.11 0.11 0.11
+  #netColor 0.11 0.11 0.11
 }
 DEF YELLOW_GOAL TeenGoal {
   translation -4.5 0 0
   rotation 0 1 0 3.14159
-  netColor 0.11 0.11 0.11
+  #netColor 0.11 0.11 0.11
 }
 DEF BALL BallGPS {
   translation 2.4 0.109919 2.2
-  color 1 1 1
+  color 1 0 0
   radius 0.11
   mass 0.055
   #linearDamping 0.17
   #angularDamping 0.33
   linearDamping 0.3
-  angularDamping 0.63  
+  angularDamping 0.63
   controller "ballGPS"
 }
 DEF OBS1 ObjectGPS {

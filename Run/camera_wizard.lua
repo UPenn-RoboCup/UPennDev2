@@ -140,9 +140,9 @@ local function update(img, sz, cnt, t)
 		--rpy = Body.get_rpy(),
 		tfL16 = tfL_flat,
 		tfG16 = tfG_flat,
-		HeadFSM = gcm.get_fsm_Head()
-		GameFSM = gcm.get_fsm_Game()
-		MotionFSM = gcm.get_fsm_Motion()
+		HeadFSM = gcm.get_fsm_Head(),
+		GameFSM = gcm.get_fsm_Game(),
+		MotionFSM = gcm.get_fsm_Motion(),
 		BodyFSM = gcm.get_fsm_Body(),
 		tleft = gcm.get_game_timeleft(),
 	}

@@ -6,13 +6,17 @@ local Body = require'Body'
 local timeout = 10.0
 local t_entry, t_update, t_exit
 
+local VX_WALK = 0.1
+local VY_WALK = 0.1
+local VA_WALK = 10*DEG_TO_RAD
+
 -- Ideal position in y along the center
-local Y_THRESH = 0.20
+local Y_THRESH = 0.10
 --
-local X_THRESH = 0.20
+local X_THRESH = 0.10
 local X_POSITION = 4.5
 --
-local A_THRESH = 10 * DEG_TO_RAD
+local A_THRESH = 5 * DEG_TO_RAD
 --
 local sign = require'util'.sign
 local pose_relative = require'util'.pose_relative
@@ -42,27 +46,33 @@ function state.update()
   local dPose = pose_relative({X_POSITION, ball.y, pose.a}, pose)
 
   local in_position = true
+  local vx = 0
+  local vy = 0
+  local va = 0
 
   -- We should move up from the goal line
   local dx = X_GOAL - dPose.x
   if math.abs(dx) > X_THRESH then
+    vx = sign(dx) * VX_WALK
     in_position = false
   end
 
   -- Stay in front of the ball always
   local dy = ball.y - dPose.y
   if math.abs(dy) > Y_THRESH then
+    vy = sign(dy) * VY_WALK
     in_position = false
   end
 
   -- Angle to face the ball a bit
   local da = math.atan2(dPose.y, dPose.x)
   if math.abs(da) > A_THRESH then
+    va = sign(da) * VA_WALK
     in_position = false
   end
 
   -- If in position, then return
-  if not in_position then return'position' end
+  if in_position then return'idle' end
 
   mcm.set_walk_vel({vx, vy, va})
 

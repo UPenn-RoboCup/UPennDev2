@@ -21,17 +21,17 @@ fsm.enabled = {
 
 --SJ: now we can have multiple FSM options
 fsm.select = {
-	Arm = 'RoboCup2015', 
-	Body = 'RoboCup2015', 
+	Arm = 'RoboCup2015',
+	Body = 'RoboCup2015',
 	Gripper = 'DRCFinal',
-	Head = 'RoboCup2015', 
+	Head = 'RoboCup2015',
 	Motion = 'RoboCup2015'
 }
 
 -- Custom libraries
 fsm.libraries = {
 	MotionLib = 'DRCFinal',
-	ArmLib = 'DRCFinal', --Now steve's libs are merged into one 
+	ArmLib = 'DRCFinal', --Now steve's libs are merged into one
 	World = 'RoboCup2015'
 }
 
@@ -54,7 +54,7 @@ fsm.Game = {
 }
 
 fsm.Arm = {
-  {'armDetect', 'timeout', 'armDetect'},  
+  {'armDetect', 'timeout', 'armDetect'},
 }
 
 fsm.Head = {
@@ -74,26 +74,26 @@ fsm.Head = {
   {'headBackScanInit', 'ballfound', 'headTrack'},
   {'headBackScanInit', 'noball', 'headBackScanInit'},
   {'headBackScanInit', 'teleop', 'headTeleop'},
-  
+
 
   {'headScan', 'ballfound', 'headTrack'},
   {'headScan', 'noball', 'headBackScan'},
   {'headScan', 'teleop', 'headTeleop'},
   {'headScan', 'scanobs', 'headObstacleScan'},
-  -- 
+  --
   {'headTeleop', 'scan', 'headBackScan'},
   {'headTeleop', 'scanobs', 'headObstacleScan'},
   {'headTeleop', 'scangoalie', 'headScan'},
-  -- 
-  
- 
+  --
+
+
 
   {'headBackScan', 'ballfound', 'headTrack'},
   {'headBackScan', 'noball', 'headBackScan'},
   {'headBackScan', 'scan', 'headScan'},
   {'headBackScan', 'teleop', 'headTeleop'},
   {'headBackScan', 'scanobs', 'headObstacleScan'},
-  
+
   --
   {'headTrack', 'balllost', 'headScan'},
   {'headTrack', 'timeout', 'headLookGoal'},
@@ -105,12 +105,12 @@ fsm.Head = {
   {'headKickFollow', 'teleop', 'headTrack'},
 
   {'headLookGoal', 'timeout', 'headTrack'},
-  {'headLookGoal', 'scanobs', 'headObstacleScan'},  
+  {'headLookGoal', 'scanobs', 'headObstacleScan'},
   {'headLookGoal', 'teleop', 'headTeleop'},
 
 
-  
-  
+
+
 }
 
 
@@ -142,7 +142,7 @@ fsm.Body = {
   -------------------------------
   --ATTACKER SMs-----------------------------
   -------------------------------
-  
+
   {'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
   {'bodyRobocupIdle','stop','bodyStop'},
@@ -152,7 +152,7 @@ fsm.Body = {
   {'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
   {'bodyRobocupFollow', 'ballclose', 'bodyRobocupApproach'},
   {'bodyRobocupFollow','stop','bodyStop'},
-  
+
   {'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
   {'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
   {'bodyRobocupApproach','stop','bodyStop'},
@@ -228,9 +228,6 @@ fsm.Body = {
   {'bodyRobocupSpin', 'ballfound', 'bodyRobocupFollow'},
 
 
-
-
-
 	{'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
   {'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
   {'bodyRobocupIdle','stop','bodyStop'},
@@ -249,10 +246,13 @@ fsm.Body = {
   {'bodyRobocupKick', 'testdone', 'bodyStop'},
 
   {'bodyRobocupGoalieIdle', 'attacker', 'bodyRobocupIdle'},
-  {'bodyRobocupGoalieIdle','stop','bodyStop'},
+  {'bodyRobocupGoalieIdle', 'stop', 'bodyStop'},
+	{'bodyRobocupGoalieIdle', 'position', 'bodyRobocupGoaliePosition'},
+
+	{'bodyRobocupGoaliePosition', 'idle', 'bodyRobocupGoalieIdle'},
+	{'bodyRobocupGoaliePosition', 'stop', 'bodyStop'},
+
 }
-
-
 
 fsm.Motion = {
 	{'motionIdle', 'timeout', 'motionIdle'},
@@ -336,7 +336,7 @@ fsm.bodyRobocupFollow = {
 
 
   rCircle = 0.6,
-  
+
 
 }
 

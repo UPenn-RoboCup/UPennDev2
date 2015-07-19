@@ -11,8 +11,8 @@ local wizards = {
 	{'camera', },
 	{'vision', },
 	{'world',},
-	{'gc', 2},
-	{'state', 1},
+	{'gc', },
+	{'state', },
 }
 local runs = {
 	'dcm',

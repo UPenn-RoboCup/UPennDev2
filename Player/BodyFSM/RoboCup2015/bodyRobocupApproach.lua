@@ -155,10 +155,17 @@ local function robocup_approach2(uLeftGlobalTarget, uRightGlobalTarget)
       uRightTargetFromTorso[1],uRightTargetFromTorso[2]))
   end
 
-  if math.abs(vStep[1]-vStepTarget[1])<0.005 and
-    math.abs(vStep[2]-vStepTarget[2])<0.005 then
+local velThApproach = Config.velThApproach or {0.02,0.02}
+
+
+  if math.abs(vStep[1]-vStepTarget[1])<velThApproach[1] and
+    math.abs(vStep[2]-vStepTarget[2])<velThApproach[2] then
     last_step = 1    
   end
+
+
+
+
 
   return vStep,false
 end

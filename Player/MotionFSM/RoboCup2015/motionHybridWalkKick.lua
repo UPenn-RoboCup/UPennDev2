@@ -379,7 +379,15 @@ function walk.update()
       angleShift,
       supportRatio)
 
-    moveleg.set_leg_positions()    
+    
+    --local qLLeg = Body.get_lleg_position()
+    if walkParam and walkParam[1]==-2 then
+--if false then
+      moveleg.set_leg_positions_hack(supportLeg,phSingle)
+    else
+      moveleg.set_leg_positions()    
+    end
+
 
 
 

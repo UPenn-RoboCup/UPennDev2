@@ -53,6 +53,7 @@ if IS_WEBOTS then
     print('!!!!IS_STEVE!!!!')
 		Config.use_gps_pose = true
 		Config.use_gps_vision = true
+
 	else
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false
@@ -217,15 +218,11 @@ end
 Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of the foot!)
 Config.reject_forward_balls = true
 
-Config.sideModL = 0.03
-Config.sideMod2L = -0.01
-
-Config.sideModR = -0.03
-Config.sideMod2R = 0.01
-
-
-
-
+Config.walk.velLimitY = {-.05,.05}
+Config.sideModL = 0.03 
+Config.sideMod2L = -0.01 
+Config.sideModR = -0.03 
+Config.sideMod2R = 0.01 
 
 
 Config.dont_look_goals =true

@@ -213,12 +213,11 @@ Config.reject_forward_balls = true
 Config.walk.velLimitY = {-.05,.05}
 Config.sideModL = 0.03 
 Config.sideMod2L = -0.01 
-
 Config.sideModR = -0.03 
 Config.sideMod2R = 0.01 
 
-
-
-
+Config.dont_look_goals =true
 Config.spin_detect = true
+
+Config.velThApproach = {0.02,0.02}
 return Config

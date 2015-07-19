@@ -541,14 +541,7 @@ local function find_ball_off_line(Image)
 				(ballGlobalObs[1] - ballGlobalNow[1]) ^ 2,
 				(ballGlobalObs[2] - ballGlobalNow[2]) ^ 2
 			)
-			-- Large changes are not good
-			print('distObs', distObs, wcm.get_ball_observed())--, wcm.get_ball_t())
-			if distObs > 2 and wcm.get_ball_observed()==1 then
-				passed = false
-				msgs[i] = string.format("Big delta: %.2f", distObs)
-				print("XSDDDDDDDDDDS")
-			end
-
+			
 			if Image.HeadFSM=="headLookGoal" then
 				passed = false
 				msgs[i] = string.format("Looking for goal")
@@ -567,7 +560,21 @@ local function find_ball_off_line(Image)
 					msgs[i] = string.format("Ball forward: %.2f", projectedV[1])
 				end
 			end
+
+			if passed then 
+				print("ballGlobal:",ballGlobalObs[1],ballGlobalObs[2], "disbObs:",distObs)
+				if distObs > 2 and wcm.get_ball_observed()==1 then
+				  passed = false
+				  msgs[i] = string.format("Big delta: %.2f", distObs)
+  -- rint("XSDDDDDDDDDDS")
+  				print('BIG DELTA:', distObs, wcm.get_ball_observed())--, wcm.get_ball_t())
+				end
+			end
+
+
+
 		end
+
 
 		-- If passed the checks
 		if passed then
@@ -578,6 +585,7 @@ local function find_ball_off_line(Image)
 			propsA.dr = 0.25 * propsA.r --TODO: tweak
 			propsA.da = 10 * DEG_TO_RAD
 			msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(propsA.v,1,3))
+--print(msgs[i])
 			propsA.online = false
 			return propsA, table.concat(msgs, '\n')
 		end

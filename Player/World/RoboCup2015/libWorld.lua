@@ -212,7 +212,8 @@ local function update_vision(detected)
   if Config.disable_ball_when_lookup and wcm.get_ball_disable()>0 then
 --    print("BALL DISABLED")
   elseif ball then
-    wcm.get_ball_observed(1)
+--    print("BALL DETECTED")
+    wcm.set_ball_observed(1)
     ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
   end
 
@@ -220,12 +221,12 @@ local function update_vision(detected)
   -- Add fake observation at behind the robot so that robot can start turning
   if wcm.get_ball_notvisible()==1 then
     wcm.set_ball_notvisible(0)
-print("No ball, turn back!")
+    print("No ball, turn back!")
 
     if gcm.get_game_role()==1 and Config.robot_turnaround then
       ballFilter.reset(true)
       ballFilter.observation_xy(-2,0, 0.5, 20*DEG_TO_RAD, t)
-      
+
       wcm.set_robot_ballglobal({-2.0,0})
       wcm.set_ball_observed(1)
     end

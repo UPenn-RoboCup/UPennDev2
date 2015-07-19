@@ -44,12 +44,12 @@ function state.update()
 	elseif stage == 1 then 
     dqNeckLimit = {55*DEG_TO_RAD, 55*DEG_TO_RAD}
     wcm.set_obstacle_enable(1)
-		yaw = -yawMag
+		yaw = yawMag
 	elseif stage == 2 then 
     yaw = 0
     pitch = pitchDown
 	elseif stage == 3 then 
-		yaw = yawMag
+		yaw = -yawMag
 	elseif stage == 4 then 
     yaw = 0
     pitch = pitchUp

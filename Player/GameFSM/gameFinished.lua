@@ -29,6 +29,11 @@ function state.update()
   -- Save this at the last update time
 
   t_update = t
+  if mcm.get_walk_ismoving()>0 then
+    print("requesting stop")
+    mcm.set_walk_stoprequest(1)
+  end
+  
 end
 
 function state.exit()

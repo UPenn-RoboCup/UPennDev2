@@ -210,4 +210,5 @@ Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of
 Config.reject_forward_balls = true
 
 
+Config.spin_detect = true
 return Config

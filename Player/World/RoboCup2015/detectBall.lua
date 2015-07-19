@@ -222,10 +222,26 @@ local function find_ball_off_line(Image)
 
 			local scale = (pHead4[3] - target_height) / (pHead4[3] - vG[3])
 			projectedVG = pHead4 + scale * (vG - pHead4)
-			--[[
-			local tr6 = T.position6D(Image.tfG)
-			local pose = vector.pose{tr6[1], tr6[2], tr6[6]}
-			--]]
+
+			-- Ball global observation
+			local ballGlobalObs = util.pose_global(
+				{projectedV[1], projectedV[2],0}, pose)
+	    local ballGlobalNow = wcm.get_robot_ballglobal()
+			local distObs = math.sqrt(
+				(ballGlobalObs[1] - ballGlobalNow[1]) ^ 2,
+				(ballGlobalObs[2] - ballGlobalNow[2]) ^ 2
+			)
+
+			if Image.HeadFSM=="headLookGoal" then
+				passed = false
+				msgs[i] = string.format("Looking for goal")
+			end
+
+			-- Support logs and on the fly
+			local ignoringBack = Image.HeadFSM=="headBackScan" or
+				Image.HeadFSM=="headBackScanInit" or
+				Image.HeadFSM=="headLog" or
+				Image.HeadFSM=="headObstacleScan" --or wcm.get_ball_backonly()==1
 
 			local minBackX = -0.1
 			if Config.reject_forward_balls and ignoringBack then

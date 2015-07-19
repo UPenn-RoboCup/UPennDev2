@@ -43,7 +43,10 @@ function state.entry()
   
   wcm.set_goal_disable(1)
   wcm.set_obstacle_enable(0)
-  
+  if Config.spin_detect then 
+    body_ch:send'spin'
+  end
+
 end
 
 function state.update()
@@ -99,6 +102,20 @@ function state.update()
     print("Couldn't find the ball!!!!")
     return 'noball' --couldn't find the ball. Ball should be right behind the robot!
   end
+
+  --Fix head angle and spin!
+  if Config.spin_detect then 
+    pitchTarget = 30*DEG_TO_RAD
+    yawTarget = 135*DEG_TO_RAD
+    stage=1
+  end
+
+
+
+
+
+
+
 
   local qNeckActual = Body.get_head_position()
   local qNeck_approach, doneNeck = 

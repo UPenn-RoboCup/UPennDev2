@@ -83,25 +83,20 @@ local state = gcm.get_game_state()
 		  game_ch:send'play'
 		end
 	elseif key_char_lower==("5") then  
-		if state~=4 then 
-		  game_ch:send'finish'		
-		end
+   game_ch:send'finish'		
 
 	elseif key_char_lower==("=") then  
 		--Only change role at gameInitial or gameTest
-		if (state==0 or state==6) and role~=1 then
+		if (state~=3 or state==6) and role~=1 then
 			gcm.set_game_role(1)
 		end
 
 	elseif key_char_lower==("-") then  
 		--Only change role at gameInitial or gameTest
-		if (state==0 or state==6) and role~=0 then
+		if (state~=3 or state==6) and role~=0 then
 			gcm.set_game_role(0)
 		end
 
-	elseif key_char_lower==("7") then  
-		--Demo mode on!
-		body_ch:send'uninit'
 
 	elseif key_char_lower==("8") then  
 	  game_ch:send'finish'

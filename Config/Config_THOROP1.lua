@@ -53,7 +53,6 @@ if IS_WEBOTS then
     print('!!!!IS_STEVE!!!!')
 		Config.use_gps_pose = true
 		Config.use_gps_vision = true
-
 	else
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false

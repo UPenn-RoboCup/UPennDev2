@@ -6,13 +6,17 @@ local Body = require'Body'
 local timeout = 10.0
 local t_entry, t_update, t_exit
 
+local VX_WALK = 0.2
+local VY_WALK = 0.2
+local VA_WALK = 30*DEG_TO_RAD
+
 -- Ideal position in y along the center
-local Y_THRESH = 0.20
+local Y_THRESH = 0.10
 --
-local X_THRESH = 0.20
-local X_GOAL = -4.5
+local X_THRESH = 0.10
+local X_GOAL = -4.25
 --
-local A_THRESH = 10 * DEG_TO_RAD
+local A_THRESH = 5 * DEG_TO_RAD
 --
 local sign = require'util'.sign
 local pose_relative = require'util'.pose_relative
@@ -37,29 +41,42 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
-  local ball = vector.pose(wcm.get_robot_ballglobal())
+  local ball = wcm.get_robot_ballglobal()
+  --print('ball*', ball)
   local pose = vector.pose(wcm.get_robot_pose())
 
   -- Find the optimal pose
-  local dPose = pose_relative({X_GOAL, ball.y, pose.a}, pose)
-
+  local y_goal = math.min(math.max(-1, ball[2]), 1);
+  local goalPose = vector.pose{
+    X_GOAL,
+    y_goal,
+    math.atan2(y_goal, 1)
+  }
+  --print('goalPose', goalPose)
+  local dPose = pose_relative(goalPose, pose)
+  print('dPose', dPose)
   local in_position = true
+  local vx = 0
+  local vy = 0
+  local va = 0
 
   -- We should move up from the goal line
-  local dx = X_GOAL - dPose.x
-  if math.abs(dx) > X_THRESH then
+  if math.abs(dPose.x) > X_THRESH then
+    vx = sign(dPose.x) * VX_WALK
     in_position = false
   end
 
   -- Stay in front of the ball always
-  local dy = ball.y - dPose.y
-  if math.abs(dy) > Y_THRESH then
+  if math.abs(dPose.y) > Y_THRESH then
+    vy = sign(dPose.y) * VY_WALK
     in_position = false
   end
 
   -- Angle to face the ball a bit
-  local da = math.atan2(dPose.y, dPose.x)
-  if math.abs(da) > A_THRESH then
+  --local da = math.atan2(goalPose.y, 0)
+
+  if math.abs(dPose.a) > A_THRESH then
+    va = sign(dPose.a) * VA_WALK
     in_position = false
   end
 
@@ -67,6 +84,10 @@ function state.update()
   if not in_position then
     return'position'
   end
+
+  local vel = vector.new{vx, vy, va}
+  --local diff = vector.new{dx, dy, da}
+  --mcm.set_walk_vel(vel)
 
 end
 

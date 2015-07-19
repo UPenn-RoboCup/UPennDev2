@@ -387,6 +387,8 @@ function libWorld.update(uOdom, detection)
     --after init, reset pose to 0,0,0
   end
 
+
+
   local updated_pose
   if IS_WEBOTS and Config.use_gps_pose then
     local gpspose1 = wcm.get_robot_pose_gps()
@@ -449,12 +451,14 @@ function libWorld.update(uOdom, detection)
     wcm.set_obstacle_v1(wcm.get_robot_gpsobs1())
     wcm.set_obstacle_v2(wcm.get_robot_gpsobs2())
     local ballglobal = wcm.get_robot_gpsball()
-    wcm.set_robot_ballglobal(ballglobal)
+
+
     local pose = wcm.get_robot_pose_gps()
     local balllocal = util.pose_relative(
       {ballglobal[1],ballglobal[2],0},
       pose
     )
+    wcm.set_robot_ballglobal(ballglobal)
     wcm.set_ball_x(balllocal[1])
     wcm.set_ball_y(balllocal[2])
     wcm.set_ball_t(Body.get_time())

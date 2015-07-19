@@ -278,15 +278,26 @@ local function find_ball_on_line(Image)
 		-- Check the time remaining: ball is never int he front half to start
 		local t_gc = gcm.set_game_gctime(t)
 		-- Trust within 10 seconds
-		if Image.t - t_gc < 10 then
+
+--SJ: we have scanobs and backscan states
+--during which, ball should never be seen in front
+		
+	--[[		
+	--		if Image.t - t_gc < 10 then
 			-- Ball in front half within the first 30sec
 			local timeleft = gcm.get_game_timeleft()
 			if vG[1] > 0 and timeleft>270 then
 				passed = false
 				table.insert(msgs, string.format("Offensive half: %d", timeleft))
 			end
-		end
+		end	
+--]]
 
+		if Config.reject_forward_balls and wcm.get_ball_backonly()==1 then
+			if projectedV[1]>-0.5 then
+				passed=false
+			end
+		end
 		-- If passed the checks
 		-- Project the ball to the ground
 		if passed then

@@ -220,7 +220,7 @@ local function update_vision(detected)
   if wcm.get_ball_notvisible()==1 then
     wcm.set_ball_notvisible(0)
     if gcm.get_game_role()==1 and Config.robot_turnaround then
-      ballFilter.observation_xy(-0.5,0, 0.5, 20*DEG_TO_RAD, t)
+      ballFilter.observation_xy(-2,0, 0.5, 20*DEG_TO_RAD, t)
     end
   end
 

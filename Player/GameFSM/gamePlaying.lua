@@ -15,9 +15,13 @@ function state.entry()
 --Gcm variables
 -- 0 for initial / 1 for ready 2 for set / 3 for play / 4 fin
 -- 5: Pre-initialized (idle) 6 for testing
-
   gcm.set_game_state(3)
-  head_ch:send'scanobs'
+  if gcm.get_game_role()==0 then
+    --goalie
+    head_ch:send'scangoalie'
+  else   
+    head_ch:send'scanobs'
+  end  
 end
 
 function state.update()

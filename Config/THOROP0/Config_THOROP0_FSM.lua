@@ -64,6 +64,15 @@ fsm.Head = {
   {'headTeleop', 'log', 'headLog'},
   --
 
+  {'headObstacleScan', 'done', 'headTrack'},
+  {'headObstacleScan', 'backscan', 'headBackScanInit'},
+  {'headObstacleScan', 'teleop', 'headTeleop'},
+
+
+  {'headBackScanInit', 'ballfound', 'headTrack'},
+  {'headBackScanInit', 'noball', 'headBackScanInit'},
+  
+
   {'headScan', 'ballfound', 'headTrack'},
   {'headScan', 'noball', 'headBackScan'},
   {'headScan', 'teleop', 'headTeleop'},
@@ -71,11 +80,9 @@ fsm.Head = {
   -- 
   {'headTeleop', 'scan', 'headBackScan'},
   {'headTeleop', 'scanobs', 'headObstacleScan'},
+  {'headTeleop', 'scangoalie', 'headScan'},
   -- 
   
-  {'headObstacleScan', 'done', 'headTrack'},
-  {'headObstacleScan', 'backscan', 'headBackScan'},
-  {'headObstacleScan', 'teleop', 'headTeleop'},
  
 
   {'headBackScan', 'ballfound', 'headTrack'},

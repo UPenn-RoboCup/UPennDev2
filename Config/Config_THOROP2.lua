@@ -207,7 +207,7 @@ else
 	Config.driftFactor = {0.029,0.026,0.008}
 end
 Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of the foot!)
-
+Config.reject_forward_balls = true
 
 
 return Config

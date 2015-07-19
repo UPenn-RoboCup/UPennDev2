@@ -19,6 +19,7 @@ function state.entry()
 	wcm.set_obstacle_enable(0)
 	wcm.set_obstacle_reset(1)
   wcm.set_goal_disable(1)
+  wcm.set_ball_disable(1)
 end
 
 function state.update()

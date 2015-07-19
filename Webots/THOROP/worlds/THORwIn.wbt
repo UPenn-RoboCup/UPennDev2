@@ -75,6 +75,28 @@ DEF BALL BallGPS {
   angularDamping 0.63
   controller "ballGPS"
 }
+
+DEF BALL BallGPS {
+  translation 2.4 0.109919 -1
+  color 1 0 0
+  radius 0.11
+  mass 0.055
+  #linearDamping 0.17
+  #angularDamping 0.33
+  linearDamping 0.3
+  angularDamping 0.63
+  controller "void"
+}
+
+DEF BALL BallGPS {
+  translation 2.4 0.10 1
+  color 1 0 0
+  radius 0.11
+  mass 0.055  
+  linearDamping 0.3
+  angularDamping 0.63
+  controller "void"
+}
 DEF OBS1 ObjectGPS {
   translation -2 0.45 -1.5
   controller "objectGPS"

@@ -60,7 +60,13 @@ function state.update()
     pitchTarget = 25*DEG_TO_RAD    
     yawTarget = 45*DEG_TO_RAD
   else
-    return 'noball'    
+    if gcm.get_game_role()~=0 then --
+      return 'noball'    
+    else
+      --goalie keep scanning
+      stage=1
+      return
+    end
   end
 
   local qNeck_approach, doneNeck = 

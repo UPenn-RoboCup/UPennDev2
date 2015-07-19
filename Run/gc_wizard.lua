@@ -113,6 +113,16 @@ local function process_packet(pkt, t)
 	-- If not our game, then return
 	if not OUR_GAME then return end
 	-- Set things
+
+	local Thorid
+  local opposite
+	if teams[0].teamNumber==teamId then
+		Thorid = 0
+		opposite = 1
+	else
+		Thorid = 1
+		opposite = 0
+	end
 	gcm.set_game_gctime(t) -- GC time of received packet
 	gcm.set_game_state(pkt.state)
 	game_ch:send(libGC.state_to_name[pkt.state]:lower())
@@ -135,12 +145,23 @@ local function process_packet(pkt, t)
 	local state_name = libGC.state_to_name[pkt.state] or "UNKNOWN"
 	local debug_str = table.concat({
 		color("State: "..state_name, 'yellow'),
-		color('Packet '..cur_pkt, 'green'),
 		color(pkt.secsRemaining..' seconds left', 'red'),
+		--color("(ThorWin)" .. pkt.teams[Thorid].score .. " : " .. pkt.teams[opposite].score .. "(Team A)",'blue'),
+    color(
+      string.format("THORwIn [%d] | (Team A) [%d]", tonumber(pkt.teams[Thorid].score) or -1, tonumber(pkt.teams[opposite].score) or -1),
+      'blue'),
+		color('Packet '..cur_pkt, 'green'),
 		''
 	}, '\n')
 	print(debug_str)
---	print(pkt.player)
+	--print("version:"..pkt.version)
+	--print("playersPerTeam:"..pkt.playersPerTeam)
+	--print("score:"..pkt.score)
+	--print(pkt.teams[0].score .. " : " .. pkt.teams[1].score)
+
+--		color(pkt.teams[0].score .. " : " .. pkt.teams[1].score,'blue'),
+
+
 end
 
 while running do
@@ -148,7 +169,6 @@ while running do
 	pkt = gc:wait_for_gc()
   t = get_time()
 	if pkt then
-    -- Every 1/10 sec
 		process_packet(pkt, t)
 	end
 	--print(pkt)

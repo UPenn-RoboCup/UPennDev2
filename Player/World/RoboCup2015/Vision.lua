@@ -90,6 +90,7 @@ local t0 =unix.time()
   HeadImage.tfG = T.from_flat(meta.tfG16)
   HeadImage.qHead = vector.new(meta.head)
   HeadImage.t = meta.t
+	HeadImage.HeadFSM = meta.HeadFSM
 --[[
 if Config.use_gps_vision then
   local detect = {

@@ -134,7 +134,8 @@ local function update(img, sz, cnt, t)
 		id = camera_name,
 		--rpy = Body.get_rpy(),
 		tfL16 = tfL_flat,
-		tfG16 = tfG_flat
+		tfG16 = tfG_flat,
+		HeadFSM = gcm.get_fsm_Head()
 	}
 	local img_str = ffi.string(img, sz)
 

@@ -282,7 +282,7 @@ local function find_ball_on_line(Image)
 					msgs[i]="whatever"
 				end
 			end
-		
+
 		end
 
 		-- Check the time remaining: ball is never int he front half to start
@@ -291,8 +291,8 @@ local function find_ball_on_line(Image)
 
 --SJ: we have scanobs and backscan states
 --during which, ball should never be seen in front
-		
-	--[[		
+
+	--[[
 	--		if Image.t - t_gc < 10 then
 			-- Ball in front half within the first 30sec
 			local timeleft = gcm.get_game_timeleft()
@@ -300,7 +300,7 @@ local function find_ball_on_line(Image)
 				passed = false
 				table.insert(msgs, string.format("Offensive half: %d", timeleft))
 			end
-		end	
+		end
 --]]
 
 	-- If passed the checks
@@ -524,19 +524,18 @@ local function find_ball_off_line(Image)
 		end
 
 
-
-
 		local projectedV
 		if passed then
 			local target_height = config.diameter / 2
 			local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
 			projectedV = pHead4 + scale * (vL - pHead4)
 
+			local tr6 = T.position6D(Image.tfG)
+			local pose = vector.pose{tr6[1], tr6[2], tr6[6]}
+
 			-- Ball global observation
 			local ballGlobalObs = util.pose_global(
-				{projectedV[1], projectedV[2],0},
-				wcm.get_robot_pose()
-			)
+				{projectedV[1], projectedV[2],0}, pose)
 	    local ballGlobalNow = wcm.get_robot_ballglobal()
 			local distObs = math.sqrt(
 				(ballGlobalObs[1] - ballGlobalNow[1]) ^ 2,
@@ -544,59 +543,42 @@ local function find_ball_off_line(Image)
 			)
 			-- Large changes are not good
 			if distObs > 4 then
-				passed = false
-				print("Ball jump,",distObs)
---		table.insert(msgs, string.format("Big delta: %.2f", distObs))
+				--passed = false
+				msgs[i] = string.format("Big delta: %.2f", distObs)
 			end
 
-			if Config.reject_forward_balls and wcm.get_ball_backonly()==1 then
-				if projectedV[1]>-0.5 then
-					passed=false
-					print("Ball forward")
+			-- Support logs and on the fly
+			local ignoringBack = Image.HeadFSM=="headBackScan" or
+				Image.HeadFSM=="headBackScanInit" or
+				Image.HeadFSM=="headLog" or
+				Image.HeadFSM=="headObstacleScan" or
+				wcm.get_ball_backonly()==1
+			local minBackX = -0.1
+			if Config.reject_forward_balls and ignoringBack then
+				if projectedV[1] > minBackX then
+					passed = false
+					msgs[i] = string.format("Ball forward: %.2f", projectedV[1])
 				end
 			end
 		end
 
-
-
-
 		-- If passed the checks
-		-- Project the ball to the ground
 		if passed then
-			local target_height = config.diameter / 2
-			if pHead4[3]==target_height then
-				propsA.v = vector.copy(v)
-			else
-				local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
-				propsA.v = pHead4 + scale * (v - pHead4)
-			end
-
+			propsA.v = projectedV
 			propsA.t = Image.t
 			-- For ballFilter
 			propsA.r = math.sqrt(v[1]^2+v[2]^2)
 			propsA.dr = 0.25 * propsA.r --TODO: tweak
 			propsA.da = 10 * DEG_TO_RAD
-
 			msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(propsA.v,1,3))
-
-			--head_ch:send'teleop'
-
-
-			if wcm.get_ball_backonly()==1 then
-				if propsA.v[1]>0 then
-					--msgs[#msgs+1]="Ball found front, false positive"
-					print("WTF")
-					return false,table.concat(msgs, '\n')
-				end
-			end
-
 			propsA.online = false
 			return propsA, table.concat(msgs, '\n')
 		end
+
 	end  -- end of loop
 
 	-- Assume failure
-	return false, "" --table.concat(msgs, '\n')
+	return false, table.concat(msgs, '\n')
 end
 
 function detectBall.update(Image)

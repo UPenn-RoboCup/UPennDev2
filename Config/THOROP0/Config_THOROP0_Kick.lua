@@ -66,7 +66,13 @@ local height3 = 0.03
 local kickfd = 0.12
 
 
+
+
 local kickdur = 2.0
+
+
+
+
 local yShift = 0.0
 kick.stepqueue["LeftKick1"]=
   {

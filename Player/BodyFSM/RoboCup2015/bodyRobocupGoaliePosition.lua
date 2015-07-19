@@ -14,7 +14,7 @@ local VA_WALK = 10*DEG_TO_RAD
 local Y_THRESH = 0.10
 --
 local X_THRESH = 0.10
-local X_POSITION = 4.5
+local X_GOAL = -4.5
 --
 local A_THRESH = 5 * DEG_TO_RAD
 --
@@ -43,7 +43,7 @@ function state.update()
   local pose = vector.pose(wcm.get_robot_pose())
 
   -- Find the optimal pose
-  local dPose = pose_relative({X_POSITION, ball.y, pose.a}, pose)
+  local dPose = pose_relative({X_GOAL, ball.y, pose.a}, pose)
 
   local in_position = true
   local vx = 0

@@ -191,14 +191,14 @@ local function find_ball_off_line(Image)
 					local fieldBBoxStats = ImageProc2.color_stats(
 					Image.labelA_d, Image.wa, Image.ha, colors.field, fieldBBox
 					)
-					print('fieldBBoxStats.area', fieldBBoxStats.area)
+					--print('fieldBBoxStats.area', fieldBBoxStats.area)
 					if fieldBBoxStats.area < b_ground_green then
 						-- if there is no field under the ball
 						-- it may be because its on a white line
 						local whiteBBoxStats = ImageProc2.color_stats(
 						Image.labelA_d, Image.wa, Image.ha, colors.white, fieldBBox
 						)
-						print('whiteBBoxStats.area', whiteBBoxStats.area)
+						--print('whiteBBoxStats.area', whiteBBoxStats.area)
 						if whiteBBoxStats.area < b_ground_white then
 							passed = false
 							msgs[i] = "Green check fail"

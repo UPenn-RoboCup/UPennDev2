@@ -250,16 +250,47 @@ local function find_ball_on_line(Image)
 		end
 		--]]
 
+		-- Check large jumps in the ball position...
+		-- TODO: Should this be in world?
+		local projectedV
+		if passed then
+			local target_height = config.diameter / 2
+			local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
+			projectedV = pHead4 + scale * (vL - pHead4)
+
+			-- Ball global observation
+			local ballGlobalObs = util.pose_global(
+				{projectedV[1], projectedV[2],0},
+				wcm.get_robot_pose()
+			)
+	    local ballGlobalNow = wcm.get_robot_ballglobal()
+			local distObs = math.sqrt(
+				(ballGlobalObs[1] - ballGlobalNow[1]) ^ 2,
+				(ballGlobalObs[2] - ballGlobalNow[2]) ^ 2
+			)
+			-- Large changes are not good
+			if distObs > 4 then
+				passed = false
+				table.insert(msgs, string.format("Big delta: %.2f", distObs))
+			end
+		end
+
+		-- Check the time remaining: ball is never int he front half to start
+		local t_gc = gcm.set_game_gctime(t)
+		-- Trust within 10 seconds
+		if Image.t - t_gc < 10 then
+			-- Ball in front half within the first 30sec
+			local timeleft = gcm.get_game_timeleft()
+			if vG[1] > 0 and timeleft>270 then
+				passed = false
+				table.insert(msgs, string.format("Offensive half: %d", timeleft))
+			end
+		end
+
 		-- If passed the checks
 		-- Project the ball to the ground
 		if passed then
-			local target_height = config.diameter / 2
-			if pHead4[3]==target_height then
-				propsA.v = vector.copy(v)
-			else
-				local scale = (pHead4[3] - target_height) / (pHead4[3] - v[3])
-				propsA.v = pHead4 + scale * (v - pHead4)
-			end
+			propsA.v = projectedV
 			propsA.t = Image.t
 			-- For ballFilter
 			propsA.r = math.sqrt(v[1]^2+v[2]^2)

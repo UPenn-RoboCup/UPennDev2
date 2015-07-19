@@ -9,7 +9,7 @@ local si = require'simple_ipc'
 --local constant = 4514
 --local start_idx = 4001
 
-local constant = 4590 -- weird frame for lines
+--local constant = 4590 -- weird frame for lines
 --local start_idx = 4500
 
 --local constant = 5445 -- weird frame for lines

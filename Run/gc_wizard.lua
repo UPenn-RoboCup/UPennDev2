@@ -41,9 +41,9 @@ local function process_switch(t)
 	if t-t_switch < 1 then return end
 	t_switch = t
 	led_count = led_count +1
---	local current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG  
+--	local current_lidar_deg = Body.get_lidar_position()[1] * RAD_TO_DEG
 	local current_lidar_deg = 90
-	local cur_position 
+	local cur_position
 	if current_lidar_deg>45 then
 		cur_position = 1
 	elseif current_lidar_deg<-45 then
@@ -73,7 +73,7 @@ local function process_switch(t)
 		gcm.set_game_state(state)
 		-- Set the LEDs
 		if role==0 then
-			rgb = {0,0,255}      
+			rgb = {0,0,255}
 		elseif role==1 then
 			rgb = {255,0,0}
 		else
@@ -109,7 +109,7 @@ local function process_packet(pkt, t)
 	--]]
 
 	--print("temaNumber:"..teamNumber)
-	
+
 	-- If not our game, then return
 	if not OUR_GAME then return end
 	-- Set things
@@ -148,6 +148,7 @@ while running do
 	pkt = gc:wait_for_gc()
   t = get_time()
 	if pkt then
+    -- Every 1/10 sec
 		process_packet(pkt, t)
 	end
 	--print(pkt)

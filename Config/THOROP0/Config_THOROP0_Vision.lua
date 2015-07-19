@@ -1,6 +1,9 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
 
+-- Test this...
+Config.robot_turnaround = true
+
 Config.enable_log = false
 
 local monitor = {

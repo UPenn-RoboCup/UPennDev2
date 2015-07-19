@@ -123,6 +123,9 @@ if Config.world then
 
 
 
+--WE NEED TO RESET BALL POS BEFORE GAME STARTS
+	shared.ball.observed = vector.zeros(1)
+
 	shared.goal = {}
 	shared.goal.t = vector.zeros(1)
 	shared.goal.attack_angle = vector.zeros(1)

@@ -13,7 +13,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
   --hcm.set_ball_approach(0)
-  wcm.set_robot_reset_pose(1)
+
 end
 
 function state.update()

@@ -212,16 +212,20 @@ local function update_vision(detected)
   if Config.disable_ball_when_lookup and wcm.get_ball_disable()>0 then
 --    print("BALL DISABLED")
   elseif ball then
-      ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
+    wcm.get_ball_observed(1)
+    ballFilter.observation_xy(ball.v[1], ball.v[2], ball.dr, ball.da, ball.t)
   end
 
   -- We cannot find the ball.
   -- Add fake observation at behind the robot so that robot can start turning
   if wcm.get_ball_notvisible()==1 then
     wcm.set_ball_notvisible(0)
+print("No ball, turn back!")
+
     if gcm.get_game_role()==1 and Config.robot_turnaround then
       ballFilter.observation_xy(-2,0, 0.5, 20*DEG_TO_RAD, t)
       wcm.set_robot_ballglobal({-2.0,0})
+      wcm.set_ball_observed(1)
     end
   end
 
@@ -313,10 +317,6 @@ function libWorld.pose_reset(pose0)
   wcm.set_robot_pose(pose0 or {0,0,0})
   wcm.set_robot_odometry({0,0,0})
 
-
-print("yaw0:",yaw0*180/math.pi)
-print("yaw:",Body.get_rpy()[3]*180/math.pi)
-
   yaw0 = Body.get_rpy()[3]
   poseFilter.initialize(pose0 or {0,0,0},{0,0,0})
   if IS_WEBOTS then
@@ -405,7 +405,7 @@ function libWorld.update(uOdom, detection)
 
     --Keep resetting pose unless the game state is playing or testing
     if gcm.get_game_role()==0 then
---     print("Goalie pose reset!")
+ --     print("Goalie pose reset!")
       -- Goalie initial pos
       local factor2 = 0.99
       poseFilter.initialize({-Config.world.xBoundary*factor2,0,0},{0,0,0})

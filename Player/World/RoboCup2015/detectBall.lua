@@ -271,7 +271,7 @@ local function find_ball_on_line(Image)
 				(ballGlobalObs[2] - ballGlobalNow[2]) ^ 2
 			)
 			-- Large changes are not good
-			if distObs > 4 then
+			if distObs > 4 and wcm.get_ball_observed()==1 then
 				passed = false
 				msgs[i] = string.format("Big delta: %.2f", distObs)
 			end
@@ -543,7 +543,7 @@ local function find_ball_off_line(Image)
 				(ballGlobalObs[2] - ballGlobalNow[2]) ^ 2
 			)
 			-- Large changes are not good
-			if distObs > 4 then
+			if distObs > 4 and wcm.get_ball_observed()==1 then
 				passed = false
 				print("Ball jump,",distObs)
 --		table.insert(msgs, string.format("Big delta: %.2f", distObs))
@@ -589,7 +589,7 @@ local function find_ball_off_line(Image)
 					return false,table.concat(msgs, '\n')
 				end
 			end
-
+			
 			propsA.online = false
 			return propsA, table.concat(msgs, '\n')
 		end

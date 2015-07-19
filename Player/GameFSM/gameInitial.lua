@@ -24,6 +24,10 @@ function state.update()
   -- Save this at the last update time
   t_update = t
 
+--WE NEED TO RESET BALL POS AT INITIAL
+--OTHERWISE we think ball jumps all the time!!
+  wcm.set_ball_observed(0)
+
 
   local role = gcm.get_game_role()
 

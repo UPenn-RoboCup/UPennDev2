@@ -567,11 +567,11 @@ local function find_ball_off_line(Image)
 			end
 
 			if passed then
-				print("ballGlobal:",ballGlobalObs[1],ballGlobalObs[2], "disbObs:",distObs)
-				if distObs > 2 and wcm.get_ball_observed()==1 then
+				--print("ballGlobal:",ballGlobalObs[1],ballGlobalObs[2], "disbObs:",distObs)
+				if distObs > 3 and wcm.get_ball_observed()==1 then
 				  passed = false
 				  msgs[i] = string.format("Big delta: %.2f", distObs)
-  				print('BIG DELTA:', distObs, wcm.get_ball_observed())--, wcm.get_ball_t())
+  				--print('BIG DELTA:', distObs, wcm.get_ball_observed())--, wcm.get_ball_t())
 				end
 			end
 

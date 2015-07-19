@@ -546,6 +546,7 @@ local function find_ball_off_line(Image)
 			if distObs > 2 and wcm.get_ball_observed()==1 then
 				passed = false
 				msgs[i] = string.format("Big delta: %.2f", distObs)
+				print("XSDDDDDDDDDDS")
 			end
 
 			if Image.HeadFSM=="headLookGoal" then

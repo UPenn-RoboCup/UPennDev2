@@ -8,12 +8,23 @@ require'wcm'
 mod_angle = util.mod_angle
 
 
-function ballFilter.reset()
-  wcm.set_ballfilter_r(1)
-  wcm.set_ballfilter_a(0)
-  wcm.set_ballfilter_rvar(1E10)
-  wcm.set_ballfilter_avar(1E10)
+function ballFilter.reset(back)
+  if back then
+    wcm.set_ballfilter_r(2)
+    wcm.set_ballfilter_a(math.pi)    
+    wcm.set_ballfilter_rvar(0.5)
+    wcm.set_ballfilter_avar(20*DEG_TO_RAD)
+  else
+    wcm.set_ballfilter_r(1)
+    wcm.set_ballfilter_a(0)
+    wcm.set_ballfilter_rvar(1E10)
+    wcm.set_ballfilter_avar(1E10)
+  end
+  
 end
+
+
+
 
 function ballFilter.observation_ra(r1, a1, rErr, aErr, t)
   local r = wcm.get_ballfilter_r()

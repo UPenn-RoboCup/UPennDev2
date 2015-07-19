@@ -280,7 +280,7 @@ local function update_vision(detected)
       -- print("detected obstacles:",#obstacle.xs)
       for i=1,#obstacle.xs do
         local x, y = obstacle.xs[i], obstacle.ys[i]
-        local r =math.sqrt(x^2+y^2)
+        local r = math.sqrt(x^2+y^2)
         local a = math.atan2(y,x)
         --local dr, da = 0.1*r, 15*DEG_TO_RAD -- webots
         local dr, da = 0.1*r, 5*DEG_TO_RAD -- TODO
@@ -292,8 +292,13 @@ local function update_vision(detected)
   end
 
   if type(detected.line)=='table' then
-    local v = detected.line.v[1][1]
-    local a = detected.line.angle[1]
+    --print()
+    for i, v in ipairs(detected.line.v) do
+      local v_close = (vector.new(v[1]) + vector.new(v[2])) / 2
+      local a = detected.line.angle[i]
+      --print('Line Angle', a*RAD_TO_DEG)
+      --print('Local Line Position', unpack(v_close))
+    end
     --poseFilter.line_observation(v, a)
   end
 
@@ -424,7 +429,7 @@ function libWorld.update(uOdom, detection)
     updated_pose = update_odometry(uOdom)
   end
 
-  --to fix yaw jump 
+  --to fix yaw jump
   if (gcm.get_game_state()~=3 and gcm.get_game_state()~=6) then
     local yaw = Body.get_rpy()[3]
     yaw0 = yaw

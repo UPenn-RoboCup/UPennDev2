@@ -720,6 +720,40 @@ end
 
 
 
+function moveleg.joint_trajectory_kick(phSingle)
+
+local breaksTX={0.100000,0.300000,0.340000,0.500000,1.000000,}
+local breaksTY={0.140000,0.450000,0.600000,0.800000,1.000000,}
+local breaksTA={0.120000,0.200000,0.500000,0.750000,1.000000,}
+local coefsX={
+  {-4719.769765,2558.241239,-203.626426,-16.720000,},
+  {-4719.769765,1142.310310,166.428729,-16.220000,},
+  {6625.988246,-1689.551549,56.980481,25.000000,},
+  {1298.366137,-894.432960,-46.378900,25.000000,},
+  {1298.366137,-271.217214,-232.882927,0.000000,},
+}
+local coefsY={
+  {607.479947,-650.317931,210.495046,33.610000,},
+  {607.479947,-395.176353,64.125846,52.000000,},
+  {-2061.628565,169.779998,-5.747024,52.000000,},
+  {2014.088094,-757.952857,-93.972952,48.000000,},
+  {2014.088094,450.500000,-155.463524,15.000000,},
+}
+local coefsA={
+  {-1178.307439,1339.975047,-336.412712,-16.890000,},
+  {-1178.307439,915.784369,-65.721582,-40.000000,},
+  {-1274.936179,632.990584,58.180414,-40.000000,},
+  {685.935970,-514.451977,93.741996,0.000000,},
+  {685.935970,-0.000000,-34.870998,2.000000,},
+}
+  local hip=eval_spline(breaksTX, coefsX,phSingle) *DEG_TO_RAD
+  local knee=eval_spline(breaksTY, coefsY,phSingle)  *DEG_TO_RAD
+  local ankle=eval_spline(breaksTA, coefsA,phSingle)  *DEG_TO_RAD
+
+  return hip,knee,ankle
+end
+
+
 
 
 function moveleg.set_leg_positions()
@@ -769,6 +803,87 @@ function moveleg.set_leg_positions()
       qLegs[9] = Config.walk.hipPitch0 + (qLegs[9]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
     end
   end
+  Body.set_lleg_command_position(vector.slice(qLegs,1,6))
+  Body.set_rleg_command_position(vector.slice(qLegs,7,12))
+
+  ------------------------------------------
+  -- Update the status in shared memory
+  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
+  mcm.set_status_odometry( uFoot )
+  --util.pose_relative(uFoot, u0) for relative odometry to point u0
+  local bodyOffset = util.pose_relative(uTorso, uFoot)
+  mcm.set_status_bodyOffset( bodyOffset )
+  ------------------------------------------
+  if IS_WEBOTS then
+    local llt = Body.get_lleg_current()
+    local rlt = Body.get_rleg_current() 
+
+    mcm.set_status_lleg_torque(llt)
+    mcm.set_status_rleg_torque(rlt)
+  end
+end
+
+
+
+function moveleg.set_leg_positions_hack(supportLeg,phSingle)
+    local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+
+  local uTorsoOffset,qLegs,comZ= Body.get_torso_compensation(qLArm,qRArm,qWaist)  
+  local delta_legs = mcm.get_walk_delta_legs()  
+  mcm.set_stance_COMoffset({-uTorsoOffset[1],-uTorsoOffset[2],comZ })
+
+  --Knee angle check
+  if Config.birdwalk then
+    --knee pitch should be neagitve
+    qLegs[4]= math.min(0,qLegs[4])
+    qLegs[10]= math.min(0,qLegs[10])
+  else
+    --knee pitch should be positive
+    qLegs[4]= math.max(0,qLegs[4])
+    qLegs[10]= math.max(0,qLegs[10])  
+  end
+
+  local legBias = vector.new(mcm.get_leg_bias())
+  qLegs = qLegs + delta_legs + legBias
+  qLegs[5]=qLegs[5]
+  qLegs[11]=qLegs[11]
+  qLegs[6]=qLegs[6]
+  qLegs[12]=qLegs[12]
+
+  if Config.walk.anklePitchLimit then
+    qLegs[5]=math.max(qLegs[5],Config.walk.anklePitchLimit[1])
+    qLegs[11]=math.max(qLegs[11],Config.walk.anklePitchLimit[1])
+    qLegs[5]=math.min(qLegs[5],Config.walk.anklePitchLimit[2])
+    qLegs[11]=math.min(qLegs[11],Config.walk.anklePitchLimit[2])
+  end
+--
+  --hip pitch lag fix
+  if Config.walk.hipPitch0 then
+    if qLegs[3]<Config.walk.hipPitch0 then
+      qLegs[3] = Config.walk.hipPitch0 + (qLegs[3]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+    if qLegs[9]<Config.walk.hipPitch0 then
+      qLegs[9] = Config.walk.hipPitch0 + (qLegs[9]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+  end
+
+
+  local q1,q2,q3 = moveleg.joint_trajectory_kick(phSingle)
+  if supportLeg==0 then --left support, right kick
+    qLegs[9],qLegs[10],qLegs[11] = q1,q2,q3
+--    qLegs[9],qLegs[10] = q1,q2
+  else
+    qLegs[3],qLegs[4],qLegs[5] = q1,q2,q3
+    --qLegs[3],qLegs[4],qLegs[5] = q1,q2
+  end
+
+
+
 
 
 
@@ -784,19 +899,14 @@ function moveleg.set_leg_positions()
   local bodyOffset = util.pose_relative(uTorso, uFoot)
   mcm.set_status_bodyOffset( bodyOffset )
   ------------------------------------------
-
-
   if IS_WEBOTS then
     local llt = Body.get_lleg_current()
     local rlt = Body.get_rleg_current() 
 
     mcm.set_status_lleg_torque(llt)
     mcm.set_status_rleg_torque(rlt)
-
   end
-
 end
-
 
 
 

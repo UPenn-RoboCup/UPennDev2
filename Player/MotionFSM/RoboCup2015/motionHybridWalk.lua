@@ -267,6 +267,42 @@ function walk.update()
       uSupport = util.pose_global({0,uSupportModY,0},uSupport)
     end
 
+
+
+
+--Quick hack for sidestepping
+
+
+local sideModL = Config.sideModL
+local sideMod2L = Config.sideMod2L
+local sideModR = Config.sideModR
+local sideMod2R = Config.sideMod2R
+
+      local uSupportModY = 0
+      if velCurrent[2]>0.01 then
+	if supportLeg ==0 then --Left support, left sidestep
+          uSupportModY = uSupportModY + sideModL
+	else
+          uSupportModY = uSupportModY + sideMod2L
+	end
+      end
+      if velCurrent[2]<-0.01 then
+	if supportLeg ~=0 then
+          uSupportModY = uSupportModY + sideModR
+	else
+          uSupportModY = uSupportModY + sideMod2R
+	end
+      end
+
+
+      uSupport = util.pose_global({0,uSupportModY,0},uSupport)
+
+
+
+
+
+
+
     local uTorsoVel = mcm.get_status_uTorsoVel()
     local uSupportDist1 = util.pose_relative(uSupport,uTorso_now)
     local uSupportDist2 = util.pose_relative(uSupport, uTorso_next)

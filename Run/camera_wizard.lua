@@ -20,7 +20,7 @@ local jpeg = require'jpeg'
 local Body = require'Body'
 local get_time = Body.get_time
 local ok, ffi = pcall(require, 'ffi')
-require'gcm'
+
 -- Grab the metadata for this camera
 local metadata, camera_id
 if type(arg)~='table' or not arg[1] then
@@ -87,6 +87,7 @@ local t_monitor = -math.huge
 -- Figure out where the camera is on each frame
 require'mcm'
 require'wcm'
+require'gcm'
 local pose_global = require'util'.pose_global
 local transform6D = require'Transform'.transform6D
 local rotY = require'Transform'.rotY
@@ -142,7 +143,8 @@ local function update(img, sz, cnt, t)
 		HeadFSM = gcm.get_fsm_Head()
 		GameFSM = gcm.get_fsm_Game()
 		MotionFSM = gcm.get_fsm_Motion()
-		BodyFSM = gcm.get_fsm_Body()
+		BodyFSM = gcm.get_fsm_Body(),
+		tleft = gcm.get_game_timeleft(),
 	}
 	local img_str = ffi.string(img, sz)
 

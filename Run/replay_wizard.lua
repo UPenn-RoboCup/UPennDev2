@@ -36,10 +36,20 @@ local function pairmin(t)
 	end
 	return tmin, imin
 end
-
 -- In lab Saturday
 local logs = {
 }
+
+----[[
+logs.yuyv = {
+	ch = si.new_publisher'camera0',
+	dir = HOME..'Data'..'/Match1/Attack_5/',
+	'07.19.2015.01.22.01',
+	'07.19.2015.01.22.23',
+	'07.19.2015.01.22.45',
+}
+--]]
+--[[
 logs.yuyv = {
 	ch = si.new_publisher'camera0',
 	dir = HOME..'Data'..'/day2_1pm',
@@ -180,7 +190,7 @@ logs.yuyv = {
 	'07.18.2015.01.56.35',
 	'07.18.2015.01.56.45',
 }
-
+--]]
 --[[
 logs.yuyv = {
 	ch = si.new_publisher'camera0',

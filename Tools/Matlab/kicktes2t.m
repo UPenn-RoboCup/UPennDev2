@@ -86,7 +86,7 @@ subplot(2,2,3);
 fnplt(r);
 ylabel('a');
 xlabel('t');
-%{
+%
 figure(2);
 subplot(2,2,1);
 plot(kick(:,1),kick(:,2)*180/pi)

@@ -874,12 +874,19 @@ function moveleg.set_leg_positions_hack(supportLeg,phSingle)
 
 
   local q1,q2,q3 = moveleg.joint_trajectory_kick(phSingle)
+  local blend_factor = math.min(1, phSingle/0.2)
+
+
   if supportLeg==0 then --left support, right kick
-    qLegs[9],qLegs[10],qLegs[11] = q1,q2,q3
---    qLegs[9],qLegs[10] = q1,q2
+    qLegs[9],qLegs[10],qLegs[11] = 
+    qLegs[9]*(1-blend_factor) + q1*blend_factor,
+    qLegs[10]*(1-blend_factor) + q2*blend_factor,
+    qLegs[11]*(1-blend_factor) + q3*blend_factor
   else
-    qLegs[3],qLegs[4],qLegs[5] = q1,q2,q3
-    --qLegs[3],qLegs[4],qLegs[5] = q1,q2
+    qLegs[3],qLegs[4],qLegs[5] = 
+    qLegs[3]*(1-blend_factor) + q1*blend_factor,
+    qLegs[4]*(1-blend_factor) + q2*blend_factor,
+    qLegs[5]*(1-blend_factor) + q3*blend_factor
   end
 
 

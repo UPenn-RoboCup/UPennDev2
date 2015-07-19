@@ -8,16 +8,11 @@ local color = require'util'.color
 local LUA = 'luajit'
 
 local wizards = {
-	{'lidar_chest', },
-	{'lidar_head', },
-	{'camera', 1},
-	{'camera', 2},
-	{'audio', 1},
-	{'audio', 2},
-	{'rpc', },
-	{'feedback', },
-	{'mesh', },
-	{'slam', },
+	{'camera', },
+	{'vision', },
+	{'world',},
+	{'gc', 2},
+	{'state', 1},
 }
 local runs = {
 	'dcm',

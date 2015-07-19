@@ -297,7 +297,7 @@ fsm.headReady = {
 
 --HeadTrack
 fsm.headTrack = {
-  tLost = 5,
+  tLost = 10,
   timeout = 6,
 	dist_th = 0.5,
 }

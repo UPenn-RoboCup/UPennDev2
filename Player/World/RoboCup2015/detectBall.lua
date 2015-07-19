@@ -18,6 +18,7 @@ local function bboxB2A(bboxB, scaleB)
 end
 
 local lastBallG = nil
+local lastBallGt = -math.huge
 
 local b_ground_head_pitch, b_ground_boundingbox, b_ground_white, b_ground_green
 local colors
@@ -233,23 +234,24 @@ local function find_ball_off_line(Image)
 
 		end
 
-		local BIG_DELTA
 		if passed and lastBallG then
 			local distObs = math.sqrt(
 				(projectedVG[1] - lastBallG[1]) ^ 2,
 				(projectedVG[2] - lastBallG[2]) ^ 2
 			)
-			--print('distObs', distObs)
-			if (distObs > 3) then
+			--print('lastBallG', lastBallG, 'ballG', projectedVG, 'distObs', distObs)
+			local dtBall = Image.t - lastBallGt
+			if (distObs > 2) and (dtBall < 10) then
 				passed = false
 				msgs[i] = string.format("Big delta: %.2f", distObs)
-				BIG_DELTA = distObs
+				--print('dist big', msgs[i])
+				--print('passed1', passed)
 			end
 		end
 
 		-- If passed the checks
+		--print('passed', passed)
 		if passed==true then
-			if BIG_DELTA then print('BIG_DELTA', BIG_DELTA) end
 			propsA.v = projectedVL
 			propsA.t = Image.t
 			-- For ballFilter
@@ -261,6 +263,7 @@ local function find_ball_off_line(Image)
 			propsA.online = false
 
 			lastBallG = projectedVG
+			lastBallGt = Image.t
 
 			return propsA, table.concat(msgs, '\n')
 		end

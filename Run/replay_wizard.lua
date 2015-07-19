@@ -376,6 +376,8 @@ while true do
 
 		elseif not constant then
 			unix.usleep( dt * 1e6 / speedup )
+			-- Set the localization in memory
+			-- wcm.set_pose
 			logs[i].ch:send(data)
 		elseif constant==cnt then
 			while true do

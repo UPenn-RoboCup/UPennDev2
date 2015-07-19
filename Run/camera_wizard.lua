@@ -215,9 +215,12 @@ if dev_raw then
 	end
 end
 if dev_raw then
+	print('Setting auto params again...')
 	-- 1 means off!
 	os.execute('uvcdynctrl -d'..dev_raw..' -s "Exposure, Auto" 1')
-		unix.usleep(1e3)
+	unix.usleep(1e3)
+	os.execute('uvcdynctrl -d'..dev_raw..' -s "White Balance Temperature, Auto" 0')
+	unix.usleep(1e3)
 end
 
 -- Set the params

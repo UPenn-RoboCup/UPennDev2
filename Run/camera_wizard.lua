@@ -140,6 +140,9 @@ local function update(img, sz, cnt, t)
 		tfL16 = tfL_flat,
 		tfG16 = tfG_flat,
 		HeadFSM = gcm.get_fsm_Head()
+		GameFSM = gcm.get_fsm_Game()
+		MotionFSM = gcm.get_fsm_Motion()
+		BodyFSM = gcm.get_fsm_Body()
 	}
 	local img_str = ffi.string(img, sz)
 

@@ -163,6 +163,9 @@ function detectLine.update(Image)
 		end
 
     if passed then
+
+
+
 			table.insert(lines.length, length)
 			table.insert(lines.endpoint, Image.scaleB * bendpoint)
 			table.insert(lines.v, vL_endpoint)
@@ -172,6 +175,11 @@ function detectLine.update(Image)
 					vL_endpoint[1][1]-vL_endpoint[2][1]
 				))
 			)
+
+			--print('lines.endpoint', unpack(lines.endpoint))
+			--print('lines.length', unpack(lines.length))
+			--print('vL_endpoint', unpack(vL_endpoint))
+
 			msgs[i] = 'Passed checks'
     end
 

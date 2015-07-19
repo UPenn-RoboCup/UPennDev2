@@ -89,12 +89,12 @@ local function init(w, h, angle_prior)
   props.j0 = j0
   props.r0 = r0
   -- Size of the zeroing
-  local b_size32 = NTH * MAXR * ffi.sizeof'int32_t'
+  local b_size32 = 2 * NTH * MAXR * ffi.sizeof'int32_t'
   -- Zero the counts
   ffi.fill(count_d, b_size32)
   ffi.fill(line_sum_d, b_size32)
   -- Fill up the min/max lines
-  for ith=0,NTH-1 do
+  for ith=0,2*NTH-1 do
     for ir=0,NR-1 do
       --count_d[ith][ir] = 0
       --line_sum_d[ith][ir] = 0
@@ -274,43 +274,6 @@ function RadonTransform.radon_lines_label(label_d, w, h)
   end
   -- Yield the Radon Transform
   return props
-end
-
--- Converts to torch
-function RadonTransform.get_population ()
-  --Int
-  local count_t = torch.IntTensor(NTH, NR)
-  local count_s = count_t:storage()
-  local tmp_s = torch.IntStorage(
-  NTH * NR,
-  tonumber(ffi.cast("intptr_t",count_d))
-  )
-  count_s:copy(tmp_s)
-  --
-  local line_sum_t = torch.IntTensor(NTH, NR)
-  local line_sum_s = line_sum_t:storage()
-  local tmp_s = torch.IntStorage(
-  NTH * NR,
-  tonumber(ffi.cast("intptr_t",line_sum_d))
-  )
-  line_sum_s:copy(tmp_s)
-  --
-  local line_min_t = torch.IntTensor(NTH, NR)
-  local line_min_s = line_min_t:storage()
-  local tmp_s = torch.IntStorage(
-  NTH * NR,
-  tonumber(ffi.cast("intptr_t",line_min_d))
-  )
-  line_min_s:copy(tmp_s)
-  --
-  local line_max_t = torch.IntTensor(NTH, NR)
-  local line_max_s = line_max_t:storage()
-  local tmp_s = torch.IntStorage(
-  NTH * NR,
-  tonumber(ffi.cast("intptr_t",line_max_d))
-  )
-  line_max_s:copy(tmp_s)
-  return count_t, line_sum_t, line_min_t, line_max_t
 end
 
 return RadonTransform

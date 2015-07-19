@@ -459,7 +459,6 @@ ImageProc.color_countB = color_countB
 ----[[
 
 local function radon2ij(props, ith, ir)
-  local s, c = props.sin_d[ith], props.cos_d[ith]
 
   -- How far down the line
   local cnt = props.count_d[ith][ir]
@@ -470,6 +469,15 @@ local function radon2ij(props, ith, ir)
   --ir = (flip and -ir or ir)
 
   -- Closest point
+  local s, c = props.sin_d[ith], props.cos_d[ith]
+  if type(c)~='number' then
+    print('cweird ith', ith, c, type(c))
+    return
+  end
+  if type(s)~='number' then
+    print('sweird ith', ith, s, type(s))
+    return
+  end
   local iR = ir * c * props.RSCALE
   local jR = ir * s * props.RSCALE
 
@@ -529,6 +537,7 @@ function ImageProc.field_lines(label, w, h)
     end
   end
   --]]
+  if cmax==0 then return end
 
   ----[[
   local irmaxes = {}
@@ -544,7 +553,7 @@ function ImageProc.field_lines(label, w, h)
         local cval = props.count_d[ith][ir]
         if cval > cmx then
           cmx = cval
-          if ith >= props.NTH and false then
+          if ith >= props.NTH then
             irmx = -ir
           else
             irmx = ir
@@ -553,7 +562,7 @@ function ImageProc.field_lines(label, w, h)
       end -- end the inner for
     elseif ith==ithmax then
       for ir=0, props.NR-1 do
-        --if ir < irmax-min_width or ir > irmax+min_width then
+        if ir < irmax-min_width or ir > irmax+min_width then
           local cval = props.count_d[ith][ir]
           if cval > cmx then
             cmx = cval
@@ -563,7 +572,7 @@ function ImageProc.field_lines(label, w, h)
               irmx = ir
             end
           end
-        --end
+        end
       end -- end the inner for
     end
     cmaxes[ith+1] = cmx
@@ -592,12 +601,15 @@ function ImageProc.field_lines(label, w, h)
     --print('line....',unpack(v))
     if v[3]>=minCount then
       -- Check for flipping later...
-      table.insert(ijs, radon2ij(props, v[1], v[2]))
+      local ij = radon2ij(props, v[1], v[2])
+      if ij then table.insert(ijs, ij) end
       --table.insert(ijs, radon2ij(props, v[1], v[2], true))
     end
   end
   --]]
 
+  --print('ijs', #ijs)
+  --util.ptable(props)
   return ijs, props
 
 end

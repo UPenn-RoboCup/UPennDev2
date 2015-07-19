@@ -541,7 +541,7 @@ local function find_ball_off_line(Image)
 				(ballGlobalObs[1] - ballGlobalNow[1]) ^ 2,
 				(ballGlobalObs[2] - ballGlobalNow[2]) ^ 2
 			)
-			
+
 			if Image.HeadFSM=="headLookGoal" then
 				passed = false
 				msgs[i] = string.format("Looking for goal")
@@ -561,17 +561,19 @@ local function find_ball_off_line(Image)
 				end
 			end
 
-			if passed then 
+			if Image.HeadFSM=="headLookGoal" then
+				passed = false
+				msgs[i] = string.format("Looking for goal not ball")
+			end
+
+			if passed then
 				print("ballGlobal:",ballGlobalObs[1],ballGlobalObs[2], "disbObs:",distObs)
 				if distObs > 2 and wcm.get_ball_observed()==1 then
 				  passed = false
 				  msgs[i] = string.format("Big delta: %.2f", distObs)
-  -- rint("XSDDDDDDDDDDS")
   				print('BIG DELTA:', distObs, wcm.get_ball_observed())--, wcm.get_ball_t())
 				end
 			end
-
-
 
 		end
 

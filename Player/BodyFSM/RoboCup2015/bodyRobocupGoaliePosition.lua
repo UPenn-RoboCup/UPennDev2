@@ -14,7 +14,7 @@ local VA_WALK = 10*DEG_TO_RAD
 local Y_THRESH = 0.10
 --
 local X_THRESH = 0.10
-local X_GOAL = -4.25
+local X_GOAL = -4.2
 --
 local A_THRESH = 5 * DEG_TO_RAD
 --
@@ -52,19 +52,14 @@ function state.update()
     y_goal,
     math.atan2(y_goal, 1)
   }
-  --print('goalPose', goalPose)
+
   local dPose = pose_relative(goalPose, pose)
+  --print('dPose', dPose, pose)
 
   local in_position = true
   local vx = 0
   local vy = 0
   local va = 0
-
-  -- We should move up from the goal line
-  if math.abs(dPose.x) > X_THRESH then
-    vx = sign(dPose.x) * VX_WALK
-    in_position = false
-  end
 
   -- Stay in front of the ball always
   if math.abs(dPose.y) > Y_THRESH then
@@ -73,16 +68,18 @@ function state.update()
   end
 
   -- Angle to face the ball a bit
-  --local da = math.atan2(goalPose.y, 0)
-
   if math.abs(dPose.a) > A_THRESH then
+    va = sign(dPose.a) * VA_WALK
+    in_position = false
+  end
 
-    --if vx==0 and vy==0 then
-      --print('dPose.a', dPose.a)
-      --print('goalPose.y', goalPose.y)
-      va = sign(dPose.a) * VA_WALK
-      in_position = false
-    --end
+  -- We should move up from the goal line
+  if math.abs(dPose.x) > X_THRESH then
+    vx = sign(dPose.x) * VX_WALK
+    if vx > 0 then
+      vx = vx * 0.5
+    end
+    in_position = false
   end
 
   -- If in position, then return

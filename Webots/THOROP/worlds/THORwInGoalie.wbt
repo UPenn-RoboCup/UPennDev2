@@ -1,0 +1,90 @@
+#VRML_SIM V7.4.3 utf8
+WorldInfo {
+  info [
+    "World for the Adult size soccer league"
+  ]
+  title "THORwIn2 RoboCup"
+  basicTimeStep 33
+  FPS 15
+}
+Viewpoint {
+  orientation -5.51592e-05 0.922351 0.386352 3.12396
+  position 0.468813 8.88919 -8.19217
+}
+Background {
+  skyColor [
+    0.7 0.3 0.3
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.3
+}
+DirectionalLight {
+  direction 0.5 -0.2 0.5
+  intensity 0.3
+}
+DirectionalLight {
+  direction 0.5 -0.2 -0.5
+  intensity 0.3
+}
+DirectionalLight {
+  direction -0.5 -0.2 0.5
+  intensity 0.3
+}
+DirectionalLight {
+  direction -0.5 -0.2 -0.5
+  intensity 0.3
+}
+THORwIn_Dale_halfmass {
+  translation 4.1 1.14 0
+  rotation 0 1 0 -1.5708
+  controller "thorop"
+  controllerArgs "0 32"
+  max_torque_400w 90
+  max_torque_200w 90
+  max_torque_100w 45
+  damping_constant 0
+  footContactMaterial "feet"
+}
+SoccerField {
+}
+DEF BLUE_GOAL TeenGoal {
+  translation 4.5 0 0
+  netColor 0.11 0.11 0.11
+}
+DEF YELLOW_GOAL TeenGoal {
+  translation -4.5 0 0
+  rotation 0 1 0 3.14159
+  netColor 0.11 0.11 0.11
+}
+DEF BALL BallGPS {
+  translation 2.4 0.109919 2.2
+  color 1 1 1
+  radius 0.11
+  mass 0.055
+  #linearDamping 0.17
+  #angularDamping 0.33
+  linearDamping 0.3
+  angularDamping 0.63  
+  controller "ballGPS"
+}
+DEF OBS1 ObjectGPS {
+  translation -2 0.45 -1.5
+  controller "objectGPS"
+  controllerArgs "1"
+}
+DEF OBS2 ObjectGPS {
+  translation -2.5 0.45 2
+  controller "objectGPS"
+  controllerArgs "2"
+}
+DEF OPPONENT Block {
+  translation -4.2 0.5 0
+}

@@ -62,6 +62,7 @@ print("OFFSET:",mcm.get_stance_COMoffsetBias())
   --both arm and body are not inited. slow down until it's done
   mcm.set_status_body_init(0)
   mcm.set_status_arm_init(0)
+  wcm.set_robot_odomfactor(0)
 
 end
 

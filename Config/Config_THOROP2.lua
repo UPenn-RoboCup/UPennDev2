@@ -198,6 +198,16 @@ Config.gamecontroller_timeout = 5.0
 Config.use_walkkick = true
 
 Config.use_arm_switch = true
-  Config.walk.velLimitX = {-.10,.15}
+Config.walk.velLimitX = {-.10,.15}
+
+  --low/med/fast speed drift (per step)
+if IS_WEBOTS then 
+	Config.driftFactor = {0,0,0}
+else
+	Config.driftFactor = {0.029,0.026,0.008}
+end
+Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of the foot!)
+
+
 
 return Config

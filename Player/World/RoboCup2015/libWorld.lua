@@ -30,6 +30,9 @@ local ball, goal, obstacle, line
 -- Obstacle filters
 local OF = {}
 
+
+local t_old
+
 -- Initial odometry
 local uOdometry0 = vector.zeros(3)
 -- Save the resampling times
@@ -135,13 +138,14 @@ local function update_odometry(uOdometry)
 
   --print('dOdom', unpack(uOdometry))
 
-  -- Scale the odometry
 
-  --odometry update is called every frame (~120hz)
-  --we drift away 1cm back every step (~0.8sec)
-  --then we have 0.01m / 0.8sec / 120 hz drift per step
+--t_old = t_entry
 
-  uOdometry[1] = odomScale[1] * uOdometry[1] + odomDrift
+  local t = Body.get_time()
+  local t_passed = t-t_old
+  t_old=t
+
+  uOdometry[1] = odomScale[1] * uOdometry[1] + t_passed * wcm.get_robot_odomfactor()/0.80
   uOdometry[2] = odomScale[2] * uOdometry[2]
   uOdometry[3] = odomScale[3] * uOdometry[3]
   -- Next, grab the gyro yaw
@@ -343,7 +347,7 @@ function libWorld.entry()
   poseFilter.initialize()
   -- Save this resampling time
   t_resample = t_entry
-
+  t_old = t_entry
   -- Set the initial odometry
   wcm.set_robot_pose({0,0,0})
   wcm.set_robot_odometry({0,0,0})

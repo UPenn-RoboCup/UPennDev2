@@ -58,8 +58,8 @@ print('!!!!IS_STEVE!!!!')
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false
 
-		Config.use_gps_pose = true
-		Config.use_gps_vision = true
+	--Config.use_gps_pose = true
+--		Config.use_gps_vision = true
 
 
 	end
@@ -209,8 +209,12 @@ Config.demo = true
 --Config.disable_kick = true --use this for approach testing
 Config.use_walkkick = true
 
-
-
-
+--low/med/fast speed drift (per step)
+if IS_WEBOTS then 
+	Config.driftFactor = {0,0,0}
+else
+	Config.driftFactor = {0.029,0.026,0.008}
+end
+Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of the foot!)
 
 return Config

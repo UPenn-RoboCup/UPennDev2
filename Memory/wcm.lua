@@ -37,6 +37,8 @@ shared.robot.reset_pose = vector.ones(1) --this forces the pose to be resetted
 shared.robot.use_imu_yaw = vector.ones(1)
 
 
+--how much robot drifts forward 
+shared.robot.odomfactor = vector.zeros(1)
 
 
 

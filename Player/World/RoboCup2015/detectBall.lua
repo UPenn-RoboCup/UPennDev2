@@ -172,8 +172,8 @@ local function find_ball_off_line(Image)
 		-- v[3], config.max_height0+config.max_height1*math.sqrt(v[1]*v[1]+v[2]*v[2]
 		--)))
 		if passed and ENABLE_GROUND_CHECK then
-			-- Only when looking down
-			if Image.qHead[2] < b_ground_head_pitch then
+			-- TODO: Only when looking down
+			--if Image.qHead[2] < b_ground_head_pitch then
 				local th_ground_boundingbox = b_ground_boundingbox
 				local ballCentroid = propsA.centroid
 				local vmargin = Image.ha - ballCentroid[2]
@@ -191,19 +191,21 @@ local function find_ball_off_line(Image)
 					local fieldBBoxStats = ImageProc2.color_stats(
 					Image.labelA_d, Image.wa, Image.ha, colors.field, fieldBBox
 					)
+					print('fieldBBoxStats.area', fieldBBoxStats.area)
 					if fieldBBoxStats.area < b_ground_green then
 						-- if there is no field under the ball
 						-- it may be because its on a white line
 						local whiteBBoxStats = ImageProc2.color_stats(
-						Image.labelA_d, Image.wa, Image.ha, ball_color, fieldBBox
+						Image.labelA_d, Image.wa, Image.ha, colors.white, fieldBBox
 						)
+						print('whiteBBoxStats.area', whiteBBoxStats.area)
 						if whiteBBoxStats.area < b_ground_white then
 							passed = false
 							msgs[i] = "Green check fail"
 						end
 					end -- end green
 				end -- end margin
-			end -- end qHead check
+			--end -- end qHead check
 		end
 
 		local ignoringBack = Image.HeadFSM=="headBackScan" or

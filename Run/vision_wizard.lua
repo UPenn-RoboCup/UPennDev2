@@ -138,7 +138,7 @@ local function update(meta, img)
     id = 'labelA',
   }
 	local lA_msg = {mpack(lA_meta), lA_raw}
-
+	--require'util'.ptable(detection)
 	local detection_msg = mpack(detection)
 	vision_ch:send(detection_msg)
 	label_ch:send(lA_msg)

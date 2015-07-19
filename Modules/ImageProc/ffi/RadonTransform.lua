@@ -25,10 +25,10 @@ local NTH = 45 -- Number of angles (4 degree res)
 
 local i0, j0, r0, th0 = 0, 0, 0, 0
 
-local count_d    = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
-local line_sum_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
-local line_min_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
-local line_max_d = ffi.new("int32_t["..NTH.."]["..MAXR.."]")
+local count_d    = ffi.new("int32_t["..2*NTH.."]["..MAXR.."]")
+local line_sum_d = ffi.new("int32_t["..2*NTH.."]["..MAXR.."]")
+local line_min_d = ffi.new("int32_t["..2*NTH.."]["..MAXR.."]")
+local line_max_d = ffi.new("int32_t["..2*NTH.."]["..MAXR.."]")
 -- TODO: Automatically wrap into torch
 
 -- Save our lookup table discretization
@@ -115,12 +115,21 @@ local function addPixelToRay (i, j, ith)
   -- Rscale by 1/2 to redeuce the search size
   --local ir = fabs(c * (i-i0) + s * (j-j0)) / RSCALE
   --local iline = -s * (i-i0) + c * (j-j0)
-  local ir = fabs(c * i + s * j) / RSCALE
+  local ir = (c * i + s * j) / RSCALE
   local iline = c * j - s * i
-  count_d[ith][ir] = count_d[ith][ir] + 1
-  line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
-  if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
-  if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
+  if ir<0 then
+    ith = ith + NTH -- maybe segfaults
+    ir = ir
+    count_d[ith][ir] = count_d[ith][ir] + 1
+    line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
+    if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
+    if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
+  else
+    count_d[ith][ir] = count_d[ith][ir] + 1
+    line_sum_d[ith][ir] = line_sum_d[ith][ir] + iline
+    if iline > line_max_d[ith][ir] then line_max_d[ith][ir] = iline end
+    if iline < line_min_d[ith][ir] then line_min_d[ith][ir] = iline end
+  end
 end
 
 local function addHorizontalPixel (i, j)

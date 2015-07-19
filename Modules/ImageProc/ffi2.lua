@@ -458,7 +458,7 @@ ImageProc.color_countB = color_countB
 -- Field lines
 ----[[
 
-local function radon2ij(props, ith, ir, flip)
+local function radon2ij(props, ith, ir)
   local s, c = props.sin_d[ith], props.cos_d[ith]
 
   -- How far down the line
@@ -467,12 +467,11 @@ local function radon2ij(props, ith, ir, flip)
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
 
-  --flip = true
-  ir = (flip and -ir or ir) * props.RSCALE
+  --ir = (flip and -ir or ir)
 
   -- Closest point
-  local iR = ir * c
-  local jR = ir * s
+  local iR = ir * c * props.RSCALE
+  local jR = ir * s * props.RSCALE
 
   local iMean = iR - lMean * s
   local jMean = jR + lMean * c
@@ -514,12 +513,18 @@ function ImageProc.field_lines(label, w, h)
   local cmax = 0
   local irmax = 0
   local ithmax = 0
-  for ith=0, props.NTH-1 do
+  for ith=0, 2*props.NTH-1 do
+  --for ith=0, props.NTH-1 do
     for ir=0, props.NR-1 do
       if props.count_d[ith][ir] > cmax then
         cmax = props.count_d[ith][ir]
-        irmax = ir
-        ithmax = ith
+        if ith >= props.NTH then
+          --irmax = -ir
+          --ithmax = ith - props.NTH
+        else
+          irmax = ir
+          ithmax = ith
+        end
       end
     end
   end
@@ -532,23 +537,37 @@ function ImageProc.field_lines(label, w, h)
   local min_th = 5
   local ithMax, irMax1, irMax2
   local cntMax1, cntMax2 = 0, 0
-  for ith=0, props.NTH-1 do
+  for ith=0, 2*props.NTH-1 do
     local irmx, cmx = 0, 0
     if ith < ithmax-min_th or ith>ithmax+min_th then
       for ir=0, props.NR-1 do
         local cval = props.count_d[ith][ir]
-        if cval > cmx then irmx = ir; cmx = cval; end
+        if cval > cmx then
+          cmx = cval
+          if ith >= props.NTH and false then
+            irmx = -ir
+          else
+            irmx = ir
+          end
+        end
       end -- end the inner for
     elseif ith==ithmax then
       for ir=0, props.NR-1 do
-        if ir < irmax-min_width or ir > irmax+min_width then
+        --if ir < irmax-min_width or ir > irmax+min_width then
           local cval = props.count_d[ith][ir]
-          if cval > cmx then irmx = ir; cmx = cval; end
-        end
+          if cval > cmx then
+            cmx = cval
+            if ith >= props.NTH then
+              irmx = -ir
+            else
+              irmx = ir
+            end
+          end
+        --end
       end -- end the inner for
     end
-    irmaxes[ith+1] = irmx
     cmaxes[ith+1] = cmx
+    irmaxes[ith+1] = irmx
   end
 
   -- How many extra?
@@ -574,7 +593,7 @@ function ImageProc.field_lines(label, w, h)
     if v[3]>=minCount then
       -- Check for flipping later...
       table.insert(ijs, radon2ij(props, v[1], v[2]))
-      table.insert(ijs, radon2ij(props, v[1], v[2], true))
+      --table.insert(ijs, radon2ij(props, v[1], v[2], true))
     end
   end
   --]]

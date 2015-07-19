@@ -19,9 +19,12 @@ function state.entry()
   if gcm.get_game_role()==0 then
     --goalie
     head_ch:send'scangoalie'
-  else   
+  elseif gcm.get_game_role()==1 then 
     head_ch:send'scanobs'
+  elseif gcm.get_game_role()==3 then  --test
+    head_ch:send'scangoalie'
   end  
+
 end
 
 function state.update()

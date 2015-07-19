@@ -23,6 +23,10 @@ function state.update()
   local t_diff = t - t_update
   -- Save this at the last update time
   t_update = t
+  if Config.auto_init then
+    body_ch:send'init'
+    return 'set'
+  end
 end
 
 function state.exit()

@@ -6,6 +6,23 @@ local t_entry, t_update
 
 local old_role = nil
 
+local function print_role(role)
+if role==1 then --attacker
+    print( util.color('Attacker Set','red') )  
+    print( util.color('Attacker Set','red') )  
+    print( util.color('Attacker Set','red') )  
+  elseif role==0 then
+    print( util.color('GOALIE Set','blue') )
+    print( util.color('GOALIE Set','blue') )
+    print( util.color('GOALIE Set','blue') )
+  elseif role==2 then
+    print( 'Testing' )
+  elseif role==3 then
+    print( util.color('DEMO Set','magenta') )
+    print( util.color('DEMO Set','magenta') )
+    print( util.color('DEMO Set','magenta') )
+  end
+end
 
 function state.entry()
   print(state._NAME..' Entry' ) 
@@ -20,7 +37,12 @@ function state.entry()
   head_ch:send'teleop'
   mcm.set_walk_stoprequest(1)
 
+   local role = gcm.get_game_role()
+   print_role(role)
+   old_role = role
 end
+
+
 
 function state.update()
   local t = Body.get_time()
@@ -31,26 +53,9 @@ function state.update()
 --WE NEED TO RESET BALL POS AT INITIAL
 --OTHERWISE we think ball jumps all the time!!
   wcm.set_ball_observed(0)
-
-
   local role = gcm.get_game_role()
-
   if role~=old_role then
-    if role==1 then --attacker
-      print( util.color('Attacker Set','red') )  
-      print( util.color('Attacker Set','red') )  
-      print( util.color('Attacker Set','red') )  
-    elseif role==0 then
-      print( util.color('GOALIE Set','blue') )
-      print( util.color('GOALIE Set','blue') )
-      print( util.color('GOALIE Set','blue') )
-    elseif role==2 then
-      print( 'Testing' )
-    elseif role==3 then
-      print( util.color('DEMO Initial','green') )
-      print( util.color('DEMO Initial','green') )
-      print( util.color('DEMO Initial','green') )
-    end
+   print_role(role) 
     old_role=role
   end
 end

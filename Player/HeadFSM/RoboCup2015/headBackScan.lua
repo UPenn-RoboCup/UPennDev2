@@ -30,6 +30,12 @@ end
 -- 25 is not enough from test in webots
 --60 degree down can see ball right in front
 
+
+
+--This state is called when the robot totally lose the ball
+--different from backscaninit!!!!
+
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- When entry was previously called
@@ -39,8 +45,7 @@ function state.entry()
   t_update = t_entry
   stage = 1
   wcm.set_ball_disable(0)
-  wcm.set_ball_backonly(1)
-  
+  wcm.set_ball_backonly(0)  
   wcm.set_goal_disable(1)
   wcm.set_obstacle_enable(0)
   
@@ -92,12 +97,9 @@ function state.update()
     pitchTarget = 20*DEG_TO_RAD            
     yawTarget = 90*DEG_TO_RAD
   else
-    if Config.demo then
+    if gcm.get_game_role()==3 then
       return 'scan'
     else
-
-      wcm.set_ball_notvisible(1)
-      print("Couldn't find the ball!!!!")
       return 'noball' --couldn't find the ball. Ball should be right behind the robot!
     end
   end

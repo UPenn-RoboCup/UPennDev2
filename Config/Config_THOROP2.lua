@@ -27,7 +27,6 @@ Config.debug = {
   armplan = true,
 }
 
-
 Config.arm_init_timeout = true
 Config.use_imu_yaw = true
 
@@ -51,9 +50,6 @@ if IS_WEBOTS then
 		Config.use_gps_pose = false
 		Config.use_gps_vision = false
 
-
-		Config.use_gps_pose = true
---	Config.use_gps_vision = true
 end
 
 
@@ -111,11 +107,6 @@ if IS_WEBOTS then
   Config.fsm.bodyRobocupApproach.target={0.25,0.12}
   Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
   Config.world.use_imu_yaw = true
-  Config.walk.velLimitX = {-.10,.15}
-  Config.walk.velLimitY = {-.04,.04}
-  Config.walk.velDelta  = {0.04,0.02,0.2}
-  
-
   Config.world.use_gps_yaw = true
   Config.stop_after_score = true
 end
@@ -132,6 +123,9 @@ Config.disable_goal_vision = false
 Config.auto_state_advance = false
 Config.enable_single_goalpost_detection = true
 Config.disable_ball_when_lookup = true
+
+Config.reject_forward_balls = true
+Config.dont_look_goals =true
 ------------------------------------------------------------
 
 
@@ -139,7 +133,6 @@ Config.disable_ball_when_lookup = true
 
 
 Config.stop_at_neutral = true --false for walk testing
-
 
 ----------------------------------------------------
 --Approach parameters
@@ -150,12 +143,6 @@ if IS_WEBOTS then
   Config.approachTargetX = {0.35, 0.30, 0.35}  --for first walkkick, long stationary kick, weak walkkick
   Config.approachTargetY= {-0.0,0.0}  --L/R aiming offsets (for robot pose)
 end
-
-
---right kick fix
-Config.approachTargetY= {0.00,0.05}  --L/R aiming offsets
-
-
 
 Config.ballX_threshold1 = -1.5 --The threshold we use walkkick
 Config.ballX_threshold2 = 0.5 --The threshold we start using strong kick
@@ -171,8 +158,6 @@ Config.maxStepApproach2 = 0.06
 Config.assume_goalie_blocking = true
 Config.enemy_goalie_shift_factor = 0.15
 
-
---faster approach
 Config.maxStepApproach1 = 0.15
 Config.maxStepApproach2 = 0.10
 ----------------------------------------------------
@@ -193,12 +178,10 @@ Config.gamecontroller_detect = true
 Config.gamecontroller_timeout = 5.0
 
 
-
 --Config.disable_kick = true --use this for approach testing
 Config.use_walkkick = true
-
 Config.use_arm_switch = true
-Config.walk.velLimitX = {-.10,.15}
+
 
   --low/med/fast speed drift (per step)
 if IS_WEBOTS then 
@@ -206,18 +189,19 @@ if IS_WEBOTS then
 else
 	Config.driftFactor = {0.029,0.026,0.008}
 end
-Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of the foot!)
-Config.reject_forward_balls = true
 
-
-Config.walk.velLimitY = {-.05,.05}
-Config.sideModL = 0.03 
-Config.sideMod2L = -0.01 
-Config.sideModR = -0.03 
-Config.sideMod2R = 0.01 
-
-Config.dont_look_goals =true
 Config.spin_detect = true
-
 Config.velThApproach = {0.02,0.02}
+Config.approachTargetY= {-0.08,0.08}  --L/R aiming offsets (kick with outside of the foot!)
+
+--We use walkkick -> weak walkkick -> strong kick in sequence
+Config.ballX_threshold1 = 0.0--The threshold we use walkkick
+Config.ballX_threshold2 = 1.0 --The threshold we start using strong kick
+------------------------------------------------------------------------------------------------
+
+
+
+-- DAY 2
+
+
 return Config

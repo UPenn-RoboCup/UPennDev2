@@ -67,17 +67,8 @@ local state = gcm.get_game_state()
 
 	 if  key_char_lower==("1") then			
 	 	if state~=0 then 
-	 	  game_ch:send'init'
+	 	  game_ch:send'set'
 	 	end
-
-	elseif key_char_lower==("2") then			
-		if state~=1 then 
-	 	  game_ch:send'ready'
-	 	end
-	elseif key_char_lower==("3") then			
-		if state~=2 then 
-		  game_ch:send'set'
-		end
 	elseif key_char_lower==("4") then  
 		if state~=3 then 
 		  game_ch:send'play'
@@ -85,36 +76,31 @@ local state = gcm.get_game_state()
 	elseif key_char_lower==("5") then  
    game_ch:send'finish'		
 
-	elseif key_char_lower==("=") then  
-		--Only change role at gameInitial or gameTest
-		if (state~=3 or state==6) and role~=1 then
+	elseif key_char_lower==("8") then  
+		mcm.set_walk_stoprequest(1)
+
+
+
+
+
+	elseif key_char_lower==("=") then  		
+		if state~=3 and role~=1 then
 			gcm.set_game_role(1)
 		end
-
-	elseif key_char_lower==("-") then  
-		--Only change role at gameInitial or gameTest
-		if (state~=3 or state==6) and role~=0 then
+	elseif key_char_lower==("-") then  		
+		if state~=3 then
 			gcm.set_game_role(0)
 		end
-
-
-	elseif key_char_lower==("8") then  
-	  game_ch:send'finish'
-
-
-
-
 	elseif key_char_lower==("9") then  
-			gcm.set_game_role(2)
+		if state~=3 then
+			gcm.set_game_role(3)
+		end
 		
 
 	elseif key_char_lower==("s") then  
 		head_ch:send'scanobs'		
 	elseif key_char_lower==("l") then  
 		head_ch:send'log'		
-
-	elseif key_char_lower==("8") then  
-		mcm.set_walk_stoprequest(1)
 	end
 
 

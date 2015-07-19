@@ -24,6 +24,7 @@ operator = Config.net.operator.wired
 
 local stream = Config.net.streams.world
 local udp_ch = ENABLE_NET and stream and stream.udp and si.new_sender(operator, stream.udp)
+local udp_wireless_ch = ENABLE_NET and stream and stream.udp and si.new_sender(Config.net.operator.wireless, stream.udp)
 local world_ch = stream and stream.sub and si.new_publisher(stream.sub)
 
 -- SHM
@@ -97,6 +98,10 @@ local function update()
 	if ENABLE_NET and t-t_send > send_interval then
 		if udp_ch then
 				local ret, err = udp_ch:send(mp.pack(metadata))
+				if err and Config.debug.world then print(ret, err) end
+		end
+		if udp_wireless_ch then
+				local ret, err = udp_wireless_ch:send(mp.pack(metadata))
 				if err and Config.debug.world then print(ret, err) end
 		end
 		t_send = t

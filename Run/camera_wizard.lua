@@ -20,7 +20,7 @@ local jpeg = require'jpeg'
 local Body = require'Body'
 local get_time = Body.get_time
 local ok, ffi = pcall(require, 'ffi')
-
+require'gcm'
 -- Grab the metadata for this camera
 local metadata, camera_id
 if type(arg)~='table' or not arg[1] then
@@ -55,7 +55,11 @@ operator = Config.net.operator.wired
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[camera_identifier]
 local udp_ch = ENABLE_NET and stream and stream.udp and
+
 	si.new_sender(operator, stream.udp)
+local udp_wireless_ch = ENABLE_NET and stream and stream.udp and
+	si.new_sender(Config.net.operator.wireless, stream.udp)
+
 local camera_ch = stream and stream.sub and si.new_publisher(stream.sub)
 print('Camera | ', operator, camera_identifier, stream.udp, udp_ch)
 
@@ -76,7 +80,7 @@ end
 local t0 = get_time()
 local t_debug = 0
 --
-local hz_monitor = 1
+local hz_monitor = 0.5
 local dt_monitor = 1/hz_monitor
 local t_monitor = -math.huge
 
@@ -172,8 +176,12 @@ local function update(img, sz, cnt, t)
 			id = camera_name,
 			n = cnt,
 		}), c_img}
-		local udp_ret, udp_err = udp_ch:send(table.concat(msg))
+		local msg = table.concat(msg)
+		local udp_ret, udp_err = udp_ch:send(msg)
 		t_monitor = t
+		if udp_wireless_ch then
+			udp_wireless_ch:send(msg)
+		end
 	end
 
 	return metadata_camera, img_str

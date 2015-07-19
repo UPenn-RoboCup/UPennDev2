@@ -59,9 +59,11 @@ local vision_identifier = 'vision'..(camera_id-1)
 local camera_identifier = 'camera'..(camera_id-1)
 local stream = Config.net.streams[vision_identifier]
 local udp_ch = ENABLE_NET and stream and stream.udp and si.new_sender(operator, stream.udp)
+local udp_wireless_ch = ENABLE_NET and stream and stream.udp and si.new_sender(Config.net.operator.wireless, stream.udp)
 local vision_ch = stream and stream.sub and si.new_publisher(stream.sub)
 local lstream = Config.net.streams.label
 local udp_label_ch = ENABLE_NET and lstream and lstream.udp and si.new_sender(operator, lstream.udp)
+local udp_wireless_label_ch = ENABLE_NET and lstream and lstream.udp and si.new_sender(Config.net.operator.wireless, lstream.udp)
 local label_ch = lstream and lstream.sub and si.new_publisher(lstream.sub)
 --
 print('Vision | ', operator, vision_identifier, stream.udp, udp_ch)
@@ -77,7 +79,7 @@ local t_debug = 0
 --
 local hz_monitor = 1
 local dt_monitor = 1 / hz_monitor
-local t_send = -math.huge
+local t_monitor = -math.huge
 
 local ptable = require'util'.ptable
 local function update(meta, img)
@@ -167,9 +169,17 @@ local function update(meta, img)
 	--label_ch:send(lC_msg)
 
 	-- TODO: How often to send over UDP?
-	if udp_ch then
+	local t = Body.get_time()
+	if udp_ch and (t - t_monitor > dt_monitor) then
+		t_monitor = t
 		udp_ch:send(detection_msg)
+		if udp_wireless_ch then
+			udp_wireless_ch:send(detection_msg)
+		end
 		udp_label_ch:send(table.concat(lA_msg))
+		if udp_wireless_label_ch then
+			udp_wireless_label_ch:send(table.concat(lA_msg))
+		end
 		if lB_msg then udp_label_ch:send(table.concat(lB_msg)) end
 	end
 end

@@ -22,15 +22,15 @@ local TEAM_NUMBER = 8
 
 local net = {
 	robot = {
-		wireless = '192.168.123.'..ROBOT_IP,
+		wireless = '192.168.44.'..ROBOT_IP,
 		wired = '192.168.123.'..ROBOT_IP,
 	},
 	operator = {
-		wireless = '192.168.123.'..WHO,
+		wireless = '192.168.44.'..IP.STEVE,
 		wired = '192.168.123.'..WHO,
 	},
 	broadcast = {
-		wireless = '192.168.123.255',
+		wireless = '192.168.44.255',
 		wired = '192.168.123.255',
 	}
 }

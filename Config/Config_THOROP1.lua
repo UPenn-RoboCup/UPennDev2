@@ -210,6 +210,7 @@ Config.demo = true
 Config.use_walkkick = true
 
 
+Config.driftFactor = {0,0,0}
 
 
 

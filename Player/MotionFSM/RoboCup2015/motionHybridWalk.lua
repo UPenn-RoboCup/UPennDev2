@@ -63,6 +63,7 @@ end
 ---------------------------
 function walk.entry()
 
+  wcm.set_robot_odomfactor(0)
   emergency_stop = false
 
 
@@ -182,6 +183,20 @@ function walk.update()
   ph_last = ph
   
   if is_next_step then
+
+
+
+    local vStep = mcm.get_walk_vel()
+
+    if math.abs(vStep[1])<0.05 then
+      wcm.set_robot_odomfactor(Config.driftFactor[1] or 0.028)
+    elseif math.abs(vStep[1])<0.10 then
+      wcm.set_robot_odomfactor(Config.driftFactor[2] or 0.025)
+    else
+      wcm.set_robot_odomfactor(Config.driftFactor[3] or 0.008)
+    end
+
+
     if emergency_stop then 
       mcm.set_walk_ismoving(0) --no more moving (body FSM can check this)
       return "emergency" 
@@ -343,6 +358,7 @@ function walk.exit()
     print("ZMP PARMAM NOT SET YET")
   end
   step_planner:save_stance(uLeft_next,uRight_next,uTorso_next)  
+  wcm.set_robot_odomfactor(0)
 end
 
 return walk

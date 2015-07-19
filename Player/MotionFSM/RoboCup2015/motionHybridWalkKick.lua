@@ -349,6 +349,9 @@ function walk.update()
 --    mcm.set_walk_aShiftY({aLeft,aRight})
 
 
+    
+
+
     step_planner:save_stance(uLeft,uRight,uTorso,zLeft,zRight)  
 
     --Update the odometry variable
@@ -380,12 +383,20 @@ function walk.update()
       supportRatio)
 
     
-    --local qLLeg = Body.get_lleg_position()
-    if walkParam and walkParam[1]==-2 then
---if false then
+--    local qLLeg = Body.get_lleg_position()
+--    if walkParam and walkParam[1]==-2 then
+    if false then
       moveleg.set_leg_positions_hack(supportLeg,phSingle)
     else
       moveleg.set_leg_positions()    
+    end
+
+    if walkParam and walkParam[1]==-2 then
+      mcm.set_leg_tempdebug(1)
+      --mcm.set_walk_aShiftY({aLeft,aRight})
+--      mcm.set_walk_aShiftY({20*DEG_TO_RAD,0})
+    else
+      mcm.set_leg_tempdebug(0)
     end
 
 

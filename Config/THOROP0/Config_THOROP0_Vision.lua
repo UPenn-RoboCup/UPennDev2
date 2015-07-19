@@ -48,7 +48,7 @@ vision.ball = {
 	diameter = 0.22,
 	th_min_bbox_area = 40, --50
 	th_min_area = 20, --10,
-	th_min_fill_rate = 0.25,
+	th_min_fill_rate = 0.21,
 
 	--TODO: to test on real robot
 	max_height0 = 0.22,    --Max height = max_height0 + dist*max_height1

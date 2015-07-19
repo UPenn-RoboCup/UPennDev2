@@ -3,7 +3,7 @@
 -- Game State Manager
 -- (c) 2014 Stephen McGill
 ---------------------------
-dofile'../include.lua'
+dofile'../fiddle.lua'
 local libGC = require'GameControlReceiver.ffi'
 require'gcm'
 local Body = require('Body')
@@ -115,6 +115,7 @@ local function process_packet(pkt, t)
 	-- Set things
 	gcm.set_game_gctime(t) -- GC time of received packet
 	gcm.set_game_state(pkt.state)
+	game_ch:send(libGC.state_to_name[pkt.state]:lower())
 --	gcm.set_game_secsremaining(pkt.secsRemaining)
 	gcm.set_game_timeleft(pkt.secsRemaining)
 
@@ -139,7 +140,7 @@ local function process_packet(pkt, t)
 		''
 	}, '\n')
 	print(debug_str)
-	print(role)
+--	print(pkt.player)
 end
 
 while running do

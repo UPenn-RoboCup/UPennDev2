@@ -58,7 +58,6 @@ kick.stepqueue["RightKick0"]=
 
 local kickdur = 2.0
 local yShift = 0.0
-
 kick.stepqueue["LeftKick1"]=
   {
     {{0.12,0,0},1,  0.3,kickdur,0.3,   {0.0,yShift,0},{-2,height3,0}}, --rf kick    
@@ -101,6 +100,11 @@ kick.stepqueue["RightKick2"]=
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
     {{0.0,0,0},0,  tSlope1, tStepMid, tSlope2,   {0,0,0},{-9,walk.stepHeight,0}}, 
   }
+
+
+kick.stepqueue["LeftKick2"]=kick.stepqueue["LeftKick0"]
+kick.stepqueue["RightKick2"]=kick.stepqueue["RightKick0"]
+
 
 kick.stepqueue["null"]=
   {

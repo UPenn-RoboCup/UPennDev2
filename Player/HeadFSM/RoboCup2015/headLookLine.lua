@@ -28,10 +28,10 @@ function state.update()
     pitch = 80*DEG_TO_RAD
 	elseif stage == 1 then
 		yaw = 100*DEG_TO_RAD
-    pitch = 45*DEG_TO_RAD
+    pitch = 30*DEG_TO_RAD
 	elseif stage == 2 then
     yaw = -100*DEG_TO_RAD
-    pitch = 45*DEG_TO_RAD
+    pitch = 30*DEG_TO_RAD
 	elseif stage == 3 then
     yaw = 0
     pitch = 30*DEG_TO_RAD

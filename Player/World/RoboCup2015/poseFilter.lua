@@ -8,6 +8,8 @@ local mod_angle = util.mod_angle
 local N = Config.world.nParticle
 local xBoundary = Config.world.xBoundary
 local yBoundary = Config.world.yBoundary
+local xPenalty = Config.world.xPenalty
+local yPenalty = Config.world.yPenalty
 local xMax = Config.world.xMax
 local yMax = Config.world.yMax
 
@@ -33,6 +35,8 @@ local yp = .5*yMax*vector.new(util.randn(N)) -- y coordinate
 local ap = 2*math.pi*vector.new(util.randu(N)) -- angle
 local wp = vector.zeros(N) -- weight
 
+local sin = require'math'.sin
+local cos = require'math'.cos
 
 local function check_particles(funcname)
   for ip = 1,N do
@@ -335,42 +339,71 @@ local function landmark_observation(pos, v, rFilter, aFilter)
   end
 end
 
-
-local xLineBoundary = Config.world.xBoundary
-local yLineBoundary = Config.world.yBoundary
 function poseFilter.line_observation(v, a)
   if type(v)~='table' or type(a)~='number' then return end
-
-  print('Updating lines!')
 
 ---Updates weights of particles according to the detection of a line
 --@param v z and y coordinates of center of line relative to robot
 --@param a angle of line relative to angle of robot
-  -- line center
+  -- Local line center
   local x, y = unpack(v)
+  -- Local distance to the line
   local r = math.sqrt(x^2 + y^2)
 
-  local w0 = 0.25 / (1 + r/2.0);
+  -- Update weight based on the angle of the line
+  -- TODO: Check on this...
 
-  -- TODO: wrap in loop for lua
-  for ip = 1,N do
-    -- pre-compute sin/cos of orientations
-    local ca = math.cos(ap[ip])
-    local sa = math.sin(ap[ip])
-
-    -- compute line weight
-    local wLine = w0 * (math.cos(4*(ap[ip] + a)) - 1);
-    wp[ip] = wp[ip] + wLine;
-
-    local xGlobal = v[1]*ca - v[2]*sa + xp[ip];
-    local yGlobal = v[1]*sa + v[2]*ca + yp[ip];
-
-    local wBounds = math.max(xGlobal - xLineBoundary, 0) +
-              math.max(-xGlobal - xLineBoundary, 0) +
-              math.max(yGlobal - yLineBoundary, 0) +
-              math.max(-yGlobal - yLineBoundary, 0);
-    wp[ip] = wp[ip] - (wBounds/.20);
+  local wLine
+  local w0 = 0.25 / (1 + r/2.0)
+  for ip, ap_ip in ipairs(ap) do
+    wLine = w0 * (cos(4*(ap_ip + a)) - 1)
+    wp[ip] = wp[ip] + wLine
   end
+
+  local ca = {}
+  local sa = {}
+  local xGlobal = {}
+  local yGlobal = {}
+  for ip, ap_ip in ipairs(ap) do
+    ca[ip] = cos(ap_ip)
+    sa[ip] = sin(ap_ip)
+    xGlobal[ip] = v[1]*ca[ip] - v[2]*sa[ip] + xp[ip]
+    yGlobal[ip] = v[1]*sa[ip] + v[2]*ca[ip] + yp[ip]
+  end
+
+  -- TODO: Need the global orientation to check x/y correctly
+
+  -- Weight update against boundaries...
+  local wBoundsFactor = 1 / (4 + r/2.0)
+  for ip, ap_ip in ipairs(ap) do
+    local wBounds =
+      math.max(xGlobal[ip] - xBoundary, 0) +
+      math.max(-xGlobal[ip] - xBoundary, 0) +
+      math.max(yGlobal[ip] - yBoundary, 0) +
+      math.max(-yGlobal[ip] - yBoundary, 0)
+    wp[ip] = wp[ip] - wBounds * wBoundsFactor
+  end
+
+  -- Weight update against goalie box
+  -- TODO: Could be a bit weird on this short line segment
+  -- Maybe just filter out always
+  local wPenaltyFactor = 1 / (1 + r)
+  for ip, ap_ip in ipairs(ap) do
+    local wPenalty =
+      math.max(xGlobal[ip] - xPenalty, 0) +
+      math.max(-xGlobal[ip] - xPenalty, 0) --+
+      --math.max(yGlobal[ip] - yPenalty, 0) +
+      --math.max(-yGlobal[ip] - yPenalty, 0)
+    wp[ip] = wp[ip] - wPenalty * wPenaltyFactor
+  end
+
+  -- Weight update against half field line
+  local wHalflineFactor = 1 / (2 + 2*r)
+  for ip, ap_ip in ipairs(ap) do
+    local wHalfLine = math.abs(xGlobal[ip])
+    wp[ip] = wp[ip] - wHalfLine * wHalflineFactor
+  end
+
   check_particles("line")
 end
 

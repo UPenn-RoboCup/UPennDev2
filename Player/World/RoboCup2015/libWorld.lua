@@ -303,13 +303,11 @@ local function update_vision(detected)
   end
 
   if type(detected.line)=='table' then
-    --print()
-    for i, v in ipairs(detected.line.v) do
-      local v_close = (vector.new(v[1]) + vector.new(v[2])) / 2
-      local a = detected.line.angle[i]
+    for i, line in ipairs(detected.line) do
+      local v_close = line.midL
+      local a = line.angle
       --print('Line Angle', a*RAD_TO_DEG)
       --print('Local Line Position', unpack(v_close))
-      
       --poseFilter.line_observation(v_close, a)
     end
 

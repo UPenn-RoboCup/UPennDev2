@@ -466,13 +466,9 @@ local function radon2ij(props, ith, ir)
   local lMin = props.line_min_d[ith][ir]
   local lMax = props.line_max_d[ith][ir]
 
-  --ir = (flip and -ir or ir)
-
-  --if ir<0 then print('lt 0') end
   local flip = false
-  if ith>=props.NTH then
+  if ith >= props.NTH then
     flip = true
-    --print('flip', ith, ir)
     ith = ith - props.NTH
   end
 
@@ -484,19 +480,10 @@ local function radon2ij(props, ith, ir)
     c = -c
   end
 
-
-
   local iR = ir * c * props.RSCALE
   local jR = ir * s * props.RSCALE
   local iMean = iR - lMean * s
   local jMean = jR + lMean * c
-  --[[
-  local th = ith/props.NTH * math.pi
-  print('Test line', ir, th*RAD_TO_DEG)
-  print('lMean', lMean)
-  print(lMean + ir, lMean - ir)
-  print((c - s)*iMean + (c + s)*jMean)
-  --]]
 
   local lineProp = {
     ir = ir,
@@ -511,8 +498,6 @@ local function radon2ij(props, ith, ir)
     iMax  = iR - lMax * s,
     jMax  = jR + lMax * c,
   }
-
-  lineProp.endpoint = {lineProp.iMin, lineProp.iMax, lineProp.jMin, lineProp.jMax}
 
   return lineProp
 end
@@ -550,7 +535,7 @@ function ImageProc.field_lines(label, w, h)
   local irmaxes = {}
   local cmaxes = {}
   local min_width = 5
-  local min_th = 5
+  local min_th = props.NTH / 6
   local ithMax, irMax1, irMax2
   local cntMax1, cntMax2 = 0, 0
   for ith=0, 2*props.NTH-1 do
@@ -614,6 +599,9 @@ function ImageProc.field_lines(label, w, h)
     end
   end
   --]]
+
+  -- TODO: Line merge
+
 
   --print('ijs', #ijs)
   --util.ptable(props)

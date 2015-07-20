@@ -175,7 +175,7 @@ Config.maxStepApproach2 = 0.10
 ----------------------------------------------------
 -- Goalie bahavior
 Config.goalieBallX_th = -0.5
-Config.goalie_odometry_only = true
+Config.goalie_odometry_only = false
 Config.goaliePosX = 0.40
 Config.ballYFactor = 1.4
 Config.max_goalie_y = 0.7

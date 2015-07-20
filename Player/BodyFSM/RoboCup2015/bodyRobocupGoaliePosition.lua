@@ -11,17 +11,19 @@ local VY_WALK = 0.1
 local VA_WALK = 10*DEG_TO_RAD
 
 -- Ideal position in y along the center
-local Y_THRESH = 0.05
+local Y_THRESH = 0.07
 local Y_MAX = 1
 local Y_FACTOR = 0.7
 --
-local X_THRESH = 0.05
+local X_THRESH = 0.107
 local X_GOAL = -4.05
 --
-local A_THRESH = 2 * DEG_TO_RAD
+local A_THRESH = 5 * DEG_TO_RAD
 --
 local sign = require'util'.sign
 local pose_relative = require'util'.pose_relative
+
+local TIMEOUT = 15
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -30,7 +32,7 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  --motion_ch:send'hybridwalk'
+  head_ch:send'line'
 end
 
 function state.update()
@@ -47,7 +49,14 @@ function state.update()
   t_update = t
 
   local ball = wcm.get_robot_ballglobal()
-  --print('ball*', ball)
+
+  local ball = wcm.get_robot_ballglobal()
+
+  -- If not on our side of the field, then do not move yet
+  if ball[1] > -0.1 then
+    return 'idle'
+  end
+
   local pose = vector.pose(wcm.get_robot_pose())
 
   -- Find the optimal pose
@@ -94,16 +103,12 @@ function state.update()
   end
 
   local vel = vector.new{vx, vy, va}
-  --local diff = vector.new{dx, dy, da}
 
-  --[[
-  print('ball', ball)
-  print('goalPose', goalPose)
-  print('pose', pose)
-  print('diff', diff)
-  print('vel', vel)
-  --]]
   mcm.set_walk_vel(vel)
+
+  if t-t_entry > TIMEOUT then
+    return'timeout'
+  end
 
 end
 

@@ -56,7 +56,7 @@ local function update(key_code)
 
 
 
-	elseif key_char_lower=="1" then
+  elseif key_char_lower=="1" then
 		body_ch:send'init'
 
   elseif key_char_lower=="2" then

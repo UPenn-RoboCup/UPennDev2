@@ -34,7 +34,22 @@ local pose0 = nil
 
 local last_step = 0
 
+local function calculate_distance_to_goal(ballGlobal)
+  local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
+  local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}
+  local goalC = {Config.world.xBoundary,0}
 
+  local distL = math.sqrt(
+    (goalL[1]-ballGlobal[1])^2+
+    (goalL[2]-ballGlobal[2])^2
+    )
+
+  local distR = math.sqrt(
+    (goalR[1]-ballGlobal[1])^2+
+    (goalR[2]-ballGlobal[2])^2
+    )
+  return math.min(distL,distR)
+end
 
 local function robocup_approach( pose, target_pose)
   --local maxStep = 0.04
@@ -156,17 +171,10 @@ local function robocup_approach2(uLeftGlobalTarget, uRightGlobalTarget)
   end
 
 local velThApproach = Config.velThApproach or {0.02,0.02}
-
-
   if math.abs(vStep[1]-vStepTarget[1])<velThApproach[1] and
     math.abs(vStep[2]-vStepTarget[2])<velThApproach[2] then
     last_step = 1    
   end
-
-
-
-
-
   return vStep,false
 end
 
@@ -188,9 +196,6 @@ local function update_velocity()
   approachTargetX = Config.approachTargetX[kicktype+1] or 0.35
   approachTargetY = Config.approachTargetY
 
-  
-
- 
 
   local uLeftGlobalTarget, uRightGlobalTarget
   if ball_side>0 then --Align to the left foot
@@ -233,8 +238,6 @@ local function update_velocity()
       vStep[1],vStep[2],vStep[3]
       ))  
   end
- 
-
 
   mcm.set_walk_vel(vStep)
 
@@ -318,15 +321,32 @@ function state.entry()
   --Determine kick types here!
 
 
---print("ball global:",ballGlobal[1],ballGlobal[2])
---print("game state:",gcm.get_game_state())
-  if gcm.get_game_state()==3 then  --Only during actual playing
-    if ballGlobal[1]<ballX_threshold1 then
+
+------------------------------------------------
+-- KICK SELECTION HERE
+-----------------------------------------------------
+
+
+
+  if Config.kick_decision_new then
+    local goalDist = calculate_distance_to_goal(ballGlobal)
+    local kick_th = Config.kick_threshold or {5,3.5}
+    if goalDist>kick_th[1] then
       mcm.set_walk_kicktype(0) --Walkkick 
-    elseif ballGlobal[1]<ballX_threshold2 then
+    elseif goalDist>kick_th[2] then
       mcm.set_walk_kicktype(2) --Weaker Walkkick 
     else
       mcm.set_walk_kicktype(1) --strong kick default
+    end
+  else
+    if gcm.get_game_state()==3 then  --Only during actual playing
+      if ballGlobal[1]<ballX_threshold1 then
+        mcm.set_walk_kicktype(0) --Walkkick 
+      elseif ballGlobal[1]<ballX_threshold2 then
+        mcm.set_walk_kicktype(2) --Weaker Walkkick 
+      else
+        mcm.set_walk_kicktype(1) --strong kick default
+      end
     end
   end
 

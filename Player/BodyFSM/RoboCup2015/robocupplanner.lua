@@ -6,6 +6,30 @@ local util   = require'util'
 local vector = require'vector'
 require'wcm'
 
+
+
+function calculate_distance_to_goal(ballGlobal)
+  local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
+  local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}
+  local goalC = {Config.world.xBoundary,0}
+
+  local distL = math.sqrt(
+    (goalL[1]-ballGlobal[1])^2+
+    (goalL[2]-ballGlobal[2])^2
+    )
+
+  local distR = math.sqrt(
+    (goalR[1]-ballGlobal[1])^2+
+    (goalR[2]-ballGlobal[2])^2
+    )
+  return math.min(distL,distR)
+end
+
+
+
+
+
+
 function evaluate_goal_kickangle(ballGlobal)
   local obstacle_dist_threshold = 0.1
 --  local kick_deviation_angle = 10*math.pi/180
@@ -51,9 +75,6 @@ end
     local obs_angle_min = math.pi
     for i=1,obstacle_num do   
       local v =wcm['get_obstacle_v'..i]()
-
-
-
       local rel_obs_x = v[1]-ballGlobal[1]
       local rel_obs_y = v[2]-ballGlobal[2]
       local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
@@ -146,6 +167,9 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
   local kick_distance = 4.0
   local kick_distance_max = 5.0
 
+
+
+  local goal_dist = calculate_distance_to_goal(ballGlobal)
 
 
   if ballGlobal[1]<ballX_threshold1 then

@@ -65,10 +65,17 @@ local state = gcm.get_game_state()
 
 
 
-	 if  key_char_lower==("1") then			
-	 	if state~=0 then 
+	 if  key_char_lower==("1") then		
+	  body_ch:send'init'	
+	 	if state~=2 then 
 	 	  game_ch:send'set'
 	 	end
+
+	elseif key_char_lower==("2") then  
+		if state~=2 then 
+	 	  game_ch:send'set'
+	 	end
+
 	elseif key_char_lower==("4") then  
 		if state~=3 then 
 		  game_ch:send'play'

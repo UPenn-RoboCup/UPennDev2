@@ -95,6 +95,8 @@ local rotZ = require'Transform'.rotZ
 local trans = require'Transform'.trans
 local from_rpy_trans = require'Transform'.from_rpy_trans
 local flatten = require'Transform'.flatten
+local rotateX = require'Transform'.rotateX
+local rotateY = require'Transform'.rotateY
 -- CoM to the Neck (32cm in z)
 local tNeck = trans(unpack(Config.head.neckOffset))
 -- Mounting of Camera from the neck axes
@@ -113,11 +115,12 @@ local function get_tf()
 	local torsoL = pose_global(uComp, bo)
 	local torsoG = pose_global(torsoL, pose)
 	-- Transform relative to the local body frame (on the ground between the feet)
+	local tfRock_n_Roll = rotZ(rpy[1]) * rotY(rpy[2])
 	local tfTorsoLocal =
-		transform6D{torsoL.x, torsoL.y, bh, rpy[1], rpy[2], torsoL.a}
+		transform6D{torsoL.x, torsoL.y, bh, 0, 0, torsoL.a} * tfRock_n_Roll
 	-- Transform relative to the global body frame (on the ground)
 	local tfTorsoGlobal =
-		transform6D{torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+		transform6D{torsoG.x, torsoG.y, bh, 0, 0, torsoG.a} * tfRock_n_Roll
 	-- Transform relative to the center of mass
 	local tfCom = tNeck * rotZ(qHead[1]) * rotY(qHead[2]) * tCamera
 	-- Give the local and global transforms

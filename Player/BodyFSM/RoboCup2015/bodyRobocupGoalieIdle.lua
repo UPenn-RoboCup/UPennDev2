@@ -45,7 +45,12 @@ function state.update()
   t_update = t
 
   local ball = wcm.get_robot_ballglobal()
-  --print('ball*', ball)
+
+  -- If not on our side of the field, then do not move yet
+  if ball[1] > -0.1 then
+    return
+  end
+
   local pose = vector.pose(wcm.get_robot_pose())
 
   -- Find the optimal pose
@@ -58,27 +63,21 @@ function state.update()
   }
   local dPose = pose_relative(goalPose, pose)
   --print('dPose', dPose, 'goalPose', goalPose, 'pose', pose)
-  --print('THRESH', X_THRESH, Y_THRESH, A_THRESH)
+
   local in_position = true
 
   -- We should move up from the goal line
   if math.abs(dPose.x) > X_THRESH then
-    print('everywhere')
     in_position = false
   end
 
   -- Stay in front of the ball always
   if math.abs(dPose.y) > Y_THRESH then
-    print('there')
     in_position = false
   end
 
   -- Angle to face the ball a bit
-  --local da = math.atan2(goalPose.y, 0)
-  --print('dPose.a', dPose.a * RAD_TO_DEG)
-  --print('goalPose', goalPose)
   if math.abs(dPose.a) > A_THRESH then
-    print('here')
     in_position = false
   end
 
@@ -86,10 +85,6 @@ function state.update()
   if not in_position then
     return'position'
   end
-
-  local vel = vector.new{vx, vy, va}
-  --local diff = vector.new{dx, dy, da}
-  --mcm.set_walk_vel(vel)
 
 end
 

@@ -106,6 +106,8 @@ function state.update()
   -- Save this at the last update time
   t_update = t
   --if t-t_entry > timeout then return'timeout' end
+  Body.set_waist_command_position({0,0})
+
 
   if Config.torque_legs then
     if IS_WEBOTS then

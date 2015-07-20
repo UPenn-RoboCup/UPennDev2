@@ -1,6 +1,6 @@
 #!/usr/bin/env luajit
 local ENABLE_NET = true
-local ENABLE_LOG = true
+--local ENABLE_LOG = true
 
 if IS_WEBOTS then
 	ENABLE_NET = false
@@ -117,6 +117,12 @@ local function get_tf()
 	local torsoL = pose_global(uComp, bo)
 	local torsoG = pose_global(torsoL, pose)
 	-- Transform relative to the local body frame (on the ground between the feet)
+
+--hack
+--rpy[1]=0
+
+rpy[1]=-rpy[1]
+
 	local tfTorsoLocal =
 		transform6D{torsoL.x, torsoL.y, bh, rpy[1], rpy[2], torsoL.a}
 	-- Transform relative to the global body frame (on the ground)

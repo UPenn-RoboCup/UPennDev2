@@ -210,4 +210,22 @@ if not IS_WEBOTS then Config.driftFactor = {0.029,0.026,0.020} end
 
 Config.ballX_threshold_direct = 0 --after halfline, we just aim for the goal
 
+
+
+
+
+Config.approachTargetX = {0.55,0.40,0.45} --for first walkkick, long stationary kick, weak walkkick\
+
+
+--after waist fix
+Config.approachTargetY= {-0.02,0.06}  --L/R aiming offsets (kick with outside of the foot!)
+
+Config.approachTargetX = {
+--0.40, --basic walkkick
+0.48, --basic walkkick
+0.35, --long stationary kick
+0.40} --for first walkkick, long stationary kick, weak walkkick\
+
+
+
 return Config

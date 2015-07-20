@@ -95,7 +95,7 @@ function state.update()
 
   -- If in position, then return
   if in_position then
-    print('dPose', dPose, pose)
+    print('GoaliePosition | dPose', dPose, pose)
     return'idle'
   end
 

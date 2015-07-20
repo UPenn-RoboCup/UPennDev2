@@ -389,7 +389,9 @@ function poseFilter.line_observation(v, a)
     ) or (
       math.max(xGlobal[ip] - xBoundary, 0) + math.max(-xGlobal[ip] - xBoundary, 0)
     )
-    wp[ip] = wp[ip] - wBounds * wBoundsFactor
+    if s then
+      --wp[ip] = wp[ip] - wBounds * wBoundsFactor
+    end
   end
 
   -- Weight update against goalie box
@@ -402,15 +404,16 @@ function poseFilter.line_observation(v, a)
     ) or (
       math.max(xGlobal[ip] - xPenalty, 0) + math.max(-xGlobal[ip] - xPenalty, 0)
     )
-    wp[ip] = wp[ip] - wPenalty * wPenaltyFactor
+    --wp[ip] = wp[ip] - wPenalty * wPenaltyFactor
   end
 
   -- Weight update against half field line
-  local wHalflineFactor = 1 / (2 + 2*r)
+  local wHalflineFactor = 1 / (4 + 4*r)
+  --print('wHalflineFactor', wHalflineFactor)
   for ip, s in ipairs(sidelines) do
-    if not s then
-      local wHalfLine = math.abs(xGlobal[ip])
-      wp[ip] = wp[ip] - wHalfLine * wHalflineFactor
+    local xDiff = xGlobal[ip]
+    if (not s) and math.abs(xDiff)<0.2 then
+      wp[ip] = math.max(wp[ip] - math.abs(xDiff) * wHalflineFactor, 0)
     end
   end
 

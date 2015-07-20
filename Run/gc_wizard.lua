@@ -103,14 +103,20 @@ local function process_arm_switch(t)
 
 	qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()  
+
+
+
   local threshold = 45*DEG_TO_RAD
   local qL = util.mod_angle(qLArm[1])
   local qR = util.mod_angle(qRArm[1])
+
+
+--print(qL*RAD_TO_DEG,qR*RAD_TO_DEG)
   
   if qL>threshold and qR>threshold then
-    cur_position = 1
+    cur_position = -1
   elseif qL<-threshold and qR<-threshold then
-    cur_position=-1
+    cur_position=1
   else
     cur_position = 0
   end

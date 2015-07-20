@@ -226,6 +226,7 @@ Config.approachTargetX = {
 0.35, --long stationary kick
 0.40} --for first walkkick, long stationary kick, weak walkkick\
 
+Config.dont_look_goals =false --testing
 
 
 return Config

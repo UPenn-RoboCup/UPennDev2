@@ -104,12 +104,10 @@ local tCamera = from_rpy_trans(unpack(metadata.mountOffset))
 -- Give transformation of the camera
 local function get_tf()
 	local rpy = Body.get_rpy()
+	rpy[1] = -rpy[1]
 	local pose = wcm.get_robot_pose()
 	local bh = mcm.get_walk_bodyHeight()
 	local bo = mcm.get_status_bodyOffset()
-
---print("bodyoffset:",unpack(bo))
-
 
 	--local qHead = Body.get_head_command_position()
 	local qHead = Body.get_head_position()
@@ -119,12 +117,12 @@ local function get_tf()
 	local torsoL = pose_global(uComp, bo)
 	local torsoG = pose_global(torsoL, pose)
 	-- Transform relative to the local body frame (on the ground between the feet)
-	local tfRock_n_Roll = rotZ(rpy[1]) * rotY(rpy[2])
+	--local tfRock_n_Roll = rotX(rpy[1]) * rotY(rpy[2])
 	local tfTorsoLocal =
-		transform6D{torsoL.x, torsoL.y, bh, 0, 0, torsoL.a} * tfRock_n_Roll
+		transform6D{torsoL.x, torsoL.y, bh, rpy[1], rpy[2], torsoL.a} -- * tfRock_n_Roll
 	-- Transform relative to the global body frame (on the ground)
 	local tfTorsoGlobal =
-		transform6D{torsoG.x, torsoG.y, bh, 0, 0, torsoG.a} * tfRock_n_Roll
+		transform6D{torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a} -- * tfRock_n_Roll
 	-- Transform relative to the center of mass
 	local tfCom = tNeck * rotZ(qHead[1]) * rotY(qHead[2]) * tCamera
 	-- Give the local and global transforms

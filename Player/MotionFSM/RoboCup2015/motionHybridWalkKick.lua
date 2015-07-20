@@ -73,8 +73,10 @@ local read_test = false
 local debug_on = false
 
 local init_odometry = function(uTorso)
+--[[
   wcm.set_robot_utorso0(uTorso)
   wcm.set_robot_utorso1(uTorso)
+  --]]
 end
 
 --[[

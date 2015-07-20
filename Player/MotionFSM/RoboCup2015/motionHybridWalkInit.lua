@@ -50,13 +50,15 @@ local read_test = false
 local debug_on = false
 
 local init_odometry = function(uTorso)
+--[[
   wcm.set_robot_utorso0(uTorso)
   wcm.set_robot_utorso1(uTorso)
+  --]]
 end
 
 local update_odometry = function(uTorso_in)
+--[[
   local uTorso1 = wcm.get_robot_utorso1()
-
   --update odometry pose
   local odometry_step = util.pose_relative(uTorso_in,uTorso1)
   local pose_odom0 = wcm.get_robot_odometry()
@@ -65,6 +67,7 @@ local update_odometry = function(uTorso_in)
 
   --updae odometry variable
   wcm.set_robot_utorso1(uTorso_in)
+  --]]
 end
 
 local function calculate_footsteps()

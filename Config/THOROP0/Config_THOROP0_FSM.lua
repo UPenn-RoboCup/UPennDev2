@@ -90,7 +90,10 @@ fsm.Head = {
   {'headTeleop', 'scanobs', 'headObstacleScan'},
   {'headTeleop', 'scangoalie', 'headScan'},
   {'headTeleop', 'line', 'headLookLine'},
-  --
+
+
+  {'headTeleop', 'lookdown', 'headLookDown'},
+   --
 
   {'headBackScan', 'ballfound', 'headTrack'},
   {'headBackScan', 'noball', 'headBackScan'},

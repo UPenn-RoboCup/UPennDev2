@@ -251,12 +251,22 @@ local function find_ball_off_line(Image)
 		--print('passed', passed)
 		if passed==true then
 			propsA.v = projectedVL
+
+
+
+
+
+
+
 			propsA.t = Image.t
 			-- For ballFilter
 			propsA.r = math.sqrt(v[1]^2+v[2]^2)
 			propsA.dr = 0.25 * propsA.r --TODO: tweak
 			propsA.da = 10 * DEG_TO_RAD
-			msgs[i] = string.format('Ball detected @ %.2f, %.2f, %.2f', unpack(projectedVL))
+			msgs[i] = string.format('Ball@%.2f,%.2f,%.2f F:%.2f,%.2f', 
+				projectedVL[1],projectedVL[2],projectedVL[3],wcm.get_ball_x(),wcm.get_ball_y()
+				)
+
 			--print('detectBall |', msgs[i])
 			propsA.online = false
 

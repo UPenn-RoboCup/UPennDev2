@@ -188,9 +188,6 @@ if IS_WEBOTS then
 	Config.driftFactor = {0,0,0}
 else
 	Config.driftFactor = {0.029,0.026,0.008}
-
-	Config.driftFactor = {0.029,0.026,0.020}
-
 end
 
 Config.spin_detect = true
@@ -205,6 +202,10 @@ Config.ballX_threshold2 = 1.0 --The threshold we start using strong kick
 
 
 -- DAY 2
+
+
+Config.approachTargetY= {-0.08,0.10}  --L/R aiming offsets (kick with outside of the foot!)
+if not IS_WEBOTS then Config.driftFactor = {0.029,0.026,0.020} end
 
 
 return Config

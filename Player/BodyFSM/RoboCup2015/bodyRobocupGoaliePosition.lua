@@ -30,10 +30,13 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  motion_ch:send'hybridwalk'
+  --motion_ch:send'hybridwalk'
 end
 
 function state.update()
+  if not gcm.get_fsm_Motion():find('HybridWalk') then  
+    motion_ch:send'hybridwalk'
+  end
 
   --  print(state._NAME..' Update' )
   -- Get the time of update

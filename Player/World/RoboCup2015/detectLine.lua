@@ -95,25 +95,42 @@ function detectLine.update(Image)
 		local passed = true
 		local propsB = lines.propsB[i]
 		--util.ptable(propsB)
-		local bendpoint = vector.new(propsB.endpoint)
-		--print('Checking ...', bendpoint)
+		local bendpoint = propsB.endpoint
 
-		if math.max(bendpoint[3], bendpoint[4]) < 4 then
+		if type(bendpoint)~='table' then
+			msgs[i] = 'stupid1'
 			passed = false
-			msgs[i] = string.format('Too close to edge y')
-		elseif math.max(bendpoint[1], bendpoint[2]) < 4 then
-			passed = false
-			msgs[i] = string.format('Too close to edge x')
+		else
+			for i, bend in ipairs(bendpoint) do
+				if type(bend)~='number' then
+					passed = false
+					msgs[i] = 'stupid2'
+				end
+			end
 		end
 
-    local length = math.sqrt(
-    	(bendpoint[1]-bendpoint[2])^2 +
-    	(bendpoint[3]-bendpoint[4])^2
-		)
+		vector.new(bendpoint)
+		if passed then
+			if math.max(bendpoint[3], bendpoint[4]) < 4 then
+				--passed = false
+				msgs[i] = string.format('Too close to edge y')
+			elseif math.max(bendpoint[1], bendpoint[2]) < 4 then
+				--passed = false
+				msgs[i] = string.format('Too close to edge x')
+			end
+		end
 
-		if length<config.min_length then
-			passed = false
-			msgs[i] = string.format('min_length: %.2f < %.2f', length, config.min_length)
+		local length
+		if passed then
+			length = math.sqrt(
+	    	(bendpoint[1]-bendpoint[2])^2 +
+	    	(bendpoint[3]-bendpoint[4])^2
+			)
+			local minLen = 25
+			if length<minLen then
+				passed = false
+				msgs[i] = string.format('min_length: %.2f < %.2f', length, minLen)
+			end
 		end
 
 		local vL_endpoint, vG_endpoint

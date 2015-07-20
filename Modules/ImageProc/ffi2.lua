@@ -468,19 +468,26 @@ local function radon2ij(props, ith, ir)
 
   --ir = (flip and -ir or ir)
 
+  --if ir<0 then print('lt 0') end
+  local flip = false
+  if ith>=props.NTH then
+    flip = true
+    --print('flip', ith, ir)
+    ith = ith - props.NTH
+  end
+
   -- Closest point
   local s, c = props.sin_d[ith], props.cos_d[ith]
-  if type(c)~='number' then
-    print('cweird ith', ith, c, type(c))
-    return
+  if flip then
+    --ir = -ir
+    s = -s
+    c = -c
   end
-  if type(s)~='number' then
-    print('sweird ith', ith, s, type(s))
-    return
-  end
+
+
+
   local iR = ir * c * props.RSCALE
   local jR = ir * s * props.RSCALE
-
   local iMean = iR - lMean * s
   local jMean = jR + lMean * c
   --[[
@@ -527,8 +534,8 @@ function ImageProc.field_lines(label, w, h)
       if props.count_d[ith][ir] > cmax then
         cmax = props.count_d[ith][ir]
         if ith >= props.NTH then
-          --irmax = -ir
-          --ithmax = ith - props.NTH
+          irmax = -ir
+          ithmax = ith - props.NTH
         else
           irmax = ir
           ithmax = ith
@@ -580,7 +587,7 @@ function ImageProc.field_lines(label, w, h)
   end
 
   -- How many extra?
-  local nKeep = 1
+  local nKeep = 2
   local maxN = {}
   for ith, c in ipairs(cmaxes) do
     if #maxN<nKeep then
@@ -595,10 +602,10 @@ function ImageProc.field_lines(label, w, h)
   end
   table.insert(maxN, 1, {ithmax, irmax, cmax})
 
-  local minCount = 50
+  local minCount = IS_WEBOTS and 24 or 48
   local ijs = {}
   for i, v in ipairs(maxN) do
-    --print('line....',unpack(v))
+    --print('line (ith, ir, cnt)',unpack(v))
     if v[3]>=minCount then
       -- Check for flipping later...
       local ij = radon2ij(props, v[1], v[2])

@@ -150,16 +150,16 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
 
   if ballGlobal[1]<ballX_threshold1 then
     if Config.debug.planning then print("Ball pos 0",ballGlobal[1]) end
-    kick_distance = 4.0
-    kick_distance_max = 5.0
+    kick_distance = 2.6
+    kick_distance_max = 3.0
   elseif ballGlobal[1]<ballX_threshold2 then
     if Config.debug.planning then  print("Ball pos 1",ballGlobal[1]) end
-    kick_distance = 2.0
+    kick_distance = 2.6
     kick_distance_max = 3.0
   else
     if Config.debug.planning then print("Ball pos for final kick",ballGlobal[1]) end
-    kick_distance = 5.0
-    kick_distance_max = 5.0
+    kick_distance = 4.0
+    kick_distance_max = 4.0
   end
 
 --  local kick_deviation_angle = 10*math.pi/180

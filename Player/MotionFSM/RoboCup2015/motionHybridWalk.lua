@@ -273,10 +273,10 @@ function walk.update()
 --Quick hack for sidestepping
 
 
-local sideModL = Config.sideModL
-local sideMod2L = Config.sideMod2L
-local sideModR = Config.sideModR
-local sideMod2R = Config.sideMod2R
+local sideModL = Config.walk.sideModL or 0
+local sideMod2L = Config.walk.sideMod2L or 0
+local sideModR = Config.walk.sideModR or 0
+local sideMod2R = Config.walk.sideMod2R or 0
 
       local uSupportModY = 0
       if velCurrent[2]>0.01 then

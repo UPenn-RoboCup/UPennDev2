@@ -43,10 +43,10 @@ function state.update()
     elseif gcm.get_game_role()==1 then
       print(util.color("Attacker start!",'red'))
       return'play'
+    elseif gcm.get_game_role()==3 then
+      print(util.color("Demo start!",'green'))
+      return'play'
     end
-
-
-
   end
 end
 

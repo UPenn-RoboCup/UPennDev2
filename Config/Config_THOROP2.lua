@@ -188,6 +188,9 @@ if IS_WEBOTS then
 	Config.driftFactor = {0,0,0}
 else
 	Config.driftFactor = {0.029,0.026,0.008}
+
+	Config.driftFactor = {0.029,0.026,0.020}
+
 end
 
 Config.spin_detect = true

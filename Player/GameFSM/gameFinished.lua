@@ -33,6 +33,10 @@ function state.update()
     print("requesting stop")
     mcm.set_walk_stoprequest(1)
   end
+
+--why head wont stop 
+  head_ch:send'teleop'
+
   
 end
 

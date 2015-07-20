@@ -37,6 +37,21 @@ function state.update()
   -- Save this at the last update time
   
   t_update = t
+
+
+  qLArm = Body.get_larm_position()
+  qRArm = Body.get_rarm_position()  
+  local threshold = 45*DEG_TO_RAD
+  local qL = util.mod_angle(qLArm[1])
+  local qR = util.mod_angle(qRArm[1])
+--  print(qL*RAD_TO_DEG,qR*RAD_TO_DEG)
+  if qL<45*DEG_TO_RAD and qL>-45*DEG_TO_RAD and
+    qR<45*DEG_TO_RAD and qR>-45*DEG_TO_RAD and
+     gcm.get_game_role()==3 then  --test
+    return 'finish'
+  end
+
+
 end
 
 function state.exit()

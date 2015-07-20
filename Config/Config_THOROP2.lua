@@ -207,4 +207,8 @@ Config.ballX_threshold2 = 1.0 --The threshold we start using strong kick
 -- DAY 2
 
 
+Config.approachTargetY= {-0.08,0.10}  --L/R aiming offsets (kick with outside of the foot!)
+
+
+
 return Config

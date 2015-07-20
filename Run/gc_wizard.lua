@@ -101,17 +101,15 @@ local function process_arm_switch(t)
 	led_count = led_count +1
 	local cur_position
 
-	qLArm = Body.get_larm_position()
+  qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()  
-
-
-
   local threshold = 45*DEG_TO_RAD
   local qL = util.mod_angle(qLArm[1])
   local qR = util.mod_angle(qRArm[1])
+  print(qL*RAD_TO_DEG,qR*RAD_TO_DEG)
 
 
---print(qL*RAD_TO_DEG,qR*RAD_TO_DEG)
+
   
   if qL>threshold and qR>threshold then
     cur_position = -1

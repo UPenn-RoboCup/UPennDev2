@@ -10,7 +10,7 @@ local t_entry, t_update, t_exit
 local Y_THRESH = 0.25
 --
 local X_THRESH = 0.25
-local X_GOAL = -4.25
+local X_GOAL = -4.15
 --
 local A_THRESH = 10 * DEG_TO_RAD
 --
@@ -49,7 +49,7 @@ function state.update()
   local goalPose = vector.pose{
     X_GOAL,
     y_goal,
-    math.atan2(y_goal, 1)
+    math.atan2(y_goal, 3)
   }
   local dPose = pose_relative(goalPose, pose)
   --print('dPose', dPose, 'goalPose', goalPose, 'pose', pose)

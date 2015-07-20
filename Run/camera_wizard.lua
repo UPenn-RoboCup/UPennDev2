@@ -107,6 +107,10 @@ local function get_tf()
 	local pose = wcm.get_robot_pose()
 	local bh = mcm.get_walk_bodyHeight()
 	local bo = mcm.get_status_bodyOffset()
+
+--print("bodyoffset:",unpack(bo))
+
+
 	--local qHead = Body.get_head_command_position()
 	local qHead = Body.get_head_position()
 	local uComp = mcm.get_stance_uTorsoComp()

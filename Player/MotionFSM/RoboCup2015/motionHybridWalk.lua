@@ -46,18 +46,6 @@ local init_odometry = function(uTorso)
   wcm.set_robot_utorso1(uTorso)
 end
 
-local update_odometry = function(uTorso_in)
-  local uTorso1 = wcm.get_robot_utorso1()
-
-  --update odometry pose
-  local odometry_step = util.pose_relative(uTorso_in,uTorso1)
-
-  local pose_odom0 = wcm.get_robot_odometry()
-  local pose_odom = util.pose_global(odometry_step, pose_odom0)
-  wcm.set_robot_odometry(pose_odom)
-  wcm.set_robot_utorso1(uTorso_in)--updae odometry variable
-end
-
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -94,8 +82,6 @@ function walk.entry()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=
       step_planner:init_stance()
 
-  --Reset odometry varialbe
-  init_odometry(uTorso_now)
 
   --Now we advance a step at next update  
   t_last_step = Body.get_time() - tStep 
@@ -348,6 +334,10 @@ local sideMod2R = Config.walk.sideMod2R or 0
   end
 
 
+
+  local uMid = util.se2_interpolate(0.5,uLeft,uRight)
+  local uBodyOffset = util.pose_relative(uTorso,uMid)
+
   --Heel lift first, heel land first
   --positive aLeft: toe lift
   --negative aLeft: heel lift
@@ -381,7 +371,7 @@ local sideMod2R = Config.walk.sideMod2R or 0
       t_diff)
 
     moveleg.set_leg_positions()       
-  update_odometry(uTorso)--Update the odometry variable
+--  update_odometry(uTorso)--Update the odometry variable
 end -- walk.update
 
 function walk.exit()

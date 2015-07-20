@@ -83,6 +83,11 @@ local function update()
 		local uOdometry = mcm.get_status_odometry()
 		dOdometry = util.pose_relative(uOdometry, uOdometry0 or uOdometry)
 		uOdometry0 = vector.copy(uOdometry)
+--[[
+		print("ODOM UPDATE",unpack(uOdometry))
+		local pose = wcm.get_robot_pose()
+		print("pose",unpack(pose))
+--]]
 		lW.update(dOdometry)
 
 	end

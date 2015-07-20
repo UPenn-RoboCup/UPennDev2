@@ -61,6 +61,12 @@ local function update(key_code)
 
   elseif key_char_lower=="2" then
 		head_ch:send'scan'
+
+
+
+	elseif key_char_lower=="3" then
+		head_ch:send'lookdown'
+
   elseif key_char_lower=="0" then
 		head_ch:send'teleop'
 

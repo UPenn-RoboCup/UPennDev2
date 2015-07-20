@@ -214,4 +214,7 @@ Config.ballX_threshold2 = 1.0 --The threshold we start using strong kick
 
 Config.auto_init = true
 
+
+Config.bodymove_fix = true
+
 return Config

@@ -50,7 +50,7 @@ local function update(key_code)
   elseif key_char_lower==("j") then targetvel_new[3]=targetvel[3]+0.15;
   elseif key_char_lower==("k") then targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
   elseif key_char_lower==("l") then targetvel_new[3]=targetvel[3]-0.15;
-  elseif key_char_lower==(",") then targetvel_new[1]=targetvel[1]-0.05;
+  elseif key_char_lower==(",") then targetvel_new[1]=targetvel[1]-0.01;
   elseif key_char_lower==("h") then targetvel_new[2]=targetvel[2]+0.02;
   elseif key_char_lower==(";") then targetvel_new[2]=targetvel[2]-0.02;
 
@@ -60,7 +60,7 @@ local function update(key_code)
 		body_ch:send'init'
 
   elseif key_char_lower=="2" then
-		head_ch:send'scan'
+		head_ch:send'teleop'
 
 
 

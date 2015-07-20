@@ -341,6 +341,8 @@ local yLineBoundary = Config.world.yBoundary
 function poseFilter.line_observation(v, a)
   if type(v)~='table' or type(a)~='number' then return end
 
+  print('Updating lines!')
+
 ---Updates weights of particles according to the detection of a line
 --@param v z and y coordinates of center of line relative to robot
 --@param a angle of line relative to angle of robot

@@ -1,6 +1,6 @@
 #!/usr/bin/env luajit
 local ENABLE_NET = true
-local ENABLE_LOG = true
+--local ENABLE_LOG = true
 
 if IS_WEBOTS then
 	ENABLE_NET = false
@@ -95,8 +95,6 @@ local rotZ = require'Transform'.rotZ
 local trans = require'Transform'.trans
 local from_rpy_trans = require'Transform'.from_rpy_trans
 local flatten = require'Transform'.flatten
-local rotateX = require'Transform'.rotateX
-local rotateY = require'Transform'.rotateY
 -- CoM to the Neck (32cm in z)
 local tNeck = trans(unpack(Config.head.neckOffset))
 -- Mounting of Camera from the neck axes
@@ -117,12 +115,14 @@ local function get_tf()
 	local torsoL = pose_global(uComp, bo)
 	local torsoG = pose_global(torsoL, pose)
 	-- Transform relative to the local body frame (on the ground between the feet)
+
 	--local tfRock_n_Roll = rotX(rpy[1]) * rotY(rpy[2])
 	local tfTorsoLocal =
 		transform6D{torsoL.x, torsoL.y, bh, rpy[1], rpy[2], torsoL.a} -- * tfRock_n_Roll
 	-- Transform relative to the global body frame (on the ground)
 	local tfTorsoGlobal =
 		transform6D{torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a} -- * tfRock_n_Roll
+
 	-- Transform relative to the center of mass
 	local tfCom = tNeck * rotZ(qHead[1]) * rotY(qHead[2]) * tCamera
 	-- Give the local and global transforms

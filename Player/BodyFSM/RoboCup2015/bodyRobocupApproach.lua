@@ -331,8 +331,13 @@ function state.entry()
   end
 
 
+
   if gcm.get_game_role()==3 then --demo mode
-   mcm.set_walk_kicktype(0) --Walkkick only for demo
+   mcm.set_walk_kicktype(
+	wcm.get_robot_forcekicktype()
+	) --Walkkick only for demo
+
+
   end
 end
 

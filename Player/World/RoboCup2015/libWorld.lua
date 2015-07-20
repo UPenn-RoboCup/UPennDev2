@@ -236,7 +236,8 @@ local function update_vision(detected)
   -- TODO: fix nan bug with this
   -- If the goal is detected
 
-  if wcm.get_goal_disable()==0 then --now disable goal detection unless we look up
+  if wcm.get_goal_disable()==0 then
+    -- Disable goal detection unless we look up
   	goal = detected.posts
     if type(goal)=='table' and #goal>0 then
       if goal[1].type == 3 then
@@ -308,8 +309,10 @@ local function update_vision(detected)
       local a = detected.line.angle[i]
       --print('Line Angle', a*RAD_TO_DEG)
       --print('Local Line Position', unpack(v_close))
+      
+      --poseFilter.line_observation(v_close, a)
     end
-    --poseFilter.line_observation(v, a)
+
   end
 
 end

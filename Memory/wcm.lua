@@ -42,6 +42,10 @@ shared.robot.odomfactor = vector.zeros(1)
 
 
 
+shared.robot.forcekicktype = vector.zeros(1)
+
+
+
 
 shared.robot.ballglobal = vector.zeros(2)
 shared.robot.goal1 = vector.zeros(2)

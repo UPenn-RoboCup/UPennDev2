@@ -126,7 +126,7 @@ function detectLine.update(Image)
 	    	(bendpoint[1]-bendpoint[2])^2 +
 	    	(bendpoint[3]-bendpoint[4])^2
 			)
-			local minLen = 40
+			local minLen = IS_WEBOTS and 38 or 50
 			if length<minLen then
 				passed = false
 				msgs[i] = string.format('min_length: %.2f < %.2f', length, minLen)

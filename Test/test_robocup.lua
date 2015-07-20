@@ -82,6 +82,20 @@ local state = gcm.get_game_state()
 
 
 
+	elseif key_char_lower==("t") then  
+	  wcm.set_robot_forcekicktype(0)
+print("WALKKICK")
+	elseif key_char_lower==("y") then  
+print("KICK")
+
+	  wcm.set_robot_forcekicktype(1)
+	elseif key_char_lower==("u") then
+print("WEAKICK")
+  
+	  wcm.set_robot_forcekicktype(2)
+
+
+
 
 
 	elseif key_char_lower==("=") then  		

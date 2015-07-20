@@ -6,17 +6,13 @@ local Body = require'Body'
 local timeout = 10.0
 local t_entry, t_update, t_exit
 
-local VX_WALK = 0.2
-local VY_WALK = 0.2
-local VA_WALK = 30*DEG_TO_RAD
-
 -- Ideal position in y along the center
-local Y_THRESH = 0.10
+local Y_THRESH = 0.25
 --
-local X_THRESH = 0.10
+local X_THRESH = 0.25
 local X_GOAL = -4.25
 --
-local A_THRESH = 5 * DEG_TO_RAD
+local A_THRESH = 10 * DEG_TO_RAD
 --
 local sign = require'util'.sign
 local pose_relative = require'util'.pose_relative
@@ -28,7 +24,10 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-  motion_ch:send'stop'
+  if mcm.get_walk_ismoving()>0 then
+    print("requesting stop")
+    mcm.set_walk_stoprequest(1)
+  end
 end
 
 function state.update()
@@ -52,23 +51,20 @@ function state.update()
     y_goal,
     math.atan2(y_goal, 1)
   }
-  --print('goalPose', goalPose)
   local dPose = pose_relative(goalPose, pose)
-  print('dPose', dPose)
+  --print('dPose', dPose, 'goalPose', goalPose, 'pose', pose)
+  --print('THRESH', X_THRESH, Y_THRESH, A_THRESH)
   local in_position = true
-  local vx = 0
-  local vy = 0
-  local va = 0
 
   -- We should move up from the goal line
   if math.abs(dPose.x) > X_THRESH then
-    vx = sign(dPose.x) * VX_WALK
+    print('everywhere')
     in_position = false
   end
 
   -- Stay in front of the ball always
   if math.abs(dPose.y) > Y_THRESH then
-    vy = sign(dPose.y) * VY_WALK
+    print('there')
     in_position = false
   end
 
@@ -76,7 +72,7 @@ function state.update()
   --local da = math.atan2(goalPose.y, 0)
 
   if math.abs(dPose.a) > A_THRESH then
-    va = sign(dPose.a) * VA_WALK
+    print('here')
     in_position = false
   end
 

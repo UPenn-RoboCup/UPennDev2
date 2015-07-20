@@ -15,7 +15,7 @@ local Y_THRESH = 0.07
 local Y_MAX = 1
 local Y_FACTOR = 0.7
 --
-local X_THRESH = 0.107
+local X_THRESH = 0.07
 local X_GOAL = -4.05
 --
 local A_THRESH = 5 * DEG_TO_RAD
@@ -31,7 +31,6 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-
   head_ch:send'line'
 end
 
@@ -47,8 +46,6 @@ function state.update()
 
   -- Save this at the last update time
   t_update = t
-
-  local ball = wcm.get_robot_ballglobal()
 
   local ball = wcm.get_robot_ballglobal()
 
@@ -69,7 +66,6 @@ function state.update()
   }
 
   local dPose = pose_relative(goalPose, pose)
-  --print('dPose', dPose, pose)
 
   local in_position = true
   local vx = 0
@@ -99,6 +95,7 @@ function state.update()
 
   -- If in position, then return
   if in_position then
+    print('dPose', dPose, pose)
     return'idle'
   end
 

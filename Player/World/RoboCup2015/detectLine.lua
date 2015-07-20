@@ -57,7 +57,7 @@ function detectLine.update(Image)
 
 		local passed = true
 		local propsB = linePropsB[i]
-		util.ptable(propsB)
+		--util.ptable(propsB)
 
 		local length
 		if passed then
@@ -100,7 +100,9 @@ function detectLine.update(Image)
 			local zHead = pHead4[3]
 			vL_endpoint = {
 				pHead4 + (vL1 - pHead4) * zHead / (zHead - vL1[3]),
-				pHead4 + (vL2 - pHead4) * zHead / (zHead - vL2[3])
+				pHead4 + (vL2 - pHead4) * zHead / (zHead - vL2[3]),
+				-- Mean:
+				pHead4 + (vL3 - pHead4) * zHead / (zHead - vL3[3])
 			}
 
 			-- TODO: Reject the center circle
@@ -118,6 +120,11 @@ function detectLine.update(Image)
 				vL_endpoint[2][1]*sa + vL_endpoint[2][2]*ca + pose.y
 			}
 
+			--[[
+			print('vG_endpoint', unpack(vG_endpoint))
+			print('vL_endpoint', unpack(vL_endpoint))
+			--]]
+
 			-- Filter out the center circle
 			local d1 = math.sqrt(vG_endpoint[1][1]^2+vG_endpoint[1][2]^2)
 			local d2 = math.sqrt(vG_endpoint[2][1]^2+vG_endpoint[2][2]^2)
@@ -129,11 +136,7 @@ function detectLine.update(Image)
 			-- TODO: filter out endpoints that are out of bounds
 			if math.abs(vG_endpoint[1][1]) > 7 or math.abs(vG_endpoint[2][1]) > 7
 			then
-				--[[
-				print('X vG_endpoint', unpack(vG_endpoint))
-				print('X vL_endpoint', unpack(vL_endpoint))
-				--]]
-				passed = false
+				--passed = false
 				msgs[i] = string.format('Outside field X!')
 			end
 			if math.abs(vG_endpoint[1][2]) > 7 or math.abs(vG_endpoint[2][2]) > 7
@@ -142,7 +145,7 @@ function detectLine.update(Image)
 				print('Y vG_endpoint', unpack(vG_endpoint))
 				print('Y vL_endpoint', unpack(vL_endpoint))
 				--]]
-				passed = false
+				--passed = false
 				msgs[i] = string.format('Outside field Y!')
 			end
 
@@ -151,29 +154,34 @@ function detectLine.update(Image)
 
     if passed then
 
-			local angleL = math.abs(math.atan2(
+			local angleL = math.atan2(
 				vL_endpoint[1][2]-vL_endpoint[2][2],
 				vL_endpoint[1][1]-vL_endpoint[2][1]
-			))
+			)
 
 			-- TODO: Round to 0 or 90 to length/width line categories
-			local angleG = math.abs(math.atan2(
+			local angleG = math.atan2(
 				vG_endpoint[1][2]-vG_endpoint[2][2],
 				vG_endpoint[1][1]-vG_endpoint[2][1]
-			))
+			)
 
 			local epB = vector.new{
 				propsB.iMin, propsB.iMax, propsB.jMin, propsB.jMax
 			}
 
-			table.insert(lines, {
+			local newline = {
 				len = length,
 				epA = Image.scaleB * epB,
 				vL = vL_endpoint,
 				vG = vG_endpoint,
 				aL = angleL,
 				aG = angleG
-			})
+			}
+			-- 90 deg is half line
+			-- 0 degree is long boundary
+			table.insert(lines, newline)
+			--print('angleL', angleL*RAD_TO_DEG)
+			--util.ptable(newline)
 
 			msgs[i] = 'Passed checks'
     end

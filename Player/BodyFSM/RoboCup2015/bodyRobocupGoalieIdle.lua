@@ -75,16 +75,19 @@ function state.update()
 
   -- We should move up from the goal line
   if math.abs(dPose.x) > X_THRESH then
+    print('x bad', dPose, pose)
     in_position = false
   end
 
   -- Stay in front of the ball always
   if math.abs(dPose.y) > Y_THRESH then
+    print('y bad', dPose, pose)
     in_position = false
   end
 
   -- Angle to face the ball a bit
   if math.abs(dPose.a) > A_THRESH then
+    print('a bad', dPose, pose)
     in_position = false
   end
 

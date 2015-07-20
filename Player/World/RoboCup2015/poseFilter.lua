@@ -339,6 +339,7 @@ local function landmark_observation(pos, v, rFilter, aFilter)
   end
 end
 
+local mod_angle = require'util'.mod_angle
 function poseFilter.line_observation(v, a)
   if type(v)~='table' or type(a)~='number' then return end
 
@@ -350,13 +351,20 @@ function poseFilter.line_observation(v, a)
   -- Local distance to the line
   local r = math.sqrt(x^2 + y^2)
 
+  -- Categorize the line for each particle
+  -- Sideline: true if the long way, false if paralle to half line
+  local sidelines = {}
+  for ip, ap_ip in ipairs(ap) do
+    local relA = mod_angle(ap_ip + a)
+    sidelines[ip] = (math.abs(relA) < 45*DEG_TO_RAD) or (math.abs(relA) > 135*DEG_TO_RAD)
+  end
+
   -- Update weight based on the angle of the line
   -- TODO: Check on this...
-
   local wLine
   local w0 = 0.25 / (1 + r/2.0)
   for ip, ap_ip in ipairs(ap) do
-    wLine = w0 * (cos(4*(ap_ip + a)) - 1)
+    wLine = w0 * (cos(4*(ap_ip + math.abs(a))) - 1)
     wp[ip] = wp[ip] + wLine
   end
 
@@ -375,12 +383,12 @@ function poseFilter.line_observation(v, a)
 
   -- Weight update against boundaries...
   local wBoundsFactor = 1 / (4 + r/2.0)
-  for ip, ap_ip in ipairs(ap) do
-    local wBounds =
-      math.max(xGlobal[ip] - xBoundary, 0) +
-      math.max(-xGlobal[ip] - xBoundary, 0) +
-      math.max(yGlobal[ip] - yBoundary, 0) +
-      math.max(-yGlobal[ip] - yBoundary, 0)
+  for ip, s in ipairs(sidelines) do
+    local wBounds = s and (
+      math.max(yGlobal[ip] - yBoundary, 0) + math.max(-yGlobal[ip] - yBoundary, 0)
+    ) or (
+      math.max(xGlobal[ip] - xBoundary, 0) + math.max(-xGlobal[ip] - xBoundary, 0)
+    )
     wp[ip] = wp[ip] - wBounds * wBoundsFactor
   end
 
@@ -388,20 +396,22 @@ function poseFilter.line_observation(v, a)
   -- TODO: Could be a bit weird on this short line segment
   -- Maybe just filter out always
   local wPenaltyFactor = 1 / (1 + r)
-  for ip, ap_ip in ipairs(ap) do
-    local wPenalty =
-      math.max(xGlobal[ip] - xPenalty, 0) +
-      math.max(-xGlobal[ip] - xPenalty, 0) --+
-      --math.max(yGlobal[ip] - yPenalty, 0) +
-      --math.max(-yGlobal[ip] - yPenalty, 0)
+  for ip, s in ipairs(sidelines) do
+    local wPenalty = s and (
+      math.max(yGlobal[ip] - yPenalty, 0) + math.max(-yGlobal[ip] - yPenalty, 0)
+    ) or (
+      math.max(xGlobal[ip] - xPenalty, 0) + math.max(-xGlobal[ip] - xPenalty, 0)
+    )
     wp[ip] = wp[ip] - wPenalty * wPenaltyFactor
   end
 
   -- Weight update against half field line
   local wHalflineFactor = 1 / (2 + 2*r)
-  for ip, ap_ip in ipairs(ap) do
-    local wHalfLine = math.abs(xGlobal[ip])
-    wp[ip] = wp[ip] - wHalfLine * wHalflineFactor
+  for ip, s in ipairs(sidelines) do
+    if not s then
+      local wHalfLine = math.abs(xGlobal[ip])
+      wp[ip] = wp[ip] - wHalfLine * wHalflineFactor
+    end
   end
 
   check_particles("line")

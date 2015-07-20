@@ -304,11 +304,7 @@ local function update_vision(detected)
 
   if type(detected.line)=='table' then
     for i, line in ipairs(detected.line) do
-      local v_close = line.midL
-      local a = line.angle
-      --print('Line Angle', a*RAD_TO_DEG)
-      --print('Local Line Position', unpack(v_close))
-      --poseFilter.line_observation(v_close, a)
+      --poseFilter.line_observation(line.vL[3], line.aL)
     end
 
   end

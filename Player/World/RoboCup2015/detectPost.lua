@@ -255,10 +255,10 @@ function detectPost.update(Image)
 			table.insert(msgs, 'Too far: '..tostring(d))
 			passed = false
 		end
-		if math.abs(vG[1])>3.5 then
+		if math.abs(vG[2])>3.5 then
 			table.insert(msgs, 'Too far side: '..tostring(vG[1]))
 			passed = false
-		elseif math.abs(vG[2])>5 then
+		elseif math.abs(vG[1])>5 then
 			table.insert(msgs, 'Too far back: '..tostring(vG[2]))
 			passed = false
 		end

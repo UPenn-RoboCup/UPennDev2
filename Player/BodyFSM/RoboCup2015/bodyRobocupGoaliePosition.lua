@@ -11,12 +11,14 @@ local VY_WALK = 0.1
 local VA_WALK = 10*DEG_TO_RAD
 
 -- Ideal position in y along the center
-local Y_THRESH = 0.10
+local Y_THRESH = 0.05
+local Y_MAX = 1
+local Y_FACTOR = 0.8
 --
-local X_THRESH = 0.10
-local X_GOAL = -4.15
+local X_THRESH = 0.05
+local X_GOAL = -4.2
 --
-local A_THRESH = 5 * DEG_TO_RAD
+local A_THRESH = 2 * DEG_TO_RAD
 --
 local sign = require'util'.sign
 local pose_relative = require'util'.pose_relative
@@ -46,11 +48,12 @@ function state.update()
   local pose = vector.pose(wcm.get_robot_pose())
 
   -- Find the optimal pose
-  local y_goal = math.min(math.max(-1, ball[2]), 1);
+  local y_goal = Y_FACTOR * math.min(math.max(-Y_MAX, ball[2]), Y_MAX);
+  local a_goal = 0
   local goalPose = vector.pose{
     X_GOAL,
     y_goal,
-    math.atan2(y_goal, 3)
+    a_goal
   }
 
   local dPose = pose_relative(goalPose, pose)

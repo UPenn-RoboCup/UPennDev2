@@ -7,10 +7,12 @@ local timeout = 10.0
 local t_entry, t_update, t_exit
 
 -- Ideal position in y along the center
-local Y_THRESH = 0.25
+local Y_THRESH = 0.1
+local Y_MAX = 1
+local Y_FACTOR = 0.8
 --
-local X_THRESH = 0.25
-local X_GOAL = -4.15
+local X_THRESH = 0.1
+local X_GOAL = -4.2
 --
 local A_THRESH = 10 * DEG_TO_RAD
 --
@@ -23,6 +25,8 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
+
+  print('Goalie Pose', vector.pose(wcm.get_robot_pose()))
 
   if mcm.get_walk_ismoving()>0 then
     print("requesting stop")
@@ -45,11 +49,12 @@ function state.update()
   local pose = vector.pose(wcm.get_robot_pose())
 
   -- Find the optimal pose
-  local y_goal = math.min(math.max(-1, ball[2]), 1);
+  local y_goal = Y_FACTOR * math.min(math.max(-Y_MAX, ball[2]), Y_MAX);
+  local a_goal = 0
   local goalPose = vector.pose{
     X_GOAL,
     y_goal,
-    math.atan2(y_goal, 3)
+    a_goal
   }
   local dPose = pose_relative(goalPose, pose)
   --print('dPose', dPose, 'goalPose', goalPose, 'pose', pose)
@@ -70,7 +75,8 @@ function state.update()
 
   -- Angle to face the ball a bit
   --local da = math.atan2(goalPose.y, 0)
-
+  --print('dPose.a', dPose.a * RAD_TO_DEG)
+  --print('goalPose', goalPose)
   if math.abs(dPose.a) > A_THRESH then
     print('here')
     in_position = false

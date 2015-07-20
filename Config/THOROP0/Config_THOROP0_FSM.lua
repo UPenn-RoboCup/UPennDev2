@@ -84,9 +84,8 @@ fsm.Head = {
   {'headTeleop', 'scan', 'headBackScan'},
   {'headTeleop', 'scanobs', 'headObstacleScan'},
   {'headTeleop', 'scangoalie', 'headScan'},
+	{'headTeleop', 'line', 'headLookLine'},
   --
-
-
 
   {'headBackScan', 'ballfound', 'headTrack'},
   {'headBackScan', 'noball', 'headBackScan'},
@@ -100,6 +99,7 @@ fsm.Head = {
   {'headTrack', 'teleop', 'headTeleop'},
   {'headTrack', 'scanobs', 'headObstacleScan'},
   {'headTrack', 'kickfollow', 'headKickFollow'},
+	{'headTrack', 'line', 'headLookLine'},
   --
   {'headKickFollow', 'done', 'headTrack'},
   {'headKickFollow', 'teleop', 'headTrack'},
@@ -107,6 +107,11 @@ fsm.Head = {
   {'headLookGoal', 'timeout', 'headTrack'},
   {'headLookGoal', 'scanobs', 'headObstacleScan'},
   {'headLookGoal', 'teleop', 'headTeleop'},
+
+
+
+	{'headLookLine', 'done', 'headTrack'},
+  {'headLookLine', 'track', 'headTrack'},
 
 
 
@@ -315,6 +320,12 @@ fsm.headTrack = {
 --HeadLookGoal: Look up to see the goal
 fsm.headLookGoal = {
   yawSweep = 80*DEG_TO_RAD,
+}
+
+--HeadLookGoal: Look up to see the goal
+fsm.headLookLine = {
+  yawMag = 80*DEG_TO_RAD,
+	pitchDown = 55*DEG_TO_RAD
 }
 
 --HeadSweep: Look around to find the goal

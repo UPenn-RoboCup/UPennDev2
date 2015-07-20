@@ -120,16 +120,25 @@ local function process_arm_switch(t)
 		last_position = cur_position
 		local role, state
 		if cur_position == 1 then
+			print(util.color("ARM SET TO ATTACK",'red'))
+			print(util.color("ARM SET TO ATTACK",'red'))
+			print(util.color("ARM SET TO ATTACK",'red'))
 			role = 1 -- One: Attacker
 		elseif cur_position == -1 then
 			role = 0 --Zero: goalie
+			print(util.color("ARM SET TO GOALIE",'blue'))
+			print(util.color("ARM SET TO GOALIE",'blue'))
+			print(util.color("ARM SET TO GOALIE",'blue'))
+
 		else --force stop
 			role = 2
-			if gcm.get_game_state()<4 and gcm.get_game_state()>0 then
-				print("STOPSTOPSTOPSTOP")
-				game_ch:send'finish'
-				return true
-			end
+--			if gcm.get_game_state()==3 and gcm.get_game_state()>0 then
+			print(util.color("ARM SET TO STOP",'magenta'))
+			print(util.color("ARM SET TO STOP",'magenta'))
+			print(util.color("ARM SET TO STOP",'magenta'))
+			print(util.color("ARM SET TO STOP",'magenta'))
+--			print("STOPSTOPSTOPSTOP")
+			game_ch:send'finish'
 		end
 
 		-- Set in shared memory
@@ -147,9 +156,15 @@ local function process_arm_switch(t)
 
 		-- Set the LEDs
 	local intensity = 1.0
+
+
+	if t - t_pkt > 2 then --gamecontroller timeout signal
+	  intensity = led_count%2
+	end
+
 	Body.set_head_led_red(rgb[1]*intensity)
-  Body.set_head_led_blue(rgb[3]*intensity)
-  Body.set_head_led_green(rgb[3]*intensity)
+	Body.set_head_led_blue(rgb[3]*intensity)
+	Body.set_head_led_green(rgb[3]*intensity)
   --[[
 	-- Change the intensity if GC packets received
 	local intensity = 1.0
@@ -236,13 +251,15 @@ end
 
 while running do
   collectgarbage('step')
-	pkt = gc:wait_for_gc()
-	  t = get_time()
-	if not process_arm_switch(t) then
-		if pkt then
-		process_packet(pkt, t)
-		end
-	end
+  pkt = gc:wait_for_gc()
+  t = get_time()
+  process_arm_switch(t)
+  if gcm.get_game_role()==2 then
+--    print("ARM SWITCH SET TO STOP, IGNORING GAMECONTROLLER")
+  else
+ --   print("packet processing")
+    if pkt then process_packet(pkt, t) end
+  end
 	--print(pkt)
 --	if pkt then
 --		print("secsRemaing:"..pkt.secsRemaining)
@@ -257,12 +274,7 @@ while running do
 --	 	end
 
 --	end
-  if ENABLE_COACH and t - t_send > SEND_RATE then
-    t_send = t
-		ret, msg = gc:send_coach("go team!")
-    if msg then print("GC | Coach error", msg) end
-    send_count = send_count + 1
-  end
+
 	if t - t_pkt > 2 then
 		--print("GC | TIMEOUT")
 	end

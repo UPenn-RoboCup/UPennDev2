@@ -24,6 +24,9 @@ function state.entry()
   elseif gcm.get_game_role()==3 then  --test
     head_ch:send'scangoalie'
   end  
+  if gcm.get_game_role()==2 then  --force stop
+    return 'finish'
+  end
 
 end
 

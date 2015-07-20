@@ -208,4 +208,6 @@ Config.approachTargetY= {-0.08,0.10}  --L/R aiming offsets (kick with outside of
 if not IS_WEBOTS then Config.driftFactor = {0.029,0.026,0.020} end
 
 
+Config.ballX_threshold_direct = 0 --after halfline, we just aim for the goal
+
 return Config

@@ -231,8 +231,14 @@ function robocupplanner.getKickAngle(pose,ballGlobal,prevKickAngle)
   local max_score_angle, max_score_angle2, best_ballEndPos1
 
   local ballX_threshold2 = Config.ballX_threshold2 or 0.5
+  local ballX_threshold_direct = Config.ballX_threshold_direct or 0
 
-  if ballGlobal[1]>ballX_threshold2 then
+
+--  if ballGlobal[1]>ballX_threshold2 then
+    if ballGlobal[1]>ballX_threshold_direct then
+
+
+
     if Config.debug.planning then print("Ball close, one stage planning") end
     --Ball close, do a single-stage planning
     daGoal, kickAngle = evaluate_goal_kickangle(ballGlobal)

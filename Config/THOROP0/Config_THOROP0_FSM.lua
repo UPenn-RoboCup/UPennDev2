@@ -261,6 +261,7 @@ fsm.Body = {
   {'bodyRobocupGoalieIdle', 'attacker', 'bodyRobocupIdle'},
   {'bodyRobocupGoalieIdle', 'stop', 'bodyStop'},
 	{'bodyRobocupGoalieIdle', 'position', 'bodyRobocupGoaliePosition'},
+	{'bodyRobocupGoalieIdle', 'timeout', 'bodyRobocupGoalieIdle'},
 
 	{'bodyRobocupGoaliePosition', 'idle', 'bodyRobocupGoalieIdle'},
 	{'bodyRobocupGoaliePosition', 'stop', 'bodyStop'},

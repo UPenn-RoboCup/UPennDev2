@@ -19,6 +19,8 @@ local A_THRESH = 10 * DEG_TO_RAD
 local sign = require'util'.sign
 local pose_relative = require'util'.pose_relative
 
+local TIMEOUT = 10
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -32,6 +34,9 @@ function state.entry()
     print("requesting stop")
     mcm.set_walk_stoprequest(1)
   end
+
+  head_ch:send'line'
+
 end
 
 function state.update()
@@ -84,6 +89,10 @@ function state.update()
   -- If in position, then return
   if not in_position then
     return'position'
+  end
+
+  if dt > TIMEOUT then
+    return'timeout'
   end
 
 end

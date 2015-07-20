@@ -17,6 +17,17 @@ breakA = [-16.89 -40   -40    -15    -10 4];
 
 
 
+%Take 2, smaller swing back, more knee motion
+breakTX = [0      0.10     0.25 0.30   0.5  1];
+breakX = [-16.72  -16.22   10     15        0 -21.95]
+
+breakTY = [0     0.14    0.45  0.55  0.8  1];
+breakY = [33.61   39      40   38   20 18.04];
+
+
+
+
+
 
 
 p=csapi(breakTX,breakX);

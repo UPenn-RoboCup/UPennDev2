@@ -9,10 +9,10 @@ local t_entry, t_update, t_exit
 -- Ideal position in y along the center
 local Y_THRESH = 0.1
 local Y_MAX = 1
-local Y_FACTOR = 0.8
+local Y_FACTOR = 0.7
 --
-local X_THRESH = 0.1
-local X_GOAL = -4.2
+local X_THRESH = 0.05
+local X_GOAL = -4.05
 --
 local A_THRESH = 10 * DEG_TO_RAD
 --

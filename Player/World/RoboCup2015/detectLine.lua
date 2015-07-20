@@ -126,7 +126,7 @@ function detectLine.update(Image)
 	    	(bendpoint[1]-bendpoint[2])^2 +
 	    	(bendpoint[3]-bendpoint[4])^2
 			)
-			local minLen = 25
+			local minLen = 40
 			if length<minLen then
 				passed = false
 				msgs[i] = string.format('min_length: %.2f < %.2f', length, minLen)
@@ -168,7 +168,7 @@ function detectLine.update(Image)
 			local d1 = math.sqrt(vG_endpoint[1][1]^2+vG_endpoint[1][2]^2)
 			local d2 = math.sqrt(vG_endpoint[2][1]^2+vG_endpoint[2][2]^2)
 			--print('Line | d1, d2:', d1, d2)
-			if d1<.2 and d2<.2 then
+			if d1<.2 or d2<.2 then
 				passed = false
 				msgs[i] = string.format('Center circle: %.2f, %.2f', d1, d2)
 			end

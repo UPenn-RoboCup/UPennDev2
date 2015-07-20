@@ -218,16 +218,16 @@ function block_bitor_ab(self)
     for jb=1,self.hb-2 do
       for ib=1,self.wb-2 do
         if b_ptr1[1]==16 then
-          if band(b_ptr1[0],8)>0 and b_ptr1[2]==0 then
+          if band(b_ptr1[0],8)~=0 and b_ptr1[2]==0 then
             b_ptr1[0] = 24
             b_ptr1[2] = 24
-          elseif b_ptr1[0]==0 and band(b_ptr1[2],8)>0 then
+          elseif b_ptr1[0]==0 and band(b_ptr1[2],8)~=0 then
             b_ptr1[0] = 24
             b_ptr1[2] = 24
-          elseif b_ptr[1]==0 and band(b_ptr2[1], 8)>0 then
+          elseif b_ptr[1]==0 and band(b_ptr2[1], 8)~=0 then
             b_ptr[1] = 24
             b_ptr2[1] = 24
-          elseif band(b_ptr[1], 8)>0 and b_ptr2[1]==0 then
+          elseif band(b_ptr[1], 8)~=0 and b_ptr2[1]==0 then
             b_ptr[1] = 24
             b_ptr2[1] = 24
           end
@@ -602,7 +602,7 @@ function ImageProc.field_lines(label, w, h)
   end
   table.insert(maxN, 1, {ithmax, irmax, cmax})
 
-  local minCount = IS_WEBOTS and 24 or 48
+  local minCount = IS_WEBOTS and 32 or 64 --48
   local ijs = {}
   for i, v in ipairs(maxN) do
     --print('line (ith, ir, cnt)',unpack(v))

@@ -131,7 +131,7 @@ Config.left_wrist_ft = FT16464
 ---------------------------------
 ---------------------------------
 --Config.right_foot_ft = FT13288
---Config.left_foot_ft = FT14216 
+--Config.left_foot_ft = FT14216
 ---------------------------------
 ---------------------------------
 ---------------------------------
@@ -143,7 +143,7 @@ Config.left_foot_ft.bias_torque = {-6,13.8}
 
 Config.right_foot_ft.bias_forceZ = -20
 Config.right_foot_ft.bias_torque = {-10,18.5}
- 
+
 Config.left_foot_ft = FT16389
 Config.right_foot_ft = FT16390
 Config.left_foot_ft.m_ids = {24, 26}
@@ -163,10 +163,12 @@ local right_arm = {
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
 --	1,3,5,7,9,11,13,
-		-- waist
+
+	-- Stub arms
 	1,2,
 
-	28,
+	-- waist
+	27, 28,
 	--head
 	29, 30,
 	-- gripper
@@ -345,7 +347,7 @@ servo.steps = 2 * vector.new({
 servo.direction = vector.new({
 	1,1, -- Head, mk2
 
-	1,1,1, 1, 1,1,1, --LArm, mk2 reassembled 
+	1,1,1, 1, 1,1,1, --LArm, mk2 reassembled
 	------
 	-1, 1,1,   1,  1,1, --LLeg
 	-1, 1,-1, -1,  -1,1, --RLeg

@@ -15,11 +15,11 @@ local bor = require'bit'.bor
 -- TODO: Now just assuming 1 pixel resolution, and just having a constant buffer
 -- so that we do not malloc each time
 local MAXR, NR = 222 --*4
-local RSCALE = 2
+local RSCALE = 1
 
 --local NTH = 90 -- Number of angles (2 degree res)
---local NTH = 45 -- Number of angles (4 degree res)
-local NTH = 36 -- 5 degree resolution
+local NTH = 45 -- Number of angles (4 degree res)
+--local NTH = 36 -- 5 degree resolution
 --local NTH = 30 -- 6 degree resolution
 --local NTH = 180 -- (1 degree res)
 

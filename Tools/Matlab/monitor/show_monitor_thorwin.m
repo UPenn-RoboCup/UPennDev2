@@ -288,7 +288,7 @@ h.process_msg = @process_msg;
             if isfield(metadata, 'line')
                 %metadata
                 for i=1:metadata.line.nLines
-                    endpoint = metadata.line.endpoint{i};  %+0.5
+                    endpoint = metadata.line.endpoint{i} + 0.5;
                     %[endpoint(1), endpoint(2)]
                     %cam.h_line{i}
                     %numel(cam.h_line)

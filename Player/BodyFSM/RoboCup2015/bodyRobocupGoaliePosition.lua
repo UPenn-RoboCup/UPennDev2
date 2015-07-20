@@ -13,10 +13,10 @@ local VA_WALK = 10*DEG_TO_RAD
 -- Ideal position in y along the center
 local Y_THRESH = 0.05
 local Y_MAX = 1
-local Y_FACTOR = 0.8
+local Y_FACTOR = 0.7
 --
 local X_THRESH = 0.05
-local X_GOAL = -4.2
+local X_GOAL = -4.05
 --
 local A_THRESH = 2 * DEG_TO_RAD
 --
@@ -34,7 +34,7 @@ function state.entry()
 end
 
 function state.update()
-  if not gcm.get_fsm_Motion():find('HybridWalk') then  
+  if not gcm.get_fsm_Motion():find('HybridWalk') then
     motion_ch:send'hybridwalk'
   end
 

@@ -78,6 +78,7 @@ local state = gcm.get_game_state()
 
 	elseif key_char_lower==("8") then  
 		mcm.set_walk_stoprequest(1)
+   game_ch:send'finish'		
 
 
 

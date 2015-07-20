@@ -89,7 +89,7 @@ fsm.Head = {
   {'headTeleop', 'scan', 'headBackScan'},
   {'headTeleop', 'scanobs', 'headObstacleScan'},
   {'headTeleop', 'scangoalie', 'headScan'},
-	{'headTeleop', 'line', 'headLookLine'},
+  {'headTeleop', 'line', 'headLookLine'},
   --
 
   {'headBackScan', 'ballfound', 'headTrack'},
@@ -115,7 +115,7 @@ fsm.Head = {
 
 
 
-	{'headLookLine', 'done', 'headTrack'},
+  {'headLookLine', 'done', 'headTrack'},
   {'headLookLine', 'track', 'headTrack'},
 
 

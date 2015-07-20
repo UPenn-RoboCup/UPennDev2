@@ -51,8 +51,8 @@ if IS_WEBOTS then
 
 	if IS_STEVE then
     print('!!!!IS_STEVE!!!!')
-		Config.use_gps_pose = true
-		Config.use_gps_vision = true
+		Config.use_gps_pose = false
+		Config.use_gps_vision = false
 
 	else
 		Config.use_gps_pose = false
@@ -193,7 +193,7 @@ Config.use_arm_switch = true
 
 
   --low/med/fast speed drift (per step)
-if IS_WEBOTS then 
+if IS_WEBOTS then
 	Config.driftFactor = {0,0,0}
 else
 	Config.driftFactor = {0.029,0.026,0.008}

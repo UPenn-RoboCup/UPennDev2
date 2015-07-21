@@ -605,7 +605,7 @@ Robot {
 				physics Physics {
 				##############################################################
 #					density -1 mass 0.373 #neck pitch bracket
-					density -1 mass 0.186 #neck pitch bracket					
+					density -1 mass 0.186 #neck pitch bracket
 					centerOfMass [0.0018 -0.0010 0.0000]
 				##############################################################
 				}
@@ -634,7 +634,7 @@ Robot {
 									name "HeadCamera"
 									width 320
 									height 180
-									translation 0 0.14 0.05
+									translation 0 0.13 0.05
 									rotation 0 1 0 3.14159265
 									pixelSize 0
 								}
@@ -693,12 +693,12 @@ Robot {
         }
         physics Physics {
 #        	density -1 mass 0.050
-        	density -1 mass 0.025        	
+        	density -1 mass 0.025
 	     			centerOfMass [0 0 0] #mk2
       	}
         ##############################################################
         children [
-    #      ARM_THORwIn {translation 0 -0.30 0}          
+    #      ARM_THORwIn {translation 0 -0.30 0}
         ] # End the solid children
         ## End Shoulder Roll
       } # End of the Shoulder Pitch endpoint
@@ -732,12 +732,12 @@ Robot {
         }
         physics Physics {
 #        	density -1 mass 0.050
-        	density -1 mass 0.025        	
+        	density -1 mass 0.025
 	     			centerOfMass [0 0 0] #mk2
         }
         ##############################################################
         children [
-   #       ARM_THORwIn {translation 0 -0.30 0}                
+   #       ARM_THORwIn {translation 0 -0.30 0}
         ] # End the solid children
         ## End Shoulder Roll
       } # End of the Shoulder Pitch endpoint

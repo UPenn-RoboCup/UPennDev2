@@ -42,7 +42,7 @@ local logs = {
 
 ----[[
 start_idx = 100
-constant = 841
+--constant = 841
 logs.yuyv = {
 	ch = si.new_publisher'camera0',
 	dir = HOME..'Data'..'/PrepDay2',

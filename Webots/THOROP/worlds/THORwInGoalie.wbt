@@ -43,7 +43,7 @@ DirectionalLight {
   intensity 0.3
 }
 THORwIn_Dale_halfmass {
-  translation 4.5 1.14 0
+  translation 4.455 1.14 0
   rotation 0 1 0 -1.5708
   controller "thorop"
   controllerArgs "0 32"

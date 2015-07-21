@@ -19,7 +19,7 @@ local A_THRESH = 10 * DEG_TO_RAD
 local sign = require'util'.sign
 local pose_relative = require'util'.pose_relative
 
-local TIMEOUT = 10
+local TIMEOUT = 20
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -50,9 +50,10 @@ function state.update()
   t_update = t
 
   local ball = wcm.get_robot_ballglobal()
+  -- check ball_t
 
   -- If not on our side of the field, then do not move yet
-  if ball[1] > -0.1 then
+  if ball[1] > -0.1 and t - wcm.get_ball_t() < 5 then
     return
   end
 
@@ -68,6 +69,7 @@ function state.update()
   }
   local dPose = pose_relative(goalPose, pose)
   --print('dPose', dPose, 'goalPose', goalPose, 'pose', pose)
+  --print('ball', unpack(ball))
 
   local in_position = true
 
@@ -88,10 +90,11 @@ function state.update()
 
   -- If in position, then return
   if not in_position then
+    print('GoalieIdle | dPose', dPose, pose)
     return'position'
   end
 
-  if dt > TIMEOUT then
+  if t-t_entry > TIMEOUT then
     return'timeout'
   end
 

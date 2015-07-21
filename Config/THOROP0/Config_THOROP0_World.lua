@@ -20,6 +20,9 @@ world.obsDiameter = 0.2
 -- Field
 world.xBoundary = 4.5
 world.yBoundary = 3.0
+world.xPenalty = 3.5
+world.yPenalty = 2.5
+
 world.xMax = 4.8
 world.yMax = 3.3
 --Field corners

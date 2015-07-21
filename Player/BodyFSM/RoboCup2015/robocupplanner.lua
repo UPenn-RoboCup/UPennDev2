@@ -344,6 +344,8 @@ function robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
 
 
   else
+--DIRECT KICK TO GOAL
+
     local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
     local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}
     local goalC = {Config.world.xBoundary,0}
@@ -351,6 +353,22 @@ function robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
     local goalAngleR = math.atan2(goalR[2]-ballGlobal[2],goalR[1]-ballGlobal[1])
     local goalAngleC = math.atan2(goalC[2]-ballGlobal[2],goalC[1]-ballGlobal[1])
     max_score_angle = (goalAngleL+goalAngleR)/2
+
+
+
+--  print(pose[3])
+    local left_deg = math.abs(goalAngleL-pose[3])
+    local right_deg = math.abs(goalAngleL-pose[3])
+
+    local goalie_avoid_kick = Config.goalie_avoid_kick or 0
+    if left_deg<right_deg then 
+      max_score_angle = (1-goalie_avoid_kick)*max_score_angle
+        +goalie_avoid_kick*goalAngleL
+    else
+      max_score_angle = (1-goalie_avoid_kick)*max_score_angle
+        +goalie_avoid_kick*goalAngleR
+    end
+
     best_ballEndPos1 = {
       ballGlobal[1]+kick_dist1*math.cos(max_score_angle),
       ballGlobal[2]+kick_dist1*math.sin(max_score_angle)

@@ -15,7 +15,7 @@ local Y_MAX = 1
 local Y_FACTOR = 0.7
 --
 local X_THRESH = 0.02
-local X_GOAL = -4
+local X_GOAL = -4.25
 --
 local A_THRESH = 5 * DEG_TO_RAD
 --
@@ -43,7 +43,7 @@ local function robocup_approach(rel_pose)
   local vStep = vector.pose{
 		procFunc(rel_pose.x*0.5, 0, maxStep),
 		procFunc(rel_pose.y*0.5, 0, maxStep),
-		rel_pose.a * 0.5
+		0
 	}
 
   -- Reduce speed based on how far away from the waypoint we are
@@ -59,11 +59,10 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-  head_ch:send'line'
 end
 
 function state.update()
-  if not gcm.get_fsm_Motion():find('HybridWalk') then
+  if mcm.get_walk_ismoving()==0 then
     motion_ch:send'hybridwalk'
   end
 
@@ -77,52 +76,24 @@ function state.update()
 
   local ball = wcm.get_robot_ballglobal()
 
-  -- If not on our side of the field, then do not move yet
-  if ball[1] > -0.1 and t - wcm.get_ball_t() < 5 then
-    return 'idle'
-  end
-
   local pose = vector.pose(wcm.get_robot_pose())
-
   -- Find the optimal pose
   local y_goal = Y_FACTOR * math.min(math.max(-Y_MAX, ball[2]), Y_MAX);
   local a_goal = 0
-  local goalPose = vector.pose{
-    X_GOAL,
-    y_goal,
-    a_goal
-  }
-
+  local goalPose = vector.pose{X_GOAL,y_goal,a_goal}
   local dPose = pose_relative(goalPose, pose)
 
-  local in_position = true
-  local vx = 0
-  local vy = 0
-  local va = 0
-
-  -- Stay in front of the ball always
-  if math.abs(dPose.y) > Y_THRESH then
-    in_position = false
-  end
-
-  -- Angle to face the ball a bit
-  if math.abs(dPose.a) > A_THRESH then
-    in_position = false
-  end
-
-  -- We should move up from the goal line
-  if math.abs(dPose.x) > X_THRESH then
-    in_position = false
-  end
-
-  -- If in position, then return
-  if in_position then
-    print('GoaliePosition | dPose', dPose, pose)
+  
+  if math.abs(dPose.x) > X_THRESH or math.abs(dPose.y) > Y_THRESH then
+  else
+    mcm.set_walk_stoprequest(1)
     return'done'
   end
 
   local vel = robocup_approach(dPose)
-
+  if not IS_WEBOTS then
+    vel[1]=vel[1]-0.025 --drift compensation
+  end
   mcm.set_walk_vel(vel)
 
   if t-t_entry > TIMEOUT then return'timeout' end

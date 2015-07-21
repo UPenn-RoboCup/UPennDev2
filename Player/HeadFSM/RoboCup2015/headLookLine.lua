@@ -14,7 +14,7 @@ function state.entry()
   t_entry = Body.get_time();
   t_update = t_entry
 	stage = 0
-  dqNeckLimit = {50*DEG_TO_RAD, 50*DEG_TO_RAD}
+  dqNeckLimit = {25*DEG_TO_RAD, 25*DEG_TO_RAD}
 end
 
 function state.update()
@@ -27,10 +27,10 @@ function state.update()
     yaw = 0
     pitch = 80*DEG_TO_RAD
 	elseif stage == 1 then
-		yaw = 100*DEG_TO_RAD
+		yaw = 110*DEG_TO_RAD
     pitch = 30*DEG_TO_RAD
 	elseif stage == 2 then
-    yaw = -100*DEG_TO_RAD
+    yaw = -110*DEG_TO_RAD
     pitch = 30*DEG_TO_RAD
 	elseif stage == 3 then
     yaw = 0

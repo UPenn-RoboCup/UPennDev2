@@ -391,11 +391,13 @@ function walk.update()
 --if false then
       moveleg.set_leg_positions_hack(supportLeg,phSingle)
 --      moveleg.set_leg_positions()    
+--[[
       local qLLeg = Body.get_lleg_command_position()
       local qRLeg = Body.get_rleg_command_position()
       if supportLeg==1 then print(phSingle,qLLeg[3],qLLeg[4],qLLeg[5])
       else print(phSingle,qRLeg[3],qRLeg[4],qRLeg[5])
       end
+--]]
     else
       moveleg.set_leg_positions()    
     end

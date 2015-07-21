@@ -29,7 +29,7 @@ function state.update()
   end
 end
 
-function state.exit()
+function state.exit()  
   body_ch:send'init'
   print(state._NAME..' Exit' ) 
 end

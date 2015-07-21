@@ -35,7 +35,9 @@ function state.update()
 
   --HACK FOR ROBOCUP
   local neckAngleTarget = {0,Config.fsm.headObstacleScan.pitchUp}
-
+  if gcm.get_game_role()==3 then --look down when testing
+    neckAngleTarget = {0,45*DEG_TO_RAD}
+  end
 
   --print('Neck angle',unpack(neckAngleTarget))
   -- Grab where we are

@@ -223,7 +223,8 @@ Config.approachTargetY= {-0.02,0.06}  --L/R aiming offsets (kick with outside of
 Config.approachTargetX = {
 --0.40, --basic walkkick
 0.48, --basic walkkick
-0.35, --long stationary kick
+--0.34, --long stationary kick
+0.30, --long stationary kick
 0.40} --for first walkkick, long stationary kick, weak walkkick\
 
 Config.dont_look_goals =false --testing

@@ -301,12 +301,20 @@ function state.entry()
     local obs_dist = math.sqrt(rel_obs_x*rel_obs_x + rel_obs_y*rel_obs_y)
     local obs_angle = math.atan2(rel_obs_y, rel_obs_x)
 
-    if obs_dist<1.0 then
-      print("Obstacle close!!!")
+    if obs_dist<1.0 then      
       if obs_angle>0 then --obstacle at left
+        print("Obstacle at LEFT!!!")
+        print("Obstacle at LEFT!!!")
+        print("Obstacle at LEFT!!!")
+        print("Obstacle at LEFT!!!")
+
         ball_side = 1 --kick with the left kick
       else
         ball_side = -1 --kick with right kick
+        print("Obstacle at RIGHT!!!")
+        print("Obstacle at RIGHT!!!")
+        print("Obstacle at RIGHT!!!")
+        print("Obstacle at RIGHT!!!")
       end
     end
   end

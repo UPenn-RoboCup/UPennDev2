@@ -255,6 +255,48 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
   end    
 end
 
+function getDirectKickAngle(ballGlobal,pose)
+
+    local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
+    local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}
+    local goalC = {Config.world.xBoundary,0}
+    local goalAngleL = math.atan2(goalL[2]-ballGlobal[2],goalL[1]-ballGlobal[1])
+    local goalAngleR = math.atan2(goalR[2]-ballGlobal[2],goalR[1]-ballGlobal[1])
+    local goalAngleC = math.atan2(goalC[2]-ballGlobal[2],goalC[1]-ballGlobal[1])
+    max_score_angle = (goalAngleL+goalAngleR)/2
+
+    local goalie_avoid_kick = Config.goalie_avoid_kick or 0
+    local farpost_aim_th = Config.farpost_aim_th or 2.5
+
+    local goal_dist= calculate_distance_to_goal(ballGlobal)
+
+    if Config.aim_far_goalpost and goal_dist<farpost_aim_th  then
+      local left_dist = math.sqrt((goalL[1]-ballGlobal[1])^2+(goalL[2]-ballGlobal[2])^2)
+      local right_dist = math.sqrt((goalR[1]-ballGlobal[1])^2+(goalR[2]-ballGlobal[2])^2)
+      local max_dist = math.max(left_dist,right_dist)
+--      if max_dist<
+-- TODO: max dist check
+      if left_dist<right_dist then 
+        max_score_angle = (1-goalie_avoid_kick)*max_score_angle
+          +goalie_avoid_kick*goalAngleR
+      else
+        max_score_angle = (1-goalie_avoid_kick)*max_score_angle
+          +goalie_avoid_kick*goalAngleL        
+      end
+    else
+      local left_deg = math.abs(goalAngleL-pose[3])
+      local right_deg = math.abs(goalAngleR-pose[3])
+      if left_deg<right_deg then 
+        max_score_angle = (1-goalie_avoid_kick)*max_score_angle
+          +goalie_avoid_kick*goalAngleL
+      else
+        max_score_angle = (1-goalie_avoid_kick)*max_score_angle
+          +goalie_avoid_kick*goalAngleR
+      end
+    end
+
+    return max_score_angle
+end
 
 
 
@@ -273,16 +315,17 @@ function robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
   if ballGlobal[1]<0 then
     local y_min=3
     local y_max=-3
-    local y_ave = 0
+    local x_ave,y_ave = 0,0
     for i=1,obstacle_num do 
       local v =wcm['get_obstacle_v'..i]()
       if y_min>v[2] then y_min = v[2] end
       if y_max<v[2] then y_max = v[2] end
       y_ave = y_ave + v[2]
+      x_ave = x_ave + v[1]
     end
+
 --    print("ymin max:",y_min,y_max)
     if ballGlobal[2]<-1 then --ball is on the right
-
       if y_min>-clearTh1 then --right side is clear
 --        print("aim right",y_min,y_max)
         aimTarget = {1, (-3 + y_min)/2}
@@ -294,6 +337,7 @@ function robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
         if obstacle_num>0 then
           aimTarget={1,y_ave/obstacle_num}
         else
+          aimTarget[1] = 1.5   
         end      
       end
     elseif ballGlobal[2]>1 then --ball is on the left
@@ -307,6 +351,7 @@ function robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
 --        print("aim center")
         if obstacle_num>0 then
           aimTarget={1,y_ave/obstacle_num}
+          aimTarget[1] = math.max(1,x_ave/obstacle_num)
         else
         end      
       end
@@ -315,7 +360,9 @@ function robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
 --        print("aim center")
         if obstacle_num>0 then
           aimTarget={1,y_ave/obstacle_num}
-        else
+          aimTarget[1] = math.max(1,x_ave/obstacle_num)
+        else  
+          aimTarget[1] = 1.5   
         end      
       elseif y_min>-clearTh1 then --right side is clear
  --       print("aim right",y_min,y_max)
@@ -335,58 +382,47 @@ function robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
       ballGlobal[1]+kick_dist1*math.cos(max_score_angle),
       ballGlobal[2]+kick_dist1*math.sin(max_score_angle)
     }
-  
-    local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
-    local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}    
-    local goalAngleL = math.atan2(goalL[2]-ballGlobal[2],goalL[1]-ballGlobal[1])
-    local goalAngleR = math.atan2(goalR[2]-ballGlobal[2],goalR[1]-ballGlobal[1])
-    max_score_angle2 = (goalAngleL+goalAngleR)/2
+    max_score_angle2 = getDirectKickAngle(best_ballEndPos1,pose)
+    
 
+    wcm.set_robot_kickneeded(2)
+    wcm.set_robot_kickangle1(max_score_angle)
+    wcm.set_robot_kickangle2(max_score_angle2)
+    wcm.set_robot_ballglobal2({best_ballEndPos1[1],best_ballEndPos1[2]})
+
+    wcm.set_robot_ballglobal3({
+      best_ballEndPos1[1] + 3.0 *math.cos(max_score_angle2),
+       best_ballEndPos1[2] + 3.0 *math.sin(max_score_angle2)
+       })
 
   else
 --DIRECT KICK TO GOAL
-
-    local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
-    local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}
-    local goalC = {Config.world.xBoundary,0}
-    local goalAngleL = math.atan2(goalL[2]-ballGlobal[2],goalL[1]-ballGlobal[1])
-    local goalAngleR = math.atan2(goalR[2]-ballGlobal[2],goalR[1]-ballGlobal[1])
-    local goalAngleC = math.atan2(goalC[2]-ballGlobal[2],goalC[1]-ballGlobal[1])
-    max_score_angle = (goalAngleL+goalAngleR)/2
-
-
-
---  print(pose[3])
-    local left_deg = math.abs(goalAngleL-pose[3])
-    local right_deg = math.abs(goalAngleL-pose[3])
-
-    local goalie_avoid_kick = Config.goalie_avoid_kick or 0
-    if left_deg<right_deg then 
-      max_score_angle = (1-goalie_avoid_kick)*max_score_angle
-        +goalie_avoid_kick*goalAngleL
-    else
-      max_score_angle = (1-goalie_avoid_kick)*max_score_angle
-        +goalie_avoid_kick*goalAngleR
-    end
-
+    max_score_angle = getDirectKickAngle(ballGlobal,pose)
+--    max_score_angle2 = max_score_angle
     best_ballEndPos1 = {
       ballGlobal[1]+kick_dist1*math.cos(max_score_angle),
       ballGlobal[2]+kick_dist1*math.sin(max_score_angle)
     }
-  
+
+    wcm.set_robot_kickneeded(1)
+    wcm.set_robot_kickangle1(max_score_angle)
+    wcm.set_robot_kickangle2(max_score_angle)
+
+    wcm.set_robot_ballglobal2({
+--          ballGlobal[1] + 3.0 *math.cos( max_score_angle),
+--          ballGlobal[2] + 3.0 *math.sin( max_score_angle)
+
+          ballGlobal[1],ballGlobal[2]
+
+          })
+
+    wcm.set_robot_ballglobal3({
+          ballGlobal[1] + 3.0 *math.cos( max_score_angle),
+          ballGlobal[2] + 3.0 *math.sin( max_score_angle)
+          })
   end
-
-
   
-  wcm.set_robot_kickneeded(2)
-  wcm.set_robot_kickangle1(max_score_angle)
-  wcm.set_robot_kickangle2(max_score_angle2)
-  wcm.set_robot_ballglobal2({best_ballEndPos1[1],best_ballEndPos1[2]})
 
-  wcm.set_robot_ballglobal3({
-    best_ballEndPos1[1] + 3.0 *math.cos(max_score_angle2),
-     best_ballEndPos1[2] + 3.0 *math.sin(max_score_angle2)
-     })
   return max_score_angle
 end
 

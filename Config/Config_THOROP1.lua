@@ -215,13 +215,12 @@ Config.approachTargetY= {-0.08,0.10}  --L/R aiming offsets (kick with outside of
 if not IS_WEBOTS then 
 	Config.driftFactor = {0.029,0.026,0.020} 
 	Config.approachTargetY= {-0.02,0.06}  --L/R aiming offsets (kick with outside of the foot!)
-Config.approachTargetX = {
---0.40, --basic walkkick
-0.48, --basic walkkick
---0.34, --long stationary kick
-0.30, --long stationary kick
-0.40} --for first walkkick, long stationary kick, weak walkkick\
-
+	Config.approachTargetX = {
+	--0.40, --basic walkkick
+	0.48, --basic walkkick
+	--0.34, --long stationary kick
+	0.30, --long stationary kick
+	0.40} --for first walkkick, long stationary kick, weak walkkick\
 end
 
 Config.ballX_threshold_direct = 0 --after halfline, we just aim for the goal
@@ -237,11 +236,7 @@ Config.bodymove_fix = true
 
 
 
-
-
-
-
---[[
+--
 --testing w/o vision
 -------------------------------------
       Config.sensors = {
@@ -265,8 +260,18 @@ Config.obsDistTh = 1.0 --larger obstacle distance th
 Config.borderTh = 0.6 
 Config.ballX_threshold_direct = 0
 Config.new_planner = true
-Config.goalie_avoid_kick = 0
---Config.goalie_avoid_kick = 0.5
+
+
+Config.goalie_avoid_kick = 0 --dead center 
+--Config.goalie_avoid_kick = 0.5 --1/2 between center and the post
 --Config.goalie_avoid_kick = 1
+
+--SEMI FINAL
+Config.aim_far_goalpost = false
+Config.aim_far_goalpost = true
+Config.goalie_avoid_kick = 0.5
+Config.farpost_aim_th = 3 --closer than this, aim for farther post
+
+
 return Config
 

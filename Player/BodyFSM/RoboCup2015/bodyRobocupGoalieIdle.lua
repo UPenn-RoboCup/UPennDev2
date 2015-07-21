@@ -12,7 +12,7 @@ local Y_MAX = 1
 local Y_FACTOR = 0.7
 --
 local X_THRESH = 0.05
-local X_GOAL = -4.07
+local X_GOAL = -4
 --
 local A_THRESH = 10 * DEG_TO_RAD
 --

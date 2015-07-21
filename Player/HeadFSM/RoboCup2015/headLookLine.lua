@@ -14,7 +14,7 @@ function state.entry()
   t_entry = Body.get_time();
   t_update = t_entry
 	stage = 0
-  dqNeckLimit = {25*DEG_TO_RAD, 25*DEG_TO_RAD}
+  dqNeckLimit = {40*DEG_TO_RAD, 40*DEG_TO_RAD}
 end
 
 function state.update()
@@ -22,6 +22,7 @@ function state.update()
   local dt = t-t_update
   t_update = t
 
+  --[[
   local yaw, pitch
 	if stage == 0 then
     yaw = 0
@@ -38,6 +39,24 @@ function state.update()
 	else
     return 'done'
 	end
+  --]]
+
+  local yaw, pitch
+  if stage == 0 then
+    yaw = 0
+    pitch = 40*DEG_TO_RAD
+  elseif stage == 1 then
+    yaw = 45*DEG_TO_RAD
+    pitch = 45*DEG_TO_RAD
+  elseif stage == 2 then
+    yaw = -45*DEG_TO_RAD
+    pitch = 45*DEG_TO_RAD
+  elseif stage == 3 then
+    yaw = 0
+    pitch = 40*DEG_TO_RAD
+  else
+    return 'done'
+  end
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()

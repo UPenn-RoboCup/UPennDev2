@@ -3,7 +3,6 @@ state._NAME = ...
 
 local Body = require'Body'
 
-local timeout = 10.0
 local t_entry, t_update, t_exit
 
 local VX_WALK = 0.1
@@ -23,7 +22,7 @@ local A_THRESH = 5 * DEG_TO_RAD
 local sign = require'util'.sign
 local pose_relative = require'util'.pose_relative
 
-local TIMEOUT = 15
+local TIMEOUT = 20
 
 local dist_threshold = 0.05
 local angle_threshold = 2 * DEG_TO_RAD
@@ -119,18 +118,14 @@ function state.update()
   -- If in position, then return
   if in_position then
     print('GoaliePosition | dPose', dPose, pose)
-    return'idle'
+    return'done'
   end
-
-
 
   local vel = robocup_approach(dPose)
 
   mcm.set_walk_vel(vel)
 
-  if t-t_entry > TIMEOUT then
-    return'timeout'
-  end
+  if t-t_entry > TIMEOUT then return'timeout' end
 
 end
 

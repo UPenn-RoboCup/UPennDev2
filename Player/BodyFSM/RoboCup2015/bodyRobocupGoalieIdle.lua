@@ -35,7 +35,9 @@ function state.entry()
     mcm.set_walk_stoprequest(1)
   end
 
-  --head_ch:send'line'
+  wcm.set_ball_backonly(0)
+
+  head_ch:send'line'
 
 end
 

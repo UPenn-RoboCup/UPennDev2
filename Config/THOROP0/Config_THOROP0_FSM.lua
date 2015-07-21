@@ -257,15 +257,20 @@ fsm.Body = {
 
 	{'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
   {'bodyRobocupKick', 'testdone', 'bodyStop'},
-
+	--
   {'bodyRobocupGoalieIdle', 'attacker', 'bodyRobocupIdle'},
   {'bodyRobocupGoalieIdle', 'stop', 'bodyStop'},
 	{'bodyRobocupGoalieIdle', 'position', 'bodyRobocupGoaliePosition'},
 	{'bodyRobocupGoalieIdle', 'timeout', 'bodyRobocupGoalieIdle'},
-
+	--
 	{'bodyRobocupGoaliePosition', 'timeout', 'bodyRobocupGoaliePosition'},
 	{'bodyRobocupGoaliePosition', 'idle', 'bodyRobocupGoalieIdle'},
+	{'bodyRobocupGoaliePosition', 'done', 'bodyRobocupGoalieDone'},
 	{'bodyRobocupGoaliePosition', 'stop', 'bodyStop'},
+	{'bodyRobocupGoaliePosition', 'attacker', 'bodyRobocupIdle'},
+	--
+	{'bodyRobocupGoalieDone', 'stop', 'bodyStop'},
+	{'bodyRobocupGoalieDone', 'attacker', 'bodyRobocupIdle'},
 
 }
 

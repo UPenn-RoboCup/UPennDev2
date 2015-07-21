@@ -247,23 +247,22 @@ local function find_ball_off_line(Image)
 			end
 		end
 
+		-- 20deg in the headbackscan...
+		if Config.reject_ball_headup and (Image.qHead[2] < 15*DEG_TO_RAD) then
+			passed = false
+			msgs[i] = string.format("Head is up: %.2f", Image.qHead[2]*RAD_TO_DEG)
+		end
+
 		-- If passed the checks
 		--print('passed', passed)
 		if passed==true then
 			propsA.v = projectedVL
-
-
-
-
-
-
-
 			propsA.t = Image.t
 			-- For ballFilter
 			propsA.r = math.sqrt(v[1]^2+v[2]^2)
 			propsA.dr = 0.25 * propsA.r --TODO: tweak
 			propsA.da = 10 * DEG_TO_RAD
-			msgs[i] = string.format('Ball@%.2f,%.2f,%.2f F:%.2f,%.2f', 
+			msgs[i] = string.format('Ball@%.2f,%.2f,%.2f F:%.2f,%.2f',
 				projectedVL[1],projectedVL[2],projectedVL[3],wcm.get_ball_x(),wcm.get_ball_y()
 				)
 

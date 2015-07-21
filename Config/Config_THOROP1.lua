@@ -256,7 +256,11 @@ Config.assume_goalie_blocking = false
 
 
 Config.kick_decision_new = true
-Config.kick_threshold= { 5 ,3.5}
+Config.kick_threshold= {5,3.5}
+
+Config.ballX_threshold_direct
+
+
 
 Config.longkick_threshold = 3.5 --if goal is closer than this we do a long kick
 

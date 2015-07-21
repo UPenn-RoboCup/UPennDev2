@@ -258,6 +258,9 @@ function robocupplanner.getKickAngle(pose,ballGlobal,prevKickAngle)
   local ballX_threshold_direct = Config.ballX_threshold_direct or 0
 
 
+
+  local goal_dist= calculate_distance_to_goal(ballGlobal)
+
 --  if ballGlobal[1]>ballX_threshold2 then
     if ballGlobal[1]>ballX_threshold_direct then
 

@@ -241,10 +241,10 @@ Config.bodymove_fix = true
 
 
 
---
+--[[
 --testing w/o vision
 -------------------------------------
-	  Config.sensors = {
+      Config.sensors = {
 			ft = true,
       head_camera = 'camera_wizard',
       world = 'world_wizard',
@@ -255,19 +255,15 @@ Config.bodymove_fix = true
 --]]
 --Config.debug.planning=true
 
+
+--DAY 3
 Config.assume_goalie_blocking = true
 Config.assume_goalie_blocking = false
-
 Config.kick_decision_new = true
 Config.kick_threshold= {4.5,3.5}
 Config.obsDistTh = 1.0 --larger obstacle distance th
 Config.borderTh = 0.6 
 Config.ballX_threshold_direct = 0
-
-
-
-
-
 Config.new_planner = true
 Config.goalie_avoid_kick = 0
 --Config.goalie_avoid_kick = 0.5

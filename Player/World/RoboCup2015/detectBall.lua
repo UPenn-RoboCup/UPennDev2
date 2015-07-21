@@ -223,6 +223,7 @@ local function find_ball_off_line(Image)
 			projectedVG = pHead4 + scale * (vG - pHead4)
 
 			local minBackX = -0.1
+			Config.reject_forward_balls = true
 			if Config.reject_forward_balls and ignoringBack then
 				if projectedVG[1] > minBackX then
 					passed = false

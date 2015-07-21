@@ -200,6 +200,7 @@ camera[1] = {
 	vision = vision,
 	-- Run the standard RoboCup vision processing
 	lut = 'colorized3',
+	--lut = 'steve',
 	--lut = 'day209_5',
 	--Logitech C920
 	-- f = 640/2/tan(78/180*pi / 2)

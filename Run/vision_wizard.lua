@@ -77,7 +77,7 @@ end
 local t0 = get_time()
 local t_debug = 0
 --
-local hz_monitor = 10
+local hz_monitor = 1
 local dt_monitor = 1 / hz_monitor
 local t_monitor = -math.huge
 

@@ -240,9 +240,16 @@ Config.obsDistTh = 1.0 --larger obstacle distance th
 Config.borderTh = 0.6 
 Config.ballX_threshold_direct = 0
 Config.new_planner = true
-Config.goalie_avoid_kick = 0
---Config.goalie_avoid_kick = 0.5
+Config.goalie_avoid_kick = 0--dead center 
+--Config.goalie_avoid_kick = 0.5 --1/2 between center and the post
 --Config.goalie_avoid_kick = 1
+
+
+--SEMI FINAL
+Config.aim_far_goalpost = false
+Config.aim_far_goalpost = true
+Config.goalie_avoid_kick = 0.5
+Config.farpost_aim_th = 3 --closer than this, aim for farther post
 
 
 return Config

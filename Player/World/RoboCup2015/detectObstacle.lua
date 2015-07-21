@@ -53,7 +53,7 @@ function detectObstacle.update(Image)
 	local obsProps = ImageProc.obstacles(
 		tonumber(ffi.cast('intptr_t', ffi.cast('void *', Image.labelB_d))),
 		Image.wb, Image.hb,
-		config.min_width, config.max_width, horizonB
+		config.min_width, config.max_width --, horizonB
 	)
 
   if #obsProps == 0 then

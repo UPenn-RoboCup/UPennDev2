@@ -239,6 +239,9 @@ local function update_velocity()
       ))  
   end
 
+  vStep[1] = math.max(0,vStep[1])
+
+
   mcm.set_walk_vel(vStep)
 
   local t  = Body.get_time()

@@ -15,7 +15,7 @@ local Y_MAX = 1
 local Y_FACTOR = 0.7
 --
 local X_THRESH = 0.02
-local X_GOAL = -4.25
+local X_GOAL = -4.35
 --
 local A_THRESH = 5 * DEG_TO_RAD
 --
@@ -41,13 +41,14 @@ local function robocup_approach(rel_pose)
 
   -- calculate walk step velocity based on ball position
   local vStep = vector.pose{
-		procFunc(rel_pose.x*0.5, 0, maxStep),
+--		procFunc(rel_pose.x*0.5, 0, maxStep),
+0,
 		procFunc(rel_pose.y*0.5, 0, maxStep),
 		0
 	}
 
   -- Reduce speed based on how far away from the waypoint we are
-	local maxStep1 = rel_dist < 0.04 and 0.02 or maxStep
+  local maxStep1 = rel_dist < 0.04 and 0.02 or maxStep
   local scale = min(maxStep1/pDist(vStep), 1)
 
   return scale * vStep, rel_dist, abs(rel_pose.a)
@@ -84,7 +85,8 @@ function state.update()
   local dPose = pose_relative(goalPose, pose)
 
   
-  if math.abs(dPose.x) > X_THRESH or math.abs(dPose.y) > Y_THRESH then
+--  if math.abs(dPose.x) > X_THRESH or 
+  if math.abs(dPose.y) > Y_THRESH then
   else
     mcm.set_walk_stoprequest(1)
     return'done'
@@ -92,7 +94,7 @@ function state.update()
 
   local vel = robocup_approach(dPose)
   if not IS_WEBOTS then
-    vel[1]=vel[1]-0.025 --drift compensation
+    vel[1]=vel[1]-0.01 --drift compensation
   end
   mcm.set_walk_vel(vel)
 

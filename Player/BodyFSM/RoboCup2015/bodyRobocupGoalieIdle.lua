@@ -70,7 +70,9 @@ function state.update()
   --print('ball', unpack(ball))
 
   -- We should move up from the goal line
-  if math.abs(dPose.x) > X_THRESH or math.abs(dPose.y) > Y_THRESH then
+  if 
+--math.abs(dPose.x) > X_THRESH or 
+math.abs(dPose.y) > Y_THRESH then
     print("Ball Found:",ball[1],ball[2])
     print('GoalieIdle | goalPose', goalPose[1],goalPose[2])
     motion_ch:send'hybridwalk' --start moving

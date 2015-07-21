@@ -221,9 +221,7 @@ Config.approachTargetX = {0.55,0.40,0.45} --for first walkkick, long stationary 
 Config.approachTargetY= {-0.02,0.06}  --L/R aiming offsets (kick with outside of the foot!)
 
 Config.approachTargetX = {
---0.40, --basic walkkick
 0.48, --basic walkkick
---0.34, --long stationary kick
 0.30, --long stationary kick
 0.40} --for first walkkick, long stationary kick, weak walkkick\
 
@@ -248,8 +246,15 @@ Config.goalie_avoid_kick = 0--dead center
 --SEMI FINAL
 Config.aim_far_goalpost = false
 Config.aim_far_goalpost = true
-Config.goalie_avoid_kick = 0.5
+Config.goalie_avoid_kick = 0
 Config.farpost_aim_th = 3 --closer than this, aim for farther post
+
+
+Config.approachTargetX = {
+0.48, --basic walkkick
+0.30, --long stationary kick
+0.35} --weakkick
+
 
 
 return Config

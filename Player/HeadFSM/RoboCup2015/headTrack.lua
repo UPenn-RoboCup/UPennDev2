@@ -103,7 +103,10 @@ function state.update()
   pitch = math.min(math.max(pitch, pitchMin), pitchMax)
 
   --If ball is in front just look down
-  if ballX>0 and math.sqrt(ballX*ballX + ballY*ballY) <0.5  then yaw = 0 end
+  if ballX>0 and 
+     ballX>math.abs(ballY*1.5) and 
+     ballX<0.9 then
+	 yaw = 0 end
 
   -- Grab where we are
   local qNeck = Body.get_head_command_position()

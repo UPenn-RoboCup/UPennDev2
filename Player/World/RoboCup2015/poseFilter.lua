@@ -41,7 +41,7 @@ local cos = require'math'.cos
 local function check_particles(funcname)
   for ip = 1,N do
     if xp[ip]==nil or yp[ip]==nil or ap[ip]==nil then
-      print(util.color("POSEFILTER P NIL at "..funcname..ip, 'red'))
+      print(util.color("POSEFILTER P NIL at "..funcname..' '..ip, 'red'))
       --SJ: quick fix
       --Swap that particle with the best particle for now
       xp[ip]=xp[1] or 0
@@ -77,6 +77,7 @@ function poseFilter.get_pose()
 		--print('ap?', #ap, 'xp?', #xp)
 		print('IMAX?', imax)
 		print(unpack(ap))
+    imax = 1
 	end
   return xp[imax], yp[imax], mod_angle(ap[imax])
 end
@@ -377,6 +378,7 @@ function poseFilter.line_observation(v, a)
     sa[ip] = sin(ap_ip)
     xGlobal[ip] = v[1]*ca[ip] - v[2]*sa[ip] + xp[ip]
     yGlobal[ip] = v[1]*sa[ip] + v[2]*ca[ip] + yp[ip]
+    --print('xGlobal[ip]', xGlobal[ip])
   end
 
   -- TODO: Need the global orientation to check x/y correctly
@@ -397,23 +399,29 @@ function poseFilter.line_observation(v, a)
   -- Weight update against goalie box
   -- TODO: Could be a bit weird on this short line segment
   -- Maybe just filter out always
-  local wPenaltyFactor = 1 / (1 + r)
+  local wPenaltyFactor = 1 / (1 + 2*r)
   for ip, s in ipairs(sidelines) do
-    local wPenalty = s and (
-      math.max(yGlobal[ip] - yPenalty, 0) + math.max(-yGlobal[ip] - yPenalty, 0)
-    ) or (
-      math.max(xGlobal[ip] - xPenalty, 0) + math.max(-xGlobal[ip] - xPenalty, 0)
-    )
-    --wp[ip] = wp[ip] - wPenalty * wPenaltyFactor
+    -- Check y if sideline
+    local wPenalty = 0
+    if s then
+      --wPenalty = math.max(yGlobal[ip] - yPenalty, 0) + math.max(-yGlobal[ip] - yPenalty, 0)
+    else
+      local xAbsDiff = math.min(
+        math.abs(xGlobal[ip] - xPenalty),
+        math.abs(xGlobal[ip] - -xPenalty)
+      )
+      --if (xGlobal[ip]<-1) then print('wPenalty !s', xAbsDiff, vector.pose{xp[ip], yp[ip], ap[ip]}, vector.pose(wcm.get_robot_pose_gps())) end
+      if xAbsDiff < 0.2 then wPenalty = xAbsDiff end
+    end
+    wp[ip] = wp[ip] - wPenalty * wPenaltyFactor
   end
 
   -- Weight update against half field line
-  local wHalflineFactor = 1 / (4 + 4*r)
-  --print('wHalflineFactor', wHalflineFactor)
+  local wHalflineFactor = 1 / (2 + 2*r)
   for ip, s in ipairs(sidelines) do
-    local xDiff = xGlobal[ip]
-    if (not s) and math.abs(xDiff)<0.2 then
-      wp[ip] = math.max(wp[ip] - math.abs(xDiff) * wHalflineFactor, 0)
+    local xAbsDiff = math.abs(xGlobal[ip])
+    if (not s) and xAbsDiff<0.2 then
+      wp[ip] = wp[ip] - xAbsDiff * wHalflineFactor
     end
   end
 
@@ -776,8 +784,8 @@ end
 ---Adds noise to particle x,y coordinates and angle.
 function poseFilter.addNoise()
   check_particles("addnoise")
-  da = 1.0*math.pi/180.0
-  dr = 0.005
+  local da = 1.0*DEG_TO_RAD
+  local dr = 0.005
   xp = xp + dr * vector.new(util.randn(N))
   yp = yp + dr * vector.new(util.randn(N))
   --KAREN: noise in yaw makes localization worse

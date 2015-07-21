@@ -7,16 +7,16 @@ local timeout = 10.0
 local t_entry, t_update, t_exit
 
 local VX_WALK = 0.1
-local VY_WALK = 0.1
-local VA_WALK = 10*DEG_TO_RAD
+local VY_WALK = 0.075
+local VA_WALK = 5*DEG_TO_RAD
 
 -- Ideal position in y along the center
-local Y_THRESH = 0.07
+local Y_THRESH = 0.02
 local Y_MAX = 1
 local Y_FACTOR = 0.7
 --
-local X_THRESH = 0.07
-local X_GOAL = -4.05
+local X_THRESH = 0.02
+local X_GOAL = -4
 --
 local A_THRESH = 5 * DEG_TO_RAD
 --
@@ -50,7 +50,7 @@ function state.update()
   local ball = wcm.get_robot_ballglobal()
 
   -- If not on our side of the field, then do not move yet
-  if ball[1] > -0.1 then
+  if ball[1] > -0.1 and t - wcm.get_ball_t() < 5 then
     return 'idle'
   end
 
@@ -88,7 +88,7 @@ function state.update()
   if math.abs(dPose.x) > X_THRESH then
     vx = sign(dPose.x) * VX_WALK
     if vx > 0 then
-      vx = vx * 0.5
+      vx = vx * 0.25
     end
     in_position = false
   end

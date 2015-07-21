@@ -54,8 +54,8 @@ function state.update()
   local ball = wcm.get_robot_ballglobal()
   -- check ball_t
 
-  -- If not on our side of the field, then do not move yet
-  if ball[1] > -0.1 and t - wcm.get_ball_t() < 5 then
+  --ball should be close and recently seen
+  if ball[1] > -1 or t - wcm.get_ball_t() > .2 then
     return
   end
 
@@ -64,47 +64,27 @@ function state.update()
   -- Find the optimal pose
   local y_goal = Y_FACTOR * math.min(math.max(-Y_MAX, ball[2]), Y_MAX);
   local a_goal = 0
-  local goalPose = vector.pose{
-    X_GOAL,
-    y_goal,
-    a_goal
-  }
+  local goalPose = vector.pose{X_GOAL,y_goal,a_goal}
   local dPose = pose_relative(goalPose, pose)
   --print('dPose', dPose, 'goalPose', goalPose, 'pose', pose)
   --print('ball', unpack(ball))
 
-  local in_position = true
-
   -- We should move up from the goal line
-  if math.abs(dPose.x) > X_THRESH then
-    in_position = false
-  end
-
-  -- Stay in front of the ball always
-  if math.abs(dPose.y) > Y_THRESH then
-    in_position = false
-  end
-
-  -- Angle to face the ball a bit
-  if math.abs(dPose.a) > A_THRESH then
-    in_position = false
-  end
-
-  -- If in position, then return
-  if not in_position then
-    print('GoalieIdle | dPose', dPose, pose)
+  if math.abs(dPose.x) > X_THRESH or math.abs(dPose.y) > Y_THRESH then
+    print("Ball Found:",ball[1],ball[2])
+    print('GoalieIdle | goalPose', goalPose[1],goalPose[2])
+    motion_ch:send'hybridwalk' --start moving
     return'position'
   end
 
   if t-t_entry > TIMEOUT then
     return'timeout'
   end
-
 end
 
 function state.exit()
   print(state._NAME..' Exit' )
-  t_exit = Body.get_time()
+  t_exit = Body.get_time()  
 end
 
 return state

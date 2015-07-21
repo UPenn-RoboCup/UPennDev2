@@ -236,7 +236,7 @@ Config.bodymove_fix = true
 
 
 
---
+--[[
 --testing w/o vision
 -------------------------------------
       Config.sensors = {

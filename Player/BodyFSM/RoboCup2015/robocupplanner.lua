@@ -235,6 +235,12 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
   
 --  if min_obs_dist>0.5 and min_borderY_dist>0.5 then   
 
+
+  local obsDistTh = Config.obsDistTh or 0.5
+  local borderYTh = Config.borderYTh or 0.5
+
+
+
   if min_obs_dist>0.5 and min_borderY_dist>0.9 then       
 
     daGoal, kickAngle2 = evaluate_goal_kickangle(ballEndPos)
@@ -250,7 +256,133 @@ function evaluate_kickangle(ballGlobal,angle, kick_deviation_angle)
 end
 
 
+
+
+function robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
+
+  local goal_dist= calculate_distance_to_goal(ballGlobal)
+  local max_score_angle,max_score_angle2 = 0,0
+  local kick_dist1 = 3.0
+
+  local aimTarget= {2,0}
+  local obstacle_num = wcm.get_obstacle_num()  
+
+  local clearTh1=1
+  local clearTh2=1.5
+
+  if ballGlobal[1]<0 then
+    local y_min=3
+    local y_max=-3
+    local y_ave = 0
+    for i=1,obstacle_num do 
+      local v =wcm['get_obstacle_v'..i]()
+      if y_min>v[2] then y_min = v[2] end
+      if y_max<v[2] then y_max = v[2] end
+      y_ave = y_ave + v[2]
+    end
+--    print("ymin max:",y_min,y_max)
+    if ballGlobal[2]<-1 then --ball is on the right
+
+      if y_min>-clearTh1 then --right side is clear
+--        print("aim right",y_min,y_max)
+        aimTarget = {1, (-3 + y_min)/2}
+      elseif y_max<clearTh2 then --left side is clear
+--        print("aim left",y_min,y_max)
+        aimTarget = {1, (3 + y_max)/2}
+      else --aim for the center
+--        print("aim center",y_min,y_max)
+        if obstacle_num>0 then
+          aimTarget={1,y_ave/obstacle_num}
+        else
+        end      
+      end
+    elseif ballGlobal[2]>1 then --ball is on the left
+      if y_max<clearTh1 then --left side is clear
+--        print("aim left",y_min,y_max)
+        aimTarget = {1, (3 + y_max)/2}
+      elseif y_min>-clearTh2 then --right side is clear
+--        print("aim right",y_min,y_max)
+        aimTarget = {1, (-3 + y_min)/2}
+      else --aim for the center
+--        print("aim center")
+        if obstacle_num>0 then
+          aimTarget={1,y_ave/obstacle_num}
+        else
+        end      
+      end
+    else
+      if y_max>clearTh1 and y_min<-clearTh1 then --left side is clear
+--        print("aim center")
+        if obstacle_num>0 then
+          aimTarget={1,y_ave/obstacle_num}
+        else
+        end      
+      elseif y_min>-clearTh1 then --right side is clear
+ --       print("aim right",y_min,y_max)
+        aimTarget = {1, (-3 + y_min)/2}
+      else 
+  --      print("aim left",y_min,y_max)
+        aimTarget = {1, (3 + y_max)/2}        
+      end
+    end
+
+    
+    local rel_x = aimTarget[1]-ballGlobal[1]
+    local rel_y = aimTarget[2]-ballGlobal[2]
+    max_score_angle = math.atan2(rel_y,rel_x)
+
+    best_ballEndPos1 = {
+      ballGlobal[1]+kick_dist1*math.cos(max_score_angle),
+      ballGlobal[2]+kick_dist1*math.sin(max_score_angle)
+    }
+  
+    local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
+    local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}    
+    local goalAngleL = math.atan2(goalL[2]-ballGlobal[2],goalL[1]-ballGlobal[1])
+    local goalAngleR = math.atan2(goalR[2]-ballGlobal[2],goalR[1]-ballGlobal[1])
+    max_score_angle2 = (goalAngleL+goalAngleR)/2
+
+
+  else
+    local goalL = {Config.world.xBoundary,Config.world.goalWidth/2 * 0.9}
+    local goalR = {Config.world.xBoundary,-Config.world.goalWidth/2 * 0.9}
+    local goalC = {Config.world.xBoundary,0}
+    local goalAngleL = math.atan2(goalL[2]-ballGlobal[2],goalL[1]-ballGlobal[1])
+    local goalAngleR = math.atan2(goalR[2]-ballGlobal[2],goalR[1]-ballGlobal[1])
+    local goalAngleC = math.atan2(goalC[2]-ballGlobal[2],goalC[1]-ballGlobal[1])
+    max_score_angle = (goalAngleL+goalAngleR)/2
+    best_ballEndPos1 = {
+      ballGlobal[1]+kick_dist1*math.cos(max_score_angle),
+      ballGlobal[2]+kick_dist1*math.sin(max_score_angle)
+    }
+  
+  end
+
+
+  
+  wcm.set_robot_kickneeded(2)
+  wcm.set_robot_kickangle1(max_score_angle)
+  wcm.set_robot_kickangle2(max_score_angle2)
+  wcm.set_robot_ballglobal2({best_ballEndPos1[1],best_ballEndPos1[2]})
+
+  wcm.set_robot_ballglobal3({
+    best_ballEndPos1[1] + 3.0 *math.cos(max_score_angle2),
+     best_ballEndPos1[2] + 3.0 *math.sin(max_score_angle2)
+     })
+  return max_score_angle
+end
+
+
+
+
+
+
+
 function robocupplanner.getKickAngle(pose,ballGlobal,prevKickAngle)
+
+  if Config.new_planner then
+    return robocupplanner.getKickAngle2(pose,ballGlobal,prevKickAngle)
+  end
   local max_score = -math.huge
   local max_score_angle, max_score_angle2, best_ballEndPos1
 
@@ -263,12 +395,9 @@ function robocupplanner.getKickAngle(pose,ballGlobal,prevKickAngle)
 
 --  if ballGlobal[1]>ballX_threshold2 then
     if ballGlobal[1]>ballX_threshold_direct then
-
-
-
-    if Config.debug.planning then print("Ball close, one stage planning") end
-    --Ball close, do a single-stage planning
-    daGoal, kickAngle = evaluate_goal_kickangle(ballGlobal)
+      if Config.debug.planning then print("Ball close, one stage planning") end
+      --Ball close, do a single-stage planning
+      daGoal, kickAngle = evaluate_goal_kickangle(ballGlobal)
 
     if not kickAngle then 
       kickAngle = prevKickAngle or 0
@@ -337,12 +466,8 @@ function robocupplanner.getKickAngle(pose,ballGlobal,prevKickAngle)
       print("No possible route")      
       return
     end
-
    end
 end
-
-
-
 
 
 

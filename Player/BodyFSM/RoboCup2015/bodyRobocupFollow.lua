@@ -48,7 +48,12 @@ function state.entry()
   local walk_target_local = {ballx,bally,balla}
   local ballGlobal = util.pose_global(walk_target_local, pose)
   
+
+
   kickAngle = robocupplanner.getKickAngle(pose,ballGlobal) --can be nil!
+  
+
+  
 
   if kickAngle then print("Initial kickAngle:",kickAngle*180/math.pi) end
   count = 0

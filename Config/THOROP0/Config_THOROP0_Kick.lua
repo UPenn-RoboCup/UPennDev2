@@ -27,6 +27,10 @@ local height3 = 0.04 --longkick height
 
 
 
+if IS_WEBOTS then
+ height2 = 0.04 --walkkick height
+end
+
 
 
 kick.stepqueue={}

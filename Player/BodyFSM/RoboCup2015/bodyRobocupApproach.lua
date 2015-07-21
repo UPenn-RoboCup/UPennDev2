@@ -332,10 +332,13 @@ function state.entry()
     local goalDist = calculate_distance_to_goal(ballGlobal)
     local kick_th = Config.kick_threshold or {5,3.5}
     if goalDist>kick_th[1] then
+      print("Goal dist",goalDist)
       mcm.set_walk_kicktype(0) --Walkkick 
     elseif goalDist>kick_th[2] then
+      print("Goal dist",goalDist)
       mcm.set_walk_kicktype(2) --Weaker Walkkick 
     else
+      print("Goal dist",goalDist)
       mcm.set_walk_kicktype(1) --strong kick default
     end
   else

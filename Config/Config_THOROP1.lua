@@ -212,18 +212,20 @@ Config.ballX_threshold2 = 1.0 --The threshold we start using strong kick
 
 -- DAY 2
 Config.approachTargetY= {-0.08,0.10}  --L/R aiming offsets (kick with outside of the foot!)
-if not IS_WEBOTS then Config.driftFactor = {0.029,0.026,0.020} end
-
-Config.ballX_threshold_direct = 0 --after halfline, we just aim for the goal
-Config.approachTargetX = {0.55,0.40,0.45} --for first walkkick, long stationary kick, weak walkkick\
-Config.approachTargetY= {-0.02,0.06}  --L/R aiming offsets (kick with outside of the foot!)
-
+if not IS_WEBOTS then 
+	Config.driftFactor = {0.029,0.026,0.020} 
+	Config.approachTargetY= {-0.02,0.06}  --L/R aiming offsets (kick with outside of the foot!)
 Config.approachTargetX = {
 --0.40, --basic walkkick
 0.48, --basic walkkick
 --0.34, --long stationary kick
 0.30, --long stationary kick
 0.40} --for first walkkick, long stationary kick, weak walkkick\
+
+end
+
+Config.ballX_threshold_direct = 0 --after halfline, we just aim for the goal
+
 
 Config.dont_look_goals =false --testing
 Config.auto_init = true
@@ -257,18 +259,20 @@ Config.assume_goalie_blocking = false
 
 Config.kick_decision_new = true
 Config.kick_threshold= {5,3.5}
-
-Config.ballX_threshold_direct
-
-
-
-Config.longkick_threshold = 3.5 --if goal is closer than this we do a long kick
+Config.kick_threshold= {4.5,3.5}
 
 
 
+Config.obsDistTh = 1.0 --larger obstacle distance th
+Config.borderTh = 0.6 
+
+Config.ballX_threshold_direct = 0
+Config.debug.planning=true
 
 
 
+Config.kick_threshold= {4,3.5}
+Config.new_planner = true
 
 return Config
 

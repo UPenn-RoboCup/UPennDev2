@@ -25,6 +25,35 @@ local pose_relative = require'util'.pose_relative
 
 local TIMEOUT = 15
 
+local dist_threshold = 0.05
+local angle_threshold = 2 * DEG_TO_RAD
+local maxStep = 0.07
+local maxTurn = 0.10
+local sqrt = require'math'.sqrt
+local pow = require'math'.pow
+local min = require'math'.min
+local abs = require'math'.abs
+local procFunc = require'util'.procFunc
+local function pDist(p) return sqrt(pow(p.x,2)+pow(p.y,2)) end
+
+local function robocup_approach(rel_pose)
+  -- Distance to the waypoint
+  local rel_dist = pDist(rel_pose)
+
+  -- calculate walk step velocity based on ball position
+  local vStep = vector.pose{
+		procFunc(rel_pose.x*0.5, 0, maxStep),
+		procFunc(rel_pose.y*0.5, 0, maxStep),
+		rel_pose.a * 0.5
+	}
+
+  -- Reduce speed based on how far away from the waypoint we are
+	local maxStep1 = rel_dist < 0.04 and 0.02 or maxStep
+  local scale = min(maxStep1/pDist(vStep), 1)
+
+  return scale * vStep, rel_dist, abs(rel_pose.a)
+end
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -74,22 +103,16 @@ function state.update()
 
   -- Stay in front of the ball always
   if math.abs(dPose.y) > Y_THRESH then
-    vy = sign(dPose.y) * VY_WALK
     in_position = false
   end
 
   -- Angle to face the ball a bit
   if math.abs(dPose.a) > A_THRESH then
-    va = sign(dPose.a) * VA_WALK
     in_position = false
   end
 
   -- We should move up from the goal line
   if math.abs(dPose.x) > X_THRESH then
-    vx = sign(dPose.x) * VX_WALK
-    if vx > 0 then
-      vx = vx * 0.25
-    end
     in_position = false
   end
 
@@ -99,7 +122,9 @@ function state.update()
     return'idle'
   end
 
-  local vel = vector.new{vx, vy, va}
+
+
+  local vel = robocup_approach(dPose)
 
   mcm.set_walk_vel(vel)
 

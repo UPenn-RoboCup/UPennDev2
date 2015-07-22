@@ -58,6 +58,7 @@ function state.update()
   t_update = t
 
   if gcm.get_game_state()~=3 then return end
+  if gcm.get_game_role()==0 then return 'scan' end
 
 
   local qNeck0 = Body.get_head_command_position()

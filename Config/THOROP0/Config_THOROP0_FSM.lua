@@ -79,6 +79,7 @@ fsm.Head = {
   {'headBackScanInit', 'ballfound', 'headTrack'},
   {'headBackScanInit', 'noball', 'headBackScanInit'},
   {'headBackScanInit', 'teleop', 'headTeleop'},
+  {'headBackScanInit', 'scan', 'headScan'},
 
 
   {'headScan', 'ballfound', 'headTrack'},

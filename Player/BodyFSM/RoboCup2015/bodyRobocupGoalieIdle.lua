@@ -21,6 +21,8 @@ local pose_relative = require'util'.pose_relative
 
 local TIMEOUT = 20
 
+local has_spreaded = false
+
 function state.entry()
   print(state._NAME..' Entry' )
   -- Update the time of entry
@@ -36,8 +38,8 @@ function state.entry()
   end
 
   wcm.set_ball_backonly(0)
-
-  head_ch:send'line'
+  has_spreaded = false
+--  head_ch:send'line'
 
 end
 
@@ -47,6 +49,18 @@ function state.update()
   -- Get the time of update
   local t  = Body.get_time()
   local dt = t - t_update
+
+
+  if not has_spreaded and 
+    mcm.get_walk_ismoving()==0 and
+    Config.goalie_spread_enable then
+    has_spreaded=true
+    mcm.set_walk_kicktype(9)
+    mcm.set_walk_kickfoot(1)--left foot kick
+    mcm.set_walk_steprequest(1)
+    mcm.set_walk_kickphase(1)    
+  end
+
 
   -- Save this at the last update time
   t_update = t

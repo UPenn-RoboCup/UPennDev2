@@ -104,6 +104,8 @@ local kicknames={
   "longkick",
   "weakkick"
 }
+kicknames[10] = "goaliespread"
+kicknames[11] = "GoalieUnspread"
 
 local function calculate_footsteps()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
@@ -134,10 +136,17 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
   if kicktype==9 then
     --safety check
     local spread_angle = util.mod_angle(uLeft_now[3]-uRight_now[3])
-    print("SPREAD ANGLE:",spread_angle)
-    if spread_angle<5*math.pi/180 then
+    local spread_width = math.sqrt(
+      (uLeft_now[1]-uRight_now[1])^2+
+      (uLeft_now[2]-uRight_now[2])^2
+      )
+    print("Spread width:",spread_angle)
+    print("Spread width:",spread_width)
+    --if spread_angle<5*math.pi/180 then
+    if spread_angle<5*math.pi/180 and spread_width<0.23 then
       step_queue=Config.kick.stepqueue["GoalieSpread"]
     else
+      print("Leg already spreaded")
       step_queue=Config.kick.stepqueue["null"]
     end
   elseif kicktype==10 then

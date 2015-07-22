@@ -273,5 +273,11 @@ Config.goalie_avoid_kick = 0.5
 Config.farpost_aim_th = 3 --closer than this, aim for farther post
 
 
+
+
+
+--Config.goalie_spread_enable = true
+
+
 return Config
 

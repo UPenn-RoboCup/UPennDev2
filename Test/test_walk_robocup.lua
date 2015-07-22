@@ -99,6 +99,12 @@ local function update(key_code)
 		
 
 
+	elseif key_char_lower==("u") then
+		mcm.set_walk_kicktype(9)
+ 		mcm.set_walk_kickfoot(1)--left foot kick
+    mcm.set_walk_steprequest(1)
+    mcm.set_walk_kickphase(1)
+
 
 --[[
 	elseif key_char_lower==("3") then

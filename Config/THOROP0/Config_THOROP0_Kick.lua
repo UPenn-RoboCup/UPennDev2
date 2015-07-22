@@ -121,6 +121,16 @@ kick.stepqueue["RightKick2"]=
   }
 
 
+local spreadX,spreadY = 0,0
+spreadY = 0.04
+
+kick.stepqueue["GoalieSpread"]=
+  {
+    {{spreadX,-spreadY,0},0,  tSlope1, tStepMid, tSlope2,   {0.0,0.02,0},{0,height1,0}}, --ls
+    {{spreadX,spreadY,0},1,  tSlope1, tStepMid, tSlope2,   {0,0,0},{0,height2,0}}, --rf kick    
+    {{0.0,0,0},2,  0.3,3,0.3,                    {0,0,0},{0,0,0}}, 
+  }
+
 
 kick.stepqueue["null"]=
   {

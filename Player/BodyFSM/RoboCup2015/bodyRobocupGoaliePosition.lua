@@ -5,18 +5,13 @@ local Body = require'Body'
 
 local t_entry, t_update, t_exit
 
-local VX_WALK = 0.1
-local VY_WALK = 0.075
-local VA_WALK = 5*DEG_TO_RAD
-
 -- Ideal position in y along the center
-local Y_THRESH = 0.02
+local X_GOAL = -4.35
 local Y_MAX = 1
 local Y_FACTOR = 0.7
 --
 local X_THRESH = 0.02
-local X_GOAL = -4.35
---
+local Y_THRESH = 0.02
 local A_THRESH = 5 * DEG_TO_RAD
 --
 local sign = require'util'.sign
@@ -84,8 +79,8 @@ function state.update()
   local goalPose = vector.pose{X_GOAL,y_goal,a_goal}
   local dPose = pose_relative(goalPose, pose)
 
-  
---  if math.abs(dPose.x) > X_THRESH or 
+
+--  if math.abs(dPose.x) > X_THRESH or
   if math.abs(dPose.y) > Y_THRESH then
   else
     mcm.set_walk_stoprequest(1)

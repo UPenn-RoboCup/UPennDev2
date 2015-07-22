@@ -3,17 +3,15 @@ state._NAME = ...
 
 local Body = require'Body'
 
-local timeout = 10.0
 local t_entry, t_update, t_exit
 
 -- Ideal position in y along the center
-local Y_THRESH = 0.1
+local X_GOAL = -4
 local Y_MAX = 1
 local Y_FACTOR = 0.7
 --
 local X_THRESH = 0.05
-local X_GOAL = -4
---
+local Y_THRESH = 0.1
 local A_THRESH = 10 * DEG_TO_RAD
 --
 local sign = require'util'.sign
@@ -70,8 +68,8 @@ function state.update()
   --print('ball', unpack(ball))
 
   -- We should move up from the goal line
-  if 
---math.abs(dPose.x) > X_THRESH or 
+  if
+--math.abs(dPose.x) > X_THRESH or
 math.abs(dPose.y) > Y_THRESH then
     print("Ball Found:",ball[1],ball[2])
     print('GoalieIdle | goalPose', goalPose[1],goalPose[2])
@@ -86,7 +84,7 @@ end
 
 function state.exit()
   print(state._NAME..' Exit' )
-  t_exit = Body.get_time()  
+  t_exit = Body.get_time()
 end
 
 return state

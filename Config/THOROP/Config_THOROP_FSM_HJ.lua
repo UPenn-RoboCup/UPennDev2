@@ -144,12 +144,19 @@ fsm.Motion = {
   {'motionStance', 'preview', 'motionStepPreview'},
   {'motionStance', 'kick', 'motionKick'},
   {'motionStance', 'done_step', 'motionHybridWalkKick'},
+-----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
+  {'motionStance', 'random', 'randmotion'}, 
+  {'randmotion', 'done','motionStance'},
 
------
-  {'motionStance', 'getupback','motionGetupBack_new'},
-  {'motionStance', 'getup', 'motionGetupFront_ver3'},  
-  {'motionGetupFront', 'done', 'motionInit'},
-
+  {'motionStance', 'getupback','motionGetupBack_ver4'},
+  
+  {'motionStance', 'getup', 'motionGetupFront_ver5'},  
+  {'motionGetupFront_ver5', 'done', 'motionInit'},
+  {'motionStance', 'getupRL', 'motionGetupRL3'},  
+  {'motionGetupRL3', 'done', 'motionInit'},
+-----------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
   {'motionStance', 'stair', 'motionStepPreviewStair'}, --- stair
   {'motionStepPreview', 'done', 'motionStance'},
   {'motionStepPreviewStair', 'done', 'motionStepPreviewStairStopped'},

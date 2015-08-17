@@ -125,8 +125,11 @@ local function update(key_code)
 		head_ch:send'scan'
 		body_ch:send'play'
 
-	elseif key_char_lower==("3") then      
---		lidar_ch:send'pansingle'
+	elseif key_char_lower==("r") then      
+		motion_ch:send'random'
+		
+	elseif key_char_lower==("p") then
+		motion_ch:send'getupRL'
 
 	elseif key_char_lower==("q") then      
 		body_ch:send'approach'
@@ -169,6 +172,8 @@ local function update(key_code)
 		gcm.set_game_role(0)
 		gcm.set_game_state(0)
 	end
+
+
 	local vel_diff = (targetvel_new[1]-targetvel[1])^2+(targetvel_new[2]-targetvel[2])^2+(targetvel_new[3]-targetvel[3])^2
 	if vel_diff>0 then
 		targetvel[1],targetvel[2],targetvel[3] = targetvel_new[1],targetvel_new[2],targetvel_new[3]

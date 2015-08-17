@@ -700,7 +700,7 @@ if IS_WEBOTS then
 
   local FSR_threshold = 190
   Body.get_lfoot_touched = function()
-    local LFSR = dcm.get-sensor_lfoot()
+    local LFSR = dcm.get_sensor_lfoot()
     if (LFSR[1]+LFSR[2]+LFSR[3]+LFSR[4])>FSR_threshold then
       return true
     else
@@ -859,7 +859,7 @@ end
 -- Take in joint angles and output an {x,y,z,r,p,yaw} table
 -- SJ: Now separated into two functions to get rid of directly calling IK
 Body.get_torque = function()
-  local torque = webots.wb_motor_get_force_feedback()
+  local torque = webots.wb_servo_get_motor_force_feedback()--wb_motor_get_force_feedback()
     return torque
   end
 
@@ -884,13 +884,23 @@ Body.get_forward_rarm = function(qR, bodyTilt, qWaist)
 end
 
 Body.get_forward_lleg = function(qL)
-  local pLArm = Kinematics.forward_lleg( qL)
-  return pLArm
+  local pLLeg = Kinematics.forward_lleg( qL)
+  return pLLeg
 end
 
 Body.get_forward_rleg = function(qR)
-  local pRArm = Kinematics.forward_rleg( qR)
-  return pRArm
+  local pRLeg = Kinematics.forward_rleg( qR)
+  return pRLeg
+end
+
+Body.get_forward_lknee = function(qL)
+  local pLknee = Kinematics.forward_lknee( qL)
+  return pLknee
+end
+
+Body.get_forward_rknee = function(qR)
+  local pRknee = Kinematics.forward_rknee( qR)
+  return pRknee
 end
 
 
@@ -985,7 +995,7 @@ Body.get_inverse_larm = function( qL, trL, lShoulderYaw, bodyTilt, qWaist)
     )
 
   local passed = check_larm_bounds(qL_target) and check_ik_error( trL, trL_check)
-  print("passed:",passed)
+  --print("passed:",passed)
   if passed then return qL_target end
 end
 --

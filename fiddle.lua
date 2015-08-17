@@ -7,6 +7,7 @@ if not ok then pcall(dofile, 'include.lua') end
 -- Important libraries in the global space
 mp = require'msgpack.MessagePack'
 si = require'simple_ipc'
+local util = require'util'
 local libs = {
 	'ffi',
 	'torch',

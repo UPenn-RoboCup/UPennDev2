@@ -2,6 +2,73 @@ local util = {}
 local vector = require'vector'
 local abs = math.abs
 local atan2 = math.atan2  
+local cos = math.cos
+local sin = math.sin
+
+--- Written by Heejin From here to ------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
+function util.findidx(v,num)
+  local idx = {}
+  local count = 1
+  for i=1,#v do
+    if v[i] == num then
+      idx[count] = i
+      count = count +1
+    end
+  end
+  return idx
+end
+
+function util.isthere(v,num)
+  local i = 1
+  local var = false
+  while (i < #v+1) do
+    if v[i] == num then
+      var = true
+      break
+    end
+    i = i+1
+  end
+  return var
+end
+
+function util.rot(rpy)
+  rpy[3] = -rpy[3]
+  local r ={} -- RPY rotation matrix of body w.r.t the global frame
+  r[1] = {}
+    r[1][1] = cos(rpy[1])*cos(rpy[2])
+    r[1][2] = cos(rpy[1])*sin(rpy[2])*sin(rpy[3]) - sin(rpy[1])*cos(rpy[3])
+    r[1][3] = cos(rpy[1])*sin(rpy[2])*cos(rpy[3]) + sin(rpy[1])*sin(rpy[3])
+  r[2] = {}
+    r[2][1] = sin(rpy[1])*cos(rpy[2])
+    r[2][2] = sin(rpy[1])*sin(rpy[2])*sin(rpy[3]) + cos(rpy[1])*cos(rpy[3])
+    r[2][3] = sin(rpy[1])*sin(rpy[2])*cos(rpy[3]) - cos(rpy[1])*sin(rpy[3]) 
+  r[3] = {}
+    r[3][1] = -sin(rpy[2])
+    r[3][2] = cos(rpy[2])*sin(rpy[3])
+    r[3][3] = cos(rpy[2])*cos(rpy[3])
+
+  local R = {}
+  R[1] = {}
+  R[1][1] = -r[1][3]
+  R[1][2] = r[1][2]
+  R[1][3] = r[1][1]
+
+  R[2][1] = -r[2][3]
+  R[2][2] = r[2][2]
+  R[2][3] = r[2][1]
+
+  R[3][1] = -r[3][3]
+  R[3][2] = r[3][2]
+  R[3][3] = r[3][1]
+
+  return setmetatable(R, matrix_meta)
+end
+
+function util.rotZ(R,v)
+  local temp = util.mulvec(R,v)
+  return temp[3]
+end
 
 function util.ypr(R,n,ypr_now)
   local orivec = {}
@@ -22,6 +89,14 @@ function util.ypr(R,n,ypr_now)
   return setmetatable(orivec, matrix_meta)
 end
 
+function util.inner(v1,v2)
+  local s = 0
+  for i=1,#v1 do
+    s = s + v1[i]*v2[i]
+  end
+  return s
+end
+
 function util.concat(v1,v2)
   local output = {}
   for i=1, #v1 do
@@ -34,6 +109,65 @@ function util.concat(v1,v2)
 
   return setmetatable(output,matrix_meta)
 end
+
+function util.randi(imax,m,n)
+  local mat = {}
+  for i=1,m do 
+    mat[i]={}
+    for j=1,n do
+      mat[i][j] = math.ceil(math.random()*imax)
+    end
+  end
+  return setmetatable( mat, matrix_meta )
+end
+
+function util.mulvec (R,v)
+  if #R[1] ~= #v then
+    print("dimension error")
+  end
+
+  local mtx ={}
+  for i = 1,#R do
+    num = 0
+    for j= 1,#v do
+      num = num + R[i][j] * v[j]
+    end
+    mtx[i] = num
+  end
+  return setmetatable( mtx, matrix_meta )
+end
+
+
+function util.mul( m1, m2 )
+  -- multiply rows with columns
+  local mtx = {}
+  for i = 1,#m2 do
+    mtx[i] = {}
+
+    if #m2[1] == 1 then
+      local num = m1[i][1]
+      for n = 2,#m1[1] do
+        num = num + m1[i][n]*m2[n]
+      end
+      mtx[i] = num
+    else
+      for j = 1,#m2[1] do
+        local num = m1[i][1] * m2[1][j]
+        for n = 2,#m1[1] do
+          num = num + m1[i][n] * m2[n][j]
+        end
+        mtx[i][j] = num
+      end
+    end
+
+  end
+  return setmetatable( mtx, matrix_meta )
+end
+
+--[[to Here]]-------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+
+
 
 
 function util.mod_angle(a)
@@ -66,6 +200,20 @@ function util.min(t)
   end
   return tmin, imin
 end
+function util.minidx(t)
+  -- find the minimum element in the array table
+  -- returns the min value and its index
+  local imin = 0
+  local tmin = math.huge
+  for i=1,#t do
+    local v = t[i]
+    if v < tmin then
+      tmin = v
+      imin = i
+    end
+  end
+  return imin
+end
 
 function util.max(t)
   -- find the maximum element in the array table
@@ -80,6 +228,10 @@ function util.max(t)
   end
   return tmax, imax
 end
+
+-- HJ : Cartesian Points Interpolation while keeping orientation
+--function util.interpolate3c(cur, tar, del)
+
 
 function util.se2_interpolate(t, u1, u2)
   -- helps smooth out the motions using a weighted average
@@ -131,6 +283,8 @@ function util.clamp_vector(values,min_values,max_values)
 	end
 	return clamped
 end
+
+
 
 -- Tolerance approach to a vector
 -- Kinda like a gradient descent
@@ -387,49 +541,6 @@ function util.transpose(m1)
   return setmetatable( mtx, matrix_meta )
 end
 
-function util.mulvec (R,v)
-  if #R ~= #v then
-    print("dimension error")
-  end
-
-  local mtx ={}
-  for i = 1,#R do
-    num = 0
-    for j= 1,#v do
-      num = num + R[i][j] * v[j]
-    end
-    mtx[i] = num
-  end
-  return setmetatable( mtx, matrix_meta )
-end
-
-
-function util.mul( m1, m2 )
-  -- multiply rows with columns
-  local mtx = {}
-  for i = 1,#m2 do
-    mtx[i] = {}
-
-    if #m2[1] == 1 then
-      local num = m1[i][1]
-      for n = 2,#m1[1] do
-        num = num + m1[i][n]*m2[n]
-      end
-      mtx[i] = num
-    else
-      for j = 1,#m2[1] do
-        local num = m1[i][1] * m2[1][j]
-        for n = 2,#m1[1] do
-          num = num + m1[i][n] * m2[n][j]
-        end
-        mtx[i][j] = num
-      end
-    end
-
-  end
-  return setmetatable( mtx, matrix_meta )
-end
-
 function util.ptorch(data, W, Precision)
   local w = W or 5
   local precision = Precision or 10
@@ -460,6 +571,8 @@ function util.ptorch(data, W, Precision)
   end
   io.flush()
 end
+
+
 
 --https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
 --[[

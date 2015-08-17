@@ -124,6 +124,21 @@ static int forward_r_leg(lua_State *L) {
 	return 1;
 }
 
+/* ADDED by HEEJIN Nov.21.2014 ------------------------------------------------------*/
+static int forward_l_knee(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	Transform t = THOROP_kinematics_forward_l_knee(&q[0]);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
+
+/* ADDED by HEEJIN Nov.21.2014 ------------------------------------------------------*/
+static int forward_r_knee(lua_State *L) {
+	std::vector<double> q = lua_checkvector(L, 1);
+	Transform t = THOROP_kinematics_forward_r_knee(&q[0]);
+	lua_pushvector(L, position6D(t));
+	return 1;
+}
 
 static int l_arm_torso_7(lua_State *L) {
 	std::vector<double> q = lua_checkvector(L, 1);
@@ -283,7 +298,7 @@ static int inverse_r_arm_7(lua_State *L) {
 	return 1;
 }
 
-
+/*
 static int inverse_l_wrist(lua_State *L) {
 	std::vector<double> qArm;
 	std::vector<double> pArm = lua_checkvector(L, 1);
@@ -313,7 +328,36 @@ static int inverse_r_wrist(lua_State *L) {
 	lua_pushvector(L, qArm);
 	return 1;
 }
+*/
+static int inverse_l_wrist(lua_State *L) {
+	std::vector<double> qArm;
+	std::vector<double> pArm = lua_checkvector(L, 1);
+	std::vector<double> qArmOrg = lua_checkvector(L, 2);
+	double shoulderYaw = luaL_optnumber(L, 3,0.0);
+	double bodyPitch = luaL_optnumber(L, 4,0.0);
+	std::vector<double> qWaist = lua_checkvector(L, 5);
+	
 
+	Transform trArm = transform6D(&pArm[0]);
+	qArm = THOROP_kinematics_inverse_l_wrist(trArm,&qArmOrg[0],shoulderYaw,bodyPitch,&qWaist[0]);
+	lua_pushvector(L, qArm);
+	return 1;
+}
+
+static int inverse_r_wrist(lua_State *L) {
+	std::vector<double> qArm;
+	std::vector<double> pArm = lua_checkvector(L, 1);
+	std::vector<double> qArmOrg = lua_checkvector(L, 2);	
+	double shoulderYaw = luaL_optnumber(L, 3,0.0);
+	double bodyPitch = luaL_optnumber(L, 4,0.0);
+	std::vector<double> qWaist = lua_checkvector(L, 5);
+	
+
+	Transform trArm = transform6D(&pArm[0]);
+	qArm = THOROP_kinematics_inverse_r_wrist(trArm,&qArmOrg[0],shoulderYaw,bodyPitch,&qWaist[0]);
+	lua_pushvector(L, qArm);
+	return 1;
+}
 static int inverse_arm_given_wrist(lua_State *L) {
 	std::vector<double> qArm;
 	std::vector<double> pArm = lua_checkvector(L, 1);
@@ -450,7 +494,7 @@ static int inverse_l_leg(lua_State *L) {
 	std::vector<double> qLeg;
 	std::vector<double> pLeg = lua_checkvector(L, 1);
 	Transform trLeg = transform6D(&pLeg[0]);
-	qLeg = THOROP_kinematics_inverse_l_leg(trLeg);
+	qLeg = THOROP_kinematics_inverse_l_leg(trLeg,0.0,0.0);
 	lua_pushvector(L, qLeg);
 	return 1;
 }
@@ -459,7 +503,7 @@ static int inverse_r_leg(lua_State *L) {
 	std::vector<double> qLeg;
 	std::vector<double> pLeg = lua_checkvector(L, 1);
 	Transform trLeg = transform6D(&pLeg[0]);
-	qLeg = THOROP_kinematics_inverse_r_leg(trLeg);
+	qLeg = THOROP_kinematics_inverse_r_leg(trLeg,0.0,0.0);
 	lua_pushvector(L, qLeg);
 	return 1;
 }
@@ -469,30 +513,52 @@ static int inverse_legs(lua_State *L) {
 	std::vector<double> pLLeg = lua_checkvector(L, 1);
 	std::vector<double> pRLeg = lua_checkvector(L, 2);
 	std::vector<double> pTorso = lua_checkvector(L, 3);
+	std::vector<double> aShiftX = lua_checkvector(L, 4);
+	std::vector<double> aShiftY = lua_checkvector(L, 5);
 
 	Transform trLLeg = transform6D(&pLLeg[0]);
 	Transform trRLeg = transform6D(&pRLeg[0]);
 	Transform trTorso = transform6D(&pTorso[0]);
-	
-	/*
-	printf("inv(trTorso)\n");
-	printTransform(inv(trTorso));
-	printf("trLLeg\n");
-	printTransform(trLLeg);
-	printf("trRLeg\n");
-	printTransform(trRLeg);
-	*/
-	
+
+	int birdwalk = luaL_optnumber(L, 6,0);
+	std::vector<double> qL = lua_checkvector(L, 7);
+	std::vector<double> qR = lua_checkvector(L, 8);
+
+	//now we should be able to manually choose tilt type
+	//and the minimum tilt angle for them
+	int leftTiltType = luaL_optnumber(L, 9, 0);
+	int rightTiltType = luaL_optnumber(L, 10, 0);
+	double leftTiltMin = luaL_optnumber(L, 11, 0.0);
+	double rightTiltMin = luaL_optnumber(L, 12, 0.0);
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 
-	qLLeg = THOROP_kinematics_inverse_l_leg(trTorso_LLeg);
-	qRLeg = THOROP_kinematics_inverse_r_leg(trTorso_RLeg);
-	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
 
+	if ((leftTiltType==0) && (rightTiltType==0)){ //automatic
+		if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
+			qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+			qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}else{
+			qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,  qL[4],leftTiltMin) ;
+			qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}
+	}else{
+		if (leftTiltType==1) {
+			qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+		}else{
+			qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+		}
+		if (rightTiltType==1) {
+			qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}else{
+			qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}
+	}
+	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
 	lua_pushvector(L, qLLeg);
 	return 1;
 }
+
 
 static int calculate_foot_tilt(lua_State *L) {
 	std::vector<double> qLFootLift(4), qRFootLift;
@@ -659,7 +725,7 @@ static int luaTHOROP_inverse_arm(lua_State *L) {
 	// TODO: Is COM compensation a good null space option?
 	return 1;
 }
-
+/*
 // Assume just the Left arm
 static int luaTHOROP_inverse_wrist(lua_State *L) {
 	std::vector<double> qArm;
@@ -684,7 +750,7 @@ static int luaTHOROP_inverse_wrist(lua_State *L) {
 	//lua_pushnumber(L, is_reach_back);
 	return 1;
 }
-
+*/
 static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_head", forward_head},
 //	{"forward_larm", forward_l_arm},
@@ -692,6 +758,8 @@ static const struct luaL_Reg kinematics_lib [] = {
 	{"forward_lleg", forward_l_leg},
 	{"forward_rleg", forward_r_leg},
 	{"forward_joints", forward_joints},
+	{"forward_lknee", forward_l_knee},
+	{"forward_rknee", forward_r_knee},
   
 	{"lleg_torso", l_leg_torso},
 	{"torso_lleg", torso_l_leg},
@@ -736,7 +804,7 @@ static const struct luaL_Reg kinematics_lib [] = {
 
 	/* Extras */
 	{"inverse_arm", luaTHOROP_inverse_arm},
-	{"inverse_wrist", luaTHOROP_inverse_wrist},
+	//{"inverse_wrist", luaTHOROP_inverse_wrist},
 
 	{"l_arm_origins", l_arm_origins},
 	{"r_arm_origins", r_arm_origins},

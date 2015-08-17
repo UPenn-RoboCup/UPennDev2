@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <vector>
+enum {LEG_LEFT = 0, LEG_RIGHT = 1};
+enum {ARM_LEFT = 0, ARM_RIGHT = 1};
 
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
@@ -39,7 +41,7 @@ const double kneeOffsetX = 0.03;
 
 const double footHeight = 0.118; // Webots value
 const double footToeX = 0.130; //from ankle to toe
-const double footHeelX = 0.130; //from ankle to heel
+const double footHeelX = 0.110; //from ankle to heel
 
 //=================================================================
 
@@ -170,6 +172,8 @@ Transform THOROP_kinematics_forward_l_arm(const double *q);
 Transform THOROP_kinematics_forward_r_arm(const double *q);
 Transform THOROP_kinematics_forward_l_leg(const double *q);
 Transform THOROP_kinematics_forward_r_leg(const double *q);
+Transform THOROP_kinematics_forward_l_knee(const double *q);
+Transform THOROP_kinematics_forward_r_knee(const double *q);
 std::vector<double> THOROP_kinematics_forward_joints(const double *r);
 
 
@@ -205,10 +209,17 @@ std::vector<double> THOROP_kinematics_inverse_l_wrist(const Transform trWrist, c
 
 std::vector<double> THOROP_kinematics_inverse_arm_given_wrist(Transform trArm, const double *qOrg, double bodyPitch, const double *qWaist); 
 
+std::vector<double> THOROP_kinematics_inverse_leg(const Transform trLeg, int leg, double aShiftX, double aShiftY);
+std::vector<double> THOROP_kinematics_inverse_leg_toelift(const Transform trLeg, int leg,double aShiftX, double aShiftY,
+		int birdwalk, double anklePitchCurrent,  double toeliftMin);
+std::vector<double> THOROP_kinematics_inverse_leg_heellift(const Transform trLeg, int leg, double aShiftX, double aShiftY,
+		 int birdwalk, double anklePitchCurrent, double heelliftMin);
 
+std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg, double aShiftX, double aShiftY);
+std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg, double aShiftX, double aShiftY);
 
-std::vector<double> THOROP_kinematics_inverse_r_leg(const Transform trLeg);
-std::vector<double> THOROP_kinematics_inverse_l_leg(const Transform trLeg);
+double THOROP_kinematics_inverse_leg_bodyheight_diff(const Transform trLeg, int leg, double aShiftX, double aShiftY);
+
 std::vector<double> THOROP_kinematics_inverse_joints(const double *q);
 
 std::vector<double> THOROP_kinematics_com_upperbody(const double *qWaist,const double *qLArm,const double *qRArm, double bodyPitch, double mLHand, double mRHand); 
@@ -243,6 +254,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_tilt(
 double THOROP_kinematics_calculate_knee_height(const double *q);
 
 std::vector<double> THOROP_kinematics_inverse_arm(Transform trArm, std::vector<double>& qOrg, double shoulderYaw, bool flip_shoulderroll);
-std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, std::vector<double>& qOrg, double shoulderYaw);
+//std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, std::vector<double>& qOrg, double shoulderYaw);
+std::vector<double> THOROP_kinematics_inverse_wrist(Transform trWrist, int arm, const double *qOrg, double shoulderYaw, double bodyPitch, const double *qWaist); 
 
 #endif

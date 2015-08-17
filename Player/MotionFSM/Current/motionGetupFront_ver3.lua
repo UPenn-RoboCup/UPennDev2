@@ -66,7 +66,7 @@ local qLArm1, qRArm1,qLLeg1,qRLeg1,qWaist1
 local pitch_offset = 15*DEG_TO_RAD
 
 local knee_offset = 0.02
-local stagemax = 10
+local stagemax = 3
 local stop = 0
 
 local gain1 = 0.01
@@ -133,6 +133,7 @@ function state.entry()
 
   setting = 1
   stage = 1  
+
   hcm.set_state_proceed(1)
   head_ch:send'teleop'
   body_ch:send'init'

@@ -140,6 +140,8 @@ function state.entry()
   qWaist1 = vector.new(Body.get_waist_command_position())  
 
 --print(unpack(vector.new(qLArm1)/DEG_TO_RAD))
+  
+  f1 = io.open("getupFront_rpy.txt","w")
 
   stage = 0  
   hcm.set_state_proceed(1)
@@ -152,14 +154,17 @@ function state.update()
   local t_diff = t - t_start
 
 --  if stage > #keyframe then return "done" end -- Task done! ( current #keyframe=12 )
-
+  
+  local rpy = Body.get_rpy()
   if stage==0 then -- Initial 
-    local rpy = Body.get_rpy()
+    
     if math.abs(rpy[1])<45*math.pi/180 and
       math.abs(rpy[2])<45*math.pi/180 then
     --check imu angle.....
       return "done" end
   end
+  --[[ WRITING ]]----------------------------------------------------------------------------------------------------------
+  f1:write( stage,"\t",rpy[1],"\t",rpy[2],"\t",rpy[3],"\n")
 
   hcm.set_motion_headangle({0,-60*math.pi/180})
   if stage>0 then    
@@ -202,8 +207,6 @@ function state.update()
       return "done" 
     end
 
-
-
     qLArm0 = qLArm1
     qRArm0 = qRArm1
     qLLeg0 = qLLeg1
@@ -221,6 +224,7 @@ function state.exit()
   print(state._NAME..' Exit')
   -- TODO: Store things in shared memory?
   hcm.set_motion_headangle({0,0*math.pi/180})
+  f1:close()
 end
 
 return state

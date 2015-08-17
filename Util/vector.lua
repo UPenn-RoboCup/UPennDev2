@@ -17,10 +17,18 @@ function vector.new(t)
   return setmetatable(t, mt)
 end
 
+function vector.concat(t1,t2)
+  local t3 = {}
+  for i=1,#t1 do t3[i] = t1[i] end
+  for j=1,#t2 do t3[#t1+j] = t2[j] end
+  return setmetatable(t3, mt)
+end
+
+
 function vector.copy(t)
   local tt = {}
   for i=1,#t do tt[i] = t[i] end
-  return setmetatable(t, mt)
+  return setmetatable(tt, mt)
 end
 
 function vector.ones(n)
@@ -49,6 +57,12 @@ function vector.slice(v1, istart, iend)
   for i = 1,iend-istart+1 do
     v[i] = v1[istart+i-1] or (0 / 0)
   end
+  return setmetatable(v, mt)
+end
+
+function vector.mulnum(v1, a)
+  local v = {}
+  for i = 1, #v1 do v[i] = a * v1[i] end
   return setmetatable(v, mt)
 end
 

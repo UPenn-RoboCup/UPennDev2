@@ -52,7 +52,6 @@ local update_odometry = function(uTorso_in)
   local pose_odom0 = wcm.get_robot_odometry()
   local pose_odom = util.pose_global(odometry_step, pose_odom0)
   wcm.set_robot_odometry(pose_odom)
-  
   wcm.set_robot_utorso1(uTorso_in)--updae odometry variable
 end
 

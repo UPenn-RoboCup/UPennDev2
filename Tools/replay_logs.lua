@@ -216,19 +216,19 @@ local ch = {
 	--itty0_ch,
 	--fb_ch,
 	camera0_ch,
-	--mesh0_ch
+	mesh0_ch
 }
 local names = {
 	--'itty0',
 	--'fb',
 	'camera0',
-	--'mesh0'
+	'mesh0'
 }
 local coro = {
 	--co_itty0,
 	--co_fb,
 	co_camera0,
-	--co_mesh0
+	co_mesh0
 }
 
 local t_next = {}

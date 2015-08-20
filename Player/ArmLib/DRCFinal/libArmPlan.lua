@@ -52,36 +52,19 @@ local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
 local torch = require'torch'
 local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
-	-- Penalty for joint limits
-	local qMin, qMax, qRange =
-		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
-
-	-- infinte rotation
-	--[[
-	for i, v in ipairs(qRange) do
-		if i==5 or i==7 then
-			qMin[i] = -2 * math.pi
-			qMax[i] = 2 * math.pi
-			qRange[i] = 4 * math.pi
-		end
-	end
-	--]]
 
 	assert(type(qArm)=='table', 'get_delta_qwaistarm | Bad qArm')
 	assert(type(vwTarget)=='table', 'get_delta_qwaistarm | Bad vwTarget')
 
-	local qWaistArm = {unpack(qArm)}
+	local qWaistArm
 	if qWaist then
-		tinsert(qWaistArm, 1, qWaist[1])
-		tinsert(qMin, 1, -45*DEG_TO_RAD)
-		tinsert(qMax, 1, 45*DEG_TO_RAD)
-		tinsert(qRange, 1, 90*DEG_TO_RAD)
+		qWaistArm = {qWaist[1], unpack(qArm)}
+	else
+		qWaistArm = {unpack(qArm)}
 	end
 
-	local l = {}
-	for i, q in ipairs(qWaistArm) do
-    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
-  end
+	local J = torch.Tensor(self.jacobian(qArm, qWaist))
+	local JT = J:t():clone()
 	-- Calculate the pseudo inverse
 	--print('self.jacobian', qArm, qWaist)
     --[[
@@ -105,15 +88,43 @@ e and then J T f is the solution.
 matrix (J*JT + λI) is invertible for λ = 0 provided J
 has full row rank.
 		--]]
-	local J = torch.Tensor(self.jacobian(qArm, qWaist))
-	local JT = J:t():clone()
+
+	-- May not be needed...
+	--[[
+	-- Penalty for joint limits
+	local qMin, qMax, qRange =
+		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
+	if qWaist then
+		tinsert(qMin, 1, -45*DEG_TO_RAD)
+		tinsert(qMax, 1, 45*DEG_TO_RAD)
+		tinsert(qRange, 1, 90*DEG_TO_RAD)
+	end
+	local l = {}
+	for i, q in ipairs(qWaistArm) do
+    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
+  end
 	local lambda = torch.Tensor(l)
 	local invInner = torch.inverse(torch.diag(lambda):addmm(JT, J))
 	--print('invInner', invInner)
 	local Jpseudoinv = torch.mm(invInner, JT)
+	--]]
+
+	-- Straight Pseudo inverse
+	-- TODO: How stable is this?
+	--local Jpseudoinv = torch.mm(torch.inverse(JT*J), JT)
+	local Jpseudoinv = torch.mm(JT, torch.inverse(J * JT))
+
 	--print('Jpseudoinv', Jpseudoinv)
 	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
-	local null = torch.eye(#l) - Jpseudoinv * J
+	local null = torch.eye(#qWaistArm) - Jpseudoinv * J
+
+	local U,S,V = torch.svd(J, 'A')
+	local null7 = V:select(2,7)
+	--local null7a = V:select(1,7)
+	print('null7', vector.new(null7))
+	--print('null7a', vector.new(null7a))
+
+	--print('null', null)
 	return dqArm, null
 end
 
@@ -560,6 +571,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		if qArmFGuess then
 			--local dqdtNull = nullspace * torch.Tensor(qDiff(qArm, qArmFGuess, qMin, qMax))
 			local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
+			print('dqdtNull', vector.new(dqdtNull))
 			dqdtCombo = dqdtArm - dqdtNull
 		else
 			dqdtCombo = dqdtArm

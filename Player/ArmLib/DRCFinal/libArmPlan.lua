@@ -90,7 +90,8 @@ has full row rank.
 		--]]
 
 	-- May not be needed...
-	--[[
+	----[[
+	-- NOTE: The l{} *could* be precalculated
 	-- Penalty for joint limits
 	local qMin, qMax, qRange =
 		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
@@ -105,7 +106,6 @@ has full row rank.
   end
 	local lambda = torch.Tensor(l)
 	local invInner = torch.inverse(torch.diag(lambda):addmm(JT, J))
-	--print('invInner', invInner)
 	local Jpseudoinv = torch.mm(invInner, JT)
 	--]]
 
@@ -113,7 +113,7 @@ has full row rank.
 	-- TODO: How stable is this?
 	--local Jpseudoinv = torch.mm(torch.inverse(JT*J), JT)
 	-- Simplification for less degrees of freedom: easier to calculate
-	local Jpseudoinv = torch.mm(JT, torch.inverse(J * JT))
+	--local Jpseudoinv = torch.mm(JT, torch.inverse(J * JT))
 
 	-- null space vector
 	local U,S,V = torch.svd(J, 'A')
@@ -130,23 +130,13 @@ local function get_distance(self, trGoal, qArm, qWaist)
 	-- Grab our relative transform from here to the goal
 	local fkArm = self.forward(qArm, qWaist)
 	local invArm = T.inv(fkArm)
-	--local here = invArm * trGoal --old ok one
-	--local invGoal = T.inv(trGoal)
 	local here = trGoal * invArm -- new good one
-	--local here = invGoal * fkArm -- ??
-	--local here = fkArm * invGoal -- opp
-	--[[
-	local dp2 = T.position(here2)
-	local drpy2 = T.to_rpy(here2)
-	local dp3 = T.position(here3)
-	local drpy3 = T.to_rpy(here3)
-	--]]
 
 	-- Determine the position and angular velocity target
 	local dp = T.position(here)
 	local drpy = T.to_rpy(here)
 
-	--print(vector.new(dp), vector.new(dp2), vector.new(dp3))
+	-- TODO: Add the rpy check for other rotation directions
 
 	local components = {vnorm(dp), vnorm(drpy)}
 	return dp, drpy, components

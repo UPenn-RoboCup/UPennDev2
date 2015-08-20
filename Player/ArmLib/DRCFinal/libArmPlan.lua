@@ -112,20 +112,18 @@ has full row rank.
 	-- Straight Pseudo inverse
 	-- TODO: How stable is this?
 	--local Jpseudoinv = torch.mm(torch.inverse(JT*J), JT)
+	-- Simplification for less degrees of freedom: easier to calculate
 	local Jpseudoinv = torch.mm(JT, torch.inverse(J * JT))
 
-	--print('Jpseudoinv', Jpseudoinv)
+	-- null space vector
+	local U,S,V = torch.svd(J, 'A')
+	local null7 = V:select(2,7)
+
+	-- Find the motion and the null space
 	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
 	local null = torch.eye(#qWaistArm) - Jpseudoinv * J
 
-	local U,S,V = torch.svd(J, 'A')
-	local null7 = V:select(2,7)
-	--local null7a = V:select(1,7)
-	print('null7', vector.new(null7))
-	--print('null7a', vector.new(null7a))
-
-	--print('null', null)
-	return dqArm, null
+	return dqArm, null, null7
 end
 
 local function get_distance(self, trGoal, qArm, qWaist)
@@ -565,13 +563,15 @@ function libArmPlan.jacobian_preplan(self, plan)
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace = get_delta_qwaistarm(self, vwTarget, qArm)
+		local dqdtArm, nullspace, null7 = get_delta_qwaistarm(self, vwTarget, qArm)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
 		if qArmFGuess then
 			--local dqdtNull = nullspace * torch.Tensor(qDiff(qArm, qArmFGuess, qMin, qMax))
 			local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
-			print('dqdtNull', vector.new(dqdtNull))
+			--print('dqdtNull', vector.new(dqdtNull))
+			--print('null7', vector.new(null7))
+			--print('scale7', vector.new(torch.cdiv(dqdtNull,null7)))
 			dqdtCombo = dqdtArm - dqdtNull
 		else
 			dqdtCombo = dqdtArm

@@ -51,6 +51,7 @@ end
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
 local torch = require'torch'
+local util = require'util'
 local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 
 	assert(type(qArm)=='table', 'get_delta_qwaistarm | Bad qArm')
@@ -115,15 +116,11 @@ has full row rank.
 	-- Simplification for less degrees of freedom: easier to calculate
 	--local Jpseudoinv = torch.mm(JT, torch.inverse(J * JT))
 
-	-- null space vector
-	local U,S,V = torch.svd(J, 'A')
-	local null7 = V:select(2,7)
-
 	-- Find the motion and the null space
 	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
 	local null = torch.eye(#qWaistArm) - Jpseudoinv * J
 
-	return dqArm, null, null7
+	return dqArm, null, J, Jpseudoinv
 end
 
 local function get_distance(self, trGoal, qArm, qWaist)
@@ -528,6 +525,13 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local nStepsTimeout = math.ceil(timeout * hz)
 	-- Initial position
 	local qArm = vector.copy(qArm0)
+	-- Memory creation saving
+	local dqdtNull = torch.Tensor(#qArm)
+	local dqNull = torch.Tensor(#qArm)
+	local dlambda = torch.Tensor(#qArm)
+	local eig = torch.Tensor(#qArm, 2)
+	local eigV = torch.Tensor(#qArm, #qArm)
+	local eigVinv = torch.Tensor(#qArm, #qArm)
 	-- Begin
 	local t0 = unix.time()
 	local path = {}
@@ -553,15 +557,22 @@ function libArmPlan.jacobian_preplan(self, plan)
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace, null7 = get_delta_qwaistarm(self, vwTarget, qArm)
+		local dqdtArm, nullspace, J, Jinv =
+			get_delta_qwaistarm(self, vwTarget, qArm)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
 		if qArmFGuess then
-			--local dqdtNull = nullspace * torch.Tensor(qDiff(qArm, qArmFGuess, qMin, qMax))
-			local dqdtNull = nullspace * torch.Tensor(qArm - qArmFGuess)
-			--print('dqdtNull', vector.new(dqdtNull))
-			--print('null7', vector.new(null7))
-			--print('scale7', vector.new(torch.cdiv(dqdtNull,null7)))
+			torch.mv(dqdtNull, nullspace, torch.Tensor(qArm - qArmFGuess))
+			torch.eig(eig, eigV, nullspace, 'V')
+			torch.inverse(eigVinv, eigV)
+			--[[
+			-- Principle null vector
+			-- Both methods seem to work OK
+			--local null7 = eigV:select(2, 1)
+			local U, S, V = torch.svd(J, 'A')
+			local null7a = V:select(2, 7)
+			--]]
+
 			dqdtCombo = dqdtArm - dqdtNull
 		else
 			dqdtCombo = dqdtArm
@@ -578,6 +589,16 @@ function libArmPlan.jacobian_preplan(self, plan)
 			for i, dq in ipairs(dqCombo) do
 				dqCombo[i] = dq / max_usage
 			end
+		end
+		-- Find the null space coordinates
+		if qArmFGuess then
+			torch.mv(dqNull, nullspace, torch.Tensor(dqCombo))
+			torch.mv(dlambda, eigVinv, dqNull)
+			local lambda = {
+				dlambda[1],
+				vector.new(eigV:select(2, 1))
+			}
+			print('λ'..#path,unpack(lambda))
 		end
 		-- Apply the joint change (Creates a new table)
 		local qOld = qArm

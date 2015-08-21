@@ -970,22 +970,30 @@ local function optimize(self, qPath, wPath)
 	local wd = 1
 	local wg = 1
 	for i=1, #dλ do gradλ[i] = wd * dλ0[i] + wg * gλ[i] end
-	for i, grad in ipairs(gradλ) do
-		print(i, grad, dλ0[i], gλ[i])
-	end
-	print('Total Costs', cdλ, cgλ, wd * cdλ + wg * cgλ)
+
 
 	local cmin, imin = util.min(gradλ)
 	local cmax, imax = util.max(gradλ)
-	print('Grad min/max')
-	print(imin, cmin, dλ0[imin], gλ[imin])
-	print(imax, cmax, dλ0[imax], gλ[imax])
+
+	--for i, grad in ipairs(gradλ) do print(i, grad, dλ0[i], gλ[i]) end
+	--print('Total Costs', cdλ, cgλ, wd * cdλ + wg * cgλ)
+	--print('Grad min/max')
+	--print(imin, cmin, dλ0[imin], gλ[imin])
+	--print(imax, cmax, dλ0[imax], gλ[imax])
 
 	-- Formulate the angular changes needed.
 	local dq_star = {}
 	for i, g in ipairs(gradλ) do
-		table.insert(dq_star, g * λ2q[i])
+		local dq_update = g * λ2q[i]
+		table.insert(dq_star, dq_update)
+		--print('dq_update', i, dq_update*RAD_TO_DEG)
 	end
+
+	local qPathNew = {}
+	for i, ddq in ipairs(dq_star) do
+		table.insert(qPathNew, qPath[i] + ddq)
+	end
+	return qPathNew
 
 end
 -- Still must set the forward and inverse kinematics

@@ -556,9 +556,10 @@ function libArmPlan.jacobian_preplan(self, plan)
 			get_delta_qwaistarm(self, vwTarget, qArm)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
+		local nullFactor = 1
 		if qArmFGuess then
 			torch.mv(dqdtNull, nullspace, torch.Tensor(qArm - qArmFGuess))
-			dqdtCombo = dqdtArm - dqdtNull
+			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
 		else
 			dqdtCombo = dqdtArm
 		end
@@ -969,14 +970,13 @@ local function optimize(self, qPath, wPath)
 	local gradλ = {}
 	local wd = 1
 	local wg = 1
-	for i=1, #dλ do gradλ[i] = wd * dλ0[i] + wg * gλ[i] end
-
+	for i=1, #dλ do gradλ[i] = wd * dλ0[i] - wg * gλ[i] end
 
 	local cmin, imin = util.min(gradλ)
 	local cmax, imax = util.max(gradλ)
 
 	--for i, grad in ipairs(gradλ) do print(i, grad, dλ0[i], gλ[i]) end
-	--print('Total Costs', cdλ, cgλ, wd * cdλ + wg * cgλ)
+	print('Total Costs', cdλ, cgλ, wd * cdλ + wg * cgλ)
 	--print('Grad min/max')
 	--print(imin, cmin, dλ0[imin], gλ[imin])
 	--print(imax, cmax, dλ0[imax], gλ[imax])
@@ -989,9 +989,13 @@ local function optimize(self, qPath, wPath)
 		--print('dq_update', i, dq_update*RAD_TO_DEG)
 	end
 
+	local factor = 1/10
 	local qPathNew = {}
 	for i, ddq in ipairs(dq_star) do
-		table.insert(qPathNew, qPath[i] + ddq)
+		-- TODO: Clamp between the min and max, or rescale the step size
+		local maxDeg = math.max(unpack(factor*ddq*RAD_TO_DEG))
+		--if math.abs(maxDeg)>1 then print('max ddq deg', i, maxDeg) end
+		table.insert(qPathNew, qPath[i] + factor*ddq)
 	end
 	return qPathNew
 

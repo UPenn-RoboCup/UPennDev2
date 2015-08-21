@@ -42,6 +42,10 @@ local function get_armplan(plan)
 	else
 		print('rco', rco)
 	end
+
+	-- Optimize the paths
+	movearm.optimize(lpath)
+
 	-- TODO: Check that the waist was not twice populated
 	print('Sending the paths',#lpath, #rpath, #wpath)
 	return {lpath, rpath, wpath}

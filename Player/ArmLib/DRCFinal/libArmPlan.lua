@@ -527,11 +527,6 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local qArm = vector.copy(qArm0)
 	-- Memory creation saving
 	local dqdtNull = torch.Tensor(#qArm)
-	local dqNull = torch.Tensor(#qArm)
-	local dlambda = torch.Tensor(#qArm)
-	local eig = torch.Tensor(#qArm, 2)
-	local eigV = torch.Tensor(#qArm, #qArm)
-	local eigVinv = torch.Tensor(#qArm, #qArm)
 	-- Begin
 	local t0 = unix.time()
 	local path = {}
@@ -563,16 +558,6 @@ function libArmPlan.jacobian_preplan(self, plan)
 		local dqdtCombo
 		if qArmFGuess then
 			torch.mv(dqdtNull, nullspace, torch.Tensor(qArm - qArmFGuess))
-			torch.eig(eig, eigV, nullspace, 'V')
-			torch.inverse(eigVinv, eigV)
-			--[[
-			-- Principle null vector
-			-- Both methods seem to work OK
-			--local null7 = eigV:select(2, 1)
-			local U, S, V = torch.svd(J, 'A')
-			local null7a = V:select(2, 7)
-			--]]
-
 			dqdtCombo = dqdtArm - dqdtNull
 		else
 			dqdtCombo = dqdtArm
@@ -589,16 +574,6 @@ function libArmPlan.jacobian_preplan(self, plan)
 			for i, dq in ipairs(dqCombo) do
 				dqCombo[i] = dq / max_usage
 			end
-		end
-		-- Find the null space coordinates
-		if qArmFGuess then
-			torch.mv(dqNull, nullspace, torch.Tensor(dqCombo))
-			torch.mv(dlambda, eigVinv, dqNull)
-			local lambda = {
-				dlambda[1],
-				vector.new(eigV:select(2, 1))
-			}
-			print('λ'..#path,unpack(lambda))
 		end
 		-- Apply the joint change (Creates a new table)
 		local qOld = qArm
@@ -921,6 +896,55 @@ local function set_shoulder_granularity(self, granularity)
 	return self
 end
 
+
+local function optimize(self, qPath, wPath)
+	print('Optimizing...')
+	local qGoal = qPath[#qPath]
+	-- TODO: Add the waist
+	local trGoal = self.forward(qGoal)
+	-- Setup the temporary variables
+	local nq = #qGoal
+	local dqNull = torch.Tensor(nq)
+	local dlambda = torch.Tensor(nq)
+	local eig = torch.Tensor(nq, 2)
+	local eigV = torch.Tensor(nq, nq)
+	local eigVinv = torch.Tensor(nq, nq)
+
+	-- Find the FK position of each joint
+	local vw = {}
+	for i, q in ipairs(qPath) do
+		-- TODO: Add the waist
+		local dp, drpy, dist_components = get_distance(self, trGoal, q)
+		-- Form our desired velocity
+		table.insert(vw, {
+			dp[1], dp[2], dp[3],
+			drpy[1], drpy[2], drpy[3]
+		})
+	end
+	-- Find the velocity of the joints
+	local dq = {}
+	for i, q in ipairs(qPath) do
+		table.insert(dq, (i < #qPath) and (qPath[i+1] - q) or vector.zeros(nq))
+	end
+
+	-- Find the coordinate in lambda space
+	local dλ = {}
+	local λ2q = {}
+	for i, q in ipairs(qPath) do
+		local dqdtArm, nullspace, J, Jinv = get_delta_qwaistarm(self, vw[i], q)
+		torch.eig(eig, eigV, nullspace, 'V')
+		torch.inverse(eigVinv, eigV)
+		--local U, S, V = torch.svd(J, 'A')
+		--local null7a = V:select(2, 7)
+		torch.mv(dqNull, nullspace, torch.Tensor(dq[i]))
+		torch.mv(dlambda, eigVinv, dqNull)
+		-- TODO: With the waist, it is dlambda[1:2], not just 1
+		table.insert(dλ, dlambda[1])
+		-- TODO: With the waist, we need two vectors
+		table.insert(λ2q, vector.new(eigV:select(2, 1)))
+	end
+
+end
 -- Still must set the forward and inverse kinematics
 function libArmPlan.new_planner(id)
 	local nq = 7
@@ -940,6 +964,8 @@ function libArmPlan.new_planner(id)
 		set_limits = set_limits,
 		set_update_rate = set_update_rate,
 		set_shoulder_granularity = set_shoulder_granularity,
+		--
+		optimize = optimize,
 	}
 	return obj
 end

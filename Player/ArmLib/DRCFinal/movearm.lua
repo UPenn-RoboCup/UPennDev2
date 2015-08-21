@@ -163,4 +163,8 @@ function movearm.goto(l, r)
 	return lco, rco
 end
 
+function movearm.optimize(l, r, w)
+	lPlanner:optimize(l, w)
+end
+
 return movearm

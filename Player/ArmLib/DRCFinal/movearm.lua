@@ -164,7 +164,13 @@ function movearm.goto(l, r)
 end
 
 function movearm.optimize(l, r, w)
-	lPlanner:optimize(l, w)
+	local lco = coroutine.create(function()
+		lPlanner:optimize(l, w)
+	end)
+	local ok, msg = coroutine.resume(lco)
+	if not ok then
+		print(msg)
+	end
 end
 
 return movearm

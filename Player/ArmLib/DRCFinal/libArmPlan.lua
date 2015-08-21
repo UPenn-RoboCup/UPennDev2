@@ -922,13 +922,14 @@ local function optimize(self, qPath, wPath)
 		})
 	end
 	-- Find the velocity of the joints
-	local dq = {}
-	for i, q in ipairs(qPath) do
-		table.insert(dq, (i < #qPath) and (qPath[i+1] - q) or vector.zeros(nq))
+	local dq = {vector.zeros(nq)}
+	for i=2, #qPath do
+		dq[i] = qPath[i] - qPath[i-1]
 	end
 
-	-- Find the coordinate in lambda space
+	-- Find the coordinate in λ space
 	local dλ = {}
+	local dλ0 = {}
 	local λ2q = {}
 	for i, q in ipairs(qPath) do
 		local dqdtArm, nullspace, J, Jinv = get_delta_qwaistarm(self, vw[i], q)
@@ -936,12 +937,54 @@ local function optimize(self, qPath, wPath)
 		torch.inverse(eigVinv, eigV)
 		--local U, S, V = torch.svd(J, 'A')
 		--local null7a = V:select(2, 7)
+		-- How much we needed to move:
+		torch.mv(dqNull, nullspace, torch.Tensor(dqdtArm))
+		torch.mv(dlambda, eigVinv, dqNull)
+		-- This is the gradient then, for the lambda velocity
+		table.insert(dλ0, dlambda[1])
+		-- How much we actually moved:
 		torch.mv(dqNull, nullspace, torch.Tensor(dq[i]))
 		torch.mv(dlambda, eigVinv, dqNull)
 		-- TODO: With the waist, it is dlambda[1:2], not just 1
+		-- This should be the gradient, then...
 		table.insert(dλ, dlambda[1])
 		-- TODO: With the waist, we need two vectors
 		table.insert(λ2q, vector.new(eigV:select(2, 1)))
+	end
+
+	-- Find the λ acceleration gradient
+	local gλ = {0}
+	for i=2,#dλ-1 do
+		gλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1]
+	end
+	-- Not allowed to move the first coords
+	gλ[#gλ+1] = 0
+
+	-- Print out the costs
+	local cdλ = 0
+	for i, λ in ipairs(dλ0) do cdλ = cdλ + λ end
+	local cgλ = 0
+	for i, λ in ipairs(gλ) do cgλ = cgλ + λ end
+	-- Total gradient
+	local gradλ = {}
+	local wd = 1
+	local wg = 1
+	for i=1, #dλ do gradλ[i] = wd * dλ0[i] + wg * gλ[i] end
+	for i, grad in ipairs(gradλ) do
+		print(i, grad, dλ0[i], gλ[i])
+	end
+	print('Total Costs', cdλ, cgλ, wd * cdλ + wg * cgλ)
+
+	local cmin, imin = util.min(gradλ)
+	local cmax, imax = util.max(gradλ)
+	print('Grad min/max')
+	print(imin, cmin, dλ0[imin], gλ[imin])
+	print(imax, cmax, dλ0[imax], gλ[imax])
+
+	-- Formulate the angular changes needed.
+	local dq_star = {}
+	for i, g in ipairs(gradλ) do
+		table.insert(dq_star, g * λ2q[i])
 	end
 
 end

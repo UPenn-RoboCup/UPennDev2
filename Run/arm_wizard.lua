@@ -45,8 +45,8 @@ local function get_armplan(plan)
 
 	-- Optimize the paths
 	local n = 0
-	n = 3
-	--n = 10
+	--n = 3
+	n = 10
 	for i=1,n do
 		lpath = movearm.optimize(lpath)
 	end

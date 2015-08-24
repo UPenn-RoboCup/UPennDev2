@@ -144,7 +144,6 @@ K.forward_rarm = forward_rarm
 
 
 local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
-	local xWrist1, xWrist2, xWrist3 = trArm[1][4], trArm[2][4], trArm[3][4]
 
 	local lowerArmLength0 = is_left and lowerArmLength or lowerArmLengthExtended
 	local upperArmLength0 = is_left and upperArmLength or upperArmLengthExtended
@@ -154,13 +153,17 @@ local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
 	local aUpperArm = atan(elbowOffsetX / upperArmLength0)
 	local aLowerArm = atan(elbowOffsetX / lowerArmLength0)
 	local aElbowMax = -1*(aUpperArm + aLowerArm)
+  local shoulderRoll = 0
 
   -- SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
   -- We are only using the smaller one (arm more bent)
-  local dWrist = xWrist1^2 + xWrist2^2 + xWrist3^2
+  local xWrist = trArm[1][4]
+  local yWrist = trArm[2][4]
+  local zWrist = trArm[3][4]
+  local dWrist = xWrist^2 + yWrist^2 + zWrist^2
   local cElbow = (dWrist-dUpperArm^2 - dLowerArm^2)/(2*dUpperArm*dLowerArm)
 
-	cElbow = max(-1, min(1, cElbow))
+	cElbow = max(-1, min(cElbow, 1))
 
   local elbowPitch = -acos(cElbow) - aUpperArm - aLowerArm
 
@@ -169,37 +172,40 @@ local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
 		TrotateY(
 			Ttranslate(
 				TrotX(shoulderYaw),
-				upperArmLength0,0, elbowOffsetX),
+				upperArmLength0, 0, elbowOffsetX),
 			elbowPitch),
 		lowerArmLength0, 0, -elbowOffsetX)
 
-  local a = m[1][4]^2 + m[2][4]^2
-  local b = -m[1][4] * xWrist2
-  local c = xWrist2^2 - m[2][4]^2
-  --
-  local shoulderRoll
+  local mx = m[1][4]
+  local my = m[2][4]
+  local mz = m[3][4]
+
+  local a = mx^2 + my^2
+  local b = -mx * yWrist
+  local c = yWrist^2 - my^2
+
   -- NaN handling
 	local det = b^2 - a*c
-  if det < 0 or a==0 then
-    shoulderRoll = 0
-  else
+  if det >= 0 and a~=0 then
 		local sqrt_det = sqrt(det)
+    --
     local s21 = (-b + sqrt_det)/a
+    s21 = max(-1, min(s21, 1))
+    local shoulderRoll1 = asin(s21)
+    local err1 = s21*mx + cos(shoulderRoll1)*my - yWrist
+    --
     local s22 = (-b - sqrt_det)/a
-		s21 = max(-1, min(1, s21))
-		s22 = max(-1, min(1, s22))
-    local shoulderRoll1, shoulderRoll2 = asin(s21), asin(s22)
-    local err1 = s21*m[1][4] + cos(shoulderRoll1)*m[2][4] - xWrist2
-    local err2 = s22*m[1][4] + cos(shoulderRoll2)*m[2][4] - xWrist2
+		s22 = max(-1, min(s22, 1))
+    local shoulderRoll2 = asin(s22)
+    local err2 = s22*mx + cos(shoulderRoll2)*my - yWrist
+    --
     shoulderRoll = err1^2 < err2^2 and shoulderRoll1 or shoulderRoll2
   end
 	shoulderRoll = FLIP_SHOULDER_ROLL and (FLIP_SHOULDER_ROLL - shoulderRoll) or shoulderRoll
 
-  local t1 = m[2][4] * sin(shoulderRoll) - m[1][4] * cos(shoulderRoll)
-
-  local m23 = m[3][4]
-  local c1 = (m23*xWrist3 - t1*xWrist1) / (m23^2 + t1^2)
-  local s1 = (m23*xWrist1 + t1*xWrist3) / (m23^2 + t1^2)
+  local t1 = my * sin(shoulderRoll) - mx * cos(shoulderRoll)
+  local c1 = (mz*zWrist - t1*xWrist) / (mz^2 + t1^2)
+  local s1 = (mz*xWrist + t1*zWrist) / (mz^2 + t1^2)
 
   local shoulderPitch = atan2(s1, c1)
 

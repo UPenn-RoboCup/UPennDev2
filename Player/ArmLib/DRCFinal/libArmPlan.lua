@@ -178,13 +178,12 @@ end
 -- Similar to SJ's method for the margin
 local function find_shoulder_sj(self, tr, qArm)
 	local minArm, maxArm, rangeArm = self.qMin, self.qMax, self.qRange
-	local invArm = self.inverse
 	local iqArm, margin, qBest
 	local dMin, dMax
 	--
 	local maxmargin, margin = -INFINITY
 	for i, q in ipairs(self.shoulderAngles) do
-		iqArm = invArm(tr, qArm, q)
+		iqArm = self.inverse(tr, qArm, q)
 		-- Maximize the minimum margin
 		dMin = iqArm - minArm
 		dMax = iqArm - maxArm
@@ -219,7 +218,6 @@ local IK_POS_ERROR_THRESH = 0.03
 local function find_shoulder(self, tr, qArm, weights, qWaist)
 	weights = weights or defaultWeights
 	-- Form the inverses
-
 	local iqArms = {}
 	for i, q in ipairs(self.shoulderAngles) do
 		local iq = self.inverse(tr, qArm, q, 0, qWaist)
@@ -228,7 +226,6 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	end
 	-- Form the FKs
 	local fks = {}
-
 	for ic, iq in ipairs(iqArms) do
 		fks[ic] = self.forward(iq, qWaist)
 	end
@@ -956,7 +953,8 @@ local function optimize(self, qPath, wPath)
 	-- Find the λ acceleration gradient
 	local gλ = {0}
 	for i=2,#dλ-1 do
-		gλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1]
+		--gλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1]
+		gλ[i] = dλ[i+1] - dλ[i-1]
 	end
 	-- Not allowed to move the first coords
 	gλ[#gλ+1] = 0

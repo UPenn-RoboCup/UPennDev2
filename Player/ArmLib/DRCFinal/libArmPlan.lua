@@ -896,7 +896,7 @@ end
 
 
 local function optimize(self, qPath, wPath)
-	print('Optimizing...')
+	--print('Optimizing...')
 	local qGoal = qPath[#qPath]
 	-- TODO: Add the waist
 	local trGoal = self.forward(qGoal)
@@ -940,44 +940,64 @@ local function optimize(self, qPath, wPath)
 		torch.mv(dlambda, eigVinv, dqNull)
 		-- This is the gradient then, for the lambda velocity
 		table.insert(dλ0, dlambda[1])
+		--print('dλ0', dlambda[1])
 		-- How much we actually moved:
 		torch.mv(dqNull, nullspace, torch.Tensor(dq[i]))
 		torch.mv(dlambda, eigVinv, dqNull)
 		-- TODO: With the waist, it is dlambda[1:2], not just 1
 		-- This should be the gradient, then...
 		table.insert(dλ, dlambda[1])
+		--print('dλ', dlambda[1])
 		-- TODO: With the waist, we need two vectors
 		table.insert(λ2q, vector.new(eigV:select(2, 1)))
 	end
 
-	-- Find the λ acceleration gradient
-	local gλ = {0}
+	-- Find the λ velocity gradient
+	local accelλ = {0}
 	for i=2,#dλ-1 do
-		--gλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1]
-		gλ[i] = dλ[i+1] - dλ[i-1]
+		accelλ[i] = dλ[i+1] - dλ[i-1] -- accel
 	end
 	-- Not allowed to move the first coords
-	gλ[#gλ+1] = 0
+	table.insert(accelλ, 0)
 
-	-- Print out the costs
-	local cdλ = 0
-	for i, λ in ipairs(dλ0) do cdλ = cdλ + λ end
-	local cgλ = 0
-	for i, λ in ipairs(gλ) do cgλ = cgλ + λ end
+	-- Find the λ acceleration gradient
+	local jerkλ = {0}
+	for i=2,#dλ-1 do
+		jerkλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1] -- jerk
+	end
+	-- Not allowed to move the first coords
+	table.insert(jerkλ, 0)
+
 	-- Total gradient
 	local gradλ = {}
-	local wd = 1
-	local wg = 1
-	for i=1, #dλ do gradλ[i] = wd * dλ0[i] - wg * gλ[i] end
+	local wa = -10
+	local wj = 1
+	for i=1, #dλ do
+		table.insert(gradλ, wa * accelλ[i] + wj * jerkλ[i])
+	end
 
-	local cmin, imin = util.min(gradλ)
-	local cmax, imax = util.max(gradλ)
-
+	-- Print out the costs
+	local csum = 0
+	local csum2 = 0
+	for i, c in ipairs(dλ0) do
+		csum = csum + c^2
+		csum2 = csum2 + accelλ[i]^2
+	end
+	print('csum', csum, csum2)
+	--[[
+	local caccelλ = 0
+	for i, cλ in ipairs(accelλ) do caccelλ = caccelλ + cλ^2 end
+	local cjerkλ = 0
+	for i, cλ in ipairs(jerkλ) do cjerkλ = cjerkλ + cλ^2 end
+	print('Total cdλ', cdλ)
+	print('Total cgλ', cgλ)
 	--for i, grad in ipairs(gradλ) do print(i, grad, dλ0[i], gλ[i]) end
-	print('Total Costs', cdλ, cgλ, wd * cdλ + wg * cgλ)
+	--local cmin, imin = util.min(gradλ)
+	--local cmax, imax = util.max(gradλ)
 	--print('Grad min/max')
 	--print(imin, cmin, dλ0[imin], gλ[imin])
 	--print(imax, cmax, dλ0[imax], gλ[imax])
+	--]]
 
 	-- Formulate the angular changes needed.
 	local dq_star = {}
@@ -987,11 +1007,11 @@ local function optimize(self, qPath, wPath)
 		--print('dq_update', i, dq_update*RAD_TO_DEG)
 	end
 
-	local factor = 1/10
+	local factor = 0.005
 	local qPathNew = {}
 	for i, ddq in ipairs(dq_star) do
 		-- TODO: Clamp between the min and max, or rescale the step size
-		local maxDeg = math.max(unpack(factor*ddq*RAD_TO_DEG))
+		--local maxDeg = math.max(unpack(factor*ddq*RAD_TO_DEG))
 		--if math.abs(maxDeg)>1 then print('max ddq deg', i, maxDeg) end
 		table.insert(qPathNew, qPath[i] + factor*ddq)
 	end

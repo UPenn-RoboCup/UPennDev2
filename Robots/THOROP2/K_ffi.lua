@@ -141,8 +141,6 @@ end
 K.forward_larm = forward_larm
 K.forward_rarm = forward_rarm
 
-
-
 local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
 
 	local lowerArmLength0 = is_left and lowerArmLength or lowerArmLengthExtended

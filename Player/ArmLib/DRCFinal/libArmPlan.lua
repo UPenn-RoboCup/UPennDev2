@@ -896,6 +896,7 @@ end
 
 
 local function optimize(self, qPath, wPath)
+	assert(type(qPath)=='table', 'Bad path!'..tostring(qPath))
 	--print('Optimizing...')
 	local qGoal = qPath[#qPath]
 	-- TODO: Add the waist
@@ -920,102 +921,100 @@ local function optimize(self, qPath, wPath)
 		})
 	end
 	-- Find the velocity of the joints
-	local dq = {vector.zeros(nq)}
-	for i=2, #qPath do
-		dq[i] = qPath[i] - qPath[i-1]
+	local dq = {torch.Tensor(nq):zero()}
+	for i=2, #qPath-1 do
+		dq[i] = torch.Tensor((qPath[i+1] - qPath[i-1])/2)
+	end
+	table.insert(dq, torch.Tensor(nq):zero())
+
+	-- Find the nullspace acting in
+	local null = {}
+	for i, q in ipairs(qPath) do
+		local dqdtArm, nullspace, J, Jinv =
+			get_delta_qwaistarm(self, vw[i], q)
+		null[i] = nullspace
 	end
 
 	-- Find the coordinate in λ space
-	local dλ = {}
 	local dλ0 = {}
+	local dλ1 = {}
 	local λ2q = {}
-	for i, q in ipairs(qPath) do
-		local dqdtArm, nullspace, J, Jinv = get_delta_qwaistarm(self, vw[i], q)
+	for i, nullspace in ipairs(null) do
+		-- TODO: With the waist, it is dlambda[1:2], not just 1
+		-- TODO: With the waist, we need two vectors of eigV
 		torch.eig(eig, eigV, nullspace, 'V')
 		torch.inverse(eigVinv, eigV)
-		--local U, S, V = torch.svd(J, 'A')
-		--local null7a = V:select(2, 7)
-		-- How much we needed to move:
-		torch.mv(dqNull, nullspace, torch.Tensor(dqdtArm))
+		λ2q[i] = vector.new(eigV:select(2, 1))
+		torch.mv(dqNull, nullspace, torch.Tensor(qPath[i] - qGoal))
 		torch.mv(dlambda, eigVinv, dqNull)
-		-- This is the gradient then, for the lambda velocity
-		table.insert(dλ0, dlambda[1])
-		--print('dλ0', dlambda[1])
-		-- How much we actually moved:
-		torch.mv(dqNull, nullspace, torch.Tensor(dq[i]))
-		torch.mv(dlambda, eigVinv, dqNull)
-		-- TODO: With the waist, it is dlambda[1:2], not just 1
-		-- This should be the gradient, then...
-		table.insert(dλ, dlambda[1])
-		--print('dλ', dlambda[1])
-		-- TODO: With the waist, we need two vectors
-		table.insert(λ2q, vector.new(eigV:select(2, 1)))
+		dλ0[i] = dlambda[1]
+		--torch.mv(dqNull, nullspace, dq[i])
+		--torch.mv(dlambda, eigVinv, dqNull)
+		--dλ1[i] = dlambda[1]
 	end
+	local dλ = dλ0
 
-	-- Find the λ velocity gradient
+	-- Find the λ velocity gradient (accel)
 	local accelλ = {0}
 	for i=2,#dλ-1 do
-		accelλ[i] = dλ[i+1] - dλ[i-1] -- accel
+		accelλ[i] = (dλ[i+1] - dλ[i-1]) / 2
 	end
 	-- Not allowed to move the first coords
 	table.insert(accelλ, 0)
 
-	-- Find the λ acceleration gradient
+	-- Find the λ acceleration gradient (jerk)
 	local jerkλ = {0}
 	for i=2,#dλ-1 do
-		jerkλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1] -- jerk
+		jerkλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1]
 	end
 	-- Not allowed to move the first coords
 	table.insert(jerkλ, 0)
 
-	-- Total gradient
-	local gradλ = {}
-	local wa = -10
-	local wj = 1
-	for i=1, #dλ do
-		table.insert(gradλ, wa * accelλ[i] + wj * jerkλ[i])
-	end
+	-- Clear memory
+	dλ0 = nil
+	dλ1 = nil
 
-	-- Print out the costs
-	local csum = 0
-	local csum2 = 0
-	for i, c in ipairs(dλ0) do
-		csum = csum + c^2
-		csum2 = csum2 + accelλ[i]^2
+	-- Total gradient
+	local wa = 1
+	local wj = 1
+	local gradλ = {}
+	for i=1, #qPath do
+		gradλ[i] = wa * accelλ[i] + wj * jerkλ[i]
 	end
-	print('csum', csum, csum2)
-	--[[
-	local caccelλ = 0
-	for i, cλ in ipairs(accelλ) do caccelλ = caccelλ + cλ^2 end
-	local cjerkλ = 0
-	for i, cλ in ipairs(jerkλ) do cjerkλ = cjerkλ + cλ^2 end
-	print('Total cdλ', cdλ)
-	print('Total cgλ', cgλ)
-	--for i, grad in ipairs(gradλ) do print(i, grad, dλ0[i], gλ[i]) end
-	--local cmin, imin = util.min(gradλ)
-	--local cmax, imax = util.max(gradλ)
-	--print('Grad min/max')
-	--print(imin, cmin, dλ0[imin], gλ[imin])
-	--print(imax, cmax, dλ0[imax], gλ[imax])
-	--]]
+	accelλ = nil
+	jerkλ = nil
+
+	--print('Transform the gradient...')
 
 	-- Formulate the angular changes needed.
-	local dq_star = {}
+	-- Actually may need to change a bit?
+	local zeroQ = vector.zeros(nq)
+	local ddq0 = {}
 	for i, g in ipairs(gradλ) do
-		local dq_update = g * λ2q[i]
-		table.insert(dq_star, dq_update)
-		--print('dq_update', i, dq_update*RAD_TO_DEG)
+		ddq0[i] = g * λ2q[i]
 	end
+	gradλ = nil
 
-	local factor = 0.005
-	local qPathNew = {}
-	for i, ddq in ipairs(dq_star) do
-		-- TODO: Clamp between the min and max, or rescale the step size
-		--local maxDeg = math.max(unpack(factor*ddq*RAD_TO_DEG))
-		--if math.abs(maxDeg)>1 then print('max ddq deg', i, maxDeg) end
-		table.insert(qPathNew, qPath[i] + factor*ddq)
+	--print('Forming ddq...')
+
+	local step = 1 * DEG_TO_RAD
+	local ddq = {}
+	for i, dd in ipairs(ddq0) do
+		nm = vector.norm(dd)
+		ddq[i] = (nm<1e-9) and zeroQ or (step * dd / nm)
 	end
-	return qPathNew
+	ddq0 = nil
+
+	--print('Setting the new path...')
+
+	-- Find the new path
+	local qPathNew = {}
+	for i, d in ipairs(ddq) do
+		-- TODO: Clamp between the min and max, or rescale the step size
+		--print('d',i,d)
+		table.insert(qPathNew, qPath[i] - d)
+	end
+	return qPathNew, dλ
 
 end
 -- Still must set the forward and inverse kinematics

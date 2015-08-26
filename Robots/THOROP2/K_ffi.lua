@@ -221,6 +221,8 @@ local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
 
 	--local rotWrist = TrotateY(TrotateX(TrotateZ(TrotateY(Tcopy(trArm), -shoulderPitch), -shoulderRoll), -shoulderYaw), -elbowPitch)
 
+  -- TODO: Use this, it is more flexible:
+  --[[
   local wristRoll = acos(rotWrist[1][1])
   local wristYaw = atan2(rotWrist[3][1], rotWrist[2][1])
   local wristYaw2 = atan2(rotWrist[1][3], -rotWrist[1][2])
@@ -229,16 +231,17 @@ local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
     elbowPitch,
     wristYaw, wristRoll, wristYaw2
   }
+
   -- Then, check outside, so see which configuration is better
   -- Now, we do not need qOrg :P
   -- Flipping the hand is just:
   -- wristRoll = -wristRoll
   -- wristYaw = wristYaw >= 0 and wristYaw-pi or wristYaw + pi
   -- wristYaw2 = wristYaw2 >= 0 and wristYaw2-pi or wristYaw2 + pi
-
+  --]]
 
   -- NOTE: singular point: just use current angles
-  --[[
+  ----[[
   -- TODO: Why is this ever used at this low level?
 	local wristYaw_a, wristYaw2_a, wristRoll_b, wristYaw_b, wristYaw2_b
 	local wristRoll_a = acos(rotWrist[1][1]) -- 0 to pi

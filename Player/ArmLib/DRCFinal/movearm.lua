@@ -167,9 +167,9 @@ function movearm.optimize(l, r, w)
 	local lco = coroutine.create(function()
 		return lPlanner:optimize(l, w)
 	end)
-	local ok, msg = coroutine.resume(lco)
+	local ok, msg, d = coroutine.resume(lco)
 	if type(msg)=='table' then
-		return msg
+		return msg, d
 	elseif not ok then
 		print(msg)
 	end

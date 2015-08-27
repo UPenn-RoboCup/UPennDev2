@@ -44,35 +44,10 @@ local function get_armplan(plan)
 	end
 
 	-- Optimize the paths
-	local costs = {}
-	local n = 0
-	--n = 2
-	n = 10
 	if type(lpath)=='table' then
-		for i=1,n do
-			local lpath1, d = movearm.optimize(lpath)
-			if lpath1 then
-				lpath = lpath1
-				costs[i] = d
-			end
-		end
-	else
-		print('No path!')
+		local lpath1 = movearm.optimize(lpath)
+		if lpath1 then lpath = lpath1 end
 	end
-
-	local cdiff = {}
-	for i,c1 in ipairs(costs[1]) do
-		cdiff[i] = costs[#costs][i]^2 - c1^2
-
-	end
-
-	local dsum = 0
-	io.write('\n')
-	for i,v in ipairs(cdiff) do
-		io.write(string.format('%.3f ', v))
-		dsum = dsum + v
-	end
-	io.write('\n',dsum,'\n')
 
 	-- TODO: Check that the waist was not twice populated
 	print('Sending the paths',#lpath, #rpath, #wpath)

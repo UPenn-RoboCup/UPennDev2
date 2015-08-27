@@ -14,6 +14,7 @@ local fabs = require'math'.abs
 local min, max = require'math'.min, require'math'.max
 local INFINITY = require'math'.huge
 local EPSILON = 1e-2 * DEG_TO_RAD
+local util = require'util'
 
 -- Does not work for the infinite turn motors
 local function sanitize(qPlanned, qNow)
@@ -47,11 +48,55 @@ local function qDiff(iqArm, qArm0, qMin, qMax)
 	return qD
 end
 
--- Use the Jacobian
+
+-- Calculate the pseudo inverse
+--print('self.jacobian', qArm, qWaist)
+	--[[
+	Thus, the damped least squares solution is equal to
+	∆θ = (J^T * J + λ^2 * I)^−1 * J^T * e
+	--]]
+	--[[
+	TODO:
+	It is easy to show that (J T J + λ 2 I) −1 J T = J T (JJ T + λ 2 I) −1 . Thus,
+	∆θ = J^T *(J * J^T + λ^2 * I)^−1 *e
+	--]]
+	--[[
+	TODO:
+	Additionally, (11) can be computed without needing to carry out the
+matrix inversion, instead row operations can find f such that (JJ T +λ 2 I) f =
+e and then J T f is the solution.
+	--]]
+	--[[
+	-- TODO: Robot subtask performance with singularity robustness using optimal damped least-squares
+	While (1) is not defined for λ = 0, (2) is as the
+matrix (J*JT + λI) is invertible for λ = 0 provided J
+has full row rank.
+	--]]
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
 local torch = require'torch'
-local util = require'util'
+local function get_pseudo_jacobian_dls(self, J, qWaistArm)
+	-- Penalty for joint limits
+	local qMin, qMax, qRange =
+		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
+	if qWaist then
+		tinsert(qMin, 1, -45*DEG_TO_RAD)
+		tinsert(qMax, 1, 45*DEG_TO_RAD)
+		tinsert(qRange, 1, 90*DEG_TO_RAD)
+	end
+	local l = {}
+	for i, q in ipairs(qWaistArm) do
+    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
+  end
+	local JT = J:t()
+	local invInner = torch.inverse(
+		torch.addmm(torch.diag(torch.Tensor(l)), JT, J)
+	)
+	local Jpseudoinv = torch.mm(invInner, JT)
+	return Jpseudoinv
+end
+
+-- Use the Jacobian
 local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 
 	assert(type(qArm)=='table', 'get_delta_qwaistarm | Bad qArm')
@@ -65,60 +110,21 @@ local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 	end
 
 	local J = torch.Tensor(self.jacobian(qArm, qWaist))
-	local JT = J:t():clone()
-	-- Calculate the pseudo inverse
-	--print('self.jacobian', qArm, qWaist)
-    --[[
-    Thus, the damped least squares solution is equal to
-    ∆θ = (J^T * J + λ^2 * I)^−1 * J^T * e
-    --]]
-    --[[
-    TODO:
-    It is easy to show that (J T J + λ 2 I) −1 J T = J T (JJ T + λ 2 I) −1 . Thus,
-    ∆θ = J^T *(J * J^T + λ^2 * I)^−1 *e
-    --]]
-    --[[
-    TODO:
-    Additionally, (11) can be computed without needing to carry out the
-matrix inversion, instead row operations can find f such that (JJ T +λ 2 I) f =
-e and then J T f is the solution.
-    --]]
-		--[[
-		-- TODO: Robot subtask performance with singularity robustness using optimal damped least-squares
-		While (1) is not defined for λ = 0, (2) is as the
-matrix (J*JT + λI) is invertible for λ = 0 provided J
-has full row rank.
-		--]]
-
-	-- May not be needed...
-	----[[
-	-- NOTE: The l{} *could* be precalculated
-	-- Penalty for joint limits
-	local qMin, qMax, qRange =
-		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
-	if qWaist then
-		tinsert(qMin, 1, -45*DEG_TO_RAD)
-		tinsert(qMax, 1, 45*DEG_TO_RAD)
-		tinsert(qRange, 1, 90*DEG_TO_RAD)
-	end
-	local l = {}
-	for i, q in ipairs(qWaistArm) do
-    l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
-  end
-	local lambda = torch.Tensor(l)
-	local invInner = torch.inverse(torch.diag(lambda):addmm(JT, J))
-	local Jpseudoinv = torch.mm(invInner, JT)
-	--]]
-
 	-- Straight Pseudo inverse
-	-- TODO: How stable is this?
 	--local Jpseudoinv = torch.mm(torch.inverse(JT*J), JT)
 	-- Simplification for less degrees of freedom: easier to calculate
 	--local Jpseudoinv = torch.mm(JT, torch.inverse(J * JT))
+	-- Damped Least Squares Pseudo Inverse
+	local Jpseudoinv = get_pseudo_jacobian_dls(self, J, qWaistArm)
 
 	-- Find the motion and the null space
 	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
-	local null = torch.eye(#qWaistArm) - Jpseudoinv * J
+	--local null = torch.eye(#qWaistArm) - Jpseudoinv * J
+	local null = torch.addmm(
+		torch.eye(#qWaistArm),
+		-1,
+		Jpseudoinv,
+		J)
 
 	return dqArm, null, J, Jpseudoinv
 end
@@ -895,21 +901,12 @@ local function set_shoulder_granularity(self, granularity)
 end
 
 
-local function optimize(self, qPath, wPath)
+local function pathJacobians(self, qPath, wPath, qGoal)
 	assert(type(qPath)=='table', 'Bad path!'..tostring(qPath))
-	--print('Optimizing...')
-	local qGoal = qPath[#qPath]
+	local nq = #qGoal
 	-- TODO: Add the waist
 	local trGoal = self.forward(qGoal)
-	-- Setup the temporary variables
-	local nq = #qGoal
-	local dqNull = torch.Tensor(nq)
-	local dlambda = torch.Tensor(nq)
-	local eig = torch.Tensor(nq, 2)
-	local eigV = torch.Tensor(nq, nq)
-	local eigVinv = torch.Tensor(nq, nq)
-
-	-- Find the FK position of each joint
+	-- Desired velocity at each joint
 	local vw = {}
 	for i, q in ipairs(qPath) do
 		-- TODO: Add the waist
@@ -920,6 +917,45 @@ local function optimize(self, qPath, wPath)
 			drpy[1], drpy[2], drpy[3]
 		})
 	end
+
+	-- Find the nullspace acting in
+	local null = {}
+	local Js = {}
+	for i, q in ipairs(qPath) do
+		local dqdtArm, nullspace, J, Jinv =
+			get_delta_qwaistarm(self, vw[i], q)
+		null[i] = nullspace
+		--null[i] = torch.eye(nq) - J:t() * J
+		Js[i] = J
+	end
+
+	return Js, null
+end
+
+local function pathEigs(self, Js, nulls)
+	local eigs = {}
+	local eigVs = {}
+	local eigVinvs = {}
+	for i, nullspace in ipairs(nulls) do
+		eigs[i], eigVs[i] = torch.eig(nullspace, 'V')
+		eigVinvs[i] = torch.inverse(eigVs[i])
+	end
+	return eigs, eigVs, eigVinvs
+end
+
+local function optimize(self, path)
+	local qPath = path.q
+	local wPath = path.w
+	local qGoal = path.qGoal
+	local wGoal = path.wGoal
+	local eigs = path.eigs
+	local eigVs = path.eigVs
+	local eigVinvs = path.eigVinvs
+	local Js = path.Js
+	local nulls = path.nulls
+
+	local nq = #qGoal
+
 	-- Find the velocity of the joints
 	local dq = {torch.Tensor(nq):zero()}
 	for i=2, #qPath-1 do
@@ -927,32 +963,33 @@ local function optimize(self, qPath, wPath)
 	end
 	table.insert(dq, torch.Tensor(nq):zero())
 
-	-- Find the nullspace acting in
-	local null = {}
+	-- Distance to the goal all the time
+	local dqGoal = {}
 	for i, q in ipairs(qPath) do
-		local dqdtArm, nullspace, J, Jinv =
-			get_delta_qwaistarm(self, vw[i], q)
-		null[i] = nullspace
+		dqGoal[i] = torch.Tensor(q - qGoal)
 	end
 
 	-- Find the coordinate in λ space
-	local dλ0 = {}
-	local dλ1 = {}
+	--print('Finding the λ coordinates...')
+	-- Setup the temporary variables
+	local dqNull = torch.Tensor(nq)
+	local dlambda = torch.Tensor(nq)
+	local dλ = {}
 	local λ2q = {}
-	for i, nullspace in ipairs(null) do
-		-- TODO: With the waist, it is dlambda[1:2], not just 1
-		-- TODO: With the waist, we need two vectors of eigV
-		torch.eig(eig, eigV, nullspace, 'V')
-		torch.inverse(eigVinv, eigV)
-		λ2q[i] = vector.new(eigV:select(2, 1))
-		torch.mv(dqNull, nullspace, torch.Tensor(qPath[i] - qGoal))
-		torch.mv(dlambda, eigVinv, dqNull)
-		dλ0[i] = dlambda[1]
+	for i, q in ipairs(qPath) do
+		-- For on the fly calculations
+		--torch.eig(eig, eigV, nullspace, 'V')
+		--torch.inverse(eigVinv, eigV)
+		--print(1)
+		λ2q[i] = vector.new(eigVs[i]:select(2, 1))
+		--print(2, nulls[i], dqGoal[i])
+		torch.mv(dqNull, nulls[i], dqGoal[i])
+		--print(3)
 		--torch.mv(dqNull, nullspace, dq[i])
-		--torch.mv(dlambda, eigVinv, dqNull)
-		--dλ1[i] = dlambda[1]
+		torch.mv(dlambda, eigVinvs[i], dqNull)
+		--print(4)
+		dλ[i] = dlambda[1]
 	end
-	local dλ = dλ0
 
 	-- Find the λ velocity gradient (accel)
 	local accelλ = {0}
@@ -963,23 +1000,21 @@ local function optimize(self, qPath, wPath)
 	table.insert(accelλ, 0)
 
 	-- Find the λ acceleration gradient (jerk)
-	local jerkλ = {0}
+	local jerkλ = {2*dλ[1] - dλ[2]}
 	for i=2,#dλ-1 do
 		jerkλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1]
 	end
 	-- Not allowed to move the first coords
-	table.insert(jerkλ, 0)
-
-	-- Clear memory
-	dλ0 = nil
-	dλ1 = nil
+	table.insert(jerkλ, 2*dλ[#dλ] - dλ[#dλ])
 
 	-- Total gradient
-	local wa = 1
+	local wa = 1e-5
 	local wj = 1
 	local gradλ = {}
 	for i=1, #qPath do
-		gradλ[i] = wa * accelλ[i] + wj * jerkλ[i]
+		--gradλ[i] = wa * accelλ[i] + wj * jerkλ[i]
+		--print(wa * dλ[i], wj * jerkλ[i])
+		gradλ[i] = wa * dλ[i] + wj * jerkλ[i]
 	end
 	accelλ = nil
 	jerkλ = nil
@@ -1038,6 +1073,8 @@ function libArmPlan.new_planner(id)
 		set_shoulder_granularity = set_shoulder_granularity,
 		--
 		optimize = optimize,
+		jacobians = pathJacobians,
+		eigs = pathEigs,
 	}
 	return obj
 end

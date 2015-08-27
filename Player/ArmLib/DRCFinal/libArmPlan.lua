@@ -559,7 +559,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 			get_delta_qwaistarm(self, vwTarget, qArm)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
-		local nullFactor = 1
+		local nullFactor = 0.5
 		if qArmFGuess then
 			torch.mv(dqdtNull, nullspace, torch.Tensor(qArm - qArmFGuess))
 			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
@@ -958,11 +958,15 @@ local function optimize(self, path)
 	local nq = #qGoal
 
 	-- Find the velocity of the joints
-	local dq = {torch.Tensor(nq):zero()}
+	--[[
+	local dq = {torch.Tensor(qPath[2] - qPath[1])}
 	for i=2, #qPath-1 do
 		dq[i] = torch.Tensor((qPath[i+1] - qPath[i-1])/2)
 	end
-	table.insert(dq, torch.Tensor(nq):zero())
+	table.insert(dq,
+		torch.Tensor(qPath[#qPath] - qPath[#qPath-1])
+	)
+	--]]
 
 	-- Distance to the goal all the time
 	local dqGoal = {}
@@ -978,27 +982,21 @@ local function optimize(self, path)
 	local dλ = {}
 	local λ2q = {}
 	for i, q in ipairs(qPath) do
-		-- For on the fly calculations
-		--torch.eig(eig, eigV, nullspace, 'V')
-		--torch.inverse(eigVinv, eigV)
-		--print(1)
 		λ2q[i] = vector.new(eigVs[i]:select(2, 1))
-		--print(2, nulls[i], dqGoal[i])
 		torch.mv(dqNull, nulls[i], dqGoal[i])
-		--print(3)
-		--torch.mv(dqNull, nullspace, dq[i])
 		torch.mv(dlambda, eigVinvs[i], dqNull)
-		--print(4)
 		dλ[i] = dlambda[1]
 	end
 
 	-- Find the λ velocity gradient (accel)
+	--[[
 	local accelλ = {0}
 	for i=2,#dλ-1 do
 		accelλ[i] = (dλ[i+1] - dλ[i-1]) / 2
 	end
 	-- Not allowed to move the first coords
 	table.insert(accelλ, 0)
+	--]]
 
 	-- Find the λ acceleration gradient (jerk)
 	local jerkλ = {2*dλ[1] - dλ[2]}
@@ -1010,15 +1008,15 @@ local function optimize(self, path)
 
 	-- Total gradient
 	local wa = 1
-	local wj = 4e5
+	local wj = 1e5
 	local gradλ = {}
 	for i=1, #qPath do
 		--gradλ[i] = wa * accelλ[i] + wj * jerkλ[i]
 		--print(wa * dλ[i], wj * jerkλ[i])
 		gradλ[i] = wa * dλ[i] + wj * jerkλ[i]
 	end
-	accelλ = nil
-	jerkλ = nil
+	--accelλ = nil
+	--jerkλ = nil
 
 	--print('Transform the gradient...')
 
@@ -1029,17 +1027,16 @@ local function optimize(self, path)
 	for i, g in ipairs(gradλ) do
 		ddq0[i] = g * λ2q[i]
 	end
-	gradλ = nil
+	--gradλ = nil
 
-	local step = (1 / n_iter) * DEG_TO_RAD
+	local factor = 1
+	local step = (0.5 + factor / n_iter) * DEG_TO_RAD
 	local ddq = {}
 	for i, dd in ipairs(ddq0) do
 		nm = vector.norm(dd)
 		ddq[i] = (nm<1e-9) and zeroQ or (step * dd / nm)
 	end
 	ddq0 = nil
-
-	--print('Setting the new path...')
 
 	-- Find the new path
 	local qPathNew = {}
@@ -1050,7 +1047,7 @@ local function optimize(self, path)
 			(i==1 or i==#qPath) and qPath[i] or (qPath[i] - d)
 		)
 	end
-	return qPathNew, dλ
+	return qPathNew, gradλ
 
 end
 -- Still must set the forward and inverse kinematics

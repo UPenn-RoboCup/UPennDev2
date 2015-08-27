@@ -164,14 +164,14 @@ function movearm.goto(l, r)
 end
 
 function movearm.optimize(l, r, w)
+
+	local DEBUG_OPT = true
+
 	local lco = coroutine.create(function(lpath, wpath)
-
 		local qlGoal = lpath[#lpath]
-
 		local Js, nulls = lPlanner:jacobians(
 			lpath, wpath, qlGoal
 			)
-		print('Gen eigs')
 		local eigs, eigVs, eigVinvs = lPlanner:eigs(Js, nulls)
 
 		local path = {
@@ -185,26 +185,37 @@ function movearm.optimize(l, r, w)
 		}
 
 		local n = 10
-		io.write('\nOptimizing ', n, ' times.\n')
+		-- Run the optimizer
+		local t0 = unix.time()
 		local costs = {}
 		for i=1,n do
+			path.n_iter = i
 			path.q, costs[i] = lPlanner:optimize(path)
 		end
+		local t1 = unix.time()
+		io.write(
+			'\nOptimizer (',
+			n,
+			' steps): ',
+			math.floor((t1 - t0)*1e3),
+			'ms\n')
 
-		local cdiff = {}
-		if #costs>1 then
-			for i,c1 in ipairs(costs[1]) do
-				cdiff[i] = costs[#costs][i]^2 - c1^2
+		if DEBUG_OPT then
+			local cdiff = {}
+			if #costs>1 then
+				for i,c1 in ipairs(costs[1]) do
+					cdiff[i] = costs[#costs][i]^2 - c1^2
+				end
 			end
-		end
 
-		local dsum = 0
-		io.write('\n')
-		for i,v in ipairs(cdiff) do
-			io.write(string.format('%.3f ', v))
-			dsum = dsum + v
+			local dsum = 0
+			io.write('\n')
+			for i,v in ipairs(cdiff) do
+				io.write(string.format('%.3f ', v))
+				dsum = dsum + v
+			end
+			io.write('\n',dsum,'\n')
 		end
-		io.write('\n',dsum,'\n')
 
 		return path.q or lpath
 	end)

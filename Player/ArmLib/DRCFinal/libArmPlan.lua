@@ -953,6 +953,7 @@ local function optimize(self, path)
 	local eigVinvs = path.eigVinvs
 	local Js = path.Js
 	local nulls = path.nulls
+	local n_iter = path.n_iter or 1
 
 	local nq = #qGoal
 
@@ -1008,8 +1009,8 @@ local function optimize(self, path)
 	table.insert(jerkλ, 2*dλ[#dλ] - dλ[#dλ])
 
 	-- Total gradient
-	local wa = 1e-5
-	local wj = 1
+	local wa = 1
+	local wj = 4e5
 	local gradλ = {}
 	for i=1, #qPath do
 		--gradλ[i] = wa * accelλ[i] + wj * jerkλ[i]
@@ -1030,9 +1031,7 @@ local function optimize(self, path)
 	end
 	gradλ = nil
 
-	--print('Forming ddq...')
-
-	local step = 1 * DEG_TO_RAD
+	local step = (1 / n_iter) * DEG_TO_RAD
 	local ddq = {}
 	for i, dd in ipairs(ddq0) do
 		nm = vector.norm(dd)
@@ -1047,7 +1046,9 @@ local function optimize(self, path)
 	for i, d in ipairs(ddq) do
 		-- TODO: Clamp between the min and max, or rescale the step size
 		--print('d',i,d)
-		table.insert(qPathNew, qPath[i] - d)
+		table.insert(qPathNew,
+			(i==1 or i==#qPath) and qPath[i] or (qPath[i] - d)
+		)
 	end
 	return qPathNew, dλ
 

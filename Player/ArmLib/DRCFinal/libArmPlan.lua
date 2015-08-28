@@ -148,37 +148,67 @@ end
 -- Play the plan as a coroutine
 -- Array of joint angles
 -- Callback on sensed data
-local function co_play(path, callback)
+local function co_play(self, plan, callback)
+
+	print('===')
+	print('co_play plan...')
+	util.ptable(plan)
+	print('===')
+
+	-- Run the optimizer
+	if plan.via then
+		print('co_play Optimizing...')
+		plan.n_optimizations = 10
+		plan.update_jacobians = true
+		local t0 = unix.time()
+		for i=1,plan.n_optimizations do
+			plan.i_optimizations = i
+			if (not plan.Js) or plan.update_jacobians then
+				self:jacobians(plan)
+				self:eigs(plan)
+			end
+			plan.qPath, plan.wPath = self:optimize(plan)
+		end
+		local t1 = unix.time()
+		io.write(
+			'\nOptimizer (',
+			plan.n_optimizations,
+			' steps): ',
+			math.floor((t1 - t0)*1e3),
+			'ms\n'
+		)
+	end
+
 	local qArmSensed, qWaistSensed = coroutine.yield()
 	if type(callback)=='function' then
 		callback(qArmSensed, qWaistSensed)
 	end
 
-	for i, qArmPlanned in ipairs(path) do
+	for i, qArmPlanned in ipairs(plan.qPath) do
 		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
 		if type(callback)=='function' then
 			callback(qArmSensed, qWaistSensed)
 		end
 	end
-	local qEnd = path[#path]
+	local qEnd = plan.qPath[#plan.qPath]
 	return qEnd
 end
 
-local function co_play_waist(path, callback)
+local function co_play_waist(plan, callback)
 	local qArmSensed, qWaistSensed = coroutine.yield()
 	if type(callback)=='function' then
 		callback(qArmSensed, qWaistSensed)
 	end
-	for i, qArmPlanned in ipairs(path) do
-		qArmSensed, qWaistSensed = coroutine.yield(
-				{unpack(qArmPlanned, 2, #qArmPlanned)}, {qArmPlanned[1], 0})
+	for i, qArm in ipairs(plan.qPath) do
+		qArmSensed, qWaistSensed = coroutine.yield(qArm, plan.wPath[i])
 		if type(callback)=='function' then
 			callback(qArmSensed, qWaistSensed)
 		end
 	end
-	local qEnd = path[#path]
-	if not qEnd then return end
-	return {unpack(qEnd, 2, #qEnd)}, {qEnd[1], 0}
+	local qEnd = plan.qPath[#plan.qPath]
+	local qEnd = plan.wPath[#plan.wPath]
+	if not qEnd or not wEnd then return end
+	return qEnd, wEnd
 end
 
 -- Similar to SJ's method for the margin
@@ -347,7 +377,9 @@ function libArmPlan.joint_preplan(self, plan)
 	local path = {}
 	-- If given a duration, then check speed limit compliance
 	if type(plan.duration)=='number' then
-		if Config.debug.armplan then print(prefix..'Using duration:', plan.duration) end
+		if Config.debug.armplan then
+			print(prefix..'Using duration:', plan.duration)
+		end
 		local dqTotal = qArmF - qArm0
 		local dqdtAverage = dqTotal / plan.duration
 		local dqAverage = dqdtAverage * dt
@@ -370,7 +402,8 @@ function libArmPlan.joint_preplan(self, plan)
 			table.insert(path, qArm)
 		end
 		print(prefix..'Duration Steps:', #path)
-		return co_play(path)
+		plan.qPath = path
+		return co_play(self, plan)
 	end
 	-- Timeout based
 	local timeout = assert(plan.timeout, prefix..'No timeout')
@@ -397,7 +430,7 @@ function libArmPlan.joint_preplan(self, plan)
 		print(prefix..'Timeout Steps:', #path)
 		if #path > nStepsTimeout then print(prefix..'Timeout: ', #path) end
 	end
-	return co_play(path)
+	return co_play(self, path)
 end
 
 function libArmPlan.joint_waist_preplan(self, plan)
@@ -462,7 +495,17 @@ function libArmPlan.joint_waist_preplan(self, plan)
 			table.insert(path, qWaistArm)
 		end
 		print(prefix..'Steps:', #path)
-		return co_play_waist(path)
+
+		local qPath = {}
+		local wPath = {}
+		for i, qWaistArmPlanned in ipairs(path) do
+			qPath[i] = {unpack(qWaistArmPlanned, 2, #qWaistArmPlanned)}
+			wPath[i] = {qWaistArmPlanned[1], 0}
+		end
+		plan.qPath = qPath
+		plan.wPath = wPath
+
+		return co_play_waist(plan)
 	end
 	-- Timeout based
 	local timeout = assert(plan.timeout, prefix..'No timeout')
@@ -489,6 +532,15 @@ function libArmPlan.joint_waist_preplan(self, plan)
 		print(prefix..'Steps:', #path)
 		if #path > nStepsTimeout then print(prefix..'Timeout: ', #path) end
 	end
+	local qPath = {}
+	local wPath = {}
+	for i, qWaistArmPlanned in ipairs(path) do
+		qPath[i] = {unpack(qWaistArmPlanned, 2, #qWaistArmPlanned)}
+		wPath[i] = {qWaistArmPlanned[1], 0}
+	end
+	plan.qPath = qPath
+	plan.wPath = wPath
+
 	return co_play_waist(plan)
 end
 -- Plan via Jacobian for just the arm
@@ -502,6 +554,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local trGoal
 	if type(plan.q)=='table' then
 		trGoal = self.forward(plan.q, qWaist0)
+		plan.tr = trGoal
 		qArmFGuess = plan.q
 	elseif plan.tr then
 		trGoal = plan.tr
@@ -512,7 +565,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	end
 	-- Use straight jacobian if no guess
 	if qArmFGuess then
-		vector.new(qArmFGuess)
+		plan.qArmFGuess = vector.new(qArmFGuess)
 	else
 		if Config.debug.armplan then
 			print(prefix..'No guess found for the final!')
@@ -546,8 +599,12 @@ function libArmPlan.jacobian_preplan(self, plan)
 		end
 		--]]
 
-		if dist_components[1] < 0.01 and dist_components[2] < 2*DEG_TO_RAD then
-			print(prefix..' close!', unpack(dist_components))
+		if dist_components[1] < 0.01
+			and dist_components[2] < 2*DEG_TO_RAD
+		then
+			if Config.debug.armplan then
+				print(prefix..' close!', unpack(dist_components))
+			end
 			break
 		end
 
@@ -601,7 +658,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
 	end
 	-- Play the plan
-	local qArmF = co_play(path)
+	plan.qPath = path
+	plan.qGoal = qArmFGuess or qArm
+	local qArmF = co_play(self, plan)
 	if Config.debug.armplan then print(prefix..'qArmF', qArmF) end
 	if not qArmF then return qArm end
 	-- Hitting the timeout means we are done
@@ -613,9 +672,15 @@ function libArmPlan.jacobian_preplan(self, plan)
 		return qArmF
 	end
 	-- Goto the final
-	if Config.debug.armplan then print(prefix..'Final find_shoulder') end
+	if Config.debug.armplan then
+		print(prefix..'Final find_shoulder')
+	end
+
 	local qArmF1 = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0)
-	if Config.debug.armplan then print(prefix..'Final solution', qArmF1) end
+
+	if Config.debug.armplan then
+		print(prefix..'Final solution', qArmF1)
+	end
 	if not qArmF1 then return qArmF end
 
 	local final_plan = {
@@ -625,8 +690,8 @@ function libArmPlan.jacobian_preplan(self, plan)
 		duration = 1
 	}
 	if Config.debug.armplan then
-	  print(prefix..'Final joint preplan')
-		util.ptable(final_plan)
+	  print(prefix..'Final joint preplan...')
+		--util.ptable(final_plan)
 	end
 	-- Use the pre-existing planner
 	return libArmPlan.joint_preplan(self, final_plan)
@@ -734,8 +799,20 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	if Config.debug.armplan then
 	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
 	end
+
+
+	local qPath = {}
+	local wPath = {}
+	for i, qWaistArmPlanned in ipairs(path) do
+		qPath[i] = {unpack(qWaistArmPlanned, 2, #qWaistArmPlanned)}
+		wPath[i] = {qWaistArmPlanned[1], 0}
+	end
+	plan.qPath = qPath
+	plan.wPath = wPath
+
 	-- Play the plan
-	local qArmF, qWaistF = co_play_waist(path)
+	local qArmF, qWaistF = co_play_waist(plan)
+
 	if #path==0 then return qArm0, qWaist0 end
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
@@ -905,12 +982,11 @@ local function set_shoulder_granularity(self, granularity)
 end
 
 
-local function pathJacobians(self, path)
-	local nq = #path.qGoal
-	local trGoal = self.forward(path.qGoal, path.wGoal)
+local function pathJacobians(self, plan)
+	local trGoal = plan.tr
 	-- Desired velocity at each joint
 	local vw = {}
-	for i, q in ipairs(path.q) do
+	for i, q in ipairs(plan.qPath) do
 		-- TODO: Add the waist
 		local dp, drpy, dist_components = get_distance(self, trGoal, q)
 		-- Form our desired velocity
@@ -923,15 +999,15 @@ local function pathJacobians(self, path)
 	-- Find the nullspace acting in
 	local nulls = {}
 	local Js = {}
-	for i, q in ipairs(path.q) do
+	for i, q in ipairs(plan.qPath) do
 		local dqdtArm, nullspace, J, Jinv =
-			get_delta_qwaistarm(self, vw[i], q, path.w[i])
+			get_delta_qwaistarm(self, vw[i], q, plan.wPath and plan.wPath[i])
 		nulls[i] = nullspace
 		Js[i] = J
 	end
 
-	path.Js = Js
-	path.nulls = nulls
+	plan.Js = Js
+	plan.nulls = nulls
 end
 
 local function pathEigs(self, path)
@@ -946,8 +1022,11 @@ local function pathEigs(self, path)
 end
 
 local function optimize(self, path)
-	local qPath = path.q
-	local wPath = path.w
+	print('Optimization step', path.i_optimizations)
+	--util.ptable(path)
+	--print('===')
+	local qPath = path.qPath
+	local wPath = path.wPath
 	local qGoal = path.qGoal
 	local wGoal = path.wGoal
 	local eigs = path.eigs
@@ -958,13 +1037,15 @@ local function optimize(self, path)
 
 	local qWaistArmGoal
 	local nNull
-	if #wPath>0 then
+	if type(wPath)=='table' and #wPath>0 then
 		nNull = 2
 		qWaistArmGoal = torch.Tensor{wGoal[1], unpack(qGoal)}
 	else
 		nNull = 1
 		qWaistArmGoal = torch.Tensor(qGoal)
 	end
+
+	--print('opt | qWaistArmGoal', qWaistArmGoal)
 
 	-- Find the velocity of the joints
 	--[[
@@ -1005,7 +1086,7 @@ local function optimize(self, path)
 	local dqGoal = {}
 	local qWaistArm
 	for i, q in ipairs(qPath) do
-		if #wPath>0 then
+		if type(wPath)=='table' and #wPath>0 then
 			qWaistArm = {wPath[i][1], unpack(q)}
 		else
 			qWaistArm = q
@@ -1114,7 +1195,7 @@ local function optimize(self, path)
 
 
 	local a = 1
-	local step = a * (1 - (path.n_iter-1)/path.n)
+	local step = a * (1 - (path.i_optimizations-1)/path.n_optimizations)
 	local ddq = {}
 	for i, _λ2q in ipairs(λ2q) do
 		local g = gradλ[i]
@@ -1148,7 +1229,9 @@ local function optimize(self, path)
 		end
 	end
 	qPathNew[1] = qPath[1]
-	wPathNew[1] = wPath[1]
+	if type(wPath)=='table' and #wPath>0 then
+		wPathNew[1] = wPath[1]
+	end
 	--qPathNew[#qPath] = qPath[#qPath]
 	return qPathNew, wPathNew, gradλ
 

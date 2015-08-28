@@ -176,12 +176,12 @@ function movearm.optimize(l, r, w)
 		local wGoal = wpath and wpath[#lpath] or {0,0}
 
 		local path = {
-			q = lpath,
-			w = wpath or {},
+			qPath = lpath,
+			wPath = wpath or {},
 			qGoal = qlGoal,
 			wGoal = wGoal,
-			n = n,
-			n_iter = 0
+			n_optimizations = n,
+			i_optimizations = 0
 		}
 
 		-- Run the optimizer
@@ -189,7 +189,7 @@ function movearm.optimize(l, r, w)
 		local costs = {}
 		for i=1,n do
 			print('Optimization', i)
-			path.n_iter = i
+			path.i_optimizations = i
 			if UPDATE_J or not path.Js then
 				lPlanner:jacobians(path)
 				lPlanner:eigs(path)

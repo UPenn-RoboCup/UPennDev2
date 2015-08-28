@@ -18,8 +18,11 @@ local function get_config(path)
 end
 
 local function get_armplan(plan)
-	print('Received a plan')
+	print('arm_wizard | Received a plan')
+
 	local lco, rco = movearm.goto(plan.left, plan.right)
+
+
 	local wpath = {}
 	--
 	local lpath = {}
@@ -44,11 +47,16 @@ local function get_armplan(plan)
 	end
 
 	-- Optimize the paths
+	--[[
+	print('\n==\nDone the initial plan!')
+	util.ptable(plan.left)
+	print('=====\n\n')
 	if type(lpath)=='table' then
 		local lpath1, wpath1 = movearm.optimize(lpath, rpath, wpath)
 		if lpath1 then lpath = lpath1 end
 		if wpath1 then wpath = wpath1 end
 	end
+	--]]
 
 	-- TODO: Check that the waist was not twice populated
 	print('Sending the paths',#lpath, #rpath, #wpath)

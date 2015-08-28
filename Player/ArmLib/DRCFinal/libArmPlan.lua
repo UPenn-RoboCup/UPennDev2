@@ -559,7 +559,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 			get_delta_qwaistarm(self, vwTarget, qArm)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
-		local nullFactor = 0.1
+		local nullFactor = 0.2
 		if qArmFGuess then
 			local dqNull = torch.Tensor(qArm - qArmFGuess)
 			torch.mv(dqdtNull, nullspace, dqNull)
@@ -670,6 +670,8 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 	local nStepsTimeout = math.ceil(timeout * hz)
 	-- Initial position
 	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}
+	-- Memory creation saving
+	local dqdtNull = torch.Tensor(#qWaistArm)
 	-- Begin
 	local t0 = unix.time()
 	local path = {}
@@ -695,8 +697,9 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
 		if qWaistArmFGuess then
-			local dqdtNull = nullspace * torch.Tensor(qWaistArm - qWaistArmFGuess)
-			dqdtCombo = dqdtWaistArm - dqdtNull
+			local dqNull = torch.Tensor(qWaistArm - qWaistArmFGuess)
+			torch.mv(dqdtNull, nullspace, dqNull)
+			dqdtCombo = dqdtWaistArm - dqdtNull:mul(nullFactor)
 		else
 			dqdtCombo = dqdtWaistArm
 		end
@@ -1086,8 +1089,8 @@ local function optimize(self, path)
 	--]]
 
 	-- Total gradient
-	local wa = 1 /100
-	local wj = 2 /100
+	local wa = 0.5 /100
+	local wj = 1 /100
 	local gradλ = dλ:clone():mul(wa):add(wj, jerkλ)
 	--print('gradλ', gradλ)
 	--[[

@@ -166,9 +166,9 @@ end
 function movearm.optimize(l, r, w)
 
 	local DEBUG_OPT = false
-	local UPDATE_J = false
+	local UPDATE_J = true
 	local n = 20 -- above this really is diminishing returns
-	n = 5
+	n = 10
 
 	local lco = coroutine.create(function(lpath, wpath)
 

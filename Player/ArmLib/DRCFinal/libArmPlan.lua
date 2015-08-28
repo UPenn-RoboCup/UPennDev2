@@ -964,7 +964,7 @@ local function optimize(self, path)
 	end
 
 	-- Find the velocity of the joints
-	----[[
+	--[[
 	local dq = {}
 	if #wPath>0 then
 		dq[1] = torch.Tensor{
@@ -1086,8 +1086,8 @@ local function optimize(self, path)
 	--]]
 
 	-- Total gradient
-	local wa = 1/6 /100
-	local wj = 1/2 /100
+	local wa = 1 /100
+	local wj = 2 /100
 	local gradλ = dλ:clone():mul(wa):add(wj, jerkλ)
 	--print('gradλ', gradλ)
 	--[[
@@ -1133,16 +1133,21 @@ local function optimize(self, path)
 
 	-- Find the new path
 	local qPathNew = {}
+	local wPathNew = {}
 	for i, d in ipairs(ddq) do
-		-- TODO: Clamp between the min and max, or rescale the step size
-		if vector.norm(d)*RAD_TO_DEG > 0.5 then
-			print('d',i,vector.norm(d)*RAD_TO_DEG)
+		if nNull==2 then
+			--print('d[1]', d[1], vector.slice(d, 2))
+			table.insert(qPathNew, qPath[i] - vector.slice(d, 2))
+			table.insert(wPathNew, vector.new{wPath[i][1] - d[1], 0})
+			--print('wPathNew', wPathNew[i])
+		else
+			table.insert(qPathNew, qPath[i] - d)
 		end
-		table.insert(qPathNew, qPath[i] - d)
 	end
 	qPathNew[1] = qPath[1]
+	wPathNew[1] = wPath[1]
 	--qPathNew[#qPath] = qPath[#qPath]
-	return qPathNew, gradλ
+	return qPathNew, wPathNew, gradλ
 
 end
 -- Still must set the forward and inverse kinematics

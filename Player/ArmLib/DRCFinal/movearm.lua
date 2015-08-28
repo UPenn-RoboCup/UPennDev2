@@ -167,7 +167,8 @@ function movearm.optimize(l, r, w)
 
 	local DEBUG_OPT = false
 	local UPDATE_J = false
-	local n = 25
+	local n = 20 -- above this really is diminishing returns
+	n = 5
 
 	local lco = coroutine.create(function(lpath, wpath)
 
@@ -193,7 +194,7 @@ function movearm.optimize(l, r, w)
 				lPlanner:jacobians(path)
 				lPlanner:eigs(path)
 			end
-			path.q, costs[i] = lPlanner:optimize(path)
+			path.q, path.w, costs[i] = lPlanner:optimize(path)
 		end
 		local t1 = unix.time()
 		io.write(
@@ -220,13 +221,13 @@ function movearm.optimize(l, r, w)
 			io.write('\n',dsum,'\n')
 		end
 
-		return path.q or lpath
+		return path.q or lpath, path.w or wpath
 	end)
-	local ok, msg = coroutine.resume(lco, l, w)
-	if type(msg)=='table' then
-		return msg
+	local ok, msg1, msg2 = coroutine.resume(lco, l, w)
+	if type(msg1)=='table' then
+		return msg1, msg2
 	elseif not ok then
-		print('optimize err:',msg)
+		print('optimize err:', msg1)
 	end
 end
 

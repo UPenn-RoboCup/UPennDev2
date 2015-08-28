@@ -45,8 +45,9 @@ local function get_armplan(plan)
 
 	-- Optimize the paths
 	if type(lpath)=='table' then
-		local lpath1 = movearm.optimize(lpath, rpath, wpath)
+		local lpath1, wpath1 = movearm.optimize(lpath, rpath, wpath)
 		if lpath1 then lpath = lpath1 end
+		if wpath1 then wpath = wpath1 end
 	end
 
 	-- TODO: Check that the waist was not twice populated

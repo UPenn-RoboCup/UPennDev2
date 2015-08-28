@@ -167,27 +167,31 @@ function movearm.optimize(l, r, w)
 
 	local DEBUG_OPT = false
 	local UPDATE_J = false
-	local n = 5
+	local n = 25
 
 	local lco = coroutine.create(function(lpath, wpath)
+
 		local qlGoal = lpath[#lpath]
+		local wGoal = wpath and wpath[#lpath] or {0,0}
 
 		local path = {
 			q = lpath,
+			w = wpath or {},
 			qGoal = qlGoal,
+			wGoal = wGoal,
+			n = n,
+			n_iter = 0
 		}
 
 		-- Run the optimizer
 		local t0 = unix.time()
 		local costs = {}
 		for i=1,n do
+			print('Optimization', i)
 			path.n_iter = i
 			if UPDATE_J or not path.Js then
-				path.Js, path.nulls = lPlanner:jacobians(
-					path.q, path.w, path.qGoal
-					)
-				path.eigs, path.eigVs, path.eigVinvs =
-					lPlanner:eigs(path.Js, path.nulls)
+				lPlanner:jacobians(path)
+				lPlanner:eigs(path)
 			end
 			path.q, costs[i] = lPlanner:optimize(path)
 		end
@@ -218,11 +222,11 @@ function movearm.optimize(l, r, w)
 
 		return path.q or lpath
 	end)
-	local ok, msg = coroutine.resume(lco, l, r, w)
+	local ok, msg = coroutine.resume(lco, l, w)
 	if type(msg)=='table' then
 		return msg
 	elseif not ok then
-		print(msg)
+		print('optimize err:',msg)
 	end
 end
 

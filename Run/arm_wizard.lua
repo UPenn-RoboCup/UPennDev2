@@ -45,7 +45,7 @@ local function get_armplan(plan)
 
 	-- Optimize the paths
 	if type(lpath)=='table' then
-		local lpath1 = movearm.optimize(lpath)
+		local lpath1 = movearm.optimize(lpath, rpath, wpath)
 		if lpath1 then lpath = lpath1 end
 	end
 

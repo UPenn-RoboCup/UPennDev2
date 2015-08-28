@@ -79,7 +79,7 @@ local function get_pseudo_jacobian_dls(self, J, qWaistArm)
 	-- Penalty for joint limits
 	local qMin, qMax, qRange =
 		{unpack(self.qMin)}, {unpack(self.qMax)}, {unpack(self.qRange)}
-	if qWaist then
+	if #qWaistArm~=#qRange then
 		tinsert(qMin, 1, -45*DEG_TO_RAD)
 		tinsert(qMax, 1, 45*DEG_TO_RAD)
 		tinsert(qRange, 1, 90*DEG_TO_RAD)
@@ -559,9 +559,10 @@ function libArmPlan.jacobian_preplan(self, plan)
 			get_delta_qwaistarm(self, vwTarget, qArm)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
-		local nullFactor = 0.5
+		local nullFactor = 0.1
 		if qArmFGuess then
-			torch.mv(dqdtNull, nullspace, torch.Tensor(qArm - qArmFGuess))
+			local dqNull = torch.Tensor(qArm - qArmFGuess)
+			torch.mv(dqdtNull, nullspace, dqNull)
 			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
 		else
 			dqdtCombo = dqdtArm
@@ -901,14 +902,12 @@ local function set_shoulder_granularity(self, granularity)
 end
 
 
-local function pathJacobians(self, qPath, wPath, qGoal)
-	assert(type(qPath)=='table', 'Bad path!'..tostring(qPath))
-	local nq = #qGoal
-	-- TODO: Add the waist
-	local trGoal = self.forward(qGoal)
+local function pathJacobians(self, path)
+	local nq = #path.qGoal
+	local trGoal = self.forward(path.qGoal, path.wGoal)
 	-- Desired velocity at each joint
 	local vw = {}
-	for i, q in ipairs(qPath) do
+	for i, q in ipairs(path.q) do
 		-- TODO: Add the waist
 		local dp, drpy, dist_components = get_distance(self, trGoal, q)
 		-- Form our desired velocity
@@ -919,28 +918,28 @@ local function pathJacobians(self, qPath, wPath, qGoal)
 	end
 
 	-- Find the nullspace acting in
-	local null = {}
+	local nulls = {}
 	local Js = {}
-	for i, q in ipairs(qPath) do
+	for i, q in ipairs(path.q) do
 		local dqdtArm, nullspace, J, Jinv =
-			get_delta_qwaistarm(self, vw[i], q)
-		null[i] = nullspace
-		--null[i] = torch.eye(nq) - J:t() * J
+			get_delta_qwaistarm(self, vw[i], q, path.w[i])
+		nulls[i] = nullspace
 		Js[i] = J
 	end
 
-	return Js, null
+	path.Js = Js
+	path.nulls = nulls
 end
 
-local function pathEigs(self, Js, nulls)
+local function pathEigs(self, path)
 	local eigs = {}
 	local eigVs = {}
 	local eigVinvs = {}
-	for i, nullspace in ipairs(nulls) do
+	for i, nullspace in ipairs(path.nulls) do
 		eigs[i], eigVs[i] = torch.eig(nullspace, 'V')
 		eigVinvs[i] = torch.inverse(eigVs[i])
 	end
-	return eigs, eigVs, eigVinvs
+	path.eigs, path.eigVs, path.eigVinvs = eigs, eigVs, eigVinvs
 end
 
 local function optimize(self, path)
@@ -953,39 +952,81 @@ local function optimize(self, path)
 	local eigVinvs = path.eigVinvs
 	local Js = path.Js
 	local nulls = path.nulls
-	local n_iter = path.n_iter or 1
 
-	local nq = #qGoal
+	local qWaistArmGoal
+	local nNull
+	if #wPath>0 then
+		nNull = 2
+		qWaistArmGoal = torch.Tensor{wGoal[1], unpack(qGoal)}
+	else
+		nNull = 1
+		qWaistArmGoal = torch.Tensor(qGoal)
+	end
 
 	-- Find the velocity of the joints
-	--[[
-	local dq = {torch.Tensor(qPath[2] - qPath[1])}
-	for i=2, #qPath-1 do
-		dq[i] = torch.Tensor((qPath[i+1] - qPath[i-1])/2)
+	----[[
+	local dq = {}
+	if #wPath>0 then
+		dq[1] = torch.Tensor{
+			wPath[2][1] - wPath[1][1],
+			unpack((qPath[2] - qPath[1])/2)
+		}
+		for i=2, #qPath-1 do
+			dq[i] = torch.Tensor{
+				(wPath[i+1][1] - wPath[i-1][1])/2,
+				unpack((qPath[i+1] - qPath[i-1])/2)
+			}
+		end
+		table.insert(dq,
+		torch.Tensor{
+			wPath[#wPath][1] - wPath[#wPath-1][1],
+			unpack(qPath[#qPath] - qPath[#qPath-1])
+		}
+		)
+	else
+		dq[1] = torch.Tensor(
+			(qPath[2] - qPath[1])/2
+		)
+		for i=2, #qPath-1 do
+			dq[i] = torch.Tensor(
+				(qPath[i+1] - qPath[i-1])/2
+			)
+		end
+		table.insert(dq,
+			torch.Tensor(qPath[#qPath] - qPath[#qPath-1])
+		)
 	end
-	table.insert(dq,
-		torch.Tensor(qPath[#qPath] - qPath[#qPath-1])
-	)
 	--]]
 
 	-- Distance to the goal all the time
 	local dqGoal = {}
+	local qWaistArm
 	for i, q in ipairs(qPath) do
-		dqGoal[i] = torch.Tensor(q - qGoal)
+		if #wPath>0 then
+			qWaistArm = {wPath[i][1], unpack(q)}
+		else
+			qWaistArm = q
+		end
+		dqGoal[i] = torch.Tensor(qWaistArm):add(-1, qWaistArmGoal)
 	end
 
 	-- Find the coordinate in λ space
 	--print('Finding the λ coordinates...')
 	-- Setup the temporary variables
-	local dqNull = torch.Tensor(nq)
-	local dlambda = torch.Tensor(nq)
-	local dλ = {}
+	local dqNull = torch.Tensor(#qWaistArmGoal)
+	local dlambda = torch.Tensor(#qWaistArmGoal)
+	local dλ = torch.Tensor(#qPath, nNull)
 	local λ2q = {}
 	for i, q in ipairs(qPath) do
-		λ2q[i] = vector.new(eigVs[i]:select(2, 1))
+		local _λ2q = eigVs[i]:narrow(2, 1, nNull)
+		λ2q[i] = _λ2q:clone()
+		--print('λ2q', _λ2q)
 		torch.mv(dqNull, nulls[i], dqGoal[i])
+		--torch.mv(dqNull, nulls[i], dq[i])
 		torch.mv(dlambda, eigVinvs[i], dqNull)
-		dλ[i] = dlambda[1]
+		local _dλ = dlambda:sub(1, nNull)
+		dλ[i]:copy(_dλ)
+		--print('dλ', _dλ)
 	end
 
 	-- Find the λ velocity gradient (accel)
@@ -998,55 +1039,109 @@ local function optimize(self, path)
 	table.insert(accelλ, 0)
 	--]]
 
+	--print('Running the kernel...')
+	----[[
+	local kernel = torch.Tensor(3, 1)
+	kernel[1] = -1
+	kernel[2] = 2
+	kernel[3] = -1
+	--]]
+
+	--[[
+	local kernel = torch.Tensor(5, 1)
+	kernel[1] = -1
+	kernel[2] = -3
+	kernel[3] = 5
+	kernel[4] = -3
+	kernel[5] = -1
+	--]]
+
+	--[[
+	local kernel = torch.Tensor(7, 1)
+	kernel[1] = -1
+	kernel[2] = -3
+	kernel[3] = -5
+	kernel[4] = 7
+	kernel[5] = -5
+	kernel[6] = -3
+	kernel[7] = -1
+	--]]
+
+	--print('dλ', dλ:size(), 'k', kernel:size())
+	local jerkλ = torch.conv2(dλ, kernel, 'F')
+		:narrow(1, 1+kernel:size(1)/2, dλ:size(1))
+	--print('jerkλ', jerkλ:size())
+
 	-- Find the λ acceleration gradient (jerk)
-	local jerkλ = {2*dλ[1] - dλ[2]}
+	--[[
+	--print('dλ', dλ)
+	local jerkλ = {
+		2*dλ[1] - dλ[2]
+	}
 	for i=2,#dλ-1 do
 		jerkλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1]
 	end
 	-- Not allowed to move the first coords
 	table.insert(jerkλ, 2*dλ[#dλ] - dλ[#dλ])
+	--]]
 
 	-- Total gradient
-	local wa = 1
-	local wj = 1e5
-	local gradλ = {}
+	local wa = 1/6 /100
+	local wj = 1/2 /100
+	local gradλ = dλ:clone():mul(wa):add(wj, jerkλ)
+	--print('gradλ', gradλ)
+	--[[
 	for i=1, #qPath do
 		--gradλ[i] = wa * accelλ[i] + wj * jerkλ[i]
-		--print(wa * dλ[i], wj * jerkλ[i])
-		gradλ[i] = wa * dλ[i] + wj * jerkλ[i]
+		print(dλ[i], jerkλ[i])
+		--gradλ[i] = wa * dλ[i] + wj * jerkλ[i]
 	end
+	--]]
 	--accelλ = nil
 	--jerkλ = nil
 
-	--print('Transform the gradient...')
-
 	-- Formulate the angular changes needed.
 	-- Actually may need to change a bit?
-	local zeroQ = vector.zeros(nq)
+	--[[
 	local ddq0 = {}
 	for i, g in ipairs(gradλ) do
 		ddq0[i] = g * λ2q[i]
 	end
-	--gradλ = nil
+	--]]
 
-	local factor = 1
-	local step = (0.5 + factor / n_iter) * DEG_TO_RAD
+
+	local a = 1
+	local step = a * (1 - (path.n_iter-1)/path.n)
 	local ddq = {}
+	for i, _λ2q in ipairs(λ2q) do
+		local g = gradλ[i]
+		ddq[i] = vector.new(
+		torch.mv(_λ2q, g):mul(step)
+			--:div(torch.norm(g)):mul(step)
+			)
+	end
+
+	--[[
+	local ddq = {}
+	local zeroQ = vector.zeros(nq)
 	for i, dd in ipairs(ddq0) do
 		nm = vector.norm(dd)
 		ddq[i] = (nm<1e-9) and zeroQ or (step * dd / nm)
 	end
 	ddq0 = nil
+	--]]
 
 	-- Find the new path
 	local qPathNew = {}
 	for i, d in ipairs(ddq) do
 		-- TODO: Clamp between the min and max, or rescale the step size
-		--print('d',i,d)
-		table.insert(qPathNew,
-			(i==1 or i==#qPath) and qPath[i] or (qPath[i] - d)
-		)
+		if vector.norm(d)*RAD_TO_DEG > 0.5 then
+			print('d',i,vector.norm(d)*RAD_TO_DEG)
+		end
+		table.insert(qPathNew, qPath[i] - d)
 	end
+	qPathNew[1] = qPath[1]
+	--qPathNew[#qPath] = qPath[#qPath]
 	return qPathNew, gradλ
 
 end

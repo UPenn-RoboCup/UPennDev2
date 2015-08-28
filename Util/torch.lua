@@ -2,6 +2,14 @@ local libtorch = require'libtorch'
 --local torch = require'libtorch'
 torch.Tensor = torch.DoubleTensor
 
+function torch.type(obj)
+	local class = torch.typename(obj)
+	if not class then
+		class = type(obj)
+	end
+	return class
+end
+
 --[[
 Copyright (c) 2011-2014 Idiap Research Institute (Ronan Collobert)
 Copyright (c) 2011-2012 NEC Laboratories America (Koray Kavukcuoglu)

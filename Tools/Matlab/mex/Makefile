@@ -35,12 +35,13 @@ TARGETS=\
 	field_occupancy.$(MEXEXT) \
 	field_spots.$(MEXEXT) \
 	label_to_mask.$(MEXEXT) \
+	mattorch.$(MEXEXT)
 #	test \
 #	serialize.$(MEXEXT) \
 #	deserialize.$(MEXEXT) \
 
 .PHONY: all clean
-	
+
 all: $(TARGETS)
 
 %.o: %.cc
@@ -51,7 +52,7 @@ all: $(TARGETS)
 
 mexshm.$(MEXEXT):
 	$(MEX) mexshm.cc $(LIBRT)
-	
+
 cjpeg.$(MEXEXT):
 	$(MEX) cjpeg.cc -ljpeg
 
@@ -60,16 +61,19 @@ djpeg.$(MEXEXT):
 
 zmq.$(MEXEXT):
 	$(MEX) zmq.cc -lzmq
-	
+
 msgpack.$(MEXEXT):
 	$(MEX) msgpack.cc -lmsgpack
-	
+
+mattorch.$(MEXEXT):
+		$(MEX) mattorch.cc -llua5.1 -ltorch -lmat -I/usr/local/include/torch -I/usr/local/include/lua-5.1 -L/Applications/MATLAB_R2015a.app/bin/maci64/libmat.dylib
+
 zlibCompress.$(MEXEXT):
 	$(MEX) zlibCompress.cc -lz
 
 zlibUncompress.$(MEXEXT):
 	$(MEX) zlibUncompress.cc -lz
-	
+
 connected_regions.$(MEXEXT): connected_regions.cc RegionProps.o ConnectRegions.o
 	$(MEX) $^
 
@@ -87,7 +91,7 @@ field_spots.$(MEXEXT): field_spots.cc RegionProps.o ConnectRegions.o
 
 kinematics.$(MEXEXT): kinematics.cc
 	$(MEX) $^ ../../../Robots/THOROP/THOROPKinematics.cpp ../../../Robots/Transform/Transform.cpp  -I../../../Robots/THOROP -I../../../Robots/Transform
-	
+
 test:
 	@echo "Testing matlab scripts!"
 	$(MATLAB) -r "run_tests"

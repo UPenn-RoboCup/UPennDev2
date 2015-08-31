@@ -75,6 +75,7 @@ has full row rank.
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
 local torch = require'torch'
+local mattorch = require'mattorch'
 local function get_pseudo_jacobian_dls(self, J, qWaistArm)
 	-- Penalty for joint limits
 	local qMin, qMax, qRange =
@@ -159,7 +160,11 @@ local function co_play(self, plan, callback)
 	if plan.via then
 		print('co_play Optimizing...')
 		plan.n_optimizations = 10
-		plan.update_jacobians = true
+		plan.update_jacobians = false
+
+		-- Send to matlab
+		self:optimize2(plan)
+
 		local t0 = unix.time()
 		for i=1,plan.n_optimizations do
 			plan.i_optimizations = i
@@ -1021,6 +1026,71 @@ local function pathEigs(self, path)
 	path.eigs, path.eigVs, path.eigVinvs = eigs, eigVs, eigVinvs
 end
 
+--[[
+function kron(A, B)
+	-- Kronecker Product
+	 local m, n = A:size(1), A:size(2)
+	 local p, q = B:size(1), B:size(2)
+	 local C = torch.Tensor(m*p,n*q)
+
+	 for i=1,m do
+			 for j=1,n do
+					 C[{{(i-1)*p+1,i*p},{(j-1)*q+1,j*q}}] = torch.mul(B, A[i][j])
+			 end
+	 end
+	 return C
+end
+--]]
+
+local function optimize2(self, plan)
+	local trGoal = plan.tr
+	-- Desired velocity at each joint
+	local vw = {}
+	for i, q in ipairs(plan.qPath) do
+		-- TODO: Add the waist
+		local dp, drpy, dist_components = get_distance(self, trGoal, q)
+		-- Form our desired velocity
+		table.insert(vw, {
+			dp[1], dp[2], dp[3],
+			drpy[1], drpy[2], drpy[3]
+		})
+	end
+
+	local nq = 7
+
+	-- Find the nullspace acting in
+	local bigNulls = torch.Tensor(
+		nq * #plan.qPath, nq * #plan.qPath
+	):zero()
+	local bigQ = torch.Tensor(nq * #plan.qPath):zero()
+	--
+	local bigA = bigNulls:clone():zero()
+	local bigQstar = bigQ:clone()
+	for i, q in ipairs(plan.qPath) do
+		local dqdtArm, nullspace, J, Jinv =
+			get_delta_qwaistarm(self, vw[i], q, plan.wPath and plan.wPath[i])
+		bigNulls:sub(nq*(i-1)+1, nq*i, nq*(i-1)+1, nq*i):copy(nullspace)
+		bigQ:sub(nq*(i-1)+1, nq*i):copy(torch.Tensor(q))
+		-- Just repeat the goal
+		-- Later, we can use more goals interspersed :P
+		bigQstar:sub(nq*(i-1)+1, nq*i):copy(torch.Tensor(plan.qGoal))
+		for j=1,nq do
+			bigA[i]
+		end
+
+	end
+
+	--plan.bigNulls = bigNulls
+	--plan.bigQ = bigQ
+	local planName = MATLAB_DIR..'/armplans/plan.mat'
+	mattorch.saveTable(planName, {
+		bigNulls = bigNulls,
+		bigQ = bigQ,
+		bigQstar = bigQstar,
+	})
+	print('Saved the plan:', planName)
+end
+
 local function optimize(self, path)
 	print('Optimization step', path.i_optimizations)
 	--util.ptable(path)
@@ -1044,43 +1114,6 @@ local function optimize(self, path)
 		nNull = 1
 		qWaistArmGoal = torch.Tensor(qGoal)
 	end
-
-	--print('opt | qWaistArmGoal', qWaistArmGoal)
-
-	-- Find the velocity of the joints
-	--[[
-	local dq = {}
-	if #wPath>0 then
-		dq[1] = torch.Tensor{
-			wPath[2][1] - wPath[1][1],
-			unpack((qPath[2] - qPath[1])/2)
-		}
-		for i=2, #qPath-1 do
-			dq[i] = torch.Tensor{
-				(wPath[i+1][1] - wPath[i-1][1])/2,
-				unpack((qPath[i+1] - qPath[i-1])/2)
-			}
-		end
-		table.insert(dq,
-		torch.Tensor{
-			wPath[#wPath][1] - wPath[#wPath-1][1],
-			unpack(qPath[#qPath] - qPath[#qPath-1])
-		}
-		)
-	else
-		dq[1] = torch.Tensor(
-			(qPath[2] - qPath[1])/2
-		)
-		for i=2, #qPath-1 do
-			dq[i] = torch.Tensor(
-				(qPath[i+1] - qPath[i-1])/2
-			)
-		end
-		table.insert(dq,
-			torch.Tensor(qPath[#qPath] - qPath[#qPath-1])
-		)
-	end
-	--]]
 
 	-- Distance to the goal all the time
 	local dqGoal = {}
@@ -1257,6 +1290,7 @@ function libArmPlan.new_planner(id)
 		set_shoulder_granularity = set_shoulder_granularity,
 		--
 		optimize = optimize,
+		optimize2 = optimize2,
 		jacobians = pathJacobians,
 		eigs = pathEigs,
 	}

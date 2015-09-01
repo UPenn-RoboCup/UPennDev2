@@ -40,6 +40,7 @@ r0 = bigQstar' * NTN * bigQstar;
 %
 q1 = -2 * bigQ';
 r1 = bigQ' * bigQ;
+clear NTN ATA;
 
 % Flip dimensions...
 P0 = P0';
@@ -49,6 +50,8 @@ q1 = q1';
 fprintf(1,'Computing the optimal value of the QCQP and its dual... ');
 
 cvx_begin
+    %cvx_precision low
+    cvx_precision medium
     variable q(n)
     dual variables lam1
     minimize( 0.5*quad_form(q, P0) + q0'*q + r0 )
@@ -56,17 +59,19 @@ cvx_begin
     lam1: (q' * q) + q1'*q + r1 <= epsilon;
 cvx_end
 
-obj1 = cvx_optval;
-
-P_lam = P0 + lam1;
-q_lam = q0 + lam1 * q1;
-r_lam = r0 + lam1 * r1;
-
-obj2 = -0.5*q_lam'*inv(P_lam)*q_lam + r_lam;
-
+% obj1 = cvx_optval;
+% 
+% P_lam = P0 + lam1;
+% q_lam = q0 + lam1 * q1;
+% r_lam = r0 + lam1 * r1;
+% 
+% obj2 = -0.5*q_lam'*inv(P_lam)*q_lam + r_lam;
+% 
 fprintf(1,'Done! \n');
+% 
+% % Displaying results
+% disp('------------------------------------------------------------------------');
+% disp('The duality gap is equal to ');
+% disp(obj1-obj2);
 
-% Displaying results
-disp('------------------------------------------------------------------------');
-disp('The duality gap is equal to ');
-disp(obj1-obj2);
+clear P0 q0 r0 q1  r1;

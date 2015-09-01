@@ -16,11 +16,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#if defined(_WIN32) || defined(_WIN64) 
-#define snprintf _snprintf 
-#define vsnprintf _vsnprintf 
-#define strcasecmp _stricmp 
-#define strncasecmp _strnicmp 
+#if defined(_WIN32) || defined(_WIN64)
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
 #endif
 
 /* 1MB-ish buffer */
@@ -208,7 +208,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			mexErrMsgTxt("Bad socket id!");
 
 		size_t n_el = mxGetNumberOfElements(prhs[2]);
-		size_t el_sz = mxGetElementSize(prhs[2]);		
+		size_t el_sz = mxGetElementSize(prhs[2]);
 		size_t msglen = n_el*el_sz;
 		/* Get the data and send it  */
 		void* msg = (void*)mxGetData(prhs[2]);
@@ -249,7 +249,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		/* Check if multipart */
 		int has_more;
 		size_t has_more_size = sizeof(has_more);
-		rc = zmq_getsockopt( sockets[socket_id], ZMQ_RCVMORE, 
+		rc = zmq_getsockopt( sockets[socket_id], ZMQ_RCVMORE,
 				&has_more, &has_more_size );
 		if( rc!=0 )
 			mexErrMsgTxt("Bad ZMQ_RCVMORE call!");
@@ -274,7 +274,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		if(rc<0)
 			mexErrMsgTxt("Poll error!");
 
-		/* 
+		/*
 			 Create a cell mxArray to hold the poll elements, and have an
 			 index array to know which channel received data
 			 */
@@ -302,6 +302,109 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		poll_items[socket_cnt].socket = NULL;
 		poll_items[socket_cnt].fd = fd;
 		poll_items[socket_cnt].events = ZMQ_POLLIN;
+		ret_sz[0] = 1;
+		plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+		uint8_t* out = (uint8_t*)mxGetData(plhs[0]);
+		out[0] = socket_cnt;
+		socket_cnt++;
+	}
+	/* Setup a requester */
+	else if( strcmp(command, "request")==0 ){
+
+		/* Check that we have enough socket spaces available */
+		if( socket_cnt==MAX_SOCKETS ){
+			mexErrMsgTxt("Cannot create any more sockets!");
+		}
+
+		/* Grab the protocol and channel */
+		if( !(protocol=mxArrayToString(prhs[1])) ){
+			mexErrMsgTxt("Bad protocol string.");
+		}
+
+		/* Protocol specific channel formation */
+		if( strcmp(protocol, "ipc")==0 ){
+			if( nrhs<3 || !(channel=mxArrayToString(prhs[2])) )
+				mexErrMsgTxt("Bad channel string.");
+			sprintf(zmq_channel, "ipc:///tmp/%s", channel );
+			mexPrintf("ZMQMEX: Requesting {%s}.\n", zmq_channel);
+			if( (sockets[socket_cnt]=zmq_socket(ctx, ZMQ_REQ))==NULL)
+				mexErrMsgTxt("Could not create socket!");
+			rc = zmq_connect( sockets[socket_cnt], zmq_channel );
+			if(rc!=0){
+				mexErrMsgTxt("Could not connect to socket!");
+			}
+		} else if( strcmp(protocol, "tcp")==0 ) {
+			if (nrhs!=3 || !(port_ptr=(double*)mxGetData(prhs[2])))
+				mexErrMsgTxt("Usage: zmq('publish','tcp',PORT)");
+			sprintf(zmq_channel, "tcp://*:%d", (int)port_ptr[0] );
+			mexPrintf("ZMQMEX: Connecting to {%s}.\n", zmq_channel);
+			if( (sockets[socket_cnt]=zmq_socket(ctx, ZMQ_REQ))==NULL)
+				mexErrMsgTxt("Could not create socket!");
+			rc = zmq_connect( sockets[socket_cnt], zmq_channel );
+			if(rc!=0)
+				mexErrMsgTxt("Could not bind to socket!");
+		} else {
+			mexErrMsgTxt("ZMQMEX: Bad protocol.");
+		}
+
+		/* Connect to the socket */
+
+		poll_items[socket_cnt].socket = sockets[socket_cnt];
+		/* poll_items[socket_cnt].events = ZMQ_POLLOUT; */
+
+		/* MATLAB specific return of the socket ID */
+		ret_sz[0] = 1;
+		plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
+		uint8_t* out = (uint8_t*)mxGetData(plhs[0]);
+		out[0] = socket_cnt;
+		socket_cnt++;
+	}
+	/* Setup a replier */
+	else if( strcmp(command, "reply")==0 ){
+
+		/* Check that we have enough socket spaces available */
+		if( socket_cnt==MAX_SOCKETS ){
+			mexErrMsgTxt("Cannot create any more sockets!");
+		}
+
+		/* Grab the protocol and channel */
+		if( !(protocol=mxArrayToString(prhs[1])) ){
+			mexErrMsgTxt("Bad protocol string.");
+		}
+
+		/* Protocol specific channel formation */
+		if( strcmp(protocol, "ipc")==0 ){
+			if( nrhs<3 || !(channel=mxArrayToString(prhs[2])) ){
+				mexErrMsgTxt("Usage: zmq('reply','ipc','name')");
+			}
+			sprintf(zmq_channel, "ipc:///tmp/%s", channel );
+			mexPrintf("ZMQMEX: Replying (bind) {%s}.\n", zmq_channel);
+			if( (sockets[socket_cnt]=zmq_socket(ctx, ZMQ_REP))==NULL)
+				mexErrMsgTxt("Could not create socket!");
+			rc = zmq_bind( sockets[socket_cnt], zmq_channel );
+			if(rc!=0){
+				mexErrMsgTxt("Could not connect to socket!");
+			}
+		} else if( strcmp(protocol, "tcp")==0 ) {
+			if (nrhs!=3 || !(port_ptr=(double*)mxGetData(prhs[2]))){
+				mexErrMsgTxt("Usage: zmq('reply','tcp',PORT)");
+			}
+			sprintf(zmq_channel, "tcp://*:%d", (int)port_ptr[0] );
+			mexPrintf("ZMQMEX: Replying to {%s}.\n", zmq_channel);
+			if( (sockets[socket_cnt]=zmq_socket(ctx, ZMQ_REP))==NULL)
+				mexErrMsgTxt("Could not create socket!");
+			rc = zmq_bind( sockets[socket_cnt], zmq_channel );
+			if(rc!=0)
+				mexErrMsgTxt("Could not bind to socket!");
+		} else {
+			mexErrMsgTxt("ZMQMEX: Bad protocol.");
+		}
+
+		/* Connect to the socket */
+		poll_items[socket_cnt].socket = sockets[socket_cnt];
+		poll_items[socket_cnt].events = ZMQ_POLLIN;
+
+		/* MATLAB specific return of the socket ID */
 		ret_sz[0] = 1;
 		plhs[0] = mxCreateNumericArray(1,ret_sz,mxUINT8_CLASS,mxREAL);
 		uint8_t* out = (uint8_t*)mxGetData(plhs[0]);

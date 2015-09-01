@@ -9,6 +9,11 @@
 % Input data
 load plan;
 
+% Weight acceleration penalty vs null space
+alpha = 0.5;
+% Closeness to previous trajectory
+epsilon = deg2rad(5);
+
 % Acceleration matrix
 nq = 7;
 n = numel(bigQ);
@@ -32,20 +37,22 @@ clear A0 a;
 
 NTN = bigNulls' * bigNulls;
 ATA = A' * A;
-epsilon = deg2rad(5);
+
 %
-P0 = NTN + ATA;
+P0 = NTN + alpha * ATA;
 q0 = -2 * bigQstar' * NTN;
 r0 = bigQstar' * NTN * bigQstar;
-%
-q1 = -2 * bigQ';
-r1 = bigQ' * bigQ;
-clear NTN ATA;
-
-% Flip dimensions...
+% Flip dims
 P0 = P0';
 q0 = q0';
-q1 = q1';
+% Cleanup
+clear NTN;
+clear ATA;
+
+% Using the older precache way
+%q1 = -2 * bigQ';
+%r1 = bigQ' * bigQ;
+%q1 = q1';
 
 fprintf(1,'Computing the optimal value of the QCQP and its dual... ');
 
@@ -54,9 +61,12 @@ cvx_begin
     cvx_precision medium
     variable q(n)
     dual variables lam1
-    minimize( 0.5*quad_form(q, P0) + q0'*q + r0 )
+    minimize( quad_form(q, P0) + q0'*q + r0 )
     % Now this works:
-    lam1: (q' * q) + q1'*q + r1 <= epsilon;
+    %lam1: (q' * q) + q1'*q + r1 <= epsilon;
+    lam1: norm(q-bigQ) <= epsilon;
+    % TODO: Keep the difference in human space close...
+    %lam1: quad_form(q, NTN) + q1'*q + r1 <= epsilon;
 cvx_end
 
 % obj1 = cvx_optval;

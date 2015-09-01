@@ -156,32 +156,40 @@ local function co_play(self, plan, callback)
 	util.ptable(plan)
 	print('===')
 
+	-- Original path
+
+	local qOptimized = plan.qPath
 	-- Run the optimizer
-	if plan.via then
-		print('co_play Optimizing...')
-		plan.n_optimizations = 10
-		plan.update_jacobians = false
+	self:optimize2(plan)
 
-		-- Send to matlab
-		self:optimize2(plan)
+	if type(plan.qOptimized)=='table' then
+		print('MATLAB Optimized')
+		qOptimized = plan.qOptimized
+	else
+		if plan.via then
+			print('Gradient Descent Optimizing...')
+			plan.n_optimizations = 10
+			plan.update_jacobians = false
 
-		local t0 = unix.time()
-		for i=1,plan.n_optimizations do
-			plan.i_optimizations = i
-			if (not plan.Js) or plan.update_jacobians then
-				self:jacobians(plan)
-				self:eigs(plan)
+			local t0 = unix.time()
+			for i=1,plan.n_optimizations do
+				plan.i_optimizations = i
+				if (not plan.Js) or plan.update_jacobians then
+					self:jacobians(plan)
+					self:eigs(plan)
+				end
+				plan.qPath, plan.wPath = self:optimize(plan)
 			end
-			plan.qPath, plan.wPath = self:optimize(plan)
+			local t1 = unix.time()
+			io.write(
+				'\nOptimizer (',
+				plan.n_optimizations,
+				' steps): ',
+				math.floor((t1 - t0)*1e3),
+				'ms\n'
+			)
+			qOptimized = plan.qPath
 		end
-		local t1 = unix.time()
-		io.write(
-			'\nOptimizer (',
-			plan.n_optimizations,
-			' steps): ',
-			math.floor((t1 - t0)*1e3),
-			'ms\n'
-		)
 	end
 
 	local qArmSensed, qWaistSensed = coroutine.yield()
@@ -189,13 +197,14 @@ local function co_play(self, plan, callback)
 		callback(qArmSensed, qWaistSensed)
 	end
 
-	for i, qArmPlanned in ipairs(plan.qPath) do
+	-- Try the optimized one
+	for i, qArmPlanned in ipairs(qOptimized) do
 		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
 		if type(callback)=='function' then
 			callback(qArmSensed, qWaistSensed)
 		end
 	end
-	local qEnd = plan.qPath[#plan.qPath]
+	local qEnd = qOptimized[#qOptimized]
 	return qEnd
 end
 
@@ -1042,6 +1051,7 @@ function kron(A, B)
 end
 --]]
 
+local opt_ch = require'simple_ipc'.new_requester('armopt')
 local function optimize2(self, plan)
 	local trGoal = plan.tr
 	-- Desired velocity at each joint
@@ -1057,7 +1067,6 @@ local function optimize2(self, plan)
 	end
 
 	local nq = 7
-
 	-- Find the nullspace acting in
 	local bigNulls = torch.Tensor(
 		nq * #plan.qPath, nq * #plan.qPath
@@ -1073,22 +1082,36 @@ local function optimize2(self, plan)
 		bigQ:sub(nq*(i-1)+1, nq*i):copy(torch.Tensor(q))
 		-- Just repeat the goal
 		-- Later, we can use more goals interspersed :P
-		bigQstar:sub(nq*(i-1)+1, nq*i):copy(torch.Tensor(plan.qGoal))
-		for j=1,nq do
-			bigA[i]
-		end
-
+		bigQstar:sub(nq*(i-1)+1, nq*i)
+			:copy(torch.Tensor(plan.qGoal))
 	end
 
 	--plan.bigNulls = bigNulls
 	--plan.bigQ = bigQ
-	local planName = MATLAB_DIR..'/armplans/plan.mat'
+	local planName = os.tmpname()..'.mat'
 	mattorch.saveTable(planName, {
 		bigNulls = bigNulls,
 		bigQ = bigQ,
 		bigQstar = bigQstar,
 	})
-	print('Saved the plan:', planName)
+	opt_ch:send(planName)
+	print('Sent the plan:', planName)
+	local optResult = opt_ch:receive()
+	print('Optimized!', planName)
+	local optPath = mattorch.load(planName)
+	local qOptimized0 = optPath.q
+	print('qOptimized', qOptimized0:size())
+	--print(bigQ:sub(1,7))
+	--print(qOptimized:sub(1,1, 1, 7))
+	local qOptimized = qOptimized0:view(#plan.qPath, nq)
+
+	-- Place into a table
+	plan.qOptimized = {}
+	for i=1,#plan.qPath do
+		plan.qOptimized[i] = vector.new(qOptimized[i])
+	end
+
+	--plan.qOptimized = optPath.q
 end
 
 local function optimize(self, path)

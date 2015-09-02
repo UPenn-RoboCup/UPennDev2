@@ -57,22 +57,24 @@ while 1
         A( (np-1)*nq+1 : n, (np-1)*nq+1 : n ) = A0(:,1:nq);
         A = sparse(A);
         ATA = A' * A;
+        clear A;
         
         %% Nullspace
         N = sparse(blkdiag(nulls{:}));
         % TODO: Just each block times itself?
         NTN = N' * N;
+        clear N;
         
         %% Optimization Variables
         P0 = NTN + alpha * ATA;
         q0 = -2 * qStar' * NTN;
         r0 = qStar' * NTN * qStar;
-        % NOTE: Flip dimensions...
-        P0 = P0';
-        q0 = q0';
         % Cleanup
         clear NTN;
         clear ATA;
+        % NOTE: Flip dimensions...
+        P0 = P0';
+        q0 = q0';
         
         %% CVX Solver
         fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
@@ -107,7 +109,6 @@ while 1
         % disp('The duality gap is equal to ');
         % disp(obj1-obj2);
         
-        clear P0 q0 r0;
         %clear q1 r1;
     %else disp('Timeout...');
     end

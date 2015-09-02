@@ -154,8 +154,8 @@ local function co_play(self, plan, callback)
 	-- Run the optimizer
 	if plan.via then
 		print('Gradient Descent Optimizing...')
-		plan.n_optimizations = 10
-		plan.update_jacobians = false
+		plan.n_optimizations = 5
+		plan.update_jacobians = true
 
 		local t0 = unix.time()
 		for i=1,plan.n_optimizations do
@@ -166,7 +166,9 @@ local function co_play(self, plan, callback)
 			if (not plan.eigVs) or plan.update_jacobians then
 				self:eigs(plan)
 			end
-			plan.qPath, plan.wPath = self:optimize(plan)
+			--plan.qPath, plan.wPath = self:optimize(plan)
+			-- Run another optimization...
+			plan.qPath, plan.wPath = self:optimize2(plan)
 		end
 		local t1 = unix.time()
 		io.write(
@@ -176,8 +178,6 @@ local function co_play(self, plan, callback)
 			math.floor((t1 - t0)*1e3),
 			'ms\n'
 		)
-		-- Run another optimization...
-		plan.qPath, plan.wPath = self:optimize2(plan)
 	end
 
 	local qArmSensed, qWaistSensed = coroutine.yield()
@@ -665,18 +665,22 @@ function libArmPlan.jacobian_preplan(self, plan)
 	if Config.debug.armplan then
 	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
 	end
-	-- Play the plan
-	plan.qPath = path
-	plan.qGoal = qArmFGuess or qArm
-	local qArmF = co_play(self, plan)
-	if Config.debug.armplan then print(prefix..'qArmF', qArmF) end
-	if not qArmF then return qArm end
 	-- Hitting the timeout means we are done
 	if #path >= nStepsTimeout then
 		if Config.debug.armplan then
 			print(prefix..'Timeout!', self.id, #path)
 			print(prefix..'Distance', unpack(dist_components))
 		end
+	end
+	-- Play the plan
+	plan.qPath = path
+	plan.qGoal = qArmFGuess or qArm
+	local qArmF = co_play(self, plan)
+	if Config.debug.armplan then
+		print(prefix..'qArmF', qArmF)
+	end
+	if not qArmF then return qArm end
+	if true then
 		return qArmF
 	end
 	-- Goto the final
@@ -1047,7 +1051,8 @@ end
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')
 local function optimize2(self, plan)
-	local planName = os.tmpname()..'.mat'
+	local planName0 = os.tmpname()
+	local planName = planName0..'.mat'
 	mattorch.saveTable(planName, plan)
 	-- Send the tmpname of the mat file
 	print('Sending plan:', planName)
@@ -1055,7 +1060,7 @@ local function optimize2(self, plan)
 	local optResult = opt_ch:receive()
 	print('Optimized!', planName)
 	local optPath = mattorch.load(planName)
-
+	os.execute('rm '..planName0..'*')
 	-- Place into a table
 	-- TODO: Simpler way?
 	local qOptimized0 = optPath.q:view(#plan.qPath, #plan.qGoal)

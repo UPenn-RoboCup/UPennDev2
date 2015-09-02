@@ -47,6 +47,9 @@ q0 = q0';
 % Cleanup
 clear NTN;
 clear ATA;
+% TODO: Make a faster objective:
+%[ P0sqrt, p, S  ] = chol( P0 );
+%P0sqrt = P0sqrt * S;
 
 %% CVX Solver
 fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
@@ -54,12 +57,12 @@ cvx_begin
     %cvx_precision low
     cvx_precision medium
     variable q(n)
-    dual variables lam1
+    dual variables lam1 lam2
     minimize( quad_form(q, P0) + q0'*q + r0 )
-    % Precomputing:
-    %lam1: (q' * q) + q1'*q + r1 <= epsilon;
-    % Norm may be faster than precomputing
+    % Keep the paths somewhat close, due to jacobian linearity
     lam1: norm(q - qPath0) <= epsilon;
+    % Keep the first point the same
+    lam2: q(1:7) == qPath0(1:7);
     % TODO: Keep the difference in human space close...
     %lam1: quad_form(q, NTN) + q1'*q + r1 <= epsilon;
 cvx_end
@@ -80,5 +83,5 @@ fprintf(1,'Done! \n');
 % disp('The duality gap is equal to ');
 % disp(obj1-obj2);
 
-clear P0 q0 r0;
+%clear P0 q0 r0;
 %clear q1 r1;

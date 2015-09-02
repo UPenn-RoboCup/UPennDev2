@@ -98,10 +98,9 @@ local function get_pseudo_jacobian_dls(self, J, qWaistArm)
 end
 
 -- Use the Jacobian
-local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
+local function get_nullspace(self, qArm, qWaist)
 
 	assert(type(qArm)=='table', 'get_delta_qwaistarm | Bad qArm')
-	assert(type(vwTarget)=='table', 'get_delta_qwaistarm | Bad vwTarget')
 
 	local qWaistArm
 	if qWaist then
@@ -117,9 +116,6 @@ local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 	--local Jpseudoinv = torch.mm(JT, torch.inverse(J * JT))
 	-- Damped Least Squares Pseudo Inverse
 	local Jpseudoinv = get_pseudo_jacobian_dls(self, J, qWaistArm)
-
-	-- Find the motion and the null space
-	local dqArm = torch.mv(Jpseudoinv, torch.Tensor(vwTarget))
 	--local null = torch.eye(#qWaistArm) - Jpseudoinv * J
 	local null = torch.addmm(
 		torch.eye(#qWaistArm),
@@ -127,7 +123,7 @@ local function get_delta_qwaistarm(self, vwTarget, qArm, qWaist)
 		Jpseudoinv,
 		J)
 
-	return dqArm, null, J, Jpseudoinv
+	return null, J, Jpseudoinv
 end
 
 local function get_distance(self, trGoal, qArm, qWaist)
@@ -160,11 +156,11 @@ local function co_play(self, plan, callback)
 		local t0 = unix.time()
 		for i=1,plan.n_optimizations do
 			plan.i_optimizations = i
-			if (not plan.Js) or plan.update_jacobians then
+			if (not plan.nulls) or plan.update_jacobians then
 				self:jacobians(plan)
 			end
 			if (not plan.eigVs) or plan.update_jacobians then
-				self:eigs(plan)
+				--self:eigs(plan)
 			end
 			--plan.qPath, plan.wPath = self:optimize(plan)
 			-- Run another optimization...
@@ -590,8 +586,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local t0 = unix.time()
 	local path = {}
 	local dp, drpy, dist_components
-	-- Save the Jacobians and nullsapces
-	plan.Js = {}
+	-- Save the nullspaces
 	plan.nulls = {}
 	repeat
 		-- Check if we are close enough
@@ -618,10 +613,10 @@ function libArmPlan.jacobian_preplan(self, plan)
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtArm, nullspace, J, Jinv =
-			get_delta_qwaistarm(self, vwTarget, qArm)
+		local nullspace, J, Jinv = get_nullspace(self, qArm)
+		-- Find the motion and the null space
+		local dqdtArm = torch.mv(Jinv, torch.Tensor(vwTarget))
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
-		table.insert(plan.Js, J)
 		table.insert(plan.nulls, nullspace)
 		local dqdtCombo
 		local nullFactor = 0.2
@@ -679,24 +674,12 @@ function libArmPlan.jacobian_preplan(self, plan)
 	if Config.debug.armplan then
 		print(prefix..'qArmF', qArmF)
 	end
-	if not qArmF then return qArm end
-	if true then
-		return qArmF
+	if not qArmF or not qArmFGuess then
+		return qArm
 	end
-	-- Goto the final
-	if Config.debug.armplan then
-		print(prefix..'Final find_shoulder')
-	end
-
-	local qArmF1 = self:find_shoulder(trGoal, qArm, {0,1,0}, qWaist0)
-
-	if Config.debug.armplan then
-		print(prefix..'Final solution', qArmF1)
-	end
-	if not qArmF1 then return qArmF end
 
 	local final_plan = {
-		q = qArmF1,
+		q = qArmFGuess,
 		qArm0 = qArmF,
 		qWaist0 = qWaist0,
 		duration = 1
@@ -765,12 +748,14 @@ function libArmPlan.jacobian_waist_preplan(self, plan)
 		local vwTarget = {unpack(dp)}
 		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
 		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local dqdtWaistArm, nullspace = get_delta_qwaistarm(
-			self,
-			vwTarget,
+		local nullspace, J, Jinv = get_nullspace(self,
 			{unpack(qWaistArm,2,#qWaistArm)},
 			{qWaistArm[1], 0}
 		)
+		-- Find the motion and the null space
+		local dqdtWaistArm = torch.mv(
+			Jinv, torch.Tensor(vwTarget))
+
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
 		if qWaistArmFGuess then
@@ -995,30 +980,12 @@ end
 
 
 local function pathJacobians(self, plan)
-	local trGoal = plan.tr
-	-- Desired velocity at each joint
-	local vw = {}
-	for i, q in ipairs(plan.qPath) do
-		-- TODO: Add the waist
-		local dp, drpy, dist_components = get_distance(self, trGoal, q)
-		-- Form our desired velocity
-		table.insert(vw, {
-			dp[1], dp[2], dp[3],
-			drpy[1], drpy[2], drpy[3]
-		})
-	end
-
 	-- Find the nullspace acting in
 	local nulls = {}
-	local Js = {}
 	for i, q in ipairs(plan.qPath) do
-		local dqdtArm, nullspace, J, Jinv =
-			get_delta_qwaistarm(self, vw[i], q, plan.wPath and plan.wPath[i])
-		nulls[i] = nullspace
-		Js[i] = J
+		nulls[i] = get_nullspace(
+			self, q, plan.wPath and plan.wPath[i])
 	end
-
-	plan.Js = Js
 	plan.nulls = nulls
 end
 
@@ -1056,11 +1023,12 @@ local function optimize2(self, plan)
 	mattorch.saveTable(planName, plan)
 	-- Send the tmpname of the mat file
 	print('Sending plan:', planName)
+	--os.exit()
 	opt_ch:send(planName)
 	local optResult = opt_ch:receive()
 	print('Optimized!', planName)
 	local optPath = mattorch.load(planName)
-	os.execute('rm '..planName0..'*')
+	--os.execute('rm '..planName0..'*')
 	-- Place into a table
 	-- TODO: Simpler way?
 	local qOptimized0 = optPath.q:view(#plan.qPath, #plan.qGoal)

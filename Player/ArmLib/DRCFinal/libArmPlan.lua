@@ -142,73 +142,6 @@ local function get_distance(self, trGoal, qArm, qWaist)
 	return dp, drpy, components
 end
 
--- Play the plan as a coroutine
--- Array of joint angles
--- Callback on sensed data
-local function co_play(self, plan, callback)
-
-	-- Run the optimizer
-	if plan.via then
-		plan.n_optimizations = 3
-		plan.update_jacobians = true
-		--plan.update_jacobians = false
-	else
-		plan.n_optimizations = 1
-	end
-
-	local t0 = unix.time()
-	for i=1,plan.n_optimizations do
-		plan.i_optimizations = i
-		if not plan.nulls then
-			self:jacobians(plan)
-		end
-		--if (not plan.eigVs) then self:eigs(plan) end
-		--plan.qPath, plan.wPath = self:optimize(plan)
-		-- Run another optimization...
-		plan.qPath, plan.wPath = self:optimize2(plan)
-		if plan.update_jacobians then
-			self:jacobians(plan)
-			--self:eigs(plan)
-		end
-	end
-	local t1 = unix.time()
-	print(string.format("%d iterations %.2f ms (%s)",
-		plan.n_optimizations, (t1 - t0)*1e3, tostring(plan.via)))
-
-	local qArmSensed, qWaistSensed = coroutine.yield()
-	if type(callback)=='function' then
-		callback(qArmSensed, qWaistSensed)
-	end
-
-	-- Try the optimized one
-	local qPath = plan.qPath
-	for i, qArmPlanned in ipairs(qPath) do
-		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
-		if type(callback)=='function' then
-			callback(qArmSensed, qWaistSensed)
-		end
-	end
-	local qEnd = qPath[#qPath]
-	return qEnd
-end
-
-local function co_play_waist(plan, callback)
-	local qArmSensed, qWaistSensed = coroutine.yield()
-	if type(callback)=='function' then
-		callback(qArmSensed, qWaistSensed)
-	end
-	for i, qArm in ipairs(plan.qPath) do
-		qArmSensed, qWaistSensed = coroutine.yield(qArm, plan.wPath[i])
-		if type(callback)=='function' then
-			callback(qArmSensed, qWaistSensed)
-		end
-	end
-	local qEnd = plan.qPath[#plan.qPath]
-	local qEnd = plan.wPath[#plan.wPath]
-	if not qEnd or not wEnd then return end
-	return qEnd, wEnd
-end
-
 -- Similar to SJ's method for the margin
 local function find_shoulder_sj(self, tr, qArm)
 	local minArm, maxArm, rangeArm = self.qMin, self.qMax, self.qRange
@@ -340,10 +273,19 @@ end
 function libArmPlan.joint_preplan(self, plan)
 	local prefix = string.format('joint_preplan (%s) | ', self.id)
 	assert(type(plan)=='table', prefix..'Bad plan')
-	local qArm0 = assert(plan.qArm0, prefix..'Need initial arm')
+	local qArm0 = plan.qArm0
+	if type(plan.qPath) then
+		-- End of the current path
+		qArm0 = plan.qPath[#plan.qPath]
+	end
+	assert(qArm0, prefix..'Need initial arm')
+	-- Keep the regular qWaist0 for now
 	local qWaist0 = assert(plan.qWaist0, prefix..'Need initial waist')
 	local qArmF
-	if type(plan.q)=='table' then
+	if type(plan.qGoal)=='table' then
+		-- If the goal is established
+		qArmF = plan.qGoal
+	elseif type(plan.q)=='table' then
 		qArmF = plan.q
 	elseif plan.tr then
 		local qArmFGuess = plan.qArmGuess or qArm0
@@ -353,6 +295,7 @@ function libArmPlan.joint_preplan(self, plan)
 		error(prefix..'Need tr or q')
 	end
 	plan.qGoal = qArmF
+
 	-- Set the limits and check compliance
 	local qMin, qMax = self.qMin, self.qMax
 	local dq_limit = self.dq_limit
@@ -373,8 +316,11 @@ function libArmPlan.joint_preplan(self, plan)
 	-- Set the timeout
 	local hz, dt = self.hz, self.dt
 	local qArm = vector.new(qArm0)
-	local path = {}
+	-- Continue or start anew
+	plan.qPath = plan.qPath or {}
+	plan.nulls = plan.nulls or {}
 	-- If given a duration, then check speed limit compliance
+
 	if type(plan.duration)=='number' then
 		if Config.debug.armplan then
 			print(prefix..'Using duration:', plan.duration)
@@ -398,19 +344,26 @@ function libArmPlan.joint_preplan(self, plan)
 		local nsteps = plan.duration * hz
 		for i=1,nsteps do
 			qArm = qArm + dqAverage
-			table.insert(path, qArm)
+			table.insert(plan.qPath, qArm)
+			local nullspace = get_nullspace(self, qArm)
+			table.insert(plan.nulls, nullspace)
 		end
-		print(prefix..'Duration Steps:', #path)
-		plan.qPath = path
-		return co_play(self, plan)
+
+
+		print(prefix..'Duration Steps:', #plan.qPath)
+		--return co_play(self, plan)
+		return plan
 	end
 	-- Timeout based
 	local timeout = assert(plan.timeout, prefix..'No timeout')
 	local nStepsTimeout = timeout * hz
+	local n = 0
 	repeat
 		local dqArmF = qArmF - qArm
 		local dist = vnorm(dqArmF)
-		if dist < 0.5*DEG_TO_RAD then break end
+		if dist < 0.5*DEG_TO_RAD then
+			break
+		end
 		-- Check the speed limit usage
 		local usage = {}
 		for i, limit in ipairs(dq_limit) do
@@ -422,14 +375,25 @@ function libArmPlan.joint_preplan(self, plan)
 		end
 		-- Apply the joint change
 		qArm = qArm + dqArmF
-		table.insert(path, qArm)
-	until #path > nStepsTimeout
-	-- Finish
+		table.insert(plan.qPath, qArm)
+		local nullspace = get_nullspace(self, qArm)
+		table.insert(plan.nulls, nullspace)
+		n = n + 1
+	until n > nStepsTimeout
+
 	if Config.debug.armplan then
-		print(prefix..'Timeout Steps:', #path)
-		if #path > nStepsTimeout then print(prefix..'Timeout: ', #path) end
+	  print(prefix, n..' steps')
+		--util.ptable(final_plan)
 	end
-	return co_play(self, path)
+
+	-- Finish
+	if #plan.qPath > nStepsTimeout then
+		if Config.debug.armplan then
+			print(prefix..'Timeout: ', #plan.qPath)
+		end
+	end
+	--return co_play(self, path)
+	return plan
 end
 
 function libArmPlan.joint_waist_preplan(self, plan)
@@ -542,12 +506,16 @@ function libArmPlan.joint_waist_preplan(self, plan)
 
 	return co_play_waist(plan)
 end
+
 -- Plan via Jacobian for just the arm
 function libArmPlan.jacobian_preplan(self, plan)
 	local prefix = string.format('jacobian_preplan (%s) | ', self.id)
 	assert(type(plan)=='table', prefix..'Bad plan')
 	local qArm0 = assert(plan.qArm0, prefix..'Need initial arm')
 	local qWaist0 = assert(plan.qWaist0, prefix..'Need initial waist')
+
+	--if Config.debug.armplan then print(prefix, "Initial") end
+
 	-- Find a guess of the final arm configuration
 	local qArmFGuess = plan.qArmGuess
 	local trGoal
@@ -583,12 +551,13 @@ function libArmPlan.jacobian_preplan(self, plan)
 	-- Memory creation saving
 	local dqdtNull = torch.Tensor(#qArm)
 	-- Begin
-	local t0 = unix.time()
-	local path = {}
+	plan.qPath = plan.qPath or {}
 	local dp, drpy, dist_components
 	-- Save the nullspaces
-	local nullFactor = 0.25
+	local nullFactor = 0.3--0.2
 	plan.nulls = {}
+
+	local t0 = unix.time()
 	repeat
 		-- Check if we are close enough
 		dp, drpy, dist_components = get_distance(self, trGoal, qArm, qWaist0)
@@ -655,45 +624,27 @@ function libArmPlan.jacobian_preplan(self, plan)
 			end
 		end
 		-- Add to the path
-		table.insert(path, qArm)
+		table.insert(plan.qPath, qArm)
 		--print(#path, 'dqArm', vector.norm(qArm-qOld)*RAD_TO_DEG, dist_components)
-	until #path > nStepsTimeout
+	until #plan.qPath > nStepsTimeout
 	local t1 = unix.time()
 	-- Show the timing
 	if Config.debug.armplan then
-	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
+	  print(string.format('%s%d steps (%d ms)', prefix, #plan.qPath, (t1-t0)*1e3))
 	end
 	-- Hitting the timeout means we are done
-	if #path >= nStepsTimeout then
+	if #plan.qPath >= nStepsTimeout then
 		if Config.debug.armplan then
-			print(prefix..'Timeout!', self.id, #path)
+			print(prefix..'Timeout!', self.id, #plan.qPath)
 			print(prefix..'Distance', unpack(dist_components))
 		end
 	end
 	-- Play the plan
-	plan.qPath = path
 	plan.qGoal = qArmFGuess or qArm
-	local qArmF = co_play(self, plan)
-	if Config.debug.armplan then
-		print(prefix..'qArmF', qArmF)
-	end
-	if not qArmF or not qArmFGuess then
-		return qArm
-	end
-	if true then return qArmF end
 
-	local final_plan = {
-		q = qArmFGuess,
-		qArm0 = qArmF,
-		qWaist0 = qWaist0,
-		duration = 1
-	}
-	if Config.debug.armplan then
-	  print(prefix..'Final joint preplan...')
-		--util.ptable(final_plan)
-	end
 	-- Use the pre-existing planner
-	return libArmPlan.joint_preplan(self, final_plan)
+	return libArmPlan.joint_preplan(self, plan)
+	--return plan
 end
 
 -- Plan via Jacobian for waist and arm

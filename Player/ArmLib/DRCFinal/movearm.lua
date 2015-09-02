@@ -43,12 +43,74 @@ do
 	rPlanner = P.new_planner('Right')
 		:set_chain(K.forward_rarm, K.inverse_rarm, K.jacobian_rarm)
 		:set_limits(minRArm, maxRArm, radiansPerSecond)
-		:set_update_rate(100)
+		:set_update_rate(10)
 		:set_shoulder_granularity(2*DEG_TO_RAD)
 end
 movearm.lPlanner = lPlanner
 movearm.rPlanner = rPlanner
 
+-- Play the plan as a coroutine
+-- Array of joint angles
+-- Callback on sensed data
+local function co_play(self, plan, callback)
+
+	-- Run the optimizer
+	plan.n_optimizations = 3
+	plan.update_jacobians = true
+	--plan.update_jacobians = false
+
+	local t0 = unix.time()
+	for i=1,plan.n_optimizations do
+		plan.i_optimizations = i
+		if not plan.nulls then
+			self:jacobians(plan)
+		end
+		--if (not plan.eigVs) then self:eigs(plan) end
+		--plan.qPath, plan.wPath = self:optimize(plan)
+		-- Run another optimization...
+		plan.qPath, plan.wPath = self:optimize2(plan)
+		if plan.update_jacobians then
+			self:jacobians(plan)
+			--self:eigs(plan)
+		end
+	end
+	local t1 = unix.time()
+	print(string.format("%d iterations %.2f ms (%s)",
+		plan.n_optimizations, (t1 - t0)*1e3, tostring(plan.via)))
+
+	local qArmSensed, qWaistSensed = coroutine.yield()
+	if type(callback)=='function' then
+		callback(qArmSensed, qWaistSensed)
+	end
+
+	-- Try the optimized one
+	local qPath = plan.qPath
+	for i, qArmPlanned in ipairs(qPath) do
+		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
+		if type(callback)=='function' then
+			callback(qArmSensed, qWaistSensed)
+		end
+	end
+	local qEnd = qPath[#qPath]
+	return qEnd
+end
+
+local function co_play_waist(plan, callback)
+	local qArmSensed, qWaistSensed = coroutine.yield()
+	if type(callback)=='function' then
+		callback(qArmSensed, qWaistSensed)
+	end
+	for i, qArm in ipairs(plan.qPath) do
+		qArmSensed, qWaistSensed = coroutine.yield(qArm, plan.wPath[i])
+		if type(callback)=='function' then
+			callback(qArmSensed, qWaistSensed)
+		end
+	end
+	local qEnd = plan.qPath[#plan.qPath]
+	local qEnd = plan.wPath[#plan.wPath]
+	if not qEnd or not wEnd then return end
+	return qEnd, wEnd
+end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto(l, r)
@@ -144,91 +206,32 @@ function movearm.goto(l, r)
 
 
 	if type(lplan)=='function' then
+		--[[
 		print('movearm | L Plan')
 		util.ptable(l)
 		print()
-		lco = coroutine.create(lplan)
-		local ok, msg = coroutine.resume(lco, lPlanner, l)
-		if not ok then lco = msg end
+		--]]
+		local ok, msg = pcall(lplan, lPlanner, l)
+		if not ok then
+			lco = msg
+		else
+			-- TODO: Add the callback hook
+			lco = coroutine.create(co_play)
+			coroutine.resume(lco, lPlanner, l)
+		end
 	end
 	if type(rplan)=='function' then
+		--[[
 		print('movearm | R Plan')
 		util.ptable(r)
 		print()
+		--]]
 		rco = coroutine.create(rplan)
 		local ok, msg = coroutine.resume(rco, rPlanner, r)
 		if not ok then rco = msg end
 	end
 
 	return lco, rco
-end
-
-function movearm.optimize(l, r, w)
-
-	local DEBUG_OPT = false
-	local UPDATE_J = true
-	local n = 20 -- above this really is diminishing returns
-	n = 10
-
-	local lco = coroutine.create(function(lpath, wpath)
-
-		local qlGoal = lpath[#lpath]
-		local wGoal = wpath and wpath[#lpath] or {0,0}
-
-		local path = {
-			qPath = lpath,
-			wPath = wpath or {},
-			qGoal = qlGoal,
-			wGoal = wGoal,
-			n_optimizations = n,
-			i_optimizations = 0
-		}
-
-		-- Run the optimizer
-		local t0 = unix.time()
-		local costs = {}
-		for i=1,n do
-			print('Optimization', i)
-			path.i_optimizations = i
-			if UPDATE_J or not path.Js then
-				lPlanner:jacobians(path)
-				lPlanner:eigs(path)
-			end
-			path.q, path.w, costs[i] = lPlanner:optimize(path)
-		end
-		local t1 = unix.time()
-		io.write(
-			'\nOptimizer (',
-			n,
-			' steps): ',
-			math.floor((t1 - t0)*1e3),
-			'ms\n')
-
-		if DEBUG_OPT then
-			local cdiff = {}
-			if #costs>1 then
-				for i,c1 in ipairs(costs[1]) do
-					cdiff[i] = costs[#costs][i]^2 - c1^2
-				end
-			end
-
-			local dsum = 0
-			io.write('\n')
-			for i,v in ipairs(cdiff) do
-				io.write(string.format('%.3f ', v))
-				dsum = dsum + v
-			end
-			io.write('\n',dsum,'\n')
-		end
-
-		return path.q or lpath, path.w or wpath
-	end)
-	local ok, msg1, msg2 = coroutine.resume(lco, l, w)
-	if type(msg1)=='table' then
-		return msg1, msg2
-	elseif not ok then
-		print('optimize err:', msg1)
-	end
 end
 
 return movearm

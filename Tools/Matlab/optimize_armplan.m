@@ -53,13 +53,13 @@ cvx_begin
     cvx_precision low
     %cvx_precision medium
     variable q(n)
-    dual variables lam1 %lam2 %y{np}
+    dual variables lam1 lam2 %y{np}
     %minimize( quad_form(q, P0) + q0'*q + r0 )
     minimize( quad_form(q, P0) + q0'*q )
     % Keep the first point the same
     lam1: q(1:nq) == qPath0(1:nq);
-    %lam2: q(n-nq+1:n) == qPath0(n-nq+1:n);
-    %lam2: q(end-nq+1:end) == qArmFGuess;
+    lam2: q(n-nq+1:n) == qPath0(n-nq+1:n);
+    %lam2: q(end-nq+1:end) == qGoal;
     % Keep the paths somewhat close, due to jacobian linearity
     %lam1: norm(q - qPath0) <= epsilon;
     %for k = nq+1 : nq : n-nq,

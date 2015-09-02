@@ -14,4 +14,10 @@ plot(rad2deg(qq-qq0));
 xlim([1, np]);
 title('Difference in Degrees');
 
+figure(4);
+b = bar(rad2deg(abs([qq0(end,:)' - qGoal, qq(end,:)' - qGoal])));
+b(1).FaceColor = 'r';
+b(2).FaceColor = 'b';
+title('qEnd vs qGoal (Absolute difference)');
+
 drawnow;

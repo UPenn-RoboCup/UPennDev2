@@ -138,7 +138,7 @@ local function get_distance(self, trGoal, qArm, qWaist)
 
 	-- TODO: Add the rpy check for other rotation directions
 
-	local components = {vnorm(dp), vnorm(drpy)}
+	local components = vector.new{vnorm(dp), vnorm(drpy)}
 	return dp, drpy, components
 end
 
@@ -149,36 +149,31 @@ local function co_play(self, plan, callback)
 
 	-- Run the optimizer
 	if plan.via then
-		print('Gradient Descent Optimizing...')
-		plan.n_optimizations = 2
+		plan.n_optimizations = 3
 		plan.update_jacobians = true
-
-		local t0 = unix.time()
-		for i=1,plan.n_optimizations do
-			plan.i_optimizations = i
-			if (not plan.nulls) then
-				self:jacobians(plan)
-			end
-			if (not plan.eigVs) then
-				--self:eigs(plan)
-			end
-			--plan.qPath, plan.wPath = self:optimize(plan)
-			-- Run another optimization...
-			plan.qPath, plan.wPath = self:optimize2(plan)
-			if plan.update_jacobians then
-				self:jacobians(plan)
-				--self:eigs(plan)
-			end
-		end
-		local t1 = unix.time()
-		io.write(
-			'\nOptimizer (',
-			plan.n_optimizations,
-			' steps): ',
-			math.floor((t1 - t0)*1e3),
-			'ms\n'
-		)
+		--plan.update_jacobians = false
+	else
+		plan.n_optimizations = 1
 	end
+
+	local t0 = unix.time()
+	for i=1,plan.n_optimizations do
+		plan.i_optimizations = i
+		if not plan.nulls then
+			self:jacobians(plan)
+		end
+		--if (not plan.eigVs) then self:eigs(plan) end
+		--plan.qPath, plan.wPath = self:optimize(plan)
+		-- Run another optimization...
+		plan.qPath, plan.wPath = self:optimize2(plan)
+		if plan.update_jacobians then
+			self:jacobians(plan)
+			--self:eigs(plan)
+		end
+	end
+	local t1 = unix.time()
+	print(string.format("%d iterations %.2f ms (%s)",
+		plan.n_optimizations, (t1 - t0)*1e3, tostring(plan.via)))
 
 	local qArmSensed, qWaistSensed = coroutine.yield()
 	if type(callback)=='function' then
@@ -357,6 +352,7 @@ function libArmPlan.joint_preplan(self, plan)
 	else
 		error(prefix..'Need tr or q')
 	end
+	plan.qGoal = qArmF
 	-- Set the limits and check compliance
 	local qMin, qMax = self.qMin, self.qMax
 	local dq_limit = self.dq_limit
@@ -591,6 +587,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local path = {}
 	local dp, drpy, dist_components
 	-- Save the nullspaces
+	local nullFactor = 0.25
 	plan.nulls = {}
 	repeat
 		-- Check if we are close enough
@@ -623,8 +620,8 @@ function libArmPlan.jacobian_preplan(self, plan)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		table.insert(plan.nulls, nullspace)
 		local dqdtCombo
-		local nullFactor = 0.2
 		if qArmFGuess then
+			--print('d', dist_components)
 			local dqNull = torch.Tensor(qArm - qArmFGuess)
 			torch.mv(dqdtNull, nullspace, dqNull)
 			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
@@ -644,6 +641,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 				dqCombo[i] = dq / max_usage
 			end
 		end
+
 		-- Apply the joint change (Creates a new table)
 		local qOld = qArm
 		qArm = qArm + dqCombo
@@ -658,6 +656,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		end
 		-- Add to the path
 		table.insert(path, qArm)
+		--print(#path, 'dqArm', vector.norm(qArm-qOld)*RAD_TO_DEG, dist_components)
 	until #path > nStepsTimeout
 	local t1 = unix.time()
 	-- Show the timing
@@ -983,7 +982,6 @@ local function set_shoulder_granularity(self, granularity)
 	return self
 end
 
-
 local function pathJacobians(self, plan)
 	-- Find the nullspace acting in
 	local nulls = {}
@@ -995,31 +993,15 @@ local function pathJacobians(self, plan)
 end
 
 local function pathEigs(self, path)
-	local eigs = {}
+	local eigs
 	local eigVs = {}
 	local eigVinvs = {}
 	for i, nullspace in ipairs(path.nulls) do
-		eigs[i], eigVs[i] = torch.eig(nullspace, 'V')
+		eigs, eigVs[i] = torch.eig(nullspace, 'V')
 		eigVinvs[i] = torch.inverse(eigVs[i])
 	end
-	path.eigs, path.eigVs, path.eigVinvs = eigs, eigVs, eigVinvs
+	path.eigVs, path.eigVinvs = eigVs, eigVinvs
 end
-
---[[
-function kron(A, B)
-	-- Kronecker Product
-	 local m, n = A:size(1), A:size(2)
-	 local p, q = B:size(1), B:size(2)
-	 local C = torch.Tensor(m*p,n*q)
-
-	 for i=1,m do
-			 for j=1,n do
-					 C[{{(i-1)*p+1,i*p},{(j-1)*q+1,j*q}}] = torch.mul(B, A[i][j])
-			 end
-	 end
-	 return C
-end
---]]
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')
 local function optimize2(self, plan)
@@ -1033,7 +1015,8 @@ local function optimize2(self, plan)
 	local optResult = opt_ch:receive()
 	print('Optimized!', planName)
 	local optPath = mattorch.load(planName)
-	--os.execute('rm '..planName0..'*')
+	-- Bit dangerous here, but whatever :P
+	os.execute('rm lua_*')
 	-- Place into a table
 	-- TODO: Simpler way?
 	local qOptimized0 = optPath.q:view(#plan.qPath, #plan.qGoal)
@@ -1057,6 +1040,7 @@ local function optimize(self, path)
 	local eigVinvs = path.eigVinvs
 	local Js = path.Js
 	local nulls = path.nulls
+	local n = #qPath
 
 	local qWaistArmGoal
 	local nNull
@@ -1085,7 +1069,7 @@ local function optimize(self, path)
 	-- Setup the temporary variables
 	local dqNull = torch.Tensor(#qWaistArmGoal)
 	local dlambda = torch.Tensor(#qWaistArmGoal)
-	local dλ = torch.Tensor(#qPath, nNull)
+	local dλ = torch.Tensor(n, nNull)
 	local λ2q = {}
 	for i, q in ipairs(qPath) do
 		local _λ2q = eigVs[i]:narrow(2, 1, nNull)
@@ -1137,34 +1121,39 @@ local function optimize(self, path)
 	kernel[7] = -1
 	--]]
 
-	--print('dλ', dλ:size(), 'k', kernel:size())
+	----[[
 	local jerkλ = torch.conv2(dλ, kernel, 'F')
 		:narrow(1, 1+kernel:size(1)/2, dλ:size(1))
-	--print('jerkλ', jerkλ:size())
+	--]]
+	jerkλ[1]:add(dλ[1], -1, dλ[2])
+	jerkλ[n]:add(dλ[n], -1, dλ[n-1])
 
 	-- Find the λ acceleration gradient (jerk)
 	--[[
-	--print('dλ', dλ)
+	local _dλ = dλ:view(dλ:size(1))
+	--print(dλ:size(), _dλ:size())
+	-- NOTE: Could do the convolution only with the valid part
 	local jerkλ = {
-		2*dλ[1] - dλ[2]
+		_dλ[1] + -1*_dλ[2]
 	}
-	for i=2,#dλ-1 do
-		jerkλ[i] = 2*dλ[i] - dλ[i-1] - dλ[i+1]
+	for i=2,n-1 do
+		jerkλ[i] = 2*_dλ[i] + -1*_dλ[i-1] + -1*_dλ[i+1]
 	end
 	-- Not allowed to move the first coords
-	table.insert(jerkλ, 2*dλ[#dλ] - dλ[#dλ])
+	table.insert(jerkλ, _dλ[n] + -1*_dλ[n-1])
 	--]]
 
 	-- Total gradient
-	local wa = 0.5 /100
-	local wj = 1 /100
+	local wa = 1 /10
+	local wj = 1 /100 * 0
 	local gradλ = dλ:clone():mul(wa):add(wj, jerkλ)
-	--print('gradλ', gradλ)
+
 	--[[
-	for i=1, #qPath do
+	local gradλ = {}
+	for i=1, n do
 		--gradλ[i] = wa * accelλ[i] + wj * jerkλ[i]
-		print(dλ[i], jerkλ[i])
-		--gradλ[i] = wa * dλ[i] + wj * jerkλ[i]
+		--print(dλ[i], jerkλ[i])
+		gradλ[i] = wa * _dλ[i] + wj * jerkλ[i]
 	end
 	--]]
 	--accelλ = nil
@@ -1173,13 +1162,14 @@ local function optimize(self, path)
 	-- Formulate the angular changes needed.
 	-- Actually may need to change a bit?
 	--[[
-	local ddq0 = {}
+	local ddq = {}
 	for i, g in ipairs(gradλ) do
-		ddq0[i] = g * λ2q[i]
+		--ddq[i] = g * λ2q[i]
+		ddq[i] = g * vector.new( λ2q[i]:view(λ2q[i]:size(1)) )
 	end
 	--]]
 
-
+	----[[
 	local a = 1
 	local step = a * (1 - (path.i_optimizations-1)/path.n_optimizations)
 	local ddq = {}
@@ -1190,6 +1180,7 @@ local function optimize(self, path)
 			--:div(torch.norm(g)):mul(step)
 			)
 	end
+	--]]
 
 	--[[
 	local ddq = {}
@@ -1211,6 +1202,7 @@ local function optimize(self, path)
 			table.insert(wPathNew, vector.new{wPath[i][1] - d[1], 0})
 			--print('wPathNew', wPathNew[i])
 		else
+			print('d', d*RAD_TO_DEG)
 			table.insert(qPathNew, qPath[i] - d)
 		end
 	end

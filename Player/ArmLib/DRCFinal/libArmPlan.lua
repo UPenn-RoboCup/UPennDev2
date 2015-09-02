@@ -150,21 +150,25 @@ local function co_play(self, plan, callback)
 	-- Run the optimizer
 	if plan.via then
 		print('Gradient Descent Optimizing...')
-		plan.n_optimizations = 5
+		plan.n_optimizations = 2
 		plan.update_jacobians = true
 
 		local t0 = unix.time()
 		for i=1,plan.n_optimizations do
 			plan.i_optimizations = i
-			if (not plan.nulls) or plan.update_jacobians then
+			if (not plan.nulls) then
 				self:jacobians(plan)
 			end
-			if (not plan.eigVs) or plan.update_jacobians then
+			if (not plan.eigVs) then
 				--self:eigs(plan)
 			end
 			--plan.qPath, plan.wPath = self:optimize(plan)
 			-- Run another optimization...
 			plan.qPath, plan.wPath = self:optimize2(plan)
+			if plan.update_jacobians then
+				self:jacobians(plan)
+				--self:eigs(plan)
+			end
 		end
 		local t1 = unix.time()
 		io.write(
@@ -677,6 +681,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	if not qArmF or not qArmFGuess then
 		return qArm
 	end
+	if true then return qArmF end
 
 	local final_plan = {
 		q = qArmFGuess,

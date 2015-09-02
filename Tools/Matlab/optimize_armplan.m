@@ -1,19 +1,10 @@
 %% Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 0.5;
+alpha = 1e6;
 % Closeness to previous trajectory
-epsilon = deg2rad(5);
-
-%% Acceleration helper
+epsilon = deg2rad(10);
+% Number of joints
 nq = 7;
-A0 = zeros(nq, nq*3);
-a = zeros(1, nq*3);
-a(1) = -1;
-a(nq+1) = 2;
-a(2*nq+1) = -1;
-for i=1:nq
-    A0(i,:) = circshift(a, i-1, 2);
-end
 
 %% Joint angles on the path
 qPath0 = cell2mat(qPath);
@@ -22,13 +13,17 @@ np = n / nq;
 qStar = repmat(qGoal, np, 1);
 
 %% Acceleration matrix
-% NOTE: There is a *much* simpler way to do this
-A = zeros(n, n);
-for i=1:np-2
-    A( (i-1)*nq+1 : i*nq, (i-1)*nq+1 : (i+2)*nq) = A0;
-end
-A( (np-2)*nq+1 : (np-1)*nq, (np-2)*nq+1 : n ) = A0(:,1:2*nq);
-A( (np-1)*nq+1 : n, (np-1)*nq+1 : n ) = A0(:,1:nq);
+d2 = 2*ones(n,1);
+% Proper doundary condition (Central difference 2nd order):
+%http://www.mathematik.uni-dortmund.de/~kuzmin/cfdintro/lecture4.pdf
+d2(end-nq+1:end) = 1;
+d2(1:nq) = 1;
+d1 = ones(n-nq,1);
+%d2(end-nq+1:end) = 0.5;
+%d2(1:nq) = 0.5;
+A0 = diag(-d2);
+A1 = diag(d1, nq);
+A = (A0 + A1 + A1');
 A = sparse(A);
 ATA = A' * A;
 
@@ -40,31 +35,43 @@ NTN = N' * N;
 %% Optimization Variables
 P0 = NTN + alpha * ATA;
 q0 = -2 * qStar' * NTN;
-r0 = qStar' * NTN * qStar;
+% NOTE: This constant is probably not needed
+%r0 = qStar' * NTN * qStar;
 % NOTE: Flip dimensions...
 P0 = P0';
 q0 = q0';
-% Cleanup
-clear NTN;
-clear ATA;
-% TODO: Make a faster objective:
+
+% TODO: Make a faster objective?
 %[ P0sqrt, p, S  ] = chol( P0 );
 %P0sqrt = P0sqrt * S;
+
+%% Remain tidy
+%clear N A qPath qGoal NTN ATA;
 
 %% CVX Solver
 fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
 cvx_begin
-    %cvx_precision low
-    cvx_precision medium
+    cvx_precision low
+    %cvx_precision medium
     variable q(n)
-    dual variables lam1 lam2
-    minimize( quad_form(q, P0) + q0'*q + r0 )
-    % Keep the paths somewhat close, due to jacobian linearity
-    lam1: norm(q - qPath0) <= epsilon;
+    dual variables lam1 lam2 %y{np}
+    %minimize( quad_form(q, P0) + q0'*q + r0 )
+    minimize( quad_form(q, P0) + q0'*q )
     % Keep the first point the same
-    lam2: q(1:7) == qPath0(1:7);
-    % TODO: Keep the difference in human space close...
-    %lam1: quad_form(q, NTN) + q1'*q + r1 <= epsilon;
+    lam1: q(1:7) == qPath0(1:7);
+    lam2: q(end-nq+1:end) == qPath0(end-nq+1:end);
+    %lam2: q(end-nq+1:end) == qArmFGuess;
+    % Keep the paths somewhat close, due to jacobian linearity
+    %lam1: norm(q - qPath0) <= epsilon;
+    %for k = nq+1 : nq : n-nq,
+    for k = nq+1 : nq : n,
+        %q(k:k+nq-1) <= qPath0(k:k+nq-1) + epsilon; %: y{k};
+        %q(k:k+nq-1) >= qPath0(k:k+nq-1) - epsilon; %: y{k};
+        norm(q(k:k+nq-1) - qPath0(k:k+nq-1)) <= epsilon;
+    end
+
+% TODO: Keep the difference in human space close...
+%lam1: quad_form(q, NTN) + q1'*q + r1 <= epsilon;
 cvx_end
 
 % obj1 = cvx_optval;
@@ -76,7 +83,7 @@ cvx_end
 % obj2 = -0.5*q_lam'*inv(P_lam)*q_lam + r_lam;
 %
 fprintf(1,'Done! \n');
-
+show_armplan;
 %
 % % Displaying results
 % disp('------------------------------------------------------------------------');

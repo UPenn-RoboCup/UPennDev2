@@ -643,6 +643,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	plan.qGoal = qArmFGuess or qArm
 
 	-- Use the pre-existing planner
+	plan.qGoal = self:find_shoulder(plan.tr, qArm, plan.weights)
 	return libArmPlan.joint_preplan(self, plan)
 	--return plan
 end

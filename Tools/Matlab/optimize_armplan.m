@@ -2,7 +2,7 @@
 % Relative weight of acceleration (vs null space accuracy)
 alpha = 1e6;
 % Closeness to previous trajectory
-epsilon = deg2rad(10);
+epsilon = deg2rad(8);
 % Number of joints
 nq = 7;
 

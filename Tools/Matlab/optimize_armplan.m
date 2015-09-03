@@ -106,8 +106,7 @@ cvx_end
 %
 % obj2 = -0.5*q_lam'*inv(P_lam)*q_lam + r_lam;
 %
-fprintf(1,'Done! \n');
-show_armplan;
+
 %
 % % Displaying results
 % disp('------------------------------------------------------------------------');

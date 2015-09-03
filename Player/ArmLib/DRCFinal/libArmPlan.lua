@@ -521,7 +521,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		-- Joint velocities to accomplish the se(3) velocities
 		local dqdtArm = torch.mv(Jinv, vwTarget)
 		local dqdtCombo
-		if qArmFGuess then
+		if qWaistArmGuess then
 			local dqNull = torch.Tensor(qWaistArm - qWaistArmGuess)
 			torch.mv(dqdtNull, nullspace, dqNull)
 			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
@@ -575,8 +575,8 @@ function libArmPlan.jacobian_preplan(self, plan)
 			n >= nStepsTimeout and 'Timeout' or 'Close'
 		))
 	end
-	--return libArmPlan.joint_preplan(self, plan)
-	return plan
+	return libArmPlan.joint_preplan(self, plan)
+	--return plan
 end
 -- API continuity:
 libArmPlan.jacobian_waist_preplan = jacobian_preplan

@@ -30,6 +30,10 @@ while 1
         % Save results to be opened
         save(tmpfile, 'q');
         y = zmq('send', ch, tmpfile);
+        
+        fprintf(1,'Done! \n');
+        % Show
+        show_armplan;
 
     %else disp('Timeout...');
     end

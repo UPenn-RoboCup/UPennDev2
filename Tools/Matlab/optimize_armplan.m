@@ -21,7 +21,13 @@ nSkip = max(floor(nSkip), 0) + 1;
 qPath0 = cell2mat(qwPath);
 n = numel(qPath0);
 np = n / nq;
-qStar = repmat(qwGoal, np, 1);
+% If given a guess, else the last point
+if exist('qWaistArmGuess', 'var')
+    qStar = repmat(qWaistArmGuess, np, 1);
+else
+    qStar = repmat(qwPath{end}, np, 1);
+end
+
 
 %% Acceleration matrix
 d2 = 2*ones(n,1);

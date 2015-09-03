@@ -299,6 +299,8 @@ static int save_table_l(lua_State *L) {
     if (t==LUA_TUSERDATA) { // torch data
       // Refer to this array
       pmi = tensor2mxArray(L);
+    } else if(t==LUA_TNUMBER) {
+      pmi = mxCreateDoubleScalar(lua_tonumber(L, -1));
     } else if(t==LUA_TTABLE) {
       // Check the first element type
       lua_rawgeti(L, -1, 1);

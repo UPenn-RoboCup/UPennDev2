@@ -1,23 +1,35 @@
 %% Plot the joint trajectories in time
 qq = reshape(q, [nq, np])';
 qq0 = reshape(qPath0, [nq, np])';
+nt = dt * np;
+t = 0:dt:nt-dt;
+tlim = [t(1), t(end)];
+
 figure(1);
-plot(rad2deg(qq0));
-xlim([1, np]);
+plot(t, rad2deg(qq0));
+xlim(tlim);
+xlabel('Time (s)');
+ylim([-180, 180]);
+ylabel('Degrees');
+title('Original Trajectory');
 
 figure(2);
-plot(rad2deg(qq));
-xlim([1, np]);
+plot(t, rad2deg(qq));
+xlim(tlim);
+xlabel('Time (s)');
+ylim([-180, 180]);
+ylabel('Degrees');
+title('Optimized Trajectory');
 
 figure(3);
-plot(rad2deg(qq-qq0));
-xlim([1, np]);
-title('Difference in Degrees');
+plot(t, rad2deg(qq-qq0));
+xlim(tlim);
+xlabel('Time (s)');
+ylabel('Degrees');
+title('Trajectory Difference');
 
 figure(4);
-b = bar(rad2deg(abs([qq0(end,:)' - qGoal, qq(end,:)' - qGoal])));
-b(1).FaceColor = 'r';
-b(2).FaceColor = 'b';
-title('qEnd vs qGoal (Absolute difference)');
+plot(abs(diff(rad2deg(qq))))
+title('Speed');
 
 drawnow;

@@ -1,10 +1,21 @@
 %% Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 1e5;
+alpha = 1e3;
+%alpha = 1e2; % Snaps to the next goal
+%alpha = 0; % Instant if possible (Verified)
 % Closeness to previous trajectory
 epsilon = deg2rad(10);
 % Number of joints
 nq = 7;
+% Constraint the joints to be close on how many iterations...
+% More skips makes the formulation of the problem easier
+% Only works with proper acceleration weight
+%nSkip = 0; % Default on all
+%nSkip = 10; % One constraint per second
+nSkip = 3;
+nSkip = max(floor(nSkip), 0) + 1;
+% TODO: Truncate the path if possible, once the difference is small
+% Then further optimization steps just make the path smaller
 
 %% Joint angles on the path
 qPath0 = cell2mat(qPath);
@@ -33,16 +44,24 @@ NTN = N' * N;
 
 %% Optimization Variables
 P0 = NTN + alpha * ATA;
-q0 = -2 * qStar' * NTN;
+q0 = qStar' * NTN;
 % NOTE: This constant is probably not needed
 %r0 = qStar' * NTN * qStar;
 % NOTE: Flip dimensions...
 P0 = P0';
 q0 = q0';
 
-% TODO: Make a faster objective?
+%% Attempt to avoid the quad_form
+% NOTE: Purported to be faster, but it is slower...
+% http://cvxr.com/cvx/doc/advanced.html
+%b = sqrtm(full(P0)) \ q0;
 %[ P0sqrt, p, S  ] = chol( P0 );
 %P0sqrt = P0sqrt * S;
+% Close to zero:
+%norm(sqrtm(full(P0))'*sqrtm(full(P0)) - full(P0), 'fro')
+%P0sqrt = sparse(sqrtm(full(P0)));
+%b = P0sqrt' \ q0;
+
 
 %% Remain tidy
 %clear N A qPath qGoal NTN ATA;
@@ -54,18 +73,18 @@ cvx_begin
     %cvx_precision medium
     variable q(n)
     dual variables lam1 lam2 %y{np}
-    %minimize( quad_form(q, P0) + q0'*q + r0 )
-    minimize( quad_form(q, P0) + q0'*q )
+    %minimize( quad_form(q, P0) -2 * q0'*q + r0 )
+    % This seems faster
+    minimize( quad_form(q, P0) -2 * q0'*q )
+    % This seems slower...
+    %minimize( norm( P0sqrt * q - b ) )
     % Keep the first point the same
     lam1: q(1:nq) == qPath0(1:nq);
+    % Last point the same
     lam2: q(n-nq+1:n) == qPath0(n-nq+1:n);
-    %lam2: q(end-nq+1:end) == qGoal;
     % Keep the paths somewhat close, due to jacobian linearity
-    %lam1: norm(q - qPath0) <= epsilon;
-    %for k = nq+1 : nq : n-nq,
-    for k = nq+1 : nq : n,
-        %q(k:k+nq-1) <= qPath0(k:k+nq-1) + epsilon; %: y{k};
-        %q(k:k+nq-1) >= qPath0(k:k+nq-1) - epsilon; %: y{k};
+    for k = nq+1 : nSkip*nq : n-nq,
+    %for k = nq+1 : nq : n,
         norm(q(k:k+nq-1) - qPath0(k:k+nq-1)) <= epsilon;
     end
 

@@ -127,7 +127,6 @@ function movearm.goto(l, r)
 
 		-- must copy the plan to keep the wait ok
 		l = util.shallow_copy(l)
-
 		if l.q then vector.new(l.q) end
 		if l.weights then vector.new(l.weights) end
 		if l.qWaistGuess then vector.new(l.qWaistGuess) end
@@ -142,6 +141,7 @@ function movearm.goto(l, r)
 		end
 		l.qArm0 = vector.new(l.qLArm0 or qcLArm)
 		l.qWaist0 = vector.new(l.qWaist0 or qcWaist)
+		l.dt = lPlanner.dt
 	end
 
 
@@ -164,6 +164,7 @@ function movearm.goto(l, r)
 		if r.qArmGuess then vector.new(r.qArmGuess) end
 		r.qArm0 = vector.new(r.qRArm0 or qcRArm)
 		r.qWaist0 = vector.new(r.qWaist0 or qcWaist)
+		r.dt = rPlanner.dt
 	end
 
 	-- Add the compensation
@@ -212,13 +213,11 @@ function movearm.goto(l, r)
 		print()
 		--]]
 		local ok, msg = pcall(lplan, lPlanner, l)
-		if not ok then
-			lco = msg
-		else
-			-- TODO: Add the callback hook
+		if ok then
 			lco = coroutine.create(co_play)
-			coroutine.resume(lco, lPlanner, l)
+			ok, msg = coroutine.resume(lco, lPlanner, l)
 		end
+		if not ok then lco = msg end
 	end
 	if type(rplan)=='function' then
 		--[[
@@ -226,9 +225,12 @@ function movearm.goto(l, r)
 		util.ptable(r)
 		print()
 		--]]
-		rco = coroutine.create(rplan)
-		local ok, msg = coroutine.resume(rco, rPlanner, r)
-		if not ok then rco = msg end
+		local ok, msg = pcall(rplan, rPlanner, r)
+		if ok then
+			rco = coroutine.create(co_play)
+			ok, msg = coroutine.resume(lco, rPlanner, r)
+		end
+		if not ok then lco = msg end
 	end
 
 	return lco, rco

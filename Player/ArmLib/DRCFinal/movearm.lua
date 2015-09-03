@@ -68,7 +68,7 @@ local function co_play(self, plan, callback)
 		--if (not plan.eigVs) then self:eigs(plan) end
 		--plan.qPath, plan.wPath = self:optimize(plan)
 		-- Run another optimization...
-		plan.qPath, plan.wPath = self:optimize2(plan)
+		plan.qwPath = self:optimize2(plan)
 		if plan.update_jacobians then
 			self:jacobians(plan)
 			--self:eigs(plan)
@@ -83,33 +83,24 @@ local function co_play(self, plan, callback)
 		callback(qArmSensed, qWaistSensed)
 	end
 
+	-- Check if we include the waist
+	local hasWaist = plan.qWaistGuess~=nil
+	local qArm, qWaist
 	-- Try the optimized one
-	local qPath = plan.qPath
-	for i, qArmPlanned in ipairs(qPath) do
-		qArmSensed, qWaistSensed = coroutine.yield(qArmPlanned)
+	for i, qWaistArm in ipairs(plan.qwPath) do
+		if hasWaist then
+			qArm = {unpack(qWaistArm, 2)}
+			qWaist = {qWaistArm[1], 0}
+		else
+			qArm = qWaistArm
+		end
+		qArmSensed, qWaistSensed = coroutine.yield(qArm, qWaist)
 		if type(callback)=='function' then
 			callback(qArmSensed, qWaistSensed)
 		end
 	end
-	local qEnd = qPath[#qPath]
-	return qEnd
-end
-
-local function co_play_waist(plan, callback)
-	local qArmSensed, qWaistSensed = coroutine.yield()
-	if type(callback)=='function' then
-		callback(qArmSensed, qWaistSensed)
-	end
-	for i, qArm in ipairs(plan.qPath) do
-		qArmSensed, qWaistSensed = coroutine.yield(qArm, plan.wPath[i])
-		if type(callback)=='function' then
-			callback(qArmSensed, qWaistSensed)
-		end
-	end
-	local qEnd = plan.qPath[#plan.qPath]
-	local qEnd = plan.wPath[#plan.wPath]
-	if not qEnd or not wEnd then return end
-	return qEnd, wEnd
+	-- TODO: This is a repeat...
+	return qArm, qWaist
 end
 
 -- Take a desired joint configuration and move linearly in each joint towards it

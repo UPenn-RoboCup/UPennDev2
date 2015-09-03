@@ -78,14 +78,19 @@ local torch = require'torch'
 local mattorch = require'mattorch'
 local function get_pseudo_jacobian_dls(self, J, qWaistArm)
 	-- Penalty for joint limits
-	local qMin = self.qMin
-	local qMax = self.qMax
-	local qRange = self.qRange
-	if #qWaistArm~=#qRange then
-		qMin = {-45*DEG_TO_RAD, unpack(self.qMin)}
-		qMax = {45*DEG_TO_RAD, unpack(self.qMax)}
-		qRange = {90*DEG_TO_RAD, unpack(self.qRange)}
+	local qMin
+	local qMax
+	local qRange
+	if #qWaistArm~=self.nq then
+		qMin = self.qWMin
+		qMax = self.qWMax
+		qRange = self.qWRange
+	else
+		qMin = self.qMin
+		qMax = self.qMax
+		qRange = self.qRange
 	end
+
 	local l = {}
 	for i, q in ipairs(qWaistArm) do
     l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
@@ -99,16 +104,11 @@ local function get_pseudo_jacobian_dls(self, J, qWaistArm)
 end
 
 -- Use the Jacobian
-local function get_nullspace(self, qArm, qWaist)
-
-	assert(type(qArm)=='table', 'get_delta_qwaistarm | Bad qArm')
-
-	local qWaistArm = qArm
-	if qWaist then
-		qWaistArm = {qWaist[1], unpack(qArm)}
-	end
-
+local function get_nullspace(self, qWaistArm, qArm, qWaist)
+	assert(type(qWaistArm)=='table',
+		'get_delta_qwaistarm | Bad qWaistArm')
 	local J = torch.Tensor(self.jacobian(qArm, qWaist))
+
 	-- Straight Pseudo inverse
 	--local Jpseudoinv = torch.mm(torch.inverse(JT*J), JT)
 	-- Simplification for less degrees of freedom: easier to calculate
@@ -130,12 +130,10 @@ local function get_distance(self, trGoal, qArm, qWaist)
 	local fkArm = self.forward(qArm, qWaist)
 	local invArm = T.inv(fkArm)
 	local here = trGoal * invArm -- new good one
-
 	-- Determine the position and angular velocity target
 	local dp = T.position(here)
 	local drpy = T.to_rpy(here)
 	-- TODO: Add the rpy check for other rotation directions
-
 	return dp, drpy
 end
 
@@ -270,27 +268,33 @@ end
 function libArmPlan.joint_preplan(self, plan)
 	local prefix = string.format('joint_preplan (%s) | ', self.id)
 	assert(type(plan)=='table', prefix..'Bad plan')
-	-- With a pre-existing path, first qArm is end of path
-	local qArm0 = plan.qArm0
-	if type(plan.qPath)=='table' then
-		qArm0 = plan.qPath[#plan.qPath]
+	-- Initial points
+	local qArm0
+	local qWaist0
+	if type(plan.qwPath)=='table' then
+		-- Continue from a pre-existing path
+		qArm0 = plan.qwPath[#plan.qwPath]
+		if #qArm0>self.nq then
+			local diff = #qArm0 - self.nq
+			qWaist0 = vector.new{unpack(qArm0, 1, diff + 1)}
+			qWaist0 = vector.new{unpack(qArm0, diff + 1)}
+		end
+	else
+		qArm0 = plan.qArm0
+		qWaist0 = plan.qWaist0
 	end
 	assert(qArm0, prefix..'Need initial arm')
-	-- With a pre-existing path, first qWaist is end of path
-	local qWaist0 = plan.qWaist0
-	if type(plan.wPath)=='table' then
-		qWaist0 = plan.wPath[#plan.wPath]
-	end
 	assert(qWaist0, prefix..'Need initial waist')
 	--  Set the Final Goal for the arm
 	local qArmF
-	if type(plan.qGoal)=='table' then
-		qArmF = plan.qGoal
+	if type(plan.qwGoal)=='table' then
+		qArmF = plan.qwGoal
 	elseif type(plan.q)=='table' then
 		qArmF = plan.q
 	elseif plan.tr then
 		local qArmFGuess = plan.qArmGuess or qArm0
-		qArmF = self:find_shoulder(plan.tr, qArmFGuess, plan.weights, qWaist0)
+		qArmF = self:find_shoulder(
+			plan.tr, qArmFGuess, plan.weights, qWaist0)
 		assert(type(qArmF)=='table', prefix..'No target shoulder solution')
 	else
 		error(prefix..'Need tr or q')
@@ -342,7 +346,8 @@ function libArmPlan.joint_preplan(self, plan)
 		for i=1,nsteps do
 			qArm = qArm + dqAverage
 			table.insert(plan.qPath, qArm)
-			local nullspace = get_nullspace(self, qArm)
+			local nullspace = get_nullspace(
+				self, qWaistArm, qArm, qWaist)
 			table.insert(plan.nulls, nullspace)
 		end
 
@@ -371,7 +376,8 @@ function libArmPlan.joint_preplan(self, plan)
 		-- Apply the joint change
 		qArm = qArm + dqArmF
 		table.insert(plan.qPath, qArm)
-		local nullspace = get_nullspace(self, qArm)
+		local nullspace = get_nullspace(
+			self, qWaistArm, qArm, qWaist)
 		table.insert(plan.nulls, nullspace)
 		n = n + 1
 	until n > nStepsTimeout
@@ -506,66 +512,91 @@ end
 function libArmPlan.jacobian_preplan(self, plan)
 	local prefix = string.format('jacobian_preplan (%s) | ', self.id)
 	assert(type(plan)=='table', prefix..'Bad plan')
-	-- With a pre-existing path, first qArm is end of path
-	local qArm0 = plan.qArm0
-	if type(plan.qPath)=='table' then
-		qArm0 = plan.qPath[#plan.qPath]
+	-- Initial points
+	local qArm0
+	local qWaist0
+	if type(plan.qwPath)=='table' then
+		-- Continue from a pre-existing path
+		qArm0 = plan.qwPath[#plan.qwPath]
+		if #qArm0>self.nq then
+			local diff = #qArm0 - self.nq
+			qWaist0 = vector.new{unpack(qArm0, 1, diff + 1)}
+			qWaist0 = vector.new{unpack(qArm0, diff + 1)}
+		end
+	else
+		qArm0 = plan.qArm0
+		qWaist0 = plan.qWaist0
 	end
 	assert(qArm0, prefix..'Need initial arm')
-	-- With a pre-existing path, first qWaist is end of path
-	local qWaist0 = plan.qWaist0
-	if type(plan.wPath)=='table' then
-		qWaist0 = plan.wPath[#plan.wPath]
-	end
 	assert(qWaist0, prefix..'Need initial waist')
-	-- Find a guess of the final arm configuration
-	assert(plan.q or plan.tr, prefix..'Need tr or q')
+	-- Update a guess for the final configuration
+	local qWaistGuess = plan.qWaistGuess
+	local qArmGuess = plan.qArmGuess
 	local trGoal
-	local qArmFGuess
+	local qWaistArmGuess
 	if type(plan.q)=='table' then
-		trGoal = self.forward(plan.q, qWaist0)
+		trGoal = self.forward(plan.q, qWaistGuess or qWaist0)
 		plan.tr = trGoal
-		qArmFGuess = plan.q
+		qWaistArmGuess = plan.q
 	elseif plan.tr then
 		trGoal = plan.tr
-		local weights = plan.weights
-		qArmFGuess = plan.qArmGuess or self:find_shoulder(trGoal, qArm0, weights, qWaist0)
+		qWaistArmGuess = qArmGuess or self:find_shoulder(
+			trGoal, qArm0, plan.weights, qWaistGuess or qWaist0)
 	end
+	assert(type(plan.tr)=='table', prefix..'No goal specified')
 	-- Use straight jacobian if no guess
-	if qArmFGuess then
-		plan.qArmFGuess = vector.new(qArmFGuess)
+	if qWaistArmGuess then
+		plan.qWaistArmGuess = vector.new(qWaistArmGuess)
+		if qWaistGuess then
+			table.insert(qWaistArmGuess, 1, qWaistGuess)
+		end
 	else
 		if Config.debug.armplan then
 			print(prefix..'No guess found for the final!')
 		end
 	end
-	-- Update a guess for the final waist
-	local qWaistFGuess = plan.qWaistGuess or qWaist0
 	-- Set the timing
-	local timeout = assert(plan.timeout, prefix..'No timeout')
+	local timeout = plan.timeout or 10
 	local hz, dt = self.hz, self.dt
 	local nStepsTimeout = math.ceil(timeout * hz)
 	-- Grab our limits
-	local dq_limit = self.dq_limit
-	local qMin, qMax = self.qMin, self.qMax
+	local dq_limit
+	local qMin
+	local qMax
+	if qWaistGuess then
+		qMin = self.qWMin
+		qMax = self.qWMax
+		dq_limit = self.dqW_limit
+	else
+		qMin = self.qMin
+		qMax = self.qMax
+		dq_limit = self.dq_limit
+	end
 	-- Initial position
 	local qArm = vector.copy(qArm0)
-	local dTF
+	local qWaist = vector.copy(qWaist0)
+	local qWaistArm
+	if qWaistGuess then
+		qWaistArm = vector.new{qWaist[1], unpack(qArm)}
+	else
+		qWaistArm = vector.copy(qArm)
+	end
 	-- Null space variables
 	local nullFactor = 0.3 --0.2
-	local dqdtNull = torch.Tensor(#qArm)
+	local dqdtNull = torch.Tensor(#qWaistArm)
 	-- Continue the path
 	plan.nulls = plan.nulls or {}
-	plan.qPath = plan.qPath or {}
+	plan.qwPath = plan.qwPath or {}
 	-- Begin
+	print(prefix..'Beginning')
+	local n = 0
+	local dTF
 	local t0 = unix.time()
 	repeat
-		-- Check if we are close enough
-		local dp, drpy = get_distance(self, trGoal, qArm, qWaist0)
-		dTF = vector.new{vnorm(dp), vnorm(drpy)}
-		if dTF[1] < 0.01
-			and dTF[2] < 2*DEG_TO_RAD
-		then
+		local dp, drpy = get_distance(self, trGoal, qArm, qWaist)
+		-- Check if we are within threshold
+		dTF = {vnorm(dp), vnorm(drpy)}
+		if dTF[1] < 0.025 and dTF[2] < 3*DEG_TO_RAD then
 			break
 		end
 		-- Form our desired velocity
@@ -574,13 +605,14 @@ function libArmPlan.jacobian_preplan(self, plan)
 			drpy[1], drpy[2], drpy[3],
 		}
 		-- Find the nullspace and Jacobian
-		local nullspace, J, Jinv = get_nullspace(self, qArm)
+		local nullspace, J, Jinv = get_nullspace(
+			self, qWaistArm, qArm, qWaistGuess and qWaist)
 		table.insert(plan.nulls, nullspace)
 		-- Joint velocities to accomplish the se(3) velocities
 		local dqdtArm = torch.mv(Jinv, vwTarget)
 		local dqdtCombo
 		if qArmFGuess then
-			local dqNull = torch.Tensor(qArm - qArmFGuess)
+			local dqNull = torch.Tensor(qWaistArm - qWaistArmGuess)
 			torch.mv(dqdtNull, nullspace, dqNull)
 			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
 		else
@@ -600,176 +632,50 @@ function libArmPlan.jacobian_preplan(self, plan)
 			end
 		end
 		-- Apply the joint change
-		local qOld = qArm
-		qArm = qArm + dqCombo
+		local qOld = qWaistArm
+		qWaistArm = qWaistArm + dqCombo
 		-- Check joint limit compliance
-		for i, q in ipairs(qArm) do
+		for i, q in ipairs(qWaistArm) do
 			if i==5 or i==7 then
 				--qArm[i] = sanitize(q, qOld[i])
 			else
-				qArm[i] = min(max(qMin[i], q), qMax[i])
+				qWaistArm[i] = min(max(qMin[i], q), qMax[i])
 			end
 		end
 		-- Add to the path
-		table.insert(plan.qPath, qArm)
-	until #plan.qPath > nStepsTimeout
+		table.insert(plan.qwPath, qWaistArm)
+		-- Decompose
+		if qWaistGuess then
+			qArm = {unpack(qWaistArm, 2)}
+			qWaist = {qWaistArm[1], 0}
+		else
+			qArm = qWaistArm
+			qWaist = qWaist0
+		end
+		n = n + 1
+	until n > nStepsTimeout
 	-- Finish
 	local t1 = unix.time()
 	-- Show the timing
 	if Config.debug.armplan then
 	  print(string.format(
 			'%s%d steps (%d ms) {%.2fcm, %.2f°} [%s]',
-			prefix, #plan.qPath, (t1-t0)*1e3,
+			prefix, n, (t1-t0)*1e3,
 			dTF[1]*1e2, dTF[2]*RAD_TO_DEG,
-			#plan.qPath >= nStepsTimeout and 'Timeout' or 'Close'
+			n >= nStepsTimeout and 'Timeout' or 'Close'
 		))
 	end
 	-- Update the goal (Filter the wrist position)
-	plan.qGoal = self:find_shoulder(plan.tr, qArm, plan.weights)
-	return libArmPlan.joint_preplan(self, plan)
+	plan.qwGoal = self:find_shoulder(
+		plan.tr, qArm, plan.weights, qWaist)
+	if qWaistGuess then
+		table.insert(plan.qwGoal, 1, qWaistGuess)
+	end
+	--return libArmPlan.joint_preplan(self, plan)
+	return plan
 end
-
--- Plan via Jacobian for waist and arm
-function libArmPlan.jacobian_waist_preplan(self, plan)
-	local prefix = string.format('jacobian_waist_preplan (%s) | ', self.id)
-	assert(type(plan)=='table', prefix..'Bad plan')
-	local qArm0 = assert(plan.qArm0, prefix..'Need initial arm')
-	local qWaist0 = assert(plan.qWaist0, prefix..'Need initial waist')
-	-- Find a guess of the final arm configuration
-	local qWaistFGuess = plan.qWaistGuess or qWaist0
-	local qArmFGuess, trGoal
-	if type(plan.q)=='table' then
-		trGoal = self.forward(plan.q, qWaistFGuess)
-		qArmFGuess = plan.qArmGuess or plan.q
-	elseif plan.tr then
-		trGoal = plan.tr
-		local weights = plan.weights
-		qArmFGuess = plan.qArmGuess or self:find_shoulder(trGoal, qArm0, weights, qWaistFGuess)
-	else
-		error(prefix..'Need tr or q')
-	end
-	-- Use straight jacobian if no guess
-	local qWaistArmFGuess
-	if qArmFGuess then
-		vector.new{qWaistFGuess[1], unpack(qArmFGuess)}
-	else
-		if Config.debug.armplan then
-			print(prefix..'No guess found for the final!')
-		end
-	end
-	-- Grab our limits
-	local hz, dt = self.hz, self.dt
-	local qMin = {-math.pi, unpack(self.qMin)}
-	local qMax = {math.pi, unpack(self.qMax)}
-	local dq_limit = {8*DEG_TO_RAD * dt, unpack(self.dq_limit)}
-	-- Set the timing
-	local timeout = assert(plan.timeout, prefix..'No timeout')
-	local nStepsTimeout = math.ceil(timeout * hz)
-	-- Initial position
-	local qWaistArm = vector.new{qWaist0[1], unpack(qArm0)}
-	-- Memory creation saving
-	local dqdtNull = torch.Tensor(#qWaistArm)
-	-- Begin
-	local t0 = unix.time()
-	local path = {}
-	repeat
-		-- Check if we are close enough
-		local dp, drpy = get_distance(
-			self, trGoal,
-			{unpack(qWaistArm,2,#qWaistArm)}, {qWaistArm[1],0})
-		local dTF = vector.new{vnorm(dp), vnorm(drpy)}
-		-- Check if we are close enough
-		if dTF[1] < 0.03 and dTF[2] < 5*DEG_TO_RAD then
-			break
-		end
-		-- Form our desired velocity
-		local vwTarget = {unpack(dp)}
-		vwTarget[4], vwTarget[5], vwTarget[6] = unpack(drpy)
-		-- Grab the joint velocities needed to accomplish the se(3) velocities
-		local nullspace, J, Jinv = get_nullspace(self,
-			{unpack(qWaistArm,2,#qWaistArm)},
-			{qWaistArm[1], 0}
-		)
-		-- Find the motion and the null space
-		local dqdtWaistArm = torch.mv(
-			Jinv, torch.Tensor(vwTarget))
-
-		-- Grab the velocities toward our guessed configuration, w/ or w/o null
-		local dqdtCombo
-		if qWaistArmFGuess then
-			local dqNull = torch.Tensor(qWaistArm - qWaistArmFGuess)
-			torch.mv(dqdtNull, nullspace, dqNull)
-			dqdtCombo = dqdtWaistArm - dqdtNull:mul(nullFactor)
-		else
-			dqdtCombo = dqdtWaistArm
-		end
-		-- Respect the update rate, place as a lua table
-		local dqCombo = vector.new(dqdtCombo:mul(dt))
-		-- Check the speed limit usage
-		local usage = {}
-		for i, limit in ipairs(dq_limit) do
-			table.insert(usage, fabs(dqCombo[i]) / limit)
-		end
-		local max_usage = max(unpack(usage))
-		if max_usage > 1 then
-			for i, dq in ipairs(dqCombo) do
-				dqCombo[i] = dq / max_usage
-			end
-		end
-		-- Apply the joint change (Creates a new table)
-		qWaistArm = qWaistArm + dqCombo
-		-- Check joint limit compliance
-		for i, q in ipairs(qWaistArm) do
-			if i==5 or i==7 then
-				-- TODO: sanitize
-			else
-				qWaistArm[i] = min(max(qMin[i], q), qMax[i])
-			end
-		end
-		-- Add to the path
-		table.insert(path, qWaistArm)
-	until #path > nStepsTimeout
-	-- Show the timing
-	local t1 = unix.time()
-	if Config.debug.armplan then
-	  print(string.format('%s: %d steps (%d ms)', prefix, #path, (t1-t0)*1e3))
-	end
-
-
-	local qPath = {}
-	local wPath = {}
-	for i, qWaistArmPlanned in ipairs(path) do
-		qPath[i] = {unpack(qWaistArmPlanned, 2, #qWaistArmPlanned)}
-		wPath[i] = {qWaistArmPlanned[1], 0}
-	end
-	plan.qPath = qPath
-	plan.wPath = wPath
-
-	-- Play the plan
-	local qArmF, qWaistF = co_play_waist(plan)
-
-	if #path==0 then return qArm0, qWaist0 end
-	-- Hitting the timeout means we are done
-	if #path >= nStepsTimeout then
-		if Config.debug.armplan then print(prefix..'Timeout!', self.id, #path) end
-		return qArmF, qWaistF
-	end
-	-- Goto the final
-	local qArmF1 =
-		self:find_shoulder(trGoal, qArmF, {0,1,0}, qWaistFGuess)
-	if not qWaistArmF1 then
-		if Config.debug.armplan then print(prefix..'No final solution found') end
-		return qArmF, qWaistF
-	end
-	-- Use the pre-existing planner
-	return libArmPlan.joint_waist_preplan(self, {
-		q = qArmF1,
-		qWaistGuess = qWaistFGuess,
-		qArm0 = qArmF,
-		qWaist0 = qWaistF,
-		duration = 2
-	})
-end
+-- API continuity:
+libArmPlan.jacobian_waist_preplan = jacobian_preplan
 
 -- Resume with an updated plan or empty table if no updates
 function libArmPlan.jacobian_velocity(self, plan)
@@ -837,8 +743,8 @@ function libArmPlan.jacobian_wasit_velocity(self, plan)
 		)
 		-- Grab the velocities toward our guessed configuration, w/ or w/o null
 		local dqdtCombo
-		if qWaistArmFGuess then
-			local dqdtNull = nullspace * torch.Tensor(qWaistArm - qWaistArmFGuess)
+		if qWaistArmGuess then
+			local dqdtNull = nullspace * torch.Tensor(qWaistArm - qWaistArmGuess)
 			dqdtCombo = dqdtWaistArm - dqdtNull
 		else
 			dqdtCombo = dqdtWaistArm
@@ -892,6 +798,15 @@ local function set_limits(self, qMin, qMax, dqdt_limit)
 
 	self.dqdt_limit = assert(dqdt_limit)
 	self.qRange = qMax - qMin
+
+	-- Add the waist
+	-- TODO: Make better API :P
+	self.qWMin = vector.new{-math.pi/2, unpack(self.qMin)}
+	self.qWMax = vector.new{math.pi/2, unpack(self.qMax)}
+	self.qWRange = self.qWMax - self.qWMin
+	self.dqWdt_limit = vector.new{
+		10*DEG_TO_RAD, unpack(self.dqdt_limit)}
+
   return self
 end
 
@@ -903,6 +818,7 @@ local function set_update_rate(self, hz)
 	self.hz = hz
 	self.dt = 1/hz
 	self.dq_limit = self.dqdt_limit / hz
+	self.dqW_limit = self.dqWdt_limit / hz
   return self
 end
 
@@ -919,9 +835,17 @@ end
 local function pathJacobians(self, plan)
 	-- Find the nullspace acting in
 	local nulls = {}
-	for i, q in ipairs(plan.qPath) do
-		nulls[i] = get_nullspace(
-			self, q, plan.wPath and plan.wPath[i])
+	local qArm, qWaist
+	for i, qw in ipairs(plan.qwPath) do
+		-- Decompose
+		if #qw>self.nq then
+			qArm = {unpack(qw, 2)}
+			qWaist = {qw[1], 0}
+		else
+			qArm = qw
+			qWaist = nil
+		end
+		nulls[i] = get_nullspace(self, qw, qArm, qWaist)
 	end
 	plan.nulls = nulls
 end
@@ -953,9 +877,10 @@ local function optimize2(self, plan)
 	os.remove(planName)
 	-- Place into a table
 	-- TODO: Simpler way?
-	local qOptimized0 = optPath.q:view(#plan.qPath, #plan.qGoal)
+	local qOptimized0 = optPath.q:view(
+		#plan.qwPath, #plan.qwGoal)
 	local qOptimized = {}
-	for i=1,#plan.qPath do
+	for i=1,#plan.qwPath do
 		qOptimized[i] = vector.new(qOptimized0[i])
 	end
 	return qOptimized

@@ -18,10 +18,10 @@ nSkip = max(floor(nSkip), 0) + 1;
 % Then further optimization steps just make the path smaller
 
 %% Joint angles on the path
-qPath0 = cell2mat(qPath);
+qPath0 = cell2mat(qwPath);
 n = numel(qPath0);
 np = n / nq;
-qStar = repmat(qGoal, np, 1);
+qStar = repmat(qwGoal, np, 1);
 
 %% Acceleration matrix
 d2 = 2*ones(n,1);

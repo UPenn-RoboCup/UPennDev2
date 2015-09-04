@@ -25,15 +25,28 @@ while 1
         load(char(tmpfile));
         
         % Run the optimizer
-        optimize_armplan;
+        if exist('dlambda0', 'var')
+            optimize_armplan_lambda;
+        else
+            optimize_armplan;
+        end
         
         % Save results to be opened
-        save(tmpfile, 'q');
+        if exist('dlambda', 'var')
+            save(tmpfile, 'dlambda');
+        else
+            save(tmpfile, 'q');
+        end
         y = zmq('send', ch, tmpfile);
         
         fprintf(1,'Done! \n');
         % Show
-        show_armplan;
+        if exist('dlambda0', 'var')
+            show_armplan_lambda;
+            clear dlambda0 dlambda;
+        else
+            show_armplan;
+        end
 
     %else disp('Timeout...');
     end

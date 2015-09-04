@@ -22,6 +22,7 @@ n = numel(dlambda0);
 nNull = size(dlambda0, 1);
 % Number of trajectory points
 np = size(dlambda0, 2);
+dlambda0 = dlambda0(:);
 
 %% Acceleration matrix
 d2 = 2*ones(n,1);
@@ -41,7 +42,6 @@ ATA = A' * A;
 P0 = eye(n) + alpha * ATA;
 % NOTE: Flip dimensions...
 P0 = P0';
-dlambda0 = dlambda0';
 
 %% Remain tidy
 %clear N A qPath qGoal NTN ATA;

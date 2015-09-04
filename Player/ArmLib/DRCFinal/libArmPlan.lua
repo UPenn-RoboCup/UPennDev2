@@ -771,7 +771,7 @@ local function pathEigs(self, path)
 end
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')
-local function optimize2(self, plan)
+local function optimize(self, plan)
 	local planName0 = os.tmpname()
 	local planName = planName0..'.mat'
 	assert(os.rename(planName0, planName), "Could not form tmp file")
@@ -795,192 +795,56 @@ local function optimize2(self, plan)
 	return qOptimized
 end
 
-local function optimize(self, path)
-	print('Optimization step', path.i_optimizations)
-	--util.ptable(path)
-	--print('===')
-	local qPath = path.qPath
-	local wPath = path.wPath
-	local qGoal = path.qGoal
-	local wGoal = path.wGoal
-	local eigs = path.eigs
-	local eigVs = path.eigVs
-	local eigVinvs = path.eigVinvs
-	local Js = path.Js
-	local nulls = path.nulls
-	local n = #qPath
-
-	local qWaistArmGoal
-	local nNull
-	if type(wPath)=='table' and #wPath>0 then
-		nNull = 2
-		qWaistArmGoal = torch.Tensor{wGoal[1], unpack(qGoal)}
-	else
-		nNull = 1
-		qWaistArmGoal = torch.Tensor(qGoal)
-	end
-
-	-- Distance to the goal all the time
-	local dqGoal = {}
-	local qWaistArm
-	for i, q in ipairs(qPath) do
-		if type(wPath)=='table' and #wPath>0 then
-			qWaistArm = {wPath[i][1], unpack(q)}
-		else
-			qWaistArm = q
-		end
-		dqGoal[i] = torch.Tensor(qWaistArm):add(-1, qWaistArmGoal)
-	end
-
+local function optimize2(self, plan)
+	local np = #plan.qwPath
+	local nq = #plan.qwPath[1]
+	local nNull = nq - 6
+	local qGoal = plan.qwPath[np]
 	-- Find the coordinate in λ space
-	--print('Finding the λ coordinates...')
-	-- Setup the temporary variables
-	local dqNull = torch.Tensor(#qWaistArmGoal)
-	local dlambda = torch.Tensor(#qWaistArmGoal)
-	local dλ = torch.Tensor(n, nNull)
-	local λ2q = {}
-	for i, q in ipairs(qPath) do
-		local _λ2q = eigVs[i]:narrow(2, 1, nNull)
-		λ2q[i] = _λ2q:clone()
-		--print('λ2q', _λ2q)
-		torch.mv(dqNull, nulls[i], dqGoal[i])
-		--torch.mv(dqNull, nulls[i], dq[i])
-		torch.mv(dlambda, eigVinvs[i], dqNull)
+	print('Finding the λ coordinates...')
+	local dqNull = torch.Tensor(nq)
+	local dlambda = torch.Tensor(nq)
+	local dλ = torch.Tensor(np, nNull)
+	for i, q in ipairs(plan.qwPath) do
+		local dqGoal = torch.Tensor(q - qGoal)
+		torch.mv(dqNull, plan.nulls[i], dqGoal)
+		torch.mv(dlambda, plan.eigVinvs[i], dqNull)
 		local _dλ = dlambda:sub(1, nNull)
 		dλ[i]:copy(_dλ)
-		--print('dλ', _dλ)
 	end
 
-	-- Find the λ velocity gradient (accel)
-	--[[
-	local accelλ = {0}
-	for i=2,#dλ-1 do
-		accelλ[i] = (dλ[i+1] - dλ[i-1]) / 2
+	-- Drive to zero and keep acceleration down
+	-- min dλ' dλ + dλ' A' A dλ
+	local planName0 = os.tmpname()
+	local planName = planName0..'.mat'
+	assert(os.rename(planName0, planName), "Could not form tmp file")
+	mattorch.saveTable(planName, {
+		dlambda0 = dλ,
+	})
+
+	print('Sending lambda plan:', planName)
+	opt_ch:send(planName)
+
+	-- Calculate in the meantime...
+	local λ2q = {}
+	for i, e in ipairs(plan.eigVs) do
+		local _λ2q = e:narrow(2, 1, nNull)
+		λ2q[i] = _λ2q:clone()
 	end
-	-- Not allowed to move the first coords
-	table.insert(accelλ, 0)
-	--]]
 
-	--print('Running the kernel...')
-	----[[
-	local kernel = torch.Tensor(3, 1)
-	kernel[1] = -1
-	kernel[2] = 2
-	kernel[3] = -1
-	--]]
+	local optResult = opt_ch:receive()
+	print('Optimized lambda!', planName)
+	local optPath = mattorch.load(planName)
+	-- Remove the file when done
+	os.remove(planName)
 
-	--[[
-	local kernel = torch.Tensor(5, 1)
-	kernel[1] = -1
-	kernel[2] = -3
-	kernel[3] = 5
-	kernel[4] = -3
-	kernel[5] = -1
-	--]]
-
-	--[[
-	local kernel = torch.Tensor(7, 1)
-	kernel[1] = -1
-	kernel[2] = -3
-	kernel[3] = -5
-	kernel[4] = 7
-	kernel[5] = -5
-	kernel[6] = -3
-	kernel[7] = -1
-	--]]
-
-	----[[
-	local jerkλ = torch.conv2(dλ, kernel, 'F')
-		:narrow(1, 1+kernel:size(1)/2, dλ:size(1))
-	--]]
-	jerkλ[1]:add(dλ[1], -1, dλ[2])
-	jerkλ[n]:add(dλ[n], -1, dλ[n-1])
-
-	-- Find the λ acceleration gradient (jerk)
-	--[[
-	local _dλ = dλ:view(dλ:size(1))
-	--print(dλ:size(), _dλ:size())
-	-- NOTE: Could do the convolution only with the valid part
-	local jerkλ = {
-		_dλ[1] + -1*_dλ[2]
-	}
-	for i=2,n-1 do
-		jerkλ[i] = 2*_dλ[i] + -1*_dλ[i-1] + -1*_dλ[i+1]
+	local dλOpt = optPath.dlambda:view(#plan.qwPath, nNull)
+	local qOptimized = {}
+	for i, q in ipairs(plan.qwPath) do
+		local dq = vector.new( λ2q[i] * (dλOpt[i] - dλ[i]) )
+		qOptimized[i] = q + dq
 	end
-	-- Not allowed to move the first coords
-	table.insert(jerkλ, _dλ[n] + -1*_dλ[n-1])
-	--]]
-
-	-- Total gradient
-	local wa = 1 /10
-	local wj = 1 /100 * 0
-	local gradλ = dλ:clone():mul(wa):add(wj, jerkλ)
-
-	--[[
-	local gradλ = {}
-	for i=1, n do
-		--gradλ[i] = wa * accelλ[i] + wj * jerkλ[i]
-		--print(dλ[i], jerkλ[i])
-		gradλ[i] = wa * _dλ[i] + wj * jerkλ[i]
-	end
-	--]]
-	--accelλ = nil
-	--jerkλ = nil
-
-	-- Formulate the angular changes needed.
-	-- Actually may need to change a bit?
-	--[[
-	local ddq = {}
-	for i, g in ipairs(gradλ) do
-		--ddq[i] = g * λ2q[i]
-		ddq[i] = g * vector.new( λ2q[i]:view(λ2q[i]:size(1)) )
-	end
-	--]]
-
-	----[[
-	local a = 1
-	local step = a * (1 - (path.i_optimizations-1)/path.n_optimizations)
-	local ddq = {}
-	for i, _λ2q in ipairs(λ2q) do
-		local g = gradλ[i]
-		ddq[i] = vector.new(
-		torch.mv(_λ2q, g):mul(step)
-			--:div(torch.norm(g)):mul(step)
-			)
-	end
-	--]]
-
-	--[[
-	local ddq = {}
-	local zeroQ = vector.zeros(nq)
-	for i, dd in ipairs(ddq0) do
-		nm = vector.norm(dd)
-		ddq[i] = (nm<1e-9) and zeroQ or (step * dd / nm)
-	end
-	ddq0 = nil
-	--]]
-
-	-- Find the new path
-	local qPathNew = {}
-	local wPathNew = {}
-	for i, d in ipairs(ddq) do
-		if nNull==2 then
-			--print('d[1]', d[1], vector.slice(d, 2))
-			table.insert(qPathNew, qPath[i] - vector.slice(d, 2))
-			table.insert(wPathNew, vector.new{wPath[i][1] - d[1], 0})
-			--print('wPathNew', wPathNew[i])
-		else
-			print('d', d*RAD_TO_DEG)
-			table.insert(qPathNew, qPath[i] - d)
-		end
-	end
-	qPathNew[1] = qPath[1]
-	if type(wPath)=='table' and #wPath>0 then
-		wPathNew[1] = wPath[1]
-	end
-	--qPathNew[#qPath] = qPath[#qPath]
-	return qPathNew, wPathNew, gradλ
-
+	return qOptimized
 end
 -- Still must set the forward and inverse kinematics
 function libArmPlan.new_planner(id)

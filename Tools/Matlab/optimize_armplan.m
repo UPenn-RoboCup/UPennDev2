@@ -8,9 +8,9 @@ epsilon = deg2rad(10);
 % Constraint the joints to be close on how many iterations...
 % More skips makes the formulation of the problem easier
 % Only works with proper acceleration weight
-%nSkip = 0; % Default on all
+nSkip = 0; % Default on all
 %nSkip = 10; % One constraint per second
-nSkip = 3;
+%nSkip = 3;
 nSkip = max(floor(nSkip), 0) + 1;
 % TODO: Truncate the path if possible, once the difference is small
 % Then further optimization steps just make the path smaller

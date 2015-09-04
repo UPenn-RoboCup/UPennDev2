@@ -760,14 +760,15 @@ local function pathJacobians(self, plan)
 end
 
 local function pathEigs(self, path)
-	local eigs
+	local eigs = {}
 	local eigVs = {}
 	local eigVinvs = {}
 	for i, nullspace in ipairs(path.nulls) do
-		eigs, eigVs[i] = torch.eig(nullspace, 'V')
+		eigs[i], eigVs[i] = torch.eig(nullspace, 'V')
 		eigVinvs[i] = torch.inverse(eigVs[i])
 	end
 	path.eigVs, path.eigVinvs = eigVs, eigVinvs
+	path.eigs = eigs
 end
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')
@@ -775,6 +776,8 @@ local function optimize(self, plan)
 	local planName0 = os.tmpname()
 	local planName = planName0..'.mat'
 	assert(os.rename(planName0, planName), "Could not form tmp file")
+	-- 0 is the q version, 1 is the lambda version
+	plan.kind = 0
 	mattorch.saveTable(planName, plan)
 	-- Send the tmpname of the mat file
 	print('Sending plan:', planName)
@@ -782,6 +785,7 @@ local function optimize(self, plan)
 	local optResult = opt_ch:receive()
 	print('Optimized!', planName)
 	local optPath = mattorch.load(planName)
+	--os.exit()
 	-- Remove the file when done
 	os.remove(planName)
 	-- Place into a table
@@ -802,35 +806,46 @@ local function optimize2(self, plan)
 	local qGoal = plan.qwPath[np]
 	-- Find the coordinate in λ space
 	print('Finding the λ coordinates...')
-	local dqNull = torch.Tensor(nq)
-	local dlambda = torch.Tensor(nq)
+	--local dqNull = torch.Tensor(nq)
+	--local dlambda = torch.Tensor(nq)
 	local dλ = torch.Tensor(np, nNull)
+	local Us = {}
 	for i, q in ipairs(plan.qwPath) do
 		local dqGoal = torch.Tensor(q - qGoal)
-		torch.mv(dqNull, plan.nulls[i], dqGoal)
-		torch.mv(dlambda, plan.eigVinvs[i], dqNull)
-		local _dλ = dlambda:sub(1, nNull)
-		dλ[i]:copy(_dλ)
+		U, S, V = torch.svd(plan.nulls[i])
+		dλ[i] = V:sub(1, nq, 1, nNull):t() * dqGoal
+		Us[i] = U
+		--lambda(i) = V(:, 1)' * (qwPath{i} - qwPath{end});
+		--torch.mv(dqNull, plan.nulls[i], dqGoal)
+		--torch.mv(dlambda, plan.eigVinvs[i], dqNull)
+		--local _dλ = dlambda:sub(1, nNull)
+		--dλ[i]:copy(_dλ)
+		--print(i, dλ[i][1])
 	end
+	plan.dlambda0 = dλ
 
 	-- Drive to zero and keep acceleration down
 	-- min dλ' dλ + dλ' A' A dλ
 	local planName0 = os.tmpname()
 	local planName = planName0..'.mat'
 	assert(os.rename(planName0, planName), "Could not form tmp file")
-	mattorch.saveTable(planName, {
-		dlambda0 = dλ,
-	})
+	-- 0 is the q version, 1 is the lambda version
+	plan.kind = 1
+	mattorch.saveTable(planName, plan)
 
 	print('Sending lambda plan:', planName)
 	opt_ch:send(planName)
 
 	-- Calculate in the meantime...
+	--[[
 	local λ2q = {}
 	for i, e in ipairs(plan.eigVs) do
+		--print(plan.eigs[i]:sub(1,nNull,1,1))
+		print(plan.eigs[i]:t():sub(1,1))
 		local _λ2q = e:narrow(2, 1, nNull)
 		λ2q[i] = _λ2q:clone()
 	end
+	--]]
 
 	local optResult = opt_ch:receive()
 	print('Optimized lambda!', planName)
@@ -841,7 +856,11 @@ local function optimize2(self, plan)
 	local dλOpt = optPath.dlambda:view(#plan.qwPath, nNull)
 	local qOptimized = {}
 	for i, q in ipairs(plan.qwPath) do
-		local dq = vector.new( λ2q[i] * (dλOpt[i] - dλ[i]) )
+		--local dq = vector.new( λ2q[i] * (dλOpt[i] - dλ[i]) )
+		local dq = vector.new(
+			V:sub(1, nq, 1, nNull) * (dλOpt[i] - dλ[i])
+		)
+
 		qOptimized[i] = q + dq
 	end
 	return qOptimized

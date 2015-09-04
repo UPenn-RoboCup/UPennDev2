@@ -82,8 +82,9 @@ cvx_begin
     variable q(n)
     dual variables lam1 lam2 %y{np}
     %minimize( quad_form(q, P0) -2 * q0'*q + r0 )
+    minimize( quad_form(q, ATA))
     % This seems faster
-    minimize( quad_form(q, P0) -2 * q0'*q )
+    %minimize( quad_form(q, P0) -2 * q0'*q )
     % This seems slower...
     %minimize( norm( P0sqrt * q - b ) )
     % Keep the first point the same
@@ -95,25 +96,4 @@ cvx_begin
     %for k = nq+1 : nq : n,
         norm(q(k:k+nq-1) - qPath0(k:k+nq-1)) <= epsilon;
     end
-
-% TODO: Keep the difference in human space close...
-%lam1: quad_form(q, NTN) + q1'*q + r1 <= epsilon;
 cvx_end
-
-% obj1 = cvx_optval;
-%
-% P_lam = P0 + lam1;
-% q_lam = q0 + lam1 * q1;
-% r_lam = r0 + lam1 * r1;
-%
-% obj2 = -0.5*q_lam'*inv(P_lam)*q_lam + r_lam;
-%
-
-%
-% % Displaying results
-% disp('------------------------------------------------------------------------');
-% disp('The duality gap is equal to ');
-% disp(obj1-obj2);
-
-%clear P0 q0 r0;
-%clear q1 r1;

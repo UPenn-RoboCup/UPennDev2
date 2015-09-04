@@ -1,11 +1,15 @@
 %% Plot
 dlambda0 = reshape(dlambda0, [nNull, np]);
 dlambda = reshape(dlambda, [nNull, np]);
-figure(1);
+figure(11);
 plot(dlambda0);
-figure(2);
+title('Original lambda');
+
+figure(12);
 plot(dlambda);
-figure(3);
-plot(dlambda - dlambda0);
+title('Optimized lambda');
+
+%figure(13);
+%plot(dlambda - dlambda0);
 
 drawnow;

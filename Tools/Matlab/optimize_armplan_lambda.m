@@ -1,10 +1,10 @@
 %% Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 1e3;
+alpha = 1e2;
 %alpha = 1e2; % Snaps to the next goal
 %alpha = 0; % Instant if possible (Verified)
 % Closeness to previous trajectory
-epsilon = deg2rad(10);
+epsilon = deg2rad(2);
 % Constraint the joints to be close on how many iterations...
 % More skips makes the formulation of the problem easier
 % Only works with proper acceleration weight

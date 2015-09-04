@@ -25,14 +25,14 @@ while 1
         load(char(tmpfile));
         
         % Run the optimizer
-        if exist('dlambda0', 'var')
+        if kind==1
             optimize_armplan_lambda;
         else
             optimize_armplan;
         end
         
         % Save results to be opened
-        if exist('dlambda', 'var')
+        if kind==1
             save(tmpfile, 'dlambda');
         else
             save(tmpfile, 'q');
@@ -41,7 +41,7 @@ while 1
         
         fprintf(1,'Done! \n');
         % Show
-        if exist('dlambda0', 'var')
+        if kind==1
             show_armplan_lambda;
             clear dlambda0 dlambda;
         else

@@ -46,4 +46,25 @@ xlabel('Time (s)');
 ylabel('Acceleration (deg/s^2)');
 title('Joint Accelerations');
 
+%% Plot the singular values
+np = numel(nulls);
+Ss = zeros(np, numel(qArm0));
+%U = {};
+%S = {};
+%V = {};
+lambda = zeros(np, 1);
+for i=1:numel(nulls)
+    %[U{i}, S{i}, V{i}] = svd(nulls{i});
+    [U, S, V] = svd(nulls{i});
+    Ss(i,:) = diag(S);
+    lambda(i) = V(:, 1)' * (qwPath{i} - qwPath{end});
+end
+figure(6);
+plot(Ss);
+title('Singular Values');
+
+figure(7);
+plot(lambda);
+
+%% Draw
 drawnow;

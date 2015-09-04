@@ -286,24 +286,26 @@ function libArmPlan.joint_preplan(self, plan)
 	assert(type(qWaistArm0)=='table',
 		prefix..'Bad initial configuration')
 	vector.new(qWaistArm0)
-
 	--  Set the Final Goal for the arm
+	local qWaistGuess = plan.qWaistGuess
+	util.ptable(plan)
 	local qWaistArmF
 	if type(plan.q)=='table' then
 		qWaistArmF = plan.q
 	elseif plan.tr then
 		qWaistArmF = self:find_shoulder(
-			plan.tr, qArm0, plan.weights, qWaist0)
+			plan.tr, qArm0, plan.weights,
+			qWaistGuess or qWaist0)
 	end
-	local qWaistGuess = plan.qWaistGuess
-	-- TODO: Add waist stuff with q as a goal
+	assert(type(qWaistArmF)=='table',
+		prefix..'No final goal')
+	vector.new(qWaistArmF)
+	-- Add waist motions
 	if qWaistGuess then
 		assert(qWaist0)
-		table.insert(qWaistArmF, 1, qWaistGuess)
-		table.insert(qWaistArm0, 1, qWaist0)
+		table.insert(qWaistArmF, 1, qWaistGuess[1])
+		table.insert(qWaistArm0, 1, qWaist0[1])
 	end
-	assert(type(qWaistArmF)=='table', prefix..'No final goal')
-	vector.new(qWaistArmF)
 	-- Grab our limits
 	local dq_limit
 	local qMin
@@ -453,12 +455,13 @@ function libArmPlan.jacobian_preplan(self, plan)
 		qWaistArmGuess = qArmGuess or self:find_shoulder(
 			trGoal, qArm0, plan.weights, qWaistGuess or qWaist0)
 	end
-	assert(type(plan.tr)=='table', prefix..'No goal specified')
+	assert(type(plan.tr)=='table',
+		prefix..'No goal specified')
 	-- Use straight jacobian if no guess
 	if qWaistArmGuess then
 		plan.qWaistArmGuess = vector.new(qWaistArmGuess)
 		if qWaistGuess then
-			table.insert(qWaistArmGuess, 1, qWaistGuess)
+			table.insert(qWaistArmGuess, 1, qWaistGuess[1])
 		end
 	else
 		if Config.debug.armplan then
@@ -521,8 +524,12 @@ function libArmPlan.jacobian_preplan(self, plan)
 		-- Joint velocities to accomplish the se(3) velocities
 		local dqdtArm = torch.mv(Jinv, vwTarget)
 		local dqdtCombo
+		--print('here...')
+		--print('qWaistArm', qWaistArm)
+		--print('qWaistArmGuess', qWaistArmGuess)
 		if qWaistArmGuess then
-			local dqNull = torch.Tensor(qWaistArm - qWaistArmGuess)
+			local dqNull = torch.Tensor(
+				qWaistArm - qWaistArmGuess)
 			torch.mv(dqdtNull, nullspace, dqNull)
 			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
 		else
@@ -578,8 +585,6 @@ function libArmPlan.jacobian_preplan(self, plan)
 	return libArmPlan.joint_preplan(self, plan)
 	--return plan
 end
--- API continuity:
-libArmPlan.jacobian_waist_preplan = jacobian_preplan
 
 -- Resume with an updated plan or empty table if no updates
 function libArmPlan.jacobian_velocity(self, plan)

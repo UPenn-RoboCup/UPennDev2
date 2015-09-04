@@ -812,8 +812,9 @@ local function optimize2(self, plan)
 	local Us = {}
 	for i, q in ipairs(plan.qwPath) do
 		local dqGoal = torch.Tensor(q - qGoal)
-		U, S, V = torch.svd(plan.nulls[i])
-		dλ[i] = V:sub(1, nq, 1, nNull):t() * dqGoal
+		local U, S, V = torch.svd(plan.nulls[i])
+		local subV = V:sub(1, nq, 1, nNull):t()
+		dλ[i] = subV * dqGoal
 		Us[i] = U
 		--lambda(i) = V(:, 1)' * (qwPath{i} - qwPath{end});
 		--torch.mv(dqNull, plan.nulls[i], dqGoal)
@@ -821,6 +822,11 @@ local function optimize2(self, plan)
 		--local _dλ = dlambda:sub(1, nNull)
 		--dλ[i]:copy(_dλ)
 		--print(i, dλ[i][1])
+		--print(i, vector.new(S))
+		--print('U')
+		--print(U)
+		--print('V')
+		--print(V)
 	end
 	plan.dlambda0 = dλ
 
@@ -858,9 +864,8 @@ local function optimize2(self, plan)
 	for i, q in ipairs(plan.qwPath) do
 		--local dq = vector.new( λ2q[i] * (dλOpt[i] - dλ[i]) )
 		local dq = vector.new(
-			V:sub(1, nq, 1, nNull) * (dλOpt[i] - dλ[i])
+			Us[i]:sub(1, nq, 1, nNull) * (dλOpt[i] - dλ[i])
 		)
-
 		qOptimized[i] = q + dq
 	end
 	return qOptimized

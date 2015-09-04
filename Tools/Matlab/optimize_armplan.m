@@ -46,7 +46,7 @@ A = sparse(A);
 ATA = A' * A;
 
 %% Nullspace
-N = sparse(blkdiag(nulls{:}));
+N = sparse(blkdiag(nulls{:}))';
 % TODO: Just each block times itself?
 NTN = N' * N;
 

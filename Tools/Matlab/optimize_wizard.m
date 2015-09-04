@@ -41,12 +41,7 @@ while 1
         
         fprintf(1,'Done! \n');
         % Show
-        if kind==1
-            show_armplan_lambda;
-            clear dlambda0 dlambda;
-        else
-            show_armplan;
-        end
+        show_armplan;
 
     %else disp('Timeout...');
     end

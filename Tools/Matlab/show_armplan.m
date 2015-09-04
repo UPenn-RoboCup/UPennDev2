@@ -22,14 +22,18 @@ ylabel('Degrees');
 title('Optimized Trajectory');
 
 figure(3);
-plot(t, rad2deg(qq-qq0));
+plot(t, rad2deg(qq - qq0));
 xlim(tlim);
 xlabel('Time (s)');
 ylabel('Degrees');
 title('Trajectory Difference');
 
 figure(4);
-plot(abs(diff(rad2deg(qq))))
+qVel = diff(rad2deg(qq));
+qVel = [zeros(1, nq); qVel];
+plot(t, abs(qVel));
+xlim(tlim);
+xlabel('Time (s)');
 title('Speed');
 
 drawnow;

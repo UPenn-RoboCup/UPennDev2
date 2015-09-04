@@ -5,8 +5,6 @@ alpha = 1e3;
 %alpha = 0; % Instant if possible (Verified)
 % Closeness to previous trajectory
 epsilon = deg2rad(10);
-% Number of joints
-nq = 7;
 % Constraint the joints to be close on how many iterations...
 % More skips makes the formulation of the problem easier
 % Only works with proper acceleration weight
@@ -19,7 +17,11 @@ nSkip = max(floor(nSkip), 0) + 1;
 
 %% Joint angles on the path
 qPath0 = cell2mat(qwPath);
+% Number of joints angles in total
 n = numel(qPath0);
+% Number of joints
+nq = size(qwPath{1}, 1);
+% Number of trajectory points
 np = n / nq;
 % If given a guess, else the last point
 if exist('qWaistArmGuess', 'var')

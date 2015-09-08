@@ -3,6 +3,8 @@
 alpha = 1e3;
 %alpha = 1e2; % Snaps to the next goal
 %alpha = 0; % Instant if possible (Verified)
+% 
+beta = 25;
 % Closeness to previous trajectory
 epsilon = deg2rad(10);
 % Constraint the joints to be close on how many iterations...
@@ -55,8 +57,8 @@ J = sparse(blkdiag(Js{:}));
 JTJ = J * J';
 
 %% Optimization Variables
-P0 = (NTN + JTJ) + alpha * ATA;
-q0 = qStar' * (NTN + JTJ);
+P0 = (NTN + beta * JTJ) + alpha * ATA;
+q0 = qStar' * (NTN + beta * JTJ);
 % NOTE: This constant is probably not needed
 %r0 = qStar' * NTN * qStar;
 % NOTE: Flip dimensions...
@@ -86,9 +88,9 @@ cvx_begin
     variable q(n)
     dual variables lam1 lam2 %y{np}
     %minimize( quad_form(q, P0) -2 * q0'*q + r0 )
-    minimize( quad_form(q, ATA))
+    %minimize( quad_form(q, ATA))
     % This seems faster
-    %minimize( quad_form(q, P0) -2 * q0'*q )
+    minimize( quad_form(q, P0) -2 * q0'*q )
     % This seems slower...
     %minimize( norm( P0sqrt * q - b ) )
     % Keep the first point the same

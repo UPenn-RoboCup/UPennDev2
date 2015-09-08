@@ -50,9 +50,13 @@ N = sparse(blkdiag(nulls{:}))';
 % TODO: Just each block times itself?
 NTN = N' * N;
 
+%% Jacobians
+J = sparse(blkdiag(Js{:}));
+JTJ = J * J';
+
 %% Optimization Variables
-P0 = NTN + alpha * ATA;
-q0 = qStar' * NTN;
+P0 = (NTN + JTJ) + alpha * ATA;
+q0 = qStar' * (NTN + JTJ);
 % NOTE: This constant is probably not needed
 %r0 = qStar' * NTN * qStar;
 % NOTE: Flip dimensions...

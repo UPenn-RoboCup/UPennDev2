@@ -55,7 +55,7 @@ movearm.rPlanner = rPlanner
 local function co_play(self, plan, callback)
 
 	-- Run the optimizer
-	plan.n_optimizations = 4
+	plan.n_optimizations = 1
 	plan.update_jacobians = true
 	--plan.n_optimizations = 0
 	--plan.update_jacobians = false
@@ -67,11 +67,9 @@ local function co_play(self, plan, callback)
 			self:jacobians(plan)
 		end
 		plan.qwPath = self:optimize(plan)
-		--if not plan.eigVs then self:eigs(plan) end
 		--plan.qwPath = self:optimize2(plan)
 		if plan.update_jacobians then
 			self:jacobians(plan)
-			--self:eigs(plan)
 		end
 	end
 	--plan.qwPath = self:optimize(plan)

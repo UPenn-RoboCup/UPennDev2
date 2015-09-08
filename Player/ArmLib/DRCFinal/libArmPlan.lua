@@ -333,6 +333,7 @@ function libArmPlan.joint_preplan(self, plan)
 	-- Continue or start anew
 	plan.qwPath = plan.qwPath or {}
 	plan.nulls = plan.nulls or {}
+	plan.Js = plan.Js or {}
 	-- If given a duration, then check speed limit compliance
 	if type(plan.duration)=='number' then
 		local dqTotal = qArmF - qArm0
@@ -369,8 +370,9 @@ function libArmPlan.joint_preplan(self, plan)
 				qArm = qWaistArm
 				qWaist = qWaist0
 			end
-			local nullspace = get_nullspace(self, qWaistArm, qArm, qWaist)
+			local nullspace, J = get_nullspace(self, qWaistArm, qArm, qWaist)
 			table.insert(plan.nulls, nullspace)
+			table.insert(plan.Js, J)
 		end
 		return plan
 	end
@@ -404,9 +406,10 @@ function libArmPlan.joint_preplan(self, plan)
 			qArm = qWaistArm
 			qWaist = qWaist0
 		end
-		local nullspace = get_nullspace(
+		local nullspace, J = get_nullspace(
 			self, qWaistArm, qArm, qWaist)
 		table.insert(plan.nulls, nullspace)
+		table.insert(plan.Js, J)
 		n = n + 1
 	until n > nStepsTimeout
 
@@ -499,6 +502,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local dqdtNull = torch.Tensor(#qWaistArm)
 	-- Continue the path
 	plan.nulls = plan.nulls or {}
+	plan.Js = plan.Js or {}
 	plan.qwPath = plan.qwPath or {}
 	-- Begin
 	print(prefix..'Beginning')
@@ -521,6 +525,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 		local nullspace, J, Jinv = get_nullspace(
 			self, qWaistArm, qArm, qWaistGuess and qWaist)
 		table.insert(plan.nulls, nullspace)
+		table.insert(plan.Js, J)
 		-- Joint velocities to accomplish the se(3) velocities
 		local dqdtArm = torch.mv(Jinv, vwTarget)
 		local dqdtCombo
@@ -744,6 +749,7 @@ end
 local function pathJacobians(self, plan)
 	-- Find the nullspace acting in
 	local nulls = {}
+	local Js = {}
 	local qArm, qWaist
 	for i, qw in ipairs(plan.qwPath) do
 		-- Decompose
@@ -754,9 +760,10 @@ local function pathJacobians(self, plan)
 			qArm = qw
 			qWaist = nil
 		end
-		nulls[i] = get_nullspace(self, qw, qArm, qWaist)
+		nulls[i], Js[i] = get_nullspace(self, qw, qArm, qWaist)
 	end
 	plan.nulls = nulls
+	plan.Js = Js
 end
 
 local function pathEigs(self, path)
@@ -778,6 +785,24 @@ local function optimize(self, plan)
 	assert(os.rename(planName0, planName), "Could not form tmp file")
 	-- 0 is the q version, 1 is the lambda version
 	plan.kind = 0
+
+
+	-- For debugging
+	local np = #plan.qwPath
+	local nq = #plan.qwPath[1]
+	local nNull = nq - 6
+	local qGoal = plan.qwPath[np]
+	local dλ = torch.Tensor(np, nNull)
+	local Us = {}
+	for i, q in ipairs(plan.qwPath) do
+		local dqGoal = torch.Tensor(q - qGoal)
+		local U, S, V = torch.svd(plan.nulls[i])
+		local subV = V:sub(1, nq, 1, nNull):t()
+		dλ[i] = torch.diag(S):sub(1,nNull,1,nNull) * subV * dqGoal
+		Us[i] = U
+	end
+	plan.dlambda0 = dλ
+
 	mattorch.saveTable(planName, plan)
 	-- Send the tmpname of the mat file
 	print('Sending plan:', planName)
@@ -814,19 +839,8 @@ local function optimize2(self, plan)
 		local dqGoal = torch.Tensor(q - qGoal)
 		local U, S, V = torch.svd(plan.nulls[i])
 		local subV = V:sub(1, nq, 1, nNull):t()
-		dλ[i] = subV * dqGoal
+		dλ[i] = torch.diag(S):sub(1,nNull,1,nNull) * subV * dqGoal
 		Us[i] = U
-		--lambda(i) = V(:, 1)' * (qwPath{i} - qwPath{end});
-		--torch.mv(dqNull, plan.nulls[i], dqGoal)
-		--torch.mv(dlambda, plan.eigVinvs[i], dqNull)
-		--local _dλ = dlambda:sub(1, nNull)
-		--dλ[i]:copy(_dλ)
-		--print(i, dλ[i][1])
-		--print(i, vector.new(S))
-		--print('U')
-		--print(U)
-		--print('V')
-		--print(V)
 	end
 	plan.dlambda0 = dλ
 
@@ -863,9 +877,8 @@ local function optimize2(self, plan)
 	local qOptimized = {}
 	for i, q in ipairs(plan.qwPath) do
 		--local dq = vector.new( λ2q[i] * (dλOpt[i] - dλ[i]) )
-		local dq = vector.new(
-			Us[i]:sub(1, nq, 1, nNull) * (dλOpt[i] - dλ[i])
-		)
+		local dq_t = Us[i]:sub(1, nq, 1, nNull) * (dλOpt[i] - dλ[i])
+		local dq = vector.new(dq_t)
 		qOptimized[i] = q + dq
 	end
 	return qOptimized

@@ -50,7 +50,6 @@ if kind==0
 end
 
 %% Plot the singular values
-
 Ss = zeros(np, numel(qArm0));
 %U = {};
 %S = {};
@@ -60,35 +59,48 @@ for i=1:numel(nulls)
     %[U{i}, S{i}, V{i}] = svd(nulls{i});
     [U, S, V] = svd(nulls{i}');
     Ss(i,:) = diag(S);
-    lambda(i) = V(:, 1)' * (qwPath{i} - qwPath{end});
+    lambda(i) = S(1:1,1:1) * V(:, 1)' * (qwPath{i} - qwPath{end});
+    %{
     if i>=47 && i<=50
         i
         U
         diag(S)'
         V
+        eig(nulls{i}')
     end
     if i>=49
         lambda(i) = -1*lambda(i);
     end
+    %}
 end
 figure(6);
-plot(Ss);
+plot(t, Ss);
+xlim(tlim);
+xlabel('Time (s)');
 title('Singular Values');
 
 figure(7);
-plot(lambda);
+plot(t, lambda);
+xlim(tlim);
+xlabel('Time (s)');
 title('Original lambda [MATLAB]')
 
 %% If lambda was given
-if kind==1
+if exist('dlamda0', 'var')
     dlambda0 = reshape(dlambda0, [nNull, np]);
-    dlambda = reshape(dlambda, [nNull, np]);
-    figure(11);
-    plot(dlambda0);
-    title('Original lambda [torch]');
     
+    figure(11);
+    plot(t, dlambda0);
+    xlim(tlim);
+    xlabel('Time (s)');
+    title('Original lambda [torch]');
+end
+if kind==1
+    dlambda = reshape(dlambda, [nNull, np]);
     figure(12);
-    plot(dlambda);
+    plot(t, dlambda);
+    xlim(tlim);
+    xlabel('Time (s)');
     title('Optimized lambda [torch]');
 end
 

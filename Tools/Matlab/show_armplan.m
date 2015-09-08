@@ -50,29 +50,49 @@ if kind==0
 end
 
 %% Plot the singular values
-Ss = zeros(np, numel(qArm0));
-%U = {};
-%S = {};
-%V = {};
-lambda = zeros(np, 1);
+nn = 2; % Number of null
+gamma = 0.5;
+Ns = cell(size(nulls));
+Ns{1} = nulls{1};
+for i=2:numel(nulls)
+    Ns{i} = (1-gamma)*Ns{i-1} + gamma*nulls{i};
+end
+
+Ss = zeros(np, nq);
+Vs = zeros(np, nq);
+Us = zeros(np, nq);
+lambda = zeros(np, nn);
+
+REFLECTION_SIGN = 1;
+
 for i=1:numel(nulls)
     %[U{i}, S{i}, V{i}] = svd(nulls{i});
-    [U, S, V] = svd(nulls{i}');
+    [U, S, V] = svd(Ns{i}');
+    Vs(i,:) = V(:, 1);
+    Us(i,:) = U(:, 1);
+    
+    %[U, S, V] = svd(gamma*nulls{i}'+(1-gamma)*nulls{i-1}');
+    %[U, S, V] = svds(gamma*nulls{i}'+(1-gamma)*nulls{i-1}', 1);
     Ss(i,:) = diag(S);
-    lambda(i) = S(1:1,1:1) * V(:, 1)' * (qwPath{i} - qwPath{end});
-    %{
-    if i>=47 && i<=50
-        i
-        U
-        diag(S)'
-        V
-        eig(nulls{i}')
-    end
-    if i>=49
-        lambda(i) = -1*lambda(i);
-    end
-    %}
+    lambda(i,:) = S(1:nn,1:nn) * V(:, 1:nn)' * (qwPath{i} - qwPath{end});
+    
 end
+
+for i=2:numel(nulls)
+    dirlambda = dot(Vs(i,:), Vs(i-1,:));
+    if abs(dirlambda)>0.9
+        % Prety much the same dir...
+        if dirlambda < 0
+            Vs(i,:) = -Vs(i,:);
+            Us(i,:) = -Us(i,:);
+            lambda(i,:) = -lambda(i,:);
+        end
+    else
+        fprintf('Dir switch: %d, %f\n', i, t(i));
+    end
+end
+
+%% Plot them
 figure(6);
 plot(t, Ss);
 xlim(tlim);
@@ -83,12 +103,14 @@ figure(7);
 plot(t, lambda);
 xlim(tlim);
 xlabel('Time (s)');
-title('Original lambda [MATLAB]')
+title('Original lambda [MATLAB]');
+
+figure(10);plot(t,Vs);xlim(tlim);title('Vs');
+figure(11);plot(t,Us);xlim(tlim);title('Us');
 
 %% If lambda was given
 if exist('dlamda0', 'var')
     dlambda0 = reshape(dlambda0, [nNull, np]);
-    
     figure(11);
     plot(t, dlambda0);
     xlim(tlim);

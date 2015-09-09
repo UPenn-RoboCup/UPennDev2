@@ -83,11 +83,28 @@ if exist('dlambda', 'var')
     hold off;
     xlim(tlim);
     xlabel('Time (s)');
-    title('Optimized lambda');
+    title('Optimized dlambda');
+end
+
+if exist('ddlambda', 'var')
+    figure(14);
+    clf;
+    hold on;
+    cmap = hsv(numel(swapidx)-1);
+    for i=1:numel(swapidx)-1
+        range = swapidx(i):swapidx(i+1);
+        for iN=1:nNull
+            plot(t(range), ddlambda(range, iN), '-s', 'Color', cmap(i,:));
+        end
+    end
+    hold off;
+    xlim(tlim);
+    xlabel('Time (s)');
+    title('Optimized ddlambda');
 end
 
 if exist('qLambda', 'var')
-    figure(14);
+    figure(15);
     plot(t, rad2deg(qLambda));
     xlim(tlim);
     ylim([-180, 180]);
@@ -96,7 +113,7 @@ if exist('qLambda', 'var')
 end
 
 if exist('dqLambda', 'var')
-    figure(15);
+    figure(16);
     plot(t, rad2deg(dqLambda));
     xlim(tlim);
     xlabel('Time (s)');

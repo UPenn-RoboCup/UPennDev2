@@ -279,8 +279,8 @@ function libArmPlan.joint_preplan(self, plan)
 			qArm0 = {unpack(qArm0, diff + 1)}
 		end
 	else
-		qArm0 = plan.qArm0
 		qWaist0 = plan.qWaist0
+		qArm0 = plan.qArm0
 	end
 	local qWaistArm0 = qArm0
 	assert(type(qWaistArm0)=='table',
@@ -288,7 +288,6 @@ function libArmPlan.joint_preplan(self, plan)
 	vector.new(qWaistArm0)
 	--  Set the Final Goal for the arm
 	local qWaistGuess = plan.qWaistGuess
-	util.ptable(plan)
 	local qWaistArmF
 	if type(plan.q)=='table' then
 		qWaistArmF = plan.q
@@ -302,7 +301,7 @@ function libArmPlan.joint_preplan(self, plan)
 	vector.new(qWaistArmF)
 	-- Add waist motions
 	if qWaistGuess then
-		assert(qWaist0)
+		assert(type(qWaist0)=='table')
 		table.insert(qWaistArmF, 1, qWaistGuess[1])
 		table.insert(qWaistArm0, 1, qWaist0[1])
 	end
@@ -310,7 +309,7 @@ function libArmPlan.joint_preplan(self, plan)
 	local dq_limit
 	local qMin
 	local qMax
-	if qWaist0 then
+	if qWaistGuess then
 		qMin = self.qWMin
 		qMax = self.qWMax
 		dq_limit = self.dqW_limit
@@ -327,13 +326,14 @@ function libArmPlan.joint_preplan(self, plan)
 	local hz, dt = self.hz, self.dt
 	-- Initial position
 	local qArm = vector.copy(qArm0)
-	local qWaist
-	if qWaist0 then qWaist = vector.copy(qWaist0) end
+	local qWaist = vector.copy(qWaist0 or plan.qWaist0)
 	local qWaistArm = vector.copy(qWaistArm0)
 	-- Continue or start anew
 	plan.qwPath = plan.qwPath or {}
 	plan.nulls = plan.nulls or {}
 	plan.Js = plan.Js or {}
+	-- Task space path
+	plan.vwPath = plan.vwPath or {}
 	-- If given a duration, then check speed limit compliance
 	if type(plan.duration)=='number' then
 		local dqTotal = qArmF - qArm0
@@ -361,8 +361,20 @@ function libArmPlan.joint_preplan(self, plan)
 		end
 		for i=1,nsteps do
 			qWaistArm = qWaistArm + dqAverage
+			local nullspace, J, Jinv = get_nullspace(
+				self, qWaistArm, qArm, qWaistGuess and qWaist)
+			if plan.tr then
+				local dp, drpy = get_distance(self, plan.tr, qArm, qWaist)
+				local vwTarget0 = {
+					dp[1], dp[2], dp[3],
+					drpy[1], drpy[2], drpy[3],
+				}
+				table.insert(plan.vwPath, vwTarget0)
+			end
+			table.insert(plan.nulls, nullspace)
+			table.insert(plan.Js, J)
 			table.insert(plan.qwPath, qWaistArm)
-			-- Decompose
+			-- Decompose for next step
 			if qWaistGuess then
 				qArm = {unpack(qWaistArm, 2)}
 				qWaist = {qWaistArm[1], 0}
@@ -370,9 +382,6 @@ function libArmPlan.joint_preplan(self, plan)
 				qArm = qWaistArm
 				qWaist = qWaist0
 			end
-			local nullspace, J = get_nullspace(self, qWaistArm, qArm, qWaist)
-			table.insert(plan.nulls, nullspace)
-			table.insert(plan.Js, J)
 		end
 		return plan
 	end
@@ -393,12 +402,26 @@ function libArmPlan.joint_preplan(self, plan)
 		end
 		local max_usage = max(unpack(usage))
 		if max_usage>1 then
-			for i, qF in ipairs(dqF) do dqF[i] = qF / max_usage end
+			for i, qF in ipairs(dqF) do
+				dqF[i] = qF / max_usage
+			end
 		end
 		-- Apply the joint change
 		qWaistArm = qWaistArm + dqF
+		local nullspace, J, Jinv = get_nullspace(
+			self, qWaistArm, qArm, qWaistGuess and qWaist)
+		if plan.tr then
+			local dp, drpy = get_distance(self, plan.tr, qArm, qWaist)
+			local vwTarget0 = {
+				dp[1], dp[2], dp[3],
+				drpy[1], drpy[2], drpy[3],
+			}
+			table.insert(plan.vwPath, vwTarget0)
+		end
+		table.insert(plan.nulls, nullspace)
+		table.insert(plan.Js, J)
 		table.insert(plan.qwPath, qWaistArm)
-		-- Decompose
+		-- Decompose for next step
 		if qWaistGuess then
 			qArm = {unpack(qWaistArm, 2)}
 			qWaist = {qWaistArm[1], 0}
@@ -406,10 +429,6 @@ function libArmPlan.joint_preplan(self, plan)
 			qArm = qWaistArm
 			qWaist = qWaist0
 		end
-		local nullspace, J = get_nullspace(
-			self, qWaistArm, qArm, qWaist)
-		table.insert(plan.nulls, nullspace)
-		table.insert(plan.Js, J)
 		n = n + 1
 	until n > nStepsTimeout
 
@@ -447,16 +466,13 @@ function libArmPlan.jacobian_preplan(self, plan)
 	-- Update a guess for the final configuration
 	local qWaistGuess = plan.qWaistGuess
 	local qArmGuess = plan.qArmGuess
-	local trGoal
 	local qWaistArmGuess
 	if type(plan.q)=='table' then
-		trGoal = self.forward(plan.q, qWaistGuess or qWaist0)
-		plan.tr = trGoal
+		plan.tr = self.forward(plan.q, qWaistGuess or qWaist0)
 		qWaistArmGuess = plan.q
 	elseif plan.tr then
-		trGoal = plan.tr
 		qWaistArmGuess = qArmGuess or self:find_shoulder(
-			trGoal, qArm0, plan.weights, qWaistGuess or qWaist0)
+			plan.tr, qArm0, plan.weights, qWaistGuess or qWaist0)
 	end
 	assert(type(plan.tr)=='table',
 		prefix..'No goal specified')
@@ -504,28 +520,30 @@ function libArmPlan.jacobian_preplan(self, plan)
 	plan.nulls = plan.nulls or {}
 	plan.Js = plan.Js or {}
 	plan.qwPath = plan.qwPath or {}
+	-- Task space path
+	plan.vwPath = plan.vwPath or {}
 	-- Begin
 	print(prefix..'Beginning')
 	local n = 0
 	local dTF
 	local t0 = unix.time()
 	repeat
-		local dp, drpy = get_distance(self, trGoal, qArm, qWaist)
+		local dp, drpy =
+			get_distance(self, plan.tr, qArm, qWaist)
 		-- Check if we are within threshold
 		dTF = {vnorm(dp), vnorm(drpy)}
 		if dTF[1] < 0.025 and dTF[2] < 3*DEG_TO_RAD then
 			break
 		end
 		-- Form our desired velocity
-		local vwTarget = torch.Tensor{
+		local vwTarget0 = {
 			dp[1], dp[2], dp[3],
 			drpy[1], drpy[2], drpy[3],
 		}
+		local vwTarget = torch.Tensor(vwTarget0)
 		-- Find the nullspace and Jacobian
 		local nullspace, J, Jinv = get_nullspace(
 			self, qWaistArm, qArm, qWaistGuess and qWaist)
-		table.insert(plan.nulls, nullspace)
-		table.insert(plan.Js, J)
 		-- Joint velocities to accomplish the se(3) velocities
 		local dqdtArm = torch.mv(Jinv, vwTarget)
 		local dqdtCombo
@@ -541,7 +559,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 			dqdtCombo = dqdtArm
 		end
 		-- Respect the update rate, place as a lua table
-		local dqCombo = vector.new(dqdtCombo:mul(dt))
+		local dqCombo = vector.new(dqdtCombo) * dt
 		-- Check the speed limit usage
 		local usage = {}
 		for i, limit in ipairs(dq_limit) do
@@ -558,15 +576,14 @@ function libArmPlan.jacobian_preplan(self, plan)
 		qWaistArm = qWaistArm + dqCombo
 		-- Check joint limit compliance
 		for i, q in ipairs(qWaistArm) do
-			if i==5 or i==7 then
-				--qArm[i] = sanitize(q, qOld[i])
-			else
-				qWaistArm[i] = min(max(qMin[i], q), qMax[i])
-			end
+			qWaistArm[i] = min(max(qMin[i], q), qMax[i])
 		end
 		-- Add to the path
 		table.insert(plan.qwPath, qWaistArm)
-		-- Decompose
+		table.insert(plan.nulls, nullspace)
+		table.insert(plan.Js, J)
+		table.insert(plan.vwPath, vwTarget0)
+		-- Decompose for next iteration
 		if qWaistGuess then
 			qArm = {unpack(qWaistArm, 2)}
 			qWaist = {qWaistArm[1], 0}

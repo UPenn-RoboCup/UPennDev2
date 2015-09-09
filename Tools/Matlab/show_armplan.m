@@ -48,8 +48,8 @@ end
 
 %% Plot the Singular Values
 figure(6);plot(t, Ss);xlim(tlim);title('Singular Values');xlabel('Time (s)');
-figure(7);plot(t,Vs);xlim(tlim);title('Vs');xlabel('Time (s)');
-figure(8);plot(t,Us);xlim(tlim);title('Us');xlabel('Time (s)');
+%figure(7);plot(t,Vs);xlim(tlim);title('Vs');xlabel('Time (s)');
+%figure(8);plot(t,Us);xlim(tlim);title('Us');xlabel('Time (s)');
 
 %% Show the null space optimization result
 if exist('lambda', 'var')
@@ -59,7 +59,9 @@ if exist('lambda', 'var')
     cmap = hsv(numel(swapidx)-1);
     for i=1:numel(swapidx)-1
         range = swapidx(i):swapidx(i+1);
-        plot(t(range), lambda(range), '-s', 'Color', cmap(i,:));
+        for iN=1:nNull
+            plot(t(range), lambda(range, iN), '-s', 'Color', cmap(i,:));
+        end
     end
     hold off;
     xlim(tlim);
@@ -68,14 +70,15 @@ if exist('lambda', 'var')
 end
 
 if exist('dlambda', 'var')
-    dlambda = reshape(dlambda, [nNull, np]);
     figure(13);
     clf;
     hold on;
     cmap = hsv(numel(swapidx)-1);
     for i=1:numel(swapidx)-1
         range = swapidx(i):swapidx(i+1);
-        plot(t(range), dlambda(range), '-s', 'Color', cmap(i,:));
+        for iN=1:nNull
+            plot(t(range), dlambda(range, iN), '-s', 'Color', cmap(i,:));
+        end
     end
     hold off;
     xlim(tlim);

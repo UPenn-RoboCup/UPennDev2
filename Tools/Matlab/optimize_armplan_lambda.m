@@ -20,52 +20,54 @@ nNull = 1;
 %% Filter the nullspace in time
 gamma = 1;
 Ns = cell(size(nulls));
-Ns{1} = nulls{1};
+% Torch comes in transposed!
+Ns{1} = nulls{1}';
 for i=2:numel(nulls)
-    Ns{i} = (1-gamma)*Ns{i-1} + gamma*nulls{i};
+    Ns{i} = (1-gamma)*Ns{i-1} + gamma*nulls{i}';
 end
 
 %% Save the SVD and form the null space coordinates
-% TODO: Should be in cells... plotting will be harder, but whatever
 Ss = zeros(np, nq);
-Vs = zeros(np, nq);
-Us = zeros(np, nq);
 lambda = zeros(np, nNull);
+Vs = cell(np, 1);
+Us = cell(np, 1);
 
-for i=1:numel(nulls)
-    [U, S, V] = svd(Ns{i}');
-    Vs(i,:) = V(:, 1);
-    Us(i,:) = U(:, 1);
-    Ss(i,:) = diag(S);
-    lambda(i,:) = S(1:nNull,1:nNull) * V(:, 1:nNull)' * (qwPath{i} - qwPath{end});
+for i=1:numel(Ns)
+    [U, S, V] = svd(Ns{i});
+    Vs{i} = V(:, 1:nNull);
+    Us{i} = U(:, 1:nNull);
+    Ss(i, :) = diag(S);
+    lambda(i, :) = S(1:nNull, 1:nNull) * V(:, 1:nNull)' * (qwPath{i} - qwPath{end});
 end
 
 %% Determine the signs from the SVD for consistent basis directions
+% NOTE: This should be slow, but not *too* bad ;)
 swapidx = [1];
-for i=2:numel(nulls)
-    dirlambda = dot(Vs(i,:), Vs(i-1,:));
-    if abs(dirlambda)>0.9
-        % Prety much the same dir...
-        if dirlambda < 0
-            Vs(i,:) = -Vs(i,:);
-            Us(i,:) = -Us(i,:);
-            lambda(i,:) = -lambda(i,:);
+for iN=1:nNull
+    for i=2:numel(nulls)
+        dirlambda = dot(Vs{i}(:, iN), Vs{i-1}(:, iN));
+        if abs(dirlambda) > 0.9 % Pretty much the same dir...
+            if dirlambda < 0
+                Vs{i}(:, iN) = -Vs{i}(:, iN);
+                Us{i}(:, iN) = -Us{i}(:, iN);
+                lambda(i, iN) = -lambda(i, iN);
+            end
+        else
+            swapidx = [swapidx, i];
         end
-    else
-        swapidx = [swapidx, i];
-        %fprintf('Dir switch: %d, %f\n', i, t(i));
     end
 end
+clear dirlambda;
 swapidx = [swapidx, numel(nulls)];
 
 %% Joint angles on the path
 % Number of joints angles in total
 nl = numel(lambda);
+lambdat = lambda';
+lambda0 = lambdat(:);
 % Number of trajectory points
 np = size(lambda, 1);
-% Number of joints
-nNull = size(lambda, 2);
-lambda0 = lambda(:);
+clear lambdat;
 
 %% Acceleration matrix
 d2 = 2*ones(nl, 1);
@@ -84,9 +86,6 @@ clear d1 d2 A0 A1;
 %% Optimization Variables
 P0 = eye(nl) + alpha * ATA;
 
-%% Remain tidy
-%clear N A qPath qGoal NTN ATA;
-
 %% CVX Solver
 fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
 cvx_begin
@@ -99,9 +98,10 @@ cvx_begin
     % This seems slower...
     %minimize( norm( P0sqrt * q - b ) )
     % Keep the first point the same
+    % TODO: For lambda, this is not necessary
     lam1: dlambda(1:nNull) == lambda0(1:nNull);
     % Last point the same
-    lam2: dlambda(nl-nNull+1:nl) == lambda0(nl-nNull+1:nl);
+    %lam2: dlambda(nl-nNull+1:nl) == lambda0(nl-nNull+1:nl);
     % Keep the paths somewhat close, due to jacobian linearity
     for k = nNull+1 : nSkip*nNull : nl-nNull,
         norm(dlambda(k:k+nNull-1) - lambda0(k:k+nNull-1)) <= epsilon;
@@ -109,11 +109,12 @@ cvx_begin
 cvx_end
 
 %% Apply the change in delat back to the original q
+dlambda = reshape(dlambda, [nNull, np])';
 qLambda = zeros(np, nq);
 dqLambda = zeros(np, nq);
+%%
 for i=1:size(lambda, 1)
     % TODO: Us should be a cell array and then choose nNull columns
-    dqLambda(i, :) = (Us(i, :) * (dlambda(i) - lambda(i)));
+    dqLambda(i, :) = Us{i} * (dlambda(i, :) - lambda(i, :))';
     qLambda(i, :) = qwPath{i} + dqLambda(i, :)';
-    %lambda(i,:) = S(1:nNull,1:nNull) * V(:, 1:nNull)' * (qwPath{i} - qwPath{end});
 end

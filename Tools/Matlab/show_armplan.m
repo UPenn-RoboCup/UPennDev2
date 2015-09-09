@@ -50,7 +50,7 @@ if kind==0
 end
 
 %% Plot the singular values
-nn = 2; % Number of null
+nn = 1; % Number of null
 gamma = 0.5;
 Ns = cell(size(nulls));
 Ns{1} = nulls{1};
@@ -78,6 +78,7 @@ for i=1:numel(nulls)
     
 end
 
+swapidx = [1];
 for i=2:numel(nulls)
     dirlambda = dot(Vs(i,:), Vs(i-1,:));
     if abs(dirlambda)>0.9
@@ -88,9 +89,11 @@ for i=2:numel(nulls)
             lambda(i,:) = -lambda(i,:);
         end
     else
+        swapidx = [swapidx, i];
         fprintf('Dir switch: %d, %f\n', i, t(i));
     end
 end
+swapidx = [swapidx, numel(nulls)];
 
 %% Plot them
 figure(6);
@@ -100,7 +103,16 @@ xlabel('Time (s)');
 title('Singular Values');
 
 figure(7);
+clf;
+hold on;
+cmap = hsv(numel(swapidx)-1);
+for i=1:numel(swapidx)-1
+    range = swapidx(i):swapidx(i+1);
+    plot(t(range), lambda(range), 'k-s', 'Color', cmap(i,:));
+end
+
 plot(t, lambda);
+hold off;
 xlim(tlim);
 xlabel('Time (s)');
 title('Original lambda [MATLAB]');

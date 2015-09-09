@@ -763,6 +763,7 @@ local function set_shoulder_granularity(self, granularity)
 	return self
 end
 
+-- TODO: Also add the vwTarget
 local function pathJacobians(self, plan)
 	-- Find the nullspace acting in
 	local nulls = {}
@@ -783,18 +784,6 @@ local function pathJacobians(self, plan)
 	plan.Js = Js
 end
 
-local function pathEigs(self, path)
-	local eigs = {}
-	local eigVs = {}
-	local eigVinvs = {}
-	for i, nullspace in ipairs(path.nulls) do
-		eigs[i], eigVs[i] = torch.eig(nullspace, 'V')
-		eigVinvs[i] = torch.inverse(eigVs[i])
-	end
-	path.eigVs, path.eigVinvs = eigVs, eigVinvs
-	path.eigs = eigs
-end
-
 local opt_ch = require'simple_ipc'.new_requester('armopt')
 local function optimize(self, plan)
 	local planName0 = os.tmpname()
@@ -803,8 +792,8 @@ local function optimize(self, plan)
 	-- 0 is the q version, 1 is the lambda version
 	plan.kind = 0
 
-
 	-- For debugging
+	--[[
 	local np = #plan.qwPath
 	local nq = #plan.qwPath[1]
 	local nNull = nq - 6
@@ -819,7 +808,7 @@ local function optimize(self, plan)
 		Us[i] = U
 	end
 	plan.dlambda0 = dλ
-
+	--]]
 	mattorch.saveTable(planName, plan)
 	-- Send the tmpname of the mat file
 	print('Sending plan:', planName)
@@ -830,10 +819,13 @@ local function optimize(self, plan)
 	--os.exit()
 	-- Remove the file when done
 	os.remove(planName)
+	--util.ptable(optPath)
 	-- Place into a table
-	-- TODO: Simpler way?
-	local qOptimized0 = optPath.q:view(
-		#plan.qwPath, #plan.qwPath[1])
+	local optPath = optPath.q or optPath.qLambda
+	assert(optPath, 'No optimized path!')
+	print('optPath', optPath:size())
+	-- MATLAB and torch are tansposed...
+	local qOptimized0 = optPath:t()
 	local qOptimized = {}
 	for i=1,#plan.qwPath do
 		qOptimized[i] = vector.new(qOptimized0[i])
@@ -841,65 +833,6 @@ local function optimize(self, plan)
 	return qOptimized
 end
 
-local function optimize2(self, plan)
-	local np = #plan.qwPath
-	local nq = #plan.qwPath[1]
-	local nNull = nq - 6
-	local qGoal = plan.qwPath[np]
-	-- Find the coordinate in λ space
-	print('Finding the λ coordinates...')
-	--local dqNull = torch.Tensor(nq)
-	--local dlambda = torch.Tensor(nq)
-	local dλ = torch.Tensor(np, nNull)
-	local Us = {}
-	for i, q in ipairs(plan.qwPath) do
-		local dqGoal = torch.Tensor(q - qGoal)
-		local U, S, V = torch.svd(plan.nulls[i])
-		local subV = V:sub(1, nq, 1, nNull):t()
-		dλ[i] = torch.diag(S):sub(1,nNull,1,nNull) * subV * dqGoal
-		Us[i] = U
-	end
-	plan.dlambda0 = dλ
-
-	-- Drive to zero and keep acceleration down
-	-- min dλ' dλ + dλ' A' A dλ
-	local planName0 = os.tmpname()
-	local planName = planName0..'.mat'
-	assert(os.rename(planName0, planName), "Could not form tmp file")
-	-- 0 is the q version, 1 is the lambda version
-	plan.kind = 1
-	mattorch.saveTable(planName, plan)
-
-	print('Sending lambda plan:', planName)
-	opt_ch:send(planName)
-
-	-- Calculate in the meantime...
-	--[[
-	local λ2q = {}
-	for i, e in ipairs(plan.eigVs) do
-		--print(plan.eigs[i]:sub(1,nNull,1,1))
-		print(plan.eigs[i]:t():sub(1,1))
-		local _λ2q = e:narrow(2, 1, nNull)
-		λ2q[i] = _λ2q:clone()
-	end
-	--]]
-
-	local optResult = opt_ch:receive()
-	print('Optimized lambda!', planName)
-	local optPath = mattorch.load(planName)
-	-- Remove the file when done
-	os.remove(planName)
-
-	local dλOpt = optPath.dlambda:view(#plan.qwPath, nNull)
-	local qOptimized = {}
-	for i, q in ipairs(plan.qwPath) do
-		--local dq = vector.new( λ2q[i] * (dλOpt[i] - dλ[i]) )
-		local dq_t = Us[i]:sub(1, nq, 1, nNull) * (dλOpt[i] - dλ[i])
-		local dq = vector.new(dq_t)
-		qOptimized[i] = q + dq
-	end
-	return qOptimized
-end
 -- Still must set the forward and inverse kinematics
 function libArmPlan.new_planner(id)
 	local nq = 7

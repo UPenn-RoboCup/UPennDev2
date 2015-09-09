@@ -25,15 +25,12 @@ while 1
         load(char(tmpfile));
         
         % Run the optimizer
-        if kind==1
-            optimize_armplan_lambda;
-        else
-            optimize_armplan;
-        end
+        optimize_armplan;
+        optimize_armplan_lambda;
         
         % Save results to be opened
-        if kind==1
-            save(tmpfile, 'dlambda');
+        if kind==1 || 1
+            save(tmpfile, 'qLambda');
         else
             save(tmpfile, 'q');
         end

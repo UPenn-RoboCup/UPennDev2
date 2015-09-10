@@ -4,7 +4,7 @@ nt = dt * np;
 t = 0:dt:nt-dt;
 
 %% Filter the nullspace in time
-gamma = 0.5;
+gamma = 1;
 Ns = cell(size(nulls));
 % Torch comes in transposed!
 Ns{1} = nulls{1}';
@@ -27,6 +27,8 @@ for i=1:numel(Ns)
 end
 lambda0 = lambda;
 
+ds = min(abs(Ss(:,1) - Ss(:,2)), [], 2);
+
 %% Determine the signs from the SVD for consistent basis directions
 % NOTE: This should be slow, but not *too* bad ;)
 swapidx = [1];
@@ -34,7 +36,7 @@ for iN=1:nNull
     for i=2:numel(nulls)
         dirlambda = dot(Vs{i-1}(:, iN), Vs{i}(:, iN));
         %fprintf(1, '%d: %.2f: %.2f\n', iN, t(i), dirlambda);
-        if abs(dirlambda) > 0.85 % Pretty much the same dir...
+        if abs(dirlambda) > 0.94 % Pretty much the same dir...
             if dirlambda < 0
                 Vs{i}(:, iN) = -Vs{i}(:, iN);
                 Us{i}(:, iN) = -Us{i}(:, iN);
@@ -101,12 +103,12 @@ for i=1:numel(swapidx)-1
     range = swapidx(i):swapidx(i+1)-1;
     % Only if enough points
     if numel(range)>5
-        ddlambda(range, :) = subopt_lambda(lambda(range, :));
+        ddlambda(range, :) = subopt_lambda(lambda(range, :), ds);
     end
 end
 
 %% Run as normal
-dlambda = subopt_lambda(lambda);
+dlambda = subopt_lambda(lambda, ds);
 
 %% Change back into q
 qLambda = zeros(np, nq);

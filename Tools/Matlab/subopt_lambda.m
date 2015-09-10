@@ -1,4 +1,4 @@
-function [ dlambda ] = subopt_lambda(lambda)
+function [ dlambda ] = subopt_lambda(lambda, ds)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -6,18 +6,13 @@ nNull = size(lambda, 2);
 
 %% Optimization Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 1e4;
+alpha = 1e3;
 %alpha = 1e2; % Snaps to the next goal
 %alpha = 0; % Instant if possible (Verified)
 % Closeness to previous trajectory
-epsilon = 0.2;
+epsilon = 0.3;
 % Constraint the joints to be close on how many iterations...
-% More skips makes the formulation of the problem easier
-% Only works with proper acceleration weight
-nSkip = 0; % Default on all
-%nSkip = 10; % One constraint per second
-%nSkip = 3;
-nSkip = max(floor(nSkip), 0) + 1;
+
 % TODO: Truncate the path if possible, once the difference is small
 % Then further optimization steps just make the path smaller
 
@@ -64,9 +59,18 @@ cvx_begin quiet
     % Last point the same
     dlambda(nl-nNull+1:nl) == lambda0(nl-nNull+1:nl);
     % Keep the paths somewhat close, due to jacobian linearity
-    for k = nNull+1 : nSkip*nNull : nl-nNull,
-        norm(dlambda(k:k+nNull-1) - lambda0(k:k+nNull-1)) <= epsilon;
+    %{
+    for k = nNull+1 : nNull : nl-nNull,
+        norm(dlambda(k:k+nNull-1) - lambda0(k:k+nNull-1)) <= epsilon*ds;
     end
+    %}
+    for k = 2:np-1,
+        norm(...
+            dlambda((k-1)*nNull+1:k*nNull) - lambda0((k-1)*nNull+1:k*nNull) ...
+            ) <= epsilon*ds(k);
+            
+    end
+    
 cvx_end
 toc
 cvx_cputime

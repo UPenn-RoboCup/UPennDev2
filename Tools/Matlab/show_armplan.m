@@ -84,23 +84,6 @@ if exist('dlambda', 'var')
     title('Optimized dlambda');
 end
 
-if exist('lambda0', 'var')
-    figure(17);
-    clf;
-    hold on;
-    cmap = hsv(numel(swapidx0)-1);
-    for i=1:numel(swapidx0)-1
-        range = swapidx0(i):swapidx0(i+1);
-        for iN=1:nNull
-            plot(t(range), lambda0(range, iN), '-s', 'Color', cmap(i,:));
-        end
-    end
-    hold off;
-    xlim(tlim);
-    xlabel('Time (s)');
-    title('Original lambda');
-end
-
 if exist('ddlambda', 'var')
     figure(14);
     clf;
@@ -118,6 +101,23 @@ if exist('ddlambda', 'var')
     title('Optimized ddlambda');
 end
 
+if exist('lambda0', 'var')
+    figure(17);
+    clf;
+    hold on;
+    cmap = hsv(numel(swapidx0)-1);
+    for i=1:numel(swapidx0)-1
+        range = swapidx0(i):swapidx0(i+1);
+        for iN=1:nNull
+            plot(t(range), lambda0(range, iN), '-s', 'Color', cmap(i,:));
+        end
+    end
+    hold off;
+    xlim(tlim);
+    xlabel('Time (s)');
+    title('Original lambda');
+end
+
 if exist('dqLambda', 'var')
     figure(16);
     plot(t, rad2deg(dqLambda));
@@ -126,6 +126,7 @@ if exist('dqLambda', 'var')
     xlabel('(deg)');
     title('Trajectory Difference (lambda)');
 end
+
 if exist('qLambda', 'var')
     figure(15);
     plot(t, rad2deg(qLambda));
@@ -174,6 +175,13 @@ xlim(tlim);
 xlabel('Time (s)');
 ylabel('Angle (deg)');
 title('Joint Positions (diff)');
+
+figure(23);
+plot(t, ddlambda - lambda);
+xlim(tlim);
+xlabel('Time (s)');
+ylabel('l');
+title('Lambda Positions (diff)');
 
 %% Draw
 drawnow;

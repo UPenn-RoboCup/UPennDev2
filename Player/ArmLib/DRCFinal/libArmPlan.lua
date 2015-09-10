@@ -520,6 +520,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	local dqdtNull = torch.Tensor(#qWaistArm)
 	-- Continue the path
 	plan.nulls = plan.nulls or {}
+	local anull = 0.5
 	plan.Js = plan.Js or {}
 	plan.qwPath = plan.qwPath or {}
 	-- Task space path
@@ -546,6 +547,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 		-- Find the nullspace and Jacobian
 		local nullspace, J, Jinv = get_nullspace(
 			self, qWaistArm, qArm, qWaistGuess and qWaist)
+		nullspace = torch.mul(nullspace, anull):add(
+			torch.mul(plan.nulls[#plan.nulls] or nullspace, 1-anull)
+		)
 		-- Joint velocities to accomplish the se(3) velocities
 		local dqdtArm = torch.mv(Jinv, vwTarget)
 		local dqdtCombo

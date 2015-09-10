@@ -56,7 +56,7 @@ movearm.rPlanner = rPlanner
 local function co_play(self, plan, callback)
 
 	-- Run the optimizer
-	plan.n_optimizations = 1
+	plan.n_optimizations = 5
 	plan.update_jacobians = true
 	--plan.n_optimizations = 0
 	--plan.update_jacobians = false

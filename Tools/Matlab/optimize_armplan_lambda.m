@@ -1,5 +1,6 @@
 %% Number of null space dimensions
-nNull = 2;
+nExtraNull = 0;
+nNull = nq - 6 + nExtraNull;
 nt = dt * np;
 t = 0:dt:nt-dt;
 
@@ -35,8 +36,8 @@ swapidx = [1];
 for iN=1:nNull
     for i=2:numel(nulls)
         dirlambda = dot(Vs{i-1}(:, iN), Vs{i}(:, iN));
-        %fprintf(1, '%d: %.2f: %.2f\n', iN, t(i), dirlambda);
-        if abs(dirlambda) > 0.94 % Pretty much the same dir...
+        fprintf(1, '%d: %.2f: %.4f\n', iN, t(i), dirlambda);
+        if abs(dirlambda) > 0.91 % Pretty much the same dir...
             if dirlambda < 0
                 Vs{i}(:, iN) = -Vs{i}(:, iN);
                 Us{i}(:, iN) = -Us{i}(:, iN);
@@ -89,6 +90,22 @@ for i=2:numel(swapidx)-1
                 lambda(ir, iN) = FLIP_DIR2*lambda(ir, iN+1);
                 lambda(ir, iN+1) = Lnow;
             end
+        elseif dirswapA < 0
+            fprintf(1, '!! SwapA %d: %d (iN: %d)\n', i, is, iN);
+            for ir=swapidx(i-1):is-1
+                Vs{ir}(:, iN) = -Vs{ir}(:, iN);
+                Us{ir}(:, iN) = -Us{ir}(:, iN);
+                lambda(ir, iN) = -lambda(ir, iN);
+            end
+            segment(i) = 0;
+        elseif dirswapB < 0
+            fprintf(1, '!! SwapB %d: %d (iN: %d)\n', i, is, iN);
+            for ir=swapidx(i-1):is-1
+                Vs{ir}(:, iN+1) = -Vs{ir}(:, iN+1);
+                Us{ir}(:, iN+1) = -Us{ir}(:, iN+1);
+                lambda(ir, iN+1) = -lambda(ir, iN+1);
+            end
+            segment(i) = 0;
         end
     end
 end 
@@ -96,19 +113,22 @@ end
 %% Run the optimization for each dimension...?
 clear ddlambda dlambda dqLambda qLambda;
 swapidx0 = swapidx;
-%swapidx = swapidx(segment);
+swapidx = swapidx(segment);
 %%{
+disp('Optimizing ddlambda!');
 ddlambda = lambda;
 for i=1:numel(swapidx)-1
     range = swapidx(i):swapidx(i+1)-1;
     % Only if enough points
     if numel(range)>5
+        fprintf(1, 'Optimizing %d\n', numel(range));
         ddlambda(range, :) = subopt_lambda(lambda(range, :), ds);
     end
 end
 
 %% Run as normal
-dlambda = subopt_lambda(lambda, ds);
+%disp('Optimizing dlambda!');
+%dlambda = subopt_lambda(lambda, ds);
 
 %% Change back into q
 qLambda = zeros(np, nq);

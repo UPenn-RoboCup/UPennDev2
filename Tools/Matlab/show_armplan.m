@@ -9,6 +9,10 @@ ylim([-180, 180]);
 ylabel('Degrees');
 title('Original Trajectory');
 
+if exist('swapidx', 'var')
+    cmap = hsv(numel(swapidx)-1);
+end
+
 if exist('q', 'var')
     figure(2);
     plot(t, rad2deg(q));
@@ -54,11 +58,10 @@ if exist('lambda', 'var')
     figure(12);
     clf;
     hold on;
-    cmap = hsv(numel(swapidx)-1);
     for i=1:numel(swapidx)-1
         range = swapidx(i):swapidx(i+1);
         for iN=1:nNull
-            plot(t(range), lambda(range, iN), '-s', 'Color', cmap(i,:));
+            plot(t(range), lambda(range, iN), '-s', 'Color', cmap(i,:)*(iN/nNull));
         end
     end
     hold off;
@@ -71,11 +74,10 @@ if exist('dlambda', 'var')
     figure(13);
     clf;
     hold on;
-    cmap = hsv(numel(swapidx)-1);
     for i=1:numel(swapidx)-1
         range = swapidx(i):swapidx(i+1);
         for iN=1:nNull
-            plot(t(range), dlambda(range, iN), '-s', 'Color', cmap(i,:));
+            plot(t(range), dlambda(range, iN), '-s', 'Color', cmap(i,:)*(iN/nNull));
         end
     end
     hold off;
@@ -88,11 +90,10 @@ if exist('ddlambda', 'var')
     figure(14);
     clf;
     hold on;
-    cmap = hsv(numel(swapidx)-1);
     for i=1:numel(swapidx)-1
         range = swapidx(i):swapidx(i+1);
         for iN=1:nNull
-            plot(t(range), ddlambda(range, iN), '-s', 'Color', cmap(i,:));
+            plot(t(range), ddlambda(range, iN), '-s', 'Color', cmap(i,:)*(iN/nNull));
         end
     end
     hold off;
@@ -104,12 +105,12 @@ end
 if exist('lambda0', 'var')
     figure(17);
     clf;
-    hold on;
     cmap = hsv(numel(swapidx0)-1);
+    hold on;
     for i=1:numel(swapidx0)-1
         range = swapidx0(i):swapidx0(i+1);
         for iN=1:nNull
-            plot(t(range), lambda0(range, iN), '-s', 'Color', cmap(i,:));
+            plot(t(range), lambda0(range, iN), '-s', 'Color', cmap(i,:)*(iN/nNull));
         end
     end
     hold off;

@@ -24,8 +24,13 @@ while 1
         % Input data
         load(char(tmpfile));
         
+        % Number of trajectory points
+        np = numel(qwPath);
+        % Number of joints
+        nq = size(qwPath{1}, 1);
+        
         % Run the optimizer
-        optimize_armplan;
+        %optimize_armplan;
         optimize_armplan_lambda;
         
         % Save results to be opened
@@ -38,7 +43,7 @@ while 1
         
         fprintf(1,'Done! \n');
         % Show
-        show_armplan;
+        %show_armplan;
 
     %else disp('Timeout...');
     end

@@ -20,10 +20,6 @@ nSkip = max(floor(nSkip), 0) + 1;
 
 %% Joint angles on the path
 qwPath0 = cell2mat(qwPath);
-% Number of trajectory points
-np = numel(qwPath);
-% Number of joints
-nq = size(qwPath{1}, 1);
 % Number of joints angles in total
 n = numel(qwPath0);
 % If given a guess, else the last point
@@ -76,7 +72,9 @@ VJJV = JV' * JV;
 
 %% CVX Solver
 %fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
-cvx_begin quiet
+disp('Optimizing q!');
+tic;
+cvx_begin
     cvx_precision low
     %cvx_precision medium
     variable q(n)
@@ -97,6 +95,8 @@ cvx_begin quiet
         norm(q(k:k+nq-1) - qwPath0(k:k+nq-1)) <= epsilon;
     end
 cvx_end
+toc
+cvx_cputime
 
 %% Form again
 q = reshape(q, [nq, np])';

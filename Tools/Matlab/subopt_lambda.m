@@ -6,11 +6,11 @@ nNull = size(lambda, 2);
 
 %% Optimization Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 1e3;
+alpha = 1e4;
 %alpha = 1e2; % Snaps to the next goal
 %alpha = 0; % Instant if possible (Verified)
 % Closeness to previous trajectory
-epsilon = deg2rad(5);
+epsilon = 0.2;
 % Constraint the joints to be close on how many iterations...
 % More skips makes the formulation of the problem easier
 % Only works with proper acceleration weight
@@ -48,26 +48,28 @@ clear d1 d2 A0 A1;
 P0 = eye(nl) + alpha * ATA;
 
 %% CVX Solver
-fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
-cvx_begin
+%fprintf(1, 'Computing the optimal value of the QCQP and its dual...\n');
+tic;
+cvx_begin quiet
     cvx_precision low
     %cvx_precision medium
     variable dlambda(nl)
-    dual variables lam1 lam2 %y{np}
     % This seems faster
     minimize( quad_form(dlambda, P0))
     % This seems slower...
     %minimize( norm( P0sqrt * q - b ) )
     % Keep the first point the same
     % TODO: For lambda, this is not necessary
-    lam1: dlambda(1:nNull) == lambda0(1:nNull);
+    dlambda(1:nNull) == lambda0(1:nNull);
     % Last point the same
-    lam2: dlambda(nl-nNull+1:nl) == lambda0(nl-nNull+1:nl);
+    dlambda(nl-nNull+1:nl) == lambda0(nl-nNull+1:nl);
     % Keep the paths somewhat close, due to jacobian linearity
     for k = nNull+1 : nSkip*nNull : nl-nNull,
         norm(dlambda(k:k+nNull-1) - lambda0(k:k+nNull-1)) <= epsilon;
     end
 cvx_end
+toc
+cvx_cputime
 
 dlambda = reshape(dlambda, [nNull, np])';
 

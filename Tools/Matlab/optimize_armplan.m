@@ -75,15 +75,18 @@ VJJV = JV' * JV;
 %clear N A qPath qGoal NTN ATA;
 
 %% CVX Solver
-fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
-cvx_begin
+%fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
+cvx_begin quiet
     cvx_precision low
     %cvx_precision medium
     variable q(n)
     dual variables lam1 lam2 %y{np}
+    %%{
     minimize( quad_form(q - qStar, NTN) + ...
         alpha * quad_form(q, ATA) + ...
         beta * norm(JV*q - vwPath0) )
+    %}
+    %minimize(quad_form(q, ATA))
     % Keep the first point the same
     lam1: q(1:nq) == qwPath0(1:nq);
     % Last point the same

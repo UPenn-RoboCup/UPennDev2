@@ -1,5 +1,7 @@
-% Number of null space dimensions
+%% Number of null space dimensions
 nNull = 2;
+nt = dt * np;
+t = 0:dt:nt-dt;
 
 %% Filter the nullspace in time
 gamma = 0.5;
@@ -23,14 +25,16 @@ for i=1:numel(Ns)
     Ss(i, :) = diag(S);
     lambda(i, :) = S(1:nNull, 1:nNull) * V(:, 1:nNull)' * (qwPath{i} - qwPath{end});
 end
+lambda0 = lambda;
 
 %% Determine the signs from the SVD for consistent basis directions
 % NOTE: This should be slow, but not *too* bad ;)
 swapidx = [1];
 for iN=1:nNull
     for i=2:numel(nulls)
-        dirlambda = dot(Vs{i}(:, iN), Vs{i-1}(:, iN));
-        if abs(dirlambda) > 0.9 % Pretty much the same dir...
+        dirlambda = dot(Vs{i-1}(:, iN), Vs{i}(:, iN));
+        %fprintf(1, '%d: %.2f: %.2f\n', iN, t(i), dirlambda);
+        if abs(dirlambda) > 0.85 % Pretty much the same dir...
             if dirlambda < 0
                 Vs{i}(:, iN) = -Vs{i}(:, iN);
                 Us{i}(:, iN) = -Us{i}(:, iN);
@@ -46,48 +50,59 @@ swapidx = [swapidx, numel(nulls)];
 swapidx = sort(unique(swapidx));
 
 %% Now on the swaps, check the directions
+segment = true(size(swapidx));
 for i=2:numel(swapidx)-1
     for iN=1:nNull-1
-        A1 = Vs{swapidx(i)-1}(:, iN);
-        A2 = Vs{swapidx(i)}(:, iN);
-        B1 = Vs{swapidx(i)-1}(:, iN+1);
-        B2 = Vs{swapidx(i)}(:, iN+1);
+        is = swapidx(i);
+        A1 = Vs{is-1}(:, iN);
+        A2 = Vs{is}(:, iN);
+        B1 = Vs{is-1}(:, iN+1);
+        B2 = Vs{is}(:, iN+1);
         dirswap1 = dot(A1, B2);
         dirswap2 = dot(B1, A2);
-        if abs(dirswap1)>0.9 && abs(dirswap1)>0.9
+        dirswapA = dot(A1, A2);
+        dirswapB = dot(B1, B2);
+        fprintf(1, '[%d]: %.2f {%.2f, %.2f}, {%.2f, %.2f}\n', ...
+            iN, t(is), dirswap1, dirswap2, dirswapA, dirswapB);
+        %if abs(dirswap1)>0.9 && abs(dirswap2)>0.9
+        if abs(dirswap1)>abs(dirswapA) || abs(dirswap2)>abs(dirswapB) ...
+            || abs(dirswap1)>abs(dirswapB) || abs(dirswap2)>abs(dirswapA)
             % Swap the two!
-            disp([iN, i, swapidx(i), dirswap1, dirswap2]);
-            if dirswap1<-0.9 || dirswap2<-0.9
-                % Also change the direction...
-                for ir=swapidx(i):swapidx(i+1)
-                    Vs{ir}(:, iN:iN+1) = -Vs{ir}(:, iN:iN+1);
-                    Us{ir}(:, iN:iN+1) = -Us{ir}(:, iN:iN+1);
-                    lambda(ir, iN:iN+1) = -lambda(ir, iN:iN+1);
-                end
+            fprintf(1, '!! Swapidx %d: %d\n', i, is);
+            segment(i) = 0;
+            FLIP_DIR1 = 1;
+            FLIP_DIR2 = 1;
+            if dirswap1<0, FLIP_DIR1 = -1; end
+            if dirswap2<0, FLIP_DIR2 = -1; end
+            
+            % Do the flipping
+            for ir=swapidx(i-1):is-1
+                Vnow = FLIP_DIR1*Vs{ir}(:, iN);
+                Vs{ir}(:, iN) = FLIP_DIR2*Vs{ir}(:, iN+1);
+                Vs{ir}(:, iN+1) = Vnow;
+                Unow = FLIP_DIR1*Us{ir}(:, iN);
+                Us{ir}(:, iN) = FLIP_DIR2*Us{ir}(:, iN+1);
+                Us{ir}(:, iN+1) = Unow;
+                Lnow = FLIP_DIR1*lambda(ir, iN);
+                lambda(ir, iN) = FLIP_DIR2*lambda(ir, iN+1);
+                lambda(ir, iN+1) = Lnow;
             end
         end
     end
-end
-    figure(12);
-    clf;
-    hold on;
-    cmap = hsv(numel(swapidx)-1);
-    for i=1:numel(swapidx)-1
-        range = swapidx(i):swapidx(i+1);
-        for iN=1:nNull
-            plot(t(range), lambda(range, iN), '-s', 'Color', cmap(i,:));
-        end
-    end
-    hold off;
-    xlim(tlim);
-    xlabel('Time (s)');
-    title('Original lambda [MATLAB]');
+end 
 
 %% Run the optimization for each dimension...?
-ddlambda = zeros(size(lambda));
+clear ddlambda dlambda dqLambda qLambda;
+swapidx0 = swapidx;
+%swapidx = swapidx(segment);
+%%{
+ddlambda = lambda;
 for i=1:numel(swapidx)-1
-    range = swapidx(i):swapidx(i+1);
-    ddlambda(range, :) = subopt_lambda(lambda(range, :));
+    range = swapidx(i):swapidx(i+1)-1;
+    % Only if enough points
+    if numel(range)>5
+        ddlambda(range, :) = subopt_lambda(lambda(range, :));
+    end
 end
 
 %% Run as normal
@@ -101,3 +116,4 @@ for i=1:size(lambda, 1)
     dqLambda(i, :) = Us{i} * (ddlambda(i, :) - lambda(i, :))';
     qLambda(i, :) = qwPath{i} + dqLambda(i, :)';
 end
+%}

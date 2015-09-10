@@ -16,7 +16,8 @@ do
 	--local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
 
 	--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-	local degreesPerSecond = vector.ones(7) * 30
+	--local degreesPerSecond = vector.ones(7) * 30
+	local degreesPerSecond = vector.ones(7) * 15
 	--local degreesPerSecond = vector.ones(7) * 100
 	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 	-- Compensation items

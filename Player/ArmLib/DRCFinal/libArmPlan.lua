@@ -16,6 +16,8 @@ local INFINITY = require'math'.huge
 local EPSILON = 1e-2 * DEG_TO_RAD
 local util = require'util'
 
+local POS_THRESH = 0.01--0.025
+
 -- Does not work for the infinite turn motors
 local function sanitize(qPlanned, qNow)
 	local qDiff = qPlanned - qNow
@@ -532,7 +534,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 			get_distance(self, plan.tr, qArm, qWaist)
 		-- Check if we are within threshold
 		dTF = {vnorm(dp), vnorm(drpy)}
-		if dTF[1] < 0.025 and dTF[2] < 3*DEG_TO_RAD then
+		if dTF[1] < POS_THRESH and dTF[2] < 3*DEG_TO_RAD then
 			break
 		end
 		-- Form our desired velocity
@@ -768,6 +770,7 @@ local function pathJacobians(self, plan)
 	-- Find the nullspace acting in
 	local nulls = {}
 	local Js = {}
+	local vwPath = {}
 	local qArm, qWaist
 	for i, qw in ipairs(plan.qwPath) do
 		-- Decompose
@@ -778,10 +781,20 @@ local function pathJacobians(self, plan)
 			qArm = qw
 			qWaist = nil
 		end
-		nulls[i], Js[i] = get_nullspace(self, qw, qArm, qWaist)
+		nulls[i], Js[i] =
+			get_nullspace(self, qw, qArm, plan.qWaistGuess and qWaist)
+		if plan.tr then
+			local dp, drpy = get_distance(self, plan.tr, qArm, qWaist)
+			local vwTarget0 = {
+				dp[1], dp[2], dp[3],
+				drpy[1], drpy[2], drpy[3],
+			}
+			table.insert(vwPath, vwTarget0)
+		end
 	end
 	plan.nulls = nulls
 	plan.Js = Js
+	plan.vwPath = vwPath
 end
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')

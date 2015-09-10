@@ -1,7 +1,4 @@
 %% Plot the joint trajectories in time
-np = numel(nulls);
-nt = dt * np;
-t = 0:dt:nt-dt;
 tlim = [t(1), t(end)];
 
 figure(1);
@@ -12,7 +9,7 @@ ylim([-180, 180]);
 ylabel('Degrees');
 title('Original Trajectory');
 
-if kind==0
+if exist('q', 'var')
     figure(2);
     plot(t, rad2deg(q));
     xlim(tlim);
@@ -20,6 +17,7 @@ if kind==0
     ylim([-180, 180]);
     ylabel('Position (Degrees)');
     title('Optimized Trajectory');
+    
     figure(3);
     plot(t, rad2deg(q - qwPath0));
     xlim(tlim);
@@ -86,6 +84,23 @@ if exist('dlambda', 'var')
     title('Optimized dlambda');
 end
 
+if exist('lambda0', 'var')
+    figure(17);
+    clf;
+    hold on;
+    cmap = hsv(numel(swapidx0)-1);
+    for i=1:numel(swapidx0)-1
+        range = swapidx0(i):swapidx0(i+1);
+        for iN=1:nNull
+            plot(t(range), lambda0(range, iN), '-s', 'Color', cmap(i,:));
+        end
+    end
+    hold off;
+    xlim(tlim);
+    xlabel('Time (s)');
+    title('Original lambda');
+end
+
 if exist('ddlambda', 'var')
     figure(14);
     clf;
@@ -103,6 +118,14 @@ if exist('ddlambda', 'var')
     title('Optimized ddlambda');
 end
 
+if exist('dqLambda', 'var')
+    figure(16);
+    plot(t, rad2deg(dqLambda));
+    xlim(tlim);
+    xlabel('Time (s)');
+    xlabel('(deg)');
+    title('Trajectory Difference (lambda)');
+end
 if exist('qLambda', 'var')
     figure(15);
     plot(t, rad2deg(qLambda));
@@ -110,15 +133,47 @@ if exist('qLambda', 'var')
     ylim([-180, 180]);
     xlabel('Time (s)');
     title('Optimized Trajectory (lambda)');
-end
 
-if exist('dqLambda', 'var')
-    figure(16);
-    plot(t, rad2deg(dqLambda));
+    figure(18);
+    qLVel = diff(qLambda) / dt;
+    qLVel = [zeros(1, nq); qLVel];
+    plot(t, abs(qLVel));
     xlim(tlim);
     xlabel('Time (s)');
-    title('Angle change from lambda');
+    ylabel('Speed (rad/s)');
+    title('Joint Speeds (lambda)');
+
+    figure(19);
+    qLAccel = diff(qLambda, 2);
+    qLAccel = [zeros(2, nq); qLAccel];
+    plot(t, abs(qLAccel));
+    xlim(tlim);
+    xlabel('Time (s)');
+    ylabel('Acceleration (rad/s^2)');
+    title('Joint Accelerations (lambda)');
 end
+
+%% Compare
+figure(20);
+plot(t, abs(qLAccel) - qqAccel);
+xlim(tlim);
+xlabel('Time (s)');
+ylabel('Acceleration (deg/s^2)');
+title('Joint Accelerations (diff)');
+
+figure(21);
+plot(t, abs(qLVel) - abs(qqVel));
+xlim(tlim);
+xlabel('Time (s)');
+ylabel('Speed (rad/s)');
+title('Joint Speeds (diff)');
+
+figure(22);
+plot(t, rad2deg(qLambda - q));
+xlim(tlim);
+xlabel('Time (s)');
+ylabel('Angle (deg)');
+title('Joint Positions (diff)');
 
 %% Draw
 drawnow;

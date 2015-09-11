@@ -1,4 +1,4 @@
-function [ dlambda ] = subopt_lambda(lambda, ds)
+function [ dlambda, dt_opt ] = subopt_lambda(lambda, ds)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,7 +10,7 @@ alpha = 1e3;
 %alpha = 1e2; % Snaps to the next goal
 %alpha = 0; % Instant if possible (Verified)
 % Closeness to previous trajectory
-epsilon = 0.3;
+epsilon = deg2rad(20);
 % Constraint the joints to be close on how many iterations...
 
 % TODO: Truncate the path if possible, once the difference is small
@@ -44,8 +44,10 @@ P0 = eye(nl) + alpha * ATA;
 
 %% CVX Solver
 %fprintf(1, 'Computing the optimal value of the QCQP and its dual...\n');
+tmpName = [tempname, '.dat'];
+diary(tmpName);
 tic;
-cvx_begin quiet
+cvx_begin
     cvx_precision low
     %cvx_precision medium
     variable dlambda(nl)
@@ -72,8 +74,17 @@ cvx_begin quiet
     end
     
 cvx_end
-toc
-cvx_cputime
+dt_cvx = cvx_cputime;
+dt_tictoc = toc;
+diary off;
+[~, cmdout] = unix(['grep ', 'Total ', tmpName]);
+cmdout = strsplit(cmdout);
+dt_solver = str2double(cmdout(7));
+clear cmdout;
+delete(tmpName);
+dt_opt = [dt_solver, dt_cvx, dt_tictoc];
+fprintf(1, 'Solver: %.2fs | CVX: %.2f | MATLAB: %.2f\n', dt_opt);
+
 
 dlambda = reshape(dlambda, [nNull, np])';
 

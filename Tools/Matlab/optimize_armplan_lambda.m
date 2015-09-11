@@ -1,16 +1,30 @@
-%% Number of null space dimensions
+function [ qLambda, dt_opt ] = ...
+    optimize_armplan_lambda(qwPath0, vwPath0, nullPath0, jacobianPath0)
+
 nExtraNull = 0;
+
+%% Reshape the path for optimization
+% Number of trajectory points
+np = size(qwPath0, 1);
+% Number of joints
+nq = size(qwPath0, 2);
+% Number of null space projections to optimize
 nNull = nq - 6 + nExtraNull;
-nt = dt * np;
-t = 0:dt:nt-dt;
+% If given a guess, else the last point
+if exist('qWaistArmGuess', 'var')
+    disp('Using a guess');
+    qwStar = qWaistArmGuess;
+else
+    qwStar = qwPath0(end, :);
+end
 
 %% Filter the nullspace in time
 gamma = 1;
-Ns = cell(size(nulls));
+Ns = cell(np);
 % Torch comes in transposed!
-Ns{1} = nulls{1}';
-for i=2:numel(nulls)
-    Ns{i} = (1-gamma)*Ns{i-1} + gamma*nulls{i}';
+Ns{1} = nullPath0{1}';
+for i=2:np
+    Ns{i} = (1-gamma) * Ns{i-1} + gamma * nullPath0{i}';
 end
 
 %% Save the SVD and form the null space coordinates
@@ -18,25 +32,34 @@ Ss = zeros(np, nq);
 lambda = zeros(np, nNull);
 Vs = cell(np, 1);
 Us = cell(np, 1);
-
-for i=1:numel(Ns)
+for i=1:np
     [U, S, V] = svd(Ns{i});
     Vs{i} = V(:, 1:nNull);
     Us{i} = U(:, 1:nNull);
     Ss(i, :) = diag(S);
-    lambda(i, :) = S(1:nNull, 1:nNull) * V(:, 1:nNull)' * (qwPath{i} - qwPath{end});
+    lambda(i, :) = S(1:nNull, 1:nNull) * V(:, 1:nNull)' * ...
+        (qwPath0(i, :) - qwStar)';
 end
 lambda0 = lambda;
 
-ds = min(abs(Ss(:,1) - Ss(:,2)), [], 2);
+%% Filter on the separation of singular values
+ds = ones(np, 1);
+dSs = diff(Ss, 1, 2);
+dsTrack = var(dSs) > 0.01;
+dSsImportant = -dSs(:,dsTrack);
+if numel(dSsImportant)>0
+    ds0 = min(dSsImportant, [], 2);
+    ds = conv(ds0.^2, [1,2,1], 'same');
+    ds = ds / max(ds);
+end
 
 %% Determine the signs from the SVD for consistent basis directions
 % NOTE: This should be slow, but not *too* bad ;)
 swapidx = [1];
 for iN=1:nNull
-    for i=2:numel(nulls)
+    for i=2:np
         dirlambda = dot(Vs{i-1}(:, iN), Vs{i}(:, iN));
-        fprintf(1, '%d: %.2f: %.4f\n', iN, t(i), dirlambda);
+        %fprintf(1, '%d: %.2f: %.4f\n', iN, 0, dirlambda);
         if abs(dirlambda) > 0.91 % Pretty much the same dir...
             if dirlambda < 0
                 Vs{i}(:, iN) = -Vs{i}(:, iN);
@@ -49,7 +72,7 @@ for iN=1:nNull
     end
 end
 clear dirlambda;
-swapidx = [swapidx, numel(nulls)];
+swapidx = [swapidx, np];
 swapidx = sort(unique(swapidx));
 
 %% Now on the swaps, check the directions
@@ -65,11 +88,11 @@ for i=2:numel(swapidx)-1
         dirswap2 = dot(B1, A2);
         dirswapA = dot(A1, A2);
         dirswapB = dot(B1, B2);
-        fprintf(1, '[%d]: %.2f {%.2f, %.2f}, {%.2f, %.2f}\n', ...
-            iN, t(is), dirswap1, dirswap2, dirswapA, dirswapB);
+        %fprintf(1, '[%d]: %.2f {%.2f, %.2f}, {%.2f, %.2f}\n', ...
+        %    iN, 0, dirswap1, dirswap2, dirswapA, dirswapB);
         %if abs(dirswap1)>0.9 && abs(dirswap2)>0.9
         if abs(dirswap1)>abs(dirswapA) || abs(dirswap2)>abs(dirswapB) ...
-            || abs(dirswap1)>abs(dirswapB) || abs(dirswap2)>abs(dirswapA)
+                || abs(dirswap1)>abs(dirswapB) || abs(dirswap2)>abs(dirswapA)
             % Swap the two!
             fprintf(1, '!! Swapidx %d: %d\n', i, is);
             segment(i) = 0;
@@ -108,7 +131,7 @@ for i=2:numel(swapidx)-1
             segment(i) = 0;
         end
     end
-end 
+end
 
 %% Run the optimization for each dimension...?
 clear ddlambda dlambda dqLambda qLambda;
@@ -122,7 +145,7 @@ for i=1:numel(swapidx)-1
     % Only if enough points
     if numel(range)>5
         fprintf(1, 'Optimizing %d\n', numel(range));
-        ddlambda(range, :) = subopt_lambda(lambda(range, :), ds);
+        [ddlambda(range, :), dt_opt_lambda] = subopt_lambda(lambda(range, :), ds);
     end
 end
 
@@ -136,6 +159,10 @@ dqLambda = zeros(np, nq);
 for i=1:size(lambda, 1)
     % TODO: Us should be a cell array and then choose nNull columns
     dqLambda(i, :) = Us{i} * (ddlambda(i, :) - lambda(i, :))';
-    qLambda(i, :) = qwPath{i} + dqLambda(i, :)';
+    qLambda(i, :) = qwPath0(i, :) + dqLambda(i, :);
 end
 %}
+
+dt_opt = 0;
+
+end

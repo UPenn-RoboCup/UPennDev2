@@ -547,9 +547,11 @@ function libArmPlan.jacobian_preplan(self, plan)
 		-- Find the nullspace and Jacobian
 		local nullspace, J, Jinv = get_nullspace(
 			self, qWaistArm, qArm, qWaistGuess and qWaist)
+			--[[
 		nullspace = torch.mul(nullspace, anull):add(
 			torch.mul(plan.nulls[#plan.nulls] or nullspace, 1-anull)
 		)
+		--]]
 		-- Joint velocities to accomplish the se(3) velocities
 		local dqdtArm = torch.mv(Jinv, vwTarget)
 		local dqdtCombo
@@ -802,13 +804,13 @@ local function pathJacobians(self, plan)
 end
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')
-local function optimize(self, plan)
+local function optimize(self, plan, stop)
 	local planName0 = os.tmpname()
 	local planName = planName0..'.mat'
 	assert(os.rename(planName0, planName), "Could not form tmp file")
 	-- 0 is the q version, 1 is the lambda version
-	plan.kind = 0
-
+	plan.stop = stop and 1 or 0
+	plan.kind = 1
 	-- For debugging
 	--[[
 	local np = #plan.qwPath
@@ -836,11 +838,12 @@ local function optimize(self, plan)
 	--os.exit()
 	-- Remove the file when done
 	os.remove(planName)
+	if stop then return end
 	--util.ptable(optPath)
 	-- Place into a table
-	local optPath = optPath.q or optPath.qLambda
+	local optPath = optPath.qw or optPath.qLambda
 	assert(optPath, 'No optimized path!')
-	print('optPath', optPath:size())
+	--print('optPath', optPath:size())
 	-- MATLAB and torch are tansposed...
 	local qOptimized0 = optPath:t()
 	local qOptimized = {}

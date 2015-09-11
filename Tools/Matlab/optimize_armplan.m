@@ -1,9 +1,12 @@
+function [ qw, dt_opt ] = ...
+    optimize_armplan(qwPath0, vwPath0, nullPath0, jacobianPath0)
+
 %% Tuning
 % Relative weight of acceleration (vs null space accuracy)
 alpha = 1e3;
 %alpha = 1e2; % Snaps to the next goal
 %alpha = 0; % Instant if possible (Verified)
-% How much to care about the Jtask Jacobian 
+% How much to care about the Jtask Jacobian
 %beta = 25;
 beta = 1e2;
 % Closeness to previous trajectory
@@ -18,20 +21,24 @@ nSkip = max(floor(nSkip), 0) + 1;
 % TODO: Truncate the path if possible, once the difference is small
 % Then further optimization steps just make the path smaller
 
-%% Joint angles on the path
-qwPath0 = cell2mat(qwPath);
+%% Reshape the path for optimization
+% Number of trajectory points
+np = size(qwPath0, 1);
+% Number of joints
+nq = size(qwPath0, 2);
 % Number of joints angles in total
 n = numel(qwPath0);
+qw0 = reshape(qwPath0', [n, 1]);
+vw0 = reshape(vwPath0', [numel(vwPath0), 1]);
+
+%% Joint angles on the path
 % If given a guess, else the last point
 if exist('qWaistArmGuess', 'var')
-    qStar = repmat(qWaistArmGuess, np, 1);
+    qwStar = repmat(qWaistArmGuess, np, 1);
 else
-    qStar = repmat(qwPath{end}, np, 1);
+    qwStar = qwPath0(end, :);
+    qwStar = repmat(qwStar(:), np, 1);
 end
-
-%% Task space path
-vwPath0 = cell2mat(vwPath);
-nt = numel(vwPath0);
 
 %% Velocity matrix
 v0 = ones(n-nq, 1);
@@ -58,46 +65,50 @@ ATA = A' * A;
 clear d2 A0 A1;
 
 %% Nullspace
-N = sparse(blkdiag(nulls{:}))';
+N = sparse(blkdiag(nullPath0{:}))';
 NTN = N' * N;
 
 %% Jacobians
-J = sparse(blkdiag(Js{:}))';
-JTJ = J' * J;
+J = sparse(blkdiag(jacobianPath0{:}))';
+%JTJ = J' * J;
 JV = J * V;
-VJJV = JV' * JV;
-
-%% Remain tidy
-%clear N A qPath qGoal NTN ATA;
+%VJJV = JV' * JV;
 
 %% CVX Solver
-%fprintf(1, 'Computing the optimal value of the QCQP and its dual... ');
-disp('Optimizing q!');
+tmpName = [tempname, '.dat'];
+diary(tmpName);
 tic;
 cvx_begin
-    cvx_precision low
-    %cvx_precision medium
-    variable q(n)
-    dual variables lam1 lam2 %y{np}
-    %%{
-    minimize( quad_form(q - qStar, NTN) + ...
-        alpha * quad_form(q, ATA) + ...
-        beta * norm(JV*q - vwPath0) )
-    %}
-    %minimize(quad_form(q, ATA))
-    % Keep the first point the same
-    lam1: q(1:nq) == qwPath0(1:nq);
-    % Last point the same
-    lam2: q(n-nq+1:n) == qwPath0(n-nq+1:n);
-    % Keep the paths somewhat close, due to jacobian linearity
-    for k = nq+1 : nSkip*nq : n-nq,
-    %for k = nq+1 : nq : n,
-        norm(q(k:k+nq-1) - qwPath0(k:k+nq-1)) <= epsilon;
-    end
+cvx_precision low
+variable qw(n)
+%%{
+minimize( quad_form(qw - qwStar, NTN) + ...
+    alpha * quad_form(qw, ATA) + ...
+    beta * norm(JV*qw - vw0) )
+%}
+%minimize(quad_form(q, ATA))
+% Keep the first point the same
+qw(1:nq) == qw0(1:nq);
+% Last point the same
+qw(n-nq+1:n) == qw0(n-nq+1:n);
+% Keep the paths somewhat close, due to jacobian linearity
+for k = nq+1 : nSkip*nq : n-nq,
+    norm(qw(k:k+nq-1) - qw0(k:k+nq-1)) <= epsilon;
+end
 cvx_end
-toc
-cvx_cputime
+
+%% Complete the timing
+dt_cvx = cvx_cputime;
+dt_tictoc = toc;
+diary off;
+[~, cmdout] = unix(['grep ', 'Total ', tmpName]);
+cmdout = strsplit(cmdout);
+dt_solver = str2double(cmdout(7));
+clear cmdout;
+delete(tmpName);
 
 %% Form again
-q = reshape(q, [nq, np])';
-qwPath0 = reshape(qwPath0, [nq, np])';
+qw = reshape(qw, [nq, np])';
+dt_opt = [dt_solver, dt_cvx, dt_tictoc];
+
+end

@@ -1,188 +1,127 @@
 %% Plot the joint trajectories in time
+np = size(optimized(1).qw, 1);
+nq = size(optimized(1).qw, 2);
+nt = dt * np;
+t = 0:dt:nt-dt;
 tlim = [t(1), t(end)];
 
+%% Joint trajectories
 figure(1);
-plot(t, rad2deg(qwPath0));
+clf;
+% Original Plan
+subplot(2,2,1);
+plot(t, rad2deg(raw(1).qw0));
 xlim(tlim);
 xlabel('Time (s)');
 ylim([-180, 180]);
 ylabel('Degrees');
 title('Original Trajectory');
+% Optimization results
 
-if exist('swapidx', 'var')
-    cmap = hsv(numel(swapidx)-1);
-end
+% q Optimization
+subplot(2,2,2);
+plot(t, rad2deg(raw(end).qw0));
+xlim(tlim);
+xlabel('Time (s)');
+ylim([-180, 180]);
+ylabel('Position (deg)');
 
-if exist('q', 'var')
-    figure(2);
-    plot(t, rad2deg(q));
-    xlim(tlim);
-    xlabel('Time (s)');
-    ylim([-180, 180]);
-    ylabel('Position (Degrees)');
+if kind==0
     title('Optimized Trajectory');
-    
-    figure(3);
-    plot(t, rad2deg(q - qwPath0));
-    xlim(tlim);
-    xlabel('Time (s)');
-    ylabel('Position (Degrees)');
+else
+    title('Optimized (L) Trajectory');
+end
+
+% Difference
+subplot(2,2,3);
+plot(t, rad2deg(raw(end).qw0 - raw(1).qw0));
+xlim(tlim);
+xlabel('Time (s)');
+ylabel('Difference (deg)');
+if kind==0
     title('Trajectory Difference');
-
-    figure(4);
-    qqVel = diff(q) / dt;
-    qqVel = [zeros(1, nq); qqVel];
-    plot(t, abs(qqVel));
-    xlim(tlim);
-    xlabel('Time (s)');
-    ylabel('Speed (deg/s)');
-    title('Joint Speeds');
-
-    figure(5);
-    qqAccel = diff(q, 2);
-    qqAccel = [zeros(2, nq); qqAccel];
-    plot(t, abs(qqAccel));
-    xlim(tlim);
-    xlabel('Time (s)');
-    ylabel('Acceleration (deg/s^2)');
-    title('Joint Accelerations');
+else
+    title('Trajectory (L) Difference');
 end
 
-%% Plot the Singular Values
-figure(6);plot(t, Ss);xlim(tlim);title('Singular Values');xlabel('Time (s)');
-%figure(7);plot(t,Vs);xlim(tlim);title('Vs');xlabel('Time (s)');
-%figure(8);plot(t,Us);xlim(tlim);title('Us');xlabel('Time (s)');
 
-%% Show the null space optimization result
-if exist('lambda', 'var')
-    figure(12);
-    clf;
-    hold on;
-    for i=1:numel(swapidx)-1
-        range = swapidx(i):swapidx(i+1);
-        for iN=1:nNull
-            plot(t(range), lambda(range, iN), '-s', 'Color', cmap(i,:)*(iN/nNull));
-        end
-    end
-    hold off;
-    xlim(tlim);
-    xlabel('Time (s)');
-    title('Original lambda [MATLAB]');
-end
+% TODO: Computation times...
 
-if exist('dlambda', 'var')
-    figure(13);
-    clf;
-    hold on;
-    for i=1:numel(swapidx)-1
-        range = swapidx(i):swapidx(i+1);
-        for iN=1:nNull
-            plot(t(range), dlambda(range, iN), '-s', 'Color', cmap(i,:)*(iN/nNull));
-        end
-    end
-    hold off;
-    xlim(tlim);
-    xlabel('Time (s)');
-    title('Optimized dlambda');
-end
-
-if exist('ddlambda', 'var')
-    figure(14);
-    clf;
-    hold on;
-    for i=1:numel(swapidx)-1
-        range = swapidx(i):swapidx(i+1);
-        for iN=1:nNull
-            plot(t(range), ddlambda(range, iN), '-s', 'Color', cmap(i,:)*(iN/nNull));
-        end
-    end
-    hold off;
-    xlim(tlim);
-    xlabel('Time (s)');
-    title('Optimized ddlambda');
-end
-
-if exist('lambda0', 'var')
-    figure(17);
-    clf;
-    cmap = hsv(numel(swapidx0)-1);
-    hold on;
-    for i=1:numel(swapidx0)-1
-        range = swapidx0(i):swapidx0(i+1);
-        for iN=1:nNull
-            plot(t(range), lambda0(range, iN), '-s', 'Color', cmap(i,:)*(iN/nNull));
-        end
-    end
-    hold off;
-    xlim(tlim);
-    xlabel('Time (s)');
-    title('Original lambda');
-end
-
-if exist('dqLambda', 'var')
-    figure(16);
-    plot(t, rad2deg(dqLambda));
-    xlim(tlim);
-    xlabel('Time (s)');
-    xlabel('(deg)');
-    title('Trajectory Difference (lambda)');
-end
-
-if exist('qLambda', 'var')
-    figure(15);
-    plot(t, rad2deg(qLambda));
-    xlim(tlim);
-    ylim([-180, 180]);
-    xlabel('Time (s)');
-    title('Optimized Trajectory (lambda)');
-
-    figure(18);
-    qLVel = diff(qLambda) / dt;
-    qLVel = [zeros(1, nq); qLVel];
-    plot(t, abs(qLVel));
-    xlim(tlim);
-    xlabel('Time (s)');
-    ylabel('Speed (rad/s)');
-    title('Joint Speeds (lambda)');
-
-    figure(19);
-    qLAccel = diff(qLambda, 2);
-    qLAccel = [zeros(2, nq); qLAccel];
-    plot(t, abs(qLAccel));
-    xlim(tlim);
-    xlabel('Time (s)');
-    ylabel('Acceleration (rad/s^2)');
-    title('Joint Accelerations (lambda)');
-end
-
-%% Compare
-figure(20);
-plot(t, abs(qLAccel) - qqAccel);
+%% Joint accelerations
+figure(2);
+% Original Plan
+subplot(2,2,1);
+qwAccel0 = diff(raw(1).qw0, 2) / (dt*dt);
+qwAccel0 = [zeros(2, nq); qwAccel0];
+plot(t, abs(qwAccel0));
 xlim(tlim);
 xlabel('Time (s)');
-ylabel('Acceleration (deg/s^2)');
-title('Joint Accelerations (diff)');
-
-figure(21);
-plot(t, abs(qLVel) - abs(qqVel));
+ylabel('Acceleration (rad/s^2)');
+title('Original Accelerations');
+% q Optimization
+subplot(2,2,2);
+qAccel = diff(optimized(end).qw, 2) / (dt*dt);
+qAccel = [zeros(2, nq); qAccel];
+plot(t, abs(qAccel));
 xlim(tlim);
 xlabel('Time (s)');
-ylabel('Speed (rad/s)');
-title('Joint Speeds (diff)');
-
-figure(22);
-plot(t, rad2deg(qLambda - q));
+ylabel('Acceleration (rad/s^2)');
+title('Optimized Accelerations');
+% Lambda Optimization
+subplot(2,2,3);
+qLambdaAccel = diff(optimized(end).qLambda, 2) / (dt*dt);
+qLambdaAccel = [zeros(2, nq); qLambdaAccel];
+plot(t, abs(qLambdaAccel));
 xlim(tlim);
 xlabel('Time (s)');
-ylabel('Angle (deg)');
-title('Joint Positions (diff)');
+ylabel('Acceleration (rad/s^2)');
+title('Lambda Accelerations');
+% TODO: Computation times...
 
-figure(23);
-plot(t, ddlambda - lambda);
-xlim(tlim);
+%% Task Space Target
+%%{
+figure(30);
+subplot(2,2,1);
+[hAx, hL1, hL2] = plotyy(...
+    t, rad2deg(raw(1).vw0(:, 1:3)), ...
+    t, rad2deg(raw(1).vw0(:, 4:6)));
+xlim(hAx(1), tlim);
+xlim(hAx(2), tlim);
 xlabel('Time (s)');
-ylabel('l');
-title('Lambda Positions (diff)');
+ylabel(hAx(1), 'Translational (m/s)');
+ylabel(hAx(2), 'Angular (deg/s)');
+legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
+title('Original Task Velocity');
+
+subplot(2,2,2);
+[hAx, hL1, hL2] = plotyy(...
+    t, rad2deg(raw(end).vw0(:, 1:3)), ...
+    t, rad2deg(raw(end).vw0(:, 4:6)));
+xlim(hAx(1), tlim);
+xlim(hAx(2), tlim);
+xlabel('Time (s)');
+ylabel(hAx(1), 'Translational (m/s)');
+ylabel(hAx(2), 'Angular (deg/s)');
+legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
+title('Optimized Task Velocity');
+
+subplot(2,2,3);
+[hAx, hL1, hL2] = plotyy(...
+    t, rad2deg(raw(end).vw0(:, 1:3) - raw(1).vw0(:, 1:3)), ...
+    t, rad2deg(raw(end).vw0(:, 4:6) - raw(1).vw0(:, 4:6)));
+xlim(hAx(1), tlim);
+xlim(hAx(2), tlim);
+xlabel('Time (s)');
+ylabel(hAx(1), 'Translational (m/s)');
+ylabel(hAx(2), 'Angular (deg/s)');
+legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
+title('Change in Task Velocity');
+
+subplot(2,2,4);
+%plot(t, raw(end).vw0 - raw(1).vw0);
+%legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
+%title('Change in Task Velocity');
+%}
 
 %% Draw
 drawnow;

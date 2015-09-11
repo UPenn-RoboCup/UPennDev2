@@ -73,7 +73,9 @@ local function co_play(self, plan, callback)
 			self:jacobians(plan)
 		end
 	end
-	--plan.qwPath = self:optimize(plan)
+	-- Just send the final data.
+	plan.i_optimizations = plan.n_optimizations + 1
+	self:optimize(plan, true)
 	local t1 = unix.time()
 	print(string.format("%d iterations %.2f ms (%s)",
 		plan.n_optimizations, (t1 - t0)*1e3, tostring(plan.via)))
@@ -113,6 +115,7 @@ function movearm.goto(l, r)
 	local qcWaist = Body.get_safe_waist_command_position()
 
 	local lplan = type(l)=='table' and P[l.via]
+	--lplan = P.joint_preplan
 	if type(lplan)=='function' then
 		--lco = coroutine.create(lplan)
 

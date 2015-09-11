@@ -6,7 +6,7 @@ nNull = size(lambda, 2);
 
 %% Optimization Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 1e3;
+alpha = 5e3;
 %alpha = 1e2; % Snaps to the next goal
 %alpha = 0; % Instant if possible (Verified)
 % Closeness to previous trajectory
@@ -39,9 +39,6 @@ A = sparse(A);
 ATA = A' * A;
 clear d1 d2 A0 A1;
 
-%% Optimization Variables
-P0 = eye(nl) + alpha * ATA;
-
 %% CVX Solver
 %fprintf(1, 'Computing the optimal value of the QCQP and its dual...\n');
 tmpName = [tempname, '.dat'];
@@ -53,7 +50,7 @@ cvx_begin
     variable dlambda(nl)
     % This seems faster
     minimize( quad_form(dlambda, eye(nl)) + ...
-        alpha * quad_form(dlambda - lambda0, ATA))
+        alpha * quad_form(dlambda - lambda0, ATA) )
     % This seems slower...
     %minimize( norm( P0sqrt * q - b ) )
     % Keep the first point the same
@@ -71,10 +68,11 @@ cvx_begin
         norm(...
             dlambda((k-1)*nNull+1:k*nNull) - lambda0((k-1)*nNull+1:k*nNull) ...
             ) <= epsilon*ds(k);
-            
     end
     
 cvx_end
+
+%% Finish the timing
 dt_cvx = cvx_cputime;
 dt_tictoc = toc;
 diary off;
@@ -83,11 +81,10 @@ cmdout = strsplit(cmdout);
 dt_solver = str2double(cmdout(7));
 clear cmdout;
 delete(tmpName);
-dt_opt = [dt_solver, dt_cvx, dt_tictoc];
-fprintf(1, 'Solver: %.2fs | CVX: %.2f | MATLAB: %.2f\n', dt_opt);
 
-
+%% Output
 dlambda = reshape(dlambda, [nNull, np])';
+dt_opt = [dt_solver, dt_cvx, dt_tictoc];
 
 end
 

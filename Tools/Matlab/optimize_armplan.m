@@ -1,5 +1,5 @@
 function [ qw, dt_opt ] = ...
-    optimize_armplan(qwPath0, vwPath0, nullPath0, jacobianPath0)
+    optimize_armplan(qwPath0, vwPath0, nullPath0, jacobianPath0, qwStar)
 
 %% Tuning
 % Relative weight of acceleration (vs null space accuracy)
@@ -8,7 +8,8 @@ alpha = 1e3;
 %alpha = 0; % Instant if possible (Verified)
 % How much to care about the Jtask Jacobian
 %beta = 25;
-beta = 1e2;
+%beta = 1e2;
+beta = 0;
 % Closeness to previous trajectory
 epsilon = deg2rad(10);
 % Constraint the joints to be close on how many iterations...
@@ -30,15 +31,7 @@ nq = size(qwPath0, 2);
 n = numel(qwPath0);
 qw0 = reshape(qwPath0', [n, 1]);
 vw0 = reshape(vwPath0', [numel(vwPath0), 1]);
-
-%% Joint angles on the path
-% If given a guess, else the last point
-if exist('qWaistArmGuess', 'var')
-    qwStar = repmat(qWaistArmGuess, np, 1);
-else
-    qwStar = qwPath0(end, :);
-    qwStar = repmat(qwStar(:), np, 1);
-end
+qwStar = repmat(qwStar(:), np, 1);
 
 %% Velocity matrix
 v0 = ones(n-nq, 1);

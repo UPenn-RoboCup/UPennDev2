@@ -1,5 +1,5 @@
 function [ qLambda, dt_opt ] = ...
-    optimize_armplan_lambda(qwPath0, vwPath0, nullPath0, jacobianPath0)
+    optimize_armplan_lambda(qwPath0, vwPath0, nullPath0, jacobianPath0, qwStar)
 
 nExtraNull = 0;
 
@@ -10,13 +10,6 @@ np = size(qwPath0, 1);
 nq = size(qwPath0, 2);
 % Number of null space projections to optimize
 nNull = nq - 6 + nExtraNull;
-% If given a guess, else the last point
-if exist('qWaistArmGuess', 'var')
-    disp('Using a guess');
-    qwStar = qWaistArmGuess;
-else
-    qwStar = qwPath0(end, :);
-end
 
 %% Filter the nullspace in time
 gamma = 1;
@@ -40,14 +33,13 @@ for i=1:np
     lambda(i, :) = S(1:nNull, 1:nNull) * V(:, 1:nNull)' * ...
         (qwPath0(i, :) - qwStar)';
 end
-lambda0 = lambda;
 
 %% Filter on the separation of singular values
 ds = ones(np, 1);
 dSs = diff(Ss, 1, 2);
 dsTrack = var(dSs) > 0.01;
 dSsImportant = -dSs(:,dsTrack);
-if numel(dSsImportant)>0
+if numel(dSsImportant)>0 && 0
     ds0 = min(dSsImportant, [], 2);
     ds = conv(ds0.^2, [1,2,1], 'same');
     ds = ds / max(ds);
@@ -140,12 +132,14 @@ swapidx = swapidx(segment);
 %%{
 disp('Optimizing ddlambda!');
 ddlambda = lambda;
+dt_opt = [];
 for i=1:numel(swapidx)-1
     range = swapidx(i):swapidx(i+1)-1;
     % Only if enough points
     if numel(range)>5
         fprintf(1, 'Optimizing %d\n', numel(range));
         [ddlambda(range, :), dt_opt_lambda] = subopt_lambda(lambda(range, :), ds);
+        dt_opt = [dt_opt; dt_opt_lambda];
     end
 end
 
@@ -162,7 +156,5 @@ for i=1:size(lambda, 1)
     qLambda(i, :) = qwPath0(i, :) + dqLambda(i, :);
 end
 %}
-
-dt_opt = 0;
 
 end

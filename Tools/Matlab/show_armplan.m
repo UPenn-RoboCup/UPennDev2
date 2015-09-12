@@ -40,8 +40,9 @@ else
     title('Trajectory (L) Difference');
 end
 subplot(2,2,4);
-t_opt = reshape([optimized.dt_opt], [3 numel(optimized)]);
+t_opt = reshape([optimized.dt_opt], [3, numel(optimized)]);
 bar(t_opt(1:1,:)');
+xlim([1, n_optimizations]);
 %legend('Solver', 'Setup+Solve');
 xlabel('Iteration Number');
 ylabel('Time (sec)');
@@ -83,16 +84,24 @@ xlim(tlim);
 xlabel('Time (s)');
 ylabel('Joint Accelerations (rad/s^2)');
 title('Acceleration Differences');
+% Optimization function cost over time
+subplot(2,2,4);
+plot([optimized.opt_val]);
+xlim([1, n_optimizations]);
+xlabel('Iteration Number');
+ylabel('Cost');
+title('Optimization Costs');
 
 %% Task Space Target
-%%{
 figure(30);
 
 subplot(2,2,1);
 vw0pos0 = raw(1).vw0(2:end, 1:3);
-%vw0pos0 = vw0pos0 ./ repmat(sqrt(sum(vw0pos0 .^ 2, 2)), 1, size(vw0pos0, 2));
 vw0rot0 = raw(1).vw0(2:end, 4:6);
-%vw0rot0 = vw0rot0 ./ repmat(sqrt(sum(vw0rot0 .^ 2, 2)), 1, size(vw0rot0, 2));
+%%{
+vw0pos0 = vw0pos0 ./ repmat(sqrt(sum(vw0pos0 .^ 2, 2)), 1, size(vw0pos0, 2));
+vw0rot0 = vw0rot0 ./ repmat(sqrt(sum(vw0rot0 .^ 2, 2)), 1, size(vw0rot0, 2));
+%}
 
 [hAx, hL1, hL2] = plotyy(...
     t(2:end), vw0pos0, ...
@@ -108,9 +117,11 @@ title('Original Desired Task Velocity');
 subplot(2,2,2);
 
 vw0pos = raw(1).vw(2:end, 1:3);
-%vw0pos = vw0pos ./ repmat(sqrt(sum(vw0pos .^ 2, 2)), 1, size(vw0pos, 2));
 vw0rot = raw(1).vw(2:end, 4:6);
-%vw0rot = vw0rot ./ repmat(sqrt(sum(vw0rot .^ 2, 2)), 1, size(vw0rot, 2));
+%%{
+vw0pos = vw0pos ./ repmat(sqrt(sum(vw0pos .^ 2, 2)), 1, size(vw0pos, 2));
+vw0rot = vw0rot ./ repmat(sqrt(sum(vw0rot .^ 2, 2)), 1, size(vw0rot, 2));
+%}
 
 [hAx, hL1, hL2] = plotyy(...
     t(2:end), vw0pos, ...
@@ -125,13 +136,15 @@ title('Original Task Velocity');
 
 subplot(2,2,3);
 vwFpos = raw(end).vw(2:end, 1:3);
-%vwFpos = vwFpos ./ repmat(sqrt(sum(vwFpos .^ 2, 2)), 1, size(vwFpos, 2));
 vwFrot = raw(end).vw(2:end, 4:6);
-%vwFrot = vwFrot ./ repmat(sqrt(sum(vwFrot .^ 2, 2)), 1, size(vwFrot, 2));
+%%{
+vwFpos = vwFpos ./ repmat(sqrt(sum(vwFpos .^ 2, 2)), 1, size(vwFpos, 2));
+vwFrot = vwFrot ./ repmat(sqrt(sum(vwFrot .^ 2, 2)), 1, size(vwFrot, 2));
+%}
 
 [hAx, hL1, hL2] = plotyy(...
     t(2:end), vwFpos, ...
-    t(2:end), vwFrot);
+    t(2:end), rad2deg(vwFrot));
 xlim(hAx(1), tlim);
 xlim(hAx(2), tlim);
 xlabel('Time (s)');
@@ -142,7 +155,7 @@ title('Optimized Task Velocity');
 
 subplot(2,2,4);
 [hAx, hL1, hL2] = plotyy(...
-    t(2:end), rad2deg(raw(end).vw(2:end, 1:3) - raw(1).vw(2:end, 1:3)), ...
+    t(2:end), (raw(end).vw(2:end, 1:3) - raw(1).vw(2:end, 1:3)), ...
     t(2:end), rad2deg(raw(end).vw(2:end, 4:6) - raw(1).vw(2:end, 4:6)));
 xlim(hAx(1), tlim);
 xlim(hAx(2), tlim);

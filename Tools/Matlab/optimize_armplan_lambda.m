@@ -1,4 +1,4 @@
-function [ qLambda, dt_opt ] = ...
+function [ qLambda, dt_opt, lambda_opt ] = ...
     optimize_armplan_lambda(qwPath0, vwPath0, nullPath0, jacobianPath0, qwStar)
 
 nExtraNull = 0;
@@ -20,6 +20,14 @@ for i=2:np
     Ns{i} = (1-gamma) * Ns{i-1} + gamma * nullPath0{i}';
 end
 
+Ns = cell(np);
+for i=1:np
+    % MATLAB/torch transpose...
+    JTJ = pinv(jacobianPath0{i}') * jacobianPath0{i}';
+    Ns{i} = eye(size(JTJ, 1)) - JTJ;
+end
+clear JTJ;
+
 %% Save the SVD and form the null space coordinates
 Ss = zeros(np, nq);
 lambda = zeros(np, nNull);
@@ -39,7 +47,7 @@ ds = ones(np, 1);
 dSs = diff(Ss, 1, 2);
 dsTrack = var(dSs) > 0.01;
 dSsImportant = -dSs(:,dsTrack);
-if numel(dSsImportant)>0 && 0
+if numel(dSsImportant)>0
     ds0 = min(dSsImportant, [], 2);
     ds = conv(ds0.^2, [1,2,1], 'same');
     ds = ds / max(ds);
@@ -133,13 +141,15 @@ swapidx = swapidx(segment);
 disp('Optimizing ddlambda!');
 ddlambda = lambda;
 dt_opt = [];
+lambda_opt = [];
 for i=1:numel(swapidx)-1
     range = swapidx(i):swapidx(i+1)-1;
     % Only if enough points
     if numel(range)>5
         fprintf(1, 'Optimizing %d\n', numel(range));
-        [ddlambda(range, :), dt_opt_lambda] = subopt_lambda(lambda(range, :), ds);
+        [ddlambda(range, :), dt_opt_lambda, opt_val] = subopt_lambda(lambda(range, :), ds);
         dt_opt = [dt_opt; dt_opt_lambda];
+        lambda_opt = [lambda_opt, opt_val];
     end
 end
 

@@ -298,11 +298,14 @@ function libArmPlan.joint_preplan(self, plan)
 			plan.tr, qArm0, plan.weights,
 			qWaistGuess or qWaist0)
 	end
-	assert(type(qWaistArmF)=='table',
-		prefix..'No final goal')
+	qWaistArmF = qWaistArmF or plan.qWaistArmGuess
+	if type(qWaistArmF)~='table' then
+		print(prefix..'No final goal')
+		return plan
+	end
 	vector.new(qWaistArmF)
 	-- Add waist motions
-	if qWaistGuess then
+	if qWaistGuess and #qWaistArmF~=8 then
 		assert(type(qWaist0)=='table')
 		table.insert(qWaistArmF, 1, qWaistGuess[1])
 		table.insert(qWaistArm0, 1, qWaist0[1])
@@ -336,6 +339,7 @@ function libArmPlan.joint_preplan(self, plan)
 	plan.Js = plan.Js or {}
 	-- Task space path
 	plan.vwPath = plan.vwPath or {}
+	plan.vwEffective = plan.vwEffective or {}
 	-- If given a duration, then check speed limit compliance
 	if type(plan.duration)=='number' then
 		local dqTotal = qArmF - qArm0
@@ -376,6 +380,9 @@ function libArmPlan.joint_preplan(self, plan)
 			table.insert(plan.nulls, nullspace)
 			table.insert(plan.Js, J)
 			table.insert(plan.qwPath, qWaistArm)
+			table.insert(plan.vwEffective,
+				J * torch.Tensor(qWaistArm - (plan.qwPath[#plan.qwPath-1] or qWaistArm0)):div(dt)
+			)
 			-- Decompose for next step
 			if qWaistGuess then
 				qArm = {unpack(qWaistArm, 2)}
@@ -423,6 +430,9 @@ function libArmPlan.joint_preplan(self, plan)
 		table.insert(plan.nulls, nullspace)
 		table.insert(plan.Js, J)
 		table.insert(plan.qwPath, qWaistArm)
+		table.insert(plan.vwEffective,
+			J * torch.Tensor(qWaistArm - (plan.qwPath[#plan.qwPath-1] or qWaistArm0)):div(dt)
+		)
 		-- Decompose for next step
 		if qWaistGuess then
 			qArm = {unpack(qWaistArm, 2)}
@@ -515,6 +525,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	else
 		qWaistArm = vector.copy(qArm)
 	end
+	local qWaistArm0 = qWaistArm
 	-- Null space variables
 	local nullFactor = 0.3 --0.2
 	local dqdtNull = torch.Tensor(#qWaistArm)
@@ -525,6 +536,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	plan.qwPath = plan.qwPath or {}
 	-- Task space path
 	plan.vwPath = plan.vwPath or {}
+	plan.vwEffective = plan.vwEffective or {}
 	-- Begin
 	print(prefix..'Beginning')
 	local n = 0
@@ -591,6 +603,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 		table.insert(plan.nulls, nullspace)
 		table.insert(plan.Js, J)
 		table.insert(plan.vwPath, vwTarget0)
+		table.insert(plan.vwEffective,
+			J * torch.Tensor(qWaistArm - (plan.qwPath[#plan.qwPath-1] or qWaistArm0)):div(dt)
+		)
 		-- Decompose for next iteration
 		if qWaistGuess then
 			qArm = {unpack(qWaistArm, 2)}
@@ -612,8 +627,11 @@ function libArmPlan.jacobian_preplan(self, plan)
 			n >= nStepsTimeout and 'Timeout' or 'Close'
 		))
 	end
-	return libArmPlan.joint_preplan(self, plan)
-	--return plan
+	if n >= nStepsTimeout then
+		return libArmPlan.joint_preplan(self, plan)
+	else
+		return plan
+	end
 end
 
 -- Resume with an updated plan or empty table if no updates
@@ -777,6 +795,7 @@ local function pathJacobians(self, plan)
 	local nulls = {}
 	local Js = {}
 	local vwPath = {}
+	local vwEffective = {}
 	local qArm, qWaist
 	for i, qw in ipairs(plan.qwPath) do
 		-- Decompose
@@ -789,6 +808,9 @@ local function pathJacobians(self, plan)
 		end
 		nulls[i], Js[i] =
 			get_nullspace(self, qw, qArm, plan.qWaistGuess and qWaist)
+		table.insert(vwEffective,
+			Js[i] * torch.Tensor(qw - (plan.qwPath[i-1] or plan.qwPath[1])):div(self.dt)
+		)
 		if plan.tr then
 			local dp, drpy = get_distance(self, plan.tr, qArm, qWaist)
 			local vwTarget0 = {
@@ -801,6 +823,7 @@ local function pathJacobians(self, plan)
 	plan.nulls = nulls
 	plan.Js = Js
 	plan.vwPath = vwPath
+	plan.vwEffective = vwEffective
 end
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')
@@ -810,7 +833,7 @@ local function optimize(self, plan, stop)
 	assert(os.rename(planName0, planName), "Could not form tmp file")
 	-- 0 is the q version, 1 is the lambda version
 	plan.stop = stop and 1 or 0
-	plan.kind = 1
+	plan.kind = 0
 	-- For debugging
 	--[[
 	local np = #plan.qwPath

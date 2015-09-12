@@ -1,4 +1,4 @@
-function [ dlambda, dt_opt ] = subopt_lambda(lambda, ds)
+function [ dlambda, dt_opt, opt_val ] = subopt_lambda(lambda, ds)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -85,6 +85,7 @@ delete(tmpName);
 %% Output
 dlambda = reshape(dlambda, [nNull, np])';
 dt_opt = [dt_solver, dt_cvx, dt_tictoc];
+opt_val = cvx_optval;
 
 end
 

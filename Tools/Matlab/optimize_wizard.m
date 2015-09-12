@@ -13,8 +13,10 @@ ch = zmq('reply', 'ipc', 'armopt');
 %while 1
 raw = struct([]);
 optimized = struct([]);
-stop = 0;
+
 %% Main loop
+while 1
+    stop = 0;
 while stop==0
     p = zmq('poll', 1000);
     if numel(p)>0
@@ -49,18 +51,20 @@ while stop==0
             % Save results to be opened
             if kind==1
                 % Subspace Optimization
-                [qLambda, dt_opt_lambda] = ...
+                [qLambda, dt_opt_lambda, opt_val_lambda] = ...
                     optimize_armplan_lambda(qw0, vw0, nulls, Js, qwStar);
                 optimized(i_optimizations).qLambda = qLambda;
                 optimized(i_optimizations).dt_opt_lambda = dt_opt_lambda;
                 optimized(i_optimizations).dt_opt = sum(dt_opt_lambda, 1);
+                optimized(i_optimizations).opt_val = sum(opt_val_lambda);
                 save(tmpfile, 'qLambda');
             else
                 % Regular Optimization
-                [qw, dt_opt] = ...
-                    optimize_armplan(qw0, vw0, nulls, Js, qwStar);
+                [qw, dt_opt, opt_val] = ...
+                    optimize_armplan(qw0, vw, nulls, Js, qwStar);
                 optimized(i_optimizations).qw = qw;
                 optimized(i_optimizations).dt_opt = dt_opt;
+                optimized(i_optimizations).opt_val = opt_val;
                 save(tmpfile, 'qw');
             end
         end
@@ -70,7 +74,4 @@ while stop==0
     end
     
 end
-
-%% Finish with a plot
-
-%end
+end

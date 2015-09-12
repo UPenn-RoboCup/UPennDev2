@@ -1,4 +1,4 @@
-function [ qw, dt_opt ] = ...
+function [ qw, dt_opt, opt_val ] = ...
     optimize_armplan(qwPath0, vwPath0, nullPath0, jacobianPath0, qwStar)
 
 %% Tuning
@@ -9,7 +9,7 @@ alpha = 1e3;
 % How much to care about the Jtask Jacobian
 %beta = 25;
 %beta = 1e2;
-beta = 0;
+beta = 1e-3;
 % Closeness to previous trajectory
 epsilon = deg2rad(10);
 % Constraint the joints to be close on how many iterations...
@@ -40,6 +40,7 @@ v1 = zeros(n, 1);
 v1(1:nq) = -2;
 v1(end-nq+1:end) = 2;
 V = diag(v0, nq) + diag(-flip(v0), -nq) + diag(v1);
+V = 0.5*V;
 clear v0 v1;
 
 %% Acceleration matrix
@@ -58,7 +59,19 @@ ATA = A' * A;
 clear d2 A0 A1;
 
 %% Nullspace
+%{
+JTJs = cell(np);
+for i=1:np
+    % MATLAB/torch transpose...
+    JTJs{i} = pinv(jacobianPath0{i}') * jacobianPath0{i}';
+end
+N = sparse(blkdiag(JTJs{:}));
+N = eye(size(N, 1)) - N;
+%}
+
+% Use the weird null space
 N = sparse(blkdiag(nullPath0{:}))';
+
 NTN = N' * N;
 
 %% Jacobians
@@ -77,7 +90,7 @@ variable qw(n)
 %%{
 minimize( quad_form(qw - qwStar, NTN) + ...
     alpha * quad_form(qw, ATA) + ...
-    beta * norm(JV*qw - vw0) )
+    beta * norm(JV * qw - vw0)^2 )
 %}
 %minimize(quad_form(q, ATA))
 % Keep the first point the same
@@ -103,5 +116,6 @@ delete(tmpName);
 %% Form again
 qw = reshape(qw, [nq, np])';
 dt_opt = [dt_solver, dt_cvx, dt_tictoc];
+opt_val = cvx_optval;
 
 end

@@ -20,12 +20,14 @@ for i=2:np
     Ns{i} = (1-gamma) * Ns{i-1} + gamma * nullPath0{i}';
 end
 
+%{
 Ns = cell(np);
 for i=1:np
     % MATLAB/torch transpose...
     JTJ = pinv(jacobianPath0{i}') * jacobianPath0{i}';
     Ns{i} = eye(size(JTJ, 1)) - JTJ;
 end
+%}
 clear JTJ;
 
 %% Save the SVD and form the null space coordinates
@@ -50,7 +52,7 @@ dSsImportant = -dSs(:,dsTrack);
 if numel(dSsImportant)>0
     ds0 = min(dSsImportant, [], 2);
     ds = conv(ds0.^2, [1,2,1], 'same');
-    ds = ds / max(ds);
+    ds = ds / (max(ds) + eps);
 end
 
 %% Determine the signs from the SVD for consistent basis directions

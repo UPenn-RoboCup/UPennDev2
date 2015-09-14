@@ -74,8 +74,10 @@ local function co_play(self, plan, callback)
 		end
 	end
 	-- Just send the final data.
-	plan.i_optimizations = plan.n_optimizations + 1
-	self:optimize(plan, true)
+	if plan.n_optimizations>0 then
+		plan.i_optimizations = plan.n_optimizations + 1
+		self:optimize(plan, true)
+	end
 	local t1 = unix.time()
 	print(string.format("%d iterations %.2f ms (%s)",
 		plan.n_optimizations, (t1 - t0)*1e3, tostring(plan.via)))

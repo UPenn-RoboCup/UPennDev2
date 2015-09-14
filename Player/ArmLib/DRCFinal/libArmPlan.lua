@@ -545,6 +545,7 @@ function libArmPlan.jacobian_preplan(self, plan)
 	repeat
 		local dp, drpy =
 			get_distance(self, plan.tr, qArm, qWaist)
+		if n==0 then print('Dist', vector.new(dp), vector.new(drpy)) end
 		-- Check if we are within threshold
 		dTF = {vnorm(dp), vnorm(drpy)}
 		if dTF[1] < POS_THRESH and dTF[2] < 3*DEG_TO_RAD then
@@ -833,7 +834,7 @@ local function optimize(self, plan, stop)
 	assert(os.rename(planName0, planName), "Could not form tmp file")
 	-- 0 is the q version, 1 is the lambda version
 	plan.stop = stop and 1 or 0
-	plan.kind = 0
+	plan.kind = 1
 	-- For debugging
 	--[[
 	local np = #plan.qwPath

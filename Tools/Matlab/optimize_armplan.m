@@ -85,6 +85,7 @@ tmpName = [tempname, '.dat'];
 diary(tmpName);
 tic;
 cvx_begin
+%cvx_solver gurobi
 cvx_precision low
 variable qw(n)
 %%{

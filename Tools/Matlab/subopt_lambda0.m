@@ -58,10 +58,10 @@ cvx_begin
     cvx_precision low
     %cvx_precision medium
     variable dlambda(nl)
+    % This seems faster
     minimize( quad_form(dlambda, eye(nl)) + ...
         alpha * quad_form(dlambda - lambda0, ATA) + ...
-        beta * quad_form(V * (dlambda - lambda0), eye(nl)) ...
-        )
+        beta * norm(V * (dlambda - lambda0))^2)
     % Keep the first point the same
     dlambda(1:nNull) == lambda0(1:nNull);
     % Last point the same

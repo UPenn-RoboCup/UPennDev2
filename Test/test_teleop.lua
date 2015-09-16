@@ -172,6 +172,10 @@ char_lut['3'] = function()
 	head_ch:send'teleop'
 end
 char_lut['4'] = function()
+	arm_ch:send'valve'
+end
+--[[
+char_lut['4'] = function()
 	head_ch:send'trackleft'
 end
 char_lut['5'] = function()
@@ -189,6 +193,7 @@ char_lut['7'] = function()
 	T.copy(get_tflarm(true), tfL0)
 	T.copy(get_tfrarm(true), tfR0)
 end
+--]]
 char_lut['8'] = function()
 	body_ch:send'stop'
 end

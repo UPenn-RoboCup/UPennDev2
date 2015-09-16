@@ -21,16 +21,16 @@ fsm.enabled = {
 --SJ: now we can have multiple FSM options
 fsm.select = {
 	Arm = 'DRCFinal',
-	Body = 'DRCFinal', 
+	Body = 'DRCFinal',
 	Gripper = 'DRCFinal',
-	Head = 'DRCFinal', 
+	Head = 'DRCFinal',
 	Motion = 'DRCFinal'
 }
 
 -- Custom libraries
 fsm.libraries = {
 	MotionLib = 'DRCFinal',
-	ArmLib = 'DRCFinal', --Now steve's libs are merged into one 
+	ArmLib = 'DRCFinal', --Now steve's libs are merged into one
 	World = 'DRCFinal'
 }
 
@@ -40,7 +40,7 @@ fsm.Body = {
   {'bodyInit', 'done', 'bodyStop'},
 	--
 --	{'bodyStop', 'approachbuggy', 'bodyApproachBuggy'},
-	
+
 --	{'bodyStop', 'stepflat', 'bodyStepAlign'},
 
 	{'bodyStop', 'approach', 'bodyApproachMessy'},
@@ -183,6 +183,8 @@ fsm.Arm = {
 	{'armInitWalk', 'done', 'armWalk'},
 	{'armInitFirst', 'done', 'armWalk'},
 
+	{'armWalk', 'valve', 'armValve'},
+
 	-- From the walk state
 	--{'armWalk', 'pushdoor', 'armPushDoorUp'},
 	{'armWalk', 'ready', 'armManipulation'},
@@ -210,7 +212,7 @@ fsm.Arm = {
 
 
 
-	
+
 	-- Teleop IK level
 	{'armTeleop', 'init', 'armInitWalk'},
 	{'armTeleop', 'teleopraw', 'armTeleopRaw'},
@@ -230,7 +232,7 @@ fsm.Arm = {
 	{'armValveRotate', 'teleopraw', 'armTeleopRaw'},
 
 
-	--When raising is done, arm state remains in armManipulation	
+	--When raising is done, arm state remains in armManipulation
 	{'armManipulation', 'init', 'armInitWalk'},
 	{'armManipulation', 'ready', 'armManipulation'},
 	{'armManipulation', 'pushdoordown', 'armPushDoorDown'},

@@ -3,13 +3,17 @@ function [ qw, dt_opt, opt_val ] = ...
 
 %% Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 1e3;
-%alpha = 1e2; % Snaps to the next goal
-%alpha = 0; % Instant if possible (Verified)
-% How much to care about the Jtask Jacobian
-%beta = 25;
-%beta = 1e2;
-beta = 1e-3;
+alpha = 10 * 1e2; % Accel
+beta = 1e1; % Vel
+
+% Out
+c_tight = 0*1e-3;
+c_usage = 2*1e-3;
+
+% Tight
+%c_tight = 2*1e-3;
+%c_usage = 0*1e-3;
+
 % Closeness to previous trajectory
 epsilon = deg2rad(10);
 % Constraint the joints to be close on how many iterations...
@@ -74,6 +78,14 @@ N = sparse(blkdiag(nullPath0{:}))';
 
 NTN = N' * N;
 
+%% TODO: Fix up
+qMid = [0, 0.759218, 0, -1.39626, 0, 0, 0];
+qMid = repmat(qMid(:), np, 1);
+elbow_diag = ones(n, 1);
+elbow_diag(3:7:n) = 1;
+N_elbow = diag(elbow_diag) * sparse(blkdiag(nullPath0{:}))';
+NTN_elbow = N_elbow' * N_elbow;
+
 %% Jacobians
 J = sparse(blkdiag(jacobianPath0{:}))';
 %JTJ = J' * J;
@@ -85,23 +97,25 @@ tmpName = [tempname, '.dat'];
 diary(tmpName);
 tic;
 cvx_begin
-%cvx_solver gurobi
-cvx_precision low
-variable qw(n)
-%%{
-minimize( quad_form(qw - qwStar, NTN) + ...
-    alpha * quad_form(qw, ATA) + ...
-    beta * norm(JV * qw - vw0)^2 )
-%}
-%minimize(quad_form(q, ATA))
-% Keep the first point the same
-qw(1:nq) == qw0(1:nq);
-% Last point the same
-qw(n-nq+1:n) == qw0(n-nq+1:n);
-% Keep the paths somewhat close, due to jacobian linearity
-for k = nq+1 : nSkip*nq : n-nq,
-    norm(qw(k:k+nq-1) - qw0(k:k+nq-1)) <= epsilon;
-end
+    %cvx_solver gurobi
+    cvx_precision low
+    variable qw(n)
+    %quad_form(qw - qwStar, NTN) + ... % Old version
+    minimize( ...
+        c_usage * quad_form(qw - qMid, NTN) + ... % Joints should be close to the middle of their range
+        c_tight * quad_form(qw, NTN_elbow) + ... % Elbow should be tight
+        alpha * quad_form(qw, ATA) + ... % Smooth joint path
+        beta * norm(JV * qw)^2) % Short task path
+    %quad_form(V * qw, eye(n)) + ... % Short joint path
+    
+    % Keep the first point the same
+    qw(1:nq) == qw0(1:nq);
+    % Last point the same
+    qw(n-nq+1:n) == qw0(n-nq+1:n);
+    % Keep the paths somewhat close, due to jacobian linearity
+    for k = nq+1 : nSkip*nq : n-nq,
+        norm(qw(k:k+nq-1) - qw0(k:k+nq-1)) <= epsilon;
+    end
 cvx_end
 
 %% Complete the timing

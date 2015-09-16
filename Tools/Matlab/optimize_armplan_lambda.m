@@ -40,8 +40,10 @@ for i=1:np
     Vs{i} = V(:, 1:nNull);
     Us{i} = U(:, 1:nNull);
     Ss(i, :) = diag(S);
-    lambda(i, :) = S(1:nNull, 1:nNull) * V(:, 1:nNull)' * ...
-        (qwPath0(i, :) - qwStar)';
+    if i<np
+        lambda(i, :) = S(1:nNull, 1:nNull) * V(:, 1:nNull)' * ...
+            (qwPath0(i+1, :) - qwPath0(i, :))';
+    end
 end
 
 %% Filter on the separation of singular values

@@ -231,6 +231,19 @@ else
     title('Optimized Trajectory (L)', 'FontSize', 16);
 end
 
+%% Original
+h_orig = figure(16);
+plot(t, rad2deg(raw(1).qw0));
+xlim(tlim);
+ylim([-180, 180]);
+xlabel('Time (s)', 'FontSize', 12);
+ylabel('Position (deg)', 'FontSize', 12);
+if kind==0
+    title('Original Trajectory', 'FontSize', 16);
+else
+    title('Original Trajectory (L)', 'FontSize', 16);
+end
+
 %% Save
 if kind==0
     figure(h_delta_task);
@@ -244,6 +257,10 @@ if kind==0
     figure(h_optimal);
     set(h_optimal,'PaperPositionMode','Auto');
     print('optimal_q', '-dpng');
+    %
+    figure(h_orig);
+    set(h_optimal,'PaperPositionMode','Auto');
+    print('original_q', '-dpng');
 else
     figure(h_delta_task);
     set(h_delta_task,'PaperPositionMode','Auto');
@@ -257,6 +274,17 @@ else
     set(h_optimal,'PaperPositionMode','Auto');
     print('optimal_lambda', '-dpng');
 end
+
+%% Calculations
+% Against human q
+dqh0 = sum(sum(angdiff(raw(1).qw0, repmat(qwStar, [np,1])).^2, 2))
+dqhF = sum(sum(angdiff(raw(end).qw0, repmat(qwStar, [np,1])).^2, 2))
+
+% Task length
+dT0 = sum( sum( (raw(1).vw).^2, 2) )
+dTF = sum( sum( (raw(end).vw).^2, 2) )
+
+%sum(sum( diff(raw(1).vw(:, 1:3)).^2, 2 ))
 
 %% Draw
 drawnow;

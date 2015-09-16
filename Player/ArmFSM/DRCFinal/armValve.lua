@@ -87,12 +87,12 @@ function state.update()
 		Body.set_rarm_command_position(qRWaypoint)
 	end
 
-	--[[
+	----[[
 	if qLWaistpoint and qRWaistpoint then
 		print('Conflicting Waist')
-	elseif qLWaist then
+	elseif qLWaistpoint then
 		Body.set_safe_waist_command_position(qLWaistpoint)
-	elseif qRWaist then
+	elseif qRWaistpoint then
 		Body.set_safe_waist_command_position(qRWaistpoint)
 	end
 	--]]

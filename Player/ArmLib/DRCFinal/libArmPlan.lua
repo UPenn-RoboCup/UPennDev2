@@ -745,8 +745,8 @@ end
 
 -- Set the iterator resolutions
 local function set_limits(self, qMin, qMax, dqdt_limit)
-	self.qMin = assert(qMin)
-	self.qMax = assert(qMax)
+	self.qMin = vector.new(assert(qMin))
+	self.qMax = vector.new(assert(qMax))
 
 	-- TODO: Check with SJ on the proper limits
 	if self.id:lower():find'left' then
@@ -756,6 +756,8 @@ local function set_limits(self, qMin, qMax, dqdt_limit)
 
 	self.dqdt_limit = assert(dqdt_limit)
 	self.qRange = qMax - qMin
+
+	print(self.id, 'mid', self.qMin /2 + self.qMax /2)
 
 	-- Add the waist
 	-- TODO: Make better API :P
@@ -834,7 +836,7 @@ local function optimize(self, plan, stop)
 	assert(os.rename(planName0, planName), "Could not form tmp file")
 	-- 0 is the q version, 1 is the lambda version
 	plan.stop = stop and 1 or 0
-	plan.kind = 1
+	plan.kind = 0
 	-- For debugging
 	--[[
 	local np = #plan.qwPath

@@ -30,18 +30,17 @@ for i, name in ipairs(names) do
 	local np_in, nb_in = 0,0
 	local np_out, nb_out = 0,0
 
-	local my_t = {}
-	local my_b = {}
+	local t_in = {}
+	local b_in = {}
+	local t_out = {}
+	local b_out = {}
 
 	local tprev = -math.huge
 	for ii, pktsz in ipairs(use) do
 		local tlog, bytesz = unpack(pktsz)
-
-		my_t[ii] = tlog
-		my_b[ii] = bytesz
-
 		local tdiff = tlog - tprev
 		tprev = tlog
+
 		if tdiff < 1e-3 then
 			--print('Burst!')
 		elseif tlog<1433536200 then
@@ -52,30 +51,27 @@ for i, name in ipairs(names) do
 			nbytes = nbytes + bytesz
 			npkts = npkts + 1
 			--else print('skip!', tlog)
-
 			--if name:find'camera0' then print(name, tlog, tlog - 1433623675.096) end
 			--if name:find'mesh0' then print(name, tlog, tlog - 1433623675.096) end
 			--if name:find'itty' then print(name, tlog, tlog - 1433623675.096) end
-
-
-
 			if tlog >= 1433538150 then
 				-- Inside!
 				nb_in = nb_in + bytesz
 				np_in = np_in + 1
+				table.insert(t_in, tlog)
+				table.insert(b_in, bytesz)
 			else
 				-- Outside!
 				nb_out = nb_out + bytesz
 				np_out = np_out + 1
+				table.insert(t_out, tlog)
+				table.insert(b_out, bytesz)
 			end
 
 		end
-
-		mattorch.saveTable('/tmp/udp_'..name, {t = my_t, bytes = my_b})
-
 	end
 	if not name:find'lidar' then
-		print('\n= '..name..' =')
+		print('\n= '..name..' =', #t_in, #t_out)
 		print(nbytes, 'bytes')
 		print(nbytes/1000, 'kbytes')
 		print(nbytes/1000/1000, 'Mbytes')
@@ -90,6 +86,10 @@ for i, name in ipairs(names) do
 		print(nb_in/1000, 'kbytes inside')
 		print(nb_in/1000/1000, 'Mbytes inside')
 		print(np_in, 'packets inside')
+		mattorch.saveTable('/tmp/udp_'..name..'_trial1.mat', {
+			t_in = t_in, b_in = b_in,
+			t_out = t_out, b_out = b_out,
+		})
 	end
 end
 print()
@@ -176,6 +176,11 @@ for i, name in ipairs(names) do
 	local np_in, nb_in = 0,0
 	local np_out, nb_out = 0,0
 
+	local t_in = {}
+	local b_in = {}
+	local t_out = {}
+	local b_out = {}
+
 	local tprev = -math.huge
 	for ii, pktsz in ipairs(use) do
 		local tlog, bytesz = unpack(pktsz)
@@ -201,10 +206,14 @@ for i, name in ipairs(names) do
 				-- Inside!
 				nb_in = nb_in + bytesz
 				np_in = np_in + 1
+				table.insert(t_in, tlog)
+				table.insert(b_in, bytesz)
 			else
 				-- Outside!
 				nb_out = nb_out + bytesz
 				np_out = np_out + 1
+				table.insert(t_out, tlog)
+				table.insert(b_out, bytesz)
 			end
 
 		end
@@ -225,6 +234,10 @@ for i, name in ipairs(names) do
 		print(nb_in/1000, 'kbytes inside')
 		print(nb_in/1000/1000, 'Mbytes inside')
 		print(np_in, 'packets inside')
+		mattorch.saveTable('/tmp/udp_'..name..'_trial2.mat', {
+			t_in = t_in, b_in = b_in,
+			t_out = t_out, b_out = b_out,
+		})
 	end
 end
 

@@ -5,15 +5,17 @@ local mp = require'msgpack.MessagePack'
 ------------------------
 local names = {
 	'mesh0',
-'ittybitty1',
-'ittybitty0',
-'lidar0',
-'feedback',
-'mesh1',
-'lidar1',
-'camera0',
-'camera1'
+	'ittybitty1',
+	'ittybitty0',
+	'lidar0',
+	'feedback',
+	'mesh1',
+	'lidar1',
+	'camera0',
+	'camera1'
 }
+
+local mattorch = require'mattorch'
 
 print('\nTrial 1')
 local f_udp = io.open('Matlab/logs1/udp1433560169.5507.log')
@@ -28,9 +30,15 @@ for i, name in ipairs(names) do
 	local np_in, nb_in = 0,0
 	local np_out, nb_out = 0,0
 
+	local my_t = {}
+	local my_b = {}
+
 	local tprev = -math.huge
 	for ii, pktsz in ipairs(use) do
 		local tlog, bytesz = unpack(pktsz)
+
+		my_t[ii] = tlog
+		my_b[ii] = bytesz
 
 		local tdiff = tlog - tprev
 		tprev = tlog
@@ -40,10 +48,10 @@ for i, name in ipairs(names) do
 		elseif tlog>1433539557 then
 		elseif tlog>=1433537480 then -- this is after that dumb bug :P true measurement
 			-- Actual start (after the car?)
-		--if tlog>=1433623621.0684 then
+			--if tlog>=1433623621.0684 then
 			nbytes = nbytes + bytesz
 			npkts = npkts + 1
-		--else print('skip!', tlog)
+			--else print('skip!', tlog)
 
 			--if name:find'camera0' then print(name, tlog, tlog - 1433623675.096) end
 			--if name:find'mesh0' then print(name, tlog, tlog - 1433623675.096) end
@@ -51,17 +59,20 @@ for i, name in ipairs(names) do
 
 
 
-		if tlog >= 1433538150 then
-			-- Inside!
-			nb_in = nb_in + bytesz
-			np_in = np_in + 1
-		else
-			-- Outside!
-			nb_out = nb_out + bytesz
-			np_out = np_out + 1
-		end
+			if tlog >= 1433538150 then
+				-- Inside!
+				nb_in = nb_in + bytesz
+				np_in = np_in + 1
+			else
+				-- Outside!
+				nb_out = nb_out + bytesz
+				np_out = np_out + 1
+			end
 
 		end
+
+		mattorch.saveTable('/tmp/udp_'..name, {t = my_t, bytes = my_b})
+
 	end
 	if not name:find'lidar' then
 		print('\n= '..name..' =')
@@ -135,8 +146,8 @@ local udp_use = f_udp:read('*all')
 f_udp:close()
 local udp_usage = mp.unpack(udp_use)
 for i, name in ipairs(names) do
-	local use = udp_usage[i]
-	print(name, #use, 'received')
+local use = udp_usage[i]
+print(name, #use, 'received')
 end
 
 -- trial2 oops start
@@ -146,8 +157,8 @@ local udp_use = f_udp:read('*all')
 f_udp:close()
 local udp_usage = mp.unpack(udp_use)
 for i, name in ipairs(names) do
-	local use = udp_usage[i]
-	print(name, #use, 'received')
+local use = udp_usage[i]
+print(name, #use, 'received')
 end
 --]]
 
@@ -175,10 +186,10 @@ for i, name in ipairs(names) do
 			--print('Burst!')
 		elseif tlog>=1433623675.096 then -- this is after that dumb bug :P true measurement
 			-- Actual start (after the car?)
-		--if tlog>=1433623621.0684 then
+			--if tlog>=1433623621.0684 then
 			nbytes = nbytes + bytesz
 			npkts = npkts + 1
-		--else print('skip!', tlog)
+			--else print('skip!', tlog)
 
 			--if name:find'camera0' then print(name, tlog, tlog - 1433623675.096) end
 			--if name:find'mesh0' then print(name, tlog, tlog - 1433623675.096) end
@@ -186,15 +197,15 @@ for i, name in ipairs(names) do
 
 
 
-		if tlog >= 1433623822.3194 then
-			-- Inside!
-			nb_in = nb_in + bytesz
-			np_in = np_in + 1
-		else
-			-- Outside!
-			nb_out = nb_out + bytesz
-			np_out = np_out + 1
-		end
+			if tlog >= 1433623822.3194 then
+				-- Inside!
+				nb_in = nb_in + bytesz
+				np_in = np_in + 1
+			else
+				-- Outside!
+				nb_out = nb_out + bytesz
+				np_out = np_out + 1
+			end
 
 		end
 	end

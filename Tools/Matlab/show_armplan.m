@@ -92,188 +92,188 @@ xlabel('Iteration Number');
 ylabel('Cost');
 title('Optimization Costs');
 
-%% Task Space Target
-figure(3);
+% %% Task Space Target
+% figure(3);
+% 
+% subplot(2,2,1);
+% vw0pos0 = raw(1).vw0(2:end, 1:3);
+% vw0rot0 = raw(1).vw0(2:end, 4:6);
+% %%{
+% vw0pos0 = vw0pos0 ./ repmat(sqrt(sum(vw0pos0 .^ 2, 2)), 1, size(vw0pos0, 2));
+% vw0rot0 = vw0rot0 ./ repmat(sqrt(sum(vw0rot0 .^ 2, 2)), 1, size(vw0rot0, 2));
+% %}
+% 
+% [hAx, hL1, hL2] = plotyy(...
+%     t(2:end), vw0pos0, ...
+%     t(2:end), vw0rot0);
+% xlim(hAx(1), tlim);
+% xlim(hAx(2), tlim);
+% xlabel('Time (s)');
+% ylabel(hAx(1), 'Translational (m/s)');
+% ylabel(hAx(2), 'Angular (deg/s)');
+% legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
+% title('Original Desired Task Velocity');
+% 
+% subplot(2,2,2);
+% 
+% vw0pos = raw(1).vw(2:end, 1:3);
+% vw0rot = raw(1).vw(2:end, 4:6);
+% %%{
+% vw0pos = vw0pos ./ repmat(sqrt(sum(vw0pos .^ 2, 2)), 1, size(vw0pos, 2));
+% vw0rot = vw0rot ./ repmat(sqrt(sum(vw0rot .^ 2, 2)), 1, size(vw0rot, 2));
+% %}
+% 
+% [hAx, hL1, hL2] = plotyy(...
+%     t(2:end), vw0pos, ...
+%     t(2:end), vw0rot);
+% xlim(hAx(1), tlim);
+% xlim(hAx(2), tlim);
+% xlabel('Time (s)');
+% ylabel(hAx(1), 'Translational (m/s)');
+% ylabel(hAx(2), 'Angular (deg/s)');
+% legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
+% title('Original Task Velocity');
+% 
+% subplot(2,2,3);
+% vwFpos = raw(end).vw(2:end, 1:3);
+% vwFrot = raw(end).vw(2:end, 4:6);
+% %%{
+% vwFpos = vwFpos ./ repmat(sqrt(sum(vwFpos .^ 2, 2)), 1, size(vwFpos, 2));
+% vwFrot = vwFrot ./ repmat(sqrt(sum(vwFrot .^ 2, 2)), 1, size(vwFrot, 2));
+% %}
+% 
+% [hAx, hL1, hL2] = plotyy(...
+%     t(2:end), vwFpos, ...
+%     t(2:end), rad2deg(vwFrot));
+% xlim(hAx(1), tlim);
+% xlim(hAx(2), tlim);
+% xlabel('Time (s)');
+% ylabel(hAx(1), 'Translational (m/s)');
+% ylabel(hAx(2), 'Angular (deg/s)');
+% legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
+% title('Optimized Task Velocity');
+% 
+% %subplot(2,2,4);
+% h_delta_task = figure(13);
+% clf;
+% [hAx, hL1, hL2] = plotyy(...
+%     t(2:end), (raw(end).vw(2:end, 1:3) - raw(1).vw(2:end, 1:3)), ...
+%     t(2:end), rad2deg(raw(end).vw(2:end, 4:6) - raw(1).vw(2:end, 4:6)));
+% hL1(1).LineStyle = '--';
+% hL1(1).LineWidth = 0.5;
+% hL1(2).LineStyle = '--';
+% hL1(2).LineWidth = 1;
+% hL1(3).LineStyle = '--';
+% hL1(3).LineWidth = 2;
+% hL2(1).LineStyle = '-';
+% hL2(1).LineWidth = 0.5;
+% hL2(2).LineStyle = '-';
+% hL2(2).LineWidth = 1;
+% hL2(3).LineStyle = '-';
+% hL2(3).LineWidth = 2;
+% xlim(hAx(1), tlim);
+% xlim(hAx(2), tlim);
+% xlabel('Time (s)', 'FontSize', 12');
+% ylabel(hAx(1), 'Translational (m/s)', 'FontSize', 12);
+% ylabel(hAx(2), 'Angular (deg/s)', 'FontSize', 12);
+% h_leg = legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
+% set(h_leg, 'FontSize', 10');
+% if kind==0
+%     title('Change in Task Velocity', 'FontSize', 16);
+% else
+%     title('Change in Task Velocity (L)', 'FontSize', 16);
+% end
+% 
+% %% Change in the preference
+% h_delta_pref = figure(14);
+% plot(t, rad2deg(raw(end).qw0 - repmat(qwStar, [np,1])));
+% xlim(tlim);
+% ylim([-110, 110]);
+% xlabel('Time (s)', 'FontSize', 12);
+% ylabel('Joint Angle (deg)', 'FontSize', 12);
+% if kind==0
+%     title('Difference from q_H', 'FontSize', 16);
+% else
+%     title('Difference from q_H (L)', 'FontSize', 16);
+% end
+% 
+% %% Change in the preference
+% h_delta_pref = figure(24);
+% %plot(t, abs(angdiff(raw(end).qw0, repmat(qwStar, [np,1]))/angdiff(raw(1).qw0, repmat(qwStar, [np,1]))));
+% %plot(t, rad2deg(angdiff(raw(1).qw0, repmat(qwStar, [np,1]))));
+% %plot(t, rad2deg(angdiff(raw(end).qw0, repmat(qwStar, [np,1]))));
+% %ylim([-90, 90]);
+% plot(t, ...
+%     abs(rad2deg(angdiff(raw(end).qw0, repmat(qwStar, [np,1])))) ...
+%     - abs(rad2deg(angdiff(raw(1).qw0, repmat(qwStar, [np,1])))) ...
+%     );
+% 
+% xlim(tlim);
+% 
+% xlabel('Time (s)', 'FontSize', 12);
+% ylabel('Joint Angle (deg)', 'FontSize', 12);
+% if kind==0
+%     title('Difference from q_H', 'FontSize', 16);
+% else
+%     title('Difference from q_H (L)', 'FontSize', 16);
+% end
 
-subplot(2,2,1);
-vw0pos0 = raw(1).vw0(2:end, 1:3);
-vw0rot0 = raw(1).vw0(2:end, 4:6);
-%%{
-vw0pos0 = vw0pos0 ./ repmat(sqrt(sum(vw0pos0 .^ 2, 2)), 1, size(vw0pos0, 2));
-vw0rot0 = vw0rot0 ./ repmat(sqrt(sum(vw0rot0 .^ 2, 2)), 1, size(vw0rot0, 2));
-%}
-
-[hAx, hL1, hL2] = plotyy(...
-    t(2:end), vw0pos0, ...
-    t(2:end), vw0rot0);
-xlim(hAx(1), tlim);
-xlim(hAx(2), tlim);
-xlabel('Time (s)');
-ylabel(hAx(1), 'Translational (m/s)');
-ylabel(hAx(2), 'Angular (deg/s)');
-legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
-title('Original Desired Task Velocity');
-
-subplot(2,2,2);
-
-vw0pos = raw(1).vw(2:end, 1:3);
-vw0rot = raw(1).vw(2:end, 4:6);
-%%{
-vw0pos = vw0pos ./ repmat(sqrt(sum(vw0pos .^ 2, 2)), 1, size(vw0pos, 2));
-vw0rot = vw0rot ./ repmat(sqrt(sum(vw0rot .^ 2, 2)), 1, size(vw0rot, 2));
-%}
-
-[hAx, hL1, hL2] = plotyy(...
-    t(2:end), vw0pos, ...
-    t(2:end), vw0rot);
-xlim(hAx(1), tlim);
-xlim(hAx(2), tlim);
-xlabel('Time (s)');
-ylabel(hAx(1), 'Translational (m/s)');
-ylabel(hAx(2), 'Angular (deg/s)');
-legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
-title('Original Task Velocity');
-
-subplot(2,2,3);
-vwFpos = raw(end).vw(2:end, 1:3);
-vwFrot = raw(end).vw(2:end, 4:6);
-%%{
-vwFpos = vwFpos ./ repmat(sqrt(sum(vwFpos .^ 2, 2)), 1, size(vwFpos, 2));
-vwFrot = vwFrot ./ repmat(sqrt(sum(vwFrot .^ 2, 2)), 1, size(vwFrot, 2));
-%}
-
-[hAx, hL1, hL2] = plotyy(...
-    t(2:end), vwFpos, ...
-    t(2:end), rad2deg(vwFrot));
-xlim(hAx(1), tlim);
-xlim(hAx(2), tlim);
-xlabel('Time (s)');
-ylabel(hAx(1), 'Translational (m/s)');
-ylabel(hAx(2), 'Angular (deg/s)');
-legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
-title('Optimized Task Velocity');
-
-%subplot(2,2,4);
-h_delta_task = figure(13);
-clf;
-[hAx, hL1, hL2] = plotyy(...
-    t(2:end), (raw(end).vw(2:end, 1:3) - raw(1).vw(2:end, 1:3)), ...
-    t(2:end), rad2deg(raw(end).vw(2:end, 4:6) - raw(1).vw(2:end, 4:6)));
-hL1(1).LineStyle = '--';
-hL1(1).LineWidth = 0.5;
-hL1(2).LineStyle = '--';
-hL1(2).LineWidth = 1;
-hL1(3).LineStyle = '--';
-hL1(3).LineWidth = 2;
-hL2(1).LineStyle = '-';
-hL2(1).LineWidth = 0.5;
-hL2(2).LineStyle = '-';
-hL2(2).LineWidth = 1;
-hL2(3).LineStyle = '-';
-hL2(3).LineWidth = 2;
-xlim(hAx(1), tlim);
-xlim(hAx(2), tlim);
-xlabel('Time (s)', 'FontSize', 12');
-ylabel(hAx(1), 'Translational (m/s)', 'FontSize', 12);
-ylabel(hAx(2), 'Angular (deg/s)', 'FontSize', 12);
-h_leg = legend('x', 'y', 'z', 'Roll', 'Pitch', 'Yaw');
-set(h_leg, 'FontSize', 10');
-if kind==0
-    title('Change in Task Velocity', 'FontSize', 16);
-else
-    title('Change in Task Velocity (L)', 'FontSize', 16);
-end
-
-%% Change in the preference
-h_delta_pref = figure(14);
-plot(t, rad2deg(raw(end).qw0 - repmat(qwStar, [np,1])));
-xlim(tlim);
-ylim([-110, 110]);
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('Joint Angle (deg)', 'FontSize', 12);
-if kind==0
-    title('Difference from q_H', 'FontSize', 16);
-else
-    title('Difference from q_H (L)', 'FontSize', 16);
-end
-
-%% Change in the preference
-h_delta_pref = figure(24);
-%plot(t, abs(angdiff(raw(end).qw0, repmat(qwStar, [np,1]))/angdiff(raw(1).qw0, repmat(qwStar, [np,1]))));
-%plot(t, rad2deg(angdiff(raw(1).qw0, repmat(qwStar, [np,1]))));
-%plot(t, rad2deg(angdiff(raw(end).qw0, repmat(qwStar, [np,1]))));
-%ylim([-90, 90]);
-plot(t, ...
-    abs(rad2deg(angdiff(raw(end).qw0, repmat(qwStar, [np,1])))) ...
-    - abs(rad2deg(angdiff(raw(1).qw0, repmat(qwStar, [np,1])))) ...
-    );
-
-xlim(tlim);
-
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('Joint Angle (deg)', 'FontSize', 12);
-if kind==0
-    title('Difference from q_H', 'FontSize', 16);
-else
-    title('Difference from q_H (L)', 'FontSize', 16);
-end
-
-%% Optimized
-h_optimal = figure(15);
-plot(t, rad2deg(raw(end).qw0));
-xlim(tlim);
-ylim([-180, 180]);
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('Position (deg)', 'FontSize', 12);
-if kind==0
-    title('Optimized Trajectory', 'FontSize', 16);
-else
-    title('Optimized Trajectory (L)', 'FontSize', 16);
-end
-
-%% Original
-h_orig = figure(16);
-plot(t, rad2deg(raw(1).qw0));
-xlim(tlim);
-ylim([-180, 180]);
-xlabel('Time (s)', 'FontSize', 12);
-ylabel('Position (deg)', 'FontSize', 12);
-if kind==0
-    title('Original Trajectory', 'FontSize', 16);
-else
-    title('Original Trajectory (L)', 'FontSize', 16);
-end
+% %% Optimized
+% h_optimal = figure(15);
+% plot(t, rad2deg(raw(end).qw0));
+% xlim(tlim);
+% ylim([-180, 180]);
+% xlabel('Time (s)', 'FontSize', 12);
+% ylabel('Position (deg)', 'FontSize', 12);
+% if kind==0
+%     title('Optimized Trajectory', 'FontSize', 16);
+% else
+%     title('Optimized Trajectory (L)', 'FontSize', 16);
+% end
+% 
+% %% Original
+% h_orig = figure(16);
+% plot(t, rad2deg(raw(1).qw0));
+% xlim(tlim);
+% ylim([-180, 180]);
+% xlabel('Time (s)', 'FontSize', 12);
+% ylabel('Position (deg)', 'FontSize', 12);
+% if kind==0
+%     title('Original Trajectory', 'FontSize', 16);
+% else
+%     title('Original Trajectory (L)', 'FontSize', 16);
+% end
 
 %% Save
-if kind==0
-    figure(h_delta_task);
-    set(h_delta_task,'PaperPositionMode','Auto') ;
-    print('delta_task_q', '-dpng');
-    %
-    figure(h_delta_pref);
-    set(h_delta_pref,'PaperPositionMode','Auto');
-    print('delta_pref_q', '-dpng');
-    %
-    figure(h_optimal);
-    set(h_optimal,'PaperPositionMode','Auto');
-    print('optimal_q', '-dpng');
-    %
-    figure(h_orig);
-    set(h_optimal,'PaperPositionMode','Auto');
-    print('original_q', '-dpng');
-else
-    figure(h_delta_task);
-    set(h_delta_task,'PaperPositionMode','Auto');
-    print('delta_task_lambda', '-dpng');
-    %
-    figure(h_delta_pref);
-    set(h_delta_pref,'PaperPositionMode','Auto');
-    print('delta_pref_lambda', '-dpng');
-    %
-    figure(h_optimal);
-    set(h_optimal,'PaperPositionMode','Auto');
-    print('optimal_lambda', '-dpng');
-end
+% if kind==0
+%     figure(h_delta_task);
+%     set(h_delta_task,'PaperPositionMode','Auto') ;
+%     print('delta_task_q', '-dpng');
+%     %
+%     figure(h_delta_pref);
+%     set(h_delta_pref,'PaperPositionMode','Auto');
+%     print('delta_pref_q', '-dpng');
+%     %
+%     figure(h_optimal);
+%     set(h_optimal,'PaperPositionMode','Auto');
+%     print('optimal_q', '-dpng');
+%     %
+%     figure(h_orig);
+%     set(h_optimal,'PaperPositionMode','Auto');
+%     print('original_q', '-dpng');
+% else
+% %     figure(h_delta_task);
+% %     set(h_delta_task,'PaperPositionMode','Auto');
+% %     print('delta_task_lambda', '-dpng');
+%     %
+% %     figure(h_delta_pref);
+% %     set(h_delta_pref,'PaperPositionMode','Auto');
+% %     print('delta_pref_lambda', '-dpng');
+%     %
+% %     figure(h_optimal);
+% %     set(h_optimal,'PaperPositionMode','Auto');
+% %     print('optimal_lambda', '-dpng');
+% end
 
 %% Calculations
 % Against human q

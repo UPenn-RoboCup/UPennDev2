@@ -1,4 +1,4 @@
-function [ qLambda, dt_opt, lambda_opt ] = ...
+function [ qLambda, dt_opt, lambda_opt, lambda, ddlambda ] = ...
     optimize_armplan_lambda(qwPath0, vwPath0, nullPath0, jacobianPath0, qwStar)
 
 nExtraNull = 0;
@@ -32,7 +32,6 @@ clear JTJ;
 
 %% Save the SVD and form the null space coordinates
 Ss = zeros(np, nq);
-lambda = zeros(np, nNull);
 Vs = cell(np, 1);
 Us = cell(np, 1);
 for i=1:np
@@ -40,10 +39,7 @@ for i=1:np
     Vs{i} = V(:, 1:nNull);
     Us{i} = U(:, 1:nNull);
     Ss(i, :) = diag(S);
-    if i<np
-        lambda(i, :) = S(1:nNull, 1:nNull) * V(:, 1:nNull)' * ...
-            (qwPath0(i+1, :) - qwPath0(i, :))';
-    end
+    
 end
 
 %% Filter on the separation of singular values
@@ -53,9 +49,15 @@ dsTrack = var(dSs) > 0.01;
 dSsImportant = -dSs(:,dsTrack);
 if numel(dSsImportant)>0
     ds0 = min(dSsImportant, [], 2);
-    ds = conv(ds0.^2, [1,2,1], 'same');
+    %ds = conv(ds0.^2, [1,2,1], 'same');
     ds = ds / (max(ds) + eps);
+    %ds = (ds + 0.5) / 1.5;
 end
+
+% figure(21);
+% plot(Ss);
+% figure(22);
+% plot(ds);
 
 %% Determine the signs from the SVD for consistent basis directions
 % NOTE: This should be slow, but not *too* bad ;)
@@ -68,7 +70,8 @@ for iN=1:nNull
             if dirlambda < 0
                 Vs{i}(:, iN) = -Vs{i}(:, iN);
                 Us{i}(:, iN) = -Us{i}(:, iN);
-                lambda(i, iN) = -lambda(i, iN);
+                %lambda(i, iN) = -lambda(i, iN);
+                %Ss(i, iN) = -Ss(i, iN);
             end
         else
             swapidx = [swapidx, i];
@@ -113,16 +116,20 @@ for i=2:numel(swapidx)-1
                 Unow = FLIP_DIR1*Us{ir}(:, iN);
                 Us{ir}(:, iN) = FLIP_DIR2*Us{ir}(:, iN+1);
                 Us{ir}(:, iN+1) = Unow;
-                Lnow = FLIP_DIR1*lambda(ir, iN);
-                lambda(ir, iN) = FLIP_DIR2*lambda(ir, iN+1);
-                lambda(ir, iN+1) = Lnow;
+%                 Lnow = FLIP_DIR1*lambda(ir, iN);
+%                 lambda(ir, iN) = FLIP_DIR2*lambda(ir, iN+1);
+%                 lambda(ir, iN+1) = Lnow;
+                 Snow = Ss(ir, iN);
+                 Ss(ir, iN) = Ss(ir, iN+1);
+                 Ss(ir, iN+1) = Snow;
             end
         elseif dirswapA < 0
             fprintf(1, '!! SwapA %d: %d (iN: %d)\n', i, is, iN);
             for ir=swapidx(i-1):is-1
                 Vs{ir}(:, iN) = -Vs{ir}(:, iN);
                 Us{ir}(:, iN) = -Us{ir}(:, iN);
-                lambda(ir, iN) = -lambda(ir, iN);
+%                 lambda(ir, iN) = -lambda(ir, iN);
+                Ss(ir, iN) = -Ss(ir, iN);
             end
             segment(i) = 0;
         elseif dirswapB < 0
@@ -130,11 +137,20 @@ for i=2:numel(swapidx)-1
             for ir=swapidx(i-1):is-1
                 Vs{ir}(:, iN+1) = -Vs{ir}(:, iN+1);
                 Us{ir}(:, iN+1) = -Us{ir}(:, iN+1);
-                lambda(ir, iN+1) = -lambda(ir, iN+1);
+                %lambda(ir, iN+1) = -lambda(ir, iN+1);
+                Ss(ir, iN+1) = -Ss(ir, iN+1);
             end
             segment(i) = 0;
         end
     end
+end
+
+%% Form lambda
+lambda = zeros(np-1, nNull);
+for i=1:np-1
+    lambda(i, :) = ...
+        diag(Ss(i+0, 1:nNull)) * Vs{i+0}' * qwPath0(i+1, :)' - ...
+        diag(Ss(i-0, 1:nNull)) * Vs{i-0}' * qwPath0(i-0, :)';
 end
 
 %% Run the optimization for each dimension...?
@@ -151,7 +167,8 @@ for i=1:numel(swapidx)-1
     % Only if enough points
     if numel(range)>5
         fprintf(1, 'Optimizing %d\n', numel(range));
-        [ddlambda(range, :), dt_opt_lambda, opt_val] = subopt_lambda(lambda(range, :), ds);
+        [ddlambda(range, :), dt_opt_lambda, opt_val] = ...
+            subopt_lambda(lambda(range, :), ds);
         dt_opt = [dt_opt; dt_opt_lambda];
         lambda_opt = [lambda_opt, opt_val];
     end
@@ -163,12 +180,30 @@ end
 
 %% Change back into q
 qLambda = zeros(np, nq);
-dqLambda = zeros(np, nq);
+%dqLambda = zeros(np, nq);
 for i=1:size(lambda, 1)
     % TODO: Us should be a cell array and then choose nNull columns
-    dqLambda(i, :) = Us{i} * (ddlambda(i, :) - lambda(i, :))';
-    qLambda(i, :) = qwPath0(i, :) + dqLambda(i, :);
+    %dqLambda(i, :) = Us{i} * (ddlambda(i, :) - lambda(i, :))';
+    qLambda(i, :) = qwPath0(i, :) - ...
+        ( Us{i} * (ddlambda(i, :) - lambda(i, :))' )';
 end
+%}
+qLambda(end, :) = qwPath0(end,:);
+
+%{
+figure(31);
+plot(dqLambda);
+
+figure(32);
+plot(ddlambda - lambda);
+
+figure(33);
+clf;
+plot(lambda, 'r');
+hold on;
+plot(ddlambda, 'b');
+hold off;
+drawnow;
 %}
 
 end

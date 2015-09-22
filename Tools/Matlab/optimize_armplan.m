@@ -7,12 +7,12 @@ alpha = 10 * 1e2; % Accel
 beta = 1e1; % Vel
 
 % Out
-c_tight = 0*1e-3;
-c_usage = 2*1e-3;
+%c_tight = 0*1e-3;
+%c_usage = 2*1e-3;
 
 % Tight
-%c_tight = 2*1e-3;
-%c_usage = 0*1e-3;
+c_tight = 2*1e-3;
+c_usage = 0*1e-3;
 
 % Closeness to previous trajectory
 epsilon = deg2rad(10);

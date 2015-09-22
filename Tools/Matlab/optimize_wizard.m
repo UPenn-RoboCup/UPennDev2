@@ -8,6 +8,7 @@
 
 %% Initialization
 % Listen for requests
+close all;
 clear all;
 ch = zmq('reply', 'ipc', 'armopt');
 
@@ -52,12 +53,14 @@ while 1
                 % Save results to be opened
                 if kind==1
                     % Subspace Optimization
-                    [qLambda, dt_opt_lambda, opt_val_lambda] = ...
+                    [qLambda, dt_opt_lambda, opt_val_lambda, lambda0, lambda1] = ...
                         optimize_armplan_lambda(qw0, vw0, nulls, Js, qwStar);
                     optimized(i_optimizations).qLambda = qLambda;
                     optimized(i_optimizations).dt_opt_lambda = dt_opt_lambda;
                     optimized(i_optimizations).dt_opt = sum(dt_opt_lambda, 1);
                     optimized(i_optimizations).opt_val = sum(opt_val_lambda);
+                    optimized(i_optimizations).lambda0 = lambda0;
+                    optimized(i_optimizations).lambda1 = lambda1;
                     save(tmpfile, 'qLambda');
                 else
                     % Regular Optimization
@@ -71,7 +74,7 @@ while 1
             end
             
             y = zmq('send', ch, tmpfile);
-            show_armplan;
+            %show_armplan;
         end
         
     end

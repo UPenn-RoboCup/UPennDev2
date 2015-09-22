@@ -36,12 +36,12 @@ for i, name in ipairs(names) do
 	local b_out = {}
 
 	local tprev = -math.huge
+	local bprev = -1
 	for ii, pktsz in ipairs(use) do
 		local tlog, bytesz = unpack(pktsz)
 		local tdiff = tlog - tprev
-		tprev = tlog
 
-		if tdiff < 1e-3 then
+		if (name:find'mesh0' or name:find'mesh1' or name:find'camera0' or name:find'camera1') and (bprev == bytesz and tdiff<=1) then
 			--print('Burst!')
 		elseif tlog<1433536200 then
 		elseif tlog>1433539557 then
@@ -55,11 +55,13 @@ for i, name in ipairs(names) do
 			--if name:find'mesh0' then print(name, tlog, tlog - 1433623675.096) end
 			--if name:find'itty' then print(name, tlog, tlog - 1433623675.096) end
 			if tlog >= 1433538150 then
-				-- Inside!
-				nb_in = nb_in + bytesz
-				np_in = np_in + 1
-				table.insert(t_in, tlog)
-				table.insert(b_in, bytesz)
+				if (not name:find'camera') or tdiff >=1 then
+					-- Inside!
+					nb_in = nb_in + bytesz
+					np_in = np_in + 1
+					table.insert(t_in, tlog)
+					table.insert(b_in, bytesz)
+				end
 			else
 				-- Outside!
 				nb_out = nb_out + bytesz
@@ -67,8 +69,9 @@ for i, name in ipairs(names) do
 				table.insert(t_out, tlog)
 				table.insert(b_out, bytesz)
 			end
-
 		end
+		tprev = tlog
+		bprev = bytesz
 	end
 	if not name:find'lidar' then
 		print('\n= '..name..' =', #t_in, #t_out)
@@ -182,13 +185,13 @@ for i, name in ipairs(names) do
 	local b_out = {}
 
 	local tprev = -math.huge
+	local bprev = -1
 	for ii, pktsz in ipairs(use) do
 		local tlog, bytesz = unpack(pktsz)
 
 		local tdiff = tlog - tprev
-		tprev = tlog
-		if tdiff < 1e-3 then
-			--print('Burst!')
+		if (name:find'mesh0' or name:find'mesh1' or name:find'camera0' or name:find'camera1') and (bprev == bytesz and tdiff<=1) then
+			--print('Burst!', bytesz, tdiff)
 		elseif tlog>=1433623675.096 then -- this is after that dumb bug :P true measurement
 			-- Actual start (after the car?)
 			--if tlog>=1433623621.0684 then
@@ -203,11 +206,13 @@ for i, name in ipairs(names) do
 
 
 			if tlog >= 1433623822.3194 then
-				-- Inside!
-				nb_in = nb_in + bytesz
-				np_in = np_in + 1
-				table.insert(t_in, tlog)
-				table.insert(b_in, bytesz)
+				--if (not name:find'camera') or tdiff >= 0.2 then
+					-- Inside!
+					nb_in = nb_in + bytesz
+					np_in = np_in + 1
+					table.insert(t_in, tlog)
+					table.insert(b_in, bytesz)
+				--end
 			else
 				-- Outside!
 				nb_out = nb_out + bytesz
@@ -215,8 +220,9 @@ for i, name in ipairs(names) do
 				table.insert(t_out, tlog)
 				table.insert(b_out, bytesz)
 			end
-
 		end
+		tprev = tlog
+		bprev = bytesz
 	end
 	if not name:find'lidar' then
 		print('\n= '..name..' =')
@@ -259,6 +265,11 @@ print('Node sent', #node_recv, 'items')
 local t0 = node_send[1][1]
 local cmd_in, cmd_out = 0,0
 local cmd_bytes_out, cmd_bytes_in = 0, 0
+
+local t_in = {}
+local b_in = {}
+local t_out = {}
+local b_out = {}
 for i, v in ipairs(node_send) do
 	local t, b = unpack(v)
 	-- At the door: 1433623646.0488
@@ -274,13 +285,21 @@ for i, v in ipairs(node_send) do
 		--outdoor
 		cmd_out = cmd_out + 1
 		cmd_bytes_out = cmd_bytes_out + b
+		table.insert(t_out, t)
+		table.insert(b_out, b)
 	else
 		-- indoor
 		cmd_in = cmd_in + 1
 		cmd_bytes_in = cmd_bytes_in + b
+		table.insert(t_in, t)
+		table.insert(b_in, b)
 	end
-
 end
+
+mattorch.saveTable('/tmp/node_trial2.mat', {
+	t_in = t_in, b_in = b_in,
+	t_out = t_out, b_out = b_out,
+})
 
 print('out commands',cmd_out, cmd_bytes_out)
 print('in  commands', cmd_in, cmd_bytes_in)

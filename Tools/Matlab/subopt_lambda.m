@@ -6,11 +6,14 @@ nNull = size(lambda, 2);
 
 %% Optimization Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 10 * 10 * 1e2;
-beta = 10 * 1e1;
+alpha = 10 * 10 * 1e2 * 0;
+beta = 10;
 
 % Closeness to previous trajectory
-epsilon = deg2rad(10);%deg2rad(20);
+%epsilon = deg2rad(0.25);
+%epsilon = deg2rad(0.5);
+%epsilon = deg2rad(1);
+epsilon = deg2rad(10);
 % Constraint the joints to be close on how many iterations...
 
 % TODO: Truncate the path if possible, once the difference is small
@@ -34,6 +37,9 @@ v1(end-nNull+1:end) = 2;
 V = diag(v0, nNull) + diag(-flip(v0), -nNull) + diag(v1);
 V = 0.5*V;
 clear v0 v1;
+
+V = eye(nl) + diag(-1*ones(nl-1,1), -nNull);
+V(1,1) = 0;
 
 %% Acceleration matrix
 d2 = 2*ones(nl, 1);
@@ -59,8 +65,7 @@ cvx_begin
     %cvx_precision medium
     variable dlambda(nl)
     minimize( quad_form(dlambda, eye(nl)) + ...
-        alpha * quad_form(dlambda - lambda0, ATA) + ...
-        beta * quad_form(V * (dlambda - lambda0), eye(nl)) ...
+        beta * quad_form(V * dlambda, eye(nl)) ... %alpha * quad_form(dlambda - lambda0, ATA) + ...
         )
     % Keep the first point the same
     dlambda(1:nNull) == lambda0(1:nNull);
@@ -68,8 +73,10 @@ cvx_begin
     dlambda(nl-nNull+1:nl) == lambda0(nl-nNull+1:nl);
     % Keep the paths somewhat close, due to jacobian linearity
     for k = 2:np-1,
-        norm(dlambda((k-1)*nNull+1:k*nNull) ...
-            - lambda0((k-1)*nNull+1:k*nNull) ) <= epsilon*ds(k);
+        norm(...
+            dlambda((k-1)*nNull+1:k*nNull) - ...
+            lambda0((k-1)*nNull+1:k*nNull) ...
+            ) <= epsilon ;%* ds(k);
     end
     
 cvx_end

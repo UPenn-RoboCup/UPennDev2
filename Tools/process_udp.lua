@@ -35,6 +35,8 @@ for i, name in ipairs(names) do
 	local t_out = {}
 	local b_out = {}
 
+	local burst = {}
+
 	local tprev = -math.huge
 	local bprev = -1
 	for ii, pktsz in ipairs(use) do
@@ -42,7 +44,11 @@ for i, name in ipairs(names) do
 		local tdiff = tlog - tprev
 
 		if (name:find'mesh0' or name:find'mesh1' or name:find'camera0' or name:find'camera1') and (bprev == bytesz and tdiff<=1) then
-			--print('Burst!')
+			if tlog >= 1433538150 then
+				-- indoor only
+				--if name:find'camera0' then print('Burst!', tdiff, bprev, bytesz) end
+				burst[#burst] = (burst[#burst] or 0) + 1
+			end
 		elseif tlog<1433536200 then
 		elseif tlog>1433539557 then
 		elseif tlog>=1433537480 then -- this is after that dumb bug :P true measurement
@@ -55,12 +61,16 @@ for i, name in ipairs(names) do
 			--if name:find'mesh0' then print(name, tlog, tlog - 1433623675.096) end
 			--if name:find'itty' then print(name, tlog, tlog - 1433623675.096) end
 			if tlog >= 1433538150 then
-				if (not name:find'camera') or tdiff >=1 then
+				--if (not name:find'camera') or tdiff >=1 then
 					-- Inside!
 					nb_in = nb_in + bytesz
 					np_in = np_in + 1
 					table.insert(t_in, tlog)
 					table.insert(b_in, bytesz)
+				--end
+				if (name:find'mesh0' or name:find'mesh1' or name:find'camera0' or name:find'camera1') then
+					--if name:find'camera0' then print(name, tdiff, 'Last burst', burst[#burst]) end
+					burst[#burst+1] = 1
 				end
 			else
 				-- Outside!
@@ -184,6 +194,8 @@ for i, name in ipairs(names) do
 	local t_out = {}
 	local b_out = {}
 
+	local burst = {0}
+
 	local tprev = -math.huge
 	local bprev = -1
 	for ii, pktsz in ipairs(use) do
@@ -192,6 +204,11 @@ for i, name in ipairs(names) do
 		local tdiff = tlog - tprev
 		if (name:find'mesh0' or name:find'mesh1' or name:find'camera0' or name:find'camera1') and (bprev == bytesz and tdiff<=1) then
 			--print('Burst!', bytesz, tdiff)
+			if tlog >= 1433623822.3194 then
+				-- indoor only
+				--if name:find'camera0' then print('Burst!', tdiff, bprev, bytesz) end
+				burst[#burst] = (burst[#burst] or 0) + 1
+			end
 		elseif tlog>=1433623675.096 then -- this is after that dumb bug :P true measurement
 			-- Actual start (after the car?)
 			--if tlog>=1433623621.0684 then
@@ -213,6 +230,14 @@ for i, name in ipairs(names) do
 					table.insert(t_in, tlog)
 					table.insert(b_in, bytesz)
 				--end
+
+				if (name:find'mesh0' or name:find'mesh1' or name:find'camera0' or name:find'camera1') then
+					--if name:find'camera0' then
+						--if burst[#burst]<3 then print(name, tdiff, 'Last burst', burst[#burst]) end
+					--end
+					burst[#burst+1] = 1
+				end
+
 			else
 				-- Outside!
 				nb_out = nb_out + bytesz
@@ -240,6 +265,18 @@ for i, name in ipairs(names) do
 		print(nb_in/1000, 'kbytes inside')
 		print(nb_in/1000/1000, 'Mbytes inside')
 		print(np_in, 'packets inside')
+		print(nb_in / np_in / 1e3, 'kBytes per packet')
+		--
+		local nFull = 0
+		local nTwo = 0
+		for i, v in ipairs(burst) do
+			if v>=3 then
+				nFull = nFull + 1
+			elseif v==2 then
+				nTwo = nTwo + 1
+			end
+		end
+		print('Full burst rate', 100*nFull / (#burst-1), nFull, (#burst-1) - nFull, 'nTwo', nTwo)
 		mattorch.saveTable('/tmp/udp_'..name..'_trial2.mat', {
 			t_in = t_in, b_in = b_in,
 			t_out = t_out, b_out = b_out,

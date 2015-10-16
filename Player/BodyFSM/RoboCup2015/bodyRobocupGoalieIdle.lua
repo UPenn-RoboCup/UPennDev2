@@ -66,8 +66,11 @@ function state.update()
   local ball = wcm.get_robot_ballglobal()
   -- check ball_t
 
+  ballX_th_goalie_movement = Config.ballX_th_goalie_movement or -1.5
+
+
   --ball should be close and recently seen
-  if ball[1] > -1 or t - wcm.get_ball_t() > .2 then
+  if ball[1] > ballX_th_goalie_movement or t - wcm.get_ball_t() > .2 then
     return
   end
 

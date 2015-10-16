@@ -121,8 +121,8 @@ kick.stepqueue["RightKick2"]=
   }
 
 
-local spreadX,spreadY = 0,0
-spreadY = 0.04
+local spreadX = 0.10
+local spreadY = 0.04
 
 kick.stepqueue["GoalieSpread"]=
   {

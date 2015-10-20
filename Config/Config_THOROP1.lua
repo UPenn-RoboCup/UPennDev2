@@ -301,10 +301,15 @@ Config.walk.phZmp = {0.2,0.8}
 
 
 
-
+--MOVING ZMP
 
 Config.walk.zmpHeel = -0.05
 Config.walk.zmpToe = 0.05
+
+
+Config.use_heeltoe_walk=true
+Config.walk.zmpHeel,Config.walk.zmpToe = 0,0
+Config.walk.heeltoe_angle = 5*DEG_TO_RAD
 
 
 

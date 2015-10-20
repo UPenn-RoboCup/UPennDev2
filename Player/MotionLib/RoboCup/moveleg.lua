@@ -239,6 +239,7 @@ function moveleg.set_leg_positions(uTorso,uLeft,uRight,zLeft,zRight,delta_legs,a
   local bodyOffset = util.pose_relative(uTorso, uFoot)
   mcm.set_status_bodyOffset( bodyOffset )
   ------------------------------------------
+
 end
 
 

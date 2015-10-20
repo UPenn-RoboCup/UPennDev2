@@ -557,17 +557,28 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   if mcm.get_walk_heeltoewalk()==1 then
     if footLift[1]>0 then 
       footlifttypeL = -1 --heellift
+
+
+      footLift[1]=0
     else
       footlifttypeL = 1 --toelift
     end
     if footLift[2]>0 then 
       footlifttypeR = -1 --heellift
+
+
+      footLift[2]=0
     else
       footlifttypeR = 1 --toelift
     end
     footliftL = math.abs(footLift[1])
     footliftR = math.abs(footLift[2])
   end
+
+
+  --no heel lift
+
+
 
   local leftSupportRatio = mcm.get_status_leftSupportRatio()
 

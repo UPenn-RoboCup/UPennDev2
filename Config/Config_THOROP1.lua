@@ -42,7 +42,7 @@ if IS_WEBOTS then
 
 
 		Config.testfile = 'test_testbed'
-		
+
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
@@ -216,8 +216,8 @@ Config.ballX_threshold2 = 1.0 --The threshold we start using strong kick
 
 -- DAY 2
 Config.approachTargetY= {-0.08,0.10}  --L/R aiming offsets (kick with outside of the foot!)
-if not IS_WEBOTS then 
-	Config.driftFactor = {0.029,0.026,0.020} 
+if not IS_WEBOTS then
+	Config.driftFactor = {0.029,0.026,0.020}
 	Config.approachTargetY= {-0.02,0.06}  --L/R aiming offsets (kick with outside of the foot!)
 	Config.approachTargetX = {
 	--0.40, --basic walkkick
@@ -261,12 +261,12 @@ Config.assume_goalie_blocking = false
 Config.kick_decision_new = true
 Config.kick_threshold= {4.5,3.5}
 Config.obsDistTh = 1.0 --larger obstacle distance th
-Config.borderTh = 0.6 
+Config.borderTh = 0.6
 Config.ballX_threshold_direct = 0
 Config.new_planner = true
 
 
-Config.goalie_avoid_kick = 0 --dead center 
+Config.goalie_avoid_kick = 0 --dead center
 --Config.goalie_avoid_kick = 0.5 --1/2 between center and the post
 --Config.goalie_avoid_kick = 1
 
@@ -302,16 +302,30 @@ Config.walk.phZmp = {0.2,0.8}
 
 
 --MOVING ZMP
+Config.walk.heeltoe_vel_min = 0.19 --MIN speed for heeltoe walk
 
 Config.walk.zmpHeel = -0.05
 Config.walk.zmpToe = 0.05
 
-
 Config.use_heeltoe_walk=true
-Config.walk.zmpHeel,Config.walk.zmpToe = 0,0
-Config.walk.heeltoe_angle = 5*DEG_TO_RAD
+--Config.walk.zmpHeel,Config.walk.zmpToe = 0,0
+Config.walk.zmpHeel,Config.walk.zmpToe = -0.0,0.10
 
 
+Config.walk.heel_angle = 5*DEG_TO_RAD
+Config.walk.toe_angle = 5*DEG_TO_RAD
+
+Config.walk.heel_angle = 10*DEG_TO_RAD
+Config.walk.toe_angle = 10*DEG_TO_RAD
+
+
+
+--[[
+Config.walk.heel_angle = 20*DEG_TO_RAD
+Config.walk.toe_angle = 20*DEG_TO_RAD
+Config.walk.stepHeight = 0.07 --test--]]
+
+
+Config.walk.heeltoe_vel_min = 0.419 --MIN speed for heeltoe walk
 
 return Config
-

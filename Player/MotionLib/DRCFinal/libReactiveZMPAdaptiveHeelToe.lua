@@ -31,7 +31,7 @@ end
 -- Torso goes from uStart to uFinish through uSupport
 -- Trapezoidal: / is start to support
 --              _ is through support
---              \ is support to finish 
+--              \ is support to finish
 -- This computes internal parameters for a new step
 local function compute( self, uSupport, uStart, uFinish )
   local tStep = self.tStep
@@ -41,6 +41,14 @@ local function compute( self, uSupport, uStart, uFinish )
 
   local uSupport1 = util.pose_global({self.zmpHeel,0,0},uSupport)
   local uSupport2 = util.pose_global({self.zmpToe,0,0},uSupport)
+
+
+  local walkvel = mcm.get_walk_vel()
+  if not Config.walk.use_heeltoe_walk or walkvel[1]<Config.walk.heeltoe_vel_min then
+    uSupport1 = uSupport
+    uSupport2 = uSupport
+  end
+
 
 
 
@@ -175,7 +183,7 @@ local function get_zmp( self, ph )
   if ph < self.start_phase then
     local start_time = tStep*( ph - self.start_phase )
     zmp[1] = zmp[1] + self.m1X*start_time
-    zmp[2] = zmp[2] + self.m1Y*start_time    
+    zmp[2] = zmp[2] + self.m1Y*start_time
   elseif ph > self.finish_phase then
     local finish_time = tStep*(ph-self.finish_phase)
     zmp[1] = zmp[1] + self.m2X*finish_time
@@ -183,12 +191,12 @@ local function get_zmp( self, ph )
   end
 
 
-  
+
   if ph < self.start_phase then
     local start_time = tStep*( ph - self.start_phase )
     zmp = self.uSupport1+vector.new({0,0,0})
     zmp[1] = zmp[1] + self.m1X1*start_time
-    zmp[2] = zmp[2] + self.m1Y1*start_time    
+    zmp[2] = zmp[2] + self.m1Y1*start_time
   elseif ph > self.finish_phase then
     zmp = self.uSupport2+vector.new({0,0,0})
     local finish_time = tStep*(ph-self.finish_phase)
@@ -201,7 +209,7 @@ local function get_zmp( self, ph )
     zmp[2] = zmp[2] + mid_ph*(self.uSupport2[2]-self.uSupport1[2])
   end
 
-  return zmp  
+  return zmp
 end
 
 -- Finds the necessary COM for stability, given the current uSupport
@@ -323,7 +331,7 @@ local function get_ph(self,t,t_last_step)
     is_next_step = true
   end
 
-  local ph 
+  local ph
   if tPassed<self.tStepLift then
     ph = (tPassed/self.tStepLift)/2 --lifting phase
   else
@@ -353,8 +361,8 @@ libReaciveZMP.new_solver = function( params )
 	local s = {}
   s.tStep = params.tStep or Config.walk.tStep
 
-  s.tStepLift = params.tStepLift or Config.walk.tStep/2  
-  s.tStepLand = params.tStepLand or Config.walk.tStep/2  
+  s.tStepLift = params.tStepLift or Config.walk.tStep/2
+  s.tStepLand = params.tStepLand or Config.walk.tStep/2
 
 
   s.zmpHeel = params.zmpHeel or 0
@@ -367,7 +375,7 @@ libReaciveZMP.new_solver = function( params )
   -- Trapezoidal ZMP parameters
   s.start_phase  = Config.walk.phZmp[1]
   s.finish_phase = Config.walk.phZmp[2]
-  
+
   s.compute  = compute
   s.get_com  = get_com
   s.get_com_vel  = get_com_vel

@@ -441,25 +441,25 @@ if IS_WEBOTS then
   Body.exit = function() end
 
   webots.wb_robot_init()
-  Body.timeStep = webots.wb_robot_get_basic_time_step()  
+  Body.timeStep = webots.wb_robot_get_basic_time_step()
   WebotsBody = require'WebotsBody'
-  
+
 	-- Check if we are using the OLD api
   last_webots_time=webots.wb_robot_get_time()
-	
+
 	function Body.entry()
-		WebotsBody.entry(Body)    
+		WebotsBody.entry(Body)
 	end
 
   function Body.update()
     WebotsBody.update(Body)
   end
-  
+
   get_time = webots.wb_robot_get_time
   --Force torque sensor based
   Body.get_lfoot_touched = function() return false end
   Body.get_rfoot_touched = function() return false end
-	
+
 	  Body.finger_target={0,0,0,0}
   Body.finger_pos={0,0,0,0}
 
@@ -511,7 +511,7 @@ end
 Body.set_safe_waist_command_position = function(qWaist)
   local qWaistSafe={qWaist[1],qWaist[2]}
   qWaistSafe[1] = math.max(math.min(qWaistSafe[1],90*DEG_TO_RAD), -90*DEG_TO_RAD)
-  qWaistSafe[2] = 0 --fix pitch angle here  
+  qWaistSafe[2] = 0 --fix pitch angle here
   local qWaistCommand = Body.get_waist_command_position()
   local qWaistDiff = util.mod_angle(qWaistSafe[1]-qWaistCommand[1])
   qWaistSafe[1] = qWaistCommand[1]+qWaistDiff
@@ -547,29 +547,33 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
 
 
   local pLLeg = vector.new({uLeft[1],uLeft[2],zLeft,0,0,uLeft[3]})
-  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})  
+  local pRLeg = vector.new({uRight[1],uRight[2],zRight,0,0,uRight[3]})
   local count,revise_max = 1,4
   local adapt_factor = 1.0
 
 
   local footLift = mcm.get_walk_footlift()
+
+  local heel_angle = Config.walk.heel_angle or 0
+  local toe_angle = Config.walk.toe_angle or 0
+
+
+
   local footlifttypeL,footlifttypeR, footliftL, footliftR = 0,0
   if mcm.get_walk_heeltoewalk()==1 then
-    if footLift[1]>0 then 
+    if footLift[1]>0 then
       footlifttypeL = -1 --heellift
-
-
-      footLift[1]=0
+      footLift[1]=footLift[1]*heel_angle
     else
       footlifttypeL = 1 --toelift
+      footLift[1]=footLift[1]*toe_angle
     end
-    if footLift[2]>0 then 
+    if footLift[2]>0 then
       footlifttypeR = -1 --heellift
-
-
-      footLift[2]=0
+      footLift[2]=footLift[2]*heel_angle
     else
       footlifttypeR = 1 --toelift
+      footLift[2]=footLift[2]*toe_angle
     end
     footliftL = math.abs(footLift[1])
     footliftR = math.abs(footLift[2])
@@ -582,7 +586,7 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
 
   local leftSupportRatio = mcm.get_status_leftSupportRatio()
 
- --Initial guess 
+ --Initial guess
   local uTorsoAdapt = util.pose_global(vector.new({-Config.walk.torsoX,0,0}),uTorso)
   local pTorso = vector.new({
     uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
@@ -593,7 +597,7 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
 
   local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0,
     qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
-    
+
   local massL,massR = 0,0 --for now
 
   -------------------Incremental COM filtering

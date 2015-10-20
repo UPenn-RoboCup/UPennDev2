@@ -69,35 +69,8 @@ local debugdata
 local t0
 
 local read_test = false
---local read_test = true
 local debug_on = false
 
-local init_odometry = function(uTorso)
---[[
-  wcm.set_robot_utorso0(uTorso)
-  wcm.set_robot_utorso1(uTorso)
-  --]]
-end
-
---[[
-local update_odometry = function(uTorso_in)
-  local uTorso1 = wcm.get_robot_utorso1()
-
-  --update odometry pose
-  local odometry_step = util.pose_relative(uTorso_in,uTorso1)
-  local pose_odom0 = wcm.get_robot_odometry()
-  local pose_odom = util.pose_global(odometry_step, pose_odom0)
-  wcm.set_robot_odometry(pose_odom)
-
-  local odom_mode = wcm.get_robot_odom_mode();
-  if odom_mode==0 then wcm.set_robot_pose(pose_odom)
-  else wcm.set_robot_pose(wcm.get_slam_pose())
-  end
-
-  --updae odometry variable
-  wcm.set_robot_utorso1(uTorso_in)
-end
---]]
 
 local kicknames={
   "walkkick",
@@ -106,6 +79,25 @@ local kicknames={
 }
 kicknames[10] = "goaliespread"
 kicknames[11] = "GoalieUnspread"
+
+local function check_stance(uLeft,uRight,uTorso)
+  print("CHECKING STANCE")
+  local uLeftRel = util.pose_relative(uLeft,uTorso)
+  local uRightRel = util.pose_relative(uRight,uTorso)
+  local diffX,diffY=uLeftRel[1]-uRightRel[1], uLeftRel[2]-uRightRel[2]
+
+  if diffY>0.23 then 
+    print("Stance too wide")
+    return true
+  end
+
+
+end
+
+
+
+
+
 
 local function calculate_footsteps()
   uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next=step_planner:init_stance()
@@ -171,9 +163,20 @@ local tStepMid =Config.walk.tStep-tSlope1-tSlope2
   if supportLeg==2 then  --Starting from DS
     if Config.debug.kick then print("Pre stance") end
     pre_step = 2
-  elseif supportLeg==next_support then
-    if Config.debug.kick then print("Pre step") end
-    pre_step = 1-supportLeg --Take anonther step
+  else
+    if supportLeg==next_support then
+      if Config.debug.kick then print("Pre step") end
+      pre_step = 1-supportLeg --Take anonther step
+
+      if Config.doublecheck_stance and kicktype~=9 then
+        check_stance(uLeft_now, uRight_now, uTorso_now)       
+      end
+    else
+      --Direct kick, should check stance
+      if Config.doublecheck_stance and kicktype~=9 then
+        check_stance(uLeft_now, uRight_now, uTorso_now)
+      end
+    end
   end
 
 --Write to SHM
@@ -252,8 +255,7 @@ function walk.entry()
   mcm.set_walk_bipedal(1)
   mcm.set_walk_stoprequest(0) --cancel stop request flag
   mcm.set_walk_ismoving(1) --We started moving
-  --Reset odometry varialbe
-  init_odometry(uTorso_now)  
+
   roll_max = 0
 
   --Checking out transition

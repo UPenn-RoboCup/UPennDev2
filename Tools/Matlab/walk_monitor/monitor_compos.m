@@ -3,7 +3,7 @@ addpath(genpath('../'));
 clf
 clear all
 
-a=shm('mcmStatus01sj');
+a=shm('mcmStatus01thor');
 
 
 f_handle_1 = figure()

@@ -6,7 +6,8 @@ local Body   = require'Body'
 local vector = require'vector'
 local util   = require'util'
 local moveleg = require'moveleg'
-local libReactiveZMP = require'libReactiveZMPAdaptive'
+--local libReactiveZMP = require'libReactiveZMPAdaptive'
+local libReactiveZMP = require'libReactiveZMPAdaptiveHeelToe'
 
 local libStep = require'libStep'
 local zmp_solver
@@ -46,6 +47,26 @@ local init_odometry = function(uTorso)
   wcm.set_robot_utorso1(uTorso)
 end
 
+
+
+local function check_stance(uLeft,uRight,uTorso)
+  
+  local uLeftRel = util.pose_relative(uLeft,uTorso)
+  local uRightRel = util.pose_relative(uRight,uTorso)
+  local diffX,diffY=uLeftRel[1]-uRightRel[1], uLeftRel[2]-uRightRel[2]
+
+  print("CHECKING STANCE",diffX,diffY)
+  if diffY>0.23 then 
+    print("Stance too wide")
+    return true
+  end
+
+
+
+  return false
+end
+
+
 ---------------------------
 -- State machine methods --
 ---------------------------
@@ -76,6 +97,9 @@ function walk.entry()
     ['tZMP']  = Config.walk.tZMP,
     ['start_phase']  = Config.walk.phSingle[1],
     ['finish_phase'] = Config.walk.phSingle[2],
+
+    ['zmpHeel'] = Config.walk.zmpHeel,
+    ['zmpToe'] = Config.walk.zmpToe,
   })
 
   step_planner = libStep.new_planner()
@@ -169,20 +193,11 @@ function walk.update()
   ph_last = ph
   
   if is_next_step then
-
-
-
     local vStep = mcm.get_walk_vel()
-
-    if math.abs(vStep[1])<0.05 then
-      wcm.set_robot_odomfactor(Config.driftFactor[1] or 0.028)
-    elseif math.abs(vStep[1])<0.10 then
-      wcm.set_robot_odomfactor(Config.driftFactor[2] or 0.025)
-    else
-      wcm.set_robot_odomfactor(Config.driftFactor[3] or 0.008)
+    if math.abs(vStep[1])<0.05 then wcm.set_robot_odomfactor(Config.driftFactor[1] or 0.028)
+    elseif math.abs(vStep[1])<0.10 then wcm.set_robot_odomfactor(Config.driftFactor[2] or 0.025)
+    else wcm.set_robot_odomfactor(Config.driftFactor[3] or 0.008)
     end
-
-
     if emergency_stop then 
       mcm.set_walk_ismoving(0) --no more moving (body FSM can check this)
       return "emergency" 
@@ -191,7 +206,12 @@ function walk.update()
     local stoprequest = mcm.get_walk_stoprequest()
     local steprequest = mcm.get_walk_steprequest()    
     if stoprequest>0 then return"done"   end
-    if steprequest>0 then return "done_step" end
+    if steprequest>0 then 
+--    check_stance(uLeft_next,uRight_next,uTorso_next)
+--    if mcm.get_walk_kickfoot()==0 then
+
+      return "done_step" 
+    end
     
     iStep = iStep + 1  -- Increment the step index  
     supportLeg = iStep % 2 -- supportLeg: 0 for left support, 1 for right support   
@@ -205,23 +225,17 @@ function walk.update()
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)
 
-
     local uTorsoVelCurrent = mcm.get_status_uTorsoVel()
     if Config.walk.variable_support then
       local torsoVelYMin = 0.20
       local torsoVelYFactor = 0.5 
       local torsoVelYFactor = 0 
-
       local torsoVelXMin = 0.07
       local torsoVelXFactor = 0.1
-
       local torsoXExt = math.max(0,(math.abs(uTorsoVelCurrent[1])-torsoVelXMin))*torsoVelXFactor
       torsoXExt = -math.min(torsoXExt, 0.02)* util.sign(uTorsoVelCurrent[2])
-
       local torsoYExt = math.max(0, (math.abs(uTorsoVelCurrent[2])-torsoVelYMin )) *torsoVelYFactor 
       torsoYExt = -math.min(torsoYExt, 0.02)*util.sign(uTorsoVelCurrent[2])
-
-
       local uSupportModY = torsoXExt + torsoYExt
       if Config.debug.walk then
         print("TorsoVel:",unpack(uTorsoVelCurrent))
@@ -229,65 +243,32 @@ function walk.update()
         print("torsoYExt:",torsoYExt)
         print("supportModY:",uSupportModY)
       end
-
-
-      if velCurrent[2]>0 and 	supportLeg ==0 then
-          uSupportModY = uSupportModY - 0.01
-      end
-
-      if velCurrent[2]>0 and 	supportLeg ~=0 then
-          uSupportModY = uSupportModY + 0.01
-      end
-
---quick hack for front walking
+      if velCurrent[2]>0 and 	supportLeg ==0 then uSupportModY = uSupportModY - 0.01 end
+      if velCurrent[2]>0 and 	supportLeg ~=0 then uSupportModY = uSupportModY + 0.01 end
       if velCurrent[1]>0.04 then
-        if supportLeg==0 then
-          uSupportModY = uSupportModY - 0.01
-        else
-          uSupportModY = uSupportModY + 0.01
-        end
+        if supportLeg==0 then uSupportModY = uSupportModY - 0.01
+        else uSupportModY = uSupportModY + 0.01 end
       end
-			if Config.debug.walk then
-				print("supportModY:",uSupportModY)
-			end
+			if Config.debug.walk then print("supportModY:",uSupportModY) end
       uSupport = util.pose_global({0,uSupportModY,0},uSupport)
     end
 
 
-
-
 --Quick hack for sidestepping
-
-
-local sideModL = Config.walk.sideModL or 0
-local sideMod2L = Config.walk.sideMod2L or 0
-local sideModR = Config.walk.sideModR or 0
-local sideMod2R = Config.walk.sideMod2R or 0
-
-      local uSupportModY = 0
-      if velCurrent[2]>0.01 then
-	if supportLeg ==0 then --Left support, left sidestep
-          uSupportModY = uSupportModY + sideModL
-	else
-          uSupportModY = uSupportModY + sideMod2L
-	end
-      end
-      if velCurrent[2]<-0.01 then
-	if supportLeg ~=0 then
-          uSupportModY = uSupportModY + sideModR
-	else
-          uSupportModY = uSupportModY + sideMod2R
-	end
-      end
-
-
-      uSupport = util.pose_global({0,uSupportModY,0},uSupport)
-
-
-
-
-
-
+    local sideModL = Config.walk.sideModL or 0
+    local sideMod2L = Config.walk.sideMod2L or 0
+    local sideModR = Config.walk.sideModR or 0
+    local sideMod2R = Config.walk.sideMod2R or 0
+    local uSupportModY = 0
+    if velCurrent[2]>0.01 then
+    	if supportLeg ==0 then  uSupportModY = uSupportModY + sideModL--Left support, left sidestep
+    	else uSupportModY = uSupportModY + sideMod2L end
+    end
+    if velCurrent[2]<-0.01 then
+    	if supportLeg ~=0 then uSupportModY = uSupportModY + sideModR
+    	else uSupportModY = uSupportModY + sideMod2R end
+    end
+    uSupport = util.pose_global({0,uSupportModY,0},uSupport)
 
     local uTorsoVel = mcm.get_status_uTorsoVel()
     local uSupportDist1 = util.pose_relative(uSupport,uTorso_now)
@@ -318,60 +299,32 @@ local sideMod2R = Config.walk.sideMod2R or 0
   local uTorsoVel = zmp_solver:get_com_vel(ph)   
   mcm.set_status_uTorsoVel(uTorsoVel)
 
-
   local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
   if iStep<=2 then phSingle = 0 end --This kills compensation and holds the foot on the ground  
   local uLeft, uRight, zLeft, zRight, aLeft,aRight  = uLeft_now, uRight_now, 0,0, 0,0
   if supportLeg == 0 then 
     uRight,zRight,aRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight) --LS
-
-
     aRight = moveleg.get_foot_tilt(ph)
   else 
     uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
-
     aLeft = moveleg.get_foot_tilt(ph)
   end
-
-
 
   local uMid = util.se2_interpolate(0.5,uLeft,uRight)
   local uBodyOffset = util.pose_relative(uTorso,uMid)
 
-  --Heel lift first, heel land first
-  --positive aLeft: toe lift
-  --negative aLeft: heel lift
-
   local heeltoe_angle = Config.walk.heeltoe_angle or 5*DEG_TO_RAD
-
-  if Config.walk.use_heeltoe_walk then
-    mcm.set_walk_footlift({aLeft*heeltoe_angle, aRight*heeltoe_angle})
-  else
-    mcm.set_walk_footlift({0,0})
-  end
-
-
+  if Config.walk.use_heeltoe_walk then mcm.set_walk_footlift({aLeft*heeltoe_angle, aRight*heeltoe_angle})
+  else mcm.set_walk_footlift({0,0}) end
   local uZMP = zmp_solver:get_zmp(ph)
   moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP, zLeft,zRight)
 
-
 -- Grab gyro feedback for these joint angles
   local gyro_rpy = moveleg.update_sensory_feedback()
---  local gyro_rpy = moveleg.get_gyro_feedback( uLeft, uRight, uTorso, supportLeg )
-
-
   moveleg.ft_compensate(t_diff)
-
   delta_legs, angleShift = moveleg.get_leg_compensation_new(
-      supportLeg,
-      ph,
-      gyro_rpy, 
-      angleShift,
-      0,
-      t_diff)
-
+      supportLeg,ph,gyro_rpy, angleShift,0,t_diff)
     moveleg.set_leg_positions()       
---  update_odometry(uTorso)--Update the odometry variable
 end -- walk.update
 
 function walk.exit()

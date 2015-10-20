@@ -39,6 +39,10 @@ if IS_WEBOTS then
 		--Config.testfile = 'test_testbed'
 		--Config.testfile = 'test_robocup'
 		Config.testfile = 'test_robocup'
+
+
+		Config.testfile = 'test_testbed'
+		
 		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
@@ -273,8 +277,36 @@ Config.goalie_avoid_kick = 0.5
 Config.farpost_aim_th = 3 --closer than this, aim for farther post
 
 
+
+--FINAL
 Config.goalie_spread_enable = true
 Config.ballX_th_goalie_movement = -2 --penalty mark
+Config.doublecheck_stance = true --check foot stance before walkkick
+
+
+--[[
+Config.walk.phSingle = {0.1,0.9}
+Config.walk.phZmp = {0.05,0.95}
+
+
+Config.walk.phSingle = {0.1,0.9}
+Config.walk.phZmp = {0.02,0.98}
+--]]
+
+Config.walk.velLimitX = {-.10,.60}
+Config.walk.stanceLimitX = {-0.60,0.60}
+
+Config.walk.phSingle = {0.2,0.8}
+Config.walk.phZmp = {0.2,0.8}
+
+
+
+
+
+Config.walk.zmpHeel = -0.05
+Config.walk.zmpToe = 0.05
+
+
 
 return Config
 

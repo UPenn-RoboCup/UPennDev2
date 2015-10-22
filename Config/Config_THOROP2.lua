@@ -84,7 +84,8 @@ if IS_WEBOTS then
 --		Config.testfile = 'test_walkstuff'		
 
 		--Config.testfile = 'test_testbed'		
-		Config.testfile = 'test_terrain'		
+		--Config.testfile = 'test_terrain'		
+		Config.testfile = 'test_stair'		
 
 		Config.debug.armplan = false		
 		Config.use_jacobian_arm_planning = true

@@ -62,6 +62,11 @@ fsm.Body = {
   {'bodyStop', 'stepover1', 'bodyStep'},
   {'bodyStep', 'done', 'bodyStop'},
   {'bodyStep', 'nextstep', 'bodyStep'},
+
+  {'bodyStop', 'stairclimb', 'bodyStepPiecewise'},
+  {'bodyStepPiecewise', 'done', 'bodyStop'},
+  {'bodyStepPiecewise', 'nextstep', 'bodyStepPiecewise'},
+--
 --]]
 
   -- Take two slow stops (for precise alignment)

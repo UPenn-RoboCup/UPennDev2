@@ -78,6 +78,8 @@ const double footHeight = 0.100;    //mk2 feet height
 const double footToeX = 0.130; //from ankle to toe, mk2 stock feet
 const double footHeelX = 0.130; //from ankle to heel, mk2 stock feet
 
+
+
 //mkw lidar positions
 const double chestLidarHingeX = 0.05; 
 const double chestLidarX = 0; //after lidar servo

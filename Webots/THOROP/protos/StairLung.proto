@@ -2,6 +2,8 @@
 #Stair step size: 103 x 30 x 22.5cm
 
 PROTO StairLung [
+	field SFVec3f stepsize 1.03 0.225 0.30
+	field SFVec3f centeroffset 0	0.1125 0	
   field SFVec3f translation 0 0 0
   field SFRotation rotation 0 1 0 0
 	field SFColor diffuseColor 0.8 0.8 0.8
@@ -14,7 +16,7 @@ Solid {
   children [
 		DEF block Transform{			
 			rotation 0 0 1 0
-			translation 0	0.1125 0	
+			translation IS centeroffset 
 			children[
 			  DEF cinderblock Shape {
 			     appearance Appearance {material Material {
@@ -22,7 +24,7 @@ Solid {
 			     	specularColor IS specularColor
 			     	}
 			     	}
-			     geometry Box { size 1.03 0.225 0.30 }
+			     geometry Box { size IS stepsize }
 			  }
 			]			
 		}

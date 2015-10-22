@@ -156,6 +156,10 @@ else
 
 
 end
+if IS_WEBOTS then
+  walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
+  walk.anklePitchLimit=vector.new{-90,90}*DEG_TO_RAD --teddy has ankle ROM limitation
+end
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

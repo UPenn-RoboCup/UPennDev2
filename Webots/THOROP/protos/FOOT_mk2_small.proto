@@ -1,0 +1,45 @@
+PROTO FOOT_mk2_small [
+  field SFRotation rotation 1 0 0 0
+  field SFVec3f translation 0 0 0
+]
+{
+  Transform {    
+    rotation IS rotation
+    translation IS translation
+    children [      
+
+      Transform{        
+        translation 0 -0.04 0.0        
+        children[
+          Shape {
+            appearance DEF POS_APP Appearance {
+              material Material {
+                diffuseColor 0.2 0.2 0.2
+                specularColor 0 0 0
+              }
+            }            
+            geometry Box { size 0.05 0.08 0.05 }
+          }
+        ]
+      }      
+
+
+      Transform{        
+        translation 0 -0.090 0.0        
+        children[
+          Shape {
+            appearance DEF POS_APP Appearance {
+              material Material {
+                diffuseColor 0.2 0.2 0.2
+                specularColor 0 0 0
+              }
+            }            
+            geometry Box { size 0.160 0.02 0.160 }
+            #geometry Box { size 0.160 0.02 0.260 }
+          }
+        ]
+      }      
+
+    ]
+  }
+}

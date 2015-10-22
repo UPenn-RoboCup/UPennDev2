@@ -10,7 +10,9 @@ if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
 exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
-
+if IS_STEVE==false then
+  exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}
+end
 -- Printing of debug messages
 Config.debug = {
   webots_wizard = false,

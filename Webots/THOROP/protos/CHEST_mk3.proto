@@ -1,0 +1,75 @@
+PROTO CHEST_mk3 [
+#mk2 waist pitch to shoulder: 0.276
+#  field SFVec3f scale 1 1 1
+  field SFRotation rotation 1 0 0 0
+  field SFVec3f translation 0 0 0
+]
+{
+  Transform {    
+    rotation IS rotation
+    translation IS translation
+    children [
+
+      Transform{        
+        translation 0 -0.100 0
+        children[
+          Shape {
+            appearance DEF POS_APP Appearance {
+              material Material {
+                diffuseColor 1 1 0.5
+                specularColor 0 0 0
+              }
+            }            
+            geometry Box { size 0.250 0.180 0.085 }
+          }
+        ]
+      }      
+
+      Transform{        
+        translation 0 0.010 0
+        children[
+          Shape {
+            appearance DEF POS_APP Appearance {
+              material Material {
+                diffuseColor 1 1 0.5
+                specularColor 0 0 0
+              }
+            }            
+            geometry Box { size 0.350 0.100 0.085 }
+          }
+        ]
+      }      
+
+      Transform{        
+        translation 0 -0.60 0
+        children[
+          Shape {
+            appearance DEF POS_APP Appearance {
+              material Material {
+                diffuseColor 1 1 0.5
+                specularColor 0 0 0
+              }
+            }            
+            geometry Box { size 0.05 1.2 0.05}
+          }
+        ]
+      }      
+
+      Transform{        
+        translation 0 -1.20 0
+        children[
+          Shape {
+            appearance DEF POS_APP Appearance {
+              material Material {
+                diffuseColor 1 1 0.5
+                specularColor 0 0 0
+              }
+            }            
+            geometry Box { size 0.80 0.050 0.80 }
+          }
+        ]
+      }      
+
+    ]
+  }
+}

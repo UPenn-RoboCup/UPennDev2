@@ -1,8 +1,13 @@
 --Now the Config file is entirely identical over two robots (using hostname)
-IS_STEVE = true
+--CONFIG FILE FOR 
+
+
+
+
+IS_STEVE=false
 IS_COMPETING = false
 
-if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
+
 -- Global Config
 Config = {PLATFORM_NAME = 'THOROP1',demo = false,}
 local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
@@ -45,38 +50,20 @@ Config.use_imu_yaw = false --use odometry for yaw
 
 -- Tune for Webots
 if IS_WEBOTS then
-	if IS_STEVE then
-		Config.testfile = 'test_teleop'
-		Config.debug.armplan = true
-
-	  Config.sensors = {
-			ft = true,
-			--feedback = 'feedback_wizard',
-			--slam = 'slam_wizard',
-    	--head_camera = 'camera_wizard',
-    	--chest_lidar = true,
-    	--head_lidar = true,
-			--kinect = 'kinect2_wizard',
-			--mesh = 'mesh_wizard',
-		 	--world = 'world_wizard',
-	  }
-
-	else
-		--Config.testfile = 'test_testbed'		
-		Config.testfile = 'test_walkstuff'		
-		Config.debug.armplan = false		
-		Config.use_jacobian_arm_planning = true
-		Config.enable_jacobian_test = false
-		Config.enable_jacobian_test = true
-		Config.enable_touchdown = false
-		Config.raise_body = false
-		Config.piecewise_step = true
-	  Config.sensors = {
-			ft = true,
-			feedback = 'feedback_wizard',
-		 	world = 'world_wizard',
-	  }
-	end
+	--Config.testfile = 'test_testbed'		
+	Config.testfile = 'test_walkstuff'		
+	Config.debug.armplan = false		
+	Config.use_jacobian_arm_planning = true
+	Config.enable_jacobian_test = false
+	Config.enable_jacobian_test = true
+	Config.enable_touchdown = false
+	Config.raise_body = false
+	Config.piecewise_step = true
+  Config.sensors = {
+--		ft = true,
+		feedback = 'feedback_wizard',
+	 	world = 'world_wizard',
+  }
 end
 
 

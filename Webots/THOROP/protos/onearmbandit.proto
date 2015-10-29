@@ -1,0 +1,472 @@
+#VRML_SIM V7.3.0 utf8
+#############################################
+# THOR-OP webots prototype file
+# Based on Robotis wbt
+# (c) Stephen McGill, 2014
+#  Changes: variable knee torque (needed for terrain tasks)
+#  Shrunk foot size according to actual robot
+#  MINIMUM number of bounding box for speed up
+#  SJ: cleaned-up all mass properties according thorIK.h
+#  Fixed wrong arm lengths
+# unlimited arm torque and velocity (for arm motion testing)
+# Added inertia matrices for upper body
+# Modification for MK2
+# Fixed kinematic params (arm and leg joint pos)
+# Enlarged foot (to match robotis foot size)
+# Fixed robotis chest lidar 
+#############################################
+
+PROTO onearmbandit [
+  field SFVec3f    translation 0 1.155 0
+  field SFRotation rotation 0 1 0 0
+  field SFString   controller "void"
+  field SFString   controllerArgs ""
+  field SFBool     synchronization TRUE
+	field SFFloat    lidarFov 3.1415926536
+	field SFInt32    lidarRays 720
+	#SJ - robotis rating is not enough to keep the robot standing
+	field SFFloat    max_torque_400w 44
+	field SFFloat    max_torque_200w 44
+  field SFFloat    max_torque_100w 24
+	field SFFloat    damping_constant 0.1  
+  # We may want wider FOV for head lidar	
+  field SFString   name "THOR-OP"
+  field SFString   footContactMaterial "default"
+]
+{
+Robot {
+  # General Characteristics
+  translation IS translation
+  rotation IS rotation
+  synchronization IS synchronization
+  name IS name
+  controller IS controller
+  controllerArgs IS controllerArgs
+  description "Robotis THOR-OP"
+
+
+#This is TORSO
+#Current origin: center of two shoulder joints
+  #################################################################
+#	boundingObject Transform {    
+#    translation 0 0 0
+#    children [Box {size 0.05 0.05 0.05}]
+#  }    
+
+		boundingObject Group {
+				children[ 
+					Transform {    
+		    translation 0 0 0
+	 	   children [Box {size 0.05 0.05 0.05}]
+			  }    
+		 		Transform {    
+		    translation 0 -0.60 0
+	 	   children [Box {size 0.05 1.20 0.05}]
+			  }  
+					Transform {    
+		    translation 0 -1.20 0
+	 	   children [Box {size 0.80 0.050 0.80}]
+			  }  
+				]
+			}  			
+
+
+
+
+  physics Physics {density -1  mass 9.802 centerOfMass [0 -0.0382 -0.0042] }#mk2  
+  #################################################################  
+  # Children items
+  children [    
+    DEF RECEIVER Receiver { name "receiver" channel IS channel }
+    DEF EMITTER Emitter { name "emitter" channel IS channel }
+    DEF PHYSICS_RECEIVER Receiver { name "physics_receiver" type "serial" channel 10 byteSize 192 }
+    DEF PHYSICS_EMITTER Emitter { name "physics_emitter" type "serial" byteSize 96 }
+    CHEST_mk3{} #New chest geometry
+
+			 InertialUnit {name "InertialUnit"}
+    Compass {name "Compass"}
+    GPS {name "GPS"}
+    DEF ACCEL Accelerometer {
+      name "Accelerometer"
+      # Must place where is on the actual robot
+      translation 0 0 0.02
+      # Rotate to the correct orientation
+      rotation 0 0.707107 0.707107 3.14159
+      lookupTable [-39.24 0 0 39.24 1024 0]
+    }
+    DEF GYRO Gyro {
+      # Must place where is on the actual robot
+      translation 0 0 0.02
+      # Rotate to the correct orientation
+      rotation -0.57735 0.57735 0.57735 2.09
+      name "Gyro"
+      lookupTable [-27.925 0 0 27.925 1024 0]
+    }
+
+    
+
+
+		DEF Neck HingeJoint {
+			device RotationalMotor {
+				name "Neck"
+				maxVelocity 3.1206487025 maxTorque 6.3				
+				minPosition -2.92343 maxPosition 2.92343
+			} # End of the Head RotationalMotor
+			jointParameters HingeJointParameters {
+				axis 0 1 0
+			} # End of the Head HingeJointParameters
+			endPoint Solid {
+    translation 0 0.117 0 #mk2 shoulder-neck height
+    boundingObject Transform {    
+ 				translation 0 0 0
+ 				children [Box {size 0.05 0.05 0.05}]
+ 			}    
+				physics Physics {
+				##############################################################		
+					density -1 mass 0.373 #neck pitch bracket
+					centerOfMass [0.0018 -0.0010 0.0000]
+				##############################################################		
+				}
+				children [
+					NECK {
+      			translation 0 -0.11 0 #mk2
+						scale 0.001 0.001 0.001
+					}
+					DEF Head HingeJoint {
+						device RotationalMotor {
+							name "Head"
+							maxVelocity 3.1206487025 maxTorque 6.3
+							minPosition -2.92343 maxPosition 2.92343
+						}
+						jointParameters HingeJointParameters {
+							axis 1 0 0
+       				anchor 0 0 0
+						} # End of the Head HingeJointParameters
+						##############################################################		
+						endPoint Camera {
+							name "HeadCamera"
+							width 320
+							height 240
+							translation 0 0.14 0.02
+							rotation 0 1 0 3.14159265
+							pixelSize 0
+							children [
+#								kinect2 {
+#									translation 0 0.02 0
+#									#rotation 0 1 0 3.14159265
+#									mass 0.1
+#									#TODO: add a pitch angle
+#									maxRange 6
+#									pixelSize 0
+#								}
+								hokuyo {
+									name "HeadLidar"
+									width IS lidarRays
+									fieldOfView IS lidarFov
+									translation 0 -0.05 0.02
+									#rotation 0.707107 -0.707107 0 3.14159
+									#rotation 0 1 0 3.14159
+									rotation 0 0 1 3.14159
+								}
+							]
+							physics Physics {
+								density -1
+								mass 0.01
+							}
+							boundingObject Box {size 0.01 0.01 0.01}
+						}
+      			##############################################################	
+					} # End of the Head HingeJoint
+				] # End of the Head Children
+			} # End of the Head endpoint
+		} # End of the Head HingeJoint
+    # End of the Head
+
+    ## Begin the Chest lidar chain
+		DEF Chest_Pan HingeJoint {
+			device RotationalMotor {
+				name "ChestLidarPan"
+				minPosition -2.92343
+				maxPosition 2.92343
+				# Verified MX-28 specs with DARwIn-OP model in Webots
+				maxVelocity 12.26
+				maxTorque 2.5
+				acceleration 55
+			} # End of the ChestLidarPan RotationalMotor
+			jointParameters HingeJointParameters {
+				axis 0 1 0
+				anchor 0 0 0.05 #mk2 stock lidar hinge: 5cm forward
+			} # End of the ChestLidarPan HingeJointParameters
+			##############################################################		
+			endPoint hokuyo {
+				name "ChestLidar"
+				width IS lidarRays
+				fieldOfView IS lidarFov
+				#mk2 stock lidar pos:0.05 forward, 0.028 down
+				translation 0 -0.028 0.05 
+				rotation 0.707107 -0.707107 0 3.14159
+				mass 0.01
+			}
+			##############################################################		
+		} # End of the ChestLidarPan HingeJoint
+## End the Chest lidar chain
+
+
+
+
+
+## Begin the Right arm chain
+    DEF Right_shoulder_pitch HingeJoint {
+      device RotationalMotor {
+        name "ShoulderR"
+        maxVelocity 2.9216811678
+				maxTorque 44.2
+        minPosition -2.92343 maxPosition 2.92343
+      } # End of the ShoulderR RotationalMotor
+      jointParameters HingeJointParameters {
+        axis 1 0 0
+        anchor -0.234 0 0
+        dampingConstant IS damping_constant                              
+      } # End of the ShoulderR HingeJointParameters
+      endPoint Solid {
+        translation -0.234 0 0
+        ##############################################################
+        boundingObject Transform {
+        	translation 0.10 0 0
+          children [Box {size 0.05 0.05 0.05}]
+        }        		
+        physics Physics {
+        	density -1 mass 0.940
+	     			centerOfMass [0 0 0] #mk2
+      	}
+        ##############################################################		
+        children [
+          RIGHT_SHOULDER_PITCH {
+            scale 0.001 0.001 0.001
+            translation 0.05 0 0
+            rotation 0 0 1 -1.5708
+          }
+          DEF Right_shoulder_roll HingeJoint {
+            device RotationalMotor {
+              name "ArmUpperR"
+              maxVelocity 2.9216811678
+														maxTorque 44.2              
+              minPosition -2.92343 maxPosition 2.92343
+            } # End of the ArmUpperR RotationalMotor
+            jointParameters HingeJointParameters {
+              axis 0 0 -1
+              dampingConstant IS damping_constant                            
+            } # End of the ArmUpperR HingeJointParameters
+            endPoint Solid {
+            #########################################################
+              boundingObject Transform {	          		
+          			translation 0.01 0 0
+          			children [Box {size 0.085 0.066 0.15}]
+        			}         		
+              physics Physics {
+	             	density -1 mass 0.752
+															#centerOfMass [0.0549 -0.0282 0.0001] #mk2, arm low posture
+															centerOfMass [0.0 -0.0282 0] #mk2, simplified (no shoulder pad)
+              }
+ 				 ##############################################################
+              ## Begin Shoulder Yaw
+              children [
+                SHOULDER_ROLL{
+                  scale 0.001 0.001 0.001
+                  translation 0 0 0.024
+                  #rotation 0 0 1 -1.5708
+                }
+                DEF Right_shoulder_yaw HingeJoint {
+                  device RotationalMotor {
+                    name "RightShoulderYaw"
+                    maxVelocity 2.9216811678
+																				maxTorque 44.2                    
+                    minPosition -2.92343 maxPosition 2.92343
+                  }
+                  jointParameters HingeJointParameters {
+                    axis 0 1 0
+                    dampingConstant IS damping_constant                    
+                  }
+                  endPoint Solid {
+              ########################################################
+																	boundingObject Transform {
+	          							translation 0 -0.07 0
+          								children [Box {size 0.05 0.05 0.05}]
+        								}
+                physics Physics {
+	             			density -1 mass 1.806                 	
+                	centerOfMass [0 -0.1808 0.0129] #mk2, arm low and elbow front
+		            		}
+				#############################################################
+                    children [
+                    	EXTENDER {translation 0 -0.06 0}
+									  										RIGHT_ARM{
+									  											#translation 0 -0.027 0
+									  											#translation 0 -0.042 0 #mk2 
+									  											#translation 0 -0.122 0 #mk2 longarm (8cm extension)
+									  											translation 0 -0.102 0 #mk2 longarm (6cm extension)
+									  											rotation 0 1 0 3.14159
+									  											scale 0.001 0.001 0.001
+									  											diffuseColor 0.9 0.1 0
+									  										}
+                      DEF Right_elbow_pitch HingeJoint {
+                        device RotationalMotor {
+                         name "ArmLowerR"
+                         maxVelocity 3.1520646292
+																									maxTorque 24.8                          
+                         minPosition -2.92343 maxPosition 2.92343
+                        }
+                        jointParameters HingeJointParameters {
+                          axis -1 0 0
+                          #anchor 0 -0.261 0.030 #default mk2 length
+                          #anchor 0 -0.341 0.030 #8cm extension
+                          anchor 0 -0.320 0.030 #6cm extension
+                          dampingConstant IS damping_constant                                                    
+                        }
+                        endPoint Solid {
+                          #translation 0 -0.261 0.030
+                          #translation 0 -0.341 0.030 #8cm extended
+                          translation 0 -0.320 0.030 #6cm extended
+                          ##############################################################		                    
+                          boundingObject Transform {
+        							      						rotation 1 0 0 0.7854
+                           children [Box {size 0.13 0.065 0.065}]
+        																		}
+                          physics Physics {
+                            density -1 mass 1.124
+                     							centerOfMass [0 -0.1239 -0.031] #mk2, arm low and elbow front
+                          }
+                          ##############################################################		
+                          
+                          children [																																									
+                          	EXTENDER {translation 0 -0.04 -0.03}
+																											RIGHT_ELBOW_mk2 {
+																												#translation 0 -0.115 -0.03
+																												translation 0 -0.195 -0.03 #8cm lower
+																												diffuseColor 0.9 0.1 0
+																											}
+                           DEF Right_wrist_yaw HingeJoint {
+                             device RotationalMotor {
+                               name "RightWristYaw"
+                               maxVelocity 3.1206487025
+                               maxTorque 6.3
+                             } # End of the RightWristYaw RotationalMotor
+                             jointParameters HingeJointParameters {                              
+                               axis 0 1 0
+																															#anchor 0 -0.252 -0.03 #default mk2 
+																															anchor 0 -0.312 -0.03 #6cm extended
+                               dampingConstant IS damping_constant																			
+                             } # End of the RightWristYaw HingeJointParameters
+                              endPoint Solid {
+                                #translation 0 -0.252 -0.03
+                                translation 0 -0.312 -0.03 #6cm extended
+                                #############################################################	                                                   
+																																boundingObject Transform {
+												          											translation 0 0.065 0
+											          												children [Box {size 0.05 0.05 0.05}]
+											        													}
+                                physics Physics {
+                                	 density -1 
+                             					mass 0.441 
+                  																centerOfMass [0 0.0070 0] #mk2, arm low and elbow front
+                                }
+                                #############################################################	                                                   
+                                children [
+	                                DEF Right_wrist_roll HingeJoint {
+                                  device RotationalMotor {
+                                    name "RightWristRoll"
+                                    maxVelocity 3.1206487025
+																																				maxTorque 6.3
+                                    minPosition -2.92343 maxPosition 2.92343
+                                  	} # End of the RightWristRoll RotationalMotor
+                                    jointParameters HingeJointParameters {
+                                      # Straight out the z axis
+                                      #fixed
+                                      axis 0 0 -1
+                                      dampingConstant IS damping_constant
+                                    } # End of the RightWristRoll HingeJointParameters
+                                    endPoint Solid {
+                                    	translation 0 0 0 
+                                	 ##############################################################	
+                                      boundingObject Box { size 0.05 0.05 0.1 }
+																		  																		physics Physics {
+                                      		density -1 mass 0.077
+                  																						centerOfMass [0 -0.0290 0] #mk2, arm low and elbow front
+                                      }           
+ 																																########################################                                      
+                                      children [
+																																							WRIST {
+                                      		translation 0 0 0
+                                      		scale 0.001 0.001 0.001}
+
+                                       DEF Right_wrist_yaw2 HingeJoint {
+                                        device RotationalMotor {
+               	                         name "RightWristYaw2"
+                                         maxVelocity 3.1206487025
+																																									maxTorque 6.3
+                                        }
+                                        jointParameters HingeJointParameters {
+                                        	#fixed
+                                         axis 0 -1 0
+                                         dampingConstant IS damping_constant     
+                                        }
+		#				                                    endPoint Solid {                    
+#													                            translation 0 -0.0953 0
+#						                            							boundingObject Box { size 0.05 0.05 0.05 }
+#						                           								physics Physics{density -1 mass 0.474 centerOfMass 0 0.0 0}
+#						                           								children[WRIST {
+#		        																																	translation 0 0.0253 0
+#        																																			scale 0.001 0.001 0.001
+#                                        			rotation 1 0 0 1.5708
+#															        																		}]
+#																                    			}
+
+#																			                   endPoint CHOPSTICKS {translation 0 -0.05 0}
+
+																				endPoint GRIPPER_UCLA_v2 {
+																						translation 0 0 0
+  																				rotation 0 1 0  3.1415
+																						trigger_name "r_trigger"
+																						grip_name "r_grip"
+																						extra_name "r_extra"
+																						mass 1.2
+																						#mass 0.474
+																					}
+
+                                        } # End of the Wrist Yaw2 HingeJoint
+                                      ] # End the solid children
+                                      ## End Wrist Yaw2
+                                    } # End of the Wrist Roll endpoint
+                                  } # End of the Wrist Roll HingeJoint
+                                ] # End the solid children
+                                ## End Wrist Roll
+                              } # End of the Wrist Yaw endpoint
+                            } # End of the Wrist Yaw HingeJoint
+                          ] # End the solid children
+                          ## End Wrist Yaw
+                        } # End of the Elbow endpoint
+                      } # End of the Elbow HingeJoint
+                    ] # End the solid children
+                    ## End Elbow
+                  } # End of the Shoulder Yaw endpoint
+                } # End of the Shoulder Yaw HingeJoint
+              ] # End the solid children
+              ## End Shoulder Yaw
+            } # End of the Shoulder Roll endpoint
+          } # End of the Shoulder Roll HingeJoint
+        ] # End the solid children
+        ## End Shoulder Roll
+      } # End of the Shoulder Pitch endpoint
+    } # End of the Shoulder Pitch HingeJoint
+## End the right arm chain
+
+
+
+
+
+
+  ] # End of the Robot children
+
+} # End of Robot
+
+} # End of PROTO

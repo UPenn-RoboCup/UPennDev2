@@ -1,13 +1,14 @@
 assert(Config, 'Need a pre-existing Config table!')
 local vector = require'vector'
-
+--ONE_CHAIN = true
 Config.nJoint = 37
 
 ---------
 -- IMU --
 ---------
 Config.imu = {
-	enabled = true,
+--	enabled = true,
+	enabled = false,
 	device = '/dev/ttyACM0',
 	-- TODO: Add some mapping, etc.
 }
@@ -131,7 +132,7 @@ Config.left_wrist_ft = FT16464
 ---------------------------------
 ---------------------------------
 --Config.right_foot_ft = FT13288
---Config.left_foot_ft = FT14216 
+--Config.left_foot_ft = FT14216
 ---------------------------------
 ---------------------------------
 ---------------------------------
@@ -143,7 +144,7 @@ Config.left_foot_ft.bias_torque = {-6,13.8}
 
 Config.right_foot_ft.bias_forceZ = -20
 Config.right_foot_ft.bias_torque = {-10,18.5}
- 
+
 if Config.birdwalk then
 	--swap ft type
 	Config.left_foot_ft = FT16390
@@ -191,13 +192,15 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-	1,3,5,7,9,11,13,
+	--1,3,5,7,9,11,13,
+	1,3,5,7,9,30,29,
+
 		-- waist
-	28,
+	--28,
 	--head
-	29, 30,
+	--29, 30,
 	-- gripper
-	63, 65, 67
+	--63, 65, 67
 	},
 	enable_read = true,
 }
@@ -235,6 +238,8 @@ local left_leg = {
 --------------------------------------------
 --for birdwalk, swap chain names too
 --------------------------------------------
+print("birdwalk")
+print(Config.birdwalk)
 if Config.birdwalk then
 
   left_leg = {
@@ -287,15 +292,16 @@ if ONE_CHAIN then
 	left_leg  = nil
 else
 	-- Both keys and indices
-	Config.chain[right_leg.name] = right_leg
+--[[	Config.chain[right_leg.name] = right_leg
 	Config.chain[left_leg.name] = left_leg
 	table.insert(Config.chain, right_leg)
 	table.insert(Config.chain, left_leg)
+	]]--
 ----[[
 		table.insert(Config.chain, right_arm)
-		table.insert(Config.chain, left_arm)
+--		table.insert(Config.chain, left_arm)
 		Config.chain[right_arm.name] = right_arm
-		Config.chain[left_arm.name] = left_arm
+--		Config.chain[left_arm.name] = left_arm
 --]]
 	one_chain = nil
 end
@@ -388,11 +394,13 @@ Config.jointNames = jointNames
 ----------------------
 local servo = {}
 servo.joint_to_motor={
-	29,30,  --Head yaw/pitch
+	--29,30,  --Head yaw/pitch
+	11,13,  --Head yaw/pitch
 	2,4,6,8,10,12,14, --LArm
 	16,18,20,22,24,26, -- left leg
 	15,17,19,21,23,25, -- right leg
-	1,3,5,7,9,11,13,  --RArm
+--	1,3,5,7,9,11,13,  --RArm
+	1,3,5,7,9,30,29,  --RArm
 	28,27, --Waist yaw/pitch (mk2 is inverted)
 	64,66,68, -- left gripper/trigger (This is the order)
 	63,67,65, -- right gripper/trigger/extra
@@ -418,12 +426,12 @@ servo.steps = 2 * vector.new({
 
 
 
---[[
+
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head, mk2
 
-	1,1,1, 1, 1,1,1, --LArm, mk2 reassembled 
+	1,1,1, 1, 1,1,1, --LArm, mk2 reassembled
 	------
 	-1, 1,1,   1,  1,1, --LLeg
 	-1, 1,-1, -1,  -1,1, --RLeg
@@ -482,7 +490,7 @@ servo.max_rad = vector.new({
 	60, -- Lidar pan
 })*DEG_TO_RAD
 
---]]
+
 
 --------------------------------------------
 --for birdwalk
@@ -528,7 +536,7 @@ if Config.birdwalk then
 	servo.direction = vector.new({
 		1,1, -- Head, mk2
 
---		1,1,1, 1, 1,1,1, --LArm, mk2 reassembled 
+--		1,1,1, 1, 1,1,1, --LArm, mk2 reassembled
 		1,1,1, 1, 1,1,1, --LArm
 		------
 		-1, -1, 1,  1, 1, -1, --LLeg, mk2, flipped
@@ -573,8 +581,8 @@ servo.max_rad = vector.new({
 
 
 end
-
-
+print("DUMMY_ARM")
+print(Config.USE_DUMMY_ARMS)
 if Config.USE_DUMMY_ARMS then
 	indexHead = 1   -- Head: 1 2
 	nJointHead = 2

@@ -1,5 +1,5 @@
 --Now the Config file is entirely identical over two robots (using hostname)
---CONFIG FILE FOR 
+--CONFIG FILE FOR
 
 
 
@@ -10,7 +10,8 @@ IS_COMPETING = false
 
 -- Global Config
 Config = {PLATFORM_NAME = 'THOROP1',demo = false,}
-local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
+--local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
+local exo = {'Walk','Net','FSM','World','Vision','Robot_onearmbandit', 'Arm'}
 
 --Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
 --exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}
@@ -31,7 +32,7 @@ Config.debug = {
 
 
 --NO BIRDWALK FOR ROBOCUP
---Config.birdwalk = 1 
+--Config.birdwalk = 1
 
 
 
@@ -48,11 +49,11 @@ Config.variable_support = true
 Config.arm_init_timeout = true
 Config.use_imu_yaw = false --use odometry for yaw
 
--- Tune for Webots
+-- Tune for webots_wizard
 if IS_WEBOTS then
-	--Config.testfile = 'test_testbed'		
-	Config.testfile = 'test_walkstuff'		
-	Config.debug.armplan = false		
+	Config.testfile = 'test_testbed'
+	--Config.testfile = 'test_walkstuff'
+	Config.debug.armplan = false
 	Config.use_jacobian_arm_planning = true
 	Config.enable_jacobian_test = false
 	Config.enable_jacobian_test = true

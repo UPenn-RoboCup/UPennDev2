@@ -12,6 +12,8 @@ local lD = require'libDynamixel'
 local shared_data = {}
 local shared_data_sz = {}
 
+print("nJoint")
+print(nJoint)
 -- Sensors from the robot
 shared_data.sensor = {}
 -- Setup from libDynamixel the read only sensor values

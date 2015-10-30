@@ -27,7 +27,7 @@ Config.debug = {
 }
 
 
-Config.birdwalk = 1 		
+Config.birdwalk = 1
 Config.raise_body = true
 Config.use_exact_tZMP = true
 Config.use_heeltoe_walk = true
@@ -40,7 +40,7 @@ Config.arm_init_timeout = true
 Config.use_imu_yaw = true
 
 Config.estop_mode = 0 --don't do anything!
-Config.estop_mode = 1 --untorque all the servos 
+Config.estop_mode = 1 --untorque all the servos
 --Config.estop_mode = 2 --make the robot sit down
 Config.auto_restart = true
 
@@ -80,14 +80,14 @@ if IS_WEBOTS then
 		 	--world = 'world_wizard',
 	  }
 	else
-		--Config.testfile = 'test_testbed'		
---		Config.testfile = 'test_walkstuff'		
+		--Config.testfile = 'test_testbed'
+--		Config.testfile = 'test_walkstuff'
 
-		--Config.testfile = 'test_testbed'		
-		--Config.testfile = 'test_terrain'		
-		Config.testfile = 'test_stair'		
+		--Config.testfile = 'test_testbed'
+		--Config.testfile = 'test_terrain'
+		Config.testfile = 'test_stair'
 
-		Config.debug.armplan = false		
+		Config.debug.armplan = false
 		Config.use_jacobian_arm_planning = true
 		Config.enable_jacobian_test = false
 		--Config.enable_jacobian_test = true

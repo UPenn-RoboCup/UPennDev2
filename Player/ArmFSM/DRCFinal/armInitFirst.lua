@@ -18,12 +18,12 @@ local last_error
 
 local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
   local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()  
+  local qRArm = Body.get_rarm_command_position()
 
-  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt ,nil,absolute)  
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt ,nil,absolute)
   local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt ,nil,absolute)
 
-  if not absolute then  
+  if not absolute then
     for i=1,7 do
       local qL_increment = util.mod_angle(qL_approach[i]-qLArm[i])
       local qR_increment = util.mod_angle(qR_approach[i]-qRArm[i])
@@ -94,11 +94,11 @@ function state.update()
   t_update = t
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-    
+
   local ret
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
-    
-  if stage==1 then --Straighten wrist roll and second wrist yaw       
+
+  if stage==1 then --Straighten wrist roll and second wrist yaw
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
     t_stage = 1.0
@@ -112,7 +112,7 @@ function state.update()
     t_stage = 1.0
 
   elseif stage==3 then --straighten shoulder yaw, widen shoulder
-    qLArmTargetC,qRArmTargetC = 
+    qLArmTargetC,qRArmTargetC =
 	util.shallow_copy(qLArmTarget),
 	util.shallow_copy(qRArmTarget)
     qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
@@ -162,12 +162,12 @@ function state.update()
 
   if t>t_last_debug+0.2 then
     t_last_debug=t
-    if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then 
+    if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then
       stage = stage+1
       print("Total joint reading err:",err*180/math.pi)
     end
     last_error = err
-  end    
+  end
 end
 
 function state.exit()
@@ -177,17 +177,17 @@ function state.exit()
   --we calculated the arm transforms (sans compensation) and stores them as current intiial conditions for planner
 
   local qWaist = Body.get_waist_command_position()
-  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist)  
+  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist)
   local vec_comp = vector.new({uTorsoComp[1],uTorsoComp[2],0, 0,0,0})
   local trLArmComp = Body.get_forward_larm(qLArmTarget)
   local trRArmComp = Body.get_forward_rarm(qRArmTarget)
   local trLArm = vector.new(trLArmComp) + vec_comp
-  local trRArm = vector.new(trRArmComp) + vec_comp 
+  local trRArm = vector.new(trRArmComp) + vec_comp
   mcm.set_arm_trlarm(trLArm)
   mcm.set_arm_trrarm(trRArm)
   mcm.set_arm_qlarmcomp(qLArmTarget)
   mcm.set_arm_qrarmcomp(qRArmTarget)
-  mcm.set_stance_uTorsoComp(uTorsoComp)  
+  mcm.set_stance_uTorsoComp(uTorsoComp)
 
 
   mcm.set_status_arm_init(1) --arm idle and requires init
@@ -202,4 +202,3 @@ function state.exit()
 end
 
 return state
-

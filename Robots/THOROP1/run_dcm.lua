@@ -581,7 +581,7 @@ local function parse_read_position(pkt, bus)
 	local read_val
 	if bus.has_mx_id[m_id] then
 		if #pkt.parameter~=lD.mx_registers.position[2] then return end
-		read_val = p_parse_mx(unpack(pkt.parameter)) 
+		read_val = p_parse_mx(unpack(pkt.parameter))
 	else
 		if #pkt.parameter~=lD.nx_registers.position[2] then return end
 		read_val = p_parse(unpack(pkt.parameter))
@@ -1226,19 +1226,19 @@ while is_running do
 --]]
 		local lfoot = dcm.get_sensor_lfoot()
 		local rfoot = dcm.get_sensor_rfoot()
-	
+
 		local lf_z, lf_r, lf_p = lfoot[3], -lfoot[4], lfoot[5]
 		local rf_z, rf_r, rf_p = rfoot[3], -rfoot[4], rfoot[5]
 
 --
 		if Config.left_foot_ft.bias_forceZ then
-		  lf_z , lf_p, lf_r = 
-			lf_z-Config.left_foot_ft.bias_forceZ, 
+		  lf_z , lf_p, lf_r =
+			lf_z-Config.left_foot_ft.bias_forceZ,
 			lf_p - Config.left_foot_ft.bias_torque[2],
 			lf_r - Config.left_foot_ft.bias_torque[1]
 
-		  rf_z , rf_p, rf_r = 
-			rf_z-Config.right_foot_ft.bias_forceZ, 
+		  rf_z , rf_p, rf_r =
+			rf_z-Config.right_foot_ft.bias_forceZ,
 			rf_p - Config.right_foot_ft.bias_torque[2],
 			rf_r - Config.right_foot_ft.bias_torque[1]
 		end
@@ -1268,7 +1268,7 @@ while is_running do
 
 
 		table.insert(debug_str, sformat('RLeg FT  Z%.1f R%.1f P%.1f ZMP: %.1f %.1f',
-		rf_z,rf_r, rf_p, 
+		rf_z,rf_r, rf_p,
 			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
 
 		debug_str = table.concat(debug_str, '\n')

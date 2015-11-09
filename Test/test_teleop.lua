@@ -184,10 +184,15 @@ char_lut['6'] = function()
 	vector.copy(get_rarm(true), qR0)
 end
 char_lut['7'] = function()
-	arm_ch:send'teleop'
-	unix.usleep(1e5)
-	T.copy(get_tflarm(true), tfL0)
-	T.copy(get_tfrarm(true), tfR0)
+	arm_ch:send'RRTbasedmove'
+
+--	arm_ch:send'teleopraw'    -jwhuh
+	--print("test_teleop2.lua") --jwhuh
+
+--	arm_ch:send'teleop'
+--	unix.usleep(1e5)
+--	T.copy(get_tflarm(true), tfL0)
+--	T.copy(get_tfrarm(true), tfR0)
 end
 char_lut['8'] = function()
 	body_ch:send'stop'

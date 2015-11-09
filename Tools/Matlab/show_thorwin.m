@@ -133,7 +133,7 @@ while running
         %msgpack('pack',Planes)
     end
     
-        load test_path.mat;
+        load test_path_sm.mat;
  %       path_rrt2 = flipud(path_rrt2);
  %       path_rrt = flipud(path_rrt);
         Planes = [path_rrt]';

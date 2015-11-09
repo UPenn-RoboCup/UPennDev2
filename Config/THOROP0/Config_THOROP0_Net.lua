@@ -80,6 +80,28 @@ streams.camera1 = {
 	tcp = 43304,
 	sub = 'camera1',
 }
+
+streams.vision0 = {
+	ws = 9013,
+	udp = 17013,
+	tcp = 43313,
+	sub = 'vision0',
+}
+streams.label = {
+	ws = 9014,
+	udp = 17014,
+	tcp = 43314,
+	sub = 'label',
+}
+streams.world = {
+	ws = 9023,
+	udp = 17023,
+	tcp = 43323,
+	sub = 'world',
+}
+
+
+
 streams.lidar0 = {
 	ws = 9010,
 	udp = 17010,
@@ -104,6 +126,17 @@ streams.mesh1 = {
 	tcp = 43301,
 	sub = 'mesh1'
 }
+
+
+-- jwhuh
+streams.rrt1 = {
+	ws = 9051,
+	udp = 17051,
+	tcp = 43351,
+	sub = 'rrt1'
+
+}
+
 --[[
 streams.kinect2_depth = {
 	ws = 9046,

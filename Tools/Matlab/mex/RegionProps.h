@@ -24,3 +24,5 @@ class RegionProps {
 bool operator< (const RegionProps& a, const RegionProps &b);
 
 #endif
+
+void deaf();

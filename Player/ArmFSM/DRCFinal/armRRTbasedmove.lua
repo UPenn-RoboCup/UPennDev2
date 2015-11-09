@@ -261,14 +261,19 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 --]]
 
   if Rrt_Run == 0 then
+    
+    -- used saved path for the RRT
+    --[[
     Rrt_Run, RRT_Path = run_RRT_code()
   --state.jnwook_test()
     RRT_Path_size = table.getn(RRT_Path);
+    ]]
+
     RRT_idx = 1;
 
 
   -- receive RRT path from MATLAB
-  --[[
+  
     print("rrt data is received\n")
     local t_plane = rrt_ch:receive(true)
 
@@ -305,8 +310,6 @@ qLArmTarget[4]*Body.RAD_TO_DEG
       --0  -60.0000         0         0   80.0000         0
       RRT_Path = tmp_RRT_Path;
        end
-]]--
-
 
 
   else

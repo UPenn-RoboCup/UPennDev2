@@ -40,7 +40,7 @@ TARGETS=\
 #	deserialize.$(MEXEXT) \
 
 .PHONY: all clean
-	
+
 all: $(TARGETS)
 
 %.o: %.cc
@@ -51,7 +51,7 @@ all: $(TARGETS)
 
 mexshm.$(MEXEXT):
 	$(MEX) mexshm.cc $(LIBRT) -I/usr/local
-	
+
 cjpeg.$(MEXEXT):
 	$(MEX) cjpeg.cc -ljpeg
 
@@ -60,16 +60,16 @@ djpeg.$(MEXEXT):
 
 zmq.$(MEXEXT):
 	$(MEX) zmq.cc -lzmq
-	
+
 msgpack.$(MEXEXT):
 	$(MEX) msgpack.cc -lmsgpack
-	
+
 zlibCompress.$(MEXEXT):
 	$(MEX) zlibCompress.cc -lz
 
 zlibUncompress.$(MEXEXT):
 	$(MEX) zlibUncompress.cc -lz
-	
+
 connected_regions.$(MEXEXT): connected_regions.cc RegionProps.o ConnectRegions.o
 	$(MEX) $^
 
@@ -86,8 +86,12 @@ field_spots.$(MEXEXT): field_spots.cc RegionProps.o ConnectRegions.o
 	$(MEX) $^
 
 kinematics.$(MEXEXT): kinematics.cc
-	$(MEX) $^ ../../../Robots/THOROP/THOROPKinematics.cpp ../../../Robots/Transform/Transform.cpp  -I../../../Robots/THOROP -I../../../Robots/Transform
-	
+	$(MEX) $^ ../../../Robots/THOROP2/THOROPArmKinematics.cpp \
+	../../../Robots/THOROP2/THOROPLegKinematics.cpp \
+	../../../Robots/Transform/Transform.cpp  \
+	-I../../../Robots/THOROP2 \
+	-I../../../Robots/Transform
+
 test:
 	@echo "Testing matlab scripts!"
 	$(MATLAB) -r "run_tests"

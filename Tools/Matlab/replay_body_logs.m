@@ -16,12 +16,14 @@ jointNames = { ...
 
 
 %% Aquire the body joint angles
-timestamp = '03.07.2015.16.13.38';
+%timestamp = '03.07.2015.16.13.38';
+timestamp = '10.24.2014.14.16.48';
+
 
 % TODO: Check if already available
 %load(strcat('Data/joint_m_',timestamp,'.mat'));
 
-fid = fopen(strcat('joint_m_',timestamp,'.log'));
+fid = fopen(strcat('Data/joint_m_',timestamp,'.log'));
 msg = fread(fid,inf,'*uchar');
 fclose(fid);
 clear fid;

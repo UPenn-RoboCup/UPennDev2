@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <sys/ioctl.h>
 #include <IOKit/serial/ioss.h>
 
 #include "mex.h"
@@ -39,7 +40,7 @@ int fiFdopen(int fd, char *mode)
 	char *tmpfilename;
 
 	/* First open a temporary file and get file status info */
-
+	//TODO: mkstemp instead of tmpnam
 	if ((tmpfilename = tmpnam(NULL)) == NULL)
 		mexErrMsgTxt("Could not generate tmpfile name.");
 

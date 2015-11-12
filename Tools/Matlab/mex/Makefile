@@ -10,6 +10,7 @@ TARGETS=\
 	getch.$(MEXEXT) \
 	udp_recv.$(MEXEXT) \
 	udp_send.$(MEXEXT) \
+	serialopen.$(MEXEXT) \
 	cjpeg.$(MEXEXT) \
 	djpeg.$(MEXEXT) \
 	msgpack.$(MEXEXT) \
@@ -35,7 +36,6 @@ TARGETS=\
 	field_occupancy.$(MEXEXT) \
 	field_spots.$(MEXEXT) \
 	label_to_mask.$(MEXEXT) \
-	mattorch.$(MEXEXT) \
 	kinematics.$(MEXEXT)
 #	test \
 #	serialize.$(MEXEXT) \
@@ -66,10 +66,6 @@ zmq.$(MEXEXT):
 msgpack.$(MEXEXT):
 	$(MEX) msgpack.cc -lmsgpack
 
-mattorch.$(MEXEXT):
-		$(MEX) mattorch.cc -llua5.1 -ltorch -lmat \
-		-I/usr/local/include/torch -I/usr/local/include/lua-5.1 \
-		-L/Applications/MATLAB_R2015b.app/bin/maci64/libmat.dylib
 zlibCompress.$(MEXEXT):
 	$(MEX) zlibCompress.cc -lz
 

@@ -57,10 +57,9 @@ clear d1 d2 A0 A1;
 
 %% CVX Solver
 %fprintf(1, 'Computing the optimal value of the QCQP and its dual...\n');
-tmpName = [tempname, '.dat'];
-diary(tmpName);
-tic;
+tstart = tic;
 cvx_begin
+    cvx_solver gurobi
     cvx_precision low
     %cvx_precision medium
     variable dlambda(nl)
@@ -78,22 +77,16 @@ cvx_begin
             lambda0((k-1)*nNull+1:k*nNull) ...
             ) <= epsilon ;%* ds(k);
     end
-    
+    dtformulate = toc(tstart);
 cvx_end
-
 %% Finish the timing
+dt_form_n_solve = toc(tstart);
+dt_solve = dt_form_n_solve - dtformulate;
 dt_cvx = cvx_cputime;
-dt_tictoc = toc;
-diary off;
-[~, cmdout] = unix(['grep ', 'Total ', tmpName]);
-cmdout = strsplit(cmdout);
-dt_solver = str2double(cmdout(7));
-clear cmdout;
-delete(tmpName);
 
 %% Output
 dlambda = reshape(dlambda, [nNull, np])';
-dt_opt = [dt_solver, dt_cvx, dt_tictoc];
+dt_opt = [dt_solve, dt_cvx, dt_form_n_solve];
 opt_val = cvx_optval;
 
 end

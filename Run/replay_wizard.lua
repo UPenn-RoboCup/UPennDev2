@@ -13,7 +13,7 @@ local speedup = 1
 
 -- In lab Saturday
 local logs = {}
-
+--[[
 logs.feedback = {
 	ch = si.new_publisher'feedback',
 	dir = HOME..'Data'..'/trial2/',
@@ -85,6 +85,27 @@ logs.camera0 = {
 	'06.06.2015.13.50.21',
 	'06.06.2015.14.04.20',
 }
+--]]
+logs.k2_rgb = {
+	-- Both channels work :D
+	--ch = si.new_publisher'camera0',
+	ch = si.new_publisher'kinect2_color',
+	dir = HOME..'Data'..'/iros/',
+	raw = true,
+	'12.31.2008.19.39.19',
+	'12.31.2008.19.42.23',
+	'12.31.2008.19.48.32',
+}
+logs.k2_depth = {
+	ch = si.new_publisher'kinect2_depth',
+	dir = HOME..'Data'..'/iros/',
+	raw = true,
+	'12.31.2008.19.39.19',
+	'12.31.2008.19.42.23',
+	'12.31.2008.19.48.32',
+}
+
+
 
 -- RoboCup
 --[[

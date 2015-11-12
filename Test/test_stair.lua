@@ -43,7 +43,17 @@ local function print_override()
 end
 
 local stair_height = 0.225
-local stair_height = 0.210
+local stair_dist = 0.30
+
+local stair_dist = 0.18
+local stair_height = 0.0
+
+--local stair_dist = 0.40
+--local stair_height = 0.1
+
+local stair_dist = 0.45
+local stair_height = 0.2
+	
 
 local function update(key_code)
   if type(key_code)~='number' or key_code==0 then return end
@@ -58,6 +68,36 @@ local function update(key_code)
   if key_char_lower==("1") then      
     body_ch:send'init'
     arm_ch:send'init'  --initialize arm to walk position 
+
+
+
+elseif key_char_lower==("q") then      
+    hcm.set_step_supportLeg(0)    
+    hcm.set_step_zpr({0,0,0})
+    hcm.set_step_relpos({stair_dist,0.02,0})    
+    hcm.set_step_zpr({stair_height,0,0}) --stair    
+    body_ch:send'stairclimb'   
+elseif key_char_lower==("w") then      
+    hcm.set_step_supportLeg(1)    
+    hcm.set_step_zpr({0,0,0})
+    hcm.set_step_relpos({stair_dist,0.02,0})    
+    hcm.set_step_zpr({stair_height,0,0}) --stair    
+    body_ch:send'stairclimb'   
+elseif key_char_lower==("a") then      
+    hcm.set_step_supportLeg(0)    
+    hcm.set_step_zpr({0,0,0})
+    hcm.set_step_relpos({-stair_dist,0.02,0})    
+    hcm.set_step_zpr({-stair_height,0,0}) --stair    
+    body_ch:send'stairclimb'   
+elseif key_char_lower==("s") then      
+    hcm.set_step_supportLeg(1)    
+    hcm.set_step_zpr({0,0,0})
+    hcm.set_step_relpos({-stair_dist,0.02,0})    
+    hcm.set_step_zpr({-stair_height,0,0}) --stair    
+    body_ch:send'stairclimb'   
+
+
+
 
 
 elseif key_char_lower==("t") then      

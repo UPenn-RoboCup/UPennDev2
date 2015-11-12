@@ -46,7 +46,6 @@ logs.ittybitty0 = {
 	'06.06.2015.13.59.11',
 	'06.06.2015.14.05.13'
 }
-----[[
 logs.mesh0 = {
 	ch = si.new_publisher'mesh0',
 	raw = true,
@@ -70,8 +69,6 @@ logs.mesh0 = {
 	'06.06.2015.13.49.30',
 	'06.06.2015.13.57.58',
 }
---]]
-----[[
 logs.camera0 = {
 	ch = si.new_publisher'camera0',
 	dir = HOME..'Data'..'/trial2/',
@@ -88,7 +85,6 @@ logs.camera0 = {
 	'06.06.2015.13.50.21',
 	'06.06.2015.14.04.20',
 }
---]]
 
 -- RoboCup
 --[[

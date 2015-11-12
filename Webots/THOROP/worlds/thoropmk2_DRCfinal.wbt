@@ -21,8 +21,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.126628 0.909501 0.395946 3.69081
-  position -1.04918 3.16075 -2.17547
+  orientation -0.354883 -0.717525 -0.599346 2.37173
+  position 2.58492 3.89649 1.03753
 }
 Background {
   skyColor [
@@ -40,8 +40,8 @@ DirectionalLight {
   intensity 0.5
 }
 THOROP_mk2_Fullmass_longarm_2 {
-  translation 0.5 1.14 0
-  rotation 0 1 0 -1.57
+  translation 2.5 1.04 0.8
+  rotation 0 1 0 -2.1
   controller "thorop"
   controllerArgs "0 32"
   lidarRays 360
@@ -52,7 +52,7 @@ THOROP_mk2_Fullmass_longarm_2 {
   footContactMaterial "feet"
 }
 DEF TASKFLOOR Floor {
-  translation 6 0 0  
+  translation 6 0 0
   rotation 1 0 0 0.087 #5 degree
   size 16 8
   texture [
@@ -84,23 +84,23 @@ simple_wall {
 }
 ## Side Right
 CinderBlock {
-  translation 7.068 0.2 1.89 
+  translation 7.068 0.2 1.89
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 7.499 0.2 1.89 
+  translation 7.499 0.2 1.89
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 7.928 0.2 1.89 
+  translation 7.928 0.2 1.89
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 8.356 0.2 1.89 
+  translation 8.356 0.2 1.89
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 8.788 0.2 1.89 
+  translation 8.788 0.2 1.89
   rotation 1 0 0 1.57
 }
 
@@ -110,23 +110,23 @@ CinderBlock {
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 7.499 0.2 0.075 
+  translation 7.499 0.2 0.075
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 7.928 0.2 0.075 
+  translation 7.928 0.2 0.075
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 8.356 0.2 0.075 
+  translation 8.356 0.2 0.075
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 8.788 0.2 0.075 
+  translation 8.788 0.2 0.075
   rotation 1 0 0 1.57
 }
 CinderBlock {
-  translation 7.068 0.2 -0.085 
+  translation 7.068 0.2 -0.085
   rotation 1 0 0 1.57
 }
 CinderBlock {
@@ -147,7 +147,7 @@ CinderBlock {
 }
 ### DEBRIS BORDER
 CinderBlock {
-  translation 7.068 0.2 -2.0 
+  translation 7.068 0.2 -2.0
   rotation 1 0 0 1.57
 }
 CinderBlock {
@@ -301,10 +301,10 @@ DEF VALVE CircleValve {
 }
 simple_wall {
   size 0.44 0.1 0.26
-  translation 3.246 1.04 1.482 # 5.33 1.04 -1.55 
+  translation 3.246 0.9 1.482 # 5.33 1.04 -1.55
   rotation 0 1 0 0.785398
 }
 SimpleDrill {
-  translation 3.246 1.20875 1.482 #5.24924 1.20875 -1.44924
+  translation 3.246 1.1 1.482 #5.24924 1.20875 -1.44924
   rotation 0.00208244 0.999985 0.00502746 -2.3562
 }

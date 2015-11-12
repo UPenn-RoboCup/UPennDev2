@@ -16,7 +16,8 @@ do
 	--local degreesPerSecond = vector.new{15,15,15, 15, 25,25,25}
 
 	--local degreesPerSecond = vector.new{15,10,20, 15, 20,20,20}
-	local degreesPerSecond = vector.ones(7) * 30
+	--local degreesPerSecond = vector.ones(7) * 30
+	local degreesPerSecond = vector.ones(7) * 15
 	--local degreesPerSecond = vector.ones(7) * 100
 	radiansPerSecond = degreesPerSecond * DEG_TO_RAD
 	-- Compensation items
@@ -38,17 +39,73 @@ do
 	lPlanner = P.new_planner('Left')
 		:set_chain(K.forward_larm, K.inverse_larm, K.jacobian_larm)
 		:set_limits(minLArm, maxLArm, radiansPerSecond)
-		:set_update_rate(100)
+		:set_update_rate(10)
 		:set_shoulder_granularity(2*DEG_TO_RAD)
 	rPlanner = P.new_planner('Right')
 		:set_chain(K.forward_rarm, K.inverse_rarm, K.jacobian_rarm)
 		:set_limits(minRArm, maxRArm, radiansPerSecond)
-		:set_update_rate(100)
+		:set_update_rate(10)
 		:set_shoulder_granularity(2*DEG_TO_RAD)
 end
 movearm.lPlanner = lPlanner
 movearm.rPlanner = rPlanner
 
+-- Play the plan as a coroutine
+-- Array of joint angles
+-- Callback on sensed data
+local function co_play(self, plan, callback)
+
+	-- Run the optimizer
+	plan.n_optimizations = 10
+	plan.update_jacobians = true
+	--plan.n_optimizations = 0
+	--plan.update_jacobians = false
+
+	local t0 = unix.time()
+	for i=1,plan.n_optimizations do
+		plan.i_optimizations = i
+		if not plan.nulls then
+			self:jacobians(plan)
+		end
+		plan.qwPath = self:optimize(plan)
+		--plan.qwPath = self:optimize2(plan)
+		if plan.update_jacobians then
+			self:jacobians(plan)
+		end
+	end
+	-- Just send the final data.
+	if plan.n_optimizations>0 then
+		plan.i_optimizations = plan.n_optimizations + 1
+		self:optimize(plan, true)
+	end
+	local t1 = unix.time()
+	print(string.format("%d iterations %.2f ms (%s)",
+		plan.n_optimizations, (t1 - t0)*1e3, tostring(plan.via)))
+
+	local qArmSensed, qWaistSensed = coroutine.yield()
+	if type(callback)=='function' then
+		callback(qArmSensed, qWaistSensed)
+	end
+
+	-- Check if we include the waist
+	local hasWaist = plan.qWaistGuess~=nil
+	local qArm, qWaist
+	-- Try the optimized one
+	for i, qWaistArm in ipairs(plan.qwPath) do
+		if hasWaist then
+			qArm = {unpack(qWaistArm, 2)}
+			qWaist = {qWaistArm[1], 0}
+		else
+			qArm = qWaistArm
+		end
+		qArmSensed, qWaistSensed = coroutine.yield(qArm, qWaist)
+		if type(callback)=='function' then
+			callback(qArmSensed, qWaistSensed)
+		end
+	end
+	-- TODO: This is a repeat...
+	return qArm, qWaist
+end
 
 -- Take a desired joint configuration and move linearly in each joint towards it
 function movearm.goto(l, r)
@@ -60,12 +117,12 @@ function movearm.goto(l, r)
 	local qcWaist = Body.get_safe_waist_command_position()
 
 	local lplan = type(l)=='table' and P[l.via]
+	--lplan = P.joint_preplan
 	if type(lplan)=='function' then
 		--lco = coroutine.create(lplan)
 
 		-- must copy the plan to keep the wait ok
 		l = util.shallow_copy(l)
-
 		if l.q then vector.new(l.q) end
 		if l.weights then vector.new(l.weights) end
 		if l.qWaistGuess then vector.new(l.qWaistGuess) end
@@ -80,6 +137,7 @@ function movearm.goto(l, r)
 		end
 		l.qArm0 = vector.new(l.qLArm0 or qcLArm)
 		l.qWaist0 = vector.new(l.qWaist0 or qcWaist)
+		l.dt = lPlanner.dt
 	end
 
 
@@ -102,6 +160,7 @@ function movearm.goto(l, r)
 		if r.qArmGuess then vector.new(r.qArmGuess) end
 		r.qArm0 = vector.new(r.qRArm0 or qcRArm)
 		r.qWaist0 = vector.new(r.qWaist0 or qcWaist)
+		r.dt = rPlanner.dt
 	end
 
 	-- Add the compensation
@@ -144,20 +203,30 @@ function movearm.goto(l, r)
 
 
 	if type(lplan)=='function' then
+		--[[
 		print('movearm | L Plan')
 		util.ptable(l)
 		print()
-		lco = coroutine.create(lplan)
-		local ok, msg = coroutine.resume(lco, lPlanner, l)
+		--]]
+		local ok, msg = pcall(lplan, lPlanner, l)
+		if ok then
+			lco = coroutine.create(co_play)
+			ok, msg = coroutine.resume(lco, lPlanner, l)
+		end
 		if not ok then lco = msg end
 	end
 	if type(rplan)=='function' then
+		--[[
 		print('movearm | R Plan')
 		util.ptable(r)
 		print()
-		rco = coroutine.create(rplan)
-		local ok, msg = coroutine.resume(rco, rPlanner, r)
-		if not ok then rco = msg end
+		--]]
+		local ok, msg = pcall(rplan, rPlanner, r)
+		if ok then
+			rco = coroutine.create(co_play)
+			ok, msg = coroutine.resume(rco, rPlanner, r)
+		end
+		if not ok then lco = msg end
 	end
 
 	return lco, rco

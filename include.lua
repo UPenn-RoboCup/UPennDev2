@@ -79,6 +79,7 @@ OPERATING_SYSTEM = unix.uname():lower()
 -- Some other directories
 KEYFRAME_DIR = HOME.."/Player/Keyframes"
 LOG_DIR = HOME.."/Logs"
+MATLAB_DIR = HOME.."/Tools/Matlab/"
 
 -- Use functional idioms
 --require "fun" ()

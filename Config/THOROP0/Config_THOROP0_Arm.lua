@@ -117,16 +117,54 @@ table.insert(arm.valve, {
 	}
 })
 --]]
+--[[
 table.insert(arm.valve, {
 	right = false,
 	left = {
-		timeout=10,
-		via='jacobian_preplan',
-		tr={0.45, 0.246, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		timeout=20,
+		--via='jacobian_preplan',
+		via='joint_preplan',
+		--tr={0.45, 0.246, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.46, 0.27, 0.2, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD}, -- seems ok for ICRA
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
-		weights = {1,1,1},
+		--weights = {1,1,1},
+		weights = {1,0,-2, 0, 1}, -- Out
+		--weights = {0,0,2, 0,1}, -- Tight
+
+		-- Door
+		--tr={0.8, 0.1, 0.246, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--weights = {1,1,-1, 0,1},
+		--qWaistGuess = {-45*DEG_TO_RAD,0},
+
+		-- Drill
+
 	}
 })
+--]]
+
+table.insert(arm.valve, {
+	left = false,
+	right = {
+		timeout=20,
+		via='jacobian_preplan',
+		--via='joint_preplan',
+		tr={0.46, -0.27, 0.3, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 60*DEG_TO_RAD}, -- seems ok for ICRA
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		--weights = {1,1,1},
+		weights = {1,0,-2, 0, 1}, -- Out
+		--weights = {0,0,2, 0,1}, -- Tight
+
+		-- Door
+		--tr={0.8, 0.1, 0.246, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--weights = {1,1,-1, 0,1},
+		--qWaistGuess = {-45*DEG_TO_RAD,0},
+
+		-- Drill
+
+	}
+})
+
+
 --[[
 table.insert(arm.valve, {
 	right = false,
@@ -158,6 +196,7 @@ arm.drill = {}
 -- mid of drill handle is like 10cm higher... : 0.25 and -0.12
 -- Left views the drill
 -- Right grabs the drill
+
 table.insert(arm.drill, {
 	--left = false,
 	left = {
@@ -372,7 +411,7 @@ armfsm.teleopr = {}
 armfsm.teleopr.arminit={
  	{'move0',nil,{0.25,-0.25,-0.15  ,0,0,0}},
   {'move0',nil,{0.30,-0.25,0.24,0,0,0}},
-  {'move0',nil,{0.30,-0.10,0.24,0,0,0}},  
+  {'move0',nil,{0.30,-0.10,0.24,0,0,0}},
 }
 armfsm.teleopr.armuninit={
   {'move0',nil,{0.30,-0.25, 0.24  ,0,0,0}},
@@ -383,7 +422,7 @@ armfsm.teleopl = {}
 armfsm.teleopl.arminit={
  	{'move0',{0.25,0.25,-0.15  ,0,0,0},nil},
 --  {'move0',{0.30,0.25,0.24,0,0,0},nil},
---  {'move0',{0.30,0.10,0.24,0,0,0},nil},  
+--  {'move0',{0.30,0.10,0.24,0,0,0},nil},
 }
 armfsm.teleopl.armuninit={
 --  {'move0',{0.30,0.25, 0.24  ,0,0,0},nil},

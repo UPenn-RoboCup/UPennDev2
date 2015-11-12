@@ -141,10 +141,7 @@ end
 K.forward_larm = forward_larm
 K.forward_rarm = forward_rarm
 
-
-
 local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
-	local xWrist1, xWrist2, xWrist3 = trArm[1][4], trArm[2][4], trArm[3][4]
 
 	local lowerArmLength0 = is_left and lowerArmLength or lowerArmLengthExtended
 	local upperArmLength0 = is_left and upperArmLength or upperArmLengthExtended
@@ -154,13 +151,17 @@ local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
 	local aUpperArm = atan(elbowOffsetX / upperArmLength0)
 	local aLowerArm = atan(elbowOffsetX / lowerArmLength0)
 	local aElbowMax = -1*(aUpperArm + aLowerArm)
+  local shoulderRoll = 0
 
   -- SJ: Robot can have TWO elbow pitch values (near elbowPitch==0)
   -- We are only using the smaller one (arm more bent)
-  local dWrist = xWrist1^2 + xWrist2^2 + xWrist3^2
+  local xWrist = trArm[1][4]
+  local yWrist = trArm[2][4]
+  local zWrist = trArm[3][4]
+  local dWrist = xWrist^2 + yWrist^2 + zWrist^2
   local cElbow = (dWrist-dUpperArm^2 - dLowerArm^2)/(2*dUpperArm*dLowerArm)
 
-	cElbow = max(-1, min(1, cElbow))
+	cElbow = max(-1, min(cElbow, 1))
 
   local elbowPitch = -acos(cElbow) - aUpperArm - aLowerArm
 
@@ -169,37 +170,40 @@ local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
 		TrotateY(
 			Ttranslate(
 				TrotX(shoulderYaw),
-				upperArmLength0,0, elbowOffsetX),
+				upperArmLength0, 0, elbowOffsetX),
 			elbowPitch),
 		lowerArmLength0, 0, -elbowOffsetX)
 
-  local a = m[1][4]^2 + m[2][4]^2
-  local b = -m[1][4] * xWrist2
-  local c = xWrist2^2 - m[2][4]^2
-  --
-  local shoulderRoll
+  local mx = m[1][4]
+  local my = m[2][4]
+  local mz = m[3][4]
+
+  local a = mx^2 + my^2
+  local b = -mx * yWrist
+  local c = yWrist^2 - my^2
+
   -- NaN handling
 	local det = b^2 - a*c
-  if det < 0 or a==0 then
-    shoulderRoll = 0
-  else
+  if det >= 0 and a~=0 then
 		local sqrt_det = sqrt(det)
+    --
     local s21 = (-b + sqrt_det)/a
+    s21 = max(-1, min(s21, 1))
+    local shoulderRoll1 = asin(s21)
+    local err1 = s21*mx + cos(shoulderRoll1)*my - yWrist
+    --
     local s22 = (-b - sqrt_det)/a
-		s21 = max(-1, min(1, s21))
-		s22 = max(-1, min(1, s22))
-    local shoulderRoll1, shoulderRoll2 = asin(s21), asin(s22)
-    local err1 = s21*m[1][4] + cos(shoulderRoll1)*m[2][4] - xWrist2
-    local err2 = s22*m[1][4] + cos(shoulderRoll2)*m[2][4] - xWrist2
+		s22 = max(-1, min(s22, 1))
+    local shoulderRoll2 = asin(s22)
+    local err2 = s22*mx + cos(shoulderRoll2)*my - yWrist
+    --
     shoulderRoll = err1^2 < err2^2 and shoulderRoll1 or shoulderRoll2
   end
 	shoulderRoll = FLIP_SHOULDER_ROLL and (FLIP_SHOULDER_ROLL - shoulderRoll) or shoulderRoll
 
-  local t1 = m[2][4] * sin(shoulderRoll) - m[1][4] * cos(shoulderRoll)
-
-  local m23 = m[3][4]
-  local c1 = (m23*xWrist3 - t1*xWrist1) / (m23^2 + t1^2)
-  local s1 = (m23*xWrist1 + t1*xWrist3) / (m23^2 + t1^2)
+  local t1 = my * sin(shoulderRoll) - mx * cos(shoulderRoll)
+  local c1 = (mz*zWrist - t1*xWrist) / (mz^2 + t1^2)
+  local s1 = (mz*xWrist + t1*zWrist) / (mz^2 + t1^2)
 
   local shoulderPitch = atan2(s1, c1)
 
@@ -217,11 +221,33 @@ local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
 
 	--local rotWrist = TrotateY(TrotateX(TrotateZ(TrotateY(Tcopy(trArm), -shoulderPitch), -shoulderRoll), -shoulderYaw), -elbowPitch)
 
+  -- TODO: Use this, it is more flexible:
+  --[[
+  local wristRoll = acos(rotWrist[1][1])
+  local wristYaw = atan2(rotWrist[3][1], rotWrist[2][1])
+  local wristYaw2 = atan2(rotWrist[1][3], -rotWrist[1][2])
+  return {
+    shoulderPitch, shoulderRoll, shoulderYaw,
+    elbowPitch,
+    wristYaw, wristRoll, wristYaw2
+  }
+
+  -- Then, check outside, so see which configuration is better
+  -- Now, we do not need qOrg :P
+  -- Flipping the hand is just:
+  -- wristRoll = -wristRoll
+  -- wristYaw = wristYaw >= 0 and wristYaw-pi or wristYaw + pi
+  -- wristYaw2 = wristYaw2 >= 0 and wristYaw2-pi or wristYaw2 + pi
+  --]]
+
   -- NOTE: singular point: just use current angles
+  ----[[
+  -- TODO: Why is this ever used at this low level?
 	local wristYaw_a, wristYaw2_a, wristRoll_b, wristYaw_b, wristYaw2_b
 	local wristRoll_a = acos(rotWrist[1][1]) -- 0 to pi
   if sin(wristRoll_a) < 1e-5 then
 	--if (wristRoll_a) < 1e-5 then
+
     wristYaw_a = qOrg[5]
     wristRoll_a = qOrg[6]
     wristYaw2_a = qOrg[7]
@@ -251,6 +277,7 @@ local function ik_arm(trArm, qOrg, is_left, shoulderYaw, FLIP_SHOULDER_ROLL)
     --qArm[7] = wristYaw2_b
 		return {shoulderPitch, shoulderRoll, shoulderYaw, elbowPitch, wristYaw_b, wristRoll_b, wristYaw2_b}
   end
+  --]]
 end
 
 -- Inverse with respect to the torso

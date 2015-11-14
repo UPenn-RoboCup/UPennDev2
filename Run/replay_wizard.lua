@@ -8,7 +8,7 @@ local si = require'simple_ipc'
 local constant
 local start_idx
 local speedup = 1
---speedup = 2
+speedup = 2
 --speedup = 0.5
 
 -- In lab Saturday
@@ -86,6 +86,7 @@ logs.camera0 = {
 	'06.06.2015.14.04.20',
 }
 --]]
+----[[
 logs.k2_rgb = {
 	-- Both channels work :D
 	--ch = si.new_publisher'camera0',
@@ -104,7 +105,7 @@ logs.k2_depth = {
 	'12.31.2008.19.42.23',
 	'12.31.2008.19.48.32',
 }
-
+--]]
 
 
 -- RoboCup

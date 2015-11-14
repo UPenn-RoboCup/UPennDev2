@@ -59,7 +59,8 @@ clear d1 d2 A0 A1;
 %fprintf(1, 'Computing the optimal value of the QCQP and its dual...\n');
 tstart = tic;
 cvx_begin
-    cvx_solver gurobi
+    %cvx_solver gurobi
+    cvx_solver ecos
     cvx_precision low
     %cvx_precision medium
     variable dlambda(nl)

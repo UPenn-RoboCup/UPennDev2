@@ -93,11 +93,10 @@ JV = J * V;
 %VJJV = JV' * JV;
 
 %% CVX Solver
-tmpName = [tempname, '.dat'];
-diary(tmpName);
-tic;
+tstart = tic;
 cvx_begin
     cvx_solver gurobi
+    %cvx_solver ecos
     cvx_precision low
     variable qw(n)
     %quad_form(qw - qwStar, NTN) + ... % Old version
@@ -105,7 +104,10 @@ cvx_begin
         c_usage * quad_form(qw - qMid, NTN) + ... % Joints should be close to the middle of their range
         c_tight * quad_form(qw, NTN_elbow) + ... % Elbow should be tight
         alpha * quad_form(qw, ATA) + ... % Smooth joint path
-        beta * norm(JV * qw)^2) % Short task path
+        beta * quad_form(JV * qw, eye(size(JV, 1))) ... % Short task path
+    )
+    %beta * norm(JV * qw)^2) ... % Short task path
+    %beta * quad_form(qw, VJJV)... % Short task path
     %quad_form(V * qw, eye(n)) + ... % Short joint path
     
     % Keep the first point the same
@@ -116,21 +118,17 @@ cvx_begin
     for k = nq+1 : nSkip*nq : n-nq,
         norm(qw(k:k+nq-1) - qw0(k:k+nq-1)) <= epsilon;
     end
+    dtformulate = toc(tstart);
 cvx_end
 
-%% Complete the timing
+%% Finish the timing
+dt_form_n_solve = toc(tstart);
+dt_solve = dt_form_n_solve - dtformulate;
 dt_cvx = cvx_cputime;
-dt_tictoc = toc;
-diary off;
-[~, cmdout] = unix(['grep ', 'Total ', tmpName]);
-cmdout = strsplit(cmdout);
-dt_solver = str2double(cmdout(7));
-clear cmdout;
-delete(tmpName);
 
 %% Form again
 qw = reshape(qw, [nq, np])';
-dt_opt = [dt_solver, dt_cvx, dt_tictoc];
+dt_opt = [dt_solve, dt_cvx, dt_form_n_solve];
 opt_val = cvx_optval;
 
 end

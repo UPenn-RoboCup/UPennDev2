@@ -12,7 +12,7 @@ speedup = 1
 --speedup = 0.5
 
 --constant = 104
-start_idx = 100
+--start_idx = 100
 
 -- In lab Saturday
 local logs = {}
@@ -89,7 +89,7 @@ logs.camera0 = {
 	'06.06.2015.14.04.20',
 }
 --]]
-----[[
+--[[
 logs.k2_rgb = {
 	-- Both channels work :D
 	--ch = si.new_publisher'camera0',
@@ -137,11 +137,13 @@ logs.yuyv = {
 	'07.21.2015.07.31.22',
 }
 --]]
---[[
+----[[
+start_idx = 4000
 logs.joint = {
 	ch = si.new_publisher'feedback',
 	dir = HOME..'Data'..'/',
-	'10.24.2014.14.16.48',
+	--'10.24.2014.14.16.48',
+	'06.04.2014.13.54.20'
 }
 --]]
 

@@ -8,15 +8,12 @@ local si = require'simple_ipc'
 local constant
 local start_idx
 local speedup = 1
-speedup = 1
+speedup = 4
 --speedup = 0.5
-
---constant = 104
-start_idx = 100
 
 -- In lab Saturday
 local logs = {}
---[[
+----[[
 logs.feedback = {
 	ch = si.new_publisher'feedback',
 	dir = HOME..'Data'..'/trial2/',
@@ -89,7 +86,7 @@ logs.camera0 = {
 	'06.06.2015.14.04.20',
 }
 --]]
-----[[
+--[[
 logs.k2_rgb = {
 	-- Both channels work :D
 	--ch = si.new_publisher'camera0',

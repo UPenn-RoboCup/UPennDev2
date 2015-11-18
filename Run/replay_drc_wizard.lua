@@ -10,6 +10,7 @@ local start_idx
 local speedup = 1
 speedup = 4
 --speedup = 0.5
+start_idx = 100
 
 -- In lab Saturday
 local logs = {}

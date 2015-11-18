@@ -57,13 +57,13 @@ local function co_play(self, plan, callback)
 
 	-- Run the optimizer
 	--plan.n_optimizations = 10
-	plan.n_optimizations = 3
+	plan.n_optimizations = 10
 	plan.update_jacobians = true
 	--plan.n_optimizations = 0
 	--plan.update_jacobians = false
 
 	local t0 = unix.time()
-	for i=1,plan.n_optimizations do
+	for i=1,plan.n_optimizations-1 do
 		plan.i_optimizations = i
 		if not plan.nulls then
 			self:jacobians(plan)

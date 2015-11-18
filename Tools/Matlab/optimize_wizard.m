@@ -70,11 +70,13 @@ while 1
                     optimized(i_optimizations).dt_opt = dt_opt;
                     optimized(i_optimizations).opt_val = opt_val;
                     save(tmpfile, 'qw');
+                    disp('Optimization time');
+                    disp(dt_opt);
                 end
             end
             
             y = zmq('send', ch, tmpfile);
-            %show_armplan;
+            show_armplan;
         end
         
     end

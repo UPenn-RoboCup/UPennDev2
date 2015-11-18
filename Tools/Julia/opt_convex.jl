@@ -10,7 +10,7 @@ beta = 1e1; # Vel
 
 # Tight
 c_tight = 2*1e-3;
-c_usage = 2*1e-3;
+c_usage = 0*1e-3;
 
 # Closeness to previous trajectory
 epsilon = deg2rad(10);
@@ -25,11 +25,10 @@ nSkip = max(floor(nSkip), 0) + 1;
 # Then further optimization steps just make the path smaller
 
 # Optimization tools
-using ECOS, SCS, Gurobi
+#using ECOS; mysolver = ECOSSolver()
+#using SCS;mysolver = SCSSolver()
+using Gurobi; mysolver = GurobiSolver()
 using Convex
-#mysolver = ECOSSolver()
-#mysolver = SCSSolver()
-mysolver = GurobiSolver()
 
 # Set the listener properly
 using ZMQ

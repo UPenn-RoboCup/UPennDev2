@@ -54,6 +54,13 @@ if use_zmq then
   rgbd_depth_ch = simple_ipc.new_publisher'rgbd_depth'
 end
 
+local libLog, logger
+if ENABLE_LOG then
+        libLog = require'libLog'
+        log_rgb = libLog.new('k_rgb', true)
+        log_depth = libLog.new('k_depth', true)
+end
+
 -- Set up timing debugging
 local cnt = 0;
 local t_last = Body.get_time()
@@ -183,6 +190,20 @@ while true do
     send_color_udp(metadata)
     send_depth_udp(metadata)
   end
+
+        if ENABLE_LOG then
+                log_rgb:record(m_rgb, j_rgb,  320*240*3)
+                log_depth:record(m_depth, ranges,  320*240*2)
+                if log_rgb.n >= 100 then
+                        log_rgb:stop()
+                        log_depth:stop()
+                        print('Open new log!')
+                        log_rgb = libLog.new('k_rgb', true)
+                        log_depth = libLog.new('k_depth', true)
+                end
+        end
+
+
   
   -- Debug the timing
   cnt = cnt+1;

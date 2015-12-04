@@ -1,5 +1,5 @@
 local test_cloud = true
-local test_skeleton = true
+local test_skeleton = false
 local show_position = true
 local show_orientation = true
 
@@ -38,14 +38,9 @@ local nframes = 150;--300
 for fr=1,nframes do
 	print( string.format("\n======== Frame %d ========",fr) )
 	if test_cloud then
-		local cloud_id, cloud_type = openni.update_cloud()
-		if cloud_type=='c' then
-			print('Update Color')
-		else
-			print('Update Depth')
-		end
-		local cloud_data = openni.cloud( cloud_id )
-		print("Cloud data",cloud_data)
+print('update...')
+		local color, depth = openni.update_rgbd()
+print('done update')
 	end
 
 	if test_skeleton then

@@ -136,7 +136,7 @@ const double MassArmR[7]={
 //	0.940, 0.752, 1.806, 1.124,       0.441, 0.077,0.474 
 //	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.200 //extender and hand mass added
 //	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.600 //extender and hand mass added
-	0.050, 0.00, 0, 0, 0, 0, 0,//for RC
+	0.050, 0.00, 0, 0, 0, 0, 0,//for Robocup (no arms)
 };
 
 
@@ -199,8 +199,8 @@ const double armComR[7][3]={
 //Leg mass with smaller battery:
 //11Ah:1.29kg (inside), 22Ah:2.58kg (center)
 const double MassLeg[6]={
-//	0.935,0.911,3.322,4.165,0.911,1.616
-		0.935,0.911,2.032,4.165,0.911,1.616
+//	0.935,0.911,3.322,4.165,0.911,1.616 //LARGE battery
+		0.935,0.911,2.032,4.165,0.911,1.616 //SMALLER battery
 };
 
 const double legLink[7][3]={
@@ -220,7 +220,7 @@ const double legCom[12][3]={
 	//left
 	{-0.0280,0.0003,0.0504},	//after hip yaw
 	{-0.0002,-0.0111,0.0000},	//after hip roll
-//	{0.0119,-0.0122,-0.1500},	//after hip pitch (upper leg)
+//	{0.0119,-0.0122,-0.1500},	//after hip pitch (upper leg), large battery
 	{0.0119,-0.031,-0.1500},	//after hip pitch (upper leg), small battery	
 
 	{0.0066,-0.0157,-0.1001},	//after knee (lower leg)

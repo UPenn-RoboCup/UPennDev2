@@ -1,4 +1,6 @@
 --Now the Config file is entirely identical over two robots (using hostname)
+------------WE USE THOR1 CONFIG FOR ROBOCUP ------------------------
+
 IS_STEVE = true
 IS_COMPETING = false
 
@@ -326,6 +328,6 @@ Config.walk.toe_angle = 20*DEG_TO_RAD
 Config.walk.stepHeight = 0.07 --test--]]
 
 
-Config.walk.heeltoe_vel_min = 0.419 --MIN speed for heeltoe walk
+--Config.walk.heeltoe_vel_min = 0.419 --MIN speed for heeltoe walk
 
 return Config

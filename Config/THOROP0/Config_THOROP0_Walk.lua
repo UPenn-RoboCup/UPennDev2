@@ -233,9 +233,13 @@ walk.tZMP = 0.33
 walk.hipRollCompensation = {1.7*DEG_TO_RAD, 1.7*DEG_TO_RAD}
 walk.supportY = 0.01
 
---This helps a bit (with weird side effect)
+--This helps a bit with hip pitch lag (with weird side effect)
 walk.hipPitch0 = -29.21*DEG_TO_RAD
 walk.hipPitchCompensationMag = 1.3
+
+
+walk.hipPitch0 = nil --disable
+
 ----------------------------------------------------------------
 
 

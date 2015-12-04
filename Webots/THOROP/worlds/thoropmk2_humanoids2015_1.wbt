@@ -1,0 +1,67 @@
+#VRML_SIM V7.4.3 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "handletest"
+  basicTimeStep 4
+  FPS 10
+  contactProperties [
+    ContactProperties {
+      material1 "feet"
+      material2 "floor"
+      coulombFriction 0.5
+      forceDependentSlip 0.0001
+    }
+  ]
+}
+Viewpoint {
+  orientation -0.0156223 0.999765 0.0149976 1.53023
+  position 3.10203 0.822044 0.0814602
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+#THOROP_mk2_Fullmass_longarm_2 {
+THOROP_mk2_Fullmass_longarm_2_smallerfoot {
+  translation 0 1.17 0
+  rotation 1 0 0 0
+  controller "thorop"
+  controllerArgs "0 32"
+  lidarRays 360
+  #max_torque_400w 135
+  #max_torque_200w 90
+  #max_torque_100w 20
+
+
+  max_torque_400w 400
+  max_torque_200w 200
+  max_torque_100w 100
+  
+
+  damping_constant 0
+  footContactMaterial "feet"
+}
+DEF TASKFLOOR Floor {
+  tileSize 5 1
+  texture [
+    "textures/texture_grid.png"
+  ]
+}
+StairLung {
+  translation 0 0 -0.27 
+  stepsize 1.03 0.20 0.30
+  centeroffset 0 0.10 0
+}

@@ -53,6 +53,22 @@ local stair_height = 0.0
 
 local stair_dist = 0.45
 local stair_height = 0.2
+
+
+
+local stair_dist = 0.15
+local stair_height = 0.0
+local stair_height2 = 0.20
+
+
+
+local stair_dist = 0.33 --73cm
+local stair_dist = 0.26 --83cm
+local stair_dist = 0.15 --83cm
+
+
+local stair_dist = 0.20 
+
 	
 
 local function update(key_code)
@@ -78,11 +94,17 @@ elseif key_char_lower==("q") then
     hcm.set_step_zpr({stair_height,0,0}) --stair    
     body_ch:send'stairclimb'   
 elseif key_char_lower==("w") then      
-    hcm.set_step_supportLeg(1)    
+    hcm.set_step_supportLeg(0)    
     hcm.set_step_zpr({0,0,0})
     hcm.set_step_relpos({stair_dist,0.02,0})    
-    hcm.set_step_zpr({stair_height,0,0}) --stair    
+    hcm.set_step_zpr({stair_height2,0,0}) --stair    
     body_ch:send'stairclimb'   
+
+--    hcm.set_step_supportLeg(1)    
+--    hcm.set_step_zpr({0,0,0})
+--    hcm.set_step_relpos({stair_dist,0.02,0})    
+--    hcm.set_step_zpr({stair_height,0,0}) --stair    
+--    body_ch:send'stairclimb'   
 elseif key_char_lower==("a") then      
     hcm.set_step_supportLeg(0)    
     hcm.set_step_zpr({0,0,0})

@@ -174,5 +174,17 @@ if c.cal[HOSTNAME].headBias then walk.headBias = c.cal[HOSTNAME].headBias end
 local zparam = require'zmpparam'
 Config.zmpparam = zparam.zmpparam
 
+
+
+--humanoids 2015 testing
+print("bodyheight:",Config.walk.bodyHeight)
+
+--Config.walk.bodyHeight = 0.83
+--Config.walk.bodyHeight = 0.83
+--Config.walk.bodyHeight = 0.73
+Config.walk.bodyHeight = 0.73
+
+
+
 return Config
 

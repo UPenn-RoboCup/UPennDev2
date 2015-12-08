@@ -14,6 +14,7 @@ local munpack  = require'msgpack'.unpack
 local vector = require'vector'
 local signal = require'signal'
 local ffi = require'ffi'
+local band = require'bit'.band
 
 local sformat = string.format
 
@@ -176,15 +177,22 @@ local function parse_ft(ft, raw_str, m_id)
 		ffi.copy(ft.raw, raw_str, 8)
 		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw16)
 		for i=0,6,2 do
+			--print(m_id, i, ft.raw[i+1], band(ft.raw[i+1], 7))
 			raw16_as_8[i] = ft.raw[i]
-			raw16_as_8[i+1] = ft.raw[i+1]
-			--			if i==6 then print(ft.raw[i], ft.raw[i+1]) end
+			--raw16_as_8[i+1] = ft.raw[i+1]
+			raw16_as_8[i+1] = band(ft.raw[i+1], 0x07)
+			--if i==6 then print(ft.raw[i], ft.raw[i+1]) end
 		end
-		--print('V1', m_id)
-		--print(3.3 * tonumber(ft.raw16[0]) / 4095.0)
-		--print(3.3 * tonumber(ft.raw16[1]) / 4095.0)
-		--print(3.3 * tonumber(ft.raw16[2]) / 4095.0)
-		--print(3.3 * tonumber(ft.raw16[3]) / 4095.0)
+		----[[
+		if m_id==23 then
+		print('V1', m_id)
+		print(raw_str:byte(1,-1))
+		print( tonumber(band(ft.raw16[0], 4095)),3.3 * tonumber(ft.raw16[0]) / 4095.0)
+		print( tonumber(ft.raw16[1]),3.3 * tonumber(ft.raw16[1]) / 4095.0)
+		print( tonumber(ft.raw16[2]),3.3 * tonumber(ft.raw16[2]) / 4095.0)
+		print( tonumber(ft.raw16[3]),3.3 * tonumber(ft.raw16[3]) / 4095.0)
+	end
+	--]]
 
 		ft.component[0] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[0]
 		ft.component[1] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[1]
@@ -196,10 +204,13 @@ local function parse_ft(ft, raw_str, m_id)
 		for i=0,6,2 do
 			raw16_as_8[i] = ft.raw[i]
 			raw16_as_8[i+1] = ft.raw[i+1]
+			--raw16_as_8[i+1] = band(ft.raw[i+1], 7)
 		end
-		--print('V2')
-		--print(3.3 * tonumber(ft.raw16[0]) / 4095.0)
-		--print(3.3 * tonumber(ft.raw16[1]) / 4095.0)
+		--[[
+		print('V2', m_id)
+		print(tonumber(ft.raw16[0]), 3.3 * tonumber(ft.raw16[0]) / 4095.0)
+		print(tonumber(ft.raw16[1]), 3.3 * tonumber(ft.raw16[1]) / 4095.0)
+		--]]
 		ft.component[4] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[4]
 		ft.component[5] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[5]
 	else
@@ -245,7 +256,8 @@ local function parse_ft(ft, raw_str, m_id)
 end
 
 -- Custom Leg Packet
-local leg_packet_reg = {'position', 'temperature', 'data'}
+--local leg_packet_reg = {'position', 'temperature', 'data'}
+local leg_packet_reg = {'position', 'current', 'data'}
 local leg_packet_sz = 0
 local leg_packet_offsets = {}
 for i,v in ipairs(leg_packet_reg) do
@@ -281,23 +293,32 @@ local function parse_read_leg(pkt, bus)
 		p_ptr_t[read_j_id - 1] = t_read
 	end
 	-- Set Current in SHM
-	--[[
+	----[[
 	local read_cur = c_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
 	if type(read_cur)=='number' then
 		c_ptr[read_j_id - 1] = read_cur
 		c_ptr_t[read_j_id - 1] = t_read
 	end
 	--]]
+	--[[
 	local read_temp = temp_parse(unpack(pkt.parameter, leg_packet_offsets[1]+1, leg_packet_offsets[2]))
 	if type(read_temp)=='number' then
 		temp_ptr[read_j_id - 1] = read_temp
 		temp_ptr_t[read_j_id - 1] = t_read
 	end
+	--]]
 	-- Update the F/T Sensor
-	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+2, leg_packet_offsets[3])
-	--	for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
-	--	print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
+	local raw_str = pkt.raw_parameter:sub(leg_packet_offsets[2]+1, leg_packet_offsets[3])
 
+	--for i,k in ipairs(leg_packet_offsets) do print('offset',i,k) end
+	--print('raw_str', #raw_str, #pkt.raw_parameter, leg_packet_offsets[2]+1, leg_packet_offsets[3])
+--[[
+	if m_id==25 or m_id==24 then
+		print('==')
+		ptable(pkt)
+		print(unpack(pkt.parameter))
+	end
+--]]
 	parse_ft(left_ft, raw_str, m_id)
 	parse_ft(right_ft, raw_str, m_id)
 	return read_j_id

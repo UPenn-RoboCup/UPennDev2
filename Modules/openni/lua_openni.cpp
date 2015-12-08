@@ -413,10 +413,18 @@ static int lua_stream_info(lua_State *L) {
 static int lua_update_rgbd(lua_State *L) {
   int changedIndex;
   Status rc;
+
+#ifdef DEBUG
+printf("waiting...\n");
+#endif
   rc = OpenNI::waitForAnyStream( &m_streams, 2, &changedIndex);
   if (rc != STATUS_OK) {
     return luaL_error(L, "Wait failed!\n" );
   }
+#ifdef DEBUG
+printf("reading...\n");
+#endif
+
   depth->readFrame( dframe );
 #ifdef DEBUG
 printf("read dframe\n");

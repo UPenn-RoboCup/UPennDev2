@@ -139,9 +139,14 @@ Config.left_foot_ft  = FT14217
 Config.right_wrist_ft = FT16465
 Config.left_wrist_ft = FT16464
 
-Config.left_foot_ft.m_ids = {24, 26}
---Config.right_foot_ft.m_ids = {23, 25}
-Config.right_foot_ft.m_ids = {25, 23}
+
+--IDS 1: all 4 values
+--IDS 2: first 2 values
+Config.right_foot_ft.m_ids = {23, 25} --confirmed
+Config.left_foot_ft.m_ids = {24, 26} --not yet confirmed
+
+
+
 
 
 -- DCM Chains
@@ -153,7 +158,7 @@ local right_arm = {
 	m_ids = {
 		1,2,
 --		1,3,5,7,9,11,13,
-		-- waist
+		-- waist yaw
 		28,
 		--head
 		29, 30,

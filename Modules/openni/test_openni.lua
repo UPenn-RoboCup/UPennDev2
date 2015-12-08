@@ -31,16 +31,19 @@ if test_skeleton then
 end
 
 local n_users = openni.startup()
+if test_skeleton then
 print( "Number of Skeletons:", n_users )
+end
+local c,d = openni.stream_info()
+for k,v in pairs(c) do print(k, v) end
+for k,v in pairs(d) do print(k, v) end
 
 -- Assume 30FPS, run for 10 seconds
 local nframes = 150;--300
 for fr=1,nframes do
 	print( string.format("\n======== Frame %d ========",fr) )
 	if test_cloud then
-print('update...')
 		local color, depth = openni.update_rgbd()
-print('done update')
 	end
 
 	if test_skeleton then

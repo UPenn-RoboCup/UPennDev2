@@ -2,10 +2,18 @@
 OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
 
 # Compiler Definitions
+
+ifdef NOTUNE
+CXX=g++
+CC=gcc
+CXXFLAGS=-fpic -pedantic -Wall
+CFLAGS=-fpic -pedantic -Wall
+else
 CXX=c++
 CC=cc
 CXXFLAGS=-O3 -fpic -pedantic -Wall
 CFLAGS=-O3 -fpic -pedantic -Wall
+endif
 
 # Linker Definitions
 LD=g++ -shared
@@ -37,8 +45,10 @@ ifeq ($(OSTYPE),darwin)
 else # Linux
 #  CFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
 #  CXXFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
+ifndef NOTUNE
   CFLAGS+= -mtune=native -march=native
   CXXFLAGS+= -mtune=native -march=native
+endif
 endif
 
 # Verbose mode check

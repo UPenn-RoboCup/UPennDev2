@@ -28,6 +28,8 @@ Lua Wrapper for some OpenNI2 functionality
 #include <OpenNI.h>
 #include <lua.hpp>
 
+#define DEBUG 1
+
 #ifdef USE_NITE_SKELETON
 /* User Tracking information */
 #include <NiTE.h>
@@ -411,20 +413,35 @@ static int lua_stream_info(lua_State *L) {
 static int lua_update_rgbd(lua_State *L) {
   int changedIndex;
   Status rc;
+
+#ifdef DEBUG
+printf("waiting...\n");
+#endif
   rc = OpenNI::waitForAnyStream( &m_streams, 2, &changedIndex);
-  if (rc != STATUS_OK)
+  if (rc != STATUS_OK) {
     return luaL_error(L, "Wait failed!\n" );
+  }
+#ifdef DEBUG
+printf("reading...\n");
+#endif
 
   depth->readFrame( dframe );
+#ifdef DEBUG
+printf("read dframe\n");
+#endif
   color->readFrame( cframe );
-  
+#ifdef DEBUG
+printf("read cframe\n");
+#endif
+/*
   lua_pushlightuserdata( L, (void*)(dframe->getData()) );
   lua_pushlightuserdata( L, (void*)(cframe->getData()) );
-  /*
+*/
+  
   lua_pushlstring( L, (char*)(dframe->getData()), 320*240*2 );
   lua_pushlstring( L, (char*)(cframe->getData()), 320*240*3 );
-  */
-	
+  
+
   return 2;
 }
 

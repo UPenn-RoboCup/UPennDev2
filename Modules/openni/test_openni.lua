@@ -32,7 +32,7 @@ end
 
 local n_users = openni.startup()
 if test_skeleton then
-print( "Number of Skeletons:", n_users )
+	print( "Number of Skeletons:", n_users )
 end
 local c,d = openni.stream_info()
 for k,v in pairs(c) do print(k, v) end
@@ -43,7 +43,8 @@ local nframes = 150;--300
 for fr=1,nframes do
 	print( string.format("\n======== Frame %d ========",fr) )
 	if test_cloud then
-		local color, depth = openni.update_rgbd()
+		local df, cf = openni.update_rgbd()
+		print('Read', type(df), type(cf))
 	end
 
 	if test_skeleton then
@@ -75,10 +76,10 @@ for fr=1,nframes do
 							print( j, stats )
 						end
 					end
-					end -- show orientation
+				end -- show orientation
 			end--v
 		end--uv pairs
-		end -- visible
+	end -- visible
 end
 -- Shutdown the skeleton
 print("Shutting down the openni device...")

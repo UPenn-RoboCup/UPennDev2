@@ -14,6 +14,7 @@ local ptable = require'util'.ptable
 local mpack = require'msgpack.MessagePack'.pack
 local jpeg = require'jpeg'
 local c_rgb = jpeg.compressor('rgb')
+local ffi = require'ffi'
 
 local operator
 if Config.net.use_wireless then
@@ -37,8 +38,6 @@ local depth_ch = si.new_publisher(depth_streams.sub)
 local color_ch = si.new_publisher(color_streams.sub)
 
 
-local c_rgb
-if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
 local T = require'Transform'
 local transform6D = require'Transform'.transform6D
 local rotY = T.rotY
@@ -128,7 +127,11 @@ local function update(rgb, depth)
 	depth.tfG16 = tfG_flat
 	depth.head_angles = head_angles
 
-	local ranges = depth.data
+	--local ranges = ffi.string(depth.data, depth.width*depth.height*depth.bpp)
+	print('type', type(depth.data))
+	local ranges = ffi.string(depth.data, 320*240*2)
+	--local ranges = 'hi'
+	print('type', type(ranges))
 	depth.data = nil
 	depth.sz = #ranges
 	depth.rsz = #ranges
@@ -191,6 +194,7 @@ local function entry()
 	if has_detection then detection.entry() end
 end
 local function exit()
+	print('Kinect | Shutting down...')
 	openni.shutdown()
 	if has_detection then detection.exit() end
 	if ENABLE_LOG then
@@ -217,20 +221,18 @@ local t_debug = 0
 entry()
 --print('After entry()')
 while running do
-	print('update...')
 	local d, c = openni.update_rgbd()
-	print('done')
 	local t = get_time()
 	color.t = t
 	depth.t = t
   color.data = c
 	depth.data = d
-	--update(color, depth)
+	update(color, depth)
 	if t-t_debug > 1 then
 		t_debug = t
 		local kb = collectgarbage('count')
 		local debug_str = {
-			string.format("Kinect2 | Uptime: %.2f Mem: %d kB", t-t0, kb)
+			string.format("Kinect | Uptime: %.2f Mem: %d kB", t-t0, kb)
 		}
 		print(table.concat(debug_str,'\n'))
 	end

@@ -124,7 +124,7 @@ local function compute( self, uSupport, uStart, uFinish )
 
 
 
-print("uSupport:",uSupport1[1],uSupport[1],uSupport2[1])
+--print("uSupport:",uSupport1[1],uSupport[1],uSupport2[1])
 
 --[[
   local support_from_start  = uSupport - uStart

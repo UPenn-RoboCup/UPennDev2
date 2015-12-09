@@ -50,7 +50,7 @@ local function update(key_code)
   elseif key_char_lower==("j") then targetvel_new[3]=targetvel[3]+0.15;
   elseif key_char_lower==("k") then targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
   elseif key_char_lower==("l") then targetvel_new[3]=targetvel[3]-0.15;
-  elseif key_char_lower==(",") then targetvel_new[1]=targetvel[1]-0.01;
+  elseif key_char_lower==(",") then targetvel_new[1]=targetvel[1]-0.05;
   elseif key_char_lower==("h") then targetvel_new[2]=targetvel[2]+0.02;
   elseif key_char_lower==(";") then targetvel_new[2]=targetvel[2]-0.02;
 
@@ -59,9 +59,9 @@ local function update(key_code)
   elseif key_char_lower=="1" then
 		body_ch:send'init'
 
+--[[
   elseif key_char_lower=="2" then
 		head_ch:send'teleop'
-
 
 
 	elseif key_char_lower=="3" then
@@ -72,6 +72,8 @@ local function update(key_code)
 
   elseif key_char_lower=="g" then
     body_ch:send'approach'
+
+
 
 	elseif key_char_lower==("5") then
 		mcm.set_walk_kicktype(0)
@@ -104,7 +106,7 @@ local function update(key_code)
  		mcm.set_walk_kickfoot(1)--left foot kick
     mcm.set_walk_steprequest(1)
     mcm.set_walk_kickphase(1)
-
+--]]
 
 --[[
 	elseif key_char_lower==("3") then

@@ -43,7 +43,8 @@ if IS_WEBOTS then
 		Config.testfile = 'test_robocup'
 
 
-		Config.testfile = 'test_testbed'
+--		Config.testfile = 'test_testbed'
+	Config.testfile = 'test_walk_robocup'
 
 		Config.piecewise_step = true
 	  Config.sensors = {
@@ -329,5 +330,20 @@ Config.walk.stepHeight = 0.07 --test--]]
 
 
 --Config.walk.heeltoe_vel_min = 0.419 --MIN speed for heeltoe walk
+
+
+
+--No heeltoe, no moving zmp
+Config.use_heeltoe_walk=false
+Config.walk.zmpHeel,Config.walk.zmpToe = 0,0
+Config.walk.heel_angle = 0*DEG_TO_RAD
+Config.walk.toe_angle = 0*DEG_TO_RAD
+
+-----------------------------------------------------------
+--Low max velocity (for demo)
+Config.walk.velLimitX = {-.10,.10}
+Config.walk.stanceLimitX = {-0.60,0.60}
+
+
 
 return Config

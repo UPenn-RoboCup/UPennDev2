@@ -22,6 +22,7 @@
 	 Lua Wrapper for some OpenNI2 functionality
 	 (c) Stephen McGill 2013
 	 */
+//#define DEBUG 1
 #define MAX_USERS 2 //10 was used before...
 #include <stdio.h>
 #include <string>
@@ -30,7 +31,6 @@
 
 #define SAMPLE_READ_WAIT_TIMEOUT 2000 //2000ms
 
-//#define DEBUG 1
 
 #ifdef USE_NITE_SKELETON
 /* User Tracking information */
@@ -274,7 +274,7 @@ static int lua_startup(lua_State *L) {
 #endif
 	if (device->getSensorInfo(SENSOR_DEPTH) == NULL)
 		return luaL_error(L,"No depth sensor\n%s\n", OpenNI::getExtendedError());
-	rc = depth->create( *device, SENSOR_DEPTH);
+	rc = depth->create(*device, SENSOR_DEPTH);
 
 	/*
 		 openni::VideoMode mode = Stream.getVideoMode();
@@ -436,14 +436,20 @@ static int lua_update_rgbd(lua_State *L) {
 #ifdef DEBUG
 	printf("waiting...\n");
 #endif
-	rc = OpenNI::waitForAnyStream( &m_streams, 2, &readyStream, SAMPLE_READ_WAIT_TIMEOUT);
+
+	rc = OpenNI::waitForAnyStream( &m_streams, 2, &readyStream);
 	if (rc != STATUS_OK) {
 		return luaL_error(L, OpenNI::getExtendedError() );
 	}
 #ifdef DEBUG
 	printf("reading...\n");
 #endif
+			depth->readFrame( dframe );
+			color->readFrame( cframe );
 
+			lua_pushlightuserdata( L, (void*)(dframe->getData()) );
+			lua_pushlightuserdata( L, (void*)(cframe->getData()) );
+			/*
 	switch (readyStream)
 	{
 		case 0:
@@ -467,6 +473,7 @@ static int lua_update_rgbd(lua_State *L) {
 		default:
 			printf("Unxpected stream\n");
 	}
+	*/
 
 	/*
 		 lua_pushlstring( L, (char*)(dframe->getData()), 320*240*2 );

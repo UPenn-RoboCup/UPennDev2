@@ -45,33 +45,30 @@ print("Starting")
 -- Start loop
 while true do
 	-- Acquire the Data
-	local frame, id = openni.update_rgbd()
+	local dframe, cframe = openni.update_rgbd()
 	-- Check the time of acquisition
 	local t = Body.get_time()
 
 	-- Save the metadata
-	local metadata = id==0 and depth_info or color_info
+	local metadata = {}
 	metadata.t = t
 	metadata.rpy = dcm.get_sensor_rpy()
 	metadata.acc = dcm.get_sensor_accelerometer()
 	metadata.gyro = dcm.get_sensor_gyro()
 
 	if ENABLE_LOG then
-		if id==0 then
-			log_depth:record(metadata, depth,  320*240*2)
+			log_depth:record(metadata, dframe,  320*240*2)
 			if log_depth.n >= 100 then
 				log_depth:stop()
 				print('Open new depth log!')
 				log_depth = libLog.new('k_depth', true)
 			end
-		else
-			log_rgb:record(metadata, color,  320*240*3)
+			log_rgb:record(metadata, cframe,  320*240*3)
 			if log_rgb.n >= 100 then
 				log_rgb:stop()
 				print('Open new rgb log!')
 				log_rgb = libLog.new('k_rgb', true)
 			end
-		end
 	end
 
 	-- Debug the timing

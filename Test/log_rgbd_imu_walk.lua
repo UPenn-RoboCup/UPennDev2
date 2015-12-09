@@ -18,7 +18,7 @@ local depth_info, color_info = openni.stream_info()
 assert(depth_info.width==WIDTH,'Bad depth resolution')
 assert(color_info.width==WIDTH,'Bad color resolution')
 
-ENABLE_LOG = false
+ENABLE_LOG = true
 
 local libLog, logger
 if ENABLE_LOG then
@@ -40,33 +40,37 @@ end
 signal.signal("SIGINT",  shutdown)
 signal.signal("SIGTERM", shutdown)
 
-print("starting")
+print("Starting")
 
 -- Start loop
 while true do
-print('updating...')
 	-- Acquire the Data
-	depth, color = openni.update_rgbd()
-print('doney')
+	local frame, id = openni.update_rgbd()
 	-- Check the time of acquisition
 	local t = Body.get_time()
 
-	-- Save the metadata  
-	local metadata = {}
+	-- Save the metadata
+	local metadata = id==0 and depth_info or color_info
 	metadata.t = t
---	metadata.rpy = dcm.get_sensor_rpy()
---	metadata.acc = dcm.get_sensor_accelerometer()
---	metadata.gyro = dcm.get_sensor_gyro()
+	metadata.rpy = dcm.get_sensor_rpy()
+	metadata.acc = dcm.get_sensor_accelerometer()
+	metadata.gyro = dcm.get_sensor_gyro()
 
 	if ENABLE_LOG then
-		log_rgb:record(metadata, color,  320*240*3)
-		log_depth:record(metadata, depth,  320*240*2)
-		if log_rgb.n >= 100 then
-			log_rgb:stop()
-			log_depth:stop()
-			print('Open new log!')
-			log_rgb = libLog.new('k_rgb', true)
-			log_depth = libLog.new('k_depth', true)
+		if id==0 then
+			log_depth:record(metadata, depth,  320*240*2)
+			if log_depth.n >= 100 then
+				log_depth:stop()
+				print('Open new depth log!')
+				log_depth = libLog.new('k_depth', true)
+			end
+		else
+			log_rgb:record(metadata, color,  320*240*3)
+			if log_rgb.n >= 100 then
+				log_rgb:stop()
+				print('Open new rgb log!')
+				log_rgb = libLog.new('k_rgb', true)
+			end
 		end
 	end
 

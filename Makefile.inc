@@ -2,10 +2,18 @@
 OSTYPE=$(shell uname -s|awk '{print tolower($$0)}')
 
 # Compiler Definitions
+
+ifdef NOTUNE
+CXX=g++
+CC=gcc
+CXXFLAGS=-fpic -pedantic -Wall
+CFLAGS=-fpic -pedantic -Wall
+else
 CXX=c++
 CC=cc
 CXXFLAGS=-O3 -fpic -pedantic -Wall
 CFLAGS=-O3 -fpic -pedantic -Wall
+endif
 
 # Linker Definitions
 LD=g++ -shared
@@ -17,39 +25,30 @@ STRIP=strip
 USE_TORCH=1
 INCLUDES=-I/usr/local/include
 
-LUA_VERSION=5.1
-LUAJIT_VERSION=2.1
-
-ifeq ($(shell pkg-config --exists luajit && echo 0),0)
-	LUA_INC=`pkg-config luajit --cflags`
-	LUA_LIB=`pkg-config luajit --libs`
-	#LUA_INC=-I/usr/local/include/luajit-$(LUAJIT_VERSION)
-	#LUA_INC=$(pkg-config --cflags-only-I luajit)
-else ifeq ($(shell pkg-config --exists lua$(LUA_VERSION) && echo 0),0)
-	LUA_INC=`pkg-config lua$(LUA_VERSION) --cflags`
-	LUA_LIB=`pkg-config lua$(LUA_VERSION) --libs`
-	#LUA_INC=-I/usr/include/lua5.1 -I/usr/local/include/lua5.1
-	#LUA_INC=$(pkg-config --cflags-only-I lua5.1)
-else
-	LUA_INC=`pkg-config lua --cflags`
-	LUA_LIB=`pkg-config lua --libs`
-endif
+# Lua 5.1
+#INCLUDES+=-I/usr/include/lua5.1 -I/usr/local/include/lua5.1
+#LUA_INC=$(pkg-config --cflags-only-I lua5.1)
+# LuaJIT 2.1
+#LUA_INC=$(pkg-config --cflags-only-I luajit)
+LUA_INC=-I/usr/local/include/luajit-2.1
 INCLUDES+=$(LUA_INC)
 
 # OS Specific overrides
 ifeq ($(OSTYPE),darwin)
-LD=g++
-#LD=ld -macosx_version_min 10.10
-#LDFLAGS=-lc++ -bundle -undefined dynamic_lookup
-LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup -L/usr/local/lib
-LIBRT=
-#	CFLAGS+=$(pkg-config lua5.1 --cflags)
-# CXXFLAGS+=$(pkg-config lua5.1 --cflags)
+  LD=g++
+  #LD=ld -macosx_version_min 10.8
+	#LDFLAGS=-lc++ -bundle -undefined dynamic_lookup
+	LDFLAGS=-lstdc++ -bundle -undefined dynamic_lookup -L/usr/local/lib
+  LIBRT=
+	#	CFLAGS+=$(pkg-config lua5.1 --cflags)
+	# CXXFLAGS+=$(pkg-config lua5.1 --cflags)
 else # Linux
 #  CFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
 #  CXXFLAGS+= -mtune=native -march=native `pkg-config lua5.1 --cflags`
-CFLAGS+= -mtune=native -march=native
-CXXFLAGS+= -mtune=native -march=native
+ifndef NOTUNE
+  CFLAGS+= -mtune=native -march=native
+  CXXFLAGS+= -mtune=native -march=native
+endif
 endif
 
 # Verbose mode check

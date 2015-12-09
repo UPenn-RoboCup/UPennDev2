@@ -110,7 +110,6 @@ logs.k2_depth = {
 }
 --]]
 
-
 -- RoboCup
 --[[
 --local constant = 4590 -- weird frame for lines
@@ -148,13 +147,19 @@ logs.joint = {
 ----[[
 logs.k_depth = {
 	ch = si.new_publisher'kinect2_depth',
-	dir = HOME..'Data'..'/',
-	'12.08.2015.14.11.23',
+	dir = HOME..'Data'..'/kinect',
+	'12.09.2015.08.52.26',
+	'12.09.2015.08.52.27',
+	'12.09.2015.08.52.28',
+	'12.09.2015.08.52.29'
 }
 logs.k_rgb = {
 	ch = si.new_publisher'kinect2_color',
-	dir = HOME..'Data'..'/',
-	'12.08.2015.14.11.23',
+	dir = HOME..'Data'..'/kinect',
+	'12.09.2015.08.52.26',
+	'12.09.2015.08.52.27',
+	'12.09.2015.08.52.28',
+	'12.09.2015.08.52.29'
 }
 --]]
 
@@ -174,11 +179,13 @@ for name, log in pairs(logs) do
 			io.write('Done!\n')
 			-- HACK ALERT!!
 			local hack_rsz
+			--[[
 			if name=='k_depth' then
 				hack_rsz = 320*240*2
 			elseif name=='k_rgb' then
 				hack_rsz = 320*240*3
 			end
+			--]]
 			if hack_rsz then
 				for i, m in ipairs(metadata) do
 					m.rsz = hack_rsz

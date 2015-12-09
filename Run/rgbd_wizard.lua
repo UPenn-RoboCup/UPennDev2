@@ -161,7 +161,7 @@ local function update(rgb, depth)
 	if ENABLE_LOG then
 		log_rgb:record(m_rgb, j_rgb)
 		log_depth:record(m_depth, ranges)
-		if log_rgb.n >= 10 then
+		if log_rgb.n >= 120 then
 			log_rgb:stop()
 			log_depth:stop()
 			print('Open new log!')

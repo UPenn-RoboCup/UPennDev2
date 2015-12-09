@@ -1,8 +1,8 @@
 %% Read the D
-logdir = 'Data/';
+logdir = 'Data/kinect/';
 prefix = 'k_depth';
 suffix = '.log';
-d = dir(strcat('Data/', prefix, '_m_*', suffix));
+d = dir(strcat(logdir, prefix, '_m_*', suffix));
 
 w = 320;
 h = 240;
@@ -13,7 +13,7 @@ h_img = imagesc;
 
 for i=1:numel(d)
     fname = d(i).name;
-    fid = fopen(fname);
+    fid = fopen(strcat(logdir, fname));
     msg = fread(fid, inf, '*uchar');
     fclose(fid);
     objs = msgpack('unpacker', msg);
@@ -35,10 +35,10 @@ for i=1:numel(d)
 end
 
 %% Read the RGB
-logdir = 'Data/';
+logdir = 'Data/kinect/';
 prefix = 'k_rgb';
 suffix = '.log';
-d = dir(strcat('Data/', prefix, '_m_*', suffix));
+d = dir(strcat(logdir, prefix, '_m_*', suffix));
 
 w = 320;
 h = 240;
@@ -49,7 +49,7 @@ h_img = imagesc;
 
 for i=1:numel(d)
     fname = d(i).name;
-    fid = fopen(fname);
+    fid = fopen(strcat(logdir, fname));
     msg = fread(fid, inf, '*uchar');
     fclose(fid);
     objs = msgpack('unpacker', msg);
@@ -59,9 +59,11 @@ for i=1:numel(d)
     fid = fopen(fname);
     for o=1:numel(objs)
         metadata = objs{o};
-        img = fread(fid, w*h*3, '*uint8');
-        img = reshape(img, [3, w, h]);
-        img = permute(img, [3,2,1]);
+        img = fread(fid, metadata.rsz, '*uint8');
+        img = djpeg(img);
+%         img = fread(fid, w*h*3, '*uint8');
+%         img = reshape(img, [3, w, h]);
+%         img = permute(img, [3,2,1]);
         img = flipud(img);
         set(h_img,'cdata', img);
         title(h_a,sprintf('Log %d | %d',i,o));

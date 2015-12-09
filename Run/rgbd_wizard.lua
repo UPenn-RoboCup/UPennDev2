@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = false
+local ENABLE_LOG = true
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014
@@ -14,6 +14,7 @@ local ptable = require'util'.ptable
 local mpack = require'msgpack.MessagePack'.pack
 local jpeg = require'jpeg'
 local c_rgb = jpeg.compressor('rgb')
+local ffi = require'ffi'
 
 local operator
 if Config.net.use_wireless then
@@ -37,8 +38,6 @@ local depth_ch = si.new_publisher(depth_streams.sub)
 local color_ch = si.new_publisher(color_streams.sub)
 
 
-local c_rgb
-if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
 local T = require'Transform'
 local transform6D = require'Transform'.transform6D
 local rotY = T.rotY
@@ -81,8 +80,8 @@ end
 local libLog, logger
 if ENABLE_LOG then
 	libLog = require'libLog'
-	log_rgb = libLog.new('k2_rgb', true)
-	log_depth = libLog.new('k2_depth', true)
+	log_rgb = libLog.new('k_rgb', true)
+	log_depth = libLog.new('k_depth', true)
 end
 
 local get_time = Body.get_time
@@ -99,7 +98,6 @@ local function update(rgb, depth)
 	if IS_COMPETING and t - hcm.get_network_topen() > 1 then
 		return t
 	end
-	if t - t_send < 1 then return t end
 	t_send = t
 	local tfL, tfG = get_tf()
 	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
@@ -128,7 +126,9 @@ local function update(rgb, depth)
 	depth.tfG16 = tfG_flat
 	depth.head_angles = head_angles
 
-	local ranges = depth.data
+	local ranges = ffi.string(depth.data, depth.width*depth.height*2)
+	--local ranges = ffi.string(depth.data, 320*240*2)
+	--local ranges = 'hi'
 	depth.data = nil
 	depth.sz = #ranges
 	depth.rsz = #ranges
@@ -145,19 +145,6 @@ local function update(rgb, depth)
 	local c_depth = p_compress(bdata)
 	--]]
 
-	-- Send
-	if not IS_WEBOTS then io.write('Kinect | t_send ', t_send,'\n') end
-
-	if depth_udp_ch then depth_udp_ch:send(m_depth..ranges) end
-	if color_udp_ch then color_udp_ch:send(m_rgb..j_rgb) end
-
-	depth_net_ch:send({m_depth, ranges})
-	color_net_ch:send({m_rgb, j_rgb})
-	depth_ch:send({m_depth, ranges})
-	color_ch:send({m_rgb, j_rgb})
-
-	-- Log at 4Hz
-	--	if t - t_send < 0.25 then return t end
 	if ENABLE_LOG then
 		log_rgb:record(m_rgb, j_rgb)
 		log_depth:record(m_depth, ranges)
@@ -165,10 +152,20 @@ local function update(rgb, depth)
 			log_rgb:stop()
 			log_depth:stop()
 			print('Open new log!')
-			log_rgb = libLog.new('k2_rgb', true)
-			log_depth = libLog.new('k2_depth', true)
+			log_rgb = libLog.new('k_rgb', true)
+			log_depth = libLog.new('k_depth', true)
 		end
 	end
+
+	if t - t_send < 1 then return t end
+	-- Send
+	if not IS_WEBOTS then io.write('Kinect | t_send ', t_send,'\n') end
+	if depth_udp_ch then depth_udp_ch:send(m_depth..ranges) end
+	if color_udp_ch then color_udp_ch:send(m_rgb..j_rgb) end
+	depth_net_ch:send({m_depth, ranges})
+	color_net_ch:send({m_rgb, j_rgb})
+	depth_ch:send({m_depth, ranges})
+	color_ch:send({m_rgb, j_rgb})
 
 	return t
 end
@@ -191,6 +188,7 @@ local function entry()
 	if has_detection then detection.entry() end
 end
 local function exit()
+	print('Kinect | Shutting down...')
 	openni.shutdown()
 	if has_detection then detection.exit() end
 	if ENABLE_LOG then
@@ -217,20 +215,18 @@ local t_debug = 0
 entry()
 --print('After entry()')
 while running do
-	print('update...')
 	local d, c = openni.update_rgbd()
-	print('done')
 	local t = get_time()
 	color.t = t
 	depth.t = t
   color.data = c
 	depth.data = d
-	--update(color, depth)
+	update(color, depth)
 	if t-t_debug > 1 then
 		t_debug = t
 		local kb = collectgarbage('count')
 		local debug_str = {
-			string.format("Kinect2 | Uptime: %.2f Mem: %d kB", t-t0, kb)
+			string.format("Kinect | Uptime: %.2f Mem: %d kB", t-t0, kb)
 		}
 		print(table.concat(debug_str,'\n'))
 	end

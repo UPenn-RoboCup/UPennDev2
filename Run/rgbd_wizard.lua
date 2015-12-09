@@ -1,5 +1,5 @@
 #!/usr/bin/env luajit
-local ENABLE_LOG = false
+local ENABLE_LOG = true
 ----------------------------
 -- Kinect2 manager
 -- (c) Stephen McGill, 2014
@@ -80,8 +80,8 @@ end
 local libLog, logger
 if ENABLE_LOG then
 	libLog = require'libLog'
-	log_rgb = libLog.new('k2_rgb', true)
-	log_depth = libLog.new('k2_depth', true)
+	log_rgb = libLog.new('k_rgb', true)
+	log_depth = libLog.new('k_depth', true)
 end
 
 local get_time = Body.get_time
@@ -98,7 +98,6 @@ local function update(rgb, depth)
 	if IS_COMPETING and t - hcm.get_network_topen() > 1 then
 		return t
 	end
-	if t - t_send < 1 then return t end
 	t_send = t
 	local tfL, tfG = get_tf()
 	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
@@ -127,11 +126,9 @@ local function update(rgb, depth)
 	depth.tfG16 = tfG_flat
 	depth.head_angles = head_angles
 
-	--local ranges = ffi.string(depth.data, depth.width*depth.height*depth.bpp)
-	print('type', type(depth.data))
-	local ranges = ffi.string(depth.data, 320*240*2)
+	local ranges = ffi.string(depth.data, depth.width*depth.height*2)
+	--local ranges = ffi.string(depth.data, 320*240*2)
 	--local ranges = 'hi'
-	print('type', type(ranges))
 	depth.data = nil
 	depth.sz = #ranges
 	depth.rsz = #ranges
@@ -148,19 +145,6 @@ local function update(rgb, depth)
 	local c_depth = p_compress(bdata)
 	--]]
 
-	-- Send
-	if not IS_WEBOTS then io.write('Kinect | t_send ', t_send,'\n') end
-
-	if depth_udp_ch then depth_udp_ch:send(m_depth..ranges) end
-	if color_udp_ch then color_udp_ch:send(m_rgb..j_rgb) end
-
-	depth_net_ch:send({m_depth, ranges})
-	color_net_ch:send({m_rgb, j_rgb})
-	depth_ch:send({m_depth, ranges})
-	color_ch:send({m_rgb, j_rgb})
-
-	-- Log at 4Hz
-	--	if t - t_send < 0.25 then return t end
 	if ENABLE_LOG then
 		log_rgb:record(m_rgb, j_rgb)
 		log_depth:record(m_depth, ranges)
@@ -168,10 +152,20 @@ local function update(rgb, depth)
 			log_rgb:stop()
 			log_depth:stop()
 			print('Open new log!')
-			log_rgb = libLog.new('k2_rgb', true)
-			log_depth = libLog.new('k2_depth', true)
+			log_rgb = libLog.new('k_rgb', true)
+			log_depth = libLog.new('k_depth', true)
 		end
 	end
+
+	if t - t_send < 1 then return t end
+	-- Send
+	if not IS_WEBOTS then io.write('Kinect | t_send ', t_send,'\n') end
+	if depth_udp_ch then depth_udp_ch:send(m_depth..ranges) end
+	if color_udp_ch then color_udp_ch:send(m_rgb..j_rgb) end
+	depth_net_ch:send({m_depth, ranges})
+	color_net_ch:send({m_rgb, j_rgb})
+	depth_ch:send({m_depth, ranges})
+	color_ch:send({m_rgb, j_rgb})
 
 	return t
 end

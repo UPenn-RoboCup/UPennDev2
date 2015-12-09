@@ -71,7 +71,7 @@ void updateUserState(const nite::UserData& user, unsigned long long ts) {
 	g_skeletonStates[user_id] = user.getSkeleton().getState();
 	g_skeletonTime[user_id] = ts;
 	for(int jj=0;jj<NITE_JOINT_COUNT;jj++)
-		g_skeletonJoints[user_id][jj] = 
+		g_skeletonJoints[user_id][jj] =
 			user.getSkeleton().getJoint((nite::JointType)jj);
 }
 
@@ -187,7 +187,7 @@ static int lua_retrieve_joint(lua_State *L) {
 
 static int lua_startup(lua_State *L) {
 
-#ifdef DEBUG	
+#ifdef DEBUG
 	fprintf(stdout,"Starting up!\n");
 	fflush(stdout);
 #endif
@@ -208,9 +208,9 @@ static int lua_startup(lua_State *L) {
 	fflush(stdout);
 
 	if(file_uri){
-		fprintf(stdout,"Accessing a log file...\n"); 
+		fprintf(stdout,"Accessing a log file...\n");
 	} else {
-		fprintf(stdout,"Accessing a physical device...\n"); 
+		fprintf(stdout,"Accessing a physical device...\n");
 	}
 	if( logmode ){
 		fprintf(stdout,"Recording log files...\n");
@@ -395,14 +395,20 @@ static int lua_stream_info(lua_State *L) {
 	int resY = dmode.getResolutionY();
 	int fps = dmode.getFps();
 	lua_newtable(L);
+	lua_pushstring(L, "name");
+  lua_pushstring(L, "depth");
+  lua_rawset(L, -3);
 	lua_pushstring(L, "width");
-	lua_pushnumber(L,resX);
+	lua_pushnumber(L, resX);
 	lua_rawset(L, -3);
 	lua_pushstring(L, "height");
-	lua_pushnumber(L,resY);
+	lua_pushnumber(L, resY);
 	lua_rawset(L, -3);
 	lua_pushstring(L, "fps");
-	lua_pushnumber(L,fps);
+	lua_pushnumber(L, fps);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "bpp");
+	lua_pushnumber(L, 2);
 	lua_rawset(L, -3);
 
 	// Color
@@ -411,6 +417,9 @@ static int lua_stream_info(lua_State *L) {
 	resY = cmode.getResolutionY();
 	fps = cmode.getFps();
 	lua_newtable(L);
+	lua_pushstring(L, "name");
+  lua_pushstring(L, "color");
+  lua_rawset(L, -3);
 	lua_pushstring(L, "width");
 	lua_pushnumber(L,resX);
 	lua_rawset(L, -3);
@@ -419,6 +428,9 @@ static int lua_stream_info(lua_State *L) {
 	lua_rawset(L, -3);
 	lua_pushstring(L, "fps");
 	lua_pushnumber(L,fps);
+	lua_rawset(L, -3);
+	lua_pushstring(L, "bpp");
+	lua_pushnumber(L, 3);
 	lua_rawset(L, -3);
 
 	return 2;

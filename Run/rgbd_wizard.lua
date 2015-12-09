@@ -1,196 +1,237 @@
 #!/usr/bin/env luajit
+local ENABLE_LOG = false
+----------------------------
+-- Kinect2 manager
+-- (c) Stephen McGill, 2014
+----------------------------
 dofile'../include.lua'
-local Body   = require'Body'
-local openni = require 'openni'
-local signal = require'signal'
-local carray = require'carray'
-local torch  = require'torch'
-torch.Tensor = torch.DoubleTensor
-require'vcm'
-
-local n_users = openni.startup()
-assert(n_users==0,'Should not use skeletons')
-
--- Verify stream
-local WIDTH, HEIGHT = 320, 240
-local DEPTH_NELEMENTS = WIDTH*HEIGHT
-local depth_info, color_info = openni.stream_info()
-assert(depth_info.width==WIDTH,'Bad depth resolution')
-assert(color_info.width==WIDTH,'Bad color resolution')
-
--- Require some modules
-local png  = require'png'
-local mp   = require'msgpack'
+local cfg = Config.kinect
+local Body = require'Body'
+local util = require'util'
+require'mcm'
+require'wcm'
+local ptable = require'util'.ptable
+local mpack = require'msgpack.MessagePack'.pack
 local jpeg = require'jpeg'
+local c_rgb = jpeg.compressor('rgb')
 
--- Access point
+local operator
+if Config.net.use_wireless then
+	operator = Config.net.operator.wireless
+else
+	operator = Config.net.operator.wired
+end
+
+local si = require'simple_ipc'
+
+local depth_streams = Config.net.streams['kinect2_depth']
+local color_streams = Config.net.streams['kinect2_color']
+
+local depth_udp_ch = si.new_sender(operator, depth_streams.udp)
+local color_udp_ch = si.new_sender(operator, color_streams.udp)
+--
+local depth_net_ch = si.new_publisher(depth_streams.tcp)
+local color_net_ch = si.new_publisher(color_streams.tcp)
+--
+local depth_ch = si.new_publisher(depth_streams.sub)
+local color_ch = si.new_publisher(color_streams.sub)
+
+
+local c_rgb
+if IS_WEBOTS then c_rgb = require'jpeg'.compressor('rgb') end
+local T = require'Transform'
+local transform6D = require'Transform'.transform6D
+local rotY = T.rotY
+local rotZ = T.rotZ
+local trans = T.trans
+local from_rpy_trans = T.from_rpy_trans
+local flatten = T.flatten
+
+
+-- CoM to the Neck (32cm in z)
+local tNeck = trans(unpack(Config.head.neckOffset))
+-- Mounting of Kinect from the neck axes
+local tKinect = from_rpy_trans(unpack(cfg.mountOffset))
+
+local function get_tf()
+	local rpy = Body.get_rpy()
+	local pose = wcm.get_robot_pose()
+	local bh = mcm.get_walk_bodyHeight()
+	local bo = mcm.get_status_bodyOffset()
+	local qHead = Body.get_head_position()
+	local uComp = mcm.get_stance_uTorsoComp()
+	uComp[3] = 0
+
+	-- Poses with the compensation
+	local torsoL = util.pose_global(uComp, bo)
+	local torsoG = util.pose_global(torsoL, pose)
+
+	-- Transform relative to the local body frame (on the ground, between the feet)
+	local tfTorsoLocal = transform6D{torsoL.x, torsoL.y, bh, rpy[1], rpy[2], torsoL.a}
+	-- Transform relative to the global body frame (on the ground)
+	local tfTorsoGlobal = transform6D{torsoG.x, torsoG.y, bh, rpy[1], rpy[2], torsoG.a}
+	-- Transform relative to the center of mass
+	local tfCom = tNeck * rotZ(qHead[1]) * rotY(qHead[2]) * tKinect
+
+	return tfTorsoLocal * tfCom, tfTorsoGlobal * tfCom
+end
+
+--local has_detection, detection = pcall(require, cfg.detection)
+
+local libLog, logger
+if ENABLE_LOG then
+	libLog = require'libLog'
+	log_rgb = libLog.new('k2_rgb', true)
+	log_depth = libLog.new('k2_depth', true)
+end
+
+local get_time = Body.get_time
+local cnt, t, t_send = 0, 0, -2
+local function update(rgb, depth)
+	t = get_time()
+	cnt = cnt + 1
+	-- Process and send
+	if has_detection then
+		detection.update(rgb, depth)
+		for _,v in ipairs(detection.send()) do color_ch:send({mp.pack(v[1]), v[2]}) end
+	end
+	-- Timing
+	if IS_COMPETING and t - hcm.get_network_topen() > 1 then
+		return t
+	end
+	if t - t_send < 1 then return t end
+	t_send = t
+	local tfL, tfG = get_tf()
+	local tfL_flat, tfG_flat = flatten(tfL), flatten(tfG)
+	local head_angles = Body.get_head_position()
+
+	-- Form color
+	rgb.t = t
+	rgb.id = 'k_rgb'
+	rgb.c = 'jpeg'
+	rgb.tfL16 = tfL_flat
+	rgb.tfG16 = tfG_flat
+	rgb.head_angles = head_angles
+
+	--local j_rgb = rgb.data
+	local j_rgb = c_rgb:compress(rgb.data, rgb.width, rgb.height)
+	rgb.data = nil
+	rgb.sz = #j_rgb
+	rgb.rsz = #j_rgb
+	local m_rgb = mpack(rgb)
+
+	-- Form depth (TODO: zlib)
+	depth.t = t
+	depth.id = 'k_depth'
+	depth.c = 'raw'
+	depth.tfL16 = tfL_flat
+	depth.tfG16 = tfG_flat
+	depth.head_angles = head_angles
+
+	local ranges = depth.data
+	depth.data = nil
+	depth.sz = #ranges
+	depth.rsz = #ranges
+	local m_depth = mpack(depth)
+
+	-- Range compression method
+	--[[
+	local ddata = depth:data()
+	ffi.copy(ddata, payload_depth)
+	local bdata = depth_byte:data()
+	for ii=0,npx-1 do
+	bdata[ii] = min(max((ddata[ii] - near)/(far-near), 0), 255)
+	end
+	local c_depth = p_compress(bdata)
+	--]]
+
+	-- Send
+	if not IS_WEBOTS then io.write('Kinect | t_send ', t_send,'\n') end
+
+	if depth_udp_ch then depth_udp_ch:send(m_depth..ranges) end
+	if color_udp_ch then color_udp_ch:send(m_rgb..j_rgb) end
+
+	depth_net_ch:send({m_depth, ranges})
+	color_net_ch:send({m_rgb, j_rgb})
+	depth_ch:send({m_depth, ranges})
+	color_ch:send({m_rgb, j_rgb})
+
+	-- Log at 4Hz
+	--	if t - t_send < 0.25 then return t end
+	if ENABLE_LOG then
+		log_rgb:record(m_rgb, j_rgb)
+		log_depth:record(m_depth, ranges)
+		if log_rgb.n >= 10 then
+			log_rgb:stop()
+			log_depth:stop()
+			print('Open new log!')
+			log_rgb = libLog.new('k2_rgb', true)
+			log_depth = libLog.new('k2_depth', true)
+		end
+	end
+
+	return t
+end
+
+-- If required from Webots, return the table
+if ... and type(...)=='string' then
+	return {entry=has_detection and detection.entry, update=update, exit=has_detection and detection.exit}
+end
+
+local openni = require'openni'
 local depth, color
--- Double for computation effectiveness
-local depths_t = torch.Tensor(DEPTH_NELEMENTS):zero()
--- Byte for range reduction
-local d_byte = torch.ByteTensor(DEPTH_NELEMENTS):zero()
 
--- Settings
---use_zmq=true
---use_udp=true
-
--- Set up the UDP sending
-local udp_depth, udp_color
-if use_udp then
-  local udp = require'udp'
-  local dport,cport = Config.net.rgbd_depth,Config.net.rgbd_color
-  local op_addr = Config.net.operator.wired
-  print('Connected to ports',dport,cport)
-  print('Operator:',op_addr)
-  udp_depth = udp.new_sender(op_addr,dport)
-  udp_color = udp.new_sender(op_addr,cport)
+local function entry()
+  openni.startup()
+  local depth, color = openni.stream_info()
+  print('Depth')
+  ptable(depth)
+  print('Color')
+  ptable(color)
+	if has_detection then detection.entry() end
+end
+local function exit()
+	openni.shutdown()
+	if has_detection then detection.exit() end
+	if ENABLE_LOG then
+		log_rgb:stop()
+		log_depth:stop()
+	end
 end
 
--- Set up the ZMQ sending
-local rgbd_color_ch, rgbd_depth_ch
-if use_zmq then
-  local simple_ipc = require'simple_ipc'
-  rgbd_color_ch = simple_ipc.new_publisher'rgbd_color'
-  rgbd_depth_ch = simple_ipc.new_publisher'rgbd_depth'
+-- Cleanly exit on Ctrl-C
+local running = true
+local function shutdown()
+	running = false
 end
 
--- Set up timing debugging
-local cnt = 0;
-local t_last = Body.get_time()
-local t_debug = 5
+local signal = require'signal'.signal
+signal("SIGINT", shutdown)
+signal("SIGTERM", shutdown)
 
-function shutdown()
-  print'Shutting down the OpenNI device...'
-  openni.shutdown()
-  os.exit()
+local get_time = unix.time
+local t0 = get_time()
+local t_debug = 0
+
+--print('Before entry()')
+entry()
+--print('After entry()')
+while running do
+	local d, c = openni.update_rgbd()
+	local t = get_time()
+	color.t = t
+	depth.t = t
+  color.data = c
+	depth.data = d
+	update(color, depth)
+	if t-t_debug>1 then
+		t_debug = t
+		local kb = collectgarbage('count')
+		local debug_str = {
+			string.format("Kinect2 | Uptime: %.2f Mem: %d kB", t-t0, kb)
+		}
+		print(table.concat(debug_str,'\n'))
+	end
+	collectgarbage'step'
 end
-signal.signal("SIGINT",  shutdown)
-signal.signal("SIGTERM", shutdown)
-
--- TODO: single frame is reliable TCP, not UDP
-local t_last_color_udp = Body.get_time()
-local function send_color_udp(metadata)
-  local net_settings = vcm.get_kinect_net_color()
-  -- Streaming
-  if net_settings[1]==0 then return end
-  -- Compression
-  local c_color
-  if net_settings[2]==1 then
-    metadata.c = 'jpeg'
-    c_color = jpeg.compress_rgb(color,color_info.width,color_info.height)
-  elseif net_settings[2]==2 then
-    metadata.c = 'png'
-    c_color = png.compress(color, color_info.width, color_info.height)
-  end
-  if not c_color then return end
-  -- Metadata
-  local meta = mp.pack(metadata)
-  -- Send over UDP
-  local ret_c,err_c = udp_color:send( meta..c_color )
-  t_last_color_udp = Body.get_time()
-  if net_settings[1]==1 then
-    net_settings[1] = 0
-    vcm.set_kinect_net_color(net_settings)
-    return
-  end
-end
-
-local t_last_depth_udp = Body.get_time()
-local function send_depth_udp(metadata)
-
-  local net_settings = vcm.get_kinect_net_depth()
-  -- Streaming
-  local stream = net_settings[1]
-  if stream==0 then return end
-
-  -- Dynamic Range Compression
-  local container_t = torch.ShortTensor(torch.ShortStorage(depth,DEPTH_NELEMENTS))
-  -- Sensitivity range in meters
-  local depths = vcm.get_kinect_depths()
-  metadata.depths = depths
-  -- convert to millimeters
-  local near = depths[1]*1000
-  local far  = depths[2]*1000
-  -- Safety check
-  if near>=far then return end
-  -- reduce the range
-  depths_t:copy(container_t):add(-near):mul(255/(far-near))
-  -- Ensure that we are between 0 and 255
-  depths_t[torch.lt(depths_t,0)] = 0
-  depths_t[torch.gt(depths_t,255)] = 255
-  -- Copy to a byte for use in compression
-  d_byte:copy(depths_t)
-  -- Compression
-  local c_depth
-  if net_settings[2]==1 then
-    metadata.c = 'jpeg'
-    jpeg.set_quality( net_settings[3] )
-    c_depth = jpeg.compress_gray(d_byte:storage():pointer(),
-      depth_info.width,depth_info.height)
-  elseif net_settings[2]==2 then
-    -- zlib
-    metadata.c = 'zlib'
-    c_mesh = zlib.compress(
-      d_byte:storage():pointer(),
-      d_byte:nElement()
-    )
-  elseif net_settings[2]==3 then
-    -- png
-    metadata.c = 'png'
-    c_depth = png.compress(d_byte:storage():pointer(),
-     depth_info.width, depth_info.height, 1)
-  else
-    -- raw data?
-    return
-  end
-  -- Metadata
-  local meta = mp.pack(metadata)
-  -- Send over UDP
-  local ret_d,err_d = udp_depth:send( meta..c_depth )
-  --print('sent',ret_d)
-  if err_d then print(err_d) end
-  t_last_depth_udp = Body.get_time()
-  -- Tidy
-  if stream==1 then
-    net_settings[1] = 0
-    vcm.set_kinect_net_depth(net_settings)
-    return
-  end
-end
-
--- Start loop
-while true do
-
-  -- Acquire the Data
-  depth, color = openni.update_rgbd()
-
-  -- Check the time of acquisition
-  local t = Body.get_time()
-  
-  -- Save the metadata  
-  --vcm.set_kinect_t(t)
-  local metadata = {}
-  metadata.t = t
-  
-  if use_zmq then
-    local meta = mp.pack(meta)
-    -- Send over ZMQ
-    rgbd_color_ch:send({meta,carray.byte(color,WIDTH*HEIGHT*3)})
-    rgbd_depth_ch:send({meta,carray.short(depth,WIDTH*HEIGHT)})
-  end
-
-  if use_udp then
-    send_color_udp(metadata)
-    send_depth_udp(metadata)
-  end
-  
-  -- Debug the timing
-  cnt = cnt+1;
-  if t-t_last>t_debug then
-    local msg = string.format("%.2f FPS", cnt/t_debug)
-    io.write("RGBD Wizard | ",msg,'\n')
-    t_last = t
-    cnt = 0
-  end
-  
-end
+exit()

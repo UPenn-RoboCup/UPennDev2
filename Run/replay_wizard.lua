@@ -8,11 +8,11 @@ local si = require'simple_ipc'
 local constant
 local start_idx
 local speedup = 1
-speedup = 1
+--speedup = 2
 --speedup = 0.5
 
 --constant = 104
-start_idx = 100
+--start_idx = 100
 
 -- In lab Saturday
 local logs = {}
@@ -89,7 +89,7 @@ logs.camera0 = {
 	'06.06.2015.14.04.20',
 }
 --]]
-----[[
+--[[
 logs.k2_rgb = {
 	-- Both channels work :D
 	--ch = si.new_publisher'camera0',
@@ -145,6 +145,19 @@ logs.joint = {
 }
 --]]
 
+----[[
+logs.k_depth = {
+	ch = si.new_publisher'kinect2_depth',
+	dir = HOME..'Data'..'/',
+	'12.08.2015.14.11.23',
+}
+logs.k_rgb = {
+	ch = si.new_publisher'kinect2_color',
+	dir = HOME..'Data'..'/',
+	'12.08.2015.14.11.23',
+}
+--]]
+
 -- Initialize the coroutines
 for name, log in pairs(logs) do
 	log.co = coroutine.create(function()
@@ -159,7 +172,21 @@ for name, log in pairs(logs) do
 				metadata = log:unroll_meta()
 			end
 			io.write('Done!\n')
-			local it = log:log_iter()
+			-- HACK ALERT!!
+			local hack_rsz
+			if name=='k_depth' then
+				hack_rsz = 320*240*2
+			elseif name=='k_rgb' then
+				hack_rsz = 320*240*3
+			end
+			if hack_rsz then
+				for i, m in ipairs(metadata) do
+					m.rsz = hack_rsz
+				end
+			end
+			--
+			local it, n = log:log_iter()
+			print('nlogs', n)
 			for i, meta, payload in it do
 				counter = counter + 1
 				coroutine.yield(counter, meta, payload)
@@ -173,6 +200,7 @@ local t_next = {}
 local data_next = {}
 for name, log in pairs(logs) do
 	local ok, counter, meta, payload = coroutine.resume(log.co)
+	assert(ok, counter)
 	t_next[name] = meta.t or meta.tlog
 	-- Strip off the logging stuff
 	meta.tlog = nil

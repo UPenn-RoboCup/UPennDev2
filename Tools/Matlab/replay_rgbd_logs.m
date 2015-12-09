@@ -4,8 +4,8 @@ prefix = 'k_depth';
 suffix = '.log';
 d = dir(strcat('Data/', prefix, '_m_*', suffix));
 
-w=320;
-h=240;
+w = 320;
+h = 240;
 
 h_f = figure(1);
 h_a = gca;
@@ -22,9 +22,10 @@ for i=1:numel(d)
     fname = strcat(logdir, prefix, '_r_', timestamp, suffix);
     fid = fopen(fname);
     for o=1:numel(objs)
-        metadata = objs{o};
+        metadata = objs{o}
         img = fread(fid, w*h, '*uint16');
         img = reshape(img, [w, h])';
+        img = flipud(img);
         set(h_img,'cdata', img);
         title(h_a,sprintf('Log %d | %d',i,o));
         %log_img = djpeg(jimg);
@@ -39,8 +40,8 @@ prefix = 'k_rgb';
 suffix = '.log';
 d = dir(strcat('Data/', prefix, '_m_*', suffix));
 
-w=320;
-h=240;
+w = 320;
+h = 240;
 
 h_f = figure(2);
 h_a = gca;
@@ -64,7 +65,6 @@ for i=1:numel(d)
         img = flipud(img);
         set(h_img,'cdata', img);
         title(h_a,sprintf('Log %d | %d',i,o));
-        %log_img = djpeg(jimg);
         pause(1/30);
     end
     fclose(fid);

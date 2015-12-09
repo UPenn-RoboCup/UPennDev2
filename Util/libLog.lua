@@ -119,28 +119,30 @@ end
 
 local function log_iter(self)
 	local metadata, buf_t = self.metadata
-	local f_r = io.open(self.r_name,'r')
+	local f_r = io.open(self.r_name, 'r')
 	local i, n = 0, #metadata
 	local function iter(param, state)
 		i = i + 1
-		if i>n then
+		if i > n then
 			if f_r then f_r:close() end
 			return nil
 		end
 		--if not param then return end
 		local m = metadata[i]
+		assert(type(m)=='table', 'log_iter | No metadata!')
 		-- Metadata only
 		if not f_r then return i, m end
+		assert(type(m.rsz)=='number', 'log_iter | No raw size given!')
 		if C then
 			local buf_t = ffi.new('uint8_t[?]', m.rsz)
-			local n_read = C.fread(buf_t,1,m.rsz,f_r)
+			local n_read = C.fread(buf_t, 1, m.rsz, f_r)
 			return i, m, ffi.string(buf_t, ffi.sizeof(buf_t))
 		else
 			local data = f_r:read(m.rsz)
 			return i, m, data
 		end
 	end
-	return iter
+	return iter, n
 end
 
 function libLog.open(dir,date,prefix)

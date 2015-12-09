@@ -139,6 +139,18 @@ streams.kinect2_color = {
 	sub = 'kinect2_color'
 }
 --]]
+streams.kinect_depth = {
+	ws = 9046,
+	udp = 17046,
+	tcp = 43346,
+	sub = 'kinect_depth'
+}
+streams.kinect_color = {
+	ws = 9047,
+	udp = 17047,
+	tcp = 43347,
+	sub = 'kinect_color'
+}
 --[[
 streams.audio = {
 ws = 9017,

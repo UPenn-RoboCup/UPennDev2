@@ -24,8 +24,8 @@ end
 
 local si = require'simple_ipc'
 
-local depth_streams = Config.net.streams['kinect2_depth']
-local color_streams = Config.net.streams['kinect2_color']
+local depth_streams = Config.net.streams['kinect_depth']
+local color_streams = Config.net.streams['kinect_color']
 
 local depth_udp_ch = si.new_sender(operator, depth_streams.udp)
 local color_udp_ch = si.new_sender(operator, color_streams.udp)
@@ -183,7 +183,7 @@ local depth, color
 
 local function entry()
   openni.startup()
-  local depth, color = openni.stream_info()
+  depth, color = openni.stream_info()
   print('Depth')
   ptable(depth)
   print('Color')
@@ -217,14 +217,16 @@ local t_debug = 0
 entry()
 --print('After entry()')
 while running do
+	print('update...')
 	local d, c = openni.update_rgbd()
+	print('done')
 	local t = get_time()
 	color.t = t
 	depth.t = t
   color.data = c
 	depth.data = d
-	update(color, depth)
-	if t-t_debug>1 then
+	--update(color, depth)
+	if t-t_debug > 1 then
 		t_debug = t
 		local kb = collectgarbage('count')
 		local debug_str = {

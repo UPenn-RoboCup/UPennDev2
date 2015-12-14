@@ -142,7 +142,7 @@ Config.left_wrist_ft = FT16464
 
 --IDS 1: all 4 values
 --IDS 2: first 2 values
-Config.right_foot_ft.m_ids = {23, 25} --confirmed
+Config.right_foot_ft.m_ids = {25, 23} --confirmed
 Config.left_foot_ft.m_ids = {24, 26} --not yet confirmed
 
 
@@ -304,14 +304,14 @@ local jointNames = {
 	-- Right leg
 	"PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
 	--Right arm
-	"ShoulderR", "null","null","null","null","null","null",	
+	"ShoulderR", "null","null","null","null","null","null",
 	-- Waist
 	"TorsoYaw","TorsoPitch",
 	-- Gripper
-	"null","null","null",	
-	"null","null","null",	
+	"null","null","null",
+	"null","null","null",
 	-- lidar movement
-	"null",	
+	"null",
 }
 
 
@@ -363,7 +363,7 @@ servo.direction = vector.new({
 --	-1, -1,1,   1,  -1,1, --RLeg, mk1
 
 --NEW ASSEMBLED LEGS
-	-1, 1, 1,   1,  1,1, --LLeg, 
+	-1, 1, 1,   1,  1,1, --LLeg,
 	-1, 1, -1, -1,  -1,1, --RLeg
 
 

@@ -198,6 +198,10 @@ local function parse_ft(ft, raw_str, m_id)
 			--if i==6 then print(ft.raw[i], ft.raw[i+1]) end
 		end
 
+
+
+
+
 	if ft.id==Config.left_foot_ft.id then
 		l_bias_counter[1]=l_bias_counter[1]+1
 		l_bias_counter[2]=l_bias_counter[2]+1
@@ -246,10 +250,22 @@ local function parse_ft(ft, raw_str, m_id)
 			)
 --]]
 
+
+
 		ft.component[0] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[0]
 		ft.component[1] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[1]
 		ft.component[2] = 3.3 * tonumber(ft.raw16[2]) / 4095.0 - ft.unloaded[2]
 		ft.component[3] = 3.3 * tonumber(ft.raw16[3]) / 4095.0 - ft.unloaded[3]
+--	end
+
+--		if m_id==25 then --disable this servo reading!
+		if false then
+			ft.component[0] = 0.0
+			ft.component[1] = 0.0
+			ft.component[2] = 0.0
+			ft.component[3] = 0.0
+	  end
+
 	elseif m_id==ft.m_ids[2] then
 		ffi.copy(ft.raw, raw_str, 8)
 		local raw16_as_8 = ffi.cast('uint8_t*', ft.raw16)
@@ -261,6 +277,15 @@ local function parse_ft(ft, raw_str, m_id)
 
 		ft.component[4] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[4]
 		ft.component[5] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[5]
+
+
+
+--		if m_id==23 then --disable this servo reading!
+		if false then
+			ft.component[4] = 0.0
+			ft.component[5] = 0.0
+	  end
+
 
 --[[
 		print(string.format("V2:%d  %.4f %.4f",m_id,
@@ -1301,6 +1326,12 @@ while is_running do
 		sel_wait = WRITE_TIMEOUT - (get_time() - t_start)
 	end
 	-- Debug messages for the user
+
+
+
+
+
+
 	dt_debug = t_start - t_debug
 	if dt_debug > 0.4 then
 		t_debug = t_start
@@ -1407,13 +1438,7 @@ while is_running do
 
 
 
-		fout:write(sformat('%.2f %.2f %.2f %.2f %.2f %.2f %.2f   %.2f %.2f %.2f %.2f %.2f %.2f\n',
-			get_time()-t0,
-			lfoot[1],lfoot[2],lfoot[3], lfoot[4],lfoot[5],lfoot[6],
-			rfoot[1],rfoot[2],rfoot[3], rfoot[4],rfoot[5],rfoot[6]
 
-		))
-		fout:flush()
 
 --log FT values
 
@@ -1422,6 +1447,20 @@ while is_running do
 
 
 	end
+
+
+	local lfoot = dcm.get_sensor_lfoot()
+	local rfoot = dcm.get_sensor_rfoot()
+
+	--WRITE FT values every frame
+	fout:write(sformat('%.2f %.2f %.2f %.2f %.2f %.2f %.2f   %.2f %.2f %.2f %.2f %.2f %.2f\n',
+		get_time()-t0,
+		lfoot[1],lfoot[2],lfoot[3], lfoot[4],lfoot[5],lfoot[6],
+		rfoot[1],rfoot[2],rfoot[3], rfoot[4],rfoot[5],rfoot[6]
+
+	))
+	fout:flush()
+
 end
 
 -- Exit

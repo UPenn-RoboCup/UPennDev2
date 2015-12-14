@@ -142,9 +142,12 @@ Config.left_wrist_ft = FT16464
 
 --IDS 1: all 4 values
 --IDS 2: first 2 values
-Config.right_foot_ft.m_ids = {25, 23} --confirmed
-Config.left_foot_ft.m_ids = {24, 26} --not yet confirmed
 
+Config.left_foot_ft.m_ids = {26, 24} --LEFT works fine
+Config.left_foot_ft.unloaded = {1.1205, 1.3869, 1.4037, 1.4857, 1.2509,1.3699}
+
+Config.right_foot_ft.m_ids = {25, 23}
+Config.right_foot_ft.unloaded = {1.9810, 2.030, 1.9850, 1.9750, 2.0033, 2.0336}
 
 
 

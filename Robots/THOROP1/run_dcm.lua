@@ -171,6 +171,20 @@ local right_wrist_ft = {
 	calibration_gain = Config.right_wrist_ft.gain,
 	shm = dcm.sensorPtr.rwrist,
 }
+
+
+
+--Automatic Calibration
+local l_bias_voltage={0,0,0,0,0,0}
+local r_bias_voltage={0,0,0,0,0,0}
+local l_bias_counter={0,0,0,0,0,0}
+local r_bias_counter={0,0,0,0,0,0}
+
+
+
+
+
+
 local function parse_ft(ft, raw_str, m_id)
 
 	if m_id==ft.m_ids[1] then
@@ -184,25 +198,53 @@ local function parse_ft(ft, raw_str, m_id)
 			--if i==6 then print(ft.raw[i], ft.raw[i+1]) end
 		end
 
+	if ft.id==Config.left_foot_ft.id then
+		l_bias_counter[1]=l_bias_counter[1]+1
+		l_bias_counter[2]=l_bias_counter[2]+1
+		l_bias_counter[3]=l_bias_counter[3]+1
+		l_bias_counter[4]=l_bias_counter[4]+1
 
-		--print('V1', m_id,' :',raw_str:byte(1,-1))
+		l_bias_voltage[1]=l_bias_voltage[1]+3.3 * tonumber(ft.raw16[0]) / 4095.0
+		l_bias_voltage[2]=l_bias_voltage[2]+3.3 * tonumber(ft.raw16[1]) / 4095.0
+		l_bias_voltage[3]=l_bias_voltage[3]+3.3 * tonumber(ft.raw16[2]) / 4095.0
+		l_bias_voltage[4]=l_bias_voltage[4]+3.3 * tonumber(ft.raw16[3]) / 4095.0
+	else
+		r_bias_counter[1]=r_bias_counter[1]+1
+		r_bias_counter[2]=r_bias_counter[2]+1
+		r_bias_counter[3]=r_bias_counter[3]+1
+		r_bias_counter[4]=r_bias_counter[4]+1
 
-		--for i=0,7 do
---			print(raw16_as_8[i])
-		--end
+		r_bias_voltage[1]=r_bias_voltage[1]+3.3 * tonumber(ft.raw16[0]) / 4095.0
+		r_bias_voltage[2]=r_bias_voltage[2]+3.3 * tonumber(ft.raw16[1]) / 4095.0
+		r_bias_voltage[3]=r_bias_voltage[3]+3.3 * tonumber(ft.raw16[2]) / 4095.0
+		r_bias_voltage[4]=r_bias_voltage[4]+3.3 * tonumber(ft.raw16[3]) / 4095.0
 
 
-
-		--[[
-		if m_id==23 then
-		print('V1', m_id)
-		print(raw_str:byte(1,-1))
-		print( tonumber(band(ft.raw16[0], 4095)),3.3 * tonumber(ft.raw16[0]) / 4095.0)
-		print( tonumber(ft.raw16[1]),3.3 * tonumber(ft.raw16[1]) / 4095.0)
-		print( tonumber(ft.raw16[2]),3.3 * tonumber(ft.raw16[2]) / 4095.0)
-		print( tonumber(ft.raw16[3]),3.3 * tonumber(ft.raw16[3]) / 4095.0)
-	end
+--[[
+		print(string.format("V1:%d  %.4f %.4f %.4f %.4f",m_id,
+				3.3 * tonumber(ft.raw16[0]) / 4095.0,
+				3.3 * tonumber(ft.raw16[1]) / 4095.0,
+				3.3 * tonumber(ft.raw16[2]) / 4095.0,
+				3.3 * tonumber(ft.raw16[3]) / 4095.0)
+				)
 	--]]
+
+
+
+
+
+
+
+	end
+
+--[[
+	print(string.format("V1:%d  %.4f %.4f %.4f %.4f",m_id,
+			3.3 * tonumber(ft.raw16[0]) / 4095.0,
+			3.3 * tonumber(ft.raw16[1]) / 4095.0,
+			3.3 * tonumber(ft.raw16[2]) / 4095.0,
+			3.3 * tonumber(ft.raw16[3]) / 4095.0)
+			)
+--]]
 
 		ft.component[0] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[0]
 		ft.component[1] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[1]
@@ -216,13 +258,39 @@ local function parse_ft(ft, raw_str, m_id)
 			raw16_as_8[i+1] = ft.raw[i+1]
 			--raw16_as_8[i+1] = band(ft.raw[i+1], 7)
 		end
-		--[[
-		print('V2', m_id)
-		print(tonumber(ft.raw16[0]), 3.3 * tonumber(ft.raw16[0]) / 4095.0)
-		print(tonumber(ft.raw16[1]), 3.3 * tonumber(ft.raw16[1]) / 4095.0)
-		--]]
+
 		ft.component[4] = 3.3 * tonumber(ft.raw16[0]) / 4095.0 - ft.unloaded[4]
 		ft.component[5] = 3.3 * tonumber(ft.raw16[1]) / 4095.0 - ft.unloaded[5]
+
+--[[
+		print(string.format("V2:%d  %.4f %.4f",m_id,
+				3.3 * tonumber(ft.raw16[0]) / 4095.0,
+				3.3 * tonumber(ft.raw16[1]) / 4095.0)
+				)
+--]]
+
+	if ft.id==Config.left_foot_ft.id then
+		l_bias_counter[5]=l_bias_counter[5]+1
+		l_bias_counter[6]=l_bias_counter[6]+1
+		l_bias_voltage[5]=l_bias_voltage[5]+3.3 * tonumber(ft.raw16[0]) / 4095.0
+		l_bias_voltage[6]=l_bias_voltage[6]+3.3 * tonumber(ft.raw16[1]) / 4095.0
+	else
+		r_bias_counter[5]=r_bias_counter[5]+1
+		r_bias_counter[6]=r_bias_counter[6]+1
+		r_bias_voltage[5]=r_bias_voltage[5]+3.3 * tonumber(ft.raw16[0]) / 4095.0
+		r_bias_voltage[6]=r_bias_voltage[6]+3.3 * tonumber(ft.raw16[1]) / 4095.0
+
+--[[
+		print(string.format( 'V2 %d   %.4f %.4f',
+			m_id,
+			3.3 * tonumber(ft.raw16[0]) / 4095.0,
+			3.3 * tonumber(ft.raw16[1]) / 4095.0
+			))
+--]]
+
+	end
+
+
 	else
 		return
 	end
@@ -1173,6 +1241,10 @@ end
 local t0 = get_time()
 -- Begin the master loop
 local co_status
+
+local fout = io.open("debug.txt","w")
+
+
 while is_running do
 	t_start = get_time()
 	-- Check for commands for the DCM from external sources
@@ -1306,9 +1378,48 @@ while is_running do
 		rf_z,rf_r, rf_p,
 			rel_zmp_left[1]*100, rel_zmp_left[2]*100 ))
 
+
+		--[[
+		table.insert(debug_str, sformat('Left FT bias: %.4f %.4f %.4f %.4f %.4f %.4f',
+		l_bias_voltage[1]/l_bias_counter[1],
+		l_bias_voltage[2]/l_bias_counter[2],
+		l_bias_voltage[3]/l_bias_counter[3],
+		l_bias_voltage[4]/l_bias_counter[4],
+		l_bias_voltage[5]/l_bias_counter[5],
+		l_bias_voltage[6]/l_bias_counter[6]))
+
+		table.insert(debug_str, sformat('Right FT bias: %.4f %.4f %.4f %.4f %.4f %.4f',
+		r_bias_voltage[1]/r_bias_counter[1],
+		r_bias_voltage[2]/r_bias_counter[2],
+		r_bias_voltage[3]/r_bias_counter[3],
+		r_bias_voltage[4]/r_bias_counter[4],
+		r_bias_voltage[5]/r_bias_counter[5],
+		r_bias_voltage[6]/r_bias_counter[6]))
+--]]
+
+
+
+
+
 		debug_str = table.concat(debug_str, '\n')
 		--os.execute('clear')
 		io.write(debug_str,'\n')
+
+
+
+		fout:write(sformat('%.2f %.2f %.2f %.2f %.2f %.2f %.2f   %.2f %.2f %.2f %.2f %.2f %.2f\n',
+			get_time()-t0,
+			lfoot[1],lfoot[2],lfoot[3], lfoot[4],lfoot[5],lfoot[6],
+			rfoot[1],rfoot[2],rfoot[3], rfoot[4],rfoot[5],rfoot[6]
+
+		))
+		fout:flush()
+
+--log FT values
+
+
+
+
 
 	end
 end

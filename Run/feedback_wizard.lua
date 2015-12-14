@@ -64,6 +64,9 @@ local function entry()
 	-- Assume open to start
 	hcm.set_network_open(1)
 	hcm.set_network_topen(t_entry)
+
+		feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
+require'util'.ptable(feedback_ch)
 	if IS_WEBOTS then
 		feedback_ch = si.new_publisher(Config.net.streams.feedback.sub)
 		--[[
@@ -191,7 +194,9 @@ local function update()
 
 	local fbmsg = mpack(e)
 
-	if feedback_ch then feedback_ch:send(fbmsg) end
+	if feedback_ch then
+feedback_ch:send(fbmsg)
+end
 
 	local available_bits = 0
 	local available_bits0 = 0

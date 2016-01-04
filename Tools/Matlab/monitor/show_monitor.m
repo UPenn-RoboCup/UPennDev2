@@ -216,7 +216,7 @@ function h=show_monitor()
 				plot_yuyv(yuyv);
       elseif yuyv_type==2
         yuyv = robots{playerNumber,teamNumber}.get_yuyv2();
-				plot_yuyv(yuyv);
+		plot_yuyv(yuyv);
       elseif yuyv_type==3
         yuyv = robots{playerNumber,teamNumber}.get_yuyv3();
 				plot_yuyv(yuyv);
@@ -292,15 +292,15 @@ function h=show_monitor()
 %        plot_field(MONITOR.h3,MONITOR.fieldtype);
 %        plot_robot( r_struct, r_mon,2,3 );
       else
-        plot_field(MONITOR.h3,MONITOR.fieldtype);
-        plot_robot( r_struct, r_mon,1.5,MONITOR.enable3,'' );
+%        plot_field(MONITOR.h3,MONITOR.fieldtype);
+%        plot_robot( r_struct, r_mon,1.5,MONITOR.enable3,'' );
       end
 
     end
 
     if MONITOR.enable4
       MONITOR.h4 = subplot(4,5,[13 14 18 19]);
-      plot_surroundings( MONITOR.h4, r_mon );
+%      plot_surroundings( MONITOR.h4, r_mon );
     end
     
     if MONITOR.enable5

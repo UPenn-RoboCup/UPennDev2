@@ -59,7 +59,7 @@ local function co_play(self, plan, callback)
 	--plan.n_optimizations = 10
 	plan.n_optimizations = 10
 	plan.update_jacobians = true
-	--plan.n_optimizations = 0
+	plan.n_optimizations = 0
 	--plan.update_jacobians = false
 
 	local t0 = unix.time()

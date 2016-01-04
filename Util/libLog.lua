@@ -17,8 +17,6 @@ else
 	carray = require'carray'
 end
 local mpack = require'msgpack.MessagePack'.pack
--- Need the C version for unpacker
-local munpacker = require'msgpack'.unpacker
 
 -- TODO: __gc should call stop
 local function stop(self)
@@ -81,7 +79,8 @@ end
 local function unroll_meta(self)
 	-- Read the metadata
 	local f_m = assert(io.open(self.m_name,'r'))
-	-- Must use an unpacker...
+	-- Need the C version for unpacker
+	local munpacker = require'msgpack'.unpacker
 	local metadata = {}
 	local u = munpacker(2048)
 	local buf, nbuf = f_m:read(512),0

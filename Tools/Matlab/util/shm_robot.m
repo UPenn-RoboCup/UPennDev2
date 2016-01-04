@@ -547,15 +547,15 @@ global MONITOR %for sending the webots check information
     yuyv = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end
 
-  function set_yuyv(yuyv) 
+  function set_yuyv(yuyv)
     rawData=yuyv2raw(yuyv);
     h.vcmImage.set_yuyv(rawData);
   end
 
   function yuyv2 = get_yuyv2() 
 % returns the half-size raw YUYV image
-    width = h.vcmImage.get_width()/4;
-    height = h.vcmImage.get_height()/2;
+    width = h.vcmImage.get_width()/4
+    height = h.vcmImage.get_height()/2
     rawData = h.vcmImage.get_yuyv2();
     yuyv2 = raw2yuyv(rawData, width, height); %for Nao, double for OP
   end

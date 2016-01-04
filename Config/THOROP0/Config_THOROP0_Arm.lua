@@ -214,6 +214,7 @@ table.insert(arm.drill, {
 		weights = {0,1,0,1},
 	}
 })
+--[[
 table.insert(arm.drill, {
 	left = {
 		timeout=10,
@@ -227,6 +228,7 @@ table.insert(arm.drill, {
 	},
 	right = false
 })
+--]]
 
 --1.22m
 table.insert(arm.drill, {

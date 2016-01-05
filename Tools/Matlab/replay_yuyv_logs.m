@@ -53,11 +53,10 @@ for i=1:numel(d)
                 ycbcr = permute(ycbcr, [3 2 1]);
                 rgb = ycbcr2rgb(ycbcr);
                 % Show image
-                %set(h_img,'cdata', flipud(rgb));
                 set(h_img,'cdata', rgb);
             end
             %if metadata.t - t0 > 33.5 && metadata.t - t0 < 36.5
-            if metadata.ball.detect>0
+            if exist('metadata.ball.detect', 'var') && metadata.ball.detect>0
                 %ball_t = [ball_t; metadata.t-t0, metadata.ball.t - t0];
                 ball_t = [ball_t; metadata.t-t0];
                 ball = [ball; metadata.ball.v];
@@ -72,7 +71,7 @@ for i=1:numel(d)
                     rad2deg(metadata.head), ...
                     metadata.ball.v(1), metadata.ball.v(2) )...
                     );
-                pause(1/30);
+                %pause(1/30);
                 %pause(1/2);
             else
                 title(h_a, sprintf('Log %d:%d', i, o));
@@ -80,8 +79,8 @@ for i=1:numel(d)
                 set(h_ball, 'YData', []);
                 %pause(1/60);
             end
-            if i==4 && o==9, return; end
-            %pause(1/30);
+            %if i==4 && o==9, return; end
+            pause(1/30);
         end
         fclose(fid);
     end

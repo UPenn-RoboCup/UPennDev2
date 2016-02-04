@@ -63,6 +63,10 @@ local function get_armplan(plan)
 	return {lpath, rpath, wpath}
 end
 
+local function adlib(data)
+  return'hello world'
+end
+
 local poller, lut
 local channels = {}
 local function cb(skt)
@@ -86,6 +90,11 @@ local config_ch = si.new_replier('config')
 config_ch.callback = cb
 config_ch.process = get_config
 table.insert(channels, config_ch)
+
+local adlib_ch = si.new_replier('adlib')
+adlib_ch.callback = cb
+adlib_ch.process = adlib
+table.insert(channels, adlib_ch)
 
 poller = si.wait_on_channels(channels)
 

@@ -76,7 +76,7 @@ has full row rank.
 local speed_eps = 0.1 * 0.1
 local c, p = 2, 10
 local torch = require'torch'
-local mattorch = require'mattorch'
+
 local function get_pseudo_jacobian_dls(self, J, qWaistArm)
 	-- Penalty for joint limits
 	local qMin
@@ -830,6 +830,7 @@ local function pathJacobians(self, plan)
 end
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')
+local mattorch = pcall(require, 'mattorch')
 local function optimize(self, plan, stop)
 	local planName0 = os.tmpname()
 	local planName = planName0..'.mat'

@@ -73,14 +73,8 @@ local function adlib(plan)
   local lPlanner = movearm.lPlanner
 
 
-  --local lPlan = plan.left
-  
-  local lPlan = {
-    qLArm0 = {0.294783, 0.00227923, -0.0851542, -0.353859, 0.404588, -0.0413827, -0.325158},
-    qWaist0 = {0, 0},
-    gamma = 5,
-    nNull = 1
-  }
+  local lPlan = plan.left
+
   local nq = #lPlan.qLArm0
   local nNull = 1 -- For now
   
@@ -88,8 +82,6 @@ local function adlib(plan)
   local dGamma = util.procFunc(lPlan.gamma+53, 5, 10)
   print('Gamma', lPlan.gamma, dGamma)
   local dNull = {dGamma}
-
-
 
   print('qL0', vector.new(lPlan.qLArm0) * RAD_TO_DEG, 'deg')
   print('qW0', vector.new(lPlan.qWaist0) * RAD_TO_DEG, 'deg')
@@ -128,45 +120,28 @@ local function adlib(plan)
   print('U other')
   util.ptorch(U:select(2, i))
   --]]
-  local dGAIN = 0.01
+  local dGAIN = 0.005
+  local qAdlibL = vector.copy(lPlan.qLArm0)
   for i=1, nNull do
     local nullDir = vector.new(U:select(2, i))
+    qAdlibL = qAdlibL + dNull[i] * nullDir * dGAIN
     print('dNull '..i, dNull[i] * nullDir * dGAIN * RAD_TO_DEG, 'deg')
   end
   
+  -- TODO: Return three arrays of vectors {left, right, waist}
+  return {qAdlibL}
   
-	--local nullspace, J, Jinv = lPlanner:get_nullspace(lPlan.qLArm0, lPlan.qLArm0, lPlan.qWaist0)
---local nullspace, J, Jinv = lPlanner:get_nullspace(vector.new{lPlan.qWaist0, unpack(lPlan.qLArm0)}, lPlan.qLArm0, lPlan.qWaist0)
-
---	local dqNull = torch.Tensor( qWaistArm - qWaistArmGuess )
---	torch.mv(dqdtNull, nullspace, dqNull)
---	dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
-  
-os.exit()
-  
-  
-  
-	local lco, rco = movearm.goto(lPlan, plan.right)
-  
-	local wpath = {}
-	--
-	local lpath = {}
-	if type(lco)=='thread' then
-
-    
-		while coroutine.status(lco)~='dead' do
-			local okL, qLWaypoint, qWaistpoint = coroutine.resume(lco)
-			table.insert(lpath, qLWaypoint)
-			if qWaistpoint then table.insert(wpath, qWaistpoint) end
-		end
-	else
-		print('lco', lco)
-	end
-  
-  return'hello world'
 end
 
-adlib()
+--[[
+local lPlan = {
+  qLArm0 = {0.294783, 0.00227923, -0.0851542, -0.353859, 0.404588, -0.0413827, -0.325158},
+  qWaist0 = {0, 0},
+  gamma = 5,
+  nNull = 1
+}
+adlib({left=lPlan})
+--]]
 
 local poller, lut
 local channels = {}

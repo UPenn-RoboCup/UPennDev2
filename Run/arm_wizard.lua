@@ -71,9 +71,8 @@ local function adlib(plan)
   
   -- Grab the planners
   local lPlanner = movearm.lPlanner
-
-
   local lPlan = plan.left
+  util.ptable(lPlan)
 
   local nq = #lPlan.qLArm0
   local nNull = 1 -- For now
@@ -82,6 +81,8 @@ local function adlib(plan)
   local dGamma = util.procFunc(lPlan.gamma+53, 5, 10)
   print('Gamma', lPlan.gamma, dGamma)
   local dNull = {dGamma}
+
+  print(unpack(lPlan.qLArm0))
 
   print('qL0', vector.new(lPlan.qLArm0) * RAD_TO_DEG, 'deg')
   print('qW0', vector.new(lPlan.qWaist0) * RAD_TO_DEG, 'deg')

@@ -79,13 +79,14 @@ local function adlib(plan)
   
   -- In degrees... from 0 to 10 degrees away from the keyboard baseline
   local dGamma = util.procFunc(lPlan.gamma+53, 5, 10)
-  print('Gamma', lPlan.gamma, dGamma)
   local dNull = {dGamma}
 
+  --[[
+  print('Gamma', lPlan.gamma, dGamma)
   print(unpack(lPlan.qLArm0))
-
   print('qL0', vector.new(lPlan.qLArm0) * RAD_TO_DEG, 'deg')
   print('qW0', vector.new(lPlan.qWaist0) * RAD_TO_DEG, 'deg')
+  --]]
   local nullspace, J, Jinv = lPlanner:get_nullspace(lPlan.qLArm0, lPlan.qLArm0)
   local U, S, V = torch.svd(nullspace)
   --[[
@@ -124,9 +125,17 @@ local function adlib(plan)
   local dGAIN = 0.005
   local qAdlibL = vector.copy(lPlan.qLArm0)
   for i=1, nNull do
-    local nullDir = vector.new(U:select(2, i))
-    qAdlibL = qAdlibL + dNull[i] * nullDir * dGAIN
-    print('dNull '..i, dNull[i] * nullDir * dGAIN * RAD_TO_DEG, 'deg')
+    local nullDir = U:select(2, i)
+    
+    print('Directions', dotDir, dNull[i])
+    local dqN = dNull[i] * vector.new(nullDir) * dGAIN
+    
+    -- Maybe consistent?
+    local dotDir = torch.dot(nullDir, torch.Tensor(lPlanner.qMax))
+    if dotDir<0 then dqN = dqN * -1 end
+    
+    qAdlibL = qAdlibL + dqN
+    print('dNull '..i, dqN * RAD_TO_DEG, 'deg')
   end
   
   -- TODO: Return three arrays of vectors {left, right, waist}

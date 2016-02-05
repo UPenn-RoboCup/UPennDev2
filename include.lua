@@ -4,6 +4,7 @@
 -- It also adds very useful globals
 if DONE_INCLUDE then return end
 
+
 math.randomseed(10)
 
 -- Locate the Modules
@@ -84,8 +85,15 @@ LOG_DIR = HOME.."/Logs"
 --require "fun" ()
 
 -- include platform specific modules
+
+
+
 require'Config'
 PLATFORM_NAME = Config.PLATFORM_NAME
+
+
+
+
 ROBOT_HOME = HOME..'/Robots/'..PLATFORM_NAME
 package.path  = ROBOT_HOME..'/?.lua;'..package.path
 package.cpath = ROBOT_HOME..'/?.so;'..package.cpath

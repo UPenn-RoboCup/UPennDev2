@@ -1,11 +1,3 @@
-% Boyd & Vandenberghe, "Convex Optimization"
-% Joëlle Skaf - 08/23/05
-%
-% Solved a QCQP with 3 inequalities:
-%           minimize    1/2 x'*P0*x + q0'*r + r0
-%               s.t.    1/2 x'*Pi*x + qi'*r + ri <= 0   for i=1,2,3
-% and verifies that strong duality holds.
-
 %% Initialization
 % Listen for requests
 close all;

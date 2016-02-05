@@ -6,6 +6,7 @@ local munpack = require'msgpack'.unpack
 local mpack = require'msgpack'.pack
 local movearm = require'movearm'
 local T = require'Transform'
+local vector = require'vector'
 
 local function get_config(path)
 	print(unpack(path))
@@ -63,9 +64,109 @@ local function get_armplan(plan)
 	return {lpath, rpath, wpath}
 end
 
-local function adlib(data)
+local function adlib(plan)
+  print('\narm_wizard | Received adlib')
+  --util.ptable(plan)
+  --print()
+  
+  -- Grab the planners
+  local lPlanner = movearm.lPlanner
+
+
+  --local lPlan = plan.left
+  
+  local lPlan = {
+    qLArm0 = {0.294783, 0.00227923, -0.0851542, -0.353859, 0.404588, -0.0413827, -0.325158},
+    qWaist0 = {0, 0},
+    gamma = 5,
+    nNull = 1
+  }
+  local nq = #lPlan.qLArm0
+  local nNull = 1 -- For now
+  
+  -- In degrees... from 0 to 10 degrees away from the keyboard baseline
+  local dGamma = util.procFunc(lPlan.gamma+53, 5, 10)
+  print('Gamma', lPlan.gamma, dGamma)
+  local dNull = {dGamma}
+
+
+
+  print('qL0', vector.new(lPlan.qLArm0) * RAD_TO_DEG, 'deg')
+  print('qW0', vector.new(lPlan.qWaist0) * RAD_TO_DEG, 'deg')
+  local nullspace, J, Jinv = lPlanner:get_nullspace(lPlan.qLArm0, lPlan.qLArm0)
+  local U, S, V = torch.svd(nullspace)
+  --[[
+  local subV = V:sub(1, nq, 1, lPlan.nNull):t()
+  print()
+  print('V')
+  util.ptorch(V)
+  print('subV')
+  util.ptorch(subV)
+  print('S')
+  util.ptorch(S)
+  print('Nullspace')
+  util.ptorch(nullspace)
+  print('Reconstructed Null')
+  util.ptorch(U*torch.diag(S)*V:t())
+  --]]
+  --[[
+  dqSafe = N * dq
+  dqSafe = U * (S * V^T  * dq)
+  dλ = (S * V^T  * dq)
+  -- assume motion then, in the λ coordinate
+  -- Use nNull columns of U, then.
+  --]]
+  --[[
+  print('U')
+  util.ptorch(U)
+  print('U Columns')
+  local U2 = U:sub(1, nq, 1, lPlan.nNull)
+  util.ptorch(U2)
+  -- Norm is 1 of each column
+  print(torch.norm(U2))
+  util.ptorch(U2*torch.diag(torch.Tensor{lPlan.gamma}))
+  print('U other')
+  util.ptorch(U:select(2, i))
+  --]]
+  local dGAIN = 0.01
+  for i=1, nNull do
+    local nullDir = vector.new(U:select(2, i))
+    print('dNull '..i, dNull[i] * nullDir * dGAIN * RAD_TO_DEG, 'deg')
+  end
+  
+  
+	--local nullspace, J, Jinv = lPlanner:get_nullspace(lPlan.qLArm0, lPlan.qLArm0, lPlan.qWaist0)
+--local nullspace, J, Jinv = lPlanner:get_nullspace(vector.new{lPlan.qWaist0, unpack(lPlan.qLArm0)}, lPlan.qLArm0, lPlan.qWaist0)
+
+--	local dqNull = torch.Tensor( qWaistArm - qWaistArmGuess )
+--	torch.mv(dqdtNull, nullspace, dqNull)
+--	dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
+  
+os.exit()
+  
+  
+  
+	local lco, rco = movearm.goto(lPlan, plan.right)
+  
+	local wpath = {}
+	--
+	local lpath = {}
+	if type(lco)=='thread' then
+
+    
+		while coroutine.status(lco)~='dead' do
+			local okL, qLWaypoint, qWaistpoint = coroutine.resume(lco)
+			table.insert(lpath, qLWaypoint)
+			if qWaistpoint then table.insert(wpath, qWaistpoint) end
+		end
+	else
+		print('lco', lco)
+	end
+  
   return'hello world'
 end
+
+adlib()
 
 local poller, lut
 local channels = {}

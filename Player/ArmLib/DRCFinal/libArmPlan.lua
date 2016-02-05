@@ -97,6 +97,9 @@ local function get_pseudo_jacobian_dls(self, J, qWaistArm)
     l[i]= speed_eps + c * ((2*q - qMin[i] - qMax[i])/qRange[i]) ^ p
   end
 	local JT = J:t()
+  
+  --print('get_pseudo_jacobian_dls', J:size(1), J:size(2), #l)
+  
 	local invInner = torch.inverse(
 		torch.addmm(torch.diag(torch.Tensor(l)), JT, J)
 	)
@@ -108,6 +111,7 @@ end
 local function get_nullspace(self, qWaistArm, qArm, qWaist)
 	assert(type(qWaistArm)=='table',
 		'get_delta_qwaistarm | Bad qWaistArm')
+    -- TODO: This may be wrong, actually...? Unless relative to the waist... :/
 	local J = torch.Tensor(self.jacobian(qArm, qWaist))
 
 	-- Straight Pseudo inverse
@@ -571,7 +575,13 @@ function libArmPlan.jacobian_preplan(self, plan)
 		--print('here...')
 		--print('qWaistArm', qWaistArm)
 		--print('qWaistArmGuess', qWaistArmGuess)
-		if qWaistArmGuess then
+    if plan.gamma then
+      local qTarget = plan.gamma<0 and self.qMin or self.qMax
+      --print('qTarget', qTarget)
+			local dqNull = torch.Tensor( qWaistArm - qWaistArmGuess )
+			torch.mv(dqdtNull, nullspace, dqNull)
+			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
+		elseif qWaistArmGuess then
 			local dqNull = torch.Tensor(
 				qWaistArm - qWaistArmGuess)
 			torch.mv(dqdtNull, nullspace, dqNull)
@@ -905,6 +915,8 @@ function libArmPlan.new_planner(id)
 		optimize2 = optimize2,
 		jacobians = pathJacobians,
 		eigs = pathEigs,
+    --
+    get_nullspace = get_nullspace,
 	}
 	return obj
 end

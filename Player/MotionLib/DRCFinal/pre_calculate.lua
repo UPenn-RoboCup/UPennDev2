@@ -123,7 +123,10 @@ outfile:write(string.format("zmpparam.preview_interval = %f\n",preview_interval)
 outfile:write(string.format("zmpparam.preview_tStep = %f\n",preview_tStep))  
 outfile:write(string.format("zmpparam.param_r_q = %f\n\n\n",r_q))  
 
-
+precompute(0.16,outfile)
+precompute(0.165,outfile)
+precompute(0.17,outfile)
+precompute(0.175,outfile)
 precompute(0.21,outfile)
 precompute(0.22,outfile)
 precompute(0.23,outfile)

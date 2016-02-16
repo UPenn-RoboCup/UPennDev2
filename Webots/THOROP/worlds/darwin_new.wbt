@@ -5,8 +5,8 @@ WorldInfo {
   ]
   title "THOR-OP Only"
   ERP 0.1
-  basicTimeStep 4
-  FPS 15
+  basicTimeStep 1
+  FPS 30
   contactProperties [
     ContactProperties {
       material1 "feet"
@@ -41,7 +41,8 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-DARwInOPGPS_naked {
+#DARwInOPGPS_naked {
+DARwInOPGPS{
   translation 0 0.34 0
   rotation 1 0 0 0
   controller "thorop"

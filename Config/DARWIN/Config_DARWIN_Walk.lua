@@ -256,12 +256,13 @@ walk.bodyHeight = 0.295
 walk.footX=-0.020
 walk.footY=0.035
 walk.bodyTilt=20*math.pi/180; 
-walk.tZMP = 0.16
+walk.bodyTilt=0*math.pi/180; 
+walk.tZMP = 0.165
 
-walk.tStep=0.5
+walk.tStep=0.4
 walk.stanceLimitY={0.07,0.20};
 walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
-walk.supportY = 0.01
+
 walk.minSitHeight = 0.10
 stance.dHeight = 0.005
 stance.sitHeight = 0.10
@@ -269,6 +270,13 @@ stance.initHeight =0.30
 walk.stepHeight = 0.035;
 walk.use_heeltoe_walk = false
 
+walk.supportY = 0.03
+walk.sideModL = 0.00 
+walk.sideMod2L = -0.00 
+walk.sideModR = -0.00 
+walk.sideMod2R = 0.00 
+
+walk.tStep=2
 
 
 ------------------------------------

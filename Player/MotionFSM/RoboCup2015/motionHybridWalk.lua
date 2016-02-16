@@ -194,9 +194,10 @@ function walk.update()
 
   if is_next_step then
     local vStep = mcm.get_walk_vel()
-    if math.abs(vStep[1])<0.05 then wcm.set_robot_odomfactor(Config.driftFactor[1] or 0.028)
-    elseif math.abs(vStep[1])<0.10 then wcm.set_robot_odomfactor(Config.driftFactor[2] or 0.025)
-    else wcm.set_robot_odomfactor(Config.driftFactor[3] or 0.008)
+    local driftFactor = Config.driftFactor or {0,0,0}
+    if math.abs(vStep[1])<0.05 then wcm.set_robot_odomfactor(driftFactor[1])
+    elseif math.abs(vStep[1])<0.10 then wcm.set_robot_odomfactor(driftFactor[2])
+    else wcm.set_robot_odomfactor(driftFactor[3])
     end
     if emergency_stop then
       mcm.set_walk_ismoving(0) --no more moving (body FSM can check this)

@@ -6,6 +6,16 @@
 #include <math.h>
 #include <vector>
 
+
+///////////////////////////////////////////////////////
+// THIS IS DARWIN-OP header file!!!!!!!!!!!!!!!!!!!!!
+// I am too lazy for changing all the names... lol
+///////////////////////////////////////////////////////
+
+
+
+
+
 ///////////////////////////////////////////////////
 // IK header file for teddy (custom legs and arms)
 ///////////////////////////////////////////////////
@@ -17,77 +27,36 @@ enum {ARM_LEFT = 0, ARM_RIGHT = 1};
 const double PI = 2*asin(1);
 const double SQRT2 = sqrt(2);
 
-//THOR-OP values, based on robotis document, and double-checked with actual robot
+//DARWIN-OP model (based on webots data)
 
-const double neckOffsetZ = .117;
-const double neckOffsetX = 0;
-
-//ORIGIN is at the mk1 waist position
-//which is 111mm higher than mk2 waist position
-//then the shoulder offset Z is the same (165mm)
-
+const double neckOffsetZ = .026+.0505;
+const double neckOffsetX = .013;
 const double originOffsetZ = 0.111;
-const double shoulderOffsetX = 0;    
-const double shoulderOffsetY = 0.234; //the same
-//const double shoulderOffsetZ = 0.165; //mk1 value
-const double shoulderOffsetZ2 = 0.276; //mk2 value, for reference
-const double shoulderOffsetZ = shoulderOffsetZ2-originOffsetZ; //virtual shoulderoffset, the same as mk1 (0.165)
-const double elbowOffsetX =   .030; 
 
+const double shoulderOffsetX = .013;    
+const double shoulderOffsetY = 0.082; 
+const double shoulderOffsetZ = .026;
+const double elbowOffsetX =   .016; 
 
-/*
-//const double upperArmLength = .261; //mk2 stock value
-//const double lowerArmLength = .252;
+const double upperArmLengthL = .060;
+const double lowerArmLengthL = .129;
+const double upperArmLengthR = .060;
+const double lowerArmLengthR = .129;
 
-//teddy longarms
-const double upperArmLength = .261+.08; //mk2 stock value
-const double lowerArmLength = .252+.08;
-*/
-
-const double upperArmLengthR = .320; //mk2 modded longarm
-const double lowerArmLengthR = .312; //mk2, 6cm extended
-const double upperArmLengthL = .261; //mk2 stock
-const double lowerArmLengthL = .252; //mk2 stock
-
-const double handOffsetX = 0.150; //ucla value
+const double handOffsetX = 0;
 const double handOffsetY = 0;
 const double handOffsetZ = 0; 
 
-//const double hipOffsetY = 0.072;	//mk1 value
-//const double hipOffsetZ = 0.282; 	//mk1 value
-const double hipOffsetX = 0;
-const double hipOffsetY = 0.105;	//mk2 value
-//const double hipOffsetZ2 = 0.180; //chip real hipoffset (hip to waist), mk2 stock, for reference
-const double hipOffsetZ2 = 0.160; //dale real hipoffset (hip to waist), for reference
 
-
-const double hipOffsetZ = hipOffsetZ2+originOffsetZ;  //mk2 virtual hipoffset (pelvis to mk1 origin)
-
-//Total torso height (hip to shoulder)
-//mk1: 165+282 = 44.7cm
-//mk2: 276+180 = 45.6cm
-
-//Total body height (shoulder to feet)
-//mk1: 0.282+0.30+0.30+0.118 + 0.165= 116.5 cm
-//mk2: 0.180+0.30+0.30+0.100 + 0.276= 115.6 cm
-
-const double thighLength = 0.30;
-const double tibiaLength = 0.30;
-
-///////////////////////////////
-//Now dale has mk2 legs too
-///////////////////////////////
-
-const double kneeOffsetX = 0.00;  //chip has new legs with zero knee offset
-//const double kneeOffsetX = 0.03;  //dale has old legs with knee offset
-
-
-
-
-
-const double footHeight = 0.100;    //mk2 feet height
-const double footToeX = 0.130; //from ankle to toe, mk2 stock feet
-const double footHeelX = 0.130; //from ankle to heel, mk2 stock feet
+const double hipOffsetX = .008;
+const double hipOffsetY = 0.037;
+const double hipOffsetZ = .096;
+const double thighLength = 0.093;
+const double tibiaLength = 0.093;
+const double kneeOffsetX = 0.00;
+const double footHeight = 0.0335;
+const double footToeX = 0.0525; 
+const double footHeelX = 0.0525; 
 
 //mkw lidar positions
 const double chestLidarHingeX = 0.05; 
@@ -107,40 +76,19 @@ const double aTibia = atan(kneeOffsetX/tibiaLength);
 
 const double g = 9.81;
 
-// MK2 mass and com values
 
-const double MassBody[2]={
-	
-//	9.802+0.490, //torso and waist
-		9.802+0.490-1.03, //torso and waist, shoulder pitch swap, 200W: 855gr, 20W: 340gr
-	
-//	4.540,  //pelvis	
-	4.540 - 0.485,  //pelvis, waist pitch swap, real one: 855gr, mockup: 370gr
-};
-//torso com: (-0.0042 -0.0007 0.2378), waist com (0 0 0.0579)
+
+const double MassBody[2]={0.7,0.275599}; //0.975599
+const double MassArmL[7]={0.025913, 0, 0.168377, 0.0592885, 0,0,0};
+const double MassArmR[7]={0.025913, 0, 0.168377, 0.0592885, 0,0,0};
+const double MassLeg[6]={0.0270692, 0.167108,0.119043,0.0703098,0.167108,0.0794462};
+
+
+
 const double bodyCom[2][3]={
-//	{-0.0040, 0, 0.2292},	 //combined com for torso and waist
-	{-0.030, 0, 0.2292},	 //combined com for torso and waist	
-	{-0.0212, 0.0002, 0.0032}
+	{0,0,0},	 //combined com for torso and waist	
+	{0,0,0},	 //combined com for torso and waist	
 };
-
-//lets assume that the chopstick adds 100gr
-const double MassArmL[7]={
-//	0.940, 0.752, 1.806, 1.124, 0.441, 0.077,0.474
-//  0.940, 0.752, 1.806, 1.124, 0.441, 0.077,0.574
-	0.050, 0.00, 0, 0, 0, 0, 0,//for RC
-};
-
-//extender mass 400g, gripper mass 1200gr (w/last servo)
-const double MassArmR[7]={
-//	0.940, 0.752, 1.806, 1.124,       0.441, 0.077,0.474 
-//	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.200 //extender and hand mass added
-//	0.940, 0.752, 1.806, 1.124 + 0.400, 0.441, 0.077,1.600 //extender and hand mass added
-	0.050, 0.00, 0, 0, 0, 0, 0,//for Robocup (no arms)
-};
-
-
-
 
 const double InertiaArm[7][6]={
 	{0.0000625, 0.0000625, 0.0000625, 0,0,0},
@@ -175,33 +123,27 @@ const double armLinkR[7][3]={
 //Com position from joint center
 const double armComL[7][3]={
 	{0,0,0},	//after shoulder pitch
-	{0.0282,0,0.0},//after shoulder roll
-	{0.1808,0,0.0129}, //after shoulder yaw	
-	{0.1239,0,-0.0301},//after elbow pitch
-	{-0.0070,0,0}, //after wrist yaw 1
-	{0.0290,0,0}, //after wrist roll
-	{0.0953,0,0} //after wrist yaw 2
+	{0,0,0},//after shoulder roll
+	{0,0,0}, //after shoulder yaw	
+	{0,0,0},//after elbow pitch
+	{0,0,0}, //after wrist yaw 1
+	{0,0,0}, //after wrist roll
+	{0,0,0} //after wrist yaw 2
 };
 
 
 //right arm com should be slightly different, but lets assume they are similar
 const double armComR[7][3]={
 	{0,0,0},	//after shoulder pitch
-	{0.0282,0,0.0},//after shoulder roll
-	{0.1808,0,0.0129}, //after shoulder yaw	
-	{0.1239,0,-0.0301},//after elbow pitch
-	{-0.0070,0,0}, //after wrist yaw 1
-	{0.0290,0,0}, //after wrist roll
-	{0.0953,0,0} //after wrist yaw 2
+	{0,0,0},//after shoulder roll
+	{0,0,0}, //after shoulder yaw	
+	{0,0,0},//after elbow pitch
+	{0,0,0}, //after wrist yaw 1
+	{0,0,0}, //after wrist roll
+	{0,0,0} //after wrist yaw 2
 };
 
 
-//Leg mass with smaller battery:
-//11Ah:1.29kg (inside), 22Ah:2.58kg (center)
-const double MassLeg[6]={
-	0.935,0.911,3.322,4.165,0.911,1.616 //LARGE battery
-//	0.935,0.911,2.032,4.165,0.911,1.616 //SMALLER battery
-};
 
 const double legLink[7][3]={
 	{0,hipOffsetY,-hipOffsetZ}, //waist-hipyaw
@@ -218,24 +160,20 @@ const double rlegLink0[3] = {0,-hipOffsetY,-hipOffsetZ};
 
 const double legCom[12][3]={
 	//left
-	{-0.0280,0.0003,0.0504},	//after hip yaw
-	{-0.0002,-0.0111,0.0000},	//after hip roll
-	{0.0119,-0.0122,-0.1500},	//after hip pitch (upper leg), large battery
-//	{0.0119,-0.031,-0.1500},	//after hip pitch (upper leg), small battery	
-
-	{0.0066,-0.0157,-0.1001},	//after knee (lower leg)
-	{-0.0111,0.0002,0}, //after ankle pitch
-	{0.0113,0.0018,-0.0828}, //after ankle pitch	
+	{0,0,0},	//after hip yaw
+	{0,0,0},	//after hip roll
+	{0,0,0},	//after hip pitch (upper leg), large battery
+	{0,0,0},	//after knee (lower leg)
+	{0,0,0}, //after ankle pitch
+	{0,0,0}, //after ankle pitch	
 
 	//right
-	{-0.0280,-0.0003,0.0504},	//after hip yaw
-	{-0.0002,0.0111,0.0000},	//after hip roll
-	{0.0119,0.0122,-0.1500},	//after hip pitch (upper leg)
-//	{0.0119,0.031,-0.1500},	//after hip pitch (upper leg), small battery	
-
-	{0.0066,0.0157,-0.1001},	//after knee (lower leg)
-	{-0.0111,-0.0002,0}, //after ankle pitch
-	{0.0113,-0.0018,-0.0828}, //after ankle pitch	
+	{0,0,0},	//after hip yaw
+	{0,0,0},	//after hip roll
+	{0,0,0},	//after hip pitch (upper leg)
+	{0,0,0},	//after knee (lower leg)
+	{0,0,0}, //after ankle pitch
+	{0,0,0}, //after ankle pitch	
 };
 
 const double InertiaLeg[12][6]={

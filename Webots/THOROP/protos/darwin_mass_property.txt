@@ -1,0 +1,60 @@
+-Y +Z +X
+
+Torso
+mass 0.975599
+centerOfMass -0.00311589 -0.0394437 -0.0196631
+
+Neck
+translation 0 0.051 0
+mass 0.0243577
+centerOfMass 0.00142428 -0.0165676 -0.000712811
+
+Head
+translation 0 0.022 -0.012
+mass 0.158042
+centerOfMass 6.39198e-05 0.0185645 0.00766662
+
+
+
+LShoulderPitch
+translation 0.082 0 0
+mass 0.025913
+centerOfMass -0.0135226 -0.005736 0.00139357
+
+LShoulderRoll
+translation 0 -0.016 0
+mass 0.168377
+centerOfMass 0.000659787 -0.036239 0.000734065
+
+LElbow
+translation 0 -0.06 0.016
+mass 0.0592885
+centerOfMass 0.00666564 -0.0458382 -0.0134901
+
+
+LHipYaw
+translation 0.037 -0.1222 -0.005
+mass 0.0270692
+centerOfMass 0 0.0184372 0.000480135
+
+LHipRoll
+mass 0.167108
+centerOfMass 7.99828e-05 -0.0138731 -0.0182424
+
+LHipPitch
+mass 0.119043
+centerOfMass -0.000322635 -0.0629655 0.000691906
+
+Knee
+translation -0 -0.093 0
+mass 0.0703098
+centerOfMass -0.000592469 -0.0390455 0.00654763
+
+AnklePitch
+translation 0 -0.093 0
+mass 0.167108
+centerOfMass -0.000213732 0.0138731 -0.0185361
+
+Foot
+mass 0.0794462
+centerOfMass 0.00950588 -0.0259953 -0.000502877

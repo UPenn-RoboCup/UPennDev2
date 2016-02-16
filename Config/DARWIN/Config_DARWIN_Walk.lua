@@ -201,18 +201,11 @@ if IS_WEBOTS then
 
   walk.phSingle = {0.2,0.8}
   walk.phZmp = {0.25,0.75}
-
-
   walk.phSingle = {0.15,0.85}
   walk.phZmp = {0.15,0.85}
-
   walk.velLimitX = {-.10,.30}
   walk.velLimitY = {-.06,.06}
-
   walk.velDelta  = {0.05,0.02,0.15}
-
-
-
   walk.velLimitX = {-.10,.60}
   walk.stanceLimitX = {-0.60,0.60}
   walk.stepHeight = 0.06
@@ -259,9 +252,24 @@ walk.sideMod2R = 0.01
 
 
 --DARWIN!
-walk.tZMP = 0.28
+walk.bodyHeight = 0.295
+walk.footX=-0.020
+walk.footY=0.035
+walk.bodyTilt=20*math.pi/180; 
+walk.tZMP = 0.16
+
+walk.tStep=0.5
+walk.stanceLimitY={0.07,0.20};
 walk.hipRollCompensation = {0*DEG_TO_RAD, 0*DEG_TO_RAD}
 walk.supportY = 0.01
+walk.minSitHeight = 0.10
+stance.dHeight = 0.005
+stance.sitHeight = 0.10
+stance.initHeight =0.30
+walk.stepHeight = 0.035;
+walk.use_heeltoe_walk = false
+
+
 
 ------------------------------------
 -- Associate with the table

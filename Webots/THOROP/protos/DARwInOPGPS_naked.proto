@@ -1,0 +1,595 @@
+# Robotis' DARwIn-OP is an open platform, miniature humanoid robot used for research, education and outreach
+#
+# The DARwIn-OP model contains principally:
+#- the 20 DOF
+#- LEDs
+#- accelerometer
+#- gyro
+#- camera
+#- realistic physics
+#
+# More info here: http://darwin-op.springnote.com
+#
+# Modeled by fabien.rohrer@cyberbotics.com
+
+PROTO DARwInOPGPS_naked [
+  field SFVec3f    translation 0 0 0
+  field SFRotation rotation  0 1 0 0
+  field SFString   controller "void"
+  field SFString   controllerArgs ""
+  field SFBool     synchronization TRUE
+  field SFString   name "DARwIn-OP"
+  field SFColor    plasticColor 0.301961 0.301961 0.301961
+  field SFVec2f    cameraWindowPosition 0 0
+  field SFFloat    cameraPixelSize 1.0
+  field SFInt32    cameraWidth 320
+  field SFInt32    cameraHeight 240
+  field SFBool     waistBand FALSE
+  field SFColor    waistBandColor 0 0 1
+  field SFInt32    channel 0
+]
+{
+Robot {
+  translation IS translation
+  rotation IS rotation
+  children [
+    DEF WAIST_BAND Transform {
+      translation 0 -0.04 -0.02
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              ambientIntensity 0.4
+              diffuseColor IS waistBandColor
+            }
+          }
+          geometry Cylinder {
+            height 0.042
+            radius 0.06
+            bottom IS waistBand
+            side IS waistBand
+            top IS waistBand
+            subdivision 18
+          }
+        }
+      ]
+    }
+    DEF DBodyShape Shape {
+      appearance Appearance {
+        material DEF DPlasticMaterial Material {
+          diffuseColor IS plasticColor
+          specularColor 0.401201 0.401201 0.401201
+        }
+      }    
+    }
+    DEF RECEIVER Receiver { name "receiver" channel IS channel }
+    DEF EMITTER Emitter { name "emitter" channel IS channel }
+    DEF PHYSICS_RECEIVER Receiver { name "physics_receiver" type "serial" channel 10 byteSize 192 }
+    DEF PHYSICS_EMITTER Emitter { name "physics_emitter" type "serial" byteSize 96 }
+                InertialUnit {name "InertialUnit"}
+                Compass {name "Compass"}
+                GPS {name "GPS"}
+                DEF ACCEL Accelerometer {
+                  name "Accelerometer"
+                  # Must place where is on the actual robot
+                  translation 0 0 0.02
+                  # Rotate to the correct orientation
+                  rotation 0 0.707107 0.707107 3.14159
+                  lookupTable [-39.24 0 0 39.24 1024 0]
+                }
+                DEF GYRO Gyro {
+                  # Must place where is on the actual robot
+                  translation 0 0 0.02
+                  # Rotate to the correct orientation
+                  rotation -0.57735 0.57735 0.57735 2.09
+                  name "Gyro"
+                  lookupTable [-27.925 0 0 27.925 1024 0]
+                }
+    DEF DNeck Servo {
+      translation 0 0.051 0
+      rotation 0 -1 0 0
+      children [
+        DEF DNeckShape Shape {
+          
+        }
+        DEF DHead Servo {
+          rotation 1 0 0 0
+          children [
+            Transform {
+              translation 0 0.022 -0.012
+              rotation 1 0 0 1.5708
+              children[
+              Shape {geometry Capsule {height 0.018 radius 0.042}} ]
+            }
+            Camera {
+              translation 0 0.0329074 0.0359816
+              rotation 0 -1 0 3.14159             
+              name "Camera"
+              windowPosition IS cameraWindowPosition
+              fieldOfView 1.0472
+              width IS cameraWidth
+              height IS cameraHeight
+              pixelSize IS cameraPixelSize
+            }
+            
+          ]
+          name "Head"
+          boundingObject Transform {
+            translation 0 0.022 -0.012
+            rotation 1 0 0 1.5708
+            children [Capsule {height 0.018 radius 0.042}]
+          }
+          physics Physics {
+            density -1
+            mass 0.158042
+            centerOfMass 6.39198e-05 0.0185645 0.00766662
+          }
+          maxForce 2.35
+        }
+      ]
+      name "Neck"
+      boundingObject Transform {
+        translation 0 -0.009 0
+        children [Box {size 0.044 0.043 0.022}]
+      }
+      physics Physics {
+        density -1
+        mass 0.0243577
+        centerOfMass 0.00142428 -0.0165676 -0.000712811
+      }
+      maxForce 2.35
+    }
+    DEF DPelvYL Servo {
+      translation 0.037 -0.1222 -0.005
+      children [
+        DEF DPelvYLShape Shape {
+      
+        }
+        DEF DPelvL Servo {
+          rotation 0 0 -1 0
+          children [
+            DEF DPelvLShape Shape {
+              appearance Appearance {
+                material DEF DServoMaterial Material {
+                  diffuseColor 0.14 0.14 0.14
+                  specularColor 0.168737 0.168737 0.168737
+                }
+              }
+        
+            }
+            DEF DLegUpperL Servo {
+              rotation -1 0 0 0
+              children [
+                DEF DLegUpperLShape Group {
+                  children [
+                    Shape {
+                    }
+                  ]
+                }
+                DEF DLegLowerL Servo {
+                  translation -0 -0.093 0
+                  rotation -1 0 0 0
+                  children [
+                    DEF DLegLowerLShape Shape {              
+                    }
+                    DEF DAnkleL Servo {
+                      translation 0 -0.093 0
+                      rotation 1 0 0 0
+                      children [
+                        DEF DAnkleLShape Shape {               
+                        }
+                        DEF DFootL Servo {
+                          rotation 0 0 1 0
+                          children [
+                            DEF DFootLShape Group {
+                              children [
+                                Shape {
+                                }
+                              ]
+                            }
+                          ]
+                          name "FootL"
+                          boundingObject Transform {
+                            translation 0.011 -0.026 -0.001
+                            children [Box {size 0.066 0.016 0.105}]
+                          }
+                          physics Physics {
+                            density -1
+                            mass 0.0794462
+                            centerOfMass 0.00950588 -0.0259953 -0.000502877
+                          }
+                          maxForce 2.35
+                        }
+                      ]
+                      name "AnkleL"
+                      boundingObject Transform {
+                        translation 0 0.01 -0.0205
+                        children [Box {size 0.036 0.045 0.083}]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.167108
+                        centerOfMass -0.000213732 0.0138731 -0.0185361
+                      }
+                      maxForce 2.35
+                    }
+                  ]
+                  name "LegLowerL"
+                  boundingObject Group {
+                    children [
+                      Transform {
+                        translation 0 -0.058 -0.008
+                        children [Box {size 0.064 0.038 0.057}]
+                      }
+                      Transform {
+                        translation 0 -0.02 0.016
+                        rotation 1 0 0 0.04
+                        children [Box {size 0.062 0.073 0.027}]
+                      }
+                    ]
+                  }
+                  physics Physics {
+                    density -1
+                    mass 0.0703098
+                    centerOfMass -0.000592469 -0.0390455 0.00654763
+                  }
+                  maxForce 2.35
+                }
+              ]
+              name "LegUpperL"
+              boundingObject Transform {
+                translation 0 -0.048 0.003
+                children [Box {size 0.054 0.12 0.045}]
+              }
+              physics Physics {
+                density -1
+                mass 0.119043
+                centerOfMass -0.000322635 -0.0629655 0.000691906
+              }
+              maxForce 2.35
+            }
+          ]
+          name "PelvL"
+          boundingObject Transform {
+            translation 0 -0.0105 -0.0205
+            children [Box {size 0.036 0.045 0.083}]
+          }
+          physics Physics {
+            density -1
+            mass 0.167108
+            centerOfMass 7.99828e-05 -0.0138731 -0.0182424
+          }
+          maxForce 2.35
+        }
+      ]
+      name "PelvYL"
+      boundingObject Transform {
+        translation 0 0.0095 0.001
+        children [Box {size 0.022 0.043 0.05}]
+      }
+      physics Physics {
+        density -1
+        mass 0.0270692
+        centerOfMass 0 0.0184372 0.000480135
+      }
+      maxForce 2.35
+    }
+    DEF DPelvYR Servo {
+      translation -0.037 -0.1222 -0.005
+      children [
+        DEF DPelvYRShape Shape {
+        }
+        DEF DPelvR Servo {
+          rotation 0 0 1 0
+          children [
+            DEF DPelvRShape Shape {
+            }
+            DEF DLegUpperR Servo {
+              rotation 1 0 0 0
+              children [
+                DEF DLegUpperRShape Group {
+                  children [
+                    Shape {
+                    }
+                    Shape {
+                    }
+                  ]
+                }
+                DEF DLegLowerR Servo {
+                  translation -0 -0.093 0
+                  rotation 1 0 0 0
+                  children [
+                    DEF DLegLowerRShape Shape {
+                    }
+                    DEF DAnkleR Servo {
+                      translation 0 -0.093 0
+                      rotation -1 0 0 0
+                      children [
+                        
+                        Transform {
+                              translation 0 0.01 -0.0205
+                              children [Shape {geometry Box {size 0.036 0.045 0.083}}]
+                            }
+                        #Shape {geometry Box {size 0.036 0.045 0.083}}
+                        DEF DFootR Servo {
+                          rotation 0 0 1 0
+                          children [
+                            Transform {
+                              translation -0.011 -0.026 -0.001
+                              children [Shape {geometry Box {size 0.066 0.016 0.105}}]
+                            }
+                          ]
+                          name "FootR"
+                          boundingObject Transform {
+                            translation -0.011 -0.026 -0.001
+                            children [Box {size 0.066 0.016 0.105}]
+                          }
+                          physics Physics {
+                            density -1
+                            mass 0.0794462
+                            centerOfMass -0.00950588 -0.0259953 -0.000502877
+                          }
+                          maxForce 2.35
+                        }
+                      ]
+                      name "AnkleR"
+                      boundingObject Transform {
+                        translation 0 0.01 -0.0205
+                        children [Box {size 0.036 0.045 0.083}]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.167108
+                        centerOfMass 0.000213732 0.0138731 -0.0185361
+                      }
+                      maxForce 2.35
+                    }
+                  ]
+                  name "LegLowerR"
+                  boundingObject Group {
+                    children [
+                      Transform {
+                        translation 0 -0.058 -0.008
+                        children [Box {size 0.064 0.038 0.057}]
+                      }
+                      Transform {
+                        translation 0 -0.02 0.016
+                        rotation 1 0 0 0.04
+                        children [Box {size 0.062 0.073 0.027}]
+                      }
+                    ]
+                  }
+                  physics Physics {
+                    density -1
+                    mass 0.0703098
+                    centerOfMass 0.000592469 -0.0390455 0.00654763
+                  }
+                  maxForce 2.35
+                }
+              ]
+              name "LegUpperR"
+              boundingObject Transform {
+                translation 0 -0.048 0.003
+                children [
+                  Box {
+                    size 0.054 0.12 0.045
+                  }
+                ]
+              }
+              physics Physics {
+                density -1
+                mass 0.119043
+                centerOfMass 0.000322635 -0.0629655 0.000691906
+              }
+              maxForce 2.35
+            }
+          ]
+          name "PelvR"
+          boundingObject Transform {
+            translation 0 -0.0105 -0.0205
+            children [Box {size 0.036 0.045 0.083}]
+          }
+          physics Physics {
+            density -1
+            mass 0.167108
+            centerOfMass -7.99828e-05 -0.0138731 -0.0182424
+          }
+          maxForce 2.35
+        }
+      ]
+      name "PelvYR"
+      boundingObject Transform {
+        translation 0 0.0095 0.001
+        children [Box {size 0.022 0.043 0.05}]
+      }
+      physics Physics {
+        density -1
+        mass 0.0270692
+        centerOfMass 0 0.0184372 0.000480135
+      }
+      maxForce 2.35
+    }
+    DEF DShoulderL Servo {
+      translation 0.082 0 0
+      rotation 1 0 0 0
+      children [
+        DEF DShoulderLShape Shape {
+        }
+        DEF DArmUpperL Servo {
+          translation 0 -0.016 0
+          rotation 0 0 1 0
+          children [
+            DEF DArmUpperLShape Group {
+              children [
+                Shape {
+                }
+              ]
+            }
+            DEF DArmLowerL Servo {
+              translation 0 -0.06 0.016
+              rotation 1 0 0 -1.5708
+              children [
+                DEF DArmLowerLShape Group {
+                  children [
+                    Shape {
+                    }
+                  ]
+                }
+              ]
+              name "ArmLowerL"
+              boundingObject Transform {
+                translation 0.0075 -0.073 -0.016
+                children [Box {size 0.027 0.113 0.036}]
+              }
+              physics Physics {
+                density -1
+                mass 0.0592885
+                centerOfMass 0.00666564 -0.0458382 -0.0134901
+              }
+              maxForce 2.35
+            }
+          ]
+          name "ArmUpperL"
+          boundingObject Group {
+            children [
+              Transform {
+                translation 0 -0.013 0
+                children [Box {size 0.036 0.055 0.04}]
+              }
+              Transform {
+                translation 0 -0.06 0.003
+                children [Box {size 0.036 0.036 0.051}]
+              }
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.168377
+            centerOfMass 0.000659787 -0.036239 0.000734065
+          }
+          maxForce 2.35
+        }
+      ]
+      name "ShoulderL"
+      boundingObject Transform {
+        translation -0.009 -0.0065 0
+        rotation 0 0 1 -0.785398
+        children [Box {size 0.027 0.022 0.044}]
+      }
+      physics Physics {
+        density -1
+        mass 0.025913
+        centerOfMass -0.0135226 -0.005736 0.00139357
+      }
+      maxForce 2.35
+    }
+    DEF DShoulderR Servo {
+      translation -0.082 0 0
+      rotation -1 0 0 0
+      children [
+        DEF DShoulderRShape Shape {
+        }
+        DEF DArmUpperR Servo {
+          translation 0 -0.016 0
+          rotation 0 0 1 0
+          children [
+            DEF DArmUpperRShape Group {
+              children [
+                Shape {
+                }
+              ]
+            }
+            DEF DArmLowerR Servo {
+              translation 0 -0.06 0.016
+              rotation -1 0 0 1.5708
+              children [
+                DEF DArmLowerRShape Group {
+                  children [
+                    Shape {
+                    }
+                  ]
+                }
+              ]
+              name "ArmLowerR"
+              boundingObject Transform {
+                translation -0.0075 -0.073 -0.016
+                children [Box {size 0.027 0.113 0.036}]
+              }
+              physics Physics {
+                density -1
+                mass 0.0592885
+                centerOfMass -0.00666564 -0.0458382 -0.0134901
+              }
+              maxForce 2.35
+            }
+          ]
+          name "ArmUpperR"
+          boundingObject Group {
+            children [
+              Transform {
+                translation 0 -0.013 0
+                children [Box {size 0.036 0.055 0.04}]
+              }
+              Transform {
+                translation 0 -0.06 0.003
+                children [Box {size 0.036 0.036 0.051}]
+              }
+            ]
+          }
+          physics Physics {
+            density -1
+            mass 0.168377
+            centerOfMass -0.000659787 -0.036239 0.000734065
+          }
+          maxForce 2.35
+        }
+      ]
+      name "ShoulderR"
+      boundingObject Transform {
+        translation 0.009 -0.0065 0
+        rotation 0 0 1 0.785398
+        children [Box {size 0.027 0.022 0.044}]
+      }
+      physics Physics {
+        density -1
+        mass 0.025913
+        centerOfMass 0.0135226 -0.005736 0.00139357
+      }
+      maxForce 2.35
+    }
+  ]
+  name "DARwIn-OP"
+  boundingObject Group {
+    children [
+      Transform {
+        translation 0 -0.059 -0.025
+        children [Box {size 0.1 0.058 0.091}]
+      }
+      Transform {
+        translation 0 -0.029 -0.038
+        children [Box {size 0.126 0.045 0.076}]
+      }
+      Transform {
+        translation 0 -0.006 -0.027
+        rotation 1 0 0 0.1
+        children [Box {size 0.114 0.058 0.076}]
+      }
+      Transform {
+        translation 0 -0.042 0.028
+        children [Box {size 0.114 0.046 0.016}]
+      }
+    ]
+  }
+  name IS name
+  model "DARwIn-OP"
+  description "Robotis' DARwIn-OP modeled by Fabien Rohrer"
+  physics Physics {
+    density -1
+    mass 0.975599
+    centerOfMass -0.00311589 -0.0394437 -0.0196631
+  }
+  controller IS controller
+  controllerArgs IS controllerArgs
+  synchronization IS synchronization
+}
+}

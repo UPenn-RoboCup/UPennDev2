@@ -58,6 +58,7 @@ const double footHeight = 0.0335;
 const double footToeX = 0.0525; 
 const double footHeelX = 0.0525; 
 
+
 //mkw lidar positions
 const double chestLidarHingeX = 0.05; 
 const double chestLidarX = 0; //after lidar servo

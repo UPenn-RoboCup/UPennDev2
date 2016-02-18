@@ -27,6 +27,7 @@ PROTO DARwInOPGPS [
   field SFBool     waistBand FALSE
   field SFColor    waistBandColor 0 0 1
   field SFInt32    channel 0
+  field SFFloat    max_torque1 2.35
 ]
 {
 Robot {
@@ -1268,7 +1269,7 @@ Robot {
             mass 0.158042
             centerOfMass 6.39198e-05 0.0185645 0.00766662
           }
-          maxForce 2.35
+          maxTorque IS max_torque1
         }
       ]
       name "Neck"
@@ -1285,7 +1286,7 @@ Robot {
         mass 0.0243577
         centerOfMass 0.00142428 -0.0165676 -0.000712811
       }
-      maxForce 2.35
+      maxTorque IS max_torque1
     }
     DEF DPelvYL Servo {
       translation 0.037 -0.1222 -0.005
@@ -2327,7 +2328,9 @@ Robot {
                           ]
                           name "FootL"
                           boundingObject Transform {
-                            translation 0.011 -0.026 -0.001
+                            #translation 0.011 -0.026 -0.001
+                            translation 0.011 -0.026 0
+
                             children [
                               Box {
                                 size 0.066 0.016 0.105
@@ -2339,7 +2342,7 @@ Robot {
                             mass 0.0794462
                             centerOfMass 0.00950588 -0.0259953 -0.000502877
                           }
-                          maxForce 2.35
+                          maxTorque IS max_torque1
                         }
                       ]
                       name "AnkleL"
@@ -2356,7 +2359,7 @@ Robot {
                         mass 0.167108
                         centerOfMass -0.000213732 0.0138731 -0.0185361
                       }
-                      maxForce 2.35
+                      maxTorque IS max_torque1
                     }
                   ]
                   name "LegLowerL"
@@ -2386,7 +2389,7 @@ Robot {
                     mass 0.0703098
                     centerOfMass -0.000592469 -0.0390455 0.00654763
                   }
-                  maxForce 2.35
+                  maxTorque IS max_torque1
                 }
               ]
               name "LegUpperL"
@@ -2403,7 +2406,7 @@ Robot {
                 mass 0.119043
                 centerOfMass -0.000322635 -0.0629655 0.000691906
               }
-              maxForce 2.35
+              maxTorque IS max_torque1
             }
           ]
           name "PelvL"
@@ -2420,7 +2423,7 @@ Robot {
             mass 0.167108
             centerOfMass 7.99828e-05 -0.0138731 -0.0182424
           }
-          maxForce 2.35
+          maxTorque IS max_torque1
         }
       ]
       name "PelvYL"
@@ -2437,7 +2440,7 @@ Robot {
         mass 0.0270692
         centerOfMass 0 0.0184372 0.000480135
       }
-      maxForce 2.35
+      maxTorque IS max_torque1
     }
     DEF DPelvYR Servo {
       translation -0.037 -0.1222 -0.005
@@ -3476,7 +3479,8 @@ Robot {
                           ]
                           name "FootR"
                           boundingObject Transform {
-                            translation -0.011 -0.026 -0.001
+                            #translation -0.011 -0.026 -0.001
+                            translation -0.011 -0.026 0
                             children [
                               Box {
                                 size 0.066 0.016 0.105
@@ -3488,7 +3492,7 @@ Robot {
                             mass 0.0794462
                             centerOfMass -0.00950588 -0.0259953 -0.000502877
                           }
-                          maxForce 2.35
+                          maxTorque IS max_torque1
                         }
                       ]
                       name "AnkleR"
@@ -3505,7 +3509,7 @@ Robot {
                         mass 0.167108
                         centerOfMass 0.000213732 0.0138731 -0.0185361
                       }
-                      maxForce 2.35
+                      maxTorque IS max_torque1
                     }
                   ]
                   name "LegLowerR"
@@ -3535,7 +3539,7 @@ Robot {
                     mass 0.0703098
                     centerOfMass 0.000592469 -0.0390455 0.00654763
                   }
-                  maxForce 2.35
+                  maxTorque IS max_torque1
                 }
               ]
               name "LegUpperR"
@@ -3552,7 +3556,7 @@ Robot {
                 mass 0.119043
                 centerOfMass 0.000322635 -0.0629655 0.000691906
               }
-              maxForce 2.35
+              maxTorque IS max_torque1
             }
           ]
           name "PelvR"
@@ -3569,7 +3573,7 @@ Robot {
             mass 0.167108
             centerOfMass -7.99828e-05 -0.0138731 -0.0182424
           }
-          maxForce 2.35
+          maxTorque IS max_torque1
         }
       ]
       name "PelvYR"
@@ -3586,7 +3590,7 @@ Robot {
         mass 0.0270692
         centerOfMass 0 0.0184372 0.000480135
       }
-      maxForce 2.35
+      maxTorque IS max_torque1
     }
     DEF DShoulderL Servo {
       translation 0.082 0 0
@@ -4416,7 +4420,7 @@ Robot {
                 mass 0.0592885
                 centerOfMass 0.00666564 -0.0458382 -0.0134901
               }
-              maxForce 2.35
+              maxTorque IS max_torque1
             }
           ]
           name "ArmUpperL"
@@ -4445,7 +4449,7 @@ Robot {
             mass 0.168377
             centerOfMass 0.000659787 -0.036239 0.000734065
           }
-          maxForce 2.35
+          maxTorque IS max_torque1
         }
       ]
       name "ShoulderL"
@@ -4463,7 +4467,7 @@ Robot {
         mass 0.025913
         centerOfMass -0.0135226 -0.005736 0.00139357
       }
-      maxForce 2.35
+      maxTorque IS max_torque1
     }
     DEF DShoulderR Servo {
       translation -0.082 0 0
@@ -5293,7 +5297,7 @@ Robot {
                 mass 0.0592885
                 centerOfMass -0.00666564 -0.0458382 -0.0134901
               }
-              maxForce 2.35
+              maxTorque IS max_torque1
             }
           ]
           name "ArmUpperR"
@@ -5322,7 +5326,7 @@ Robot {
             mass 0.168377
             centerOfMass -0.000659787 -0.036239 0.000734065
           }
-          maxForce 2.35
+          maxTorque IS max_torque1
         }
       ]
       name "ShoulderR"
@@ -5340,7 +5344,7 @@ Robot {
         mass 0.025913
         centerOfMass 0.0135226 -0.005736 0.00139357
       }
-      maxForce 2.35
+      maxTorque IS max_torque1
     }
   ]
   name "DARwIn-OP"

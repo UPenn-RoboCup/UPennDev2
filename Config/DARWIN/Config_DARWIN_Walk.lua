@@ -252,6 +252,9 @@ walk.sideMod2R = 0.01
 
 
 --DARWIN!
+
+walk.anklePitchLimit=vector.new{-90,90}*DEG_TO_RAD --teddy has ankle ROM limitation
+
 walk.bodyHeight = 0.295
 walk.footX=-0.020
 walk.footY=0.035
@@ -276,8 +279,33 @@ walk.sideMod2L = -0.00
 walk.sideModR = -0.00 
 walk.sideMod2R = 0.00 
 
-walk.tStep=2
 
+walk.phSingle = {0.15,0.85}
+walk.phZmp = {0.15,0.85}
+walk.tStep=0.6
+walk.supportY = 0.015
+walk.stanceLimitX = {-0.40,0.40}
+walk.stepHeight = 0.035;
+
+
+walk.velLimitX = {-.125,.175}
+walk.stepHeight = 0.045;
+walk.phSingle = {0.15,0.85}
+walk.phZmp = {0.15,0.85}
+walk.tStep=1.5
+--------------works till here
+
+
+
+--forced heel-toe test
+use_heeltoe_walk=false
+use_heeltoe_walk=true
+--walk.heel_angle = 30*DEG_TO_RAD
+--walk.toe_angle = 10*DEG_TO_RAD
+walk.heeltoe_vel_min = 0.13
+
+--ROlling zmp
+walk.zmpHeel,walk.zmpToe = -0.03,0.03
 
 ------------------------------------
 -- Associate with the table

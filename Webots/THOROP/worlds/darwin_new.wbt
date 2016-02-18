@@ -47,4 +47,5 @@ DARwInOPGPS{
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
+  max_torque1 50
 }

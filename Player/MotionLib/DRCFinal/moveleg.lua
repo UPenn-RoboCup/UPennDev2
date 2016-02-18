@@ -846,6 +846,15 @@ function moveleg.set_leg_positions()
   end
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))
+--[[
+  print(
+    string.format("L %.2f R %.2f",
+        (qLegs[3]+qLegs[4]+qLegs[5])*180/math.pi,
+      (qLegs[9]+qLegs[10]+qLegs[11])*180/math.pi
+      )
+
+    )
+--]]
 
   ------------------------------------------
   -- Update the status in shared memory

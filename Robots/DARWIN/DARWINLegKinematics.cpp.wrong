@@ -237,6 +237,11 @@ std::vector<double> THOROP_kinematics_inverse_leg_heellift(Transform trLeg, int 
   xLeg[1] = xLeg[1] - dAnkle2Mod;
   xLeg[2] = xLeg[2] - dAnkle3Mod;
 
+/*
+  xLeg[0] = xLeg[0] - (footToeX - footC*cos(ankle_tilt_angle+afootA));
+  xLeg[2] = xLeg[2] - footC*sin(ankle_tilt_angle+afootA);
+*/
+
   dLeg = xLeg[0]*xLeg[0] + xLeg[1]*xLeg[1] + xLeg[2]*xLeg[2];
   cKnee = .5*(dLeg-dTibia*dTibia-dThigh*dThigh)/(dTibia*dThigh);
 
@@ -504,6 +509,7 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
     }  
     if (fabs(ferr)<0.01){ 
       ankle_tilt_angle = x0-afootA;
+      printf("Toelift:%f\n",ankle_tilt_angle*180/3.1415);
     }
     else{
    //   printf("Toelift: no solution!\n");
@@ -524,6 +530,13 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
 
   ankle_tilt_angle = -ankle_tilt_angle; //change into ankle PITCH bias angle
 
+
+/*
+  //TODO: ankle location incorporiating surface angles 
+  xLeg[0] = xLeg[0] + footHeelX - footC*cos(-ankle_tilt_angle+afootA);
+  xLeg[2] = xLeg[2] - sin(afootA-ankle_tilt_angle)*footC;
+*/
+
 //Find relative torso position from ankle position (in global frame)
   xLeg[0] = xLeg[0] - dAnkle1Mod;
   xLeg[1] = xLeg[1] - dAnkle2Mod;
@@ -542,6 +555,8 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   }
   double kneePitchActual = kneePitch+aThigh*kneeOffsetA+aTibia*kneeOffsetA;
 
+
+
   //Now we know knee pitch and ankle tilt 
   Transform trAnkle =  trcopy (trLeg);
 
@@ -550,9 +565,9 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   
   //Genertae body to ankle transform 
   trAnkle = trAnkle
-    .translate(-footHeelX,0,0)
+    .translate(footToeX,0,0)
     .rotateY(ankle_tilt_angle)
-    .translate(footHeelX,0,footHeight);
+    .translate(-footToeX,0,footHeight);
 
   //Get rid of hip offset to make hip to ankle transform
   Transform t;

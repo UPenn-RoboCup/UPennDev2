@@ -115,7 +115,7 @@ for sm, en in pairs(Config.fsm.enabled) do
 		end
 	end
 end
-
+--[[
 
 --MOVING ZMP
 Config.walk.heeltoe_vel_min = 0.19 --MIN speed for heeltoe walk
@@ -136,11 +136,6 @@ Config.use_heeltoe_walk=false
 Config.walk.zmpHeel,Config.walk.zmpToe = 0,0
 Config.walk.heel_angle = 0*DEG_TO_RAD
 Config.walk.toe_angle = 0*DEG_TO_RAD
-
------------------------------------------------------------
---Low max velocity (for demo)
-Config.walk.velLimitX = {-.05,.15}
-Config.walk.stepHeight = 0.035;
-Config.walk.stepHeight = 0.06;
+--]]
 
 return Config

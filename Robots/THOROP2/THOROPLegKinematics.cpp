@@ -560,9 +560,9 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
   
   //Genertae body to ankle transform 
   trAnkle = trAnkle
-    .translate(footToeX,0,0)
+    .translate(-footHeelX,0,0)
     .rotateY(ankle_tilt_angle)
-    .translate(-footToeX,0,footHeight);
+    .translate(footHeelX,0,footHeight);
 
   //Get rid of hip offset to make hip to ankle transform
   Transform t;

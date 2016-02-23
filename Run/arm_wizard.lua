@@ -121,7 +121,7 @@ local function adlib(plan)
   
   print(counter, 'Sending adlib', #qAdlibL)
   
-  --[[
+  ----[[
   -- Save the path
   counter = counter + 1
   local fname = string.format('/tmp/arm_adlib_%d_%d.plan', unix.time(), counter)

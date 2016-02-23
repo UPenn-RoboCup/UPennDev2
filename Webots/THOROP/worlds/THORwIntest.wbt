@@ -9,11 +9,11 @@ WorldInfo {
 }
 Viewpoint {
   orientation 0 -1 0 3.14
-  position 0 1.36563 -5
+  position -0.0799999 0.68563 -4.99987
 }
 Background {
   skyColor [
-    0.7 0.3 0.3
+    0.9 0.9 0.9
   ]
 }
 DirectionalLight {
@@ -43,7 +43,7 @@ DirectionalLight {
   intensity 0.3
 }
 THORwIn_Dale_halfmass {
-  translation 0 1.14 0
+  translation 0.37499 1.15119 -0.00059723
   rotation 0 1 0 -1.5708
   controller "thorop"
   controllerArgs "0 32"
@@ -53,10 +53,31 @@ THORwIn_Dale_halfmass {
   damping_constant 0
   footContactMaterial "feet"
 }
-DEF TASKFLOOR Floor {
-size 100 100
-tileSize 5 20
-  texture [
-    "textures/texture_grid.png"
+DEF STARTLINE Solid {
+  translation -4 -5 0
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+        texture ImageTexture {
+          url [
+            "textures/texture_grid.png"
+          ]
+        }
+      }
+      geometry Box {
+        size 10 10 2
+      }
+    }
   ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 10 10 2
+      }
+    ]
+  }
+  locked TRUE
 }

@@ -46,7 +46,7 @@ local function update(key_code)
 
 
 	local torsoangle = hcm.get_legdebug_torso_angle()
-	if key_char_lower==("i") then    targetvel_new[1]=targetvel[1]+0.05;
+	if key_char_lower==("i") then    targetvel_new[1]=targetvel[1]+0.08;
   elseif key_char_lower==("j") then targetvel_new[3]=targetvel[3]+0.15;
   elseif key_char_lower==("k") then targetvel_new[1],targetvel_new[2],targetvel_new[3]=0,0,0;
   elseif key_char_lower==("l") then targetvel_new[3]=targetvel[3]-0.15;

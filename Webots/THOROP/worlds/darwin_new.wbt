@@ -17,8 +17,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.473123 -0.865963 -0.162056 0.753315
-  position -1.61734 1.47515 2.09696
+  orientation -0.176845 -0.975934 -0.127591 1.27321
+  position -2.46074 1.13177 0.827436
 }
 Background {
   skyColor [
@@ -41,11 +41,11 @@ DEF FLOOR Floor {
     "textures/texture_grid.png"
   ]
 }
-#DARwInOPGPS_naked {
-DARwInOPGPS{
+DARwInOPGPS {
   translation 0 0.34 0
   rotation 1 0 0 0
   controller "thorop"
   controllerArgs "0 32"
   max_torque1 50
+  max_velocity1 50
 }

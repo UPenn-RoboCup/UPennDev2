@@ -796,9 +796,13 @@ end
 
 
 
+local debug_out =true
+local fout
+if debug_out then fout = io.open("webots_debug.txt","w") end
+local debug_count=1
 
 function moveleg.set_leg_positions()
-    local uLeft = mcm.get_status_uLeft()
+  local uLeft = mcm.get_status_uLeft()
   local uRight = mcm.get_status_uRight()
   local uTorso = mcm.get_status_uTorso()
   local qWaist = Body.get_waist_command_position()
@@ -827,6 +831,11 @@ function moveleg.set_leg_positions()
   qLegs[6]=qLegs[6]
   qLegs[12]=qLegs[12]
 
+
+  local supportLeg = mcm.get_status_supportLeg()
+  
+
+
   if Config.walk.anklePitchLimit then
     qLegs[5]=math.max(qLegs[5],Config.walk.anklePitchLimit[1])
     qLegs[11]=math.max(qLegs[11],Config.walk.anklePitchLimit[1])
@@ -846,6 +855,21 @@ function moveleg.set_leg_positions()
   end
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))
+
+if debug_out then
+  debug_count=debug_count+1
+  if debug_count%10==0 then
+    local LLeg=Body.get_lleg_position()
+    fout:write(sformat(
+    '%.2f    %.2f %.2f %.2f %.2f %.2f %.2f\n',
+    Body.get_time(),
+    qLegs[3],qLegs[4],qLegs[5],
+    LLeg[3],LLeg[4],LLeg[5]
+    ))
+  fout:flush()
+  end
+end
+
 --[[
   print(
     string.format("L %.2f R %.2f",

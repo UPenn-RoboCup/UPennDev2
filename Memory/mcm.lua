@@ -229,8 +229,8 @@ shared.status.rleg_torque = vector.zeros(6)
 shared.status.stabilization_mode = vector.zeros(1)
 shared.status.temp_tZMP = vector.zeros(1)
 
-
-
+--Stores current toe/heel lift information
+shared.status.footTilt=vector.zeros(2)
 
 --Current time
 shared.status.t = vector.zeros(1)

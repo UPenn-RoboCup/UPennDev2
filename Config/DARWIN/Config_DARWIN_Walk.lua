@@ -330,6 +330,8 @@ walk.supportY = 0.03
 
 walk.tStep=1.2
 walk.velLimitX = {-.125,.18}
+
+walk.velLimitX = {-.125,.08}
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

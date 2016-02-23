@@ -5,7 +5,8 @@ WorldInfo {
   ]
   title "THOR-OP Only"
   ERP 0.1
-  basicTimeStep 1
+  #basicTimeStep 1
+  basicTimeStep 10
   FPS 30
   contactProperties [
     ContactProperties {
@@ -17,12 +18,12 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.176845 -0.975934 -0.127591 1.27321
-  position -2.46074 1.13177 0.827436
+  orientation 0 -1 0 3.14
+  position -0.699872 0.2763 -4.91887
 }
 Background {
   skyColor [
-    0.678431 0.847059 0.901961
+    0.9 0.9 0.9
   ]
 }
 DirectionalLight {
@@ -35,17 +36,41 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.5
 }
-DEF FLOOR Floor {
-  contactMaterial "floor"
-  texture [
-    "textures/texture_grid.png"
+DEF STARTLINE Solid {
+  translation -2 -2.5 0
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+        texture ImageTexture {
+          url [
+            "textures/texture_grid.png"
+          ]
+        }
+      }
+      geometry Box {
+        size 5 5 2
+      }
+    }
   ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 5 5 2
+      }
+    ]
+  }
+  locked TRUE
 }
 DARwInOPGPS {
-  translation 0 0.34 0
-  rotation 1 0 0 0
+  translation -0.445861 0.334724 0.000710103
+  rotation 0 1 0 -1.5708
   controller "thorop"
   controllerArgs "0 32"
+  cameraWidth 1
+  cameraHeight 1
   max_torque1 50
   max_velocity1 50
 }

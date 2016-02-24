@@ -96,7 +96,7 @@ local function adlib(plan)
   local nNull = 1 -- For now
   
   -- In degrees... from 0 to 10 degrees away from the keyboard baseline
-  local dGamma = util.procFunc(lPlan.gamma+53, 5, 10)
+  local dGamma = util.procFunc(lPlan.gamma, 3, 10)
   local dNull = {dGamma}
 
   local nullspace, J, Jinv = lPlanner:get_nullspace(lPlan.qLArm0, lPlan.qLArm0)
@@ -107,12 +107,16 @@ local function adlib(plan)
   for i=1, nNull do
     local nullDir = U:select(2, i)
     
-    print('Directions', dotDir, dNull[i])
+    
     local dqN = dNull[i] * vector.new(nullDir) * dGAIN
     
     -- Maybe consistent?
+    --[[
     local dotDir = torch.dot(nullDir, torch.Tensor(lPlanner.qMax))
+    print('Directions', dotDir, dNull[i])
     if dotDir<0 then dqN = dqN * -1 end
+    --]]
+    if nullDir[3]<0 then dqN = dqN * -1 end
     
     qAdlibL = qAdlibL + dqN
     print('dNull '..i, dqN * RAD_TO_DEG, 'deg')

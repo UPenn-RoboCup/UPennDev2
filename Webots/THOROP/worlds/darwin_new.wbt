@@ -34,8 +34,14 @@ DirectionalLight {
 }
 DirectionalLight {
   direction 0.5 -0.5 0.5
-  intensity 0.5
+  intensity 0.6
 }
+
+DirectionalLight {
+  direction 0.5 0.5 0.5
+  intensity 0.3
+}
+
 DEF STARTLINE Solid {
   translation -2 -2.5 0
   children [

@@ -178,6 +178,8 @@ shared.status.uSupport = vector.zeros(3)
 shared.status.supportLeg = vector.zeros(1)
 shared.status.ph = vector.zeros(1)
 
+shared.status.velActual = vector.zeros(3)
+
 
 --We store the torso velocity (to handle stopping)
 shared.status.uTorsoVel = vector.zeros(3)

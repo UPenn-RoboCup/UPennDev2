@@ -200,6 +200,8 @@ function walk.update()
 
     --step_planner:update_velocity(hcm.get_motion_velocity())
     velCurrent = step_planner:update_velocity(mcm.get_walk_vel())
+    mcm.set_status_velActual(velCurrent)
+
     --Calculate next step and torso positions based on velocity      
     uLeft_now, uRight_now, uTorso_now, uLeft_next, uRight_next, uTorso_next, uSupport =
       step_planner:get_next_step_velocity(uLeft_next,uRight_next,uTorso_next,supportLeg,initial_step)

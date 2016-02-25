@@ -860,11 +860,28 @@ if debug_out then
   debug_count=debug_count+1
   if debug_count%10==0 then
     local LLeg=Body.get_lleg_position()
+
+
+    local Lcur=Body.get_lleg_current()
+    local Rcur=Body.get_rleg_current()
+
+
+print(unpack(Lcur))
+
+    local vel = mcm.get_status_velActual()
+    local sLeg = mcm.get_status_supportLeg()
+    local ph = mcm.get_status_ph()
+
     fout:write(sformat(
-    '%.2f    %.2f %.2f %.2f %.2f %.2f %.2f\n',
-    Body.get_time(),
-    qLegs[3],qLegs[4],qLegs[5],
-    LLeg[3],LLeg[4],LLeg[5]
+    '%.2f %.2f %d   %.3f    %.3f %.3f %.3f    %.3f %.3f %.3f\n',
+
+Body.get_time(), ph,sLeg, vel[1],
+Lcur[3],Lcur[4],Lcur[5],
+Rcur[3],Rcur[4],Rcur[5]
+
+--    Body.get_time(),
+--    qLegs[3],qLegs[4],qLegs[5],
+--    LLeg[3],LLeg[4],LLeg[5]
     ))
   fout:flush()
   end

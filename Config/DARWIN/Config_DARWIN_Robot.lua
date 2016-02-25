@@ -278,37 +278,14 @@ Config.parts = {
 	Lidar = vector.count(indexLidar,nJointLidar)
 }
 
---[[
-local jointNames = {
-	"Neck","Head", -- Head (Yaw,pitch)
-	-- Left Arm
-	"ShoulderL", "ArmUpperL", "LeftShoulderYaw",
-	"ArmLowerL","LeftWristYaw","LeftWristRoll","LeftWristYaw2",
-	-- Left leg
-	"PelvYL","PelvL","LegUpperL","LegLowerL","AnkleL","FootL",
-	-- Right leg
-	"PelvYR","PelvR","LegUpperR","LegLowerR","AnkleR","FootR",
-	--Right arm
-	"ShoulderR", "ArmUpperR", "RightShoulderYaw","ArmLowerR",
-	"RightWristYaw","RightWristRoll","RightWristYaw2",
-	-- Waist
-	"TorsoYaw","TorsoPitch",
-	-- Gripper
-	"l_grip", "l_trigger", "l_extra",
-	"r_grip", "r_trigger", "r_extra",
-	-- lidar movement
-	"ChestLidarPan",
-}
---]]
 
+
+--OLD DARWINOP JOINT NAMES
 local jointNames = {"Neck", "Head",
-
    "ShoulderL", "ArmUpperL", "ArmLowerL"   ,"null","null","null","null",
    "PelvYL", "PelvL", "LegUpperL", "LegLowerL", "AnkleL", "FootL", 
    "PelvYR", "PelvR", "LegUpperR", "LegLowerR", "AnkleR", "FootR",
    "ShoulderR", "ArmUpperR", "ArmLowerR"    ,"null","null","null","null", 
-
-
 	"null","null",
 	"null","null","null",
 	"null","null","null",
@@ -556,7 +533,15 @@ if IS_WEBOTS then
 		1,1, -- Head
 		1,-1,-1,  1,  -1,-1,1, --LArm
 		--[[Yaw/Roll:]] 1, -1, --[[3 Pitch:]] -1,-1, 1, 1, --LLeg
-		--[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1, -1, 1, --RLeg
+
+
+
+--		--[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1, -1, 1, --RLeg
+		--[[Yaw/Roll:]] 1, -1, --[[3 Pitch:]] 1,1, -1, 1, --RLeg  --for new darwin op model
+
+
+
+
 		1,-1,-1,  -1,  -1,-1,1, --RArm
 		-- TODO: Check the gripper
 		-1,1, -- Waist

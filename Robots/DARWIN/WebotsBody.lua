@@ -23,6 +23,9 @@ local ENABLE_IMU = true
 
 local OLD_API = webots.wb_device_get_type(webots.wb_robot_get_device(jointNames[1]))==89
 OLD_API=true --HACK FOR DARWIN OP PROTO
+OLD_API=false --Lets use new proto
+
+
 local set_pos, get_pos = webots.wb_motor_set_position, webots.wb_motor_get_position
 if OLD_API then
 	set_pos = webots.wb_servo_set_position

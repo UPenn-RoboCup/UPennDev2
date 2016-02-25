@@ -334,11 +334,13 @@ walk.velLimitX = {-.125,.18} --max vel with heeltoe
 walk.velLimitX = {-.125,.08} --max vel without heeltoe, 295mm bodyheight
 ------------------------------------
 
+--[[
+walk.bodyHeight = 0.24
+--]]
 
 walk.bodyHeight = 0.24
 walk.velLimitX = {-.125,.12} --max vel with heeltoe
-walk.tStep = 3
-
+walk.tStep=2
 
 
 --[[

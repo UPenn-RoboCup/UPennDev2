@@ -231,6 +231,12 @@ fsm.Body = {
 
 
 
+--stepping again
+  {'bodyStop', 'stairclimb', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},  
+
+
+
   {'bodyStop', 'play', 'bodyRobocupIdle'},
   {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
 
@@ -273,13 +279,6 @@ fsm.Body = {
 	{'bodyRobocupGoalieDone', 'stop', 'bodyStop'},
 	{'bodyRobocupGoalieDone', 'attacker', 'bodyRobocupIdle'},
 
-
---[[
-  {'bodyStop', 'stepover1', 'bodyStep'},
-  {'bodyStep', 'done', 'bodyStop'},
-  {'bodyStep', 'nextstep', 'bodyStep'},
---]]
-
 }
 
 fsm.Motion = {
@@ -312,6 +311,10 @@ fsm.Motion = {
 
 	--
 	{'motionStepPreview', 'done', 'motionStance'},
+
+--stair again
+  {'motionStance', 'stair', 'motionStepPreviewStair'},
+  {'motionStepPreviewStair','done','motionStance'},
 }
 
 

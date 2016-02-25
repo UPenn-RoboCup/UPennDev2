@@ -518,6 +518,10 @@ std::vector<double> THOROP_kinematics_inverse_leg_toelift(Transform trLeg, int l
     ankle_tilt_angle=toeliftMin;
   }
 
+//hack
+  ankle_tilt_angle=0.0;
+
+
   //lets calculate correct ankle offset position
   double dAnkle1Mod = vecx0*(-footHeelX + footC*cos(ankle_tilt_angle+afootA)) + vecz0*footC*sin(ankle_tilt_angle+afootA);
   double dAnkle2Mod = vecx1*(-footHeelX +  footC*cos(ankle_tilt_angle+afootA)) + vecz1*footC*sin(ankle_tilt_angle+afootA);

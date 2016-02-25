@@ -180,6 +180,8 @@ function state.entry()
 
   local leg_move_factor = math.abs(uLeftTorso[1]-uRightTorso[1])/0.25
 
+
+--[[
   is_possible = true
   hcm.set_step_nosolution(0)
 
@@ -194,28 +196,21 @@ function state.entry()
     is_possible = false
     return
   end
-
-  supportLeg=hcm.get_step_supportLeg()
-
-
--- Determine next step leg, position, height, angle  
--- supportLeg = footstepplanner.getnextstep()
-  
   if hcm.get_step_nosolution()>0 then
     --don't start step if there's no foot positions available!
     is_possible = false
     return
   end
 
-  local step_min = 0.05
+--]]
 
+  
+  local step_min = Config.walk.stepHeightStairMin or 0.08
 
-  local step_min = 0.06
-
-
-  local step_min = 0.08
-
-
+-- Determine next step leg, position, height, angle  
+-- supportLeg = footstepplanner.getnextstep()
+  
+  supportLeg=hcm.get_step_supportLeg()
   step_relpos = hcm.get_step_relpos() 
   step_zpr = hcm.get_step_zpr()
   if step_zpr[1]>=0.03 then 
@@ -223,8 +218,6 @@ function state.entry()
     sh1=math.max(0.15,sh1)
   else sh1,sh2 = step_min, step_zpr[1]
   end
-
-  
 
   local st,wt = 1.0,3.0
 

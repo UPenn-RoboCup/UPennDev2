@@ -333,6 +333,20 @@ walk.velLimitX = {-.125,.18}
 
 walk.velLimitX = {-.125,.08}
 ------------------------------------
+
+
+
+walk.stepHeightStairMin = 0.02
+walk.stepHeightStairMax = 0.07
+walk.stepStairst = 1.0
+walk.stepStairwt = 3.0
+
+walk.anklePitchLimit=vector.new{-90,90}*DEG_TO_RAD --teddy has ankle ROM limitation
+walk.raise_body = true
+walk.use_exact_tZMP = true
+
+
+
 -- Associate with the table
 Config.walk    = walk
 Config.stance  = stance

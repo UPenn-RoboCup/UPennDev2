@@ -1,0 +1,99 @@
+#VRML_SIM V7.4.3 utf8
+WorldInfo {
+  info [
+    "Default world for the THOR-OP"
+  ]
+  title "THOR-OP Only"
+  ERP 0.1
+  #basicTimeStep 1
+  basicTimeStep 10
+  FPS 30
+  contactProperties [
+    ContactProperties {
+      material1 "feet"
+      material2 "floor"
+      coulombFriction 0.5
+      forceDependentSlip 0.0001
+    }
+  ]
+}
+Viewpoint {
+  orientation 0 -1 0 3.14
+  position -0.699872 0.2763 -4.91887
+}
+Background {
+  skyColor [
+    0.9 0.9 0.9
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+DEF STARTLINE Solid {
+  translation -2 -2.5 0
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+        texture ImageTexture {
+          url [
+            "textures/texture_grid.png"
+          ]
+        }
+      }
+      geometry Box {
+        size 5 5 2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 5 5 2
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation -0.57 0.025 0
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+      }
+      geometry Box {
+        size 0.12 0.05 2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.12 0.05 2
+      }
+    ]
+  }
+  locked TRUE
+}
+DARwInOPGPS {
+  translation -0.445861 0.334724 0.000710103
+  rotation 0 1 0 -1.5708
+  controller "thorop"
+  controllerArgs "0 32"
+  cameraWidth 1
+  cameraHeight 1
+  max_torque1 50
+  max_velocity1 50
+}

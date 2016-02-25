@@ -206,6 +206,13 @@ function state.entry()
 
   
   local step_min = Config.walk.stepHeightStairMin or 0.08
+  local step_max = Config.walk.stepHeightStairMax or 0.15
+
+  local st,wt = 1.0,3.0
+  local st,wt = Config.walk.stepStairst or 1.0,Config.walk.stepStairwt or 3.0
+
+
+
 
 -- Determine next step leg, position, height, angle  
 -- supportLeg = footstepplanner.getnextstep()
@@ -215,11 +222,11 @@ function state.entry()
   step_zpr = hcm.get_step_zpr()
   if step_zpr[1]>=0.03 then 
     sh1,sh2 = step_zpr[1]+step_min, step_zpr[1]
-    sh1=math.max(0.15,sh1)
+    sh1=math.max(step_max,sh1)
   else sh1,sh2 = step_min, step_zpr[1]
   end
 
-  local st,wt = 1.0,3.0
+  
 
   local aShiftY0=mcm.get_walk_aShiftY()
 

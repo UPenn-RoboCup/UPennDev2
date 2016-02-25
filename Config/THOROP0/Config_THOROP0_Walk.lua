@@ -257,6 +257,13 @@ walk.sideModR = -0.03
 walk.sideMod2R = 0.01 
 
 
+--release it for climbing...
+walk.anklePitchLimit=vector.new{-90,90}*DEG_TO_RAD --teddy has ankle ROM limitation
+walk.raise_body = true
+walk.use_exact_tZMP = true
+---------------------------------------------
+
+
 ------------------------------------
 -- Associate with the table
 Config.walk    = walk

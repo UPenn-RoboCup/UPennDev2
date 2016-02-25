@@ -43,16 +43,14 @@ local function print_override()
 end
 
 
-local stair_height = 0.20
-local step_dist = 0.30
+local stair_height = 0.2
+local step_dist = 0.35
 
 if Config.PLATFORM_NAME=='DARWIN' then
-  stair_height = 0.10
+  stair_height = 0.05
   step_dist = 0.15
 
 end
-
-stair_height = 0.0
 
 local function update(key_code)
   if type(key_code)~='number' or key_code==0 then return end
@@ -96,22 +94,17 @@ elseif key_char_lower==("4") then
     hcm.set_step_relpos({step_dist,0,0})
     hcm.set_step_zpr({stair_height,0,0}) --stair
 
-
-    hcm.set_step_relpos({0.30,0,0})
-    hcm.set_step_zpr({0.0,0,0}) --stair    
-
-
     body_ch:send'stairclimb'   
 
 elseif key_char_lower==("5") then 
     hcm.set_step_supportLeg(0) --move lfoot
-    hcm.set_step_relpos({-0.30,0,0})
+    hcm.set_step_relpos({step_dist,0,0})
     hcm.set_step_zpr({-stair_height,0,0}) --stair
     body_ch:send'stairclimb' 
 
 elseif key_char_lower==("6") then 
     hcm.set_step_supportLeg(1) --move rfoot
-    hcm.set_step_relpos({-0.30,0,0})
+    hcm.set_step_relpos({step_dist,0,0})
     hcm.set_step_zpr({-stair_height,0,0}) --stair
     body_ch:send'stairclimb' 
 

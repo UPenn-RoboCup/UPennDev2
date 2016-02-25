@@ -1,0 +1,106 @@
+#VRML_SIM V7.4.3 utf8
+WorldInfo {
+  info [
+    "World for the Adult size soccer league"
+  ]
+  title "THORwIn2 RoboCup"
+  basicTimeStep 10
+  FPS 15
+}
+Viewpoint {
+  orientation 0 -1 0 3.14
+  position -0.0799999 0.68563 -4.99987
+}
+Background {
+  skyColor [
+    0.9 0.9 0.9
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.3
+}
+DirectionalLight {
+  direction 0.5 -0.2 0.5
+  intensity 0.3
+}
+DirectionalLight {
+  direction 0.5 -0.2 -0.5
+  intensity 0.3
+}
+DirectionalLight {
+  direction -0.5 -0.2 0.5
+  intensity 0.3
+}
+DirectionalLight {
+  direction -0.5 -0.2 -0.5
+  intensity 0.3
+}
+THORwIn_Dale_halfmass {
+  translation 0.37499 1.15119 -0.00059723
+  rotation 0 1 0 -1.5708
+  controller "thorop"
+  controllerArgs "0 32"
+  max_torque_400w 90
+  max_torque_200w 90
+  max_torque_100w 45
+  damping_constant 0
+  footContactMaterial "feet"
+}
+DEF STARTLINE Solid {
+  translation -4 -5 0
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+        texture ImageTexture {
+          url [
+            "textures/texture_grid.png"
+          ]
+        }
+      }
+      geometry Box {
+        size 10 10 2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 10 10 2
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 0.03 0.1 0
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 0
+        }
+      }
+      geometry Box {
+        size 0.25 0.2 2
+      }
+    }
+  ]
+  boundingObject Transform {
+    children [
+      Box {
+        size 0.25 0.2 2
+      }
+    ]
+  }
+  locked TRUE
+}

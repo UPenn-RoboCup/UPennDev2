@@ -273,6 +273,13 @@ fsm.Body = {
 	{'bodyRobocupGoalieDone', 'stop', 'bodyStop'},
 	{'bodyRobocupGoalieDone', 'attacker', 'bodyRobocupIdle'},
 
+
+--[[
+  {'bodyStop', 'stepover1', 'bodyStep'},
+  {'bodyStep', 'done', 'bodyStop'},
+  {'bodyStep', 'nextstep', 'bodyStep'},
+--]]
+
 }
 
 fsm.Motion = {

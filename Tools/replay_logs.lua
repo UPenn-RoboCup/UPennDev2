@@ -270,12 +270,15 @@ while not done do
 -- Done with SJ's low level control to turn it: 1433624312.668
 -- Back from the valve: 1433624372.5473
 --print( t/1e3, (t-t0)/1e3, b, t/1e3 - 1433538627.495)
+
+-- 1433623922 --1433623994.7933
+
   -- TODO: Loop the crossing threshold (Figure 23) @ 1433623813.5
-  local loopy = true
+  local loopy = false
   
 	if i==0 then break end
                  
-	if t_cursor >= 1433623922 then  -- 1433623922 --1433623994.7933
+	if t_cursor >= 1433624070 then  
     repeat
   		print(i, 'Time:', t_n)
   		print(i, dt, names[i])

@@ -1,8 +1,10 @@
 clear all;
 
 %% List the logs
-lsPlan = dir('~/Dropbox/IROS2016/data/take2/plan*.arm');
-lsAdlib = dir('~/Dropbox/IROS2016/data/take2/adlib*.arm');
+root = '~/Dropbox/IROS2016/data';
+take = 'take3';
+lsPlan = dir(fullfile(root, take, 'plan*.arm'));
+lsAdlib = dir(fullfile(root, take, 'adlib*.arm'));
 paths = cell(1, numel(lsPlan));
 breaks = [];
 
@@ -70,22 +72,48 @@ for i=1:numel(fpaths)
 end
 
 %% Add the alpha weighting
-alpha1 = zeros(1, ranges(end));
-alpha2 = zeros(1, ranges(end));
+alpha1 = zeros(ranges(end), 1);
+alpha2 = zeros(ranges(end), 1);
 for i=2:numel(ranges)-1
     dr = [ranges(i)+1:ranges(i+1)] - ranges(i);
-    alpha1(ranges(i)+1:ranges(i+1)) = exp(-dr);
+    alpha1(ranges(i)+1:ranges(i+1)) = exp(-(dr-1));
 end
 
 for i=2:numel(ranges)-1
     dr = [ranges(i-1)+1:ranges(i)] - ranges(i-1);
-    alpha2(ranges(i-1)+1:ranges(i)) = -1*flip(exp(-dr));
+    alpha2(ranges(i-1)+1:ranges(i)) = -1*flip(exp(-(dr-1)));
 end
-figure(2);
-plot(alpha1+alpha2);
 
-%% Plot
-figure(1);
+alpha = alpha1+alpha2;
+
+%% Identify the features
+np = size(apath, 1);
+% Similar config... (from Config_Arm)
+qSimilar = deg2rad([-20, -60, -90, -120, 0, -45, 0]);
+f1 = sum(apath - repmat(qSimilar, np, 1), 2).^2;
+
+% Shoulder Yaw
+f2 = apath(:, 2).^2;
+
+% f3 is the mid of rnage of motion
+qMid = [0, 0.759218, 0, -1.39626, 0, 0, 0];
+
+f3 = apath - repmat(qMid, np, 1);
+f3 = sum(f3, 2).^2;
+
+% Elbow extension
+f4 = apath(:, 4).^2;
+
+% All features merged
+features = [f1, f2, f3];
+
+%% Weight the features
+af = features .* repmat(alpha, [1, size(features, 2)]);
+af = sum(af, 1);
+
+%% Plot path
+hPath = figure(1);
+set(hPath, 'Position', [0, 0, 1024, 768]);
 clf;
 hold on;
 for i=1:numel(fpaths)
@@ -111,3 +139,21 @@ h_legend = legend(...
     'Wr Roll 2');
 h_legend.FontSize = 16;
 h_legend.Location = 'best';
+
+print(fullfile(root, 'adapted-path'),'-dpng');
+
+%% Alpha weights
+hAlpha = figure(2);
+set(hAlpha, 'Position', [0, 0, 640, 480]);
+plot(alpha);
+for i=2:numel(ranges)-1
+    line([ranges(i)+0.5, ranges(i)+0.5], [-pi, pi], 'LineWidth', 2, 'Color', 'k');
+end
+
+xlim([1, ranges(end)]);
+ylim([-1, 1]);
+title('Gradient Weighting', 'FontSize', 18);
+xlabel('Timestep', 'FontSize', 16);
+ylabel('Alpha', 'FontSize', 16);
+
+print(fullfile(root, 'alpha-path'),'-dpng');

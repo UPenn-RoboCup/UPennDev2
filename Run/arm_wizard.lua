@@ -9,6 +9,7 @@ local T = require'Transform'
 local vector = require'vector'
 
 local counter = 0
+local f_adlib
 
 local function get_config(path)
 	print(unpack(path))
@@ -67,8 +68,9 @@ local function get_armplan(plan)
 	print(counter, 'Sending the paths', #lpath, #rpath, #wpath)
   
   -- -- -- -- -- -- -- -- -- -- --
+  local t_log = unix.time()
   -- Save the path
-  local fname = string.format('/tmp/arm_plan_%d_%d.plan', unix.time(), counter)
+  local fname = string.format('/tmp/plan_%d_%d.arm', t_log, counter)
   local f = io.open(fname, 'w')
   f:write(mpack{
     lpath = lpath,
@@ -78,6 +80,11 @@ local function get_armplan(plan)
   })
   f:close()
   -- -- -- -- -- -- -- -- -- -- --
+  -- Manage adlib logs
+  if f_adlib then f_adlib:close() end
+  local fname = string.format('/tmp/adlib_%d_%d.arm', t_log, counter)
+  f_adlib = io.open(fname, 'w')
+  --]]
   
 	return {lpath, rpath, wpath}
 end
@@ -91,6 +98,7 @@ local function adlib(plan)
   local lPlanner = movearm.lPlanner
   local lPlan = plan.left
   util.ptable(lPlan)
+  
 
   local nq = #lPlan.qLArm0
   local nNull = 1 -- For now
@@ -107,7 +115,6 @@ local function adlib(plan)
   for i=1, nNull do
     local nullDir = U:select(2, i)
     
-    
     local dqN = dNull[i] * vector.new(nullDir) * dGAIN
     
     -- Maybe consistent?
@@ -122,17 +129,12 @@ local function adlib(plan)
     print('dNull '..i, dqN * RAD_TO_DEG, 'deg')
   end
   
-  
   print(counter, 'Sending adlib', #qAdlibL)
-  
-  ----[[
-  -- Save the path
-  counter = counter + 1
-  local fname = string.format('/tmp/arm_adlib_%d_%d.plan', unix.time(), counter)
-  local f = io.open(fname, 'w')
-  f:write(mpack{ qAdlibL = qAdlibL, counter = counter })
-  f:close()
-  --]]
+  lPlan.qAdlib = qAdlibL
+  lPlan.counter = counter
+  -- f_adlib should be open...
+  assert(f_adlib, "Why no adlib?")
+  f_adlib:write(mpack(lPlan))
   
   -- TODO: Return three arrays of vectors {left, right, waist}
   return {qAdlibL}

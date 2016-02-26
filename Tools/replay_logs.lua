@@ -214,19 +214,19 @@ local mesh0_ch = si.new_publisher('mesh0')
 
 local ch = {
 	--itty0_ch,
-	--fb_ch,
+	fb_ch,
 	camera0_ch,
 	mesh0_ch
 }
 local names = {
 	--'itty0',
-	--'fb',
+	'fb',
 	'camera0',
 	'mesh0'
 }
 local coro = {
 	--co_itty0,
-	--co_fb,
+	co_fb,
 	co_camera0,
 	co_mesh0
 }
@@ -243,6 +243,7 @@ for i, co in ipairs(coro) do
 end
 local t_cursor = math.min(unpack(t_next))
 
+
 local cnt = 0
 local done
 while not done do
@@ -258,12 +259,29 @@ while not done do
 	dt = dt / 2
 	-- Send
 	local data = data_next[i]
+
+-- 1433624372: Near the valve
+-- At the door: 1433623646.0488
+-- Door swings open: 1433623732.4492
+-- Begin walking through the door: 1433623770.537
+-- Inside conditions: 1433623822.3194
+-- Move arm to the valve: 1433624078.416
+-- Aligned to the valve: 1433624212.348
+-- Done with SJ's low level control to turn it: 1433624312.668
+-- Back from the valve: 1433624372.5473
+--print( t/1e3, (t-t0)/1e3, b, t/1e3 - 1433538627.495)
+  -- TODO: Loop the crossing threshold (Figure 23) @ 1433623813.5
+  local loopy = true
+  
 	if i==0 then break end
-	if t_cursor >= 1433624372 then
-		print(i, 'Time:', t_n)
-		print(i, dt, names[i])
-		unix.usleep( dt * 1e6 )
-		ch[i]:send(data)
+                 
+	if t_cursor >= 1433623922 then  -- 1433623922 --1433623994.7933
+    repeat
+  		print(i, 'Time:', t_n)
+  		print(i, dt, names[i])
+  		unix.usleep( dt * 1e6 )
+  		ch[i]:send(data)
+    until not loopy
 	end
 	-- Repopulate
 	local ok, meta, payload = coroutine.resume(coro[i])

@@ -2,7 +2,7 @@ clear all;
 
 %% List the logs
 root = '~/Dropbox/IROS2016/data';
-take = 'take3';
+take = 'take2';
 lsPlan = dir(fullfile(root, take, 'plan*.arm'));
 lsAdlib = dir(fullfile(root, take, 'adlib*.arm'));
 paths = cell(1, numel(lsPlan));
@@ -10,7 +10,7 @@ breaks = [];
 
 %% Grab the path
 for i=1:numel(lsPlan)
-    disp(i);
+    %disp(i);
     %% Grab the generated path
     fid = fopen(fullfile(lsPlan(i).folder, lsPlan(i).name));
     raw = fread(fid,Inf,'*uint8');
@@ -26,7 +26,7 @@ end
 
 %% Grab the adlib on the path
 for i=1:numel(lsAdlib)
-    disp(i);
+    %disp(i);
     fid = fopen(fullfile(lsAdlib(i).folder, lsAdlib(i).name));
     raw = fread(fid,Inf,'*uint8');
     fclose(fid);
@@ -43,7 +43,7 @@ for i=1:numel(lsAdlib)
     % Find the breakpoint
     for j=1:size(path, 1)
         dnorm = norm(path(j,:)-qStop);
-        fprintf('Break: %d %d/%d %.6f\n', i, j, size(path, 1), dnorm);
+        %fprintf('Break: %d %d/%d %.6f\n', i, j, size(path, 1), dnorm);
         if dnorm < 1e-6
             breaks(i) = j;
             break
@@ -89,8 +89,8 @@ alpha = alpha1+alpha2;
 %% Identify the features
 np = size(apath, 1);
 % Similar config... (from Config_Arm)
-qSimilar = deg2rad([-20, -60, -90, -120, 0, -45, 0]);
-f1 = sum(apath - repmat(qSimilar, np, 1), 2).^2;
+qGravity = deg2rad([0, 60, 90, -120, -90, -15, 0]);
+f1 = sum(apath - repmat(qGravity, np, 1), 2).^2;
 
 % Shoulder Yaw
 f2 = apath(:, 2).^2;
@@ -106,10 +106,26 @@ f4 = apath(:, 4).^2;
 
 % All features merged
 features = [f1, f2, f3];
+clear f1 f2 f3;
 
 %% Weight the features
 af = features .* repmat(alpha, [1, size(features, 2)]);
 af = sum(af, 1);
+
+fprintf('%s | Weighted features: %.2f %.2f %.2f\n', take, af);
+
+%% Loss of the path
+% Pure loss of the path - how well it actually followed, by the magnitude
+% of the human interaction, essentially
+losses = zeros(numel(ranges)-2, nq);
+normLosses = zeros(size(losses, 1), 1);
+for i=2:numel(ranges)-1
+    before = apath(ranges(i), :); % bad by robot
+    after = apath(ranges(i)+1, :); % Good by user
+    losses(i-1,:) = before - after;
+    normLosses(i-1) = norm(losses(i-1,:));
+end
+fprintf('%s | Loss of the path: %.2f\n', take, sum(normLosses));
 
 %% Plot path
 hPath = figure(1);
@@ -140,8 +156,6 @@ h_legend = legend(...
 h_legend.FontSize = 16;
 h_legend.Location = 'best';
 
-print(fullfile(root, 'adapted-path'),'-dpng');
-
 %% Alpha weights
 hAlpha = figure(2);
 set(hAlpha, 'Position', [0, 0, 640, 480]);
@@ -156,4 +170,6 @@ title('Gradient Weighting', 'FontSize', 18);
 xlabel('Timestep', 'FontSize', 16);
 ylabel('Alpha', 'FontSize', 16);
 
-print(fullfile(root, 'alpha-path'),'-dpng');
+% Save the images
+%print(fullfile(root, 'adapted-path'),'-dpng');
+%print(fullfile(root, 'alpha-path'),'-dpng');

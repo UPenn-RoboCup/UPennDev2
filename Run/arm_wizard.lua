@@ -28,14 +28,17 @@ local function get_armplan(plan)
   
 	local lco, rco = movearm.goto(plan.left, plan.right)
 
+  local Js, nulls
+
 	local wpath = {}
 	--
 	local lpath = {}
 	if type(lco)=='thread' then
 		while coroutine.status(lco)~='dead' do
-			local okL, qLWaypoint, qWaistpoint = coroutine.resume(lco)
+			local okL, qLWaypoint, qWaistpoint, j, n = coroutine.resume(lco)
 			table.insert(lpath, qLWaypoint)
 			if qWaistpoint then table.insert(wpath, qWaistpoint) end
+      if j and n then Js, nulls = j, n end
 		end
 	else
 		print('lco', lco)
@@ -50,6 +53,9 @@ local function get_armplan(plan)
 	else
 		print('rco', rco)
 	end
+  table.remove(lpath)
+  table.remove(rpath)
+  table.remove(wpath)
 
 	-- Optimize the paths
 	--[[
@@ -73,6 +79,7 @@ local function get_armplan(plan)
   local fname = string.format('/tmp/plan_%d_%d.arm', t_log, counter)
   local f = io.open(fname, 'w')
   f:write(mpack{
+    plan = plan,
     lpath = lpath,
     rpath = rpath,
     wpath = wpath,
@@ -84,6 +91,12 @@ local function get_armplan(plan)
   if f_adlib then f_adlib:close() end
   local fname = string.format('/tmp/adlib_%d_%d.arm', t_log, counter)
   f_adlib = io.open(fname, 'w')
+  
+  mattorch.saveTable(string.format('/tmp/js_%d_%d.arm', t_log, counter), {
+    Js = Js,
+    nulls = nulls,
+  })
+  
   --]]
   
 	return {lpath, rpath, wpath}

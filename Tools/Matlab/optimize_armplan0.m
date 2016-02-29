@@ -38,7 +38,7 @@ vwPath0 = cell2mat(vwPath);
 
 %% Acceleration matrix
 d2 = 2*ones(n,1);
-% Proper doundary condition (Central difference 2nd order):
+% Proper boundary condition (Central difference 2nd order):
 %http://www.mathematik.uni-dortmund.de/~kuzmin/cfdintro/lecture4.pdf
 d2(1:nq) = 1;
 d2(end-nq+1:end) = 1;

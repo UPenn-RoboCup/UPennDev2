@@ -1,44 +1,47 @@
-clear all;
+clear variables;
+USE_TASK = 0;
+USE_PLOT = 0;
 
 %% List the logs
 root = '~/Dropbox/IROS2016/data';
-take = 'take2';
+take = 'take5';
 lsPlan = dir(fullfile(root, take, 'plan*.arm'));
 lsAdlib = dir(fullfile(root, take, 'adlib*.arm'));
+lsJs = dir(fullfile(root, take, 'js*.arm'));
 paths = cell(1, numel(lsPlan));
 breaks = [];
 
 %% Grab the path
 for i=1:numel(lsPlan)
-    %disp(i);
-    %% Grab the generated path
+    % Grab the generated path
     fid = fopen(fullfile(lsPlan(i).folder, lsPlan(i).name));
     raw = fread(fid,Inf,'*uint8');
     fclose(fid);
-    clear fid;
     obj = msgpack('unpack', raw);
-    clear raw;
     nq = numel(obj.lpath{1});
     np = numel(obj.lpath);
     paths{i} = reshape(cell2mat(obj.lpath), [nq, np])';
-    clear obj;
+    if i==1
+        plan0 = obj;
+        plan0.lpath = paths{i};
+    end
 end
+clear fid obj raw;
 
 %% Grab the adlib on the path
 for i=1:numel(lsAdlib)
-    %disp(i);
     fid = fopen(fullfile(lsAdlib(i).folder, lsAdlib(i).name));
     raw = fread(fid,Inf,'*uint8');
     fclose(fid);
-    clear fid;
+    
     if numel(raw)==0
         break;
     end
     objs = msgpack('unpacker', raw);
-    clear raw;
+    
     qStop = objs{1}.qLArm0;
     qDesired = objs{end}.qAdlib;
-    clear objs;
+    
     path = paths{i};
     % Find the breakpoint
     for j=1:size(path, 1)
@@ -51,6 +54,17 @@ for i=1:numel(lsAdlib)
     end
     
 end
+clear fid obj raw;
+
+%% Grab the Jacobians
+for i=1:numel(lsJs)
+    load(fullfile(lsJs(i).folder, lsJs(i).name), '-mat');
+    if i==1
+        plan0.Js = Js;
+        plan0.nulls = nulls;
+    end
+end
+clear Js nulls;
 
 %% Split up
 fpaths = cell(size(paths));
@@ -129,86 +143,107 @@ fprintf('%s | Loss of the path: %.2f\n', take, sum(normLosses));
 
 
 %% FK readings
-fid = fopen('/tmp/fk.mp');
-raw = fread(fid,Inf,'*uint8');
-fclose(fid);
-clear fid;
-obj = msgpack('unpack', raw);
-clear raw;
-fkPath = [obj{:}];
-fkPath = reshape(fkPath, [6, numel(fkPath)/6])';
-
-%% Plot path
-hPath = figure(1);
-set(hPath, 'Position', [0, 0, 1024, 768]);
-clf;
-hold on;
-for i=1:numel(fpaths)
-    plot(ranges(i)+1:ranges(i+1), fpaths{i});
-end
-hold off;
-
-for i=2:numel(ranges)-1
-    line([ranges(i)+0.5, ranges(i)+0.5], [-pi, pi], 'LineWidth', 2, 'Color', 'k');
-end
-xlim([1, ranges(end)]);
-ylim([-pi, pi]);
-title('Adapted Path', 'FontSize', 18);
-xlabel('Timestep', 'FontSize', 16);
-ylabel('Angle (rad)', 'FontSize', 16);
-h_legend = legend(...
-    'Sh Pitch',...
-    'Sh Yaw',...
-    'Sh Roll',...
-    'Elbow',...
-    'Wr Roll 1',...
-    'Wr Yaw',...
-    'Wr Roll 2');
-h_legend.FontSize = 16;
-h_legend.Location = 'best';
-
-%% Alpha weights
-hAlpha = figure(2);
-clf;
-set(hAlpha, 'Position', [0, 0, 640, 480]);
-plot(alpha);
-for i=2:numel(ranges)-1
-    line([ranges(i)+0.5, ranges(i)+0.5], [-pi, pi], 'LineWidth', 2, 'Color', 'k');
+if USE_TASK==1
+    msg = msgpack('pack', apath);
+    fid = fopen('/tmp/qp.path', 'w');
+    fwrite(fid, msg);
+    fclose(fid);
+    clear fid msg;
+    % RUN LUA SCRIPT
+    fid = fopen('/tmp/fk.mp');
+    raw = fread(fid,Inf,'*uint8');
+    fclose(fid);
+    clear fid;
+    obj = msgpack('unpack', raw);
+    clear raw;
+    fkPath = [obj{:}];
+    fkPath = reshape(fkPath, [6, numel(fkPath)/6])';
 end
 
-xlim([1, ranges(end)]);
-ylim([-1, 1]);
-title('Gradient Weighting', 'FontSize', 18);
-xlabel('Timestep', 'FontSize', 16);
-ylabel('Alpha', 'FontSize', 16);
+%% Re-run the path optimization
+optimize_augmented(plan0.lpath, plan0.Js, plan0.nulls);
 
-%% Task Space plot
-hTask = figure(3);
-clf;
-[hAx, h1, h2] = plotyy(...
-    1:size(fkPath,1), fkPath(:, 1:3), ...
-    1:size(fkPath,1), rad2deg(fkPath(:, 4:6)) );
-for i=2:numel(ranges)-1
-    line([ranges(i)+0.5, ranges(i)+0.5], [-pi, pi], 'LineWidth', 2, 'Color', 'k');
+%% Plot things
+if USE_PLOT
+    
+    %% Plot path
+    hPath = figure(1);
+    clf;
+    set(hPath, 'Position', [0, 0, 1024, 768]);
+    hold on;
+    for i=1:numel(fpaths)
+        plot(ranges(i)+1:ranges(i+1), rad2deg(fpaths{i}));
+    end
+    hold off;
+    
+    for i=2:numel(ranges)-1
+        line([ranges(i)+0.5, ranges(i)+0.5], [-180, 180], 'LineWidth', 2, 'Color', 'k');
+    end
+    xlim([1, ranges(end)]);
+    ylim([-180, 180]);
+    title('Adapted Path', 'FontSize', 18);
+    xlabel('Timestep', 'FontSize', 16);
+    ylabel('Angle (deg)', 'FontSize', 16);
+    h_legend = legend(...
+        'Sh Pitch',...
+        'Sh Yaw',...
+        'Sh Roll',...
+        'Elbow',...
+        'Wr Roll 1',...
+        'Wr Yaw',...
+        'Wr Roll 2');
+    h_legend.FontSize = 16;
+    h_legend.Location = 'best';
+    
+    %% Alpha weights
+    hAlpha = figure(2);
+    clf;
+    set(hAlpha, 'Position', [0, 0, 640, 480]);
+    plot(alpha);
+    for i=2:numel(ranges)-1
+        line([ranges(i)+0.5, ranges(i)+0.5], [-pi, pi], 'LineWidth', 2, 'Color', 'k');
+    end
+    
+    xlim([1, ranges(end)]);
+    ylim([-1, 1]);
+    title('Gradient Weighting', 'FontSize', 18);
+    xlabel('Timestep', 'FontSize', 16);
+    ylabel('Alpha', 'FontSize', 16);
+    
+    %% Task Space plot
+    if USE_TASK==1
+        hTask = figure(3);
+        clf;
+        set(hTask, 'Position', [0, 0, 640, 480]);
+        x = 1:size(fkPath,1);
+        [hAx, h1, h2] = plotyy(...
+            x, fkPath(:, 1:3), ...
+            x, rad2deg(fkPath(:, 4:6)) );
+        for i=2:numel(ranges)-1
+            line([ranges(i)+0.5, ranges(i)+0.5], [-pi, pi], 'LineWidth', 2, 'Color', 'k');
+        end
+        xlim(hAx(1), [1, ranges(end)]);
+        xlim(hAx(2), [1, ranges(end)]);
+        title('Task Space Path', 'FontSize', 18);
+        xlabel('Timestep', 'FontSize', 16);
+        ylabel(hAx(1), 'Position (m)', 'FontSize', 16);
+        ylabel(hAx(2), 'Angle (deg)', 'FontSize', 16);
+        h_legend = legend(hAx(1),...
+            'x',...
+            'y',...
+            'z');
+        h_legend.FontSize = 16;
+        h_legend.Location = 'best';
+        h_legend = legend(hAx(2),...
+            'Roll',...
+            'Pitch',...
+            'Yaw');
+        h_legend.FontSize = 16;
+        h_legend.Location = 'best';
+    end
+    
 end
-xlim([1, ranges(end)]);
-title('Task Space Path', 'FontSize', 18);
-xlabel('Timestep', 'FontSize', 16);
-ylabel(hAx(1), 'Position (m)', 'FontSize', 16);
-ylabel(hAx(2), 'Angle (deg)', 'FontSize', 16);
-h_legend = legend(hAx(1),...
-    'x',...
-    'y',...
-    'z');
-h_legend.FontSize = 16;
-h_legend.Location = 'best';
-h_legend = legend(hAx(2),...
-    'Roll',...
-    'Pitch',...
-    'Yaw');
-h_legend.FontSize = 16;
-h_legend.Location = 'best';
-
-% Save the images
+%% Save the images
 %print(fullfile(root, 'adapted-path'),'-dpng');
 %print(fullfile(root, 'alpha-path'),'-dpng');
+%print(fullfile(root, 'adapted-task'),'-dpng');

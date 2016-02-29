@@ -80,6 +80,11 @@ local function co_play(self, plan, callback)
 		self:optimize(plan, true)
 	end
 	local t1 = unix.time()
+  
+	if not plan.nulls then
+		self:jacobians(plan)
+	end
+  
 	print(string.format("%d iterations %.2f ms (%s)",
 		plan.n_optimizations, (t1 - t0)*1e3, tostring(plan.via)))
 
@@ -105,7 +110,7 @@ local function co_play(self, plan, callback)
 		end
 	end
 	-- TODO: This is a repeat...
-	return qArm, qWaist
+	return qArm, qWaist, plan.Js, plan.nulls
 end
 
 -- Take a desired joint configuration and move linearly in each joint towards it

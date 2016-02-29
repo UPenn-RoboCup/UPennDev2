@@ -127,6 +127,17 @@ for i=2:numel(ranges)-1
 end
 fprintf('%s | Loss of the path: %.2f\n', take, sum(normLosses));
 
+
+%% FK readings
+fid = fopen('/tmp/fk.mp');
+raw = fread(fid,Inf,'*uint8');
+fclose(fid);
+clear fid;
+obj = msgpack('unpack', raw);
+clear raw;
+fkPath = [obj{:}];
+fkPath = reshape(fkPath, [6, numel(fkPath)/6])';
+
 %% Plot path
 hPath = figure(1);
 set(hPath, 'Position', [0, 0, 1024, 768]);
@@ -158,6 +169,7 @@ h_legend.Location = 'best';
 
 %% Alpha weights
 hAlpha = figure(2);
+clf;
 set(hAlpha, 'Position', [0, 0, 640, 480]);
 plot(alpha);
 for i=2:numel(ranges)-1
@@ -169,6 +181,33 @@ ylim([-1, 1]);
 title('Gradient Weighting', 'FontSize', 18);
 xlabel('Timestep', 'FontSize', 16);
 ylabel('Alpha', 'FontSize', 16);
+
+%% Task Space plot
+hTask = figure(3);
+clf;
+[hAx, h1, h2] = plotyy(...
+    1:size(fkPath,1), fkPath(:, 1:3), ...
+    1:size(fkPath,1), rad2deg(fkPath(:, 4:6)) );
+for i=2:numel(ranges)-1
+    line([ranges(i)+0.5, ranges(i)+0.5], [-pi, pi], 'LineWidth', 2, 'Color', 'k');
+end
+xlim([1, ranges(end)]);
+title('Task Space Path', 'FontSize', 18);
+xlabel('Timestep', 'FontSize', 16);
+ylabel(hAx(1), 'Position (m)', 'FontSize', 16);
+ylabel(hAx(2), 'Angle (deg)', 'FontSize', 16);
+h_legend = legend(hAx(1),...
+    'x',...
+    'y',...
+    'z');
+h_legend.FontSize = 16;
+h_legend.Location = 'best';
+h_legend = legend(hAx(2),...
+    'Roll',...
+    'Pitch',...
+    'Yaw');
+h_legend.FontSize = 16;
+h_legend.Location = 'best';
 
 % Save the images
 %print(fullfile(root, 'adapted-path'),'-dpng');

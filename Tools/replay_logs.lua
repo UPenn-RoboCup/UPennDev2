@@ -227,8 +227,8 @@ local names = {
 local coro = {
 	--co_itty0,
 	co_fb,
-	co_camera0,
-	co_mesh0
+	--co_camera0,
+	--co_mesh0
 }
 
 local t_next = {}
@@ -274,7 +274,7 @@ while not done do
 -- 1433623922 --1433623994.7933
 
   -- TODO: Loop the crossing threshold (Figure 23) @ 1433623813.5
-  local loopy = false
+  local loopy = true
   
 	if i==0 then break end
                  

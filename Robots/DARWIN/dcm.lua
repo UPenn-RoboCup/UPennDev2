@@ -2,6 +2,10 @@
 -- Joint Communication Module
 -- (c) 2013 Stephen McGill
 --------------------------------
+
+
+
+
 local Config = Config or require'Config'
 assert(Config, 'JCM requires a config, since it defines joints!')
 local nJoint = Config.nJoint
@@ -48,6 +52,7 @@ end
 
 --  Write to the motors
 shared_data.actuator = {}
+
 -- Setup from libDynamixel every write item
 -- TODO: Separate parameters? RAM/ROM
 for reg, v in pairs(lD.nx_registers) do

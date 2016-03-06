@@ -331,16 +331,18 @@ walk.supportY = 0.03
 walk.tStep=1.2
 walk.velLimitX = {-.125,.18} --max vel with heeltoe
  
-walk.velLimitX = {-.125,.08} --max vel without heeltoe, 295mm bodyheight
+--walk.velLimitX = {-.125,.08} --max vel without heeltoe, 295mm bodyheight
 ------------------------------------
 
 --[[
 walk.bodyHeight = 0.24
 --]]
 
+--[[
 walk.bodyHeight = 0.24
 walk.velLimitX = {-.125,.12} --max vel with heeltoe
 walk.tStep=2
+--]]
 
 
 --[[
@@ -361,12 +363,13 @@ walk.use_exact_tZMP = true
 
 
 
+walk.velLimitX = {-.125,.15} --max vel with heeltoe
+
+walk.bodyTilt = 15*math.pi/180
 
 
 
-
-
-
+walk.tStep=1 --this works with robot lol
 
 
 

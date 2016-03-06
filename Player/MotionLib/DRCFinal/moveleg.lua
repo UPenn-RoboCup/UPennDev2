@@ -797,6 +797,8 @@ end
 
 
 local debug_out =true
+local debug_out =false
+
 local fout
 if debug_out then fout = io.open("webots_debug.txt","w") end
 local debug_count=1

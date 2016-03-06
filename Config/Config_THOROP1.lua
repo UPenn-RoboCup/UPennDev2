@@ -346,6 +346,10 @@ Config.walk.supportY = 0.0
 
 
 
+
+
+
+
 --Config.walk.velLimitX = {-.10,.22} --MAX for non-heel lift
 
 
@@ -366,6 +370,12 @@ Config.walk.zmpHeel,Config.walk.zmpToe = 0,0
 Config.walk.heel_angle = 0*DEG_TO_RAD
 Config.walk.toe_angle = 0*DEG_TO_RAD
 
+
+
+--rolling zmp
+--Config.walk.zmpHeel,Config.walk.zmpToe = -0.0,0.10
+--Config.walk.zmpHeel,Config.walk.zmpToe = -0.0,0.06
+--Config.walk.heeltoe_vel_min = 0.10--MIN speed for heeltoe walk
 
 --]]
 

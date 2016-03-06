@@ -87,8 +87,11 @@ const double MassLeg[6]={0.0270692, 0.167108,0.119043,0.0703098,0.167108,0.07944
 
 
 const double bodyCom[2][3]={
-	{0,0,0},	 //combined com for torso and waist	
-	{0,0,0},	 //combined com for torso and waist	
+	{0,0,0},	 //combined com for torso and waist
+	{0,0,0},	 //combined com for torso and waist
+//	{-0.15,0,0},	 //combined com for torso and waist
+//	{-0.15,0,0},	 //combined com for torso and waist
+
 };
 
 const double InertiaArm[7][6]={

@@ -46,6 +46,7 @@ if IS_WEBOTS then
 
 --		Config.testfile = 'test_testbed'
 	Config.testfile = 'test_walk_robocup'
+	Config.testfile = 'test_stair'
 
 		Config.piecewise_step = true
 --[[		

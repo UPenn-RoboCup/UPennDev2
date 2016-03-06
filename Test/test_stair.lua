@@ -50,6 +50,9 @@ if Config.PLATFORM_NAME=='DARWIN' then
   stair_height = 0.05
   step_dist = 0.15
 
+  stair_height = 0.00
+  step_dist = 0.12
+
 end
 
 local function update(key_code)
@@ -86,13 +89,18 @@ elseif key_char_lower==("3") then
     hcm.set_step_relpos({step_dist,0,0})
     hcm.set_step_zpr({stair_height,0,0}) --stair    
 
-
+    hcm.set_step_supportLeg(1)  --hack
     body_ch:send'stairclimb'   
 
 elseif key_char_lower==("4") then      
     hcm.set_step_supportLeg(1) --move rfoot
     hcm.set_step_relpos({step_dist,0,0})
     hcm.set_step_zpr({stair_height,0,0}) --stair
+
+
+
+    hcm.set_step_relpos({-step_dist,0,0})
+
 
     body_ch:send'stairclimb'   
 
@@ -107,6 +115,22 @@ elseif key_char_lower==("6") then
     hcm.set_step_relpos({step_dist,0,0})
     hcm.set_step_zpr({-stair_height,0,0}) --stair
     body_ch:send'stairclimb' 
+
+
+
+
+
+
+
+
+
+elseif key_char_lower==("7") then
+    body_ch:send'test'
+    
+
+
+
+
 
 	elseif key_char_lower==("8") then  
 		body_ch:send'stop'

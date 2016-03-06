@@ -227,6 +227,8 @@ fsm.Body = {
 --  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
   {'bodyStop', 'approach', 'bodyRobocupApproach'},
 
+  {'bodyStop', 'test', 'bodyTest'},
+  {'bodyTest', 'done', 'bodyStop'},
 
 
 

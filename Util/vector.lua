@@ -58,6 +58,11 @@ function vector.norm(v1)
   for i = 1, #v1 do s = s + pow(v1[i], 2) end
   return sqrt(s)
 end
+function vector.normsq(v1)
+  local s = 0
+  for i = 1, #v1 do s = s + pow(v1[i], 2) end
+  return s
+end
 
 function vector.sum(v1)
   local s = 0

@@ -1,8 +1,9 @@
 
 ## Tuning
 # Relative weight of acceleration (vs null space accuracy)
-alpha = 10 * 1e2; # Accel
+alpha = 1e3; # Accel
 beta = 1e1; # Vel
+gamma = 1e1 # Loss
 
 # Out
 #c_tight = 0*1e-3;
@@ -26,8 +27,8 @@ nSkip = max(floor(nSkip), 0) + 1;
 
 # Optimization tools
 #using ECOS; mysolver = ECOSSolver()
-#using SCS;mysolver = SCSSolver()
-using Gurobi; mysolver = GurobiSolver()
+using SCS;mysolver = SCSSolver()
+#using Gurobi; mysolver = GurobiSolver()
 using Convex
 
 # Set the listener properly
@@ -54,6 +55,13 @@ while true
 
   # This works fine
   vars = matread(matfile);
+
+  # wh: ctight,cusage,csimilar
+  wh = vars["wh"]
+  println("wh", wh)
+  c_similar = wh[3] # * 1e-3
+  c_usage = wh[2] # * 1e-3
+  c_tight = wh[1] # * 1e-3
 
   ## Convert the variables
 
@@ -131,7 +139,7 @@ while true
   nulls = 0;
   N = blkdiag(nulls_sparse...)';
   nulls_sparse = 0;
-  NTN = N' * N;
+  #NTN = N' * N;
 
   # Jacobian effective
   Js = vars["Js"]
@@ -151,26 +159,54 @@ while true
   elbow_diag = ones(n);
   elbow_diag[3:7:n] = 1;
   N_elbow = diagm(elbow_diag) * N;
-  NTN_elbow = N_elbow' * N_elbow;
+  #NTN_elbow = N_elbow' * N_elbow;
 
+  qGravity = deg2rad([0, 60, 90, -120, -90, -15, 0]);
+  qGravity = repmat(qGravity[:], np, 1);
+
+  interactions = getkey(vars, "interactions", false)
+  sumInteractions = zeros(n);
+  ni = 0
+  if interactions != false
+    interactions = vars["interactions"]
+    ni = length(interactions);
+    for iter in eachindex(interactions)
+      @show interactions[iter]
+      qI = interactions[iter]
+      sumInteractions = sumInteractions + repmat(qI[:], np, 1)
+    end
+    sumInteractions = 2 * sumInteractions / ni
+    gamma = 1e2;
+  else
+    gamma = 0;
+  end
+  # Normalize (the optimization has ni divided out of q' q)
+  
+  println("ni", ni)
 
   # Solve the problem
   q0 = reshape(qwPath0', n, 1)
   q = Convex.Variable(n)
   p = minimize(
-  alpha * sumsquares(A * q)
-  + beta * sumsquares(JV * q)
-  + c_tight * sumsquares(N_elbow * q)
-  #+ c_usage * quad_form(q - qMid, NTN)
-  + c_usage * sumsquares(N * (q-qMid))
+    alpha * sumsquares(A * q)
+    + beta * sumsquares(JV * q)
+    + gamma * (sumsquares(q) - sumInteractions' * q) # Augmented loss
+    + c_tight * sumsquares(N_elbow * q)
+    + c_similar * sumsquares(N * (q - qGravity))
+    + c_usage * sumsquares(N * (q-qMid))
   )
 
   p.constraints += q[1:nq]==q0[1:nq]
-  p.constraints += q[n-nq+1:n]==q0[n-nq+1:n]
-  for k = nq+1 : nSkip*nq : n-nq
-      p.constraints += Base.norm(q[k:k+nq-1] - q0[k:k+nq-1], 2) <= epsilon;
+  if ni==0
+    p.constraints += q[n-nq+1:n]==q0[n-nq+1:n]
+    for k = nq+1 : nSkip*nq : n-nq
+        p.constraints += norm(q[k:k+nq-1] - q0[k:k+nq-1], 2) <= epsilon;
+    end
+  else
+    for k = nq+1 : nSkip*nq : n
+        p.constraints += norm(q[k:k+nq-1] - q0[k:k+nq-1], 2) <= epsilon;
+    end
   end
-
   #@time Convex.solve!(p, mysolver);
   Convex.solve!(p, mysolver);
   #println("Optimal objective: ", p.optval);

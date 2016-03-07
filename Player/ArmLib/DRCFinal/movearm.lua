@@ -65,25 +65,20 @@ local function co_play(self, plan, callback)
 	local t0 = unix.time()
 	for i=1,plan.n_optimizations-1 do
 		plan.i_optimizations = i
-		if not plan.nulls then
-			self:jacobians(plan)
-		end
+		if not plan.nulls then self:jacobians(plan) end
 		plan.qwPath = self:optimize(plan)
 		--plan.qwPath = self:optimize2(plan)
-		if plan.update_jacobians then
-			self:jacobians(plan)
-		end
+		if plan.update_jacobians then self:jacobians(plan) end
 	end
 	-- Just send the final data.
 	if plan.n_optimizations>0 then
 		plan.i_optimizations = plan.n_optimizations + 1
-		self:optimize(plan, true)
+		plan.qwPath = self:optimize(plan, true)
+		if plan.update_jacobians then self:jacobians(plan) end
 	end
 	local t1 = unix.time()
   
-	if not plan.nulls then
-		self:jacobians(plan)
-	end
+	if not plan.nulls then self:jacobians(plan) end
   
 	print(string.format("%d iterations %.2f ms (%s)",
 		plan.n_optimizations, (t1 - t0)*1e3, tostring(plan.via)))

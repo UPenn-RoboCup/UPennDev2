@@ -545,6 +545,9 @@ function libArmPlan.jacobian_preplan(self, plan)
 	print(prefix..'Beginning')
 	local n = 0
 	local dTF
+  
+  if plan.interactions then print('Have interactions!') end
+  
 	local t0 = unix.time()
 	repeat
 		local dp, drpy =
@@ -581,6 +584,15 @@ function libArmPlan.jacobian_preplan(self, plan)
 			local dqNull = torch.Tensor( qWaistArm - qWaistArmGuess )
 			torch.mv(dqdtNull, nullspace, dqNull)
 			dqdtCombo = dqdtArm - dqdtNull:mul(nullFactor)
+    elseif plan.interactions and #plan.interactions>0 then
+      local dqdtNullSum = torch.Tensor(qWaistArm):zero()
+			for _, qInteraction in ipairs(plan.interactions) do
+        local dqNull = torch.Tensor(qWaistArm - qInteraction)
+  			torch.mv(dqdtNull, nullspace, dqNull)
+        dqdtNullSum = dqdtNullSum + dqdtNull
+      end
+      dqdtNullSum = dqdtNullSum:mul(1/#plan.interactions)
+			dqdtCombo = dqdtArm - dqdtNullSum:mul(nullFactor)
 		elseif qWaistArmGuess then
 			local dqNull = torch.Tensor(
 				qWaistArm - qWaistArmGuess)
@@ -840,7 +852,7 @@ local function pathJacobians(self, plan)
 end
 
 local opt_ch = require'simple_ipc'.new_requester('armopt')
-local mattorch = pcall(require, 'mattorch')
+local ok, mattorch = pcall(require, 'mattorch')
 local function optimize(self, plan, stop)
 	local planName0 = os.tmpname()
 	local planName = planName0..'.mat'
@@ -876,7 +888,7 @@ local function optimize(self, plan, stop)
 	--os.exit()
 	-- Remove the file when done
 	os.remove(planName)
-	if stop then return end
+	--if stop then return end
 	--util.ptable(optPath)
 	-- Place into a table
 	local optPath = optPath.qw or optPath.qLambda
@@ -917,6 +929,7 @@ function libArmPlan.new_planner(id)
 		eigs = pathEigs,
     --
     get_nullspace = get_nullspace,
+    get_distance = get_distance
 	}
 	return obj
 end

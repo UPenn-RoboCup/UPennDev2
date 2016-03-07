@@ -1,18 +1,21 @@
 function [ qw, dt_opt, opt_val ] = ...
-    optimize_augmented(qwPath0, jacobianPath0, nullPath0)
+    optimize_augmented(qwPath0, jacobianPath0, nullPath0, qInteractions, ...
+    weights)
 
 %% Tuning
 % Relative weight of acceleration (vs null space accuracy)
-alpha = 10 * 1e2; % Accel
+alpha = 1e3; % Accel
 beta = 1e1; % Vel
+gamma = 1e2; % Loss
 
 % Out
 %c_tight = 0*1e-3;
 %c_usage = 2*1e-3;
 
 % Tight
-c_tight = 2*1e-3;
-c_usage = 0*1e-3;
+c_tight = weights(1) * 1e-3;
+c_usage = weights(2) * 1e-3;
+c_similar = weights(3) * 1e-3;
 
 % Closeness to previous trajectory
 epsilon = deg2rad(10);
@@ -64,7 +67,6 @@ clear d2 A0 A1;
 
 % Use the weird null space
 N = sparse(blkdiag(nullPath0{:}))';
-
 NTN = N' * N;
 
 %% TODO: Fix up
@@ -75,9 +77,19 @@ elbow_diag(3:7:n) = 1;
 N_elbow = diag(elbow_diag) * sparse(blkdiag(nullPath0{:}))';
 NTN_elbow = N_elbow' * N_elbow;
 
+
+qGravity = deg2rad([0, 60, 90, -120, -90, 0, 0]);
+qGravity = repmat(qGravity(:), np, 1);
 %% Jacobians
 J = sparse(blkdiag(jacobianPath0{:}))';
 JV = J * V;
+
+%% Interaction points
+sumInteractions = zeros(n, 1);
+ni = numel(qInteractions);
+for i=1:ni
+    sumInteractions = sumInteractions + repmat(qInteractions{i}', np, 1);
+end
 
 %% CVX Solver
 
@@ -86,24 +98,37 @@ warning('off', 'MATLAB:nargchk:deprecated');
 tstart = tic;
 cvx_begin
     %cvx_solver gurobi
-    %cvx_solver ecos
+    cvx_solver ecos
     cvx_precision low
     variable qw(n)
+%     minimize( ...
+%         c_usage * norm(N*(qw - qMid)) + ... % Joints should be close to the middle of their range
+%         c_tight * norm(N_elbow*qw) + ... % Elbow should be tight
+%         c_similar * norm(N*(qw-qGravity)) + ... % Elbow should be tight
+%         alpha * norm(A*qw) + ... % Smooth joint path
+%         beta * norm(JV * qw) ... % Short task path
+%         + gamma*(ni*norm(qw) - 2 * sumInteractions' * qw) ...
+%     )
     minimize( ...
         c_usage * quad_form(qw - qMid, NTN) + ... % Joints should be close to the middle of their range
         c_tight * quad_form(qw, NTN_elbow) + ... % Elbow should be tight
+        c_similar * quad_form(qw - qGravity, NTN) + ... % Elbow should be tight
         alpha * quad_form(qw, ATA) + ... % Smooth joint path
-        beta * quad_form(JV * qw, eye(size(JV, 1))) ... % Short task path
+        beta * sum_square(JV * qw) ... % Short task path
+        + gamma*(ni*sum_square(qw) - 2 * sumInteractions' * qw) ... % Loss augmented interaction points
     )
-    
-    % Keep the first point the same
-    qw(1:nq) == qw0(1:nq);
-    % Last point the same
-    qw(n-nq+1:n) == qw0(n-nq+1:n);
-    % Keep the paths somewhat close, due to jacobian linearity
-    for k = nq+1 : nSkip*nq : n-nq,
-        norm(qw(k:k+nq-1) - qw0(k:k+nq-1)) <= epsilon;
-    end
+    subject to    
+        % Keep the first point the same
+        qw(1:nq) == qw0(1:nq);
+        % Last point the same
+        % No - just use cost
+        %qw(n-nq+1:n) == qw0(n-nq+1:n);
+        norm(qw(n-nq+1:n) - qw0(n-nq+1:n)) <= epsilon;
+
+        % Keep the paths somewhat close, due to jacobian linearity
+        for k = nq+1 : nSkip*nq : n-nq,
+            norm(qw(k:k+nq-1) - qw0(k:k+nq-1)) <= epsilon;
+        end
     dtformulate = toc(tstart);
 cvx_end
 

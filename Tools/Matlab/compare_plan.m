@@ -1,10 +1,10 @@
 clear variables;
 USE_TASK = 0;
-USE_PLOT = 0;
+USE_PLOT = 1;
 
 %% List the logs
-root = '~/Dropbox/IROS2016/data';
-take = 'take5';
+root = '~/Dropbox/IROS2016_McGill/data';
+take = 'test1';
 lsPlan = dir(fullfile(root, take, 'plan*.arm'));
 lsAdlib = dir(fullfile(root, take, 'adlib*.arm'));
 lsJs = dir(fullfile(root, take, 'js*.arm'));
@@ -90,12 +90,12 @@ alpha1 = zeros(ranges(end), 1);
 alpha2 = zeros(ranges(end), 1);
 for i=2:numel(ranges)-1
     dr = [ranges(i)+1:ranges(i+1)] - ranges(i);
-    alpha1(ranges(i)+1:ranges(i+1)) = exp(-(dr-1));
+    alpha1(ranges(i)+1:ranges(i+1)) = exp(-(dr-1)/2);
 end
 
 for i=2:numel(ranges)-1
     dr = [ranges(i-1)+1:ranges(i)] - ranges(i-1);
-    alpha2(ranges(i-1)+1:ranges(i)) = -1*flip(exp(-(dr-1)));
+    alpha2(ranges(i-1)+1:ranges(i)) = -1*flip(exp(-(dr-1)/2));
 end
 
 alpha = alpha1+alpha2;
@@ -103,20 +103,20 @@ alpha = alpha1+alpha2;
 %% Identify the features
 np = size(apath, 1);
 % Similar config... (from Config_Arm)
-qGravity = deg2rad([0, 60, 90, -120, -90, -15, 0]);
-f1 = sum(apath - repmat(qGravity, np, 1), 2).^2;
+qGravity = deg2rad([0, 60, 90, -120, -90, 0, 0]);
+f3 = sum(apath - repmat(qGravity, np, 1), 2).^2;
 
-% Shoulder Yaw
-f2 = apath(:, 2).^2;
+% Shoulder Yaw (tight)
+f1 = apath(:, 2).^2;
 
-% f3 is the mid of rnage of motion
+% Usage is the mid of rnage of motion
 qMid = [0, 0.759218, 0, -1.39626, 0, 0, 0];
 
-f3 = apath - repmat(qMid, np, 1);
-f3 = sum(f3, 2).^2;
+f2 = apath - repmat(qMid, np, 1);
+f2 = sum(f2, 2).^2;
 
 % Elbow extension
-f4 = apath(:, 4).^2;
+%f4 = apath(:, 4).^2;
 
 % All features merged
 features = [f1, f2, f3];
@@ -126,6 +126,7 @@ clear f1 f2 f3;
 af = features .* repmat(alpha, [1, size(features, 2)]);
 af = sum(af, 1);
 
+fprintf('%s | Weights: c_tight c_usage c_similar\n', take);
 fprintf('%s | Weighted features: %.2f %.2f %.2f\n', take, af);
 
 %% Loss of the path
@@ -161,7 +162,13 @@ if USE_TASK==1
 end
 
 %% Re-run the path optimization
-optimize_augmented(plan0.lpath, plan0.Js, plan0.nulls);
+qInteractions = {};
+for i=1:numel(fpaths)
+    qInteractions{i} = fpaths{1}(end, :);
+end
+weights = plan0.plan.left.wh;
+qwOpt = optimize_augmented(plan0.lpath, plan0.Js, plan0.nulls, ...
+    qInteractions, weights);
 
 %% Plot things
 if USE_PLOT
@@ -209,6 +216,29 @@ if USE_PLOT
     title('Gradient Weighting', 'FontSize', 18);
     xlabel('Timestep', 'FontSize', 16);
     ylabel('Alpha', 'FontSize', 16);
+    
+    %% Plot optimized
+    hOpt = figure(4);
+    clf;
+    set(hOpt, 'Position', [0, 0, 1024, 768]);
+    hold on;
+    plot(rad2deg(qwOpt));
+    hold off;
+    xlim([1, size(qwOpt,1)]);
+    ylim([-180, 180]);
+    title('Optimized Path', 'FontSize', 18);
+    xlabel('Timestep', 'FontSize', 16);
+    ylabel('Angle (deg)', 'FontSize', 16);
+    h_legend = legend(...
+        'Sh Pitch',...
+        'Sh Yaw',...
+        'Sh Roll',...
+        'Elbow',...
+        'Wr Roll 1',...
+        'Wr Yaw',...
+        'Wr Roll 2');
+    h_legend.FontSize = 16;
+    h_legend.Location = 'best';
     
     %% Task Space plot
     if USE_TASK==1

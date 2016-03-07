@@ -87,13 +87,12 @@ Solid {
   }
   locked TRUE
 }
-DARwInOPGPS {
+#DARwInOPGPS {
+DARwInOP {
   translation -0.445861 0.334724 0.000710103
   rotation 0 1 0 -1.5708
   controller "thorop"
   controllerArgs "0 32"
   cameraWidth 1
-  cameraHeight 1
-  max_torque1 50
-  max_velocity1 50
+  cameraHeight 1  
 }

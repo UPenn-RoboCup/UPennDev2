@@ -22,12 +22,17 @@ function state.entry()
   motion_ch:send'hybridwalk'    
 end
 
+
+local tTest1, tTest2 = Config.walk.testT[1],Config.walk.testT[2]
+--local tTest1, tTest2 = 15,20
+
+
 function state.update()
   --  print(state._NAME..' Update' )
   -- Get the time of update
   local t  = Body.get_time()
   local t_passed = t-t_entry
-  if t_passed<4.5 then
+  if t_passed<tTest1 then
     mcm.set_walk_vel({0.15,0,0})
   else
     mcm.set_walk_vel({0.08,0,0})
@@ -35,7 +40,7 @@ function state.update()
 
   -- Save this at the last update time
 
-  if t_passed>6.0 then
+  if t_passed>tTest2 then
     if mcm.get_walk_ismoving()>0 then      
       mcm.set_walk_stoprequest(1)
     else

@@ -526,30 +526,50 @@ for i, offset in ipairs(servo.rad_offset) do
 	servo.step_offset[i] = offset * servo.to_steps[i]
 end
 
-if IS_WEBOTS then
+servo.OLD_API=false
 
-	--DARWIN OP MODEL
+if IS_WEBOTS then
+  if servo.OLD_API then
+--DARWIN OP MODEL
 	servo.direction = vector.new({
 		1,1, -- Head
 		1,-1,-1,  1,  -1,-1,1, --LArm
-		--[[Yaw/Roll:]] 1, -1, --[[3 Pitch:]] -1,-1, 1, 1, --LLeg
-
-
-
---		--[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1, -1, 1, --RLeg
-		--[[Yaw/Roll:]] 1, -1, --[[3 Pitch:]] 1,1, -1, 1, --RLeg  --for new darwin op model
-
-
-
-
+--OLD MODEL		
+	--[[Yaw/Roll:]] 1, -1, --[[3 Pitch:]] -1,-1, 1, 1, --LLeg
+	--[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1, -1, 1, --RLeg
+--NEW MODEL
 		1,-1,-1,  -1,  -1,-1,1, --RArm
 		-- TODO: Check the gripper
 		-1,1, -- Waist
 		1,1,1, -- left gripper
 		-1,-1,-1, -- right gripper
-
 		1, -- Lidar pan
 	})
+
+  else
+
+--DARWIN OP MODEL
+	servo.direction = vector.new({
+		1,1, -- Head
+		1,-1,-1,  1,  -1,-1,1, --LArm
+--OLD MODEL		
+--		--[[Yaw/Roll:]] 1, -1, --[[3 Pitch:]] -1,-1, 1, 1, --LLeg
+--		--[[Yaw/Roll:]] 1, 1, --[[3 Pitch:]] 1,1, -1, 1, --RLeg
+--NEW MODEL
+  	--[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] -1,-1, 1, 1, --LLeg
+		--[[Yaw/Roll:]] -1, -1, --[[3 Pitch:]] 1,1, -1, 1, --RLeg  --for new darwin op model
+		1,-1,-1,  -1,  -1,-1,1, --RArm
+		-- TODO: Check the gripper
+		-1,1, -- Waist
+		1,1,1, -- left gripper
+		-1,-1,-1, -- right gripper
+		1, -- Lidar pan
+	})
+
+  end
+
+
+	
 
 	servo.rad_offset = vector.new({
 		0,0, -- head

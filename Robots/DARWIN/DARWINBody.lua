@@ -554,34 +554,22 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
 
   local footLift = mcm.get_walk_footlift()
 
-  local heel_angle = Config.walk.heel_angle or 0
-  local toe_angle = Config.walk.toe_angle or 0
-
-
-
   local footlifttypeL,footlifttypeR, footliftL, footliftR = 0,0
   if mcm.get_walk_heeltoewalk()==1 then
     if footLift[1]>0 then
-      footlifttypeL = -1 --heellift
-      footLift[1]=footLift[1]*heel_angle
+      footlifttypeL = -1 --heellift      
     else
       footlifttypeL = 1 --toelift
-      footLift[1]=footLift[1]*toe_angle
     end
     if footLift[2]>0 then
       footlifttypeR = -1 --heellift
-      footLift[2]=footLift[2]*heel_angle
     else
       footlifttypeR = 1 --toelift
-      footLift[2]=footLift[2]*toe_angle
     end
     footliftL = math.abs(footLift[1])
     footliftR = math.abs(footLift[2])
+--  print("Forced Footlift:",footLift[1]*180/math.pi, footLift[2]*180/math.pi)
   end
-
-
-  --no heel lift
-
 
 
   local leftSupportRatio = mcm.get_status_leftSupportRatio()
@@ -598,6 +586,8 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
   local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0,
     qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
 
+  --Now the qLegs can be either 12 or 14 sized vector (14 with new IK, last 2 are foot tilt angles)
+
   local massL,massR = 0,0 --for now
 
   -------------------Incremental COM filtering
@@ -613,8 +603,8 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
       vector.new({com[1]/com[4], com[2]/com[4],0}),uTorsoAdapt)
 
 
-  local comX_bias = mcm.get_stance_COMoffsetBias()
-  uCOM[1]=uCOM[1]+comX_bias
+    local comX_bias = mcm.get_stance_COMoffsetBias()
+    uCOM[1]=uCOM[1]+comX_bias
 
 
    uTorsoAdapt[1] = uTorsoAdapt[1]+ adapt_factor * (uTorso[1]-uCOM[1])
@@ -622,12 +612,18 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
    local pTorso = vector.new({
             uTorsoAdapt[1], uTorsoAdapt[2], mcm.get_stance_bodyHeight(),
             0,mcm.get_stance_bodyTilt(),uTorsoAdapt[3]})
-      qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0,
+   qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso, aShiftX, aShiftY, Config.birdwalk or 0,
           qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
    count = count+1
   end
+
+  local tiltLR={0,0}
+  if #qLegs>12 then tiltLR[1],tiltLR[2] = qLegs[13],qLegs[14] end
+  mcm.set_status_footTilt(tiltLR)
+
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
-  return {uTorsoOffset[1],uTorsoOffset[2]}, qLegs, com[3]/com[4]
+   --Now the qLegs can be either 12 or 14 sized vector (14 with new IK, last 2 are foot tilt angles)
+  return {uTorsoOffset[1],uTorsoOffset[2]}, vector.slice(qLegs,1,12), com[3]/com[4]
 end
 
 return Body

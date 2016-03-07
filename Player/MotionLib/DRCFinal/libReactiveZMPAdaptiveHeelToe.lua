@@ -31,7 +31,7 @@ end
 --              _ is through support
 --              \ is support to finish
 -- This computes internal parameters for a new step
-local function compute( self, uSupport, uStart, uFinish )
+local function compute( self, uSupport, uStart, uFinish, velForward )
   local tStep = self.tStep
   local start_phase   = tStep*self.start_phase
   local finish_phase  = tStep*(1-self.finish_phase)
@@ -41,8 +41,7 @@ local function compute( self, uSupport, uStart, uFinish )
   local uSupport2 = util.pose_global({self.zmpToe,0,0},uSupport)
 
 
-  local walkvel = mcm.get_walk_vel()
-  if not Config.walk.use_heeltoe_walk or walkvel[1]<Config.walk.heeltoe_vel_min then
+  if not Config.walk.use_heeltoe_walk or velForward<Config.walk.heeltoe_vel_min then
     uSupport1 = uSupport
     uSupport2 = uSupport
   end

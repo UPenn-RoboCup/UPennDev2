@@ -34,8 +34,15 @@ local zmp_param_set = false
 local emergency_stop = false
 
 
--- What foot trajectory are we using?
+local velCurrent={0,0,0}
 
+
+local last_footTilt={0,0}
+local max_footTilt={0,0}
+--for delaying heel tilt zeroing during foot lift 
+
+
+-- What foot trajectory are we using?
 local foot_traj_name = "foot_trajectory_base2"
 if Config.walk.traj and Config.walk.traj.hybridwalk then
   foot_traj_name = Config.walk.traj.hybridwalk
@@ -130,6 +137,10 @@ function walk.entry()
   zmp_param_set = false
   roll_max = 0
 end
+
+
+
+
 
 function walk.update()
   -- Get the time of update
@@ -289,7 +300,7 @@ function walk.update()
     zmp_solver:set_param(tStepNew)
     zmp_param_set = true
     -- Compute the ZMP coefficients for the next step
-    zmp_solver:compute( uSupport, uTorso_now, uTorso_next )
+    zmp_solver:compute( uSupport, uTorso_now, uTorso_next , velCurrent[1])
     t_last_step = Body.get_time() -- Update t_last_step
   end
 
@@ -303,25 +314,61 @@ function walk.update()
   local phSingle = moveleg.get_ph_single(ph,Config.walk.phSingle[1],Config.walk.phSingle[2])
   if iStep<=2 then phSingle = 0 end --This kills compensation and holds the foot on the ground
   local uLeft, uRight, zLeft, zRight, aLeft,aRight  = uLeft_now, uRight_now, 0,0, 0,0
+
+  local heel_angle = Config.walk.heel_angle or 0
+  local toe_angle = Config.walk.toe_angle or 0
+
   if supportLeg == 0 then
     uRight,zRight,aRight = foot_traj_func(phSingle,uRight_now,uRight_next,stepHeight) --LS
     aRight = moveleg.get_foot_tilt(ph)
+    if aRight>0 then aRight=aRight*heel_angle
+    else aRight=aRight*toe_angle end
   else
     uLeft,zLeft,aLeft = foot_traj_func(phSingle,uLeft_now,uLeft_next,stepHeight)    -- RS
     aLeft = moveleg.get_foot_tilt(ph)
+    if aLeft>0 then aLeft=aLeft*heel_angle
+    else aLeft=aLeft*toe_angle end
   end
 
   local uMid = util.se2_interpolate(0.5,uLeft,uRight)
   local uBodyOffset = util.pose_relative(uTorso,uMid)
 
 
-  local walkvel = mcm.get_walk_vel()
+  --for delaying heel tilt zeroing during foot lift 
+  local footTiltMinL, footTiltMinR = -40*math.pi/180,-40*math.pi/180
 
-  if Config.walk.use_heeltoe_walk and walkvel[1]>Config.walk.heeltoe_vel_min then
-   mcm.set_walk_footlift({aLeft, aRight})
+  local phTiltZero = 0.6
+  if ph>phTiltZero then 
+    max_footTilt={0,0} 
   else
-   mcm.set_walk_footlift({0,0})
+    local cur_footTilt = mcm.get_status_footTilt()
+    if zLeft==0 and zRight==0 then
+      max_footTilt[1]=math.max(max_footTilt[1],cur_footTilt[1])
+      max_footTilt[2]=math.max(max_footTilt[2],cur_footTilt[2])        
+    else
+     local tiltFactor = math.max(0, (phTiltZero-ph)/(phTiltZero-Config.walk.phSingle[1]))
+     footTiltMinL = max_footTilt[1]*tiltFactor
+     footTiltMinR = max_footTilt[2]*tiltFactor
+     print(footTiltMinL,footTiltMinR)
+    end
   end
+  
+
+
+  if Config.walk.use_heeltoe_walk and velCurrent[1]>Config.walk.heeltoe_vel_min then
+   mcm.set_walk_footlift({
+    math.max(aLeft,footTiltMinL), 
+    math.max(aRight,footTiltMinR)})
+    --aLeft,aRight})
+  else
+   mcm.set_walk_footlift({
+    math.max(0,footTiltMinL), 
+    math.max(0,footTiltMinR)})
+  end
+
+
+
+
   local uZMP = zmp_solver:get_zmp(ph)
   moveleg.store_stance(t,ph,uLeft,uTorso,uRight,supportLeg,uZMP, zLeft,zRight)
 

@@ -362,14 +362,37 @@ walk.use_exact_tZMP = true
 
 
 
-
+walk.zmpHeel,walk.zmpToe = -0.0,0.0
 walk.velLimitX = {-.125,.15} --max vel with heeltoe
 
 walk.bodyTilt = 0*math.pi/180
 
 
 
-walk.tStep=1 --this works with robot lol
+
+use_heeltoe_walk=true
+walk.toe_angle = 0*DEG_TO_RAD
+walk.heel_angle = 0*DEG_TO_RAD
+walk.heeltoe_vel_min = 0.08
+
+walk.velLimitX = {-.125,.12} --max vel with heeltoe
+walk.tStep=1 --this works with robot
+walk.testT={4.5,6.0} --one step
+walk.testT={5.5,7.0} --two step
+
+
+walk.use_heeltoe_walk = true
+walk.toe_angle = 20*DEG_TO_RAD
+walk.heel_angle = 20*DEG_TO_RAD
+walk.heeltoe_vel_min = 0.05
+
+
+walk.testT={15,16} --two step
+walk.velLimitX = {-.125,.18} --max vel with heeltoe
+walk.velDelta  = {0.04,0.02,0.1}
+walk.zmpHeel,walk.zmpToe = -0.01,0.02
+walk.heeltoe_vel_min = 0.10
+
 
 
 

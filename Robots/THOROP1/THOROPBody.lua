@@ -561,20 +561,26 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
 
   local footlifttypeL,footlifttypeR, footliftL, footliftR = 0,0
   if mcm.get_walk_heeltoewalk()==1 then
+    str=''
     if footLift[1]>0 then
+      str=str.."LH "
       footlifttypeL = -1 --heellift
       footLift[1]=footLift[1]*heel_angle
     else
+      str=str.."LT "
       footlifttypeL = 1 --toelift
       footLift[1]=footLift[1]*toe_angle
     end
     if footLift[2]>0 then
+      str=str.."RH "
       footlifttypeR = -1 --heellift
       footLift[2]=footLift[2]*heel_angle
     else
+      str=str.."RT "
       footlifttypeR = 1 --toelift
       footLift[2]=footLift[2]*toe_angle
     end
+    print("Force footLift:", str)
     footliftL = math.abs(footLift[1])
     footliftR = math.abs(footLift[2])
   end

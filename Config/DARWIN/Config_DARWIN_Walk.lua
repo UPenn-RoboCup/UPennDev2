@@ -387,6 +387,17 @@ walk.heeltoe_vel_min_zmp = 0.12
 walk.heel_angle = 25*DEG_TO_RAD
 
 
+walk.testVel1=0.08
+walk.testVel2=0.17
+walk.supportX = 0.01
+----works here with help of support mod X
+
+
+--[[
+walk.supportX = 0.01
+walk.zmpHeel,walk.zmpToe = 0.0,0.01
+walk.tStep=1.2 --this works with robot
+--]]
 
 --for video
 --[[
@@ -395,7 +406,7 @@ walk.bodyHeight=0.245
 walk.heeltoe_vel_min = 0.13
 --]]
 
---
+
 --------------------STEP UPDOWN TESTING
 walk.stepHeightStairMin = 0.02
 walk.stepHeightStairMax = 0.07

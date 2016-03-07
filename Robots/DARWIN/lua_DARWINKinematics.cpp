@@ -540,7 +540,7 @@ static int inverse_legs(lua_State *L) {
 	Transform trTorso_LLeg = inv(trTorso)*trLLeg;
 	Transform trTorso_RLeg = inv(trTorso)*trRLeg;
 
-
+/*
 	if ((leftTiltType==0) && (rightTiltType==0)){ //automatic
 		if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3)){ //Left front
 			qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
@@ -561,6 +561,32 @@ static int inverse_legs(lua_State *L) {
 			qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
 		}
 	}
+	*/
+
+	
+	if (leftTiltType==1) qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+	else{
+	 if (leftTiltType==-1) qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+   else{
+   	if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3))
+   		qLLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,qL[4],leftTiltMin);
+   	else
+			qLLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_LLeg,LEG_LEFT,aShiftX[0],aShiftY[0],birdwalk,  qL[4],leftTiltMin) ;
+    }
+  }
+
+	if (rightTiltType==1) qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+ 	else{
+ 		if (rightTiltType==-1) qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+	  else{
+			if(trTorso_LLeg(0,3)>trTorso_RLeg(0,3))	   		
+				qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+			else
+			  qRLeg = THOROP_kinematics_inverse_leg_toelift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
+		}
+	}
+
+
 //	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
 
 	//now we return feet tilt angles too (append at the end of the qLeg)

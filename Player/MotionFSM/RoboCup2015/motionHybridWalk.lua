@@ -271,7 +271,7 @@ function walk.update()
     local sideMod2L = Config.walk.sideMod2L or 0
     local sideModR = Config.walk.sideModR or 0
     local sideMod2R = Config.walk.sideMod2R or 0
-    local uSupportModY = 0
+    local uSupportModX,uSupportModY = 0,0
     if velCurrent[2]>0.01 then
     	if supportLeg ==0 then  uSupportModY = uSupportModY + sideModL--Left support, left sidestep
     	else uSupportModY = uSupportModY + sideMod2L end
@@ -280,6 +280,26 @@ function walk.update()
     	if supportLeg ~=0 then uSupportModY = uSupportModY + sideModR
     	else uSupportModY = uSupportModY + sideMod2R end
     end
+
+
+
+    print("Step forward:",velCurrent[1])
+
+
+--Lean forward when walk fast forward (for darwin)
+
+  if velCurrent[1]>0.15 then
+    uSUpportModX=0.02
+  elseif velCurrent[1]>0.10 then
+    uSUpportModX=0.02
+  end
+
+
+
+
+
+
+
     uSupport = util.pose_global({0,uSupportModY,0},uSupport)
 
     local uTorsoVel = mcm.get_status_uTorsoVel()
@@ -347,13 +367,23 @@ function walk.update()
       max_footTilt[2]=math.max(max_footTilt[2],cur_footTilt[2])        
     else
      local tiltFactor = math.max(0, (phTiltZero-ph)/(phTiltZero-Config.walk.phSingle[1]))
+
+     tiltFactor = math.min(1.0, tiltFactor*1.2) --keep max angle for a while
+
      footTiltMinL = max_footTilt[1]*tiltFactor
      footTiltMinR = max_footTilt[2]*tiltFactor
-     print(footTiltMinL,footTiltMinR)
+     --print(footTiltMinL,footTiltMinR)
     end
-  end
-  
 
+
+
+
+  end
+
+--[[
+    local cur_footTilt = mcm.get_status_footTilt()
+    print(string.format("%.3f %.1f %.1f",ph,cur_footTilt[1]*180/math.pi,cur_footTilt[2]*180/math.pi))  
+--]]
 
   if Config.walk.use_heeltoe_walk and velCurrent[1]>Config.walk.heeltoe_vel_min then
    mcm.set_walk_footlift({

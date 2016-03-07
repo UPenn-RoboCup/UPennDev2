@@ -337,7 +337,7 @@ function walk.update()
   --for delaying heel tilt zeroing during foot lift 
   local footTiltMinL, footTiltMinR = -40*math.pi/180,-40*math.pi/180
 
-  local phTiltZero = 0.6
+  local phTiltZero = Config.walk.phTiltZero or 0.6
   if ph>phTiltZero then 
     max_footTilt={0,0} 
   else

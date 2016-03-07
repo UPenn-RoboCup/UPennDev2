@@ -24,7 +24,6 @@ end
 
 
 local tTest1, tTest2 = Config.walk.testT[1],Config.walk.testT[2]
---local tTest1, tTest2 = 15,20
 
 
 function state.update()
@@ -33,9 +32,9 @@ function state.update()
   local t  = Body.get_time()
   local t_passed = t-t_entry
   if t_passed<tTest1 then
-    mcm.set_walk_vel({0.15,0,0})
+    mcm.set_walk_vel({Config.walk.testVel2 or 0.15,0,0})
   else
-    mcm.set_walk_vel({0.08,0,0})
+    mcm.set_walk_vel({Config.walk.testVel1 or 0.08,0,0})
   end
 
   -- Save this at the last update time

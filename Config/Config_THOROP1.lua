@@ -44,7 +44,8 @@ if IS_WEBOTS then
 
 
 --		Config.testfile = 'test_testbed'
-	Config.testfile = 'test_walk_robocup'
+	--Config.testfile = 'test_walk_robocup'
+	Config.testfile = 'test_stair'
 
 		Config.piecewise_step = true
 	  Config.sensors = {
@@ -327,6 +328,7 @@ Config.walk.stepHeight=0.08 --up to 40cm per step
 
 
 --slow and high walk
+
 Config.walk.heeltoe_vel_min = 0.21 --MIN speed for heeltoe walk
 Config.walk.stepHeight=0.08 --up to 40cm per step
 Config.walk.heel_angle = 0*DEG_TO_RAD
@@ -341,13 +343,6 @@ Config.walk.velLimitX = {-.10,.50}
 
 Config.walk.velDelta  = {0.10,0.02,0.1}
 Config.walk.supportY = 0.0  
-
-
-
-
-
-
-
 
 
 --Config.walk.velLimitX = {-.10,.22} --MAX for non-heel lift
@@ -379,5 +374,32 @@ Config.walk.toe_angle = 0*DEG_TO_RAD
 
 --]]
 
+
+Config.walk.testT={10,11} 
+Config.walk.heeltoe_vel_min = 0.21 --MIN speed for heeltoe walk
+Config.walk.heeltoe_vel_min_zmp=0.21
+Config.walk.tStep = 1
+Config.walk.testVel1=0.10
+Config.walk.testVel2=0.50
+
+
+Config.walk.velLimitX = {-.10,.22} --MAX for non-heel lift
+
+
+--[[
+Config.walk.velLimitX = {-.10,.40} --MAX for heel-toe walk
+Config.walk.use_heeltoe_walk=true
+Config.walk.zmpHeel,Config.walk.zmpToe = 0,0
+Config.walk.heel_angle = 20*DEG_TO_RAD
+Config.walk.toe_angle = 30*DEG_TO_RAD
+Config.walk.stepHeight = 0.07 
+Config.walk.velLimitX = {-.10,.45} 
+Config.walk.stepHeight = 0.10 
+Config.walk.heel_angle = 30*DEG_TO_RAD
+Config.walk.heel_angle = 40*DEG_TO_RAD
+Config.walk.toe_angle = 40*DEG_TO_RAD
+Config.walk.phTiltZero = 0.5
+Config.walk.stanceLimitX = {-0.90,0.90}
+--]]
 
 return Config

@@ -5,7 +5,6 @@ WorldInfo {
   ]
   title "THOR-OP Only"
   ERP 0.1
-  #basicTimeStep 1
   basicTimeStep 10
   FPS 30
   contactProperties [
@@ -19,7 +18,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation 0 -1 0 3.14
-  position -0.699872 0.2763 -4.91887
+  position -0.459745 0.2363 -4.83925
 }
 Background {
   skyColor [
@@ -36,12 +35,10 @@ DirectionalLight {
   direction 0.5 -0.5 0.5
   intensity 0.6
 }
-
 DirectionalLight {
   direction 0.5 0.5 0.5
   intensity 0.3
 }
-
 DEF STARTLINE Solid {
   translation -2 -2.5 0
   children [
@@ -70,15 +67,11 @@ DEF STARTLINE Solid {
   }
   locked TRUE
 }
-#DARwInOPGPS {
 DARwInOP {
-#DARwInOPGPS_naked {
   translation -0.445861 0.334724 0.000710103
   rotation 0 1 0 -1.5708
   controller "thorop"
   controllerArgs "0 32"
   cameraWidth 1
   cameraHeight 1
-#  max_torque1 50
-#  max_velocity1 50
 }

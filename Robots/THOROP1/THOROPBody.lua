@@ -597,7 +597,6 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
 
   local qLegs = Kinematics.inverse_legs(pLLeg, pRLeg, pTorso,aShiftX,aShiftY , Config.birdwalk or 0,
     qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
-
   local massL,massR = 0,0 --for now
 
   -------------------Incremental COM filtering
@@ -626,8 +625,14 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
           qLLegCurrent, qRLegCurrent, footlifttypeL, footlifttypeR, footliftL, footliftR)
    count = count+1
   end
+
+  local tiltLR={0,0}
+  if #qLegs>12 then tiltLR[1],tiltLR[2] = qLegs[13],qLegs[14] end
+  mcm.set_status_footTilt(tiltLR)
+
   local uTorsoOffset = util.pose_relative(uTorsoAdapt, uTorso)
-  return {uTorsoOffset[1],uTorsoOffset[2]}, qLegs, com[3]/com[4]
+     --Now the qLegs can be either 12 or 14 sized vector (14 with new IK, last 2 are foot tilt angles)
+  return {uTorsoOffset[1],uTorsoOffset[2]}, vector.slice(qLegs,1,12), com[3]/com[4]
 end
 
 return Body

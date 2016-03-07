@@ -345,18 +345,7 @@ walk.tStep=2
 --]]
 
 
---[[
---------------------STEP UPDOWN TESTING
-walk.stepHeightStairMin = 0.02
-walk.stepHeightStairMax = 0.07
-walk.stepStairst = 1.0
-walk.stepStairwt = 3.0
 
-walk.anklePitchLimit=vector.new{-90,90}*DEG_TO_RAD --teddy has ankle ROM limitation
-walk.raise_body = true
-walk.use_exact_tZMP = true
---------------------------------------------
---]]
 
 
 
@@ -387,7 +376,7 @@ walk.heel_angle = 20*DEG_TO_RAD
 walk.heeltoe_vel_min = 0.05
 
 
-walk.testT={15,16} --two step
+walk.testT={10,11} --two step
 walk.velLimitX = {-.125,.18} --max vel with heeltoe
 walk.velDelta  = {0.04,0.02,0.1}
 walk.zmpHeel,walk.zmpToe = -0.01,0.02
@@ -398,6 +387,30 @@ walk.heeltoe_vel_min_zmp = 0.12
 walk.heel_angle = 25*DEG_TO_RAD
 
 
+
+--for video
+--[[
+walk.velLimitX = {-.125,.12} --max vel with heeltoe
+walk.bodyHeight=0.245
+walk.heeltoe_vel_min = 0.13
+--]]
+
+--
+--------------------STEP UPDOWN TESTING
+walk.stepHeightStairMin = 0.02
+walk.stepHeightStairMax = 0.07
+walk.stepStairst = 1.0
+walk.stepStairwt = 3.0
+
+walk.anklePitchLimit=vector.new{-90,90}*DEG_TO_RAD --teddy has ankle ROM limitation
+walk.raise_body = true
+walk.use_exact_tZMP = true
+--------------------------------------------
+--]]
+
+
+--[[
+
 --ROBOT
 walk.testT={5.5,7.0} --two step
 walk.velLimitX = {-.125,.12} --max vel with heeltoe
@@ -405,6 +418,7 @@ walk.velDelta  = {0.06,0.02,0.1}
 walk.zmpHeel,walk.zmpToe = -0.0,0.0
 walk.heeltoe_vel_min = 0.08
 
+--]]
 
 -- Associate with the table
 Config.walk    = walk

@@ -505,7 +505,9 @@ static int inverse_l_leg(lua_State *L) {
 }
 
 static int inverse_r_leg(lua_State *L) {
+
 	std::vector<double> qLeg;
+
 	std::vector<double> pLeg = lua_checkvector(L, 1);
 	Transform trLeg = transform6D(&pLeg[0]);
 	qLeg = THOROP_kinematics_inverse_r_leg(trLeg,0.0,0.0);
@@ -514,7 +516,9 @@ static int inverse_r_leg(lua_State *L) {
 }
 
 static int inverse_legs(lua_State *L) {
-	std::vector<double> qLLeg(12), qRLeg;
+	//Now we return foot tilt angles too
+	std::vector<double> qLLeg, qRLeg;
+
 	std::vector<double> pLLeg = lua_checkvector(L, 1);
 	std::vector<double> pRLeg = lua_checkvector(L, 2);
 	std::vector<double> pTorso = lua_checkvector(L, 3);
@@ -559,8 +563,17 @@ static int inverse_legs(lua_State *L) {
 			qRLeg = THOROP_kinematics_inverse_leg_heellift(trTorso_RLeg,LEG_RIGHT,aShiftX[1],aShiftY[1],birdwalk, qR[4],rightTiltMin);
 		}
 	}
-	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
-	lua_pushvector(L, qLLeg);
+//	qLLeg.insert(qLLeg.end(), qRLeg.begin(), qRLeg.end());
+	//now we return feet tilt angles too (append at the end of the qLeg)
+	std::vector<double> qLeg(14); 
+	for (int i=0;i<6;i++){
+		qLeg[i]=qLLeg[i];
+		qLeg[i+6]=qRLeg[i];
+	}	
+	qLeg[12]=qLLeg[6];
+	qLeg[13]=qRLeg[6];  	
+
+	lua_pushvector(L, qLeg);
 	return 1;
 }
 

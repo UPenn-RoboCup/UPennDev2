@@ -392,8 +392,18 @@ walk.velLimitX = {-.125,.18} --max vel with heeltoe
 walk.velDelta  = {0.04,0.02,0.1}
 walk.zmpHeel,walk.zmpToe = -0.01,0.02
 walk.heeltoe_vel_min = 0.10
+walk.heeltoe_vel_min_zmp = 0.10
+walk.heeltoe_vel_min = 0.10
+walk.heeltoe_vel_min_zmp = 0.12
+walk.heel_angle = 25*DEG_TO_RAD
 
 
+--ROBOT
+walk.testT={5.5,7.0} --two step
+walk.velLimitX = {-.125,.12} --max vel with heeltoe
+walk.velDelta  = {0.06,0.02,0.1}
+walk.zmpHeel,walk.zmpToe = -0.0,0.0
+walk.heeltoe_vel_min = 0.08
 
 
 -- Associate with the table

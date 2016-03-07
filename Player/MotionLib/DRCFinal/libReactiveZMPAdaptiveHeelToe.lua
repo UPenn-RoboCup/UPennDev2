@@ -41,7 +41,7 @@ local function compute( self, uSupport, uStart, uFinish, velForward )
   local uSupport2 = util.pose_global({self.zmpToe,0,0},uSupport)
 
 
-  if not Config.walk.use_heeltoe_walk or velForward<Config.walk.heeltoe_vel_min then
+  if not Config.walk.use_heeltoe_walk or velForward<Config.walk.heeltoe_vel_min_zmp then
     uSupport1 = uSupport
     uSupport2 = uSupport
   end

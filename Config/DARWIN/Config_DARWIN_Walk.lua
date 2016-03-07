@@ -365,7 +365,7 @@ walk.use_exact_tZMP = true
 
 walk.velLimitX = {-.125,.15} --max vel with heeltoe
 
-walk.bodyTilt = 15*math.pi/180
+walk.bodyTilt = 0*math.pi/180
 
 
 

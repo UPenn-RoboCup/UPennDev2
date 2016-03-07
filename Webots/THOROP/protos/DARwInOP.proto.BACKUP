@@ -1161,12 +1161,12 @@ PROTO DARwInOP [
               }
               jointParameters HingeJointParameters {
                 axis 0 0 -1 
-                position 0.0 
+                position -0.01 
                 dampingConstant 0.002 
                 staticFriction 0.025 
               }
               endPoint Solid {
-                rotation 0 0 -1 -0.0 
+                rotation 0 0 -1 -0.01 
                 children [
                   DEF DPelvLShape Shape {
                     appearance Appearance {
@@ -1279,12 +1279,12 @@ PROTO DARwInOP [
                     }
                     jointParameters HingeJointParameters {
                       axis -1 0 0 
-                      position 0
+                      position 1.15 
                       dampingConstant 0.002 
                       staticFriction 0.025 
                     }
                     endPoint Solid {
-                      rotation -1 0 0 0
+                      rotation -1 0 0 1.15 
                       children [
                         DEF DLegUpperLShape Group {
                           children [
@@ -1465,13 +1465,13 @@ PROTO DARwInOP [
                           jointParameters HingeJointParameters {
                             axis -1 0 0 
                             anchor -0 -0.093 0 
-                            position 0
+                            position -2.25 
                             dampingConstant 0.002 
                             staticFriction 0.025 
                           }
                           endPoint Solid {
                             translation -0 -0.093 0 
-                            rotation -1 0 0 0
+                            rotation -1 0 0 -2.25 
                             children [
                               DEF DLegLowerLShape Shape {
                                 appearance Appearance {
@@ -1591,13 +1591,13 @@ PROTO DARwInOP [
                                 jointParameters HingeJointParameters {
                                   axis 1 0 0 
                                   anchor 0 -0.093 0 
-                                  position 0
+                                  position -1.23 
                                   dampingConstant 0.002 
                                   staticFriction 0.025 
                                 }
                                 endPoint Solid {
                                   translation 0 -0.093 0 
-                                  rotation 1 0 0 0
+                                  rotation 1 0 0 -1.23 
                                   children [
                                     DEF DAnkleLShape Shape {
                                       appearance Appearance {
@@ -1984,7 +1984,7 @@ PROTO DARwInOP [
         jointParameters HingeJointParameters {
           axis 0 -1 0 
           anchor -0.037 -0.1222 -0.005 
-          position -0.0 
+          position -0.01 
           dampingConstant 0.002 
           staticFriction 0.025 
         }
@@ -2100,13 +2100,13 @@ PROTO DARwInOP [
                 maxTorque 2.5 
               }
               jointParameters HingeJointParameters {
-                axis 0 0 -1                 
-                position 0.0 
+                axis 0 0 -1 
+                position 0.02 
                 dampingConstant 0.002 
                 staticFriction 0.025 
               }
               endPoint Solid {
-                rotation 0 0 -1 0.0 
+                rotation 0 0 -1 0.02 
                 children [
                   DEF DPelvRShape Shape {
                     appearance Appearance {
@@ -2216,12 +2216,12 @@ PROTO DARwInOP [
                     }
                     jointParameters HingeJointParameters {
                       axis 1 0 0 
-                      position 0
+                      position -1.15 
                       dampingConstant 0.002 
                       staticFriction 0.025 
                     }
                     endPoint Solid {
-                      rotation 1 0 0 0
+                      rotation 1 0 0 -1.15 
                       children [
                         DEF DLegUpperRShape Group {
                           children [
@@ -2402,13 +2402,13 @@ PROTO DARwInOP [
                           jointParameters HingeJointParameters {
                             axis 1 0 0 
                             anchor -0 -0.093 0 
-                            position 0
+                            position 2.25 
                             dampingConstant 0.002 
                             staticFriction 0.025 
                           }
                           endPoint Solid {
                             translation -0 -0.093 0 
-                            rotation 1 0 0 0
+                            rotation 1 0 0 2.25 
                             children [
                               DEF DLegLowerRShape Shape {
                                 appearance Appearance {
@@ -2528,13 +2528,13 @@ PROTO DARwInOP [
                                 jointParameters HingeJointParameters {
                                   axis -1 0 0 
                                   anchor 0 -0.093 0 
-                                  position 0
+                                  position 1.22 
                                   dampingConstant 0.002 
                                   staticFriction 0.025 
                                 }
                                 endPoint Solid {
                                   translation 0 -0.093 0 
-                                  rotation -1 0 0 0
+                                  rotation -1 0 0 1.22 
                                   children [
                                     DEF DAnkleRShape Shape {
                                       appearance Appearance {
@@ -2644,12 +2644,12 @@ PROTO DARwInOP [
                                       }
                                       jointParameters HingeJointParameters {
                                         axis 0 0 1 
-                                        position 0 
+                                        position 0.05 
                                         dampingConstant 0.002 
                                         staticFriction 0.025 
                                       }
                                       endPoint Solid {
-                                        rotation 0 0 1 0
+                                        rotation 0 0 1 0.05 
                                         children [
                                           DEF RIGHT_FOOT_SLOT Group {
                                             children IS rightFootSlot

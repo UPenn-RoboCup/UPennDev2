@@ -162,13 +162,16 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
---	1,3,5,7,9,11,13,
+	1,3,5,7,9,
+  
+  -- Not on the testbed
+  --11,13,
 
 	-- Stub arms
-	1,2,
+--	1,2,
 
 	-- waist
-	27, 28,
+--	27, 28,
 	--head
 	29, 30,
 	-- gripper
@@ -213,18 +216,22 @@ if OPERATING_SYSTEM=='darwin' then
 	right_leg.ttyname = '/dev/cu.usbserial-FTVTLUY0C'
 	left_leg.ttyname  = '/dev/cu.usbserial-FTVTLUY0D'
 end
+ONE_CHAIN = true
 if ONE_CHAIN then
 	-- Add the one chain support
 	local one_chain = {
-		device = '/dev/ttyUSB0',
+    name = 'one',
+		ttyname = '/dev/ttyUSB0',
+    m_ids = {},
+    enable_read = true
 	}
 	if OPERATING_SYSTEM=='darwin' then
-		one_chain.device = '/dev/cu.usbserial-FTVTLUY0A'
+		one_chain.ttyname = '/dev/cu.usbserial-AI0283AY'
 	end
 	for _,v in ipairs(right_arm.m_ids) do table.insert(one_chain.m_ids, v) end
-	for _,v in ipairs(left_arm.m_ids)  do table.insert(one_chain.m_ids, v) end
-	for _,v in ipairs(right_leg.m_ids) do table.insert(one_chain.m_ids, v) end
-	for _,v in ipairs(left_leg.m_ids)  do table.insert(one_chain.m_ids, v) end
+  -- for _,v in ipairs(left_arm.m_ids)  do table.insert(one_chain.m_ids, v) end
+  -- for _,v in ipairs(right_leg.m_ids) do table.insert(one_chain.m_ids, v) end
+  -- for _,v in ipairs(left_leg.m_ids)  do table.insert(one_chain.m_ids, v) end
 	table.insert(Config.chain, one_chain)
 	right_arm = nil
 	left_arm  = nil
@@ -310,11 +317,11 @@ Config.jointNames = jointNames
 ----------------------
 local servo = {}
 servo.joint_to_motor={
-	29,30,  --Head yaw/pitch
+	11,13,  --Head yaw/pitch
 	2,4,6,8,10,12,14, --LArm
 	16,18,20,22,24,26, -- left leg
 	15,17,19,21,23,25, -- right leg
-	1,3,5,7,9,11,13,  --RArm
+	1,3,5,7,9,30,29,  --RArm
 	28,27, --Waist yaw/pitch (mk2 is inverted)
 	64,66,68, -- left gripper/trigger (This is the order)
 	63,67,65, -- right gripper/trigger/extra
@@ -333,7 +340,13 @@ servo.steps = 2 * vector.new({
 	251000,251000,251000,251000,251000,251000, --RLeg
 --	251000,251000,251000,251000,151875,151875,151875, --RArm
 --	251000,251000,251000,251000,251000,151875,151875, --RArm
-	151875,251000,251000,251000,251000,151875,151875, --RArm (RC arm)
+	--151875,251000,251000,251000,251000,151875,151875, --RArm (RC arm)
+
+  -- Working test iros
+--  	251000,251000,151875,251000,251000,151875,151875, --RArm (test arm)
+    --
+  	251000,251000,251000,251000,151875,151875,151875, --RArm (test arm)
+
 	251000,251000, -- Waist
 	2048,2048,2048, -- Left gripper
 	2048,2048,2048, -- Right gripper
@@ -351,7 +364,8 @@ servo.direction = vector.new({
 	-1, 1,1,   1,  1,1, --LLeg
 	-1, 1,-1, -1,  -1,1, --RLeg
 	------
-	-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
+--	-1,1,1, -1, 1,1,1, --RArm, mk2 reassembled
+	-1,-1,1, -1, 1,1,1, --RArm, test
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
 	1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
@@ -366,7 +380,8 @@ servo.rad_offset = vector.new({
 	0,0,0,  0  ,0,0, --LLeg
 	0,0,0,  0  ,0,0, --RLeg
 --	90,  90,  90,-45,  90,0,0, --RArm
-	0,  90,  90,-45,  90,0,0, --RArm, RC
+--	0,  90,  90,-45,  90,0,0, --RArm, RC
+	90,  90,  0, -45,  90,0,-90, --RArm, test
 --	90,  90,  90,-45,  -90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger

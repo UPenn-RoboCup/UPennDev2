@@ -116,7 +116,9 @@ end
 ------------------------------------------------------------
 -- Head/vision parameters
 Config.use_angle_localization = true
-Config.fsm.headTrack.timeout = 3
+if Config.fsm.headTrack then
+  Config.fsm.headTrack.timeout = 3
+end
 Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
 Config.enable_obstacle_scan = true
 Config.disable_goal_vision = false

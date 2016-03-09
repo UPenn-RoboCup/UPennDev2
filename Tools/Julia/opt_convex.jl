@@ -5,13 +5,9 @@ alpha = 1e3; # Accel
 beta = 1e1; # Vel
 gamma = 1e1 # Loss
 
-# Out
-#c_tight = 0*1e-3;
-#c_usage = 2*1e-3;
-
-# Tight
-c_tight = 2*1e-3;
+c_tight = 0*1e-3;
 c_usage = 0*1e-3;
+c_similar = 0*1e-3
 
 # Closeness to previous trajectory
 epsilon = deg2rad(10);
@@ -55,13 +51,6 @@ while true
 
   # This works fine
   vars = matread(matfile);
-
-  # wh: ctight,cusage,csimilar
-  wh = vars["wh"]
-  println("wh", wh)
-  c_similar = wh[3] # * 1e-3
-  c_usage = wh[2] # * 1e-3
-  c_tight = wh[1] # * 1e-3
 
   ## Convert the variables
 
@@ -168,6 +157,14 @@ while true
   sumInteractions = zeros(n);
   ni = 0
   if interactions != false
+    
+    # wh: ctight,cusage,csimilar
+    wh = vars["wh"]
+    println("wh", wh)
+    c_similar = wh[3] * 1e-3
+    c_usage = wh[2] * 1e-3
+    c_tight = wh[1] * 1e-3
+    
     interactions = vars["interactions"]
     ni = length(interactions);
     for iter in eachindex(interactions)
@@ -175,7 +172,7 @@ while true
       qI = interactions[iter]
       sumInteractions = sumInteractions + repmat(qI[:], np, 1)
     end
-    sumInteractions = 2 * sumInteractions / ni
+    #sumInteractions = sumInteractions / ni
     gamma = 1e2;
   else
     gamma = 0;
@@ -190,7 +187,7 @@ while true
   p = minimize(
     alpha * sumsquares(A * q)
     + beta * sumsquares(JV * q)
-    + gamma * (sumsquares(q) - sumInteractions' * q) # Augmented loss
+    + gamma * (ni * sumsquares(q) - 2 * sumInteractions' * q + sumInteractions' * sumInteractions) # Augmented loss
     + c_tight * sumsquares(N_elbow * q)
     + c_similar * sumsquares(N * (q - qGravity))
     + c_usage * sumsquares(N * (q-qMid))

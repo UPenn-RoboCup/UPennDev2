@@ -8,6 +8,13 @@ local movearm = require'movearm'
 local T = require'Transform'
 local vector = require'vector'
 
+LIVE_DEMO = true
+local Body
+local getch = require'getch'
+if LIVE_DEMO then
+  Body = require'Body'
+end
+
 local counter = 0
 local f_adlib
 local prevPath
@@ -46,7 +53,8 @@ local function q2f(q)
   return vector.new{f1, f2, f3}
 end
 
-local WEIGHT_ADJ = 0.05
+--local WEIGHT_ADJ = 0.05
+local WEIGHT_ADJ = 0.01
 
 local function get_armplan(plan)
 	print('\narm_wizard | Received a plan')
@@ -54,13 +62,13 @@ local function get_armplan(plan)
   state = 'plan'
   
   if type(plan)~="table" then return"Nope" end
-  util.ptable(plan.left)
+  util.ptable(plan.right)
   
   local features, alphas = {}, {}
   if replan then
     print('replan', replan)
     -- Grab the new point from the human
-    local qHgood = plan.left.qLArm0
+    local qHgood = plan.right.qRArm0
     table.insert(interaction_points, qHgood)
     -- Grab the bad points by looking back in time
     assert(prevPath, "There should be a previous plan")
@@ -93,11 +101,12 @@ local function get_armplan(plan)
   end
   
   -- IK weights
-  plan.left.weights[1] = prevWeights[2]
-  plan.left.weights[3] = prevWeights[1]
-  plan.left.wh = prevWeights
+  plan.right.weights[1] = prevWeights[2]
+  plan.right.weights[3] = prevWeights[1]
+  plan.right.weights[6] = prevWeights[3]
+  plan.right.wh = prevWeights
   
-  plan.left.interactions = interaction_points
+  plan.right.interactions = interaction_points
   
 	local lco, rco = movearm.goto(plan.left, plan.right)
 
@@ -122,6 +131,12 @@ local function get_armplan(plan)
 			local okR, qRWaypoint, qWaistpoint = coroutine.resume(rco)
 			table.insert(rpath, qRWaypoint)
 			if qWaistpoint then table.insert(wpath, qWaistpoint) end
+      if LIVE_DEMO then
+        io.write(#rpath, #rpath%5==0 and '\n' or '\t')
+        if getch.nonblock() then istop=1; break end
+        Body.set_rarm_command_position(qRWaypoint)
+        unix.usleep(1e6/10)
+      end
 		end
 	else
 		print('rco', rco)
@@ -129,6 +144,17 @@ local function get_armplan(plan)
   table.remove(lpath)
   table.remove(rpath)
   table.remove(wpath)
+  
+  --[[
+  if LIVE_DEMO then
+    for i, q in ipairs(rpath) do
+      io.write(i, '/', #rpath,'\n')
+      if getch.nonblock() then break end
+      Body.set_rarm_command_position(q)
+      unix.usleep(1e6/10)
+    end
+  end
+  --]]
 
 	-- Optimize the paths
 	--[[
@@ -185,27 +211,27 @@ local function adlib(plan)
   --print()
   
   -- Grab the planners
-  local lPlanner = movearm.lPlanner
-  local lPlan = plan.left
-  --util.ptable(lPlan)
+  local rPlanner = movearm.rPlanner
+  local rPlan = plan.right
+  --util.ptable(rPlan)
 
-  local nq = #lPlan.qLArm0
+  local nq = #rPlan.qRArm0
   local nNull = 1 -- For now
   
   -- In degrees... from 0 to 10 degrees away from the keyboard baseline
-  local dGamma = util.procFunc(lPlan.gamma, 3, 10)
+  local dGamma = util.procFunc(rPlan.gamma, 3, 10)
   local dNull = {dGamma}
 
-  local nullspace, J, Jinv = lPlanner:get_nullspace(lPlan.qLArm0, lPlan.qLArm0)
+  local nullspace, J, Jinv = rPlanner:get_nullspace(rPlan.qRArm0, rPlan.qRArm0)
   local U, S, V = torch.svd(nullspace)
   
   --print("GETTING DIST")
-	if #lPlan.tr==6 then
-		lPlan.tr = T.transform6D(lPlan.tr)
-	elseif #lPlan.tr==7 then
-		lPlan.tr = T.from_quatp(lPlan.tr)
+	if #rPlan.tr==6 then
+		rPlan.tr = T.transform6D(rPlan.tr)
+	elseif #rPlan.tr==7 then
+		rPlan.tr = T.from_quatp(rPlan.tr)
 	end
-	local dp, drpy = lPlanner:get_distance(lPlan.tr, vector.new(lPlan.qLArm0), {0,0})
+	local dp, drpy = rPlanner:get_distance(rPlan.tr, vector.new(rPlan.qRArm0), {0,0})
   --print("DIST", dp)
 	-- Check if we are within threshold
   --[[
@@ -223,7 +249,7 @@ local function adlib(plan)
 	local dqdtArm = torch.mv(Jinv, vwTarget)
 
   local dGAIN = 0.01
-  local qAdlibL = vector.copy(lPlan.qLArm0)
+  local qAdlibR = vector.copy(rPlan.qRArm0)
   for i=1, nNull do
     local nullDir = U:select(2, i)
     
@@ -231,27 +257,32 @@ local function adlib(plan)
     
     -- Maybe consistent?
     --[[
-    local dotDir = torch.dot(nullDir, torch.Tensor(lPlanner.qMax))
+    local dotDir = torch.dot(nullDir, torch.Tensor(rPlanner.qMax))
     print('Directions', dotDir, dNull[i])
     if dotDir<0 then dqN = dqN * -1 end
     --]]
     if nullDir[3]<0 then dqN = dqN * -1 end
     
-    qAdlibL = qAdlibL + dqN + dqdtArm * 0.05
+    qAdlibR = qAdlibR + dqN + dqdtArm * 10 * dGAIN
     --print('dNull '..i, dqN * RAD_TO_DEG, 'deg')
   end
   
   --print(counter, 'Sending adlib', #qAdlibL)
-  lPlan.qAdlib = qAdlibL
-  lPlan.counter = counter
+  rPlan.qAdlib = qAdlibR
+  rPlan.counter = counter
   -- f_adlib should be open...
   assert(f_adlib, "Why no adlib?")
-  f_adlib:write(mpack(lPlan))
+  f_adlib:write(mpack(rPlan))
+  
+  if LIVE_DEMO then
+      Body.set_rarm_command_position(qAdlibR)
+  end
   
   -- TODO: Return three arrays of vectors {left, right, waist}
-  return {qAdlibL}
+  return {qAdlibR}
   
 end
+
 
 local poller, lut
 local channels = {}

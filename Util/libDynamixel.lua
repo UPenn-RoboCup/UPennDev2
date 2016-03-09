@@ -10,9 +10,15 @@ local DP2 = require'DynamixelPacket2' -- 2.0 protocol
 libDynamixel.DP2 = DP2
 local unix = require'unix'
 local stty = require'stty'
+
+-- OSX is bad with the FTDI :/
+local READ_TIMEOUT = 1 / 30
+
 --local READ_TIMEOUT = 1 / 60
 --local READ_TIMEOUT = 1 / 80
-local READ_TIMEOUT = 1 / 90
+
+--local READ_TIMEOUT = 1 / 90
+
 local using_status_return = true
 local using_status_return_mx = false
 

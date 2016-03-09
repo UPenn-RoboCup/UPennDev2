@@ -172,6 +172,7 @@ end
 
 -- Weights: cusage, cdiff, ctight, cshoulder, cwrist
 local defaultWeights = {0, 0, 0, 0, 2}
+local qGravity = vector.new({0, 60, 90, -120, -90, 0, 0})*DEG_TO_RAD;
 --
 local function valid_cost(iq, qMin, qMax)
 	for i, q in ipairs(iq) do
@@ -251,6 +252,10 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 	for _, iq in ipairs(iqArms) do
 		tinsert(cwrist, fabs(iq[5]) + fabs(iq[7]))
 	end
+  local cgravity, wgravity = {}, weights[6] or 0
+	for _, iq in ipairs(iqArms) do
+		tinsert(cgravity, vector.normsq(iq - qGravity))
+	end
 
 	-- Combined cost
 	-- TODO: Tune the weights on a per-task basis (some tight, but not door)
@@ -261,6 +266,7 @@ local function find_shoulder(self, tr, qArm, weights, qWaist)
 			+ weights[2]*cdiff[ic]
 			+ wtight*ctight[ic]
 			+ wshoulder*cshoulder[ic]
+      + wgravity*cgravity[ic]
 		)
 	end
 	-- Find the smallest cost

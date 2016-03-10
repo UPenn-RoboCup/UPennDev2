@@ -11,11 +11,12 @@ local IP = {
 	CHIP = 145,
 	DALE = 146,
 	FIELD = 132,
+	ASUS = '200'
 }
 
 -- Who do we use?
-local WHO = IP.CHIP2
-local ROBOT_IP = IP.CHIP
+local WHO = IP.STEVE
+local ROBOT_IP = IP.ASUS
 local TEAM_NUMBER = 8
 
 local net = {

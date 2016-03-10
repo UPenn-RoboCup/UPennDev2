@@ -420,14 +420,17 @@ walk.use_exact_tZMP = true
 --]]
 
 
---[[
-
+--
 --ROBOT
-walk.testT={5.5,7.0} --two step
+walk.testVel1=0.06
+walk.testVel2=0.12
+walk.heeltoe_vel_min = 0.08
 walk.velLimitX = {-.125,.12} --max vel with heeltoe
+walk.testT={5.5,7.0} --two step
 walk.velDelta  = {0.06,0.02,0.1}
 walk.zmpHeel,walk.zmpToe = -0.0,0.0
-walk.heeltoe_vel_min = 0.08
+walk.toe_angle = 20*DEG_TO_RAD
+walk.heel_angle = 20*DEG_TO_RAD
 
 --]]
 

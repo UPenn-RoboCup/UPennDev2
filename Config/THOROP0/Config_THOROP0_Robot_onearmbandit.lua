@@ -190,7 +190,7 @@ Config.chain = {enabled = true}
 
 local right_arm = {
 	name = 'rarm',
-	ttyname = '/dev/ttyUSB0',
+	ttyname = '/dev/ttyUSB1',
 	m_ids = {
 	--1,3,5,7,9,11,13,
 	1,3,5,7,9,30,29,
@@ -207,7 +207,7 @@ local right_arm = {
 
 local left_arm = {
 	name = 'larm',
-	ttyname = '/dev/ttyUSB1',
+	ttyname = '/dev/ttyUSB0',
 	m_ids = {
 	2,4,6,8,10,12,14,
 	-- lidar
@@ -298,10 +298,10 @@ else
 	table.insert(Config.chain, left_leg)
 	]]--
 ----[[
-		table.insert(Config.chain, right_arm)
---		table.insert(Config.chain, left_arm)
-		Config.chain[right_arm.name] = right_arm
---		Config.chain[left_arm.name] = left_arm
+--		table.insert(Config.chain, right_arm)
+		table.insert(Config.chain, left_arm)
+--		Config.chain[right_arm.name] = right_arm
+		Config.chain[left_arm.name] = left_arm
 --]]
 	one_chain = nil
 end
@@ -412,7 +412,8 @@ servo.joint_to_motor={
 -- TODO: some pros are different
 servo.steps = 2 * vector.new({
 	151875,151875, -- Head
-	251000,251000,251000,251000,151875,151875,151875, --LArm (mk1 arm)
+--	251000,251000,251000,251000,151875,151875,151875, --LArm (mk1 arm)
+	251000,251000,251000,251000,251000,151875,151875, --LArm (mk1 arm)
 --	251000,251000,251000,251000,251000,151875,151875, --LArm (mk2 arm)
 	251000,251000,251000,251000,251000,251000, --LLeg
 	251000,251000,251000,251000,251000,251000, --RLeg
@@ -431,7 +432,7 @@ servo.steps = 2 * vector.new({
 servo.direction = vector.new({
 	1,1, -- Head, mk2
 
-	1,1,1, 1, 1,1,1, --LArm, mk2 reassembled
+	1,-1,1, 1, 1,1,1, --LArm, mk2 reassembled
 	------
 	-1, 1,1,   1,  1,1, --LLeg
 	-1, 1,-1, -1,  -1,1, --RLeg
@@ -448,10 +449,12 @@ servo.direction = vector.new({
 -- TODO: Offset in addition to bias?
 servo.rad_offset = vector.new({
 	0,0, -- Head
-	-90,  -90,  -90,45,  -90,0,0, --LArm
+--	-90,  -90,  -90,45,  -90,0,0, --LArm
+	-90,  90,  0,45,    0,0,0, --LArm    03/10/2016
 	0,0,0,  0  ,0,0, --LLeg
 	0,0,0,  0  ,0,0, --RLeg
-	90,  90,  90,-45,  90,0,0, --RArm
+	90,  90,   0,-45,  90,0,0, --RArm
+--	90,  90,  90,-45,  90,0,0, --RArm
 --	90,  90,  90,-45,  -90,0,0, --RArm
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
@@ -462,7 +465,8 @@ servo.rad_offset = vector.new({
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
 	-90,-80, -- Head
-	-90, 0, -90,    -160,   -180,-87,-180, --LArm
+--	-90, 0, -90,    -160,   -180,-87,-180, --LArm
+	-90, -175, -90,    -160,   -180,-87,-180, --LArm  03/10/2016
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
 	-90,-175,-90,    -160,   -180,-87,-180, --RArm
@@ -484,7 +488,9 @@ servo.max_rad = vector.new({
 	175,25,175,175,175,175, --LLeg
 	175,175,175,175,175,175, --RLeg
 --	160,-0,90,   0,     180,87,180, --RArm
-	160,175,90,   0,     180,87,180, --RArm
+--	160,175,90,   0,     180,87,180, --RArm
+	160,-0,90,   0,     180,87,180, --RArm  12.31
+
 --	90,45, -- Waist
 	90,45, -- Waist
 	65,65,55, -- lgrip

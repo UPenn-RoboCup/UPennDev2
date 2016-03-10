@@ -296,7 +296,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
       --print(planes[1].."d"..planes[101+1].."d"..planes[2*101+1].."d"..planes[3*101+1].."d"..planes[4*101+1].."d"..planes[5*101+1].."d"..planes[6*101+1])
       -- print(planes[1].."d"..planes[2].."d"..planes[3].."d"..planes[4].."d"..planes[5].."d"..planes[6].."d"..planes[7])
        tmp_RRT_Path = {}
-       for idx = 1, RRT_Path_size-1 do
+       for idx = 1, RRT_Path_size do
           tmp_vector = {}
           tmp_vector[1] =  planes[(idx-1)*7+1]
           tmp_vector[2] =  planes[(idx-1)*7+2]
@@ -350,7 +350,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
     --Body.set_rarm_command_position(qcRArm)
 
     print(string.format("QLArmTarget: %.2f %.2f %.2f %.2f %.2f %.2f" ,
-unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
+unpack( vector.new(qRArmTarget)*RAD_TO_DEG)
 ))
 
   local dqArmLim = vector.new(util.shallow_copy(Config.arm.vel_angular_limit_init))
@@ -364,9 +364,10 @@ unpack( vector.new(qLArmTarget)*RAD_TO_DEG)
 
     end
 
-    if RRT_idx > (RRT_Path_size - 2) then
+    if RRT_idx > (RRT_Path_size) then
         print ("RRT ended")
         finished = 1;
+        Rrt_Run = 0;
         return'teleopraw'
     end
 

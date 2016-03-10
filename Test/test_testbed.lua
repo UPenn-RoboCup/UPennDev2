@@ -104,7 +104,7 @@ local function update(key_code)
   if key_char_lower==("1") then
     body_ch:send'init'
     arm_ch:send'init'  --initialize arm to walk position
-
+    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx")
 	elseif key_char_lower==("0") then  print("jwhuh")    body_ch:send'uninit'
 
 --[[
@@ -119,7 +119,7 @@ local function update(key_code)
   elseif key_char_lower==("4") then  arm_ch:send'valve'
   elseif key_char_lower==("5") then  arm_ch:send'drill'
 
-elseif key_char_lower==("7") then  arm_ch:send'RRTbasedmove'   --jwhuh
+  elseif key_char_lower==("7") then  arm_ch:send'RRTbasedmove'   --jwhuh
 
 	elseif key_char_lower==("8") then
 		body_ch:send'stop'

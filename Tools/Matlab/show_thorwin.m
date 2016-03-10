@@ -1,6 +1,6 @@
 % Clear the environment
-clear all;
-close all;
+%clear all;
+%close all;
 %startup;
 
 %% Camera Figure
@@ -72,8 +72,9 @@ data_world.recv = false;
 data_detect.recv = false;
 data_labelA.recv = false;
 data_labelB.recv = false;
-
-while running
+run_time = 0;
+while run_time < 1000 %running
+    run_time = run_time + 1;
     % 100ms timeout
     wait_time = max(0, 0.066 - last_draw_duration);
     idx = zmq('poll', wait_time*1000);
@@ -133,7 +134,8 @@ while running
         %msgpack('pack',Planes)
     end
     
-        load test_path_sm.mat;
+ %       load test_path_sm.mat;
+        load test_path_RP1119_case6.mat;
  %       path_rrt2 = flipud(path_rrt2);
  %       path_rrt = flipud(path_rrt);
         Planes = [path_rrt]';

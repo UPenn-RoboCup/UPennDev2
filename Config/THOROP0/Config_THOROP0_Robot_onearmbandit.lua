@@ -213,6 +213,7 @@ local left_arm = {
 	-- lidar
 	37,
 	--no gripper
+	32, 34, 36
 	},
 	enable_read = true
 }
@@ -402,7 +403,8 @@ servo.joint_to_motor={
 --	1,3,5,7,9,11,13,  --RArm
 	1,3,5,7,9,30,29,  --RArm
 	28,27, --Waist yaw/pitch (mk2 is inverted)
-	64,66,68, -- left gripper/trigger (This is the order)
+--	64,66,68, -- left gripper/trigger (This is the order)
+	32,34,36, -- left gripper/trigger (This is the order)
 	63,67,65, -- right gripper/trigger/extra
 	37, -- Lidar pan
 }
@@ -457,6 +459,7 @@ servo.rad_offset = vector.new({
 --	90,  90,  90,-45,  90,0,0, --RArm
 --	90,  90,  90,-45,  -90,0,0, --RArm
 	0,0, -- Waist
+--	0, 0, 0, -- left gripper/trigger
 	0, 0, 0, -- left gripper/trigger
 	-90, -90, 0, -- right gripper/trigger (UCLA verified)
 	0, -- Lidar pan
@@ -472,7 +475,8 @@ servo.min_rad = vector.new({
 	-90,-175,-90,    -160,   -180,-87,-180, --RArm
 --	-90,-45, -- Waist
 	-90,-45, -- Waist
-	-60, -55, -60,
+--	-60, -55, -60,
+	-3, -15, -15,
 	-90, -120, -55, -- right gripper/trigger (UCLA verified)
 	-60, -- Lidar pan
 })*DEG_TO_RAD
@@ -493,7 +497,8 @@ servo.max_rad = vector.new({
 	160,-0,90,   0,     180,87,180, --RArm  12.31 by SJ
 --	90,45, -- Waist
 	90,45, -- Waist
-	65,65,55, -- lgrip
+--	65,65,55, -- lgrip
+	30,30,30, -- lgrip
 	105,110,105, -- right gripper/trigger (UCLA verified)
 	60, -- Lidar pan
 })*DEG_TO_RAD
@@ -536,7 +541,8 @@ if Config.birdwalk then
 
 		1,3,5,7,9,11,13,  --RArm
 		28,27, --Waist yaw/pitch (mk2 is inverted)
-		64,66,68, -- left gripper/trigger (This is the order)
+--		64,66,68, -- left gripper/trigger (This is the order)
+		32,34,36, -- left gripper/trigger (This is the order)
 		63,67,65, -- right gripper/trigger/extra
 		37, -- Lidar pan
 	}

@@ -46,11 +46,13 @@ local dcm_chains = Config.chain
 -- Gripper states
 local is_gripper, gripper_mode = {}, {}
 for _,id in ipairs(Config.parts.LGrip) do
-	is_gripper[id] = true
-	gripper_mode[id] = 0
+	--is_gripper[id] = true
+	is_gripper[id] = false
+		gripper_mode[id] = 0
 end
 for _,id in ipairs(Config.parts.RGrip) do
-	is_gripper[id] = true
+	--is_gripper[id] = true
+	is_gripper[id] = false
 	gripper_mode[id] = 0
 end
 

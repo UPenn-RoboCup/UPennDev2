@@ -1,6 +1,6 @@
 --------------------------------
 -- Humanoid arm state
--- (c) 2013 Stephen McGill, Seung-Joon Yi, Jinwook Huh
+-- (c) 2016 Jinwook Huh, Stephen McGill, Seung-Joon Yi 
 --------------------------------
 
 local state = {}

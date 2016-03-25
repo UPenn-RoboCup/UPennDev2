@@ -48,11 +48,18 @@ function state.entry()
   t_finish = t
 
   -- Close rgrip
-  Body.set_rgrip_command_torque({-10,-10,10})
+--  Body.set_rgrip_command_torque({-10,-10,10})
   -- Open rgrip
-  Body.set_rgrip_command_torque({10,10,-10})
+--  Body.set_rgrip_command_torque({10,10,-10})
   -- No torque rgrip
-  Body.set_rgrip_command_torque({0,0,0})
+--  Body.set_rgrip_command_torque({0,0,0})
+
+  Grip_hold = {0,0,0}
+  Grip_open = {0.496719, 0.458369, 0.50132}
+
+  Body.set_lgrip_torque_enable(1)
+  Body.set_lgrip_command_position(Grip_open)
+    
 
   qLArmTarget = Body.get_inverse_larm(
     vector.zeros(7),
@@ -124,6 +131,8 @@ function state.update()
 
   elseif stage==4 then
     qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+    Body.set_lgrip_command_position(Grip_hold)
+
     t_stage = 1.0
   elseif stage==5 then
     return "done"

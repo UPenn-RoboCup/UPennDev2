@@ -19,11 +19,12 @@ function state.entry()
   t_update = t_entry
 
 
-  motion_ch:send'hybridwalk'    
+  
 end
 
-
+local tTest0 = Config.walk.testT0
 local tTest1, tTest2 = Config.walk.testT[1],Config.walk.testT[2]
+local phase=0
 
 
 function state.update()
@@ -31,10 +32,16 @@ function state.update()
   -- Get the time of update
   local t  = Body.get_time()
   local t_passed = t-t_entry
-  if t_passed<tTest1 then
-    mcm.set_walk_vel({Config.walk.testVel2 or 0.15,0,0})
+
+  if phase==0 and t_passed>tTest0 then
+    motion_ch:send'hybridwalk'      
+    phase=1
   else
-    mcm.set_walk_vel({Config.walk.testVel1 or 0.08,0,0})
+    if t_passed<tTest1 then
+      mcm.set_walk_vel({Config.walk.testVel2 or 0.15,0,0})
+    else
+      mcm.set_walk_vel({Config.walk.testVel1 or 0.08,0,0})
+    end
   end
 
   -- Save this at the last update time

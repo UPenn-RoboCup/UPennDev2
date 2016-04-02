@@ -375,10 +375,12 @@ Config.walk.toe_angle = 0*DEG_TO_RAD
 --]]
 
 
+Config.walk.testT0=5
 Config.walk.testT={10,11} 
+Config.walk.tStep = 1
 Config.walk.heeltoe_vel_min = 0.21 --MIN speed for heeltoe walk
 Config.walk.heeltoe_vel_min_zmp=0.21
-Config.walk.tStep = 1
+
 Config.walk.testVel1=0.10
 Config.walk.testVel2=0.50
 
@@ -386,7 +388,7 @@ Config.walk.testVel2=0.50
 Config.walk.velLimitX = {-.10,.22} --MAX for non-heel lift
 
 
---[[
+--
 Config.walk.velLimitX = {-.10,.40} --MAX for heel-toe walk
 Config.walk.use_heeltoe_walk=true
 Config.walk.zmpHeel,Config.walk.zmpToe = 0,0
@@ -400,6 +402,15 @@ Config.walk.heel_angle = 40*DEG_TO_RAD
 Config.walk.toe_angle = 40*DEG_TO_RAD
 Config.walk.phTiltZero = 0.5
 Config.walk.stanceLimitX = {-0.90,0.90}
+
+
+--SLOW testing
+Config.walk.testT0=5
+Config.walk.testT={17,20} 
+Config.walk.tStep = 2
+Config.walk.heeltoe_vel_min = 0.16 --MIN speed for heeltoe walk
+
+
 --]]
 
 return Config

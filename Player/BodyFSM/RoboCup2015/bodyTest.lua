@@ -10,6 +10,8 @@ local t_entry, t_update, t_exit, t_plan
 --Tele-op state for testing various stuff
 --Don't do anything until commanded
 local old_state
+local phase=0
+
 
 function state.entry()
   print(state._NAME..' Entry' )
@@ -17,14 +19,13 @@ function state.entry()
   local t_entry_prev = t_entry -- When entry was previously called
   t_entry = Body.get_time()
   t_update = t_entry
-
+  phase=0
 
   
 end
 
 local tTest0 = Config.walk.testT0
 local tTest1, tTest2 = Config.walk.testT[1],Config.walk.testT[2]
-local phase=0
 
 
 function state.update()

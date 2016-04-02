@@ -411,6 +411,43 @@ Config.walk.tStep = 2
 Config.walk.heeltoe_vel_min = 0.16 --MIN speed for heeltoe walk
 
 
+Config.walk.testVel1=0.10
+Config.walk.testVel2=0.25
+
+Config.walk.stepHeight = 0.05 
+Config.walk.supportX = 0.03
+Config.walk.stop_threshold_angle = 15*math.pi/180
+Config.walk.supportY = 0.02
+
+Config.walk.heel_angle = 0*DEG_TO_RAD
+Config.walk.toe_angle = 0*DEG_TO_RAD
+
+Config.walk.tStep = 2
+Config.walk.testT={17,20} 
+Config.use_heeltoe_walk=false
+
+
+--Config.walk.tStep = 3
+--Config.walk.testT={20,25} 
+Config.walk.phSingle = {0.25,0.75}
+Config.walk.phZmp = {0.25,0.75}
+Config.walk.supportY = 0.01
+Config.walk.supportX = 0.01
+
+Config.use_heeltoe_walk=false
+
+Config.walk.testT={20,23} 
+
+
+Config.walk.testVel2=0.35
+Config.walk.stepHeight = 0.07 
+
+Config.walk.testT={17,20} 
+
+
+Config.walk.testVel2=0.30
+
+
 --]]
 
 return Config

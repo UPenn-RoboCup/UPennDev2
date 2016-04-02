@@ -560,7 +560,9 @@ Body.get_torso_compensation= function (qLArm, qRArm, qWaist)
 
 
   local footlifttypeL,footlifttypeR, footliftL, footliftR = 0,0
-  if mcm.get_walk_heeltoewalk()==1 then
+--  if mcm.get_walk_heeltoewalk()==1 then
+  if false then
+
     str=''
     if footLift[1]>0 then
       str=str.."LH "

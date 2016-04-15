@@ -778,8 +778,9 @@ local function set_limits(self, qMin, qMax, dqdt_limit)
 
 	self.dqdt_limit = assert(dqdt_limit)
 	self.qRange = qMax - qMin
+  self.qMid = self.qMin /2 + self.qMax /2
 
-	print(self.id, 'mid', self.qMin /2 + self.qMax /2)
+	print(self.id, 'mid', self.qMid)
 
 	-- Add the waist
 	-- TODO: Make better API :P
@@ -894,7 +895,7 @@ local function optimize(self, plan, stop)
 	local optPath = optPath.qw or optPath.qLambda
 	assert(optPath, 'No optimized path!')
 	--print('optPath', optPath:size())
-	-- MATLAB and torch are tansposed...
+	-- MATLAB and torch are transposed...
 	local qOptimized0 = optPath:t()
 	local qOptimized = {}
 	for i=1,#plan.qwPath do

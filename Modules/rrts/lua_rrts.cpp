@@ -290,7 +290,7 @@ printf("Checking the plan...\n");
 	lua_createtable(L, finalTraj.size(), 0);
 	//printf("Num path: %d\n", finalTraj.size());
 	int j = 0;
-	for (std::list<double*>::iterator it = finalTraj.begin(); it != finalTraj.end(); it++){
+	for (std::list<double*>::iterator it = finalTraj.begin(); it != finalTraj.end(); ++it){
 		double* coord = *it;
 		lua_createtable(L, nDim, 0);
 		for (int i = 0; i < nDim; i++) {

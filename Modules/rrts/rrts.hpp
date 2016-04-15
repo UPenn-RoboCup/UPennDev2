@@ -568,8 +568,9 @@ int
 RRTstar::Planner<State, Trajectory, System>
 ::getBestTrajectory (std::list<double*>& trajectoryOut) {
     
-    if (lowerBoundVertex == NULL)
-        return 0;
+    if (lowerBoundVertex == NULL){
+      return 0;
+    }
     
     Vertex<State,Trajectory,System>* vertexCurr = lowerBoundVertex;
     int nDim = vertexCurr->getState().getNumDimensions();
@@ -583,12 +584,10 @@ RRTstar::Planner<State, Trajectory, System>
           stateArrCurr[i] = stateCurr[i];
         }
         
-        trajectoryOut.push_front (stateArrCurr);
+        trajectoryOut.push_front(stateArrCurr);
         
         Vertex<State,Trajectory,System>& vertexParent = vertexCurr->getParent();
-        //printf("vParent: %x\n", (void*)&vertexParent);
         
-        //if (&vertexParent != NULL) {
         if(vertexCurr->hasParent()){
             
             State& stateParent = vertexParent.getState();
@@ -597,8 +596,7 @@ RRTstar::Planner<State, Trajectory, System>
             system->getTrajectory (stateParent, stateCurr, trajectory);
             
             trajectory.reverse ();
-            //printf("traj sz %ld\n", trajectory.size());
-            for (std::list<double*>::iterator iter = trajectory.begin(); iter != trajectory.end(); iter++) {
+            for (std::list<double*>::iterator iter = trajectory.begin(); iter != trajectory.end(); ++iter) {
                 
                 double *stateArrFromParentCurr = *iter;
                 // No need to draw the full links.. just the state path

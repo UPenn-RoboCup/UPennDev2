@@ -281,7 +281,7 @@ function libArmPlan.joint_preplan(self, plan)
 	local qWaist0
 	if type(plan.qwPath)=='table' then
 		-- Continue from a pre-existing path
-		qArm0 = plan.qwPath[#plan.qwPath]
+		qArm0 = vector.new(plan.qwPath[#plan.qwPath])
 		if #qArm0>self.nq then
 			local diff = #qArm0 - self.nq
 			qWaist0 = {unpack(qArm0, 1, diff + 1)}
@@ -349,7 +349,9 @@ function libArmPlan.joint_preplan(self, plan)
 	plan.vwEffective = plan.vwEffective or {}
 	-- If given a duration, then check speed limit compliance
 	if type(plan.duration)=='number' then
-		local dqTotal = qArmF - qArm0
+    print('qWaistArmF', qWaistArmF)
+    print('qWaistArm0', qWaistArm0)
+		local dqTotal = qWaistArmF - qWaistArm0
 		local dqdtAverage = dqTotal / plan.duration
 		local dqAverage = dqdtAverage * dt
 		local usage = {}
@@ -784,9 +786,33 @@ function libArmPlan.rrt_star(self, plan)
   if not plan.qWaistArmGuess then
     print('Mid bias...')
     plan.qWaistArmGuess = vector.copy(self.qMid)
+  else
+    print('Guess:', qWaistArmGuess)
   end
   
-  plan.qwPath = rrts.plan(plan, self, 1.25)
+  plan.qwPath = rrts.plan(plan, self, 1.5, 1e4)
+  
+  if type(plan.qwPath)=='table' then
+    print('Found:', #plan.qwPath)
+    
+    local p = {}
+    for i=2,#plan.qwPath do
+      print('q',i, vector.new(plan.qwPath[i]))
+      p = libArmPlan.joint_preplan(self, {
+        qArm0 = plan.qwPath[i-1],
+        qWaist0 = {0,0},
+        q = plan.qwPath[i],
+        duration = 6,
+        timeout = 7,
+        qwPath = p.qwPath
+        })
+    end
+    
+    print('New qwPath', p.qwPath)
+    print('#', #p.qwPath)
+    plan.qwPath = p.qwPath
+  end
+  
   return plan
 end
 

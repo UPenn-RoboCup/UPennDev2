@@ -11,6 +11,7 @@ using namespace SingleIntegrator;
 #define DISCRETIZATION_STEP 0.03
 #define JANGLES
 #define FK
+#define BIAS
 
 extern double* xyzG;
 extern Transform trG;
@@ -266,16 +267,23 @@ int System::sampleState (State &randomStateOut) {
     // Bias 10% of the time
 #ifdef BIAS
     double pBias = (double)rand() / RAND_MAX;
-    if (pBias < 0.001){
-      printf("Biasing...\n");
+    if (pBias < 0.005){
+      //printf("Biasing... %f\n", ((double)rand()/RAND_MAX)-0.5);
       for (int i = 0; i < numDimensions; i++) {
+        
         randomStateOut.x[i] = max(
           -regionOperating.size[i]/2.0,
           min(regionOperating.size[i]/2.0,
-          regionGoal.center[i] + ((double)rand()/RAND_MAX - 0.5) * regionGoal.size[i]
+          regionGoal.center[i] + ((double)rand()/RAND_MAX - 0.5) / 90
+            //((double)rand()/RAND_MAX - 0.5) * regionGoal.size[i]/0.2
           ));
         
+        
+        //randomStateOut.x[i] = regionGoal.center[i];
+        
+        
       }
+      //printf("Biasing...\n");
     }
 #endif
     
@@ -306,7 +314,7 @@ bool System::isReachingTarget (State &stateIn) {
   //static double xyzG[] = {0.46, 0.27, 0.3, 0, 0, -M_PI/3};
   static double xyzS[] = {0,0,0};
 
-  Transform trS = fkLeft7(stateIn.x, qWaist, 0,0,0);
+  Transform trS = fkLeft7(stateIn.x, qWaist, 0.235,0,0);
   trS.getXYZ(xyzS);
   
   //Transform trG = fkLeft7(regionGoal.center, qWaist, 0,0,0);
@@ -314,6 +322,12 @@ bool System::isReachingTarget (State &stateIn) {
   //trG.getXYZ(xyzG);
   Transform here = inv(trS) * trG;
   std::vector<double> dtr6 = position6D(here);
+  
+  /*
+  printf("dtr6: ");
+  for (int i=0;i<6;i++){ printf("%f\t", dtr6[i]); }
+  printf("\n");
+  */
   
   for (int i = 0; i < 3; i++) {
     /*
@@ -323,7 +337,8 @@ bool System::isReachingTarget (State &stateIn) {
     if (fabs(dist) > 0.0254 ) { return false; }
     */
     if (fabs(dtr6[i]) > 0.04 ) { return false; }
-    if (fabs(dtr6[i+3]) > 30*M_PI/180 ) { return false; }
+    //if (fabs(dtr6[i+3]) > 30*M_PI/180 ) { return false; }
+    if (fabs(dtr6[i+3]) > 20*M_PI/180 ) { return false; }
   }
   /*
   printf("dp %.2f\n", fabs(xyzS[0] - xyzG[0]));
@@ -360,10 +375,10 @@ bool System::isReachingTarget (State &stateIn) {
 #ifdef FK
 bool System::IsInCollision (double *stateIn) {
   static double qWaist[] = {0,0};
-  static double WALL_Y = 0.4;
+  static double WALL_Y = 0.5;
   
   double xyz[] = {0,0,0};
-  Transform tr = fkLeft7(stateIn, qWaist, 0,0,0);
+  Transform tr = fkLeft7(stateIn, qWaist, 0.235,0,0);
   tr.getXYZ(xyz);
   if (xyz[1] > WALL_Y) {
     //printf("xyz: (%5.2f, %5.2f, %5.2f)\n", xyz[0], xyz[1], xyz[2]);
@@ -372,7 +387,7 @@ bool System::IsInCollision (double *stateIn) {
   // Elbow
   fkLeftElbow7(stateIn, qWaist).getXYZ(xyz);
   if (xyz[1] > WALL_Y) {
-    //printf("elbow: (%5.2f, %5.2f, %5.2f)\n", xyz[0], xyz[1], xyz[2]);
+    printf("elbow: (%5.2f, %5.2f, %5.2f)\n", xyz[0], xyz[1], xyz[2]);
     return true;
   }
   return false;
@@ -577,7 +592,7 @@ double System::evaluateCostToGo (State& stateIn) {
   Transform trG = fkLeft7(regionGoal.center, qWaist, 0,0,0);
   trG.getXYZ(xyzG);
   */
-  Transform trS = fkLeft7(stateIn.x, qWaist, 0,0,0);
+  Transform trS = fkLeft7(stateIn.x, qWaist, 0.235,0,0);
   trS.getXYZ(xyzS);
   
   //Transform trG = fkLeft7(regionGoal.center, qWaist, 0,0,0);

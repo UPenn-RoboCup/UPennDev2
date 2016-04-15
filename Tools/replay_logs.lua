@@ -246,6 +246,7 @@ local t_cursor = math.min(unpack(t_next))
 
 local cnt = 0
 local done
+local ok, meta, payload
 while not done do
 	cnt = cnt + 1
 	local t_n, i = util.min(t_next)
@@ -287,7 +288,7 @@ while not done do
     until not loopy
 	end
 	-- Repopulate
-	local ok, meta, payload = coroutine.resume(coro[i])
+	ok, meta, payload = coroutine.resume(coro[i])
 	if not ok then done = true end
 	if meta then
 		t_next[i] = meta.tlog

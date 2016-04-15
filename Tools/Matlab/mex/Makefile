@@ -64,7 +64,7 @@ zmq.$(MEXEXT):
 	$(MEX) zmq.cc -lzmq
 
 msgpack.$(MEXEXT):
-	$(MEX) msgpack.cc -lmsgpack
+	$(MEX) msgpack.cc -lmsgpackc
 
 zlibCompress.$(MEXEXT):
 	$(MEX) zlibCompress.cc -lz

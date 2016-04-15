@@ -1,13 +1,15 @@
 %% Plot the joint trajectories in time
 tlim = [t(1), t(end)];
 
-figure(1);
-plot(t, rad2deg(qwPath0));
-xlim(tlim);
-xlabel('Time (s)');
-ylim([-180, 180]);
-ylabel('Degrees');
-title('Original Trajectory');
+if exist('qwPath0', 'var')
+    figure(1);
+    plot(t, rad2deg(qwPath0));
+    xlim(tlim);
+    xlabel('Time (s)');
+    ylim([-180, 180]);
+    ylabel('Degrees');
+    title('Original Trajectory');
+end
 
 if exist('swapidx', 'var')
     cmap = hsv(numel(swapidx)-1);

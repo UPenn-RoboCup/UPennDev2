@@ -12,6 +12,8 @@ using namespace SingleIntegrator;
 #define JANGLES
 #define FK
 
+extern double* xyzG;
+
 region::region () {
     
     numDimensions = 0;
@@ -300,7 +302,7 @@ end
 
 bool System::isReachingTarget (State &stateIn) {
   static double qWaist[] = {0,0};
-  static double xyzG[] = {0.46, 0.27, 0.3, 0, 0, -M_PI/3};
+  //static double xyzG[] = {0.46, 0.27, 0.3, 0, 0, -M_PI/3};
   static double xyzS[] = {0,0,0};
 
   Transform trS = fkLeft7(stateIn.x, qWaist, 0,0,0);
@@ -567,8 +569,8 @@ double System::evaluateCostToGo (State& stateIn) {
 #ifdef FK
   
   static double qWaist[] = {0,0};
-  static double xyzG[] = {0.46, 0.27, 0.3, 0, 0, -M_PI/3};
-  static double xyzS[] = {0,0,0};
+  //static double xyzG[] = {0.46, 0.27, 0.3, 0, 0, -M_PI/3};
+  static double xyzS[] = {0,0,0, 0,0,0};
   
   /*
   Transform trG = fkLeft7(regionGoal.center, qWaist, 0,0,0);

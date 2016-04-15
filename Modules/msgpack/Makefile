@@ -1,6 +1,6 @@
 LIBNAME=msgpack
 include ../../Makefile.inc
-LDFLAGS+=-lmsgpack
+LDFLAGS+=-lmsgpackc
 #ifdef USE_TORCH
 #CXXFLAGS+=-DTORCH=1
 #LDFLAGS+=-ltorch

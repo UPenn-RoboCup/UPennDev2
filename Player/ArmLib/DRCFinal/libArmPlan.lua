@@ -784,10 +784,9 @@ function libArmPlan.rrt_star(self, plan)
 	end
   
   if not plan.qWaistArmGuess then
-    print('Mid bias...')
-    plan.qWaistArmGuess = vector.copy(self.qMid)
+    print('No guess!')
   else
-    print('Guess:', qWaistArmGuess)
+    print('Guess:', plan.qWaistArmGuess)
   end
   
   plan.qwPath = rrts.plan(plan, self, 1.5, 1e4)
@@ -802,6 +801,17 @@ function libArmPlan.rrt_star(self, plan)
         qArm0 = plan.qwPath[i-1],
         qWaist0 = {0,0},
         q = plan.qwPath[i],
+        duration = 6,
+        timeout = 7,
+        qwPath = p.qwPath
+        })
+    end
+    -- Finish the path...
+    if plan.qWaistArmGuess then
+      p = libArmPlan.joint_preplan(self, {
+        qArm0 = plan.qwPath[#plan.qwPath],
+        qWaist0 = {0,0},
+        q = plan.qWaistArmGuess,
         duration = 6,
         timeout = 7,
         qwPath = p.qwPath

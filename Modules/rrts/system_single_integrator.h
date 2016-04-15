@@ -13,7 +13,7 @@
 #define shoulderOffsetY 0.234 //the same
 #define upperArmLengthL 0.261 //mk2 stock
 #define lowerArmLengthL 0.252 //mk2 stock
-#define shoulderOffsetZ2 0.276 //mk2 value, for referenc
+//#define shoulderOffsetZ2 0.276 //mk2 value, for referenc
 //virtual shoulderoffset, the same as mk1 (0.165):
 //#define shoulderOffsetZ shoulderOffsetZ2-originOffsetZ 
 #define shoulderOffsetZ 0.165
@@ -70,6 +70,8 @@ namespace SingleIntegrator {
          *
          */
         int setNumDimensions (int numDimensionsIn);
+        
+        int getNumDimensions ();
     };
     
 

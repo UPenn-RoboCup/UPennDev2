@@ -13,6 +13,7 @@ using namespace SingleIntegrator;
 #define FK
 
 extern double* xyzG;
+extern Transform trG;
 
 region::region () {
     
@@ -309,7 +310,7 @@ bool System::isReachingTarget (State &stateIn) {
   trS.getXYZ(xyzS);
   
   //Transform trG = fkLeft7(regionGoal.center, qWaist, 0,0,0);
-  Transform trG = transform6D(xyzG);
+  //Transform trG = transform6D(xyzG);
   //trG.getXYZ(xyzG);
   Transform here = inv(trS) * trG;
   std::vector<double> dtr6 = position6D(here);
@@ -580,7 +581,7 @@ double System::evaluateCostToGo (State& stateIn) {
   trS.getXYZ(xyzS);
   
   //Transform trG = fkLeft7(regionGoal.center, qWaist, 0,0,0);
-  Transform trG = transform6D(xyzG);
+  //Transform trG = transform6D(xyzG);
   //trG.getXYZ(xyzG);
   Transform here = inv(trS) * trG;
   std::vector<double> dtr6 = position6D(here);

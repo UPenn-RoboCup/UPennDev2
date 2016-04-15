@@ -21,8 +21,66 @@ using namespace std;
 extern double* xyzG;
 double* xyzG = new double[6];
 
+extern Transform trG;
+Transform trG;
+
 typedef Planner<State,Trajectory,System> planner_t;
 typedef Vertex<State,Trajectory,System> vertex_t;
+
+static Transform lua_checktransform(lua_State *L, int narg) {
+  // Table of tables
+  luaL_checktype(L, narg, LUA_TTABLE);
+#if LUA_VERSION_NUM == 502
+	int n_el = lua_rawlen(L, narg);
+#else
+  int n_el = lua_objlen(L, narg);
+#endif
+  if(n_el!=4){
+    luaL_error(L, "Bad dimension! %d x ?",n_el);
+  }
+
+  // Make the Transform
+  Transform tr;
+  int i, j;
+
+  // Loop through the transform
+  for (i = 1; i <= 4; i++) {
+    // Grab the table entry
+    lua_rawgeti(L, narg, i);
+    // Get the top of the stack
+    int top_tbl = lua_gettop(L);
+    //printf("Top of stack: %d\n",top_arg);
+
+    luaL_checktype(L, top_tbl, LUA_TTABLE);
+    #if LUA_VERSION_NUM == 502
+      int n_el2 = lua_rawlen(L, top_tbl);
+    #else
+      int n_el2 = lua_objlen(L, top_tbl);
+    #endif
+    if(n_el!=4){
+      luaL_error(L, "Bad dimension! %d x %d",i,n_el2);
+    }
+
+    // Work with the table, which is pushed
+    for (j = 1; j <= 4; j++) {
+      // Grab the table entry on top of the stack (of 2 things?)
+      lua_rawgeti(L, top_tbl, j);
+      int top_num = lua_gettop(L);
+      // The number is now on the top of the stack
+      double el = luaL_checknumber(L, top_num);
+      // Work with the table, which is pushed
+      //printf("El @ (%d,%d)=%lf\n",i,j,el);
+      tr(i-1,j-1) = el;
+      // Remove the number from the stack
+      lua_pop(L, 1);
+    }
+    // Remove from the stack
+    lua_pop(L, 1);
+  }
+
+  // Return the Transform
+  return tr;
+}
 
 static int lua_rrts_plan(lua_State *L) {
 
@@ -38,10 +96,16 @@ static int lua_rrts_plan(lua_State *L) {
 
 	// Create the dynamical system that checks obstacles and closeness
 	System system;
-
+#ifdef DEBUG
+printf("Checking the plan...\n");
+#endif
 	// fk pose
-	lua_pushliteral(L, "trGoal");
+	lua_pushliteral(L, "tr");
 	lua_rawget(L, 1);
+  trG = lua_checktransform(L, -1);
+  lua_pop(L, 1);
+  
+  /*
 	luaL_checktype(L, -1, LUA_TTABLE);
 #if LUA_VERSION_NUM == 502
 	if(6 != lua_rawlen(L, -1)){ return luaL_error(L, "Bad fk dimensions"); }
@@ -56,8 +120,12 @@ static int lua_rrts_plan(lua_State *L) {
     printf("TR GOAL: %f\n", xyzG[i]);
 #endif
 	}
+*/
   
 	// Grab the initial pose
+  #ifdef DEBUG
+  printf("Grab nDim...\n");
+  #endif
 	lua_pushliteral(L, "qArm0");
 	lua_rawget(L, 1);
 	luaL_checktype(L, -1, LUA_TTABLE);
@@ -66,6 +134,7 @@ static int lua_rrts_plan(lua_State *L) {
 #else
 	int nDim = lua_objlen(L, -1);
 #endif
+  lua_pop(L, 1);
 	system.setNumDimensions(nDim);
 
 	// Define the region dimensions
@@ -73,7 +142,10 @@ static int lua_rrts_plan(lua_State *L) {
 	system.regionOperating.setNumDimensions(nDim);
 
 	// Guessed pose (Option for goal biasing)
-	lua_pushliteral(L, "qArmGuess");
+  #ifdef DEBUG
+  printf("Grab guess...\n");
+  #endif
+	lua_pushliteral(L, "qWaistArmGuess");
 	lua_rawget(L, 1);
 	luaL_checktype(L, -1, LUA_TTABLE);
 #if LUA_VERSION_NUM == 502
@@ -86,13 +158,17 @@ static int lua_rrts_plan(lua_State *L) {
 		system.regionGoal.center[i] = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 		system.regionGoal.size[i] = 2 * DEGREE_TOLERANCE * M_PI / 180;
-		
 #ifdef DEBUG
     printf("GUESS: %f\n", system.regionGoal.center[i]);
 #endif
-
 	}
+  lua_pop(L, 1);
 
+#ifdef DEBUG
+    printf("Checking the planner...\n");
+#endif
+
+  // TODO: Decide between qWMin and qMin
 	// qMid
 	lua_pushliteral(L, "qMid");
 	lua_rawget(L, 2);
@@ -107,6 +183,7 @@ static int lua_rrts_plan(lua_State *L) {
 		system.regionOperating.center[i] = luaL_checknumber(L, -1);
 		lua_pop(L, 1);
 	}
+  lua_pop(L, 1);
   
 	// qRange
 	lua_pushliteral(L, "qRange");
@@ -122,6 +199,7 @@ static int lua_rrts_plan(lua_State *L) {
 		system.regionOperating.size[i] = luaL_checknumber(L, -1);
 		lua_pop(L, 1);
 	}
+  lua_pop(L, 1);
 
 	// Add the system to the planner
 	rrts.setSystem (system);
@@ -142,6 +220,7 @@ static int lua_rrts_plan(lua_State *L) {
     printf("qArm0: %f\n", rootState[i]);
 #endif
 	}
+  lua_pop(L, 1);
 
 	// Initialize the planner
 	rrts.initialize();

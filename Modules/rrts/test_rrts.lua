@@ -7,7 +7,13 @@ local nIter = 1e4
 print("Solving with gamma=", gamma)
 local plan = {
   qArm0 = {1.91986, 0, 0, -2.7, 0, 0.785398, 0},
-  trGoal = {0.46, 0.27, 0.3, 0, 0, -math.pi/3},
+  --trGoal = {0.46, 0.27, 0.3, 0, 0, -math.pi/3},
+  tr = {
+    {1, 0, 0, 0.46},
+    {0, 1, 0, 0.27},
+    {0, 0, 1, 0.3},
+    {0, 0, 0, 1},
+    },
   qArmGuess = {-0.349, 1.047, -1.57, -2.094, 0, -0.785, 0},
 }
 local planner = {

@@ -55,12 +55,14 @@ movearm.rPlanner = rPlanner
 -- Callback on sensed data
 local function co_play(self, plan, callback)
 
+  if not plan.qwPath then return end
+
 	-- Run the optimizer
 	--plan.n_optimizations = 10
 	plan.n_optimizations = 10
 	plan.update_jacobians = true
 	plan.n_optimizations = 0
-  plan.n_optimizations = 1
+--  plan.n_optimizations = 1
 	--plan.update_jacobians = false
   
   -- Show the initial vw

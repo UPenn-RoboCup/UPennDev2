@@ -16,6 +16,9 @@ local INFINITY = require'math'.huge
 local EPSILON = 1e-2 * DEG_TO_RAD
 local util = require'util'
 
+local has_rrts, rrts = pcall(require, 'rrts')
+print("Using rrts?", has_rrts, rrts)
+
 local POS_THRESH = 0.01--0.025
 
 -- Does not work for the infinite turn motors
@@ -757,6 +760,36 @@ function libArmPlan.jacobian_wasit_velocity(self, plan)
 	end
 end
 
+function libArmPlan.rrt_star(self, plan)
+  
+	local prefix = string.format('rrt_star (%s) | ', self.id)
+	assert(type(plan)=='table', prefix..'Bad plan')
+  
+	-- Update a guess for the final configuration
+	if type(plan.q)=='table' then
+		plan.tr = self.forward(plan.q, plan.qWaistGuess or plan.qWaist0)
+		plan.qWaistArmGuess = vector.copy(plan.q)
+	elseif plan.tr then
+		plan.qWaistArmGuess = plan.qArmGuess or self:find_shoulder(
+			plan.tr, plan.qArm0, plan.weights, plan.qWaistGuess or plan.qWaist0)
+    vector.new(plan.qWaistArmGuess)
+	end
+	assert(type(plan.tr)=='table', prefix..'No goal specified')
+
+	-- Append the waist to the guess if need be
+  if plan.qWaistArmGuess and plan.qWaistGuess then
+		table.insert(plan.qWaistArmGuess, 1, plan.qWaistGuess[1])
+	end
+  
+  if not plan.qWaistArmGuess then
+    print('Mid bias...')
+    plan.qWaistArmGuess = vector.copy(self.qMid)
+  end
+  
+  plan.qwPath = rrts.plan(plan, self, 1.25)
+  return plan
+end
+
 -- Set the forward and inverse
 local function set_chain(self, forward, inverse, jacobian)
 	self.forward = assert(forward)
@@ -787,6 +820,7 @@ local function set_limits(self, qMin, qMax, dqdt_limit)
 	self.qWMin = vector.new{-math.pi/2, unpack(self.qMin)}
 	self.qWMax = vector.new{math.pi/2, unpack(self.qMax)}
 	self.qWRange = self.qWMax - self.qWMin
+  self.qWMid = self.qWMin /2 + self.qWMax /2
 	self.dqWdt_limit = vector.new{
 		10*DEG_TO_RAD, unpack(self.dqdt_limit)}
 
@@ -824,6 +858,7 @@ local function pathJacobians(self, plan)
 	local vwEffective = {}
 	local qArm, qWaist
 	for i, qw in ipairs(plan.qwPath) do
+    vector.new(qw)
 		-- Decompose
 		if #qw>self.nq then
 			qArm = {unpack(qw, 2)}

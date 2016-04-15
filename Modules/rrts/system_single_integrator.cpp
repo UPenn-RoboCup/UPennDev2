@@ -270,8 +270,9 @@ int System::sampleState (State &randomStateOut) {
 	randomStateOut.setNumDimensions (numDimensions);
 
 	// Bias 10% of the time
-	if(regionGoal.getNumDimensions()>0 && (double)rand() / RAND_MAX < 1){
-		//printf("Biasing...\n");
+  double bias = (double)rand() / RAND_MAX;
+	if(regionGoal.getNumDimensions()>0 && bias < 0.001){
+		printf("Biasing... %f\n", bias);
 		for (int i = 0; i < numDimensions; i++) {
 			randomStateOut.x[i] = max(
 				-regionOperating.size[i]/2.0,
@@ -376,7 +377,7 @@ bool System::isReachingTarget (State &stateIn) {
 #ifdef FK
 bool System::IsInCollision (double *stateIn) {
 	static double qWaist[] = {0,0};
-	static double WALL_Y = 0.5;
+	static double WALL_Y = 0.4;
 
 	double xyz[] = {0,0,0};
 	Transform tr = fkLeft7(stateIn, qWaist, 0.235,0,0);

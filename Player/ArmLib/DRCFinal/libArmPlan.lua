@@ -821,6 +821,7 @@ function libArmPlan.rrt_star(self, plan)
     print('New qwPath', p.qwPath)
     print('#', #p.qwPath)
     plan.qwPath = p.qwPath
+    
   end
   
   return plan

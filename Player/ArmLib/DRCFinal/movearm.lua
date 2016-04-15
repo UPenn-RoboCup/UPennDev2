@@ -61,9 +61,11 @@ local function co_play(self, plan, callback)
 	--plan.n_optimizations = 10
 	plan.n_optimizations = 10
 	plan.update_jacobians = true
-	plan.n_optimizations = 0
---  plan.n_optimizations = 1
+  plan.n_optimizations = 1
+--	plan.n_optimizations = 0
 	--plan.update_jacobians = false
+  
+  if not plan.nulls then self:jacobians(plan) end
   
   -- Show the initial vw
   mattorch.saveTable("~/plan0.mat", plan)
@@ -83,6 +85,7 @@ local function co_play(self, plan, callback)
 	-- Just send the final data.
 	if plan.n_optimizations>0 then
 		plan.i_optimizations = plan.n_optimizations + 1
+    
 		plan.qwPath = self:optimize(plan, true)
 		if plan.update_jacobians then
       self:jacobians(plan)

@@ -195,7 +195,7 @@ RRTstar::Planner<State, Trajectory, System>
         
         double costCurr = vertexIn.getCost();
         if ( (lowerBoundVertex == NULL) || ( (lowerBoundVertex != NULL) && (costCurr < lowerBoundCost)) ) {
-            
+          printf("New solution found! %f\n", costCurr);
             lowerBoundVertex = &vertexIn;
             lowerBoundCost = costCurr;
         }
@@ -572,6 +572,8 @@ RRTstar::Planner<State, Trajectory, System>
       return 0;
     }
     
+    trajectoryOut.clear();
+    
     Vertex<State,Trajectory,System>* vertexCurr = lowerBoundVertex;
     int nDim = vertexCurr->getState().getNumDimensions();
     
@@ -621,7 +623,8 @@ RRTstar::Planner<State, Trajectory, System>
         
     }
     
-    return 1;
+    //return 1;
+    return trajectoryOut.size();
 }
 
 

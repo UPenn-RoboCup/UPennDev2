@@ -249,23 +249,27 @@ if(pFile != NULL){
 }
 #endif
 
+std::list<double*> finalTraj;
+
 #ifdef TIMING
 clock_t start = clock();
 #endif
 
 // Run the algorithm for 10000 iteartions
 for (int i = 0; i < nIterations; i++){
+
+	rrts.iteration(ostate, pstate);
+  
 #ifdef TIMING
 	if(i%1000 == 0){
 		clock_t now = clock();
-		printf("Completion: %4.2f, %5.2f sec\n", i/(double)nIterations, ((double)(now-start))/CLOCKS_PER_SEC);
+    int ret = rrts.getBestTrajectory(finalTraj);
+		printf("Completion: %4.2f, %5.2f sec, Found: %d\n",
+      i/(double)nIterations, ((double)(now-start))/CLOCKS_PER_SEC, ret);
 	}
 #endif
 
-	rrts.iteration(ostate, pstate);
-
 #ifdef CSV
-	rrts.iteration(ostate, pstate);
 	if (pFile!=NULL){
 		for(int i=0;i<nDim;i++){
 			fprintf(pFile, "%.2f ", pstate[i]);
@@ -292,11 +296,11 @@ if (pFile!=NULL)
 }
 #endif
 
-std::list<double*> finalTraj;
+
 int ret = rrts.getBestTrajectory(finalTraj);
 
 // No path found
-if(!ret){ return 0; }
+if(ret==0){ return 0; }
 
 lua_createtable(L, finalTraj.size(), 0);
 //printf("Num path: %d\n", finalTraj.size());

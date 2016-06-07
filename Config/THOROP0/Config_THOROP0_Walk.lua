@@ -182,7 +182,7 @@ print("bodyheight:",Config.walk.bodyHeight)
 --Config.walk.bodyHeight = 0.83
 --Config.walk.bodyHeight = 0.83
 --Config.walk.bodyHeight = 0.73
-Config.walk.bodyHeight = 0.73
+--Config.walk.bodyHeight = 0.73
 
 
 

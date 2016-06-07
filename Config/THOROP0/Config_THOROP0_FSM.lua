@@ -169,7 +169,7 @@ fsm.Arm = {
 
 
 	--This should be called JUST ONCE at the beginning
-	{'armIdle', 'init', 'armInitFirst2'},   --armInitFirst
+	{'armIdle', 'init', 'armInitFirst'},   --armInitFirst
 --	{'armIdle', 'init', 'armInitWalk'},
 
 

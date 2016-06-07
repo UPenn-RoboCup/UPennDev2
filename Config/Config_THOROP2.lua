@@ -10,9 +10,6 @@ if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
 exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
-if IS_STEVE==false then
-  exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}
-end
 -- Printing of debug messages
 Config.debug = {
   webots_wizard = false,
@@ -27,10 +24,10 @@ Config.debug = {
 }
 
 
-Config.birdwalk = 1 		
+--Config.birdwalk = 1 		
 Config.raise_body = true
 Config.use_exact_tZMP = true
-Config.use_heeltoe_walk = true
+Config.use_heeltoe_walk = false
 Config.heeltoe_angle = 0*DEG_TO_RAD
 Config.walktraj={}
 Config.walktraj.hybridwalk = "foot_trajectory_softfast"

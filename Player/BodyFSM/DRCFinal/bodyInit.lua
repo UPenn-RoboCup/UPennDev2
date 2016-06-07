@@ -38,6 +38,7 @@ function state.update()
   --TODO: Check whether all FSMs have done initialzing 
   local body_init = mcm.get_status_body_init()
   local arm_init = mcm.get_status_arm_init()
+  --print(body_init, arm_init)
   if body_init==1 and arm_init==1 then return "done" end
 
   --TODO

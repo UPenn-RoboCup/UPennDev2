@@ -191,6 +191,7 @@ char_lut['7'] = function()
 end
 char_lut['8'] = function()
 	body_ch:send'stop'
+--	motion_ch:send'done'
 end
 char_lut['9'] = function()
   motion_ch:send'hybridwalk'

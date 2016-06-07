@@ -751,7 +751,7 @@ local function do_external(request, bus)
 			for i, m_id in ipairs(m_ids) do
 				val = m_vals[i]
 				j_id = m_to_j[m_id]
-				status = lD['set_mx_'..wr_reg](m_id, val, bus)[1]
+				status = lD['set_mx_'..wr_reg](m_id, val, bus)
 				if status then
 					gripper_mode[j_id] = val
 					-- copy the position if going to command position mode

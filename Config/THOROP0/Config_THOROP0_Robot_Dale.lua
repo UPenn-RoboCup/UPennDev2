@@ -358,7 +358,7 @@ servo.direction = vector.new({
 servo.rad_offset = vector.new({
 	0,0, -- Head
 --	-90,  -90,  -90,45,  -90,0,0, --LArm, rebias
-	-90,   90,    0,45,    0,0,0, --LArm    03/10/2016  -jinwook
+	-90,   90,    0,45,    0,0,90, --LArm    03/10/2016  -jinwook
 --	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
 --	0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
 

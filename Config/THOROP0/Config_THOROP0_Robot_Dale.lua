@@ -157,11 +157,11 @@ local right_arm = {
 
 
 		-- waist
-		28,
+		--28,
 		--head
-		29, 30,
+		--29, 30,
 		-- gripper
-		63, 65, 67
+		--63, 65, 67
 	},
 	enable_read = true,
 }
@@ -318,7 +318,8 @@ servo.steps = 2 * vector.new({
 	251000,251000,251000,251000,251000,151875,151875, --LArm (mk2 arm)
 	251000,251000,251000,251000,251000,251000, --LLeg
 	251000,251000,251000,251000,251000,251000, --RLeg
-	251000,251000,251000,251000,251000,151875,151875, --RArm (mk2 arm)
+--	251000,251000,251000,251000,251000,151875,151875, --RArm (mk2 arm)
+	251000,251000,251000,251000,151875,151875,151875, --RArm (mk2 arm)  --jinwook
 	251000,251000, -- Waist
 	2048,2048,2048, -- Left gripper
 	2048,2048,2048, -- Right gripper
@@ -328,7 +329,8 @@ servo.steps = 2 * vector.new({
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
 	1,1, -- Head, mk2
-	1,1,1, 1, 1,1,1, --LArm, mk2, after flipping wristyaw
+--	1,1,1, 1, 1,1,1, --LArm, mk2, after flipping wristyaw
+	1,-1,1, 1, 1,1,1, --LArm, mk2 reassembled
 
 
 
@@ -341,7 +343,9 @@ servo.direction = vector.new({
 
 
 
-	-1,1,1, -1, 1,1,1, --RArm, teddy2, tested, rshoulder yaw fix
+--	-1,1,1, -1, 1,1,1, --RArm, teddy2, tested, rshoulder yaw fix
+	-1,-1,1, -1, 1,1,1, --RArm, mk2 reassembled   --jinwook
+
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
 	1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
@@ -353,7 +357,8 @@ servo.direction = vector.new({
 -- OLDOLDOLD
 servo.rad_offset = vector.new({
 	0,0, -- Head
-	-90,  -90,  -90,45,  -90,0,0, --LArm, rebias
+--	-90,  -90,  -90,45,  -90,0,0, --LArm, rebias
+	-90,   90,    0,45,    0,0,0, --LArm    03/10/2016  -jinwook
 --	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
 --	0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
 
@@ -362,7 +367,9 @@ servo.rad_offset = vector.new({
 
 
 
-	90,  90,  90,-45,  90,0,-90, --RArm, teddy, wristYaw fix
+--	90,  90,  90,-45,  90,0,-90, --RArm, teddy, wristYaw fix
+	90,  90,   0,-45,  90,0,0, --RArm   --jinwook
+
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
 	-90, -90, 0, -- right gripper/trigger (UCLA rev2 verified)
@@ -376,10 +383,12 @@ servo.rad_offset = vector.new({
 --SJ: Arm servos should at least move up to 90 deg
 servo.min_rad = vector.new({
 	-135,-80, -- Head
-	-160, 0, -100,    -160,   -180,-87,-180, --LArm
+--	-160, 0, -100,    -160,   -180,-87,-180, --LArm
+	-90, -175, -90,    -160,   -180,-87,-180, --LArm  03/10/2016  --jinwook
 	-175,-25,-175,-175,-175,-175, --LLeg
 	-175,-175,-175,-175,-175,-175, --RLeg
-	-160,-87,-100,    -160,   -180,-87,-180, --RArm
+--	-160,-87,-100,    -160,   -180,-87,-180, --RArm
+	-90,-175,-90,    -160,   -180,-87,-180, --RArm    --jinwook
 	-90,-45, -- Waist
 	-60, -55, -60,
 	-90, -120, -55, -- right gripper/trigger (UCLA rev2 verified)
@@ -390,10 +399,15 @@ servo.min_rad = vector.new({
 servo.max_rad = vector.new({
 	--90,80, -- Head
 	135,80, -- Head
-	160,87,100,   0,     180,87,180, --LArm
+--	160,87,100,   0,     180,87,180, --LArm
+	180,87,135,   0,     180,87,180, --LArm   jinwook
+
+
 	175,25,175,175,175,175, --LLeg
 	175,175,175,175,175,175, --RLeg
-	160,-0,100,   0,     180,87,180, --RArm
+--	160,-0,100,   0,     180,87,180, --RArm
+	160,-0,90,   0,     180,87,180, --RArm  12.31 by SJ   jinwook
+
 	90,45, -- Waist
 	65,65,55, -- lgrip
 	105,110,105, -- right gripper/trigger (UCLA rev2 verified)
@@ -403,6 +417,8 @@ servo.max_rad = vector.new({
 
 
 if Config.USE_DUMMY_ARMS then
+
+	print("dummy dummy dummy dummy arm")
 	indexHead = 1   -- Head: 1 2
 	nJointHead = 2
 	indexLArm = 3   --LArm: 3 4
@@ -559,10 +575,10 @@ if IS_WEBOTS then
 
 	servo.min_rad = vector.new({
 		-135,-80, -- Head
-		-160, 0, -100, -160,      -180,-87,-180, --LArm
+		-90, -175, -90,    -160,   -180,-87,-180, --LArm  03/10/2016  --jinwook
 		-175,-175,-175,-175,-175,-175, --LLeg
 		-175,-175,-175,-175,-175,-175, --RLeg
-		-160,-180,-100,-160,       -180,-87,-180, --RArm
+		-90,-175,-90,    -160,   -180,-87,-180, --RArm    --jinwook
 		-90,-45, -- Waist
 		120,80,60, --lhand
 		120,60,60,--rhand
@@ -570,17 +586,20 @@ if IS_WEBOTS then
 		-60, -- Lidar pan
 	})*DEG_TO_RAD
 
+
+
 	servo.max_rad = vector.new({
 		135, 80, -- Head
-		160,180,100,0,     180,87,180, --LArm
+		180,87,135,   0,     180,87,180, --LArm   jinwook
 		175,175,175,175,175,175, --LLeg
 		175,175,175,175,175,175, --RLeg
-		160,0,100,0,     180,87,180, --RArm
+		160,-0,90,   0,     180,87,180, --RArm  12.31 by SJ   jinwook
 		90,79, -- Waist
 		0,45,45,  --lhand
 		0,45,45,    --rhand
 		60, -- Lidar pan
 	})*DEG_TO_RAD
+
 
 
 

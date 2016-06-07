@@ -18,12 +18,12 @@ local last_error
 
 local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
   local qLArm = Body.get_larm_command_position()
-  local qRArm = Body.get_rarm_command_position()  
+  local qRArm = Body.get_rarm_command_position()
 
-  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt ,nil,absolute)  
+  local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt ,nil,absolute)
   local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt ,nil,absolute)
 
-  if not absolute then  
+  if not absolute then
     for i=1,7 do
       local qL_increment = util.mod_angle(qL_approach[i]-qLArm[i])
       local qR_increment = util.mod_angle(qR_approach[i]-qRArm[i])
@@ -47,34 +47,53 @@ function state.entry()
   t_update = t_entry
   t_finish = t
 
-  -- Close rgrip
-  Body.set_rgrip_command_torque({-10,-10,10})
-  -- Open rgrip
-  Body.set_rgrip_command_torque({10,10,-10})
-  -- No torque rgrip
-  Body.set_rgrip_command_torque({0,0,0})
+--  Grip_hold = {0,0,0}
+--  Grip_open = {0.496719, 0.458369, 0.50132}
 
-  qLArmTarget = Body.get_inverse_larm(
+--  Body.set_lgrip_torque_enable(1)
+--  Body.set_lgrip_command_position(Grip_open)
+    
+
+    qLArmTarget = Body.get_inverse_larm(
     vector.zeros(7),
     Config.arm.trLArm0,
     Config.arm.ShoulderYaw0[1],
     mcm.get_stance_bodyTilt(),{0,0},true)
 
-  qRArmTarget = Body.get_inverse_rarm(
+
+    qRArmTarget = Body.get_inverse_rarm(
     vector.zeros(7),
     Config.arm.trRArm0,
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0},true)
 
-print("L:",qLArmTarget[5]*RAD_TO_DEG)
-print("R:",qRArmTarget[5]*RAD_TO_DEG)
+    print(    Config.arm.ShoulderYaw0[1])
+    print(mcm.get_stance_bodyTilt())
+    print("L:",qLArmTarget[1],qLArmTarget[2],qLArmTarget[3],qLArmTarget[4],qLArmTarget[5],qLArmTarget[6])
+    print("R:",qRArmTarget[5]*RAD_TO_DEG)
 
-  qLArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, 90*DEG_TO_RAD,40*DEG_TO_RAD,-90*DEG_TO_RAD}
-  qRArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, -90*DEG_TO_RAD,-40*DEG_TO_RAD,90*DEG_TO_RAD}
+--  qLArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, 90*DEG_TO_RAD,40*DEG_TO_RAD,-90*DEG_TO_RAD}
+--  qRArmTarget = {110*DEG_TO_RAD,0,0,   -150*DEG_TO_RAD, -90*DEG_TO_RAD,-40*DEG_TO_RAD,90*DEG_TO_RAD}
 
 
-  qLArmTarget = vector.new({110,0,10,-155,90,45,-76})*DEG_TO_RAD
-  qRArmTarget = vector.new({110,0,-10,-160,-90,-40,76})*DEG_TO_RAD
+  --qLArmTarget = vector.new({110,0,10,-155,90,45,-76})*DEG_TO_RAD
+  qLArmTarget = vector.new({90,0,0,0,0,0,0})*DEG_TO_RAD
+  --qLArmTarget = vector.new({65.30, 90, 14.44, -39.95, -93.46, -24.63, 0.0})*DEG_TO_RAD
+
+  --qRArmTarget = vector.new({110,0,-10,-160,-90,-40,76})*DEG_TO_RAD
+  qRArmTarget = vector.new({90,0,0,0,0,0,0})*DEG_TO_RAD
+
+--65.30 -47.70 14.44 -39.95 -93.46 -24.63
+
+  --- for the test of IK
+  qLArmTarget = vector.new({90,0,0,0,0,0,0})*DEG_TO_RAD
+
+
+
+
+  ---
+
+
 
 
   t_last_debug=t_entry
@@ -94,11 +113,11 @@ function state.update()
   t_update = t
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
-    
+
   local ret
   local qLArmTargetC, qRArmTargetC = util.shallow_copy(qLArm),util.shallow_copy(qRArm)
-    
-  if stage==1 then --Straighten wrist roll and second wrist yaw       
+
+  if stage==1 then --Straighten wrist roll and second wrist yaw
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
     t_stage = 1.0
@@ -112,14 +131,15 @@ function state.update()
     t_stage = 1.0
 
   elseif stage==3 then --straighten shoulder yaw, widen shoulder
-    qLArmTargetC,qRArmTargetC = 
-	util.shallow_copy(qLArmTarget),
-	util.shallow_copy(qRArmTarget)
+    qLArmTargetC,qRArmTargetC =
+  util.shallow_copy(qLArmTarget),
+  util.shallow_copy(qRArmTarget)
     qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
     t_stage = 2.0
 
   elseif stage==4 then
     qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
+    
     t_stage = 1.0
   elseif stage==5 then
     return "done"
@@ -162,12 +182,12 @@ function state.update()
 
   if t>t_last_debug+0.2 then
     t_last_debug=t
-    if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then 
+    if ret==1 and math.abs(last_error-err)<0.2*math.pi/180 then
       stage = stage+1
       print("Total joint reading err:",err*180/math.pi)
     end
     last_error = err
-  end    
+  end
 end
 
 function state.exit()
@@ -175,19 +195,21 @@ function state.exit()
   --Our arm joint angles are (qLArmTarget, qRArmTarget)
   --but as the torso moves to compensate. the actual arm end positions are slightly different
   --we calculated the arm transforms (sans compensation) and stores them as current intiial conditions for planner
+  
+  --Body.set_lgrip_command_position(Grip_hold)
 
   local qWaist = Body.get_waist_command_position()
-  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist)  
+  local uTorsoComp = Body.get_torso_compensation(qLArmTarget,qRArmTarget,qWaist)
   local vec_comp = vector.new({uTorsoComp[1],uTorsoComp[2],0, 0,0,0})
   local trLArmComp = Body.get_forward_larm(qLArmTarget)
   local trRArmComp = Body.get_forward_rarm(qRArmTarget)
   local trLArm = vector.new(trLArmComp) + vec_comp
-  local trRArm = vector.new(trRArmComp) + vec_comp 
+  local trRArm = vector.new(trRArmComp) + vec_comp
   mcm.set_arm_trlarm(trLArm)
   mcm.set_arm_trrarm(trRArm)
   mcm.set_arm_qlarmcomp(qLArmTarget)
   mcm.set_arm_qrarmcomp(qRArmTarget)
-  mcm.set_stance_uTorsoComp(uTorsoComp)  
+  mcm.set_stance_uTorsoComp(uTorsoComp)
 
 
   mcm.set_status_arm_init(1) --arm idle and requires init
@@ -202,4 +224,3 @@ function state.exit()
 end
 
 return state
-

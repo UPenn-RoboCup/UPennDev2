@@ -69,7 +69,8 @@ local function correct( self, z_k )
 end
 
 -- Filter initialization code
-local function initialize_filter( nDim )
+local function initialize_filter( nDim, state0 )
+  if state0 then assert(#state0==nDim, 'Oops!') end
 	local filter = {}
 	-- Utility
 	filter.I = torch.eye(nDim)
@@ -82,7 +83,7 @@ local function initialize_filter( nDim )
 	filter.H = torch.eye(nDim) 
 	-- Prior
 	filter.P_k_minus = torch.eye(nDim)
-	filter.x_k_minus = torch.Tensor(nDim):zero()
+	filter.x_k_minus = state0 and torch.Tensor(state0) or torch.Tensor(nDim):zero()
 	-- State
 	filter.P_k = torch.Tensor( nDim, nDim ):copy( filter.P_k_minus )
 	filter.x_k = torch.Tensor(nDim):copy( filter.x_k_minus )
@@ -97,6 +98,7 @@ local function initialize_filter( nDim )
 	
 	return filter
 end
+libKalman.initialize_filter = initialize_filter
 
 -- Temporary Variables for complicated fast memory approach
 local function initialize_temporary_variables( filter )
@@ -112,6 +114,7 @@ local function initialize_temporary_variables( filter )
 	filter.tmp_scor  = torch.Tensor( filter.H:size(1) )
 	return filter
 end
+libKalman.initialize_temporary_variables = initialize_temporary_variables
 
 -- Generic filter with default initialization
 function libKalman.new_filter( nDim )

@@ -2,9 +2,8 @@
 -- (c) 2013 Stephen McGill
 local libKalman = require'libKalman'
 local torch = require 'torch'
-torch.Tensor = torch.DoubleTensor
 local cov_debug = false
-local prior_debug = false
+local prior_debug = true
 
 local libBallTrack = {}
 local tmp_rotatation = torch.Tensor(2,2)
@@ -12,7 +11,7 @@ local DEFAULT_VAR = 100*100
 local EPS = .1/(DEFAULT_VAR*DEFAULT_VAR);
 -- TODO: Tune these values...
 local MIN_ERROR_DISTANCE = 5 -- 5cm
-local ERROR_DEPTH_FACTOR = .2
+local ERROR_DEPTH_FACTOR = 0.2
 local ERROR_ANGLE_FACTOR = 3*math.pi/180
 local DECAY = 1
 
@@ -96,10 +95,10 @@ end
 -- we missed an observation during that camera frame
 -- Arguments
 -- positions: torch.Tensor(2) or {x,y}
-local function update( filter, positions )
-	
+local function update( filter, positions )  
 	-- Reset if needed
 	if filter.needs_reset and positions then
+    print("Resetting")
 		local x = positions[1] * 100
 		local y = positions[2] * 100
 		filter.x_k_minus[1] = x
@@ -122,9 +121,11 @@ local function update( filter, positions )
 	--filter.Q
 	-- Perform prediction with this process covariance
 	filter:predict()
-	
 	local state, uncertainty = filter:get_prior()
-	if prior_debug then io.write('\nPrior',state[1]/100,state[2]/100,state[3]/100,state[4]/100) end
+  if prior_debug then
+    print(string.format('Prediction:  %.4f, %.4f, %.4f, %.4f',state[1]/100,state[2]/100,state[3]/100,state[4]/100))
+  end
+	
 	-- Next, correct prediction, if positions available
 	if positions then
 		-- Update measurement confidence
@@ -133,15 +134,19 @@ local function update( filter, positions )
 		local y = positions[2] * 100
 		
 		local r = math.sqrt( x^2 + y^2 )
-		local theta = math.atan2(-y,x)
+		local theta = math.atan2(-y, x)
 		local rho_unc = ERROR_DEPTH_FACTOR*(r+MIN_ERROR_DISTANCE)
 		local azi_unc = ERROR_ANGLE_FACTOR*(r+MIN_ERROR_DISTANCE)
 		filter.R = set_uncertainty( filter.R, rho_unc, azi_unc, theta )
 		-- This Tensor instantiation is to support tables or tensors
 		-- Tables will be used in regular lua files
-		-- We wish to support non-torch programs
+    -- We wish to support non-torch programs
 		filter:correct( torch.Tensor({x,y}) )
 		state, uncertainty = filter:get_state()
+    if prior_debug then
+      print(string.format('Observation: %.4f, %.4f', x/100, y/100))
+      print(string.format('Correction:  %.4f, %.4f, %.4f, %.4f',state[1]/100,state[2]/100,state[3]/100,state[4]/100))
+    end
 		
 		if cov_debug then
 			io.write('\nx,y',x,y)
@@ -159,15 +164,19 @@ local function update( filter, positions )
 		io.write('un',uncertainty[1][2],uncertainty[2][1])
 	end
 	return {state[1]/100,state[2]/100}, {state[3]/100,state[4]/100}, uncertainty
-	--return {state[1],state[2]}, {state[3],state[4]}, uncertainty
 end
 
 -- FOR NOW - ONLY USE 2 DIMENSIONS
 -- 4 states: x y vx vy
-libBallTrack.new_tracker = function()
-	local f = {}
+libBallTrack.new_tracker = function(observation0)
 	-- Generic filter to start with 2 states per dimension
-	f = libKalman.initialize_filter( f, 4 )
+  local state0
+  if observation0 then
+    state0 = {}
+    for i=1,2 do state0[i] = 100*observation0[i] end
+    for i=3,4 do state0[i] = 0 end
+  end
+	local f = libKalman.initialize_filter( 4, state0 )
 	f = customize_filter( f, 2 )
 	f.update = update
 	f.reset = reset
@@ -177,10 +186,16 @@ libBallTrack.new_tracker = function()
 end
 
 -- Arbitrary # of dimensions for generic position tracker
-libBallTrack.new_position_filter = function(nDim)
-	local f = {}
+libBallTrack.new_position_filter = function(nDim, observation0)
 	-- Generic filter to start with 2 states per dimension
-	f = libKalman.initialize_filter( f, 2*nDim )
+  local state0
+  if observation0 then
+    state0 = {}
+    for i=1,nDim do state0[i] = observation0[i] end
+    for i=nDim+1, 2*nDim do state0[i] = 0 end
+  end
+  
+	local f = libKalman.initialize_filter( 2*nDim, state0 )
 	f = customize_filter( f, nDim )
 	f = libKalman.initialize_temporary_variables( f )
 	return f

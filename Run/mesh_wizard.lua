@@ -33,7 +33,6 @@ local function check_send_mesh()
 	--
 	local t = Body.get_time()
 	local dt_send0 = t - t_send
-
 	if is_outdoors and dt_send0 < dt_outdoor_send then return end
 	if is_indoors and dt_send0 < dt_indoor_send then return end
 	t_send = t

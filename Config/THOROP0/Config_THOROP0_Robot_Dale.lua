@@ -333,7 +333,7 @@ servo.steps = 2 * vector.new({
 
 -- NOTE: Servo direction is webots/real robot specific
 servo.direction = vector.new({
-	1,1, -- Head, mk2
+	1,-1, -- Head, mk2
 --	1,1,1, 1, 1,1,1, --LArm, mk2, after flipping wristyaw
 	1,-1,1, 1, 1,1,1, --LArm, mk2 reassembled
 

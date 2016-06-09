@@ -347,7 +347,7 @@ servo.direction = vector.new({
 	-1,-1,1, -1, 1,1,1, --RArm, mk2 reassembled   --jinwook
 
 	1, 1, -- Waist, mk2
-	-1,1,-1, -- left gripper TODO
+	1,-1,1, -- left gripper TODO
 	1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
 	-1, -- Lidar pan
 })

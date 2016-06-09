@@ -6,6 +6,7 @@ local IP = {
 	SJ = 100,
 	BHORAM = 57,
 	JQ = 150,
+ASUS = 200,
 	--
 	CHIP2 = 144,
 	CHIP = 145,
@@ -14,8 +15,8 @@ local IP = {
 }
 
 -- Who do we use?
-local WHO = IP.CHIP2
-local ROBOT_IP = IP.CHIP
+local WHO = IP.ASUS
+local ROBOT_IP = IP.DALE
 local TEAM_NUMBER = 8
 
 local net = {

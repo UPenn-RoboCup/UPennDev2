@@ -173,8 +173,12 @@ local left_arm = {
 		2,4,6,8,10,12,14,
 		-- lidar
 		--37,
+		--head
+		29, 30,
 		-- gripper
 		64, 66, 68
+
+
 	},
 	enable_read = true
 }
@@ -314,7 +318,8 @@ servo.joint_to_motor={
 -- TODO: Use some loop based upon MX/NX
 -- TODO: some pros are different
 servo.steps = 2 * vector.new({
-	151875,151875, -- Head
+	151875,251000, -- Head
+--	151875,151875, -- Head
 	251000,251000,251000,251000,251000,151875,151875, --LArm (mk2 arm)
 	251000,251000,251000,251000,251000,251000, --LLeg
 	251000,251000,251000,251000,251000,251000, --RLeg

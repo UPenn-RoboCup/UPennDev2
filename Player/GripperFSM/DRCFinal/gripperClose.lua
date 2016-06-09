@@ -13,8 +13,8 @@ function state.entry()
   t_update = t_entry
 
 	-- Write the torque
-	Body.set_lgrip_command_torque{5,5,15}
-	Body.set_rgrip_command_torque{5,5,15}
+	Body.set_lgrip_command_torque{5,5,20}
+	Body.set_rgrip_command_torque{5,5,20}
 
 end
 

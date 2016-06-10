@@ -157,7 +157,7 @@ local right_arm = {
 
 
 		-- waist
-		--28,
+		28,
 		--head
 		--29, 30,
 		-- gripper

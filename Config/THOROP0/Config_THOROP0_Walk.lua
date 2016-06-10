@@ -33,8 +33,8 @@ if Config.birdwalk then
   walk.stanceLimitA = {-30*DEG_TO_RAD,0*DEG_TO_RAD}
 end
 walk.bodyHeight = 0.93
-walk.footY = 0.105 --mk2, wider
-walk.footX = 0
+walk.footY = 0.12--0.105 --mk2, wider
+walk.footX = 0.02
 walk.bodyTilt = 0
 walk.torsoX = 0.02     -- com-to-body-center offset (which is for initial seed for numerical solver)
 walk.torsoX = 0.0     -- com-to-body-center offset
@@ -184,7 +184,16 @@ print("bodyheight:",Config.walk.bodyHeight)
 --Config.walk.bodyHeight = 0.73
 --Config.walk.bodyHeight = 0.73
 
-
+-- ACTUALLY NOT TERRIBLE, JUST REALLY BAD
+walk.tStep = 8.0
+walk.tZMP = 0.35
+walk.stepHeight = 0.05
+walk.phComp = {0.1,0.9}
+walk.phSingle = {0.4,0.6}
+walk.phZmp = {0.25,0.75}
+walk.phCompSlope = 0.2
+walk.supportX = 0.00
+walk.supportY = 0.02
 
 return Config
 

@@ -24,10 +24,10 @@ Config.debug = {
 }
 
 
-Config.birdwalk = 1 		
+--Config.birdwalk = 1 		
 Config.raise_body = true
 Config.use_exact_tZMP = true
-Config.use_heeltoe_walk = true
+Config.use_heeltoe_walk = false
 Config.heeltoe_angle = 0*DEG_TO_RAD
 Config.walktraj={}
 Config.walktraj.hybridwalk = "foot_trajectory_softfast"

@@ -199,6 +199,10 @@ char_lut['9'] = function()
   motion_ch:send'hybridwalk'
 end
 --
+char_lut['0'] = function()
+	arm_ch:send'RRTbasedmove'
+end
+
 code_lut[92] = function()
   -- Backslash
   selected_arm = 1 - selected_arm

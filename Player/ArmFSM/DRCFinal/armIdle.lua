@@ -6,6 +6,7 @@ local Body = require'Body'
 local t_entry, t_update, t_finish
 local timeout = 10.0
 require'mcm'
+require'rcm'
 
 local qLArm, qRArm
 
@@ -20,6 +21,8 @@ function state.entry()
   qLArm = Body.get_larm_position()
   qRArm = Body.get_rarm_position()
   mcm.set_status_arm_init(0) --arm idle and requires init
+  rcm.set_RRT_finished(0)   --arm rrt
+
 end
 
 function state.update()

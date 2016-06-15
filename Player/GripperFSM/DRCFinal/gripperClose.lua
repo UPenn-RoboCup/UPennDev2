@@ -14,7 +14,18 @@ function state.entry()
 
 	-- Write the torque
 	Body.set_lgrip_command_torque{5,5,20}
-	Body.set_rgrip_command_torque{5,5,20}
+	
+
+-- right gripper : nx motor
+  --Body.set_rgrip_command_torque{5,5,20}
+
+  Grip_hold = {0,0,0}
+  Grip_open = {0.496719, 0.458369, 0.50132}
+
+  print("Gripper is closed")
+  Body.set_rgrip_torque_enable(1)
+  Body.set_rgrip_command_position(Grip_hold)
+
 
 end
 

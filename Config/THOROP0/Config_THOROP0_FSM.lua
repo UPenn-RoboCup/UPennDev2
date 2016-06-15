@@ -247,6 +247,19 @@ fsm.Head = {
 
 
 fsm.Arm = {
+
+
+	--RRT
+	{'armIdle', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
+	{'armTeleop','RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
+	--	{'armManipulation','RRTbasedmove','armRRTbasedmove'} --jwhuh
+	{'armTeleopRaw', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
+	{'armRRTbasedmove', 'teleopraw', 'armTeleopRaw'},  --jwhuh
+	{'armRRTbasedmove', 'done', 'armRRTbasedmove'},  --jwhuh
+	{'armRRTmoveReady', 'done', 'armRRTmoveReady'},  --jwhuh
+	{'armManipulation', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
+
+
 	-- Idle
 	{'armIdle', 'timeout', 'armIdle'},
 	{'armIdle', 'teleopraw', 'armTeleopRaw'},

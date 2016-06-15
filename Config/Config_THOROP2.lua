@@ -8,7 +8,7 @@ if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 --local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
 Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
-exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm', 'Kick'}
+exo = {'Walk','Net','FSM','World','Vision','Robot_Rescue', 'Arm', 'Kick'}
 
 -- Printing of debug messages
 Config.debug = {

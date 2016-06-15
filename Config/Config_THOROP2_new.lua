@@ -8,7 +8,7 @@ if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 --local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
 Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
-exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm', 'Kick'}
+exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
 
 -- Printing of debug messages
 Config.debug = {
@@ -23,7 +23,7 @@ Config.debug = {
   armplan = true,
 }
 
-
+--------------------------------------------------------------
 --Config.birdwalk = 1 		
 Config.raise_body = true
 Config.use_exact_tZMP = true
@@ -55,9 +55,8 @@ Config.adapt_surface_angle =false
 Config.roll_adaptation_max = 0*DEG_TO_RAD
 Config.pitch_adaptation_max = 0*DEG_TO_RAD
 
-
 Config.comX_bias = 0
-
+--------------------------------------------------------------
 
 -- Tune for Webots
 if IS_WEBOTS then
@@ -67,18 +66,18 @@ if IS_WEBOTS then
 
 	  Config.sensors = {
 		--ft = true,
-		feedback = 'feedback_wizard',
+		--feedback = 'feedback_wizard',
 		--slam = 'slam_wizard',
-		head_camera = 'camera_wizard',
-		chest_lidar = true,
-		head_lidar = true,
+		--head_camera = 'camera_wizard',
+		--chest_lidar = true,
+		--head_lidar = true,
 		--kinect = 'kinect2_wizard',
-		mesh = 'mesh_wizard',
-		world = 'world_wizard',
+		--mesh = 'mesh_wizard',
+		--world = 'world_wizard',
 	  }
 	else
 		--Config.testfile = 'test_testbed'		
---		Config.testfile = 'test_walkstuff'		
+		--		Config.testfile = 'test_walkstuff'		
 
 		--Config.testfile = 'test_testbed'		
 		--Config.testfile = 'test_terrain'		
@@ -89,10 +88,10 @@ if IS_WEBOTS then
 		Config.enable_jacobian_test = false
 		--Config.enable_jacobian_test = true
 		Config.enable_touchdown = false
-	  Config.sensors = {
-			ft = true,
-			feedback = 'feedback_wizard',
-		 	world = 'world_wizard',
+		Config.sensors = {
+		ft = true,
+		feedback = 'feedback_wizard',
+			world = 'world_wizard',
 	  }
 
 		Config.use_imu_yaw = false --use imu yaw only for single approach
@@ -146,8 +145,6 @@ end
 --robot drifts backwards
 --Config.world.odomScale = {0.8,1,1} -- For now IMU not in use
 Config.world.use_imu_yaw = true
-
-
 Config.slowstep_duration =2.5
 Config.supportYSS = -0.03
 Config.walk.stepHeightSlow = 0.02
@@ -159,6 +156,39 @@ Config.walk.stepHeightSlow = 0.02
 ------------------------------------
 ------------------------------------
 -- ROBOCUP config variables
+
+if IS_WEBOTS then
+
+--  Config.vision.ball.th_min_fill_rate = 0.25
+
+  Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
+  Config.fsm.headLookGoal.tScan = 2.0
+  Config.fsm.bodyRobocupFollow.circleR = 1
+  Config.fsm.bodyRobocupFollow.kickoffset = 0.5
+  Config.fsm.bodyRobocupApproach.target={0.25,0.12}
+  Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
+  Config.world.use_imu_yaw = true
+  Config.world.use_gps_yaw = true
+  Config.stop_after_score = true
+end
+
+
+
+------------------------------------------------------------
+-- Head/vision parameters
+Config.use_angle_localization = true
+Config.fsm.headTrack.timeout = 3
+Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
+Config.enable_obstacle_scan = true
+Config.disable_goal_vision = false
+Config.auto_state_advance = false
+Config.enable_single_goalpost_detection = true
+Config.disable_ball_when_lookup = true
+
+Config.reject_forward_balls = true
+Config.dont_look_goals =true
+------------------------------------------------------------
+
 
 
 
@@ -354,5 +384,6 @@ Config.walk.toe_angle = 0*DEG_TO_RAD
 --Low max velocity (for demo)
 Config.walk.velLimitX = {-.10,.10}
 Config.walk.stanceLimitX = {-0.60,0.60}
+
 
 return Config

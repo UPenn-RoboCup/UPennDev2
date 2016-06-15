@@ -1,14 +1,16 @@
 --Now the Config file is entirely identical over two robots (using hostname)
+------------WE USE THOR1 CONFIG FOR ROBOCUP ------------------------
+
 IS_STEVE = true
 IS_COMPETING = false
 
 if HOSTNAME=="thor-P770ZM" or HOSTNAME=="asus"then	IS_STEVE = false end
 -- Global Config
---Config = {PLATFORM_NAME = 'THOROP1',demo = false,}
---local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm'}
+Config = {PLATFORM_NAME = 'THOROP1',demo = false,}
+local exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm', 'Kick'}
 
-Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
-exo = {'Walk','Net','FSM','World','Vision','Robot_Dale', 'Arm', 'Kick'}
+--Config = {PLATFORM_NAME = 'THOROP2',demo = false,}
+--exo = {'Walk','Net','FSM','World','Vision','Robot_Chip', 'Arm'}
 
 -- Printing of debug messages
 Config.debug = {
@@ -20,84 +22,56 @@ Config.debug = {
   goalpost = false,
   world = false,
   feedback = false,
-  armplan = true,
+  armplan = false,
+  walk = false,
+
+
+  --goalpost = true,
 }
 
-
---Config.birdwalk = 1 		
-Config.raise_body = true
-Config.use_exact_tZMP = true
-Config.use_heeltoe_walk = false
-Config.heeltoe_angle = 0*DEG_TO_RAD
-Config.walktraj={}
-Config.walktraj.hybridwalk = "foot_trajectory_softfast"
-Config.variable_tstep = true
-Config.variable_support = true
 Config.arm_init_timeout = true
-Config.use_imu_yaw = true
+Config.use_imu_yaw = false --use odometry for yaw
 
-Config.estop_mode = 0 --don't do anything!
-Config.estop_mode = 1 --untorque all the servos 
---Config.estop_mode = 2 --make the robot sit down
-Config.auto_restart = true
-
---Config.hybrid_approach = true
-
-Config.roll_adaptation_max = 3.5*DEG_TO_RAD
-Config.pitch_adaptation_max = 2*DEG_TO_RAD
---Config.pitch_adaptation_max = 0*DEG_TO_RAD --disabled
-
-Config.pitch_threshold = 1*DEG_TO_RAD
-Config.pitch_adaptation_max = 3*DEG_TO_RAD --disabled
-
---NO adaptation!
-Config.adapt_surface_angle =false
-Config.roll_adaptation_max = 0*DEG_TO_RAD
-Config.pitch_adaptation_max = 0*DEG_TO_RAD
-
-
-Config.comX_bias = 0
-
+-----------------------------------
 
 -- Tune for Webots
 if IS_WEBOTS then
-	if IS_STEVE then
-		Config.testfile = 'test_rescue'
-		Config.debug.armplan = true
 
-	  Config.sensors = {
-		--ft = true,
-		feedback = 'feedback_wizard',
-		--slam = 'slam_wizard',
-		head_camera = 'camera_wizard',
-		chest_lidar = true,
-		head_lidar = true,
-		--kinect = 'kinect2_wizard',
-		mesh = 'mesh_wizard',
-		world = 'world_wizard',
-	  }
-	else
-		--Config.testfile = 'test_testbed'		
---		Config.testfile = 'test_walkstuff'		
+	--for SJ's testing in webots
+		--Config.testfile = 'test_testbed'
+		--Config.testfile = 'test_robocup'
+		Config.testfile = 'test_robocup'
 
-		--Config.testfile = 'test_testbed'		
-		--Config.testfile = 'test_terrain'		
-		Config.testfile = 'test_stair'		
 
-		Config.debug.armplan = false		
-		Config.use_jacobian_arm_planning = true
-		Config.enable_jacobian_test = false
-		--Config.enable_jacobian_test = true
-		Config.enable_touchdown = false
+--		Config.testfile = 'test_testbed'
+	Config.testfile = 'test_walk_robocup'
+
+		Config.piecewise_step = true
 	  Config.sensors = {
 			ft = true,
-			feedback = 'feedback_wizard',
-		 	world = 'world_wizard',
+      head_camera = 'camera_wizard',
+      vision = 'vision_wizard',
+      world = 'world_wizard',
+
+			--feedback = 'feedback_wizard',
 	  }
 
-		Config.use_imu_yaw = false --use imu yaw only for single approach
+	if IS_STEVE then
+    print('!!!!IS_STEVE!!!!')
+		Config.use_gps_pose = false
+		Config.use_gps_vision = false
+
+	else
+		Config.use_gps_pose = false
+		Config.use_gps_vision = false
+
+	--Config.use_gps_pose = true
+--		Config.use_gps_vision = true
+
+
 	end
 end
+
 
 -----------------------------------
 -- Load Paths and Configurations --
@@ -133,32 +107,43 @@ for sm, en in pairs(Config.fsm.enabled) do
 	end
 end
 
-
-
-
-if IS_WEBOTS then
-	Config.world.odomDrift = 0
-else
-	Config.world.odomDrift = -0.0001
-end
-
-
---robot drifts backwards
---Config.world.odomScale = {0.8,1,1} -- For now IMU not in use
-Config.world.use_imu_yaw = true
-
-
-Config.slowstep_duration =2.5
-Config.supportYSS = -0.03
-Config.walk.stepHeightSlow = 0.02
-
-
--------------------------------------------------------------
-----Overwritting the Robocup setting for the walking
 ------------------------------------
 ------------------------------------
 ------------------------------------
 -- ROBOCUP config variables
+
+if IS_WEBOTS then
+
+--  Config.vision.ball.th_min_fill_rate = 0.25
+
+  Config.fsm.headLookGoal.yawSweep = 30*math.pi/180
+  Config.fsm.headLookGoal.tScan = 2.0
+  Config.fsm.bodyRobocupFollow.circleR = 1
+  Config.fsm.bodyRobocupFollow.kickoffset = 0.5
+  Config.fsm.bodyRobocupApproach.target={0.25,0.12}
+  Config.fsm.bodyRobocupApproach.th = {0.01, 0.01}
+  Config.world.use_imu_yaw = true
+  Config.world.use_gps_yaw = true
+  Config.stop_after_score = true
+end
+
+
+
+------------------------------------------------------------
+-- Head/vision parameters
+Config.use_angle_localization = true
+Config.fsm.headTrack.timeout = 3
+Config.fsm.dqNeckLimit ={40*DEG_TO_RAD, 180*DEG_TO_RAD}
+Config.enable_obstacle_scan = true
+Config.disable_goal_vision = false
+Config.auto_state_advance = false
+Config.enable_single_goalpost_detection = true
+Config.disable_ball_when_lookup = true
+
+Config.reject_forward_balls = true
+Config.dont_look_goals =true
+------------------------------------------------------------
+
 
 
 
@@ -251,6 +236,10 @@ Config.ballX_threshold_direct = 0 --after halfline, we just aim for the goal
 Config.dont_look_goals =false --testing
 Config.auto_init = true
 Config.bodymove_fix = true
+
+
+
+
 
 
 
@@ -354,5 +343,7 @@ Config.walk.toe_angle = 0*DEG_TO_RAD
 --Low max velocity (for demo)
 Config.walk.velLimitX = {-.10,.10}
 Config.walk.stanceLimitX = {-0.60,0.60}
+
+
 
 return Config

@@ -38,6 +38,12 @@ shared.robot.use_imu_yaw = vector.ones(1)
 
 
 
+--how much robot drifts forward 
+shared.robot.odomfactor = vector.zeros(1)
+
+
+
+shared.robot.forcekicktype = vector.zeros(1)
 
 
 
@@ -116,14 +122,24 @@ if Config.world then
 	--Use this to disable ball detection when robot looks up and scanning around
 	shared.ball.disable = vector.zeros(1)
 
+	--For attacker, ball should be found BEHIND the robot all the time
+	shared.ball.backonly = vector.zeros(1)
+
+
+
+--WE NEED TO RESET BALL POS BEFORE GAME STARTS
+	shared.ball.observed = vector.zeros(1)
 
 	shared.goal = {}
 	shared.goal.t = vector.zeros(1)
 	shared.goal.attack_angle = vector.zeros(1)
 	shared.goal.defend_angle = vector.zeros(1)
 
+	--Use this to disable false positive when looking down
+	shared.goal.disable = vector.zeros(1)
+
 	shared.obstacle = {}
-	shared.obstacle.enable = vector.zeros(1)
+	shared.obstacle.enable = vector.zeros(1)  --only enabled during headobstaclescan
 	shared.obstacle.reset = vector.zeros(1)
 	shared.obstacle.detect = vector.zeros(1)
 

@@ -21,10 +21,10 @@ fsm.enabled = {
 --SJ: now we can have multiple FSM options
 fsm.select = {
 	Arm = 'DRCFinal',
-	Body = 'RoboCup2015', 
+	Body = 'DRCFinal', 
 	Gripper = 'DRCFinal',
 	Head = 'DRCFinal', 
-	Motion = 'RoboCup2015'
+	Motion = 'DRCFinal'
 }
 
 -- Custom libraries
@@ -34,11 +34,6 @@ fsm.libraries = {
 	World = 'DRCFinal'
 }
 
-
-------------------------------------------------------------------
----- DRC Body State Code
-
---[[
 fsm.Body = {
   {'bodyIdle', 'init', 'bodyInit'},
   --
@@ -72,6 +67,7 @@ fsm.Body = {
   {'bodyStepPiecewise', 'done', 'bodyStop'},
   {'bodyStepPiecewise', 'nextstep', 'bodyStepPiecewise'},
 --
+--]]
 
   -- Take two slow stops (for precise alignment)
 --  {'bodyStepAlign', 'done', 'bodyStop'},
@@ -95,90 +91,6 @@ fsm.Body = {
   {'bodyUndrive', 'estop', 'bodyEStop'}, --re-inits leg
   {'bodyEStop', 'done', 'bodyInit'},
 }
-
-]]--
---------------------------------------------------------------------
-
-
---------------------------------------------------------------------
--- Robocup 
-
-fsm.Body = {
-	{'bodyIdle', 'init', 'bodyInit'},
-	{'bodyInit', 'done', 'bodyStop'},
-
-	--  {'bodyStop', 'footrace', 'bodyFootRace'},
-	--  {'bodyFootRace', 'done', 'bodyStop'},
-
-	{'bodyStop', 'kick', 'bodyRobocupKick'},
-	--  {'bodyStop', 'play', 'bodyRobocupIdle'},
-	--  {'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
-	
-
-
-------------------------------------------------------------------
-	--{'bodyStop', 'approach', 'bodyRobocupApproach'},
-
-
-	{'bodyStop', 'approach', 'bodyApproachMessy'},
-	{'bodyStop', 'stepflat', 'bodyApproachMessy'},
-
-	{'bodyStop', 'stop', 'bodyStop'},
-	--
-	{'bodyApproachMessy', 'stop', 'bodyStop'},
-	{'bodyApproachMessy', 'done', 'bodyStop'},
-	--
-
-	{'bodyStop', 'stop', 'bodyStop'},   --jinwook
-
---------------------------------------------------------------------
-
-
-	{'bodyStop', 'play', 'bodyRobocupIdle'},
-	{'bodyStop', 'goalie', 'bodyRobocupGoalieIdle'},
-
-	{'bodyStop', 'uninit', 'bodyUninit'},
-	{'bodyUninit', 'done', 'bodyIdle'},
-
-
-	{'bodyRobocupIdle', 'spin', 'bodyRobocupSpin'},
-	{'bodyRobocupSpin', 'ballfound', 'bodyRobocupFollow'},
-
-
-	{'bodyRobocupIdle', 'timeout', 'bodyRobocupIdle'},
-	{'bodyRobocupIdle', 'ballfound', 'bodyRobocupFollow'},
-	{'bodyRobocupIdle','stop','bodyStop'},
-	{'bodyRobocupIdle','goalie','bodyRobocupGoalieIdle'},
-
-	{'bodyRobocupApproach', 'done', 'bodyRobocupKick'},
-	{'bodyRobocupApproach', 'ballfar', 'bodyRobocupFollow'},
-	{'bodyRobocupApproach','stop','bodyStop'},
-
-	{'bodyRobocupFollow', 'done', 'bodyRobocupIdle'},
-	{'bodyRobocupFollow', 'timeout', 'bodyRobocupFollow'},
-	{'bodyRobocupFollow', 'ballclose', 'bodyRobocupApproach'},
-	{'bodyRobocupFollow','stop','bodyStop'},
-
-	{'bodyRobocupKick', 'done', 'bodyRobocupIdle'},
-	{'bodyRobocupKick', 'testdone', 'bodyStop'},
-	--
-	{'bodyRobocupGoalieIdle', 'attacker', 'bodyRobocupIdle'},
-	{'bodyRobocupGoalieIdle', 'stop', 'bodyStop'},
-	{'bodyRobocupGoalieIdle', 'position', 'bodyRobocupGoaliePosition'},
-	{'bodyRobocupGoalieIdle', 'timeout', 'bodyRobocupGoalieIdle'},
-	--
-	{'bodyRobocupGoaliePosition', 'timeout', 'bodyRobocupGoalieDone'},
-	{'bodyRobocupGoaliePosition', 'idle', 'bodyRobocupGoalieIdle'},
-	{'bodyRobocupGoaliePosition', 'done', 'bodyRobocupGoalieDone'},
-	{'bodyRobocupGoaliePosition', 'stop', 'bodyStop'},
-	{'bodyRobocupGoaliePosition', 'attacker', 'bodyRobocupIdle'},
-	--
-	{'bodyRobocupGoalieDone', 'stop', 'bodyStop'},
-	{'bodyRobocupGoalieDone', 'attacker', 'bodyRobocupIdle'},
-
-}
-
---------------------------------------------------------------------
 
 -- Anything can fall!
 local allbody = {}
@@ -296,7 +208,7 @@ fsm.Arm = {
 	{'armWalk', 'valve', 'armValve'}, --THIS works too!
 	{'armPushDoorDown', 'init', 'armInitWalk'}, --this kinda works too
 
-	{'armWalk', 'plug', 'armPlug'},
+{'armWalk', 'plug', 'armPlug'},
 	{'armPlug', 'init', 'armInitWalk'},
 
 
@@ -518,11 +430,6 @@ fsm.Lidar = {
 	{'lidarDrive', 'pan', 'lidarPan'},
 }
 
-
-
---------------------------------------------------------------------
----------------------- DRC Motion Code
---[[
 fsm.Motion = {
 	{'motionIdle', 'timeout', 'motionIdle'},
 	{'motionIdle', 'stand', 'motionInit'},
@@ -561,46 +468,6 @@ fsm.Motion = {
 
 
 }
----------------------------------------------------------------------
-]] --
-
---------------------------------------------------------------------
----------------------- Robocup Motion Code
-
-fsm.Motion = {
-	{'motionIdle', 'timeout', 'motionIdle'},
-	{'motionIdle', 'stand', 'motionInit'},
-	{'motionIdle', 'bias', 'motionBiasInit'},
-	--
-	{'motionBiasInit', 'done', 'motionBiasIdle'},
-	{'motionBiasIdle', 'stand', 'motionInit'},
-	--
-	{'motionInit', 'done', 'motionStance'},
-	{'motionUnInit', 'done', 'motionIdle'},
-	--
-	{'motionStance', 'bias', 'motionBiasInit'},
-	{'motionStance', 'uninit', 'motionUnInit'},
-	{'motionStance', 'hybridwalk', 'motionHybridWalkInit'},
-  {'motionStance', 'done_step', 'motionHybridWalkKick'},
---	{'motionStance', 'slowstep', 'motionSlowStep'},
-
-	--
-	{'motionHybridWalkInit', 'done', 'motionHybridWalk'},
-	{'motionHybridWalk', 'done', 'motionHybridWalkEnd'},
-	{'motionHybridWalk', 'emergency', 'motionStance'},
-	{'motionHybridWalkEnd', 'done', 'motionStance'},
-
-	--kick handlings
-  {'motionHybridWalk', 'done_step', 'motionHybridWalkKick'},
-  {'motionHybridWalkKick', 'done', 'motionStance'},
-  {'motionHybridWalkKick', 'walkalong', 'motionHybridWalk'},
-
-	--
-	{'motionStepPreview', 'done', 'motionStance'},
-}
-
---------------------------------------------------------------------
-
 
 
 -- E-stop handling

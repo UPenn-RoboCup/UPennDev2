@@ -440,6 +440,10 @@ function moveleg.get_leg_compensation_new(supportLeg, ph, gyro_rpy,angleShift,su
 end
 
 
+function moveleg.get_foot_tilt(ph)
+  local aFoot = math.sin(ph*2*math.pi)
+  return aFoot
+end
 
 
 function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
@@ -450,7 +454,7 @@ function moveleg.foot_trajectory_base(phSingle,uStart,uEnd,stepHeight)
   local zFoot = stepHeight * zf
 
   local aFoot = math.sin(phSingle*2*math.pi)
-  aFoot = math.max(0,aFoot) --dont lift heel
+
   
   return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
@@ -481,11 +485,38 @@ function moveleg.foot_trajectory_base2(phSingle,uStart,uEnd,stepHeight)
   local zf=eval_spline(breaksTY, coefsY,phSingle)  
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
   local zFoot = stepHeight*zf
-  local aFoot = math.sin(phSingle*2*math.pi)
-  aFoot = math.max(0,aFoot) --dont lift heel
+  local aFoot = math.sin(phSingle*2*math.pi) 
 
   return uFoot, zFoot, aFoot, lift_phase, land_phase
 end
+
+function moveleg.foot_trajectory_base3(phSingle,uStart,uEnd,stepHeight)
+  --vertical landing 
+  local breaksTX={0.200000,0.500000,0.700000,1.000000,}
+  local breaksTY={0.200000,0.300000,0.400000,0.600000,0.900000,1.000000,}
+  local coefsX={
+    {-1.576577,2.770270,0.009009,0.000000,},
+    {-1.576577,1.824324,0.927928,0.100000,},
+    {-3.198198,0.405405,1.596847,0.500000,},
+    {-3.198198,-1.513514,1.375225,0.810000,},
+  }
+  local coefsY={
+    {3.994134,-9.497067,5.489648,0.000000,},
+    {3.994134,-7.100587,2.170117,0.750000,},
+    {22.041063,-5.902346,0.869824,0.900000,},
+    {-6.064527,0.709972,0.350587,0.950000,},
+    {-7.720842,-2.928744,-0.093168,1.000000,},
+    {-7.720842,-9.877502,-3.935041,0.500000,},
+  }
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight*zf
+  local aFoot = math.sin(phSingle*2*math.pi) 
+
+  return uFoot, zFoot, aFoot, lift_phase, land_phase
+end
+
 
 
 function moveleg.foot_trajectory_soft(phSingle,uStart,uEnd,stepHeight)
@@ -548,6 +579,104 @@ local coefsY={
 end
 
 
+function moveleg.foot_trajectory_walkkick(phSingle,uStart,uEnd,stepHeight)
+
+  local breaksTX={0.300000,0.400000,0.600000,0.800000,0.900000,1.000000,}
+  local breaksTY={0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
+  local coefsX={
+    {8.359213,0.815217,-0.163561,0.000000,},
+    {8.359213,8.338509,2.582557,0.250000,},
+    {-54.257246,10.846273,4.501035,0.600000,},
+    {31.573499,-21.708075,2.328675,1.500000,},
+    {34.213251,-2.763975,-2.565735,1.350000,},
+    {34.213251,7.500000,-2.092133,1.100000,},
+  }
+  local coefsY={
+    {5.646481,-9.517185,5.346972,0.000000,},
+    {5.646481,-4.435352,1.161211,0.900000,},
+    {-8.878887,-1.047463,0.064648,1.000000,},
+    {5.728314,-6.374795,-1.419804,0.900000,},
+    {-1.145663,-4.656301,-2.522913,0.700000,},
+    {-1.145663,-5.000000,-3.488543,0.400000,},
+  }
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight * zf*1.5
+  return uFoot, zFoot,0
+end
+
+function moveleg.foot_trajectory_walkkick2(phSingle,uStart,uEnd,stepHeight)
+
+  local breaksTX={0.300000,0.400000,0.600000,0.800000,0.900000,1.000000,}
+  local breaksTY={0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
+  local breaksA={0.300000,0.500000,0.700000,1.000000,}
+  local coefsX={
+    {8.359213,0.815217,-0.163561,0.000000,},
+    {8.359213,8.338509,2.582557,0.250000,},
+    {-54.257246,10.846273,4.501035,0.600000,},
+    {31.573499,-21.708075,2.328675,1.500000,},
+    {34.213251,-2.763975,-2.565735,1.350000,},
+    {34.213251,7.500000,-2.092133,1.100000,},
+  }
+  local coefsY={
+    {5.646481,-9.517185,5.346972,0.000000,},
+    {5.646481,-4.435352,1.161211,0.900000,},
+    {-8.878887,-1.047463,0.064648,1.000000,},
+    {5.728314,-6.374795,-1.419804,0.900000,},
+    {-1.145663,-4.656301,-2.522913,0.700000,},
+    {-1.145663,-5.000000,-3.488543,0.400000,},
+  }
+  local coefsA={
+    {773.809524,-952.380952,282.738095,0.000000,},
+    {773.809524,-255.952381,-79.761905,20.000000,},
+    {-59.523810,208.333333,-89.285714,0.000000,},
+    {-59.523810,172.619048,-13.095238,-10.000000,},
+  }
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local af=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight * zf*1.5
+  local aFoot = af*DEG_TO_RAD
+  return uFoot, zFoot, aFoot
+end
+
+
+
+
+--csapi([0 0.1 0.3 0.7 0.8 0.9 1],[0 -0.2 -1 2  2 1.4 1])
+function moveleg.foot_trajectory_kick(phSingle,uStart,uEnd,stepHeight)
+    --More swing back
+
+  local breaksTX={0.100000,0.400000,0.670000,0.720000,0.800000,0.900000,1.000000,}
+  local breaksTY={0.100000,0.300000,0.500000,0.700000,0.800000,0.900000,1.000000,}
+  local coefsX={
+    {103.699049,-45.182858,-3.518705,0.000000,},
+    {103.699049,-14.073143,-9.444305,-0.700000,},
+    {-229.010397,79.256001,10.110553,-2.000000,},
+    {995.160754,-106.242421,2.824219,2.000000,},
+    {-485.346581,43.031692,-0.336317,2.000000,},
+    {311.504957,-73.451487,-2.769901,2.000000,},
+    {311.504957,20.000000,-8.115050,1.300000,},
+  }
+  local coefsY={
+    {-32.433041,1.306550,7.193675,0.000000,},
+    {-32.433041,-8.423363,6.481994,0.700000,},
+    {108.898830,-27.883187,-0.779316,1.400000,},
+    {-165.662278,37.456111,1.135269,1.000000,},
+    {295.588566,-61.941256,-3.761760,1.400000,},
+    {-39.117713,26.735314,-7.282354,0.700000,},
+    {-39.117713,15.000000,-3.108823,0.200000,},
+  }
+  local xf=eval_spline(breaksTX, coefsX,phSingle)  
+  local zf=eval_spline(breaksTY, coefsY,phSingle)  
+  local uFoot = util.se2_interpolate(xf, uStart,uEnd)
+  local zFoot = stepHeight * zf*2.5
+  return uFoot, zFoot,0
+end
+
+
 
 function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkParam)
   local xf,zf,zFoot,aFoot, zHeight0, zHeight1= 0,0,0,0,0,0
@@ -585,9 +714,85 @@ function moveleg.foot_trajectory_square(phSingle,uStart,uEnd, stepHeight, walkPa
   end   
   local uFoot = util.se2_interpolate(xf, uStart,uEnd)
 
-  return uFoot, zf, lift_phase, land_phase
+  local aFoot = 0
+  return uFoot, zf,aFoot, lift_phase, land_phase
 end
 
+
+
+function moveleg.joint_trajectory_kick(phSingle)
+
+
+--reference one, >4m
+local breaksTX={0.100000,0.300000,0.340000,0.500000,1.000000,}
+local breaksTY={0.140000,0.450000,0.600000,0.800000,1.000000,}
+local breaksTA={0.120000,0.200000,0.500000,0.750000,1.000000,}
+local coefsX={
+  {-4719.769765,2558.241239,-203.626426,-16.720000,},
+  {-4719.769765,1142.310310,166.428729,-16.220000,},
+  {6625.988246,-1689.551549,56.980481,25.000000,},
+  {1298.366137,-894.432960,-46.378900,25.000000,},
+  {1298.366137,-271.217214,-232.882927,0.000000,},
+}
+local coefsY={
+  {129.678234,-154.897255,57.643922,33.610000,},
+  {129.678234,-100.432397,21.897771,39.000000,},
+  {-594.422562,20.168361,-2.984080,40.000000,},
+  {538.036319,-247.321792,-37.057094,38.000000,},
+  {538.036319,75.500000,-71.421453,25.000000,},
+}
+local coefsA={
+  {-2192.431733,1664.494821,-360.751695,-16.890000,},
+  {-2192.431733,875.219397,-55.985989,-40.000000,},
+  {-703.686964,349.035782,41.954426,-40.000000,},
+  {475.043315,-284.282486,61.380414,-15.000000,},
+  {475.043315,72.000000,8.309793,-10.000000,},
+}
+--[[
+--toe up, less swing
+local breaksTX={0.100000,0.300000,0.340000,0.500000,1.000000,}
+local breaksTY={0.140000,0.450000,0.600000,0.800000,1.000000,}
+local breaksTA={0.120000,0.200000,0.500000,0.750000,1.000000,}
+local coefsX={
+  {-4719.769765,2558.241239,-203.626426,-16.720000,},
+  {-4719.769765,1142.310310,166.428729,-16.220000,},
+  {6625.988246,-1689.551549,56.980481,25.000000,},
+  {1298.366137,-894.432960,-46.378900,25.000000,},
+  {1298.366137,-271.217214,-232.882927,0.000000,},
+}
+local coefsY={
+  {129.678234,-154.897255,57.643922,33.610000,},
+  {129.678234,-100.432397,21.897771,39.000000,},
+  {-594.422562,20.168361,-2.984080,40.000000,},
+  {538.036319,-247.321792,-37.057094,38.000000,},
+  {538.036319,75.500000,-71.421453,25.000000,},
+}
+local coefsA={
+  {-2192.431733,1664.494821,-360.751695,-16.890000,},
+  {-2192.431733,875.219397,-55.985989,-40.000000,},
+  {-703.686964,349.035782,41.954426,-40.000000,},
+  {475.043315,-284.282486,61.380414,-15.000000,},
+  {475.043315,72.000000,8.309793,-10.000000,},
+}
+
+
+--take 3
+local breaksTX={0.100000,0.300000,0.340000,0.500000,1.000000,}
+
+
+
+
+
+
+
+--]]
+
+  local hip=eval_spline(breaksTX, coefsX,phSingle) *DEG_TO_RAD
+  local knee=eval_spline(breaksTY, coefsY,phSingle)  *DEG_TO_RAD
+  local ankle=eval_spline(breaksTA, coefsA,phSingle)  *DEG_TO_RAD
+
+  return hip,knee,ankle
+end
 
 
 
@@ -629,6 +834,16 @@ function moveleg.set_leg_positions()
     qLegs[11]=math.min(qLegs[11],Config.walk.anklePitchLimit[2])
   end
 
+
+  --hip pitch lag fix
+  if Config.walk.hipPitch0 then
+    if qLegs[3]<Config.walk.hipPitch0 then
+      qLegs[3] = Config.walk.hipPitch0 + (qLegs[3]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+    if qLegs[9]<Config.walk.hipPitch0 then
+      qLegs[9] = Config.walk.hipPitch0 + (qLegs[9]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+  end
   Body.set_lleg_command_position(vector.slice(qLegs,1,6))
   Body.set_rleg_command_position(vector.slice(qLegs,7,12))
 
@@ -640,19 +855,109 @@ function moveleg.set_leg_positions()
   local bodyOffset = util.pose_relative(uTorso, uFoot)
   mcm.set_status_bodyOffset( bodyOffset )
   ------------------------------------------
-
-
   if IS_WEBOTS then
     local llt = Body.get_lleg_current()
     local rlt = Body.get_rleg_current() 
 
     mcm.set_status_lleg_torque(llt)
     mcm.set_status_rleg_torque(rlt)
-
   end
-
 end
 
+
+
+function moveleg.set_leg_positions_hack(supportLeg,phSingle)
+    local uLeft = mcm.get_status_uLeft()
+  local uRight = mcm.get_status_uRight()
+  local uTorso = mcm.get_status_uTorso()
+  local qWaist = Body.get_waist_command_position()
+  local qLArm = Body.get_larm_command_position()
+  local qRArm = Body.get_rarm_command_position()
+
+  local uTorsoOffset,qLegs,comZ= Body.get_torso_compensation(qLArm,qRArm,qWaist)  
+  local delta_legs = mcm.get_walk_delta_legs()  
+  mcm.set_stance_COMoffset({-uTorsoOffset[1],-uTorsoOffset[2],comZ })
+
+  --Knee angle check
+  if Config.birdwalk then
+    --knee pitch should be neagitve
+    qLegs[4]= math.min(0,qLegs[4])
+    qLegs[10]= math.min(0,qLegs[10])
+  else
+    --knee pitch should be positive
+    qLegs[4]= math.max(0,qLegs[4])
+    qLegs[10]= math.max(0,qLegs[10])  
+  end
+
+  local legBias = vector.new(mcm.get_leg_bias())
+  qLegs = qLegs + delta_legs + legBias
+  qLegs[5]=qLegs[5]
+  qLegs[11]=qLegs[11]
+  qLegs[6]=qLegs[6]
+  qLegs[12]=qLegs[12]
+
+  if Config.walk.anklePitchLimit then
+    qLegs[5]=math.max(qLegs[5],Config.walk.anklePitchLimit[1])
+    qLegs[11]=math.max(qLegs[11],Config.walk.anklePitchLimit[1])
+    qLegs[5]=math.min(qLegs[5],Config.walk.anklePitchLimit[2])
+    qLegs[11]=math.min(qLegs[11],Config.walk.anklePitchLimit[2])
+  end
+--
+  --hip pitch lag fix
+  if Config.walk.hipPitch0 then
+    if qLegs[3]<Config.walk.hipPitch0 then
+      qLegs[3] = Config.walk.hipPitch0 + (qLegs[3]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+    if qLegs[9]<Config.walk.hipPitch0 then
+      qLegs[9] = Config.walk.hipPitch0 + (qLegs[9]-Config.walk.hipPitch0)*Config.walk.hipPitchCompensationMag
+    end
+  end
+
+
+  local q1,q2,q3 = moveleg.joint_trajectory_kick(phSingle)
+
+  q2 = q2 + 10*DEG_TO_RAD
+
+  local blend_factor = math.min(1, phSingle/0.2)
+  blend_factor = math.min(blend_factor,(1-phSingle)/0.2)
+
+  if supportLeg==0 then --left support, right kick
+    qLegs[9],qLegs[10],qLegs[11] = 
+    qLegs[9]*(1-blend_factor) + q1*blend_factor,
+    qLegs[10]*(1-blend_factor) + q2*blend_factor,
+    qLegs[11]*(1-blend_factor) + q3*blend_factor
+  else
+    qLegs[3],qLegs[4],qLegs[5] = 
+    qLegs[3]*(1-blend_factor) + q1*blend_factor,
+    qLegs[4]*(1-blend_factor) + q2*blend_factor,
+    qLegs[5]*(1-blend_factor) + q3*blend_factor
+  end
+
+
+
+
+
+
+
+  Body.set_lleg_command_position(vector.slice(qLegs,1,6))
+  Body.set_rleg_command_position(vector.slice(qLegs,7,12))
+
+  ------------------------------------------
+  -- Update the status in shared memory
+  local uFoot = util.se2_interpolate(.5, uLeft, uRight)
+  mcm.set_status_odometry( uFoot )
+  --util.pose_relative(uFoot, u0) for relative odometry to point u0
+  local bodyOffset = util.pose_relative(uTorso, uFoot)
+  mcm.set_status_bodyOffset( bodyOffset )
+  ------------------------------------------
+  if IS_WEBOTS then
+    local llt = Body.get_lleg_current()
+    local rlt = Body.get_rleg_current() 
+
+    mcm.set_status_lleg_torque(llt)
+    mcm.set_status_rleg_torque(rlt)
+  end
+end
 
 
 

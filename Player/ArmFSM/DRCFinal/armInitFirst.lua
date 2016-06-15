@@ -102,7 +102,6 @@ function state.update()
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
     t_stage = 1.0
-  print("jinwook here1")
 
   elseif stage==2 then  --Straighten first wrist yaw, straighten shouldr yaw, widen shoulder
     qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
@@ -111,24 +110,20 @@ function state.update()
     qLArmTargetC[6],qRArmTargetC[6] = 0,0
     qLArmTargetC[7],qRArmTargetC[7] = qLArmTarget[7],qRArmTarget[7]
     t_stage = 1.0
-  print("jinwook here2")
-
+ 
   elseif stage==3 then --straighten shoulder yaw, widen shoulder
     qLArmTargetC,qRArmTargetC = 
   util.shallow_copy(qLArmTarget),
   util.shallow_copy(qRArmTarget)
     qLArmTargetC[2],qRArmTargetC[2] = shoulderRollInit, -shoulderRollInit
     t_stage = 2.0
-  print("jinwook here3")
-
+ 
   elseif stage==4 then
     qLArmTargetC,qRArmTargetC = qLArmTarget,qRArmTarget
     t_stage = 1.0
-      print("jinwook here4")
-
+ 
   elseif stage==5 then
-      print("jinwook here5")
-
+ 
     return "done"
 
   end
@@ -197,7 +192,6 @@ function state.exit()
   mcm.set_arm_qrarmcomp(qRArmTarget)
   mcm.set_stance_uTorsoComp(uTorsoComp)  
 
-  print("jinwook here")
   mcm.set_status_arm_init(1) --arm idle and requires init
 
 

@@ -77,7 +77,7 @@ local function check_send(msg)
 	for i,m in ipairs(buffer) do
 
 		if world_ch then 
-			print('sending world')
+			--print('sending world')
 
 			world_ch:send(m) 
 		end

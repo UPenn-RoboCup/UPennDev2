@@ -50,7 +50,7 @@ for _,id in ipairs(Config.parts.LGrip) do
 	gripper_mode[id] = 0
 end
 for _,id in ipairs(Config.parts.RGrip) do
-	is_gripper[id] = true
+	is_gripper[id] = false --true
 	gripper_mode[id] = 0
 end
 

@@ -161,7 +161,7 @@ local right_arm = {
 		--head
 		--29, 30,
 		-- gripper
-		--63, 65, 67
+		63, 65, 67
 	},
 	enable_read = true,
 }
@@ -310,7 +310,7 @@ servo.joint_to_motor={
 	1,3,5,7,9,11,13,  --RArm
 	28,27, --Waist yaw/pitch (mk2 is inverted)
 	64,66,68, -- left gripper/trigger (This is the order)
-	63,67,65, -- right gripper/trigger/extra
+	63,65,67, -- right gripper/trigger/extra
 	37, -- Lidar pan
 }
 
@@ -353,7 +353,7 @@ servo.direction = vector.new({
 
 	1, 1, -- Waist, mk2
 	1,-1,1, -- left gripper TODO
-	1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
+	-1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
 	-1, -- Lidar pan
 })
 
@@ -377,7 +377,7 @@ servo.rad_offset = vector.new({
 
 	0,0, -- Waist
 	0, 0, 0, -- left gripper/trigger
-	-90, -90, 0, -- right gripper/trigger (UCLA rev2 verified)
+	0, 0, 0, -- right gripper/trigger (UCLA rev2 verified)
 	--70, -125, 0, -- right gripper/trigger (UCLA rev1 verified)
 	0, -- Lidar pan
 })*DEG_TO_RAD
@@ -396,7 +396,7 @@ servo.min_rad = vector.new({
 	-90,-175,-90,    -160,   -180,-87,-180, --RArm    --jinwook
 	-90,-45, -- Waist
 	-60, -55, -60,
-	-90, -120, -55, -- right gripper/trigger (UCLA rev2 verified)
+	-3, -15, -15, -- right gripper/trigger (UCLA rev2 verified)
 	-- -60, -35, -60, -- right gripper/trigger (UCLA rev1 verified)
 	-60, -- Lidar pan
 })*DEG_TO_RAD
@@ -415,7 +415,7 @@ servo.max_rad = vector.new({
 
 	90,45, -- Waist
 	65,65,55, -- lgrip
-	105,110,105, -- right gripper/trigger (UCLA rev2 verified)
+	30,30,30, -- right gripper/trigger (UCLA rev2 verified)
 	-- 80,40,55, -- right gripper/trigger (UCLA rev1 verified)
 	60, -- Lidar pan
 })*DEG_TO_RAD

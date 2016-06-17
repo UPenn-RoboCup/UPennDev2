@@ -33,7 +33,7 @@ end
 local USE_MAG = false
 local OVERRIDE_YAW = true
 local CALIBRATE_GYRO_BIAS = true
-local CALIBRATION_THRESHOLD = 0.01
+local CALIBRATION_THRESHOLD = 0.011
 
 -- Modules
 require'dcm'

@@ -375,7 +375,7 @@ servo.rad_offset = vector.new({
 --	90,  90,  90,-45,  90,0,-90, --RArm, teddy, wristYaw fix
 	90,  90,   0,-45,  90,0,0, --RArm   --jinwook
 
-	0,0, -- Waist
+	0 ,0, -- Waist    --   -1.5
 	0, 0, 0, -- left gripper/trigger
 	0, 0, 0, -- right gripper/trigger (UCLA rev2 verified)
 	--70, -125, 0, -- right gripper/trigger (UCLA rev1 verified)

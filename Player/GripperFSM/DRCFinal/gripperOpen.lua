@@ -13,7 +13,7 @@ function state.entry()
   t_update = t_entry
 
 	-- Write the torque
-	Body.set_lgrip_command_torque{-10,-10,-20}
+	Body.set_lgrip_command_torque{-10,-10,-10}
 	
   -- right gripper : nx motor
   --Body.set_rgrip_command_torque{-10,-10,-10}

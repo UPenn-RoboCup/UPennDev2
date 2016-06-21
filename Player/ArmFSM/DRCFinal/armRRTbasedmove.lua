@@ -25,7 +25,21 @@ require'rcm'
 local get_time = Body.get_time
 -- Subscribe to important messages
 local vision_ch = si.new_subscriber'vision0'
-local rrt_ch = si.new_subscriber'rrt1'
+
+
+local rrt_streams = Config.net.streams['rrt1']
+--local rrt_ch = si.new_subscriber'rrt1'
+--local rrt_ch = si.new_subscriber(43351, '158.130.109.11')
+local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
+
+--local depth_net_ch = si.new_publisher(depth_streams.tcp)
+--local color_net_ch = si.new_publisher(color_streams.tcp)
+--
+--local depth_ch = si.new_publisher(depth_streams.sub)
+--local color_ch = si.new_publisher(color_streams.sub)
+
+
+
 
 -- Who to send to
 local operator

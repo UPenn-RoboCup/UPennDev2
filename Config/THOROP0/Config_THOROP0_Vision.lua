@@ -106,11 +106,11 @@ local ucla_wrist_param = {
 	--{'White Balance Temperature', 2300},
 	--{'Exposure (Absolute)', 112},
 	--{'Focus', 120},
-	{'Brightness', 48},
-	{'Contrast', 32},
-	{'Saturation', 48},
-	{'Gain', 0},
-	{'Sharpness', 128},
+	--{'Brightness', 48},
+	--{'Contrast', 32},
+	--{'Saturation', 128},
+	--{'Gain', 100},
+	--{'Sharpness', 128},
 }
 
 -- Cameras
@@ -175,10 +175,10 @@ camera[2] = {
 	downsampling = 1,
 	crop = {320/2+1, 240/2+1, 320/2, 240/2},
 	auto_param = {
-		{'Exposure, Auto', 1},
-		{'White Balance Temperature, Auto', 1},
-		{'Power Line Frequency', 0},
-		{'Exposure, Auto Priority', 1},
+		--{'Exposure, Auto', 1},
+		--{'White Balance Temperature, Auto', 1},
+		--{'Power Line Frequency', 0},
+		--{'Exposure, Auto Priority', 1},
 		--{'Focus, Auto', 0}
 	},
 	param = ucla_wrist_param,

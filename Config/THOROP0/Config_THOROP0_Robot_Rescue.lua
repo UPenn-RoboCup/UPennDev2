@@ -234,8 +234,8 @@ else
 	--
 	table.insert(Config.chain, right_arm)
 	Config.chain[right_arm.name] = right_arm
-	table.insert(Config.chain, left_arm)
-	Config.chain[left_arm.name] = left_arm
+	--table.insert(Config.chain, left_arm)
+	--Config.chain[left_arm.name] = left_arm
 	--
 	one_chain = nil
 end

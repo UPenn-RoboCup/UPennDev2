@@ -259,6 +259,7 @@ fsm.Arm = {
 	{'armRRTmoveReady', 'done', 'armRRTmoveReady'},  --jwhuh
 	{'armManipulation', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
 	{'armRRTbasedmove', 'ready', 'armManipulation'},  --jwhuh
+	{'armWalk', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
 
 
 
@@ -273,7 +274,7 @@ fsm.Arm = {
 
 
 	--This should be called JUST ONCE at the beginning
-	{'armIdle', 'init', 'armInitFirst'},   --armInitFirst
+	{'armIdle', 'init', 'armInitFirst2'},   --armInitFirst
 --	{'armIdle', 'init', 'armInitWalk'},
 
 
@@ -290,7 +291,7 @@ fsm.Arm = {
 
 	-- armWalk does nothing (the arm should be in walk configuration)
 	{'armInitWalk', 'done', 'armWalk'},
-	{'armInitFirst', 'done', 'armWalk'},
+	{'armInitFirst2', 'done', 'armWalk'},
 
 	-- From the walk state
 	--{'armWalk', 'pushdoor', 'armPushDoorUp'},

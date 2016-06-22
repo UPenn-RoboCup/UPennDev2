@@ -121,7 +121,7 @@ streams.world0 = {
 	tcp = 43323,
 	sub = 'world',
 }
---[[
+
 streams.kinect2_depth = {
 	ws = 9046,
 	udp = 17046,
@@ -133,6 +133,11 @@ streams.kinect2_color = {
 	udp = 17047,
 	tcp = 43347,
 	sub = 'kinect2_color'
+}
+streams.rgbd_color = {
+	ws=1056,
+	udp= 17123,
+	sub= "rgbd_color"
 }
 --]]
 --[[

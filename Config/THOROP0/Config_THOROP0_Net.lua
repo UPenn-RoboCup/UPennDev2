@@ -81,6 +81,14 @@ streams.camera1 = {
 	tcp = 43304,
 	sub = 'camera1',
 }
+
+streams.camera2 ={
+ws = 9005,
+udp = 17005,
+tcp = 43305,
+sub = 'camera2',
+}
+
 streams.lidar0 = {
 	ws = 9010,
 	udp = 17010,
@@ -124,7 +132,7 @@ streams.world0 = {
 
 streams.kinect2_depth = {
 	ws = 9046,
-	udp = 17046,
+	udp = 17049,
 	tcp = 43346,
 	sub = 'kinect2_depth'
 }

@@ -87,7 +87,7 @@ local ittybitty_udp_ch = si.new_sender(Config.net.operator.wired, itty_stream.ud
 local field_tcp_ch = si.new_publisher(stream.tcp);
 
 
-local depth_streams = Config.net.streams['camera1']
+local depth_streams = Config.net.streams['camera2']
 local depth_udp_ch = depth_streams and depth_streams.udp and si.new_sender(operator, depth_streams.udp)
 local depth_net_ch = si.new_publisher(depth_streams.tcp)
 local depth_ch = depth_streams and depth_streams.sub and si.new_publisher(depth_streams.sub)

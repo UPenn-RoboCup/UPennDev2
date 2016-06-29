@@ -344,6 +344,7 @@ fsm.Arm = {
 	{'armManipulation', 'init', 'armInitWalk'},
 	{'armManipulation', 'ready', 'armManipulation'},
 	{'armManipulation', 'pushdoordown', 'armPushDoorDown'},
+	{'armManipulation', 'pushdoorright', 'armPushDoorRight'},
 	{'armManipulation', 'drill', 'armDrill'},
 	--{'armManipulation', 'shower', 'armShower'},
 	{'armManipulation', 'valve', 'armValve'},
@@ -357,11 +358,18 @@ fsm.Arm = {
 	-- PushDoor positioning
 	{'armPushDoorDown', 'ready', 'armManipulation'},
 	--{'armPushDoorDown', 'done', 'armManipulation'},
+	{'armPushDoorRight', 'ready', 'armManipulation'},
+
 	--
 	{'armTeleop', 'pushdoordown', 'armPushDoorDown'},
 	{'armTeleopRaw', 'pushdoordown', 'armPushDoorDown'},
 	{'armPushDoorDown', 'teleop', 'armTeleop'},
 	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
+
+	{'armTeleop', 'pushdoorright', 'armPushDoorRight'},
+	{'armTeleopRaw', 'pushdoorright', 'armPushDoorRight'},
+	{'armPushDoorRight', 'teleop', 'armTeleop'},
+	{'armPushDoorRight', 'teleopraw', 'armTeleopRaw'},
 
 	-- Down arm positioning ( just the left for now
 	{'armWalk', 'down', 'armDown'},

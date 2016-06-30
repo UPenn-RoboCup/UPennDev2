@@ -74,7 +74,7 @@ arm.pushdoorright[1] = {
 		via='jacobian_preplan',
 		timeout=8,
 --		tr={0.37, 0.31, -0.05, -90*DEG_TO_RAD, 0*DEG_TO_RAD,0},
-		tr={0.45, -0.246, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.45, -0.246, 0.19, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
 		weights = {1,1,1},
 	},
@@ -135,14 +135,14 @@ table.insert(arm.valve, {
 })
 --]]
 table.insert(arm.valve, {
-	right = false,
-	left = {
+	right = {
 		timeout=10,
 		via='jacobian_preplan',
-		tr={0.45, 0.246, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		tr={0.45, -0.246, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
 		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
 		weights = {1,1,1},
-	}
+	},
+	left = false	
 })
 --[[
 table.insert(arm.valve, {

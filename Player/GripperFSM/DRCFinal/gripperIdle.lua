@@ -13,13 +13,13 @@ function state.entry()
   t_entry = Body.get_time()
   t_update = t_entry
 
-	Body.set_lgrip_command_torque(0)
+	Body.set_rgrip_command_torque(0)
 	--Body.set_rgrip_command_torque(0)
 
-	Body.set_lgrip_torque_enable(1)
-	Body.set_rgrip_torque_enable(0)
+	Body.set_rgrip_torque_enable(1)
+	Body.set_lgrip_torque_enable(0)
 
-	Body.set_lgrip_command_torque(0)
+	Body.set_rgrip_command_torque(0)
 	--Body.set_rgrip_command_torque(0)
 
 end

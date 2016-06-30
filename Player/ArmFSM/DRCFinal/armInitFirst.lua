@@ -48,9 +48,9 @@ function state.entry()
   t_finish = t
 
   -- Close rgrip
-  Body.set_rgrip_command_torque({-10,-10,10})
+  --Body.set_rgrip_command_torque({-10,-10,10})
   -- Open rgrip
-  Body.set_rgrip_command_torque({10,10,-10})
+  --Body.set_rgrip_command_torque({10,10,-10})
   -- No torque rgrip
   Body.set_rgrip_command_torque({0,0,0})
 

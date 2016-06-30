@@ -161,7 +161,7 @@ local right_arm = {
 		--head
 		--29, 30,
 		-- gripper
-		63, 65, 67
+		64, 66, 68
 	},
 	enable_read = true,
 }
@@ -176,7 +176,7 @@ local left_arm = {
 		--head
 		29, 30,
 		-- gripper
-		64, 66, 68
+		63, 65, 67
 
 
 	},
@@ -309,8 +309,8 @@ servo.joint_to_motor={
 	15,17,19,21,23,25, -- right leg
 	1,3,5,7,9,11,13,  --RArm
 	28,27, --Waist yaw/pitch (mk2 is inverted)
-	64,66,68, -- left gripper/trigger (This is the order)
-	63,65,67, -- right gripper/trigger/extra
+	63,65,67, -- left gripper/trigger (This is the order)
+	64,66,68, -- right gripper/trigger/extra
 	37, -- Lidar pan
 }
 
@@ -335,7 +335,7 @@ servo.steps = 2 * vector.new({
 servo.direction = vector.new({
 	1,-1, -- Head, mk2
 --	1,1,1, 1, 1,1,1, --LArm, mk2, after flipping wristyaw
-	1,-1,1, 1, 1,1,1, --LArm, mk2 reassembled
+	1,-1,1, 1, 1,1,-1, --LArm, mk2 reassembled
 
 
 
@@ -349,11 +349,11 @@ servo.direction = vector.new({
 
 
 --	-1,1,1, -1, 1,1,1, --RArm, teddy2, tested, rshoulder yaw fix
-	-1,-1,1, -1, 1,1,1, --RArm, mk2 reassembled   --jinwook
+	-1,-1,1, -1, 1,1,-1, --RArm, mk2 reassembled   --jinwook
 
 	1, 1, -- Waist, mk2
-	1,-1,1, -- left gripper TODO
-	-1,1,-1, -- right gripper/trigger (Good trigger with UCLA hand)
+	-1,1,-1, -- left gripper TODO
+	1,-1, 1, -- right gripper/trigger (Good trigger with UCLA hand)
 	-1, -- Lidar pan
 })
 
@@ -373,7 +373,7 @@ servo.rad_offset = vector.new({
 
 
 --	90,  90,  90,-45,  90,0,-90, --RArm, teddy, wristYaw fix
-	90,  90,   0,-45,  90,0, 0, --RArm   --jinwook 90 is terrible
+	90,  90,   0,-45,  90,0,0, --RArm   --jinwook
 
 	0 ,0, -- Waist    --   -1.5
 	0, 0, 0, -- left gripper/trigger
@@ -395,9 +395,10 @@ servo.min_rad = vector.new({
 --	-160,-87,-100,    -160,   -180,-87,-180, --RArm
 	-90,-175,-90,    -160,   -180,-87,-180, --RArm    --jinwook
 	-90,-45, -- Waist
-	-60, -55, -60,
-	-3, -15, -15, -- right gripper/trigger (UCLA rev2 verified)
-	-- -60, -35, -60, -- right gripper/trigger (UCLA rev1 verified)
+--	-60, -55, -60,
+--	-3, -15, -15, -- right gripper/trigger (UCLA rev2 verified)
+	-3, -15, -15,  --left gripper
+	-60, -55, -60, --right gripper
 	-60, -- Lidar pan
 })*DEG_TO_RAD
 
@@ -414,8 +415,10 @@ servo.max_rad = vector.new({
 	160,-0,90,   0,     180,87,180, --RArm  12.31 by SJ   jinwook
 
 	90,45, -- Waist
-	65,65,55, -- lgrip
-	30,30,30, -- right gripper/trigger (UCLA rev2 verified)
+	30,30,30, -- lgrip
+	65,65,55, -- rgrip
+--	65,65,55, -- lgrip
+--	30,30,30, -- right gripper/trigger (UCLA rev2 verified)
 	-- 80,40,55, -- right gripper/trigger (UCLA rev1 verified)
 	60, -- Lidar pan
 })*DEG_TO_RAD
@@ -578,10 +581,10 @@ if IS_WEBOTS then
 
 	servo.min_rad = vector.new({
 		-135,-80, -- Head
-		-90, -175, -90,    -160,   -180,-87,-180, --LArm  03/10/2016  --jinwook
+		-90, -175, -90,    -160,   -180,-87,-175, --LArm  03/10/2016  --jinwook
 		-175,-175,-175,-175,-175,-175, --LLeg
 		-175,-175,-175,-175,-175,-175, --RLeg
-		-90,-175,-90,    -160,   -180,-87,-180, --RArm    --jinwook
+		-90,-175,-90,    -160,   -180,-87,-175, --RArm    --jinwook
 		-90,-45, -- Waist
 		120,80,60, --lhand
 		120,60,60,--rhand
@@ -593,10 +596,10 @@ if IS_WEBOTS then
 
 	servo.max_rad = vector.new({
 		135, 80, -- Head
-		180,87,135,   0,     180,87,180, --LArm   jinwook
+		180,87,135,   0,     180,87,175, --LArm   jinwook
 		175,175,175,175,175,175, --LLeg
 		175,175,175,175,175,175, --RLeg
-		160,-0,90,   0,     180,87,180, --RArm  12.31 by SJ   jinwook
+		160,-0,90,   0,     180,87,175, --RArm  12.31 by SJ   jinwook
 		90,79, -- Waist
 		0,45,45,  --lhand
 		0,45,45,    --rhand

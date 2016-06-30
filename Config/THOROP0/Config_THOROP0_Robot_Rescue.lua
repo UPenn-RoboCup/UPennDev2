@@ -151,7 +151,7 @@ local right_arm = {
 	name = 'rarm',
 	ttyname = '/dev/ttyUSB0',
 	m_ids = {
-		1,3,5,7,9,11,13,
+		1,3,5,7,9,11,14,
 
 --		1,3,5,7,9,11,
 
@@ -170,7 +170,7 @@ local left_arm = {
 	name = 'larm',
 	ttyname = '/dev/ttyUSB1',
 	m_ids = {
-		2,4,6,8,10,12,14,
+		2,4,6,8,10,12,13,
 		-- lidar
 		--37,
 		--head
@@ -304,10 +304,10 @@ Config.jointNames = jointNames
 local servo = {}
 servo.joint_to_motor={
 	29,30,  --Head yaw/pitch
-	2,4,6,8,10,12,14, --LArm
+	2,4,6,8,10,12,13, --LArm
 	16,18,20,22,24,26, -- left leg
 	15,17,19,21,23,25, -- right leg
-	1,3,5,7,9,11,13,  --RArm
+	1,3,5,7,9,11,14,  --RArm
 	28,27, --Waist yaw/pitch (mk2 is inverted)
 	63,65,67, -- left gripper/trigger (This is the order)
 	64,66,68, -- right gripper/trigger/extra
@@ -335,7 +335,7 @@ servo.steps = 2 * vector.new({
 servo.direction = vector.new({
 	1,-1, -- Head, mk2
 --	1,1,1, 1, 1,1,1, --LArm, mk2, after flipping wristyaw
-	1,-1,1, 1, 1,1,-1, --LArm, mk2 reassembled
+	1,-1,1, 1, 1,1,1, --LArm, mk2 reassembled
 
 
 
@@ -349,7 +349,7 @@ servo.direction = vector.new({
 
 
 --	-1,1,1, -1, 1,1,1, --RArm, teddy2, tested, rshoulder yaw fix
-	-1,-1,1, -1, 1,1,-1, --RArm, mk2 reassembled   --jinwook
+	-1,-1,1, -1, 1,1,1, --RArm, mk2 reassembled   --jinwook
 
 	1, 1, -- Waist, mk2
 	-1,1,-1, -- left gripper TODO
@@ -363,7 +363,7 @@ servo.direction = vector.new({
 servo.rad_offset = vector.new({
 	0,0, -- Head
 --	-90,  -90,  -90,45,  -90,0,0, --LArm, rebias
-	-90,   90,    0,45,    0,0,90, --LArm    03/10/2016  -jinwook
+	-90,   90,    0,45,    0,0,0, --LArm    06/30/2016  -jinwook
 --	0,0,0,  45  ,0,0, --LLeg , teddy2, after leg swap
 --	0,0,0,  -45  ,0,0, --RLeg  , teddy2, after leg swap
 
@@ -373,7 +373,7 @@ servo.rad_offset = vector.new({
 
 
 --	90,  90,  90,-45,  90,0,-90, --RArm, teddy, wristYaw fix
-	90,  90,   0,-45,  90,0,0, --RArm   --jinwook
+	90,  90,   0,-45,  90,0,-90, -- probably 90 RArm   --jinwook
 
 	0 ,0, -- Waist    --   -1.5
 	0, 0, 0, -- left gripper/trigger

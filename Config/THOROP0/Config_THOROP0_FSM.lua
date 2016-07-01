@@ -344,7 +344,7 @@ fsm.Arm = {
 	{'armManipulation', 'init', 'armInitWalk'},
 	{'armManipulation', 'ready', 'armManipulation'},
 	{'armManipulation', 'pushdoordown', 'armPushDoorDown'},
-	{'armManipulation', 'pushdoorright', 'armPushDoorRight'},
+	{'armManipulation', 'maniright', 'armManiRight'},
 	{'armManipulation', 'drill', 'armDrill'},
 	--{'armManipulation', 'shower', 'armShower'},
 	{'armManipulation', 'valve', 'armValve'},
@@ -358,7 +358,7 @@ fsm.Arm = {
 	-- PushDoor positioning
 	{'armPushDoorDown', 'ready', 'armManipulation'},
 	--{'armPushDoorDown', 'done', 'armManipulation'},
-	{'armPushDoorRight', 'ready', 'armManipulation'},
+	{'armManiRight', 'ready', 'armManipulation'},
 
 	--
 	{'armTeleop', 'pushdoordown', 'armPushDoorDown'},
@@ -366,10 +366,10 @@ fsm.Arm = {
 	{'armPushDoorDown', 'teleop', 'armTeleop'},
 	{'armPushDoorDown', 'teleopraw', 'armTeleopRaw'},
 
-	{'armTeleop', 'pushdoorright', 'armPushDoorRight'},
-	{'armTeleopRaw', 'pushdoorright', 'armPushDoorRight'},
-	{'armPushDoorRight', 'teleop', 'armTeleop'},
-	{'armPushDoorRight', 'teleopraw', 'armTeleopRaw'},
+	{'armTeleop', 'maniright', 'armManiRight'},
+	{'armTeleopRaw', 'maniright', 'armManiRight'},
+	{'armManiRight', 'teleop', 'armTeleop'},
+	{'armManiRight', 'teleopraw', 'armTeleopRaw'},
 
 	-- Down arm positioning ( just the left for now
 	{'armWalk', 'down', 'armDown'},

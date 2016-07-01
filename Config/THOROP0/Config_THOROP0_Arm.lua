@@ -65,10 +65,10 @@ arm.pushdoordown[1] = {
 }
 
 
-arm.pushdoorright = {}
+arm.maniright = {}
 
 
-arm.pushdoorright[1] = {
+arm.maniright[1] = {
 	left = false,
 	right = {
 		via='jacobian_preplan',

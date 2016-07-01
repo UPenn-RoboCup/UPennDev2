@@ -106,16 +106,19 @@ arm.plug[1] = {
 
 
 
+-- Weights: cusage, cdiff, ctight, cshoulder, cwrist
+arm.doorpush = {}
 
-
-
-
-
-
-
-
-
-
+table.insert(arm.doorpush, {
+	right = false,
+	left = {
+		timeout=10,
+		via='jacobian_preplan',
+		tr={0.45, 0.246, 0.0, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		weights = {1,1,1},
+	}	
+})
 
 
 

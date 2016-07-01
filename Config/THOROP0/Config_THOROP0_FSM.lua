@@ -348,6 +348,8 @@ fsm.Arm = {
 	{'armManipulation', 'drill', 'armDrill'},
 	--{'armManipulation', 'shower', 'armShower'},
 	{'armManipulation', 'valve', 'armValve'},
+	{'armManipulation', 'doorpush', 'armDoorPush'},
+
 	{'armManipulation', 'plug', 'armPlug'},
 	--
 	{'armTeleop', 'ready', 'armManipulation'},
@@ -395,6 +397,17 @@ fsm.Arm = {
 	{'armTeleopRaw', 'valve', 'armValve'},
 	{'armValve', 'teleop', 'armTeleop'},
 	{'armValve', 'teleopraw', 'armTeleopRaw'},
+
+	-- door push
+	{'armWalk', 'doorpush', 'armDoorPush'},
+	{'armDoorPush', 'done', 'armTeleop'},
+	--
+	{'armTeleop', 'doorpush', 'armDoorPush'},
+	{'armTeleopRaw', 'doorpush', 'armDoorPush'},
+	{'armDoorPush', 'teleop', 'armTeleop'},
+	{'armDoorPush', 'teleopraw', 'armTeleopRaw'},
+
+
 
 	-- Valve turning
 	--[[

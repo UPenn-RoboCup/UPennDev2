@@ -66,8 +66,13 @@ function state.entry()
     Config.arm.ShoulderYaw0[2],
     mcm.get_stance_bodyTilt(),{0,0},true)
 
-  qLArmTarget = vector.new({110,0,10,-155,90,45,-76})*DEG_TO_RAD
-  qRArmTarget = vector.new({110,0,-10,-160,-90,-40,76})*DEG_TO_RAD
+--  qLArmTarget = vector.new({110,0,10,-155,90,45,-76})*DEG_TO_RAD
+--  qRArmTarget = vector.new({110,0,-10,-160,-90,-40,76})*DEG_TO_RAD
+
+  qLArmTarget = vector.new({90,0,0,0,0,0,0})*DEG_TO_RAD
+  qRArmTarget = vector.new({90,0,0,0,0,0,0})*DEG_TO_RAD
+
+
 
 
   t_last_debug=t_entry

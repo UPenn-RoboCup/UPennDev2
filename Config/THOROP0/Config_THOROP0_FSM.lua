@@ -255,11 +255,12 @@ fsm.Arm = {
 	--	{'armManipulation','RRTbasedmove','armRRTbasedmove'} --jwhuh
 	{'armTeleopRaw', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
 	{'armRRTbasedmove', 'teleopraw', 'armTeleopRaw'},  --jwhuh
-	{'armRRTbasedmove', 'done', 'armTeleop'},  --jwhuh
+	{'armRRTbasedmove', 'done', 'armRRTbasedmove'},  --jwhuh
 	{'armRRTmoveReady', 'done', 'armRRTmoveReady'},  --jwhuh
 	{'armManipulation', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
 	{'armRRTbasedmove', 'ready', 'armManipulation'},  --jwhuh
 --	{'armWalk', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
+	{'armWalk', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
 
 
 

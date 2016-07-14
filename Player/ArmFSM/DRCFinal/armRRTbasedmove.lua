@@ -30,7 +30,8 @@ local vision_ch = si.new_subscriber'vision0'
 local rrt_streams = Config.net.streams['rrt1']
 --local rrt_ch = si.new_subscriber'rrt1'
 --local rrt_ch = si.new_subscriber(43351, '158.130.109.11')
-local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
+--local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
+local rrt_ch = si.new_subscriber(43351, '158.130.107.210')
 
 --local depth_net_ch = si.new_publisher(depth_streams.tcp)
 --local color_net_ch = si.new_publisher(color_streams.tcp)
@@ -333,6 +334,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
         head_vector[6] =  planes[6]
         head_vector[7] =  planes[7]
       
+
           --print(head_vector[1], head_vector[2], head_vector[3])
 
         RRT_Path_l_size = head_vector[1]
@@ -425,6 +427,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
        qRArmTarget[5] = -1*(-1*RRT_r_Path[RRT_r_idx][6]+90)*3.141592/180;
        qRArmTarget[6] = -1*(-1*RRT_r_Path[RRT_r_idx][7])*3.141592/180;
        qRArmTarget[7] = RRT_r_end_effector+3.141592/2;
+       qRArmTarget[7] = RRT_r_end_effector;
 
        --print('RRT_l_path')
        --print(RRT_l_Path[RRT_l_idx][5])
@@ -435,7 +438,9 @@ qLArmTarget[4]*Body.RAD_TO_DEG
        qLArmTarget[4] = (RRT_l_Path[RRT_l_idx][5])*3.141592/180;
        qLArmTarget[5] = (-1*RRT_l_Path[RRT_l_idx][6]+90)*3.141592/180;
        qLArmTarget[6] = (-1*RRT_l_Path[RRT_l_idx][7])*3.141592/180;
-       qLArmTarget[7] = RRT_l_end_effector+3.141592/2;
+       qLArmTarget[7] = RRT_l_end_effector+3.141592/2;     -- why it add 90 degree???
+       qLArmTarget[7] = RRT_l_end_effector;     -- why it add 90 degree???
+
        --qLArmTarget[7] = 0;
 --[[
         qLArmTarget[1] = (RRT_Path[RRT_idx][2])*3.141592/180;
@@ -454,6 +459,10 @@ qLArmTarget[4]*Body.RAD_TO_DEG
         local qRArmCommand = Body.get_rarm_command_position()
         local qWaistCommand = Body.get_waist_command_position()
 
+
+
+       print(string.format("qRArmCommand: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
+       unpack(qRArmCommand)))
 
 
        --print(RRT_idx);

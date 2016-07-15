@@ -92,7 +92,13 @@ local function setArmJoints(qLArmTarget,qRArmTarget, dt,dqArmLim, absolute)
   local qL_approach, doneL2 = util.approachTolRad( qLArm, qLArmTarget, dqArmLim, dt ,nil,absolute)
   local qR_approach, doneR2 = util.approachTolRad( qRArm, qRArmTarget, dqArmLim, dt ,nil,absolute)
 
+      local qL_increment = util.mod_angle(qL_approach[4]-qLArm[4])
+      local qR_increment = util.mod_angle(qR_approach[4]-qRArm[4])
+      qL_approach[4] = qLArm[4] + qL_increment
+      qR_approach[4] = qRArm[4] + qR_increment
+
   if not absolute then
+    print("NONONONONO")
     for i=1,7 do
       local qL_increment = util.mod_angle(qL_approach[i]-qLArm[i])
       local qR_increment = util.mod_angle(qR_approach[i]-qRArm[i])
@@ -265,7 +271,6 @@ function state.update()
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local finished = 0;   --RRT
-
  --   print("Jinwook Jinwook Jinwook")
 
 --[[
@@ -472,39 +477,152 @@ qLArmTarget[4]*Body.RAD_TO_DEG
     --Body.set_larm_command_position(qcLArm)
     --Body.set_rarm_command_position(qcRArm)
 
+      if RRT_idx <= (RRT_Path_size) then
+          stage=1
+          local dqArmLim = vector.new(util.shallow_copy(Config.arm.vel_angular_limit_init))
+          if IS_WEBOTS then dqArmLim = dqArmLim*2 end
 
-        local dqArmLim = vector.new(util.shallow_copy(Config.arm.vel_angular_limit_init))
-        if IS_WEBOTS then dqArmLim = dqArmLim*2 end
+          local ret = setArmJoints(qLArmTarget,qRArmTarget,dt,dqArmLim,true)
 
-        local ret = setArmJoints(qLArmTarget,qRArmTarget,dt,dqArmLim,true)
-
-        if ret == 1 then
-          RRT_idx = RRT_idx + 1;
-        end
+          if ret == 1 then
+            RRT_idx = RRT_idx + 1;
+          end
+      end
 
     end
 
     if RRT_idx > (RRT_Path_size) then
+        print(stage)
 
         Grip_close = {0.496719, 0.458369, 0.50132}
         Grip_open = {-0.496719, -0.458369, -0.50132}
         Body.set_rgrip_command_position(Grip_open)
+--[[
+     qLArmTarget = Body.get_larm_position()
+     qRArmTarget = Body.get_rarm_position()
+
+       qRArmTarget[1] = 0.84;
+       qRArmTarget[2] = -0.30;
+       qRArmTarget[3] = -0.52;
+       qRArmTarget[4] = -0.81;
+       qRArmTarget[5] = -0.41;
+       qRArmTarget[6] = -0.25;
+       qRArmTarget[7] = 0.97;     -- why it add 90 degree???
+
+
+        local dqArmLim = vector.new(util.shallow_copy(Config.arm.vel_angular_limit_init))
+        if IS_WEBOTS then dqArmLim = dqArmLim/5 end
+
+
+      local b_set = setArmJoints(qLArmTarget,qRArmTarget,dt,dqArmLim,true)
+      ]]--
 
 
 
-        print ("RRT ended")
-        finished = 1;
-        Rrt_Run = 0;
---        return'teleopraw'
+ if stage==1 then --Straighten wrist roll and second wrist yaw       
 
-        print("shared")
-        print(rcm.get_RRT_finished())
-        rcm.set_RRT_finished(255);
-        print(rcm.get_RRT_finished())
 
-        gripper_ch:send'close'
+--   
+    print("im here")
+     qLArmTarget = Body.get_larm_position()
+     qRArmTarget = Body.get_rarm_position()
 
-        return'grasping'
+-- 1.32 -0.61 -0.52 -1.64 0.51 -0.46 0.13
+       qRArmTarget[1] = 1.18;
+       qRArmTarget[2] = -0.51;
+       qRArmTarget[3] = -0.52;
+       qRArmTarget[4] = -1.43;
+       qRArmTarget[5] = 0.44;
+       qRArmTarget[6] = -0.37;
+       qRArmTarget[7] = 0.18;   
+
+       qRArmTarget[1] = 0.84;
+       qRArmTarget[2] = -0.30;
+       qRArmTarget[3] = -0.52;
+       qRArmTarget[4] = -0.81;
+       qRArmTarget[5] = -0.41;
+       qRArmTarget[6] = -0.25;
+       qRArmTarget[7] = 0.97; 
+
+
+  elseif stage==2 then  --Straighten first wrist yaw, straighten shouldr yaw, widen shoulder
+
+     qLArmTarget = Body.get_larm_position()
+     qRArmTarget = Body.get_rarm_position()
+
+-- 1.18 -0.51 -0.52 -1.43 0.44 -0.37 0.18
+
+       qRArmTarget[1] = 1.18;
+       qRArmTarget[2] = -0.51;
+       qRArmTarget[3] = -0.52;
+       qRArmTarget[4] = -1.43;
+       qRArmTarget[5] = 0.44;
+       qRArmTarget[6] = -0.37;
+       qRArmTarget[7] = 0.18; 
+ 
+  elseif stage==3 then --straighten shoulder yaw, widen shoulder
+
+     qLArmTarget = Body.get_larm_position()
+     qRArmTarget = Body.get_rarm_position()
+
+--1.03 -0.41 -0.52 -1.18 0.20 -0.28 0.39
+       qRArmTarget[1] = 1.03;
+       qRArmTarget[2] = -0.41;
+       qRArmTarget[3] = -0.52;
+       qRArmTarget[4] = -1.18;
+       qRArmTarget[5] = 0.20;
+       qRArmTarget[6] = -0.28;
+       qRArmTarget[7] = 0.39; 
+ 
+  elseif stage==4 then
+
+     qLArmTarget = Body.get_larm_position()
+     qRArmTarget = Body.get_rarm_position()
+--0.84 -0.30 -0.52 -0.81 -0.41 -0.25 0.97
+       qRArmTarget[1] = 0.84;
+       qRArmTarget[2] = -0.30;
+       qRArmTarget[3] = -0.52;
+       qRArmTarget[4] = -0.81;
+       qRArmTarget[5] = -0.41;
+       qRArmTarget[6] = -0.25;
+       qRArmTarget[7] = 0.97; 
+ 
+  elseif stage==5 then
+ 
+          print("finished jwhuh")
+
+
+
+          print ("RRT ended")
+          finished = 1;
+          Rrt_Run = 0;
+  --        return'teleopraw'
+
+          print("shared")
+          print(rcm.get_RRT_finished())
+          rcm.set_RRT_finished(255);
+          print(rcm.get_RRT_finished())
+
+
+          return'done'
+
+  end
+
+
+
+        local dqArmLim = vector.new(util.shallow_copy(Config.arm.vel_angular_limit_init))
+        if IS_WEBOTS then dqArmLim = dqArmLim/10 end
+
+
+      local b_set = setArmJoints(qLArmTarget,qRArmTarget,dt,dqArmLim,true)
+      
+
+        print("trying to move to the final pose")
+        if b_set == 1 then
+          stage = stage + 1
+
+        end
+        --gripper_ch:send'close'
 
     end
 

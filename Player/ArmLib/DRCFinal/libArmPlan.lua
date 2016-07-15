@@ -14,6 +14,7 @@ local fabs = require'math'.abs
 local min, max = require'math'.min, require'math'.max
 local INFINITY = require'math'.huge
 local EPSILON = 1e-2 * DEG_TO_RAD
+local util = require'util'
 
 -- Does not work for the infinite turn motors
 local function sanitize(qPlanned, qNow)

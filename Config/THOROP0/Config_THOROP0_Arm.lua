@@ -147,6 +147,35 @@ table.insert(arm.valve, {
 	},
 	left = false	
 })
+
+
+
+arm.grasping = {}
+--[[
+table.insert(arm.valve, {
+	right = false,
+	left = {
+		timeout=12,
+		via='jacobian_preplan',
+		tr={0.25, 0.3, 0.3, 0*DEG_TO_RAD, -80*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--tr={0.52, 0.43, 0.14, 0*DEG_TO_RAD, 0*DEG_TO_RAD, 0*DEG_TO_RAD},
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		--weights = {0,1,0,1},
+	}
+})
+--]]
+table.insert(arm.grasping, {
+	right = {
+		timeout=10,
+		via='jacobian_preplan',
+		tr={0.683845, -0.277838, -0.069592, 0.003704, -0.055883, -0.000970},
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		weights = {1,1,1},
+	},
+	left = false	
+})
+
+
 --[[
 table.insert(arm.valve, {
 	right = false,

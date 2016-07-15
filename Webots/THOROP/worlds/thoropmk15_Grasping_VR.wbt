@@ -21,8 +21,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.713477 0.697613 0.0654722 5.94269
-  position -5.9098 4.12938 13.9245
+  orientation 0.939978 0.340883 0.0155194 6.02421
+  position -4.46332 4.26571 14.1346
 }
 Background {
   skyColor [
@@ -63,8 +63,8 @@ simple_wall {
   translation 0 1 -1.9
 }
 simple_wall {
-  size 1.6 0.26 3
-  translation -2.46 0.53 -0.143407
+  size 1.6 0.24 3
+  translation -2.31 0.63 -0.143168
 }
 simple_wall {
   size 0.05 2 2.7
@@ -298,6 +298,6 @@ SimpleDrill {
   rotation 0.00208244 0.999985 0.00502746 -2.3562
 }
 SimpleDrill {
-  translation -2.90856 0.78257 0.245956
+  translation -2.96 0.932586 0.246016
   rotation -0.000199618 -1 -0.000199617 3.14159
 }

@@ -111,6 +111,12 @@ end
 
 
 function state.entry()
+
+        Grip_close = {0.496719, 0.458369, 0.50132}
+        Grip_open = {-0.496719, -0.458369, -0.50132}
+        Body.set_rgrip_command_position(Grip_open)
+
+
 io.write(state._NAME, ' Entry\n')
   local t_entry_prev = t_entry
   t_entry = Body.get_time()
@@ -488,7 +494,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
         Grip_close = {0.496719, 0.458369, 0.50132}
         Grip_open = {-0.496719, -0.458369, -0.50132}
-        Body.set_rgrip_command_position(Grip_open)
+        Body.set_rgrip_command_position(Grip_close)
 
 
 
@@ -502,9 +508,9 @@ qLArmTarget[4]*Body.RAD_TO_DEG
         rcm.set_RRT_finished(255);
         print(rcm.get_RRT_finished())
 
-        gripper_ch:send'close'
+        --gripper_ch:send'close'
 
-        return'grasping'
+        return'done'
 
     end
 

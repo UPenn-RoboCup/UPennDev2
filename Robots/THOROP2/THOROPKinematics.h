@@ -44,8 +44,8 @@ const double upperArmLength = .261+.08; //mk2 stock value
 const double lowerArmLength = .252+.08;
 */
 
-const double upperArmLengthR = .320; //mk2 modded longarm
-const double lowerArmLengthR = .312; //mk2, 6cm extended
+const double upperArmLengthR = .261; //mk2 modded longarm
+const double lowerArmLengthR = .252; //mk2, 6cm extended
 const double upperArmLengthL = .261; //mk2 stock
 const double lowerArmLengthL = .252; //mk2 stock
 

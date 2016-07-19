@@ -1,6 +1,6 @@
 ---------------------------------
--- Vision Communication Module --
--- (c) 2013, 2014 Stephen McGill     --
+-- RRT Communication Module --
+-- (c) 2016 Jinwook Huh     --
 ---------------------------------
 local memory = require'memory'
 local vector = require'vector'
@@ -11,6 +11,7 @@ local shsize = {}
 -- RRT
 shared.RRT = {}
 shared.RRT.finished = vector.zeros(1)
+shared.RRT.eef = vector.zeros(6)
 
 -- Mesh formation
 -- Sweep: Field of View (radians), time to complete sweep (seconds)
@@ -19,6 +20,7 @@ shared.RRT.finished = vector.zeros(1)
 
 shared.rrt1 = {
 	finished = vector.zeros(1)
+--	eef = vector.zeros(6)
 }
 
 -- Initialize the segment

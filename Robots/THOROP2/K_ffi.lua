@@ -46,8 +46,8 @@ local elbowOffsetX = 0.030
 local upperArmLength = 0.261 -- shoulderpad
 local lowerArmLength = 0.252 -- yellow noextend
 -- Extended Arm (on right)
-local upperArmLengthExtended = 0.320
-local lowerArmLengthExtended = 0.312
+local upperArmLengthExtended = 0.261 --0.320
+local lowerArmLengthExtended = 0.251 --0.312
 
 -- Gripper of no appendage - just the plate
 --[[
@@ -61,7 +61,7 @@ local handOffsetX_L = 0.235
 local handOffsetY_L = 0
 local handOffsetZ_L = 0
 
-local handOffsetX_Gripper = 0.18
+local handOffsetX_Gripper = 0.1  --0.18
 local handOffsetY_Gripper = 0
 local handOffsetZ_Gripper = 0
 

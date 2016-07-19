@@ -9,6 +9,7 @@ local Body   = require'Body'
 local vector = require'vector'
 local movearm = require'movearm'
 local T = require'Transform'
+require'rcm'
 
 local t_entry, t_update, t_finish
 local timeout = 30.0
@@ -25,7 +26,32 @@ function state.entry()
 	t_entry = Body.get_time()
 	t_update = t_entry
 
-	sequence = {unpack(Config.arm.grasping)}
+
+
+eef_vector = rcm.get_RRT_eef()
+
+grasping_eef = {}
+
+len = 0.00
+dim = 0.05
+table.insert(grasping_eef, {
+	right = {
+		timeout=10,
+		via='jacobian_preplan',
+--		tr={0.4338 - 0.03 -0.08, -0.277838, -0.039592, -0.003704, -0.055883, 0.000970}, --norminal
+--		tr={0.44, -0.277838, -0.039592, -0.003704, -0.055883, 0.000970}, --norminal
+--		tr={0.44, -0.277838 -0.05, -0.039592, -0.003704, -0.055883, 45*DEG_TO_RAD},   --45deg
+		tr=eef_vector,
+
+		--qArmGuess = vector.new{-15, 60, 90, -120, -80, -70, 0}*DEG_TO_RAD,
+		weights = {1,1,1},
+	},
+	left = false	
+})
+
+
+
+	sequence = {unpack(grasping_eef)}
 
 	-- When to reset?
 	s = 1

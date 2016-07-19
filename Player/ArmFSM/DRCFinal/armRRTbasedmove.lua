@@ -31,7 +31,9 @@ local rrt_streams = Config.net.streams['rrt1']
 --local rrt_ch = si.new_subscriber'rrt1'
 --local rrt_ch = si.new_subscriber(43351, '158.130.109.11')
 --local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
-local rrt_ch = si.new_subscriber(43351, '158.130.107.210')
+--local rrt_ch = si.new_subscriber(43351, '158.130.107.210')
+local rrt_ch = si.new_subscriber(43351, '10.0.0.16')
+
 
 --local depth_net_ch = si.new_publisher(depth_streams.tcp)
 --local color_net_ch = si.new_publisher(color_streams.tcp)
@@ -160,6 +162,7 @@ unpack(qLArm*RAD_TO_DEG)
   qRArmTarget = Body.get_rarm_position()
 
 
+  
   -- Open rgrip
   --Grip_hold = {0,0,0}
   --Grip_open = {0.496719, 0.458369, 0.50132}
@@ -334,6 +337,18 @@ qLArmTarget[4]*Body.RAD_TO_DEG
         head_vector[6] =  planes[6]
         head_vector[7] =  planes[7]
       
+        local eef =  vector.zeros(6)
+        eef[1] = planes[8]
+        eef[2] = planes[9]
+        eef[3] = planes[10]
+        eef[4] = planes[11]
+        eef[5] = planes[12]
+        eef[6] = planes[13]
+
+        print("****************************************************")
+        print(rcm.get_RRT_eef())
+        rcm.set_RRT_eef(eef);
+        print(rcm.get_RRT_eef())
 
           --print(head_vector[1], head_vector[2], head_vector[3])
 
@@ -353,13 +368,13 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
        for idx = 1, RRT_Path_l_size do
           tmp_vector = {}
-          tmp_vector[1] =  planes[(idx)*7+1]
-          tmp_vector[2] =  planes[(idx)*7+2]
-          tmp_vector[3] =  planes[(idx)*7+3]
-          tmp_vector[4] =  planes[(idx)*7+4]
-          tmp_vector[5] =  planes[(idx)*7+5]
-          tmp_vector[6] =  planes[(idx)*7+6]
-          tmp_vector[7] =  planes[(idx)*7+7]
+          tmp_vector[1] =  planes[(idx+1)*7+1]
+          tmp_vector[2] =  planes[(idx+1)*7+2]
+          tmp_vector[3] =  planes[(idx+1)*7+3]
+          tmp_vector[4] =  planes[(idx+1)*7+4]
+          tmp_vector[5] =  planes[(idx+1)*7+5]
+          tmp_vector[6] =  planes[(idx+1)*7+6]
+          tmp_vector[7] =  planes[(idx+1)*7+7]
           tmp_RRT_l_Path[idx] = tmp_vector;
       end
       --0  -60.0000         0         0   80.0000         0
@@ -368,13 +383,13 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
       for idx = (RRT_Path_l_size+1), (RRT_Path_l_size+RRT_Path_r_size) do
           tmp_vector = {}
-          tmp_vector[1] =  planes[(idx)*7+1]
-          tmp_vector[2] =  planes[(idx)*7+2]
-          tmp_vector[3] =  planes[(idx)*7+3]
-          tmp_vector[4] =  planes[(idx)*7+4]
-          tmp_vector[5] =  planes[(idx)*7+5]
-          tmp_vector[6] =  planes[(idx)*7+6]
-          tmp_vector[7] =  planes[(idx)*7+7]
+          tmp_vector[1] =  planes[(idx+1)*7+1]
+          tmp_vector[2] =  planes[(idx+1)*7+2]
+          tmp_vector[3] =  planes[(idx+1)*7+3]
+          tmp_vector[4] =  planes[(idx+1)*7+4]
+          tmp_vector[5] =  planes[(idx+1)*7+5]
+          tmp_vector[6] =  planes[(idx+1)*7+6]
+          tmp_vector[7] =  planes[(idx+1)*7+7]
           tmp_RRT_r_Path[idx-RRT_Path_l_size] = tmp_vector;
       end
       --0  -60.0000         0         0   80.0000         0
@@ -501,6 +516,9 @@ qLArmTarget[4]*Body.RAD_TO_DEG
         print(rcm.get_RRT_finished())
         rcm.set_RRT_finished(255);
         print(rcm.get_RRT_finished())
+
+
+
 
         gripper_ch:send'close'
 

@@ -93,7 +93,9 @@ local function update()
 local c_meta = {
 	-- Required for rendering
 	id = 'world',
-	mrrt = rcm.get_RRT_finished()
+	mrrt = rcm.get_RRT_finished(),
+	qLArm = Body.get_larm_position(),
+    qRArm = Body.get_rarm_position()
 }
 
 	c_meta.t = t

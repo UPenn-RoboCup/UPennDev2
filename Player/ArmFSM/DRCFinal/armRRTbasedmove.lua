@@ -31,8 +31,8 @@ local rrt_streams = Config.net.streams['rrt1']
 --local rrt_ch = si.new_subscriber'rrt1'
 --local rrt_ch = si.new_subscriber(43351, '158.130.109.11')
 --local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
---local rrt_ch = si.new_subscriber(43351, '158.130.107.210')
-local rrt_ch = si.new_subscriber(43351, '10.0.0.16')
+local rrt_ch = si.new_subscriber(43351, '158.130.107.210')
+--local rrt_ch = si.new_subscriber(43351, '10.0.0.16')
 
 
 --local depth_net_ch = si.new_publisher(depth_streams.tcp)
@@ -476,8 +476,8 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
 
 
-       print(string.format("qRArmCommand: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
-       unpack(qRArmCommand)))
+       print(string.format("qLArmCommand: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
+       unpack(qLArmCommand)))
 
 
        --print(RRT_idx);

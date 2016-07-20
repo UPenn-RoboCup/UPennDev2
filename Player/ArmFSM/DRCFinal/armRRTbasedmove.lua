@@ -394,7 +394,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
       end
       --0  -60.0000         0         0   80.0000         0
       RRT_r_Path = tmp_RRT_r_Path;
-      gripper_ch:send'open' 
+--      gripper_ch:send'open' 
    end
 
 
@@ -501,11 +501,9 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
     if RRT_idx > (RRT_Path_size) then
 
-        Grip_close = {0.496719, 0.458369, 0.50132}
-        Grip_open = {-0.496719, -0.458369, -0.50132}
-        Body.set_rgrip_command_position(Grip_open)
-
-
+    --    Grip_close = {0.496719, 0.458369, 0.50132}
+    --    Grip_open = {-0.496719, -0.458369, -0.50132}
+    --    Body.set_rgrip_command_position(Grip_open)
 
         print ("RRT ended")
         finished = 1;
@@ -518,9 +516,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
         print(rcm.get_RRT_finished())
 
 
-
-
-        gripper_ch:send'close'
+        gripper_ch:send'open'
 
         return'grasping'
 

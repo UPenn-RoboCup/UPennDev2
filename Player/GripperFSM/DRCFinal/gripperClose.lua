@@ -13,7 +13,24 @@ function state.entry()
   t_update = t_entry
 
 	-- Write the torque
-	Body.set_rgrip_command_torque{5,5,10}
+
+if IS_WEBOTS then
+
+  Grip_close = {0.496719, 0.458369, 0.50132}
+  Grip_open = {-0.496719, -0.458369, -0.50132}
+  Body.set_rgrip_command_position(Grip_close)
+
+else
+
+    -- Write the torque
+  Body.set_rgrip_command_torque{5,5,10}
+  
+
+end
+
+
+
+
 	
 
 -- right gripper : nx motor

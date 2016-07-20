@@ -162,9 +162,13 @@ function state.update()
 			return'finetune'
 		else
 
-        Grip_close = {0.496719, 0.458369, 0.50132}
-        Grip_open = {-0.496719, -0.458369, -0.50132}
-        Body.set_rgrip_command_position(Grip_close)
+--        Grip_close = {0.496719, 0.458369, 0.50132}
+--        Grip_open = {-0.496719, -0.458369, -0.50132}
+--        Body.set_rgrip_command_position(Grip_close)
+
+        gripper_ch:send'close'
+
+
 			return'done'
 		end
 	end

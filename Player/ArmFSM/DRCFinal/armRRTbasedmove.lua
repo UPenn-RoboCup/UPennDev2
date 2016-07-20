@@ -30,8 +30,8 @@ local vision_ch = si.new_subscriber'vision0'
 local rrt_streams = Config.net.streams['rrt1']
 --local rrt_ch = si.new_subscriber'rrt1'
 --local rrt_ch = si.new_subscriber(43351, '158.130.109.11')
---local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
-local rrt_ch = si.new_subscriber(43351, '158.130.107.210')
+local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
+--local rrt_ch = si.new_subscriber(43351, '158.130.107.210')
 --local rrt_ch = si.new_subscriber(43351, '10.0.0.16')
 
 

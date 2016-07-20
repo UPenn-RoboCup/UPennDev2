@@ -23,7 +23,7 @@ local LOG_INTERVAL = 1/5
 local libLog, logger
 
 local stream = Config.net.streams['world0']
-local world_ch = stream and stream.sub and si.new_publisher(stream.sub)
+local world_ch = stream and stream.sub and si.new_publisher(stream.tcp)
 
 
 local nlog = 0

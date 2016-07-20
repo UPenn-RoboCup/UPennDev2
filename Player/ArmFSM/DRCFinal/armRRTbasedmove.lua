@@ -505,20 +505,25 @@ qLArmTarget[4]*Body.RAD_TO_DEG
     --    Grip_open = {-0.496719, -0.458369, -0.50132}
     --    Body.set_rgrip_command_position(Grip_open)
 
-        print ("RRT ended")
-        finished = 1;
-        Rrt_Run = 0;
+	gripper_ch:send'open'
+	rgrip_position = Body.get_rgrip_position()
+	print(rgrip_position[1])
+	print("test_gripper position")
+
+	if rgrip_position[1] < -1.0 then
+
+	        print ("RRT ended")
+        	finished = 1;
+        	Rrt_Run = 0;
 --        return'teleopraw'
 
-        print("shared")
-        print(rcm.get_RRT_finished())
-        rcm.set_RRT_finished(255);
-        print(rcm.get_RRT_finished())
+        	print("shared")
+        	print(rcm.get_RRT_finished())
+        	rcm.set_RRT_finished(255);
+        	print(rcm.get_RRT_finished())
+		return'grasping'
 
-
-        gripper_ch:send'open'
-
-        return'grasping'
+	end
 
     end
 

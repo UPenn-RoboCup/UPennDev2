@@ -1,0 +1,294 @@
+#VRML_SIM V7.4.3 utf8
+WorldInfo {
+  info [
+    "IROS 2015 World"
+  ]
+  title "THOR-OP In an obstacle course"
+  basicTimeStep 8
+  FPS 15
+  contactProperties [
+    ContactProperties {
+      material1 "feet"
+      material2 "floor"
+      coulombFriction 0.5
+      forceDependentSlip 0.0001
+    }
+    ContactProperties {
+      material1 "feet"
+      material2 "ramp"
+      coulombFriction 20
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.00707809 0.994826 0.101346 3.21422
+  position -1.70631 4.13948 -17.381
+}
+Background {
+  skyColor [
+    0.678431 0.847059 0.901961
+  ]
+}
+DirectionalLight {
+  ambientIntensity 0.8
+  direction -0.5 -2 -0.5
+  intensity 0.3
+  castShadows TRUE
+}
+DirectionalLight {
+  direction 0.5 -0.5 0.5
+  intensity 0.5
+}
+THOROP_mk15_Fullmass_longarm_2 {
+  hidden position_0_0 -4.88956e-07
+  hidden position_0_1 -6.5168e-09
+  hidden position_0_2 -0.395957
+  hidden position_0_3 0.349067
+  hidden position_0_4 0.349066
+  hidden position_5_0 -5.01169e-07
+  hidden position_6_0 -3.60267e-05
+  hidden position_6_1 -3.60479e-05
+  hidden position_12_0 -0.0303966
+  hidden position_13_0 -0.515538
+  hidden position_14_0 0.896688
+  hidden position_15_0 -0.381123
+  hidden position_16_0 0.0422811
+  hidden translation_18 6.128e-05 9.59048e-05 -1.65025e-07
+  hidden rotation_18 -0.720249 0.234177 0.652995 -3.42243e-06
+  hidden position_19_0 -0.00501231
+  hidden position_20_0 -0.517255
+  hidden position_21_0 0.900008
+  hidden position_22_0 -0.382731
+  hidden position_23_0 -0.0133627
+  hidden translation_25 -6.19025e-05 9.12356e-05 9.40757e-07
+  hidden rotation_25 0.556186 0.218625 0.801786 4.3022e-06
+  hidden position_26_0 3.41407e-09
+  hidden position_30_0 4.28187e-07
+  hidden position_31_0 0.174533
+  hidden position_32_0 2.79252
+  hidden position_33_0 1.5708
+  hidden position_35_0 0.698132
+  hidden position_36_0 1.32645
+  hidden position_38_0 -1.70914e-10
+  hidden position_40_0 1.71415e-10
+  hidden position_42_0 1.71479e-10
+  hidden position_44_0 -3.69987e-07
+  hidden position_45_0 -0.174533
+  hidden position_46_0 -2.70526
+  hidden position_47_0 -1.5708
+  hidden position_49_0 -0.785398
+  hidden position_50_0 -1.32645
+  translation 0 1.15 0
+  rotation -0.00092282 0.999999 0.00108074 1.56869
+  controller "thorop"
+  controllerArgs "0 32"
+  lidarRays 360
+  max_torque_400w 90
+  max_torque_200w 90
+  max_torque_100w 45
+  damping_constant 0
+  footContactMaterial "feet"
+}
+DEF TASKFLOOR Floor {
+  translation 6 0 0
+  size 12 8
+  texture [
+    "textures/marble.png"
+  ]
+}
+simple_wall {
+  size 0.01 2 2.7
+  translation 1.5 0 0
+}
+simple_wall {
+  size 0.05 2 3
+  translation 10.4 1 -1.9
+}
+simple_wall {
+  size 0.05 2 2.7
+  translation 10.4 1 1.75
+}
+CinderBlock {
+  translation 7.068 0.2 1.89
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.499 0.2 1.89
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.928 0.2 1.89
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.356 0.2 1.89
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.788 0.2 1.89
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.068 0.2 0.075
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.499 0.2 0.075
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.928 0.2 0.075
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.356 0.2 0.075
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.788 0.2 0.075
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.068 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.499 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.928 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.356 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.788 0.2 -0.085
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.068 0.2 -2
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.499 0.2 -2
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 7.928 0.2 -2
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.356 0.2 -2
+  rotation 1 0 0 1.57
+}
+CinderBlock {
+  translation 8.788 0.2 -2
+  rotation 1 0 0 1.57
+}
+CinderRampF {
+  translation 7.068 0 0.45
+}
+CinderRampR {
+  translation 7.068 0 0.86
+}
+CinderRampR {
+  translation 7.068 0 1.27
+}
+CinderRampR {
+  translation 7.068 0 1.68
+}
+CinderRampF {
+  translation 7.499 0 0.45
+}
+CinderRampR {
+  translation 7.499 0 0.86
+}
+CinderRampR {
+  translation 7.499 0 1.27
+}
+CinderRampR {
+  translation 7.499 0 1.68
+}
+CinderBlock {
+  translation 7.928 0 0.45
+}
+CinderBlock {
+  translation 7.928 0 0.86
+}
+CinderRampR {
+  translation 7.928 0 1.27
+}
+CinderRampR {
+  translation 7.928 0 1.68
+}
+CinderRampF {
+  translation 8.356 0 0.45
+}
+CinderRampR {
+  translation 8.356 0 0.86
+}
+CinderRampR {
+  translation 8.356 0 1.29
+}
+CinderRampR {
+  translation 8.356 0 1.68
+}
+CinderRampF {
+  translation 8.788 0 0.45
+}
+CinderRampR {
+  translation 8.788 0 0.86
+}
+CinderRampR {
+  translation 8.788 0 1.29
+}
+CinderRampR {
+  translation 8.788 0 1.68
+}
+StairLung {
+  translation 11.5 0 0
+  rotation 0 1 0 1.57
+}
+StairLung {
+  translation 11.8 0.225 0
+  rotation 0 1 0 1.57
+}
+StairLung {
+  translation 12.1 0.45 0
+  rotation 0 1 0 1.57
+}
+StairLung {
+  translation 12.4 0.675 0
+  rotation 0 1 0 1.57
+}
+StairLung {
+  translation 12.7 0.675 0
+  rotation 0 1 0 1.57
+}
+simple_wall {
+  size 1.25 2 0.01
+  translation 5.036 1 1.608
+  rotation 0 1 0 0.785398
+}
+simple_wall {
+  size 1.25 2 0.01
+  translation 5.92 1 1.608
+  rotation 0 1 0 -0.785398
+}
+simple_wall {
+  size 1.25 2 0.01
+  translation 9.958 1 1.608
+  rotation 0 1 0 0.785398
+}
+simple_wall {
+  size 0.44 0.1 0.26
+  translation 3.246 1.04 1.482
+  rotation 0 1 0 0.785398
+}
+SimpleDrill {
+  translation 3.24487 1.25969 1.48087
+  rotation 0.000159476 1 0.000385006 -2.35619
+}

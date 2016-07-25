@@ -577,6 +577,7 @@ if IS_WEBOTS then
 		0,0,0,
 		0,0,0,
 		0,
+		---22.686669,
 	})*DEG_TO_RAD
 
 	servo.min_rad = vector.new({

@@ -31,8 +31,10 @@ local rrt_streams = Config.net.streams['rrt1']
 --local rrt_ch = si.new_subscriber'rrt1'
 --local rrt_ch = si.new_subscriber(43351, '158.130.109.11')
 local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
---local rrt_ch = si.new_subscriber(43351, '158.130.107.210')
+--local rrt_ch = si.new_subscriber(43351, '158.130.104.207')
 --local rrt_ch = si.new_subscriber(43351, '10.0.0.16')
+--local rrt_ch = si.new_subscriber(43351, '172.20.20.20')
+
 
 
 --local depth_net_ch = si.new_publisher(depth_streams.tcp)
@@ -123,6 +125,7 @@ io.write(state._NAME, ' Entry\n')
 
   stage = 1
   Rrt_Run = 0
+  head_ch:send'mesh'
   --Slowly close all fingers
   --[[
   Body.move_lgrip1(Config.arm.torque.movement)
@@ -265,6 +268,9 @@ function state.update()
   t_update = t
 --  print(state._NAME..' Update' )
 
+  dd = Body.get_lidar_position()
+  dd = (dd*180)/3.141592
+  print(dd)
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local finished = 0;   --RRT

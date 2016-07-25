@@ -191,6 +191,7 @@ char_lut['7'] = function()
 end
 char_lut['8'] = function()
 	body_ch:send'stop'
+	arm_ch:send'stop'
 	mcm.set_walk_stoprequest(1)
 
 --	motion_ch:send'done'

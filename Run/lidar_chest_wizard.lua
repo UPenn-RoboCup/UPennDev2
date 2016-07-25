@@ -35,7 +35,7 @@ h0.ch = si.new_publisher(streams.lidar0.sub)
 h0.metadata = {
 	id='lidar0'
 }
-h0.angle = Body.get_lidar_position
+h0.angle = Body.get_lidar_position()
 --[[
 local h1 = libHokuyo.new_hokuyo(11) -- head on mk2
 h1.name = 'head'

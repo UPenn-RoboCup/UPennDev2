@@ -30,8 +30,8 @@ local vision_ch = si.new_subscriber'vision0'
 local rrt_streams = Config.net.streams['rrt1']
 --local rrt_ch = si.new_subscriber'rrt1'
 --local rrt_ch = si.new_subscriber(43351, '158.130.109.11')
-local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
---local rrt_ch = si.new_subscriber(43351, '158.130.104.207')
+--local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
+local rrt_ch = si.new_subscriber(43351, '158.130.104.207')
 --local rrt_ch = si.new_subscriber(43351, '10.0.0.16')
 --local rrt_ch = si.new_subscriber(43351, '172.20.20.20')
 
@@ -268,9 +268,7 @@ function state.update()
   t_update = t
 --  print(state._NAME..' Update' )
 
-  dd = Body.get_lidar_position()
-  dd = (dd*180)/3.141592
-  print(dd)
+
   local qLArm = Body.get_larm_command_position()
   local qRArm = Body.get_rarm_command_position()
   local finished = 0;   --RRT
@@ -516,7 +514,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 	print(rgrip_position[1])
 	print("test_gripper position")
 
-	if rgrip_position[1] < -1.0 then
+	if rgrip_position[1] < -0.4 then
 
 	        print ("RRT ended")
         	finished = 1;

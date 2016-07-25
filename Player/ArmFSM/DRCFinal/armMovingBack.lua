@@ -30,6 +30,9 @@ function state.entry()
 
 eef_vector = rcm.get_RRT_eef()
 
+-- need to receive it from the Matlab
+eef_vector = {0.44-0.2, -0.277838-0.2-dim*0.707, -0.069592, -0.003704, -0.055883, 20*DEG_TO_RAD}
+
 grasping_eef = {}
 
 len = 0.00
@@ -168,8 +171,8 @@ function state.update()
 
         gripper_ch:send'close'
 
--- need to check the position of the gripper
-			return'moveup'
+
+			return'done'
 		end
 	end
 

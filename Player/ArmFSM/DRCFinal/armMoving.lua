@@ -166,10 +166,10 @@ function state.update()
 --        Grip_open = {-0.496719, -0.458369, -0.50132}
 --        Body.set_rgrip_command_position(Grip_close)
 
-        gripper_ch:send'close'
+        gripper_ch:send'open'
 
--- need to check the position of the gripper
-			return'moveup'
+
+			return'movingback'
 		end
 	end
 

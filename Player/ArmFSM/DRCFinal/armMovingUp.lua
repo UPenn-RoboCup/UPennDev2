@@ -29,7 +29,7 @@ function state.entry()
 
 
 eef_vector = rcm.get_RRT_eef()
-
+eef_vector[3] = eef_vector[3] + 0.1 
 grasping_eef = {}
 
 len = 0.00
@@ -168,8 +168,8 @@ function state.update()
 
         gripper_ch:send'close'
 
--- need to check the position of the gripper
-			return'moveup'
+
+			return'done'
 		end
 	end
 

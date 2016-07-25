@@ -41,8 +41,8 @@ h0.angle = Body.get_lidar_position
 ----[[
 local h1 = libHokuyo.new_hokuyo(10) -- head on mk2
 h1.name = 'head'
-h1.ch = si.new_publisher(streams.lidar1.sub)
---h1.tcp_ch = si.new_publisher(streams.lidar1.tcp)
+--h1.ch = si.new_publisher(streams.lidar1.sub)
+h1.tcp_ch = si.new_publisher(streams.lidar1.tcp)
 h1.metadata = {
 	id='lidar1'
 }
@@ -82,8 +82,8 @@ local cb = function(self, data)
 	metadata.qWaist = qW
 
 	local send_data = {mpack(metadata), data}
-	local ret = self.ch:send(send_data)
---	local ret = self.tcp_ch:send(send_data)
+--	local ret = self.ch:send(send_data)
+	local ret = self.tcp_ch:send(send_data)
 
 	if ENABLE_LOG then
 		self.logger:record(metadata, data)

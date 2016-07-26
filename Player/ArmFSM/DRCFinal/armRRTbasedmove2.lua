@@ -360,6 +360,11 @@ qLArmTarget[4]*Body.RAD_TO_DEG
         RRT_Path_r_size = head_vector[2]
         RRT_l_end_effector = head_vector[3]
         RRT_r_end_effector = head_vector[4]
+
+        diff_end_effector = RRT_r_end_effector - qRArm[7];
+        inc_end_effector = diff_end_effector/(RRT_Path_r_size+1)
+
+
         RRT_Path_size = RRT_Path_l_size
 
       if RRT_Path_r_size > RRT_Path_l_size then
@@ -394,6 +399,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
           tmp_vector[5] =  planes[(idx+1)*7+5]
           tmp_vector[6] =  planes[(idx+1)*7+6]
           tmp_vector[7] =  planes[(idx+1)*7+7]
+          tmp_vector[8] = qRArm[7] + inc_end_effector*(idx - RRT_Path_l_size - 1)
           tmp_RRT_r_Path[idx-RRT_Path_l_size] = tmp_vector;
       end
       --0  -60.0000         0         0   80.0000         0
@@ -439,6 +445,9 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
        --print(RRT_r_idx)
        --print(RRT_l_idx)
+
+
+
        qRArmTarget[1] = (RRT_r_Path[RRT_r_idx][2])*3.141592/180;
        qRArmTarget[2] = -1*(RRT_r_Path[RRT_r_idx][3])*3.141592/180;
        qRArmTarget[3] = -1*(-1*RRT_r_Path[RRT_r_idx][4])*3.141592/180;
@@ -447,6 +456,7 @@ qLArmTarget[4]*Body.RAD_TO_DEG
        qRArmTarget[6] = -1*(-1*RRT_r_Path[RRT_r_idx][7])*3.141592/180;
        qRArmTarget[7] = RRT_r_end_effector+3.141592/2;
        qRArmTarget[7] = RRT_r_end_effector;
+       qRArmTarget[7] = RRT_r_Path[RRT_r_idx][8];
 
        --print('RRT_l_path')
        --print(RRT_l_Path[RRT_l_idx][5])

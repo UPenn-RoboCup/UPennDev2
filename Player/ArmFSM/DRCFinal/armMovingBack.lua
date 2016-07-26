@@ -171,6 +171,7 @@ function state.update()
 
         gripper_ch:send'close'
 
+        	rcm.set_RRT_finished(100);
 
 			return'done'
 		end

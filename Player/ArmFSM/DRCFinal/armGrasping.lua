@@ -19,8 +19,11 @@ local lco, rco
 local okL, qLWaypoint, qLWaist
 local okR, qRWaypoint, qRWaist
 local sequence, s, stage
+local check_gripper
 
 function state.entry()
+
+	check_gripper = 0
 	io.write(state._NAME, ' Entry\n')
 	local t_entry_prev = t_entry
 	t_entry = Body.get_time()
@@ -70,6 +73,23 @@ end
 
 function state.update()
 	--  io.write(state._NAME,' Update\n')
+
+
+	if (check_gripper == 1) then
+
+			rgrip_position = Body.get_rgrip_position()
+			print('here here here here here')
+			print(rgrip_position[1])
+			if rgrip_position[1] > 0.4 then
+
+				return'moveup'
+
+			end
+	end
+
+
+
+
 	local t  = Body.get_time()
 	local dt = t - t_update
 	t_update = t
@@ -166,10 +186,11 @@ function state.update()
 --        Grip_open = {-0.496719, -0.458369, -0.50132}
 --        Body.set_rgrip_command_position(Grip_close)
 
-        gripper_ch:send'close'
+			 check_gripper = 1
+        	gripper_ch:send'close'	
 
 -- need to check the position of the gripper
-			return'moveup'
+--			return'moveup'
 		end
 	end
 

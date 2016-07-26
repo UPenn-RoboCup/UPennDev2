@@ -262,12 +262,12 @@ fsm.Arm = {
 --	{'armWalk', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
 	{'armWalk', 'RRTbasedmove', 'armRRTbasedmove'},  --jwhuh
 	{'armRRTbasedmove', 'grasping', 'armGrasping'},  --jwhuh
-	{'armGrasping', 'done', 'armTeleop'},
+--	{'armGrasping', 'done', 'armTeleop'},
 	{'armRRTbasedmove', 'stop', 'armStop'},  --jwhuh
 	{'armGrasping', 'stop', 'armStop'},
 	{'armGrasping', 'moveup', 'armMovingUp'},
 	{'armTeleop', 'moveup', 'armMovingUp'},
-	{'armMovingUp', 'done', 'armTeleop'},
+	{'armMovingUp', 'done', 'armRRTbasedmove2'},
 	{'armTeleop','RRTbasedtrans', 'armRRTbasedmove2'},  --jwhuh
 	{'armTeleop','moving', 'armMoving'},  --jwhuh
 	{'armRRTbasedmove2','moving', 'armMoving'},  --jwhuh

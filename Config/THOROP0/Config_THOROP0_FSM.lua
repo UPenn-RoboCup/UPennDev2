@@ -274,6 +274,7 @@ fsm.Arm = {
 	{'armMoving','movingback', 'armMovingBack'},  --jwhuh
 	{'armMovingBack','done', 'armRRTbasedending'},  --jwhuh
 	{'armMovingBack','ending', 'armRRTbasedending'},  --jwhuh
+	{'armRRTbasedending','done', 'armRRTbasedmove'},  --jwhuh
 
 
 

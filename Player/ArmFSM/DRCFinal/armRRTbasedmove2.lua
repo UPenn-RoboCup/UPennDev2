@@ -490,8 +490,8 @@ qLArmTarget[4]*Body.RAD_TO_DEG
 
 
 
-       print(string.format("qLArmCommand: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
-       unpack(qLArmCommand)))
+       --print(string.format("qLArmCommand: %.2f %.2f %.2f %.2f %.2f %.2f %.2f" ,
+       --unpack(qLArmCommand)))
 
 
        --print(RRT_idx);

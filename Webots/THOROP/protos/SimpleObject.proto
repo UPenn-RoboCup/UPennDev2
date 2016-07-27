@@ -1,0 +1,64 @@
+PROTO SimpleObject [
+  field SFColor color 1.0 0.54 0.08
+  field SFFloat mass 3
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation  0 1 0 0
+]
+{
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+	# Handle
+    DEF HANDLE Shape {
+      appearance Appearance {
+        material Material {
+          ambientIntensity 0.1
+          diffuseColor IS color
+        }
+      }
+      geometry Cylinder {
+        height 0.25
+        radius 0.015
+				subdivision 8
+				top FALSE
+				bottom FALSE
+      }
+    }
+    DEF BASE Transform {
+      translation 0 -0.135 0.00
+      children [
+        Shape {
+					geometry Cylinder { height 0.07
+      					                    radius 0.06
+					 }
+				}
+      ]
+    }
+    DEF MOTOR Transform {
+      translation 0 0.10 0.0
+      rotation 1 0 0 0
+      children [
+        Shape {
+          geometry Cylinder {
+            height 0.05
+            radius 0.04
+						subdivision 6
+          }
+        }
+      ]
+    }
+  ]
+  boundingObject Group {
+    children [
+			USE HANDLE
+			USE BASE
+			USE MOTOR
+    ]
+  }
+  physics Physics {
+    density -1
+    mass IS mass
+  }
+}
+}

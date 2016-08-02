@@ -31,8 +31,9 @@ local rrt_streams = Config.net.streams['rrt1']
 --local rrt_ch = si.new_subscriber'rrt1'
 --local rrt_ch = si.new_subscriber(43351, '158.130.109.11')
 --local rrt_ch = si.new_subscriber(43351, '192.168.123.200')
-local rrt_ch = si.new_subscriber(43351, '158.130.104.207')
+--local rrt_ch = si.new_subscriber(43351, '158.130.104.207')
 --local rrt_ch = si.new_subscriber(43351, '10.0.0.16')
+local rrt_ch = si.new_subscriber(43351, '165.123.155.112')
 --local rrt_ch = si.new_subscriber(43351, '172.20.20.20')
 
 

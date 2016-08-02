@@ -29,7 +29,7 @@ function state.entry()
 
 
 eef_vector = rcm.get_RRT_eef()
-eef_vector[3] = eef_vector[3] + 0.1 
+eef_vector[3] = eef_vector[3] + 0.05 
 grasping_eef = {}
 
 len = 0.00

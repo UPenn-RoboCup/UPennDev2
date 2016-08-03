@@ -3,7 +3,7 @@ This project is a modularized software framework for use with humanoid robot dev
 
 The project began with the University of Pennsylvania RoboCup code base from the 2011 RoboCup season and is continuing to evolve into an ever more generalized and versatile robot software framework.  The DARPA Robotics Challenge also pushed development
 
-## Copyright
+## Copyright and License
 
 All code sources associated with this project are:
 
@@ -13,7 +13,16 @@ All code sources associated with this project are:
 
 * (c) 2015 Stephen McGill, Seung-Joon Yi, Daniel D. Lee, Bhoram Lee
 
+* (c) 2016 Stephen McGill, Seung-Joon Yi, Daniel D. Lee, Jinwook Huh
+
 * Exceptions are noted on a per file basis.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 
 ### Contact Information
 
